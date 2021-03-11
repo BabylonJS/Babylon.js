@@ -161,7 +161,7 @@ export class LavaMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new LavaMaterialDefines();
+            subMesh.materialDefines = new LavaMaterialDefines();
         }
 
         var defines = <LavaMaterialDefines>subMesh._materialDefines;
@@ -280,7 +280,7 @@ export class LavaMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

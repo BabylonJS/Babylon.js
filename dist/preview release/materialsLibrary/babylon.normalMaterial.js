@@ -640,9 +640,9 @@ var NormalMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new NormalMaterialDefines();
+            subMesh.materialDefines = new NormalMaterialDefines();
         }
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         var scene = this.getScene();
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -727,7 +727,7 @@ var NormalMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: 4 }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

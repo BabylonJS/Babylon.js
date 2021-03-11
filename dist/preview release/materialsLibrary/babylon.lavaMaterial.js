@@ -617,7 +617,7 @@ var LavaMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new LavaMaterialDefines();
+            subMesh.materialDefines = new LavaMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -711,7 +711,7 @@ var LavaMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

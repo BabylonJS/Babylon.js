@@ -258,6 +258,11 @@ export interface IWheelEvent extends IMouseEvent {
      * Z-Axis scroll delta
      */
     deltaZ: number;
+
+    /**
+     * WheelDelta (From MouseWheel Event)
+     */
+    wheelDelta?: number;
 }
 
 /**

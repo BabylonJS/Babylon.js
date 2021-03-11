@@ -1,12 +1,5 @@
-[[block]] struct Uniforms {
-  [[offset(0)]] color : vec4<f32>;
-};
-[[binding(0), set(0)]] var<uniform> uniforms : Uniforms;
+uniform vec4 color;
 
-[[location(0)]] var<out> outColor : vec4<f32>;
-
-[[stage(fragment)]]
-fn main() -> void {
-  outColor = uniforms.color;
-  return;
+void main() {
+	gl_FragColor = color;
 }

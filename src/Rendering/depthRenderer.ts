@@ -7,10 +7,10 @@ import { SmartArray } from "../Misc/smartArray";
 import { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect } from "../Materials/effect";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
@@ -21,16 +21,17 @@ import { _DevTools } from '../Misc/devTools';
  * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
  */
 export class DepthRenderer {
+    private static _Counter = 0;
+
     private _scene: Scene;
     private _depthMap: RenderTargetTexture;
-    private _effect: Effect;
+    private _nameForDrawWrapper: string;
     private readonly _storeNonLinearDepth: boolean;
     private readonly _clearColor: Color4;
 
     /** Get if the depth renderer is using packed depth or not */
     public readonly isPacked: boolean;
 
-    private _cachedDefines: string;
     private _camera: Nullable<Camera>;
 
     /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
@@ -68,6 +69,7 @@ export class DepthRenderer {
 
         DepthRenderer._SceneComponentInitialization(this._scene);
 
+        this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX + DepthRenderer._Counter++;
         this._camera = camera;
         var engine = scene.getEngine();
 
@@ -130,21 +132,25 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                engine.enableEffect(this._effect);
-                renderingMesh._bind(subMesh, this._effect, material.fillMode);
+                const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
+                const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
-                this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
-                this._effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+                engine.enableEffect(drawWrapper);
 
-                this._effect.setFloat2("depthValues", camera.minZ, camera.minZ + camera.maxZ);
+                renderingMesh._bind(subMesh, effect, material.fillMode);
+
+                effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+
+                effect.setFloat2("depthValues", camera.minZ, camera.minZ + camera.maxZ);
 
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
                     var alphaTexture = material.getAlphaTestTexture();
 
                     if (alphaTexture) {
-                        this._effect.setTexture("diffuseSampler", alphaTexture);
-                        this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        effect.setTexture("diffuseSampler", alphaTexture);
+                        effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
                 }
 
@@ -158,22 +164,22 @@ export class DepthRenderer {
                             return;
                         }
 
-                        this._effect.setTexture("boneSampler", boneTexture);
-                        this._effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                        effect.setTexture("boneSampler", boneTexture);
+                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
                     } else {
-                        this._effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                        effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
                     }
                 }
 
                 // Morph targets
-                MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
+                MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
                 if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
-                    renderingMesh.morphTargetManager._bind(this._effect);
+                    renderingMesh.morphTargetManager._bind(effect);
                 }
 
                 // Draw
-                renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-                    (isInstance, world) => this._effect.setMatrix("world", world));
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
+                    (isInstance, world) => effect.setMatrix("world", world));
             }
         };
 
@@ -211,6 +217,11 @@ export class DepthRenderer {
         }
 
         var defines = [];
+
+        const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
+
+        let effect = subMeshEffect.effect!;
+        let cachedDefines = subMeshEffect.defines;
 
         var attribs = [VertexBuffer.PositionKind];
 
@@ -282,16 +293,18 @@ export class DepthRenderer {
 
         // Get correct effect
         var join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
-            this._effect = this._scene.getEngine().createEffect("depth",
+        if (cachedDefines !== join) {
+            cachedDefines = join;
+            effect = this._scene.getEngine().createEffect("depth",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "morphTargets"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
-        return this._effect.isReady();
+        subMeshEffect.setEffect(effect, cachedDefines);
+
+        return effect.isReady();
     }
 
     /**

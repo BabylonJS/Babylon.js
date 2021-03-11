@@ -19079,7 +19079,7 @@ var FluentMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new FluentMaterialDefines();
+            subMesh.materialDefines = new FluentMaterialDefines();
         }
         var scene = this.getScene();
         var defines = subMesh._materialDefines;
@@ -19137,7 +19137,7 @@ var FluentMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: 4 }
-            }, engine));
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -19548,7 +19548,7 @@ var FluentButtonMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new FluentButtonMaterialDefines();
+            subMesh.materialDefines = new FluentButtonMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();

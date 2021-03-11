@@ -59,12 +59,12 @@ interface GPURequestAdapterOptions {
 
 type GPUPowerPreference = "low-power" | "high-performance";
 
-// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features (should replace 'extensions'). See also GPUDeviceDescriptor, GPUFeatureName and GPUDevice
+// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features as GPUAdapterFeatures but as GPUFeatureName[]
 declare class GPUAdapter {
     // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
     private __brand: void;
     readonly name: string;
-    readonly extensions: GPUExtensionName[];
+    readonly features: GPUFeatureName[];
     //readonly features: GPUAdapterFeatures;
     readonly limits: Required<GPUAdapterLimits>;
 
@@ -72,38 +72,27 @@ declare class GPUAdapter {
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
-    extensions?: GPUExtensionName[];
-    //nonGuaranteedFeatures?: GPUFeatureName[];
-    limits?: GPUAdapterLimits;
-    //nonGuaranteedLimits?: { [name: string]: GPUSize32 };
+    nonGuaranteedFeatures?: GPUFeatureName[];
+    nonGuaranteedLimits?: { [name: string]: GPUSize32 };
 }
 
-type GPUExtensionName =
-    | "texture-compression-bc"
-    | "timestamp-query"
-    | "pipeline-statistics-query"
+type GPUFeatureName =
     | "depth-clamping"
     | "depth24unorm-stencil8"
-    | "depth32float-stencil8";
-
-/*type GPUFeatureName =
-    | "depth-clamping",
-    | "depth24unorm-stencil8",
-    | "depth32float-stencil8",
-    | "pipeline-statistics-query",
-    | "texture-compression-bc",
-    | "timestamp-query",*/
+    | "depth32float-stencil8"
+    | "pipeline-statistics-query"
+    | "texture-compression-bc"
+    | "timestamp-query";
 
 declare class GPUDevice extends EventTarget implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
 
     readonly adapter: GPUAdapter;
-    readonly extensions: GPUExtensionName[];
-    //readonly features: GPUFeatureName[];
+    readonly features: GPUFeatureName[];
     readonly limits: Required<GPUAdapterLimits>;
 
-    defaultQueue: GPUQueue;
+    readonly queue: GPUQueue;
 
     destroy(): void;
 
@@ -119,8 +108,8 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
 
     createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
     createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
-    createReadyComputePipeline(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
-    createReadyRenderPipeline(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
+    createComputePipelineAsync(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
+    createRenderPipelineAsync(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
 
     createCommandEncoder(descriptor?: GPUCommandEncoderDescriptor): GPUCommandEncoder;
     createRenderBundleEncoder(descriptor: GPURenderBundleEncoderDescriptor): GPURenderBundleEncoder;
@@ -608,7 +597,7 @@ type GPUVertexFormat =
 
 type GPUInputStepMode = "vertex" | "instance";
 
-interface GPUVertexState {
+interface GPUVertexState { // TODO WEBGPU to be replaced by: interface GPUVertexState extends GPUProgrammableStage {
     indexFormat?: GPUIndexFormat; // TODO WEBGPU to be removed
     vertexBuffers?: GPUVertexBufferLayout[]; // TODO WEBGPU to be renamed to buffers
 }
@@ -1076,7 +1065,7 @@ type GPUOrigin3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordi
 interface GPUExtent3DDict {
     width?: GPUIntegerCoordinate; /* default=1 */
     height?: GPUIntegerCoordinate; /* default=1 */
-    depth?: GPUIntegerCoordinate; /* default=1 */
+    depthOrArrayLayers?: GPUIntegerCoordinate; /* default=1 */
 }
 type GPUExtent3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUExtent3DDict;
 

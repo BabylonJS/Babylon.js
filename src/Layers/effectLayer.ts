@@ -27,6 +27,7 @@ import "../Shaders/glowMapGeneration.vertex";
 import { _DevTools } from '../Misc/devTools';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { EffectFallbacks } from '../Materials/effectFallbacks';
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -73,9 +74,9 @@ export abstract class EffectLayer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _cachedDefines: string;
-    private _effectLayerMapGenerationEffect: Effect;
+    private _effectLayerMapGenerationDrawWrapper: DrawWrapper;
     private _effectLayerOptions: IEffectLayerOptions;
-    private _mergeEffect: Effect;
+    private _mergeDrawWrapper: DrawWrapper;
 
     protected _scene: Scene;
     protected _engine: Engine;
@@ -188,6 +189,9 @@ export abstract class EffectLayer {
         this._maxSize = this._engine.getCaps().maxTextureSize;
         this._scene.effectLayers.push(this);
 
+        this._effectLayerMapGenerationDrawWrapper = new DrawWrapper(this._engine);
+        this._mergeDrawWrapper = new DrawWrapper(this._engine);
+
         // Generate Buffers
         this._generateIndexBuffer();
         this._generateVertexBuffer();
@@ -266,7 +270,7 @@ export abstract class EffectLayer {
         this._setMainTextureSize();
         this._createMainTexture();
         this._createTextureAndPostProcesses();
-        this._mergeEffect = this._createMergeEffect();
+        this._mergeDrawWrapper.setEffect(this._createMergeEffect());
     }
 
     /**
@@ -555,27 +559,28 @@ export abstract class EffectLayer {
         var join = defines.join("\n");
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
-            this._effectLayerMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
+            this._effectLayerMapGenerationDrawWrapper.setEffect(this._scene.getEngine().createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
                     "glowColor", "morphTargetInfluences", "boneTextureWidth",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity",
                     "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"], join,
-                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers })
+            );
         }
 
-        return this._effectLayerMapGenerationEffect.isReady();
+        return this._effectLayerMapGenerationDrawWrapper.effect!.isReady();
     }
 
     /**
      * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
      */
     public render(): void {
-        var currentEffect = this._mergeEffect;
+        var currentEffect = this._mergeDrawWrapper;
 
         // Check
-        if (!currentEffect.isReady()) {
+        if (!currentEffect.effect!.isReady()) {
             return;
         }
 
@@ -594,7 +599,7 @@ export abstract class EffectLayer {
         engine.setState(false);
 
         // VBOs
-        engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect);
+        engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect.effect!);
 
         // Cache
         var previousAlphaMode = engine.getAlphaMode();
@@ -603,7 +608,7 @@ export abstract class EffectLayer {
         engine.setAlphaMode(this._effectLayerOptions.alphaBlendingMode);
 
         // Blends the map on the main canvas.
-        this._internalRender(currentEffect);
+        this._internalRender(currentEffect.effect!);
 
         // Restore Alpha
         engine.setAlphaMode(previousAlphaMode);
@@ -728,14 +733,16 @@ export abstract class EffectLayer {
             renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
         }
         else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
-            engine.enableEffect(this._effectLayerMapGenerationEffect);
-            renderingMesh._bind(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode);
+            const effect = this._effectLayerMapGenerationDrawWrapper.effect!;
 
-            this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
+            engine.enableEffect(this._effectLayerMapGenerationDrawWrapper);
+            renderingMesh._bind(subMesh, effect, Material.TriangleFillMode);
 
-            this._effectLayerMapGenerationEffect.setMatrix("world", effectiveMesh.getWorldMatrix());
+            effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-            this._effectLayerMapGenerationEffect.setFloat4("glowColor",
+            effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+
+            effect.setFloat4("glowColor",
                 this._emissiveTextureAndColor.color.r,
                 this._emissiveTextureAndColor.color.g,
                 this._emissiveTextureAndColor.color.b,
@@ -748,28 +755,28 @@ export abstract class EffectLayer {
                 ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
 
             if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
-                this._effectLayerMapGenerationEffect.setTexture("diffuseSampler", diffuseTexture);
+                effect.setTexture("diffuseSampler", diffuseTexture);
                 const textureMatrix = diffuseTexture.getTextureMatrix();
 
                 if (textureMatrix) {
-                    this._effectLayerMapGenerationEffect.setMatrix("diffuseMatrix", textureMatrix);
+                    effect.setMatrix("diffuseMatrix", textureMatrix);
                 }
             }
 
             const opacityTexture = (material as any).opacityTexture;
             if (opacityTexture) {
-                this._effectLayerMapGenerationEffect.setTexture("opacitySampler", opacityTexture);
-                this._effectLayerMapGenerationEffect.setFloat("opacityIntensity", opacityTexture.level);
+                effect.setTexture("opacitySampler", opacityTexture);
+                effect.setFloat("opacityIntensity", opacityTexture.level);
                 const textureMatrix = opacityTexture.getTextureMatrix();
                 if (textureMatrix) {
-                    this._effectLayerMapGenerationEffect.setMatrix("opacityMatrix", textureMatrix);
+                    effect.setMatrix("opacityMatrix", textureMatrix);
                 }
             }
 
             // Glow emissive only
             if (this._emissiveTextureAndColor.texture) {
-                this._effectLayerMapGenerationEffect.setTexture("emissiveSampler", this._emissiveTextureAndColor.texture);
-                this._effectLayerMapGenerationEffect.setMatrix("emissiveMatrix", this._emissiveTextureAndColor.texture.getTextureMatrix());
+                effect.setTexture("emissiveSampler", this._emissiveTextureAndColor.texture);
+                effect.setMatrix("emissiveMatrix", this._emissiveTextureAndColor.texture.getTextureMatrix());
             }
 
             // Bones
@@ -782,17 +789,17 @@ export abstract class EffectLayer {
                         return;
                     }
 
-                    this._effectLayerMapGenerationEffect.setTexture("boneSampler", boneTexture);
-                    this._effectLayerMapGenerationEffect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                    effect.setTexture("boneSampler", boneTexture);
+                    effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
                 } else {
-                    this._effectLayerMapGenerationEffect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                    effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
                 }
             }
 
             // Morph targets
-            MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effectLayerMapGenerationEffect);
+            MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
             if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
-                renderingMesh.morphTargetManager._bind(this._effectLayerMapGenerationEffect);
+                renderingMesh.morphTargetManager._bind(effect);
             }
 
             // Alpha mode
@@ -801,8 +808,8 @@ export abstract class EffectLayer {
             }
 
             // Draw
-            renderingMesh._processRendering(effectiveMesh, subMesh, this._effectLayerMapGenerationEffect, material.fillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => this._effectLayerMapGenerationEffect.setMatrix("world", world));
+            renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
+                (isInstance, world) => effect.setMatrix("world", world));
         } else {
             // Need to reset refresh rate of the main map
             this._mainTexture.resetRefreshCounter();

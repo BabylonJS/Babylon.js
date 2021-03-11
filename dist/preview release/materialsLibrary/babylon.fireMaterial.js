@@ -543,7 +543,7 @@ var FireMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new FireMaterialDefines();
+            subMesh.materialDefines = new FireMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -622,7 +622,7 @@ var FireMaterial = /** @class */ (function (_super) {
                 indexParameters: null,
                 maxSimultaneousLights: 4,
                 transformFeedbackVaryings: null
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

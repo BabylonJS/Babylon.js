@@ -555,7 +555,7 @@ var CellMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new CellMaterialDefines();
+            subMesh.materialDefines = new CellMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -645,7 +645,7 @@ var CellMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

@@ -40852,6 +40852,91 @@ var LogComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/parentingPropertyGridComponent.tsx":
+/*!*******************************************************!*\
+  !*** ./components/parentingPropertyGridComponent.tsx ***!
+  \*******************************************************/
+/*! exports provided: ParentingPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ParentingPropertyGridComponent", function() { return ParentingPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
+
+
+
+
+var ParentingPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ParentingPropertyGridComponent, _super);
+    function ParentingPropertyGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.parentIndex = 0;
+        return _this;
+    }
+    ParentingPropertyGridComponent.prototype._isContainer = function (guiControl) {
+        switch (guiControl.typeName) {
+            case "Button":
+            case "StackPanel":
+            case "Rectangle":
+            case "Ellipse":
+                return true;
+            default:
+                return false;
+        }
+    };
+    ParentingPropertyGridComponent.prototype.addChildGui = function (childNode, parentNode) {
+        this.props.globalState.guiTexture.removeControl(childNode);
+        parentNode.addControl(childNode);
+    };
+    ParentingPropertyGridComponent.prototype.removeChildGui = function (childNode, parentNode) {
+        parentNode.removeControl(childNode);
+        this.props.globalState.guiTexture.addControl(childNode);
+    };
+    ParentingPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var parentOptions = [{ label: "None", value: 0 }];
+        var containerNodes = [];
+        this.props.guiNodes.forEach(function (node) {
+            if (_this._isContainer(node) && node != _this.props.guiNode) {
+                var name = node.name ? node.name : "";
+                parentOptions.push({ label: name, value: parentOptions.length });
+                containerNodes.push(node);
+            }
+        });
+        var parent = this.props.guiNode.parent;
+        if (parent) {
+            for (var i = 0; i < containerNodes.length; ++i) {
+                if (parent == containerNodes[i]) {
+                    this.parentIndex = i + 1;
+                }
+            }
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "PARENTING" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_2__["OptionsLineComponent"], { label: "Parent Container", options: parentOptions, target: this, propertyName: "parentIndex", noDirectUpdate: true, onSelect: function (value) {
+                        _this.parentIndex = value;
+                        if (_this.props.guiNode.parent) {
+                            _this.removeChildGui(_this.props.guiNode, _this.props.guiNode.parent);
+                        }
+                        if (value != 0) {
+                            var parent = containerNodes[value - 1];
+                            _this.addChildGui(_this.props.guiNode, parent);
+                        }
+                        _this.forceUpdate();
+                    } }))));
+    };
+    return ParentingPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/propertyTab/propertyTab.scss":
 /*!*************************************************!*\
   !*** ./components/propertyTab/propertyTab.scss ***!
@@ -40900,28 +40985,29 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _diagram_guiNode__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../diagram/guiNode */ "./diagram/guiNode.ts");
-/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../sharedUiComponents/stringTools */ "./sharedUiComponents/stringTools.ts");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedUiComponents/stringTools */ "./sharedUiComponents/stringTools.ts");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent.tsx");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24__);
 /* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/controlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/controlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! babylonjs-gui/2D/advancedDynamicTexture */ "babylonjs-gui/2D/controls/button");
-/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_26___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_26__);
-/* harmony import */ var _sharedUiComponents_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ../../sharedUiComponents/lines/vector2LineComponent */ "./sharedUiComponents/lines/vector2LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ../../sharedUiComponents/lines/vector2LineComponent */ "./sharedUiComponents/lines/vector2LineComponent.tsx");
+/* harmony import */ var _parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ../parentingPropertyGridComponent */ "./components/parentingPropertyGridComponent.tsx");
+
 
 
 
@@ -40958,7 +41044,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_10__["LockObject"]();
+        _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_9__["LockObject"]();
         _this.state = { currentNode: null, textureSize: new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["Vector2"](1200, 1200) };
         return _this;
     }
@@ -40971,7 +41057,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         this._timerIntervalId = window.setInterval(function () { return _this.timerRefresh(); }, 500);
         this.props.globalState.onSelectionChangedObservable.add(function (selection) {
-            if (selection instanceof _diagram_guiNode__WEBPACK_IMPORTED_MODULE_7__["GUINode"]) {
+            if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24__["Control"]) {
                 _this.setState({ currentNode: selection });
             }
             else {
@@ -40999,7 +41085,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     };
     PropertyTabComponent.prototype.save = function () {
         var json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
-        _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_9__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
+        _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_8__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
     };
     PropertyTabComponent.prototype.saveToSnippetServer = function () {
         var _this = this;
@@ -41033,7 +41119,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 }
             }
         };
-        xmlHttp.open("POST", babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_26__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+        xmlHttp.open("POST", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
         var dataToSend = {
             payload: JSON.stringify({
@@ -41053,81 +41139,81 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         this.props.globalState.workbench.loadFromSnippet(snippedID);
     };
     PropertyTabComponent.prototype.renderProperties = function () {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
-        var className = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.guiControl.getClassName();
+        var _a;
+        var className = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.getClassName();
         switch (className) {
             case "TextBlock": {
-                var textBlock = (_b = this.state.currentNode) === null || _b === void 0 ? void 0 : _b.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["TextBlockPropertyGridComponent"], { textBlock: textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var textBlock = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["TextBlockPropertyGridComponent"], { textBlock: textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "InputText": {
-                var inputText = (_c = this.state.currentNode) === null || _c === void 0 ? void 0 : _c.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["InputTextPropertyGridComponent"], { inputText: inputText, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var inputText = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["InputTextPropertyGridComponent"], { inputText: inputText, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "ColorPicker": {
-                var colorPicker = (_d = this.state.currentNode) === null || _d === void 0 ? void 0 : _d.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var colorPicker = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Image": {
-                var image = (_e = this.state.currentNode) === null || _e === void 0 ? void 0 : _e.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["ImagePropertyGridComponent"], { image: image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var image = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ImagePropertyGridComponent"], { image: image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Slider": {
-                var slider = (_f = this.state.currentNode) === null || _f === void 0 ? void 0 : _f.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["SliderPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var slider = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["SliderPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "ImageBasedSlider": {
-                var imageBasedSlider = (_g = this.state.currentNode) === null || _g === void 0 ? void 0 : _g.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var imageBasedSlider = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Rectangle": {
-                var rectangle = (_h = this.state.currentNode) === null || _h === void 0 ? void 0 : _h.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["RectanglePropertyGridComponent"], { rectangle: rectangle, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var rectangle = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["RectanglePropertyGridComponent"], { rectangle: rectangle, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "StackPanel": {
-                var stackPanel = (_j = this.state.currentNode) === null || _j === void 0 ? void 0 : _j.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var stackPanel = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Grid": {
-                var grid = (_k = this.state.currentNode) === null || _k === void 0 ? void 0 : _k.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["GridPropertyGridComponent"], { grid: grid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var grid = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__["GridPropertyGridComponent"], { grid: grid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "ScrollViewer": {
-                var scrollViewer = (_l = this.state.currentNode) === null || _l === void 0 ? void 0 : _l.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var scrollViewer = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Ellipse": {
-                var ellipse = (_m = this.state.currentNode) === null || _m === void 0 ? void 0 : _m.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__["EllipsePropertyGridComponent"], { ellipse: ellipse, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var ellipse = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["EllipsePropertyGridComponent"], { ellipse: ellipse, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Checkbox": {
-                var checkbox = (_o = this.state.currentNode) === null || _o === void 0 ? void 0 : _o.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["CheckboxPropertyGridComponent"], { checkbox: checkbox, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var checkbox = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__["CheckboxPropertyGridComponent"], { checkbox: checkbox, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "RadioButton": {
-                var radioButton = (_p = this.state.currentNode) === null || _p === void 0 ? void 0 : _p.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var radioButton = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Line": {
-                var line = (_q = this.state.currentNode) === null || _q === void 0 ? void 0 : _q.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["LinePropertyGridComponent"], { line: line, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var line = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["LinePropertyGridComponent"], { line: line, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Button": {
-                var control = (_r = this.state.currentNode) === null || _r === void 0 ? void 0 : _r.guiControl;
-                var button = (_s = this.state.currentNode) === null || _s === void 0 ? void 0 : _s.guiControl;
+                var control = this.state.currentNode;
+                var button = this.state.currentNode;
                 var buttonMenu = [];
                 buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_25__["ControlPropertyGridComponent"], { key: "buttonMenu", control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
                 if (button.textBlock) {
-                    buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["TextBlockPropertyGridComponent"], { key: "textBlockMenu", textBlock: button.textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                    buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["TextBlockPropertyGridComponent"], { key: "textBlockMenu", textBlock: button.textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
                 }
                 if (button.image) {
-                    buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["ImagePropertyGridComponent"], { key: "imageMenu", image: button.image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                    buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ImagePropertyGridComponent"], { key: "imageMenu", image: button.image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
                 }
                 return buttonMenu;
             }
         }
         if (className !== "") {
-            var control = (_t = this.state.currentNode) === null || _t === void 0 ? void 0 : _t.guiControl;
+            var control = this.state.currentNode;
             return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_25__["ControlPropertyGridComponent"], { control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
         }
         return null;
@@ -41140,7 +41226,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "GUI EDITOR")),
                 this.renderProperties(),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE GUI", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_27__["ParentingPropertyGridComponent"], { guiNode: this.state.currentNode, guiNodes: this.props.globalState.guiTexture.getChildren()[0].children, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "REMOVE ELEMENT", onClick: function () {
                         var _a;
                         (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
@@ -41152,10 +41239,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "GUI EDITOR")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["Engine"].Version }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open("https://doc.babylonjs.com", "_blank"); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["Engine"].Version }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open("https://doc.babylonjs.com", "_blank"); } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "OPTIONS" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_27__["Vector2LineComponent"], { label: "GUI Canvas Size", target: this.state, propertyName: "textureSize", onChange: function (newvalue) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_26__["Vector2LineComponent"], { label: "GUI Canvas Size", target: this.state, propertyName: "textureSize", onChange: function (newvalue) {
                             _this.props.globalState.workbench.resizeGuiTexture(newvalue);
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Show grid", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("ShowGrid", true); }, onSelect: function (value) {
@@ -41179,228 +41266,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./diagram/guiNode.ts":
-/*!****************************!*\
-  !*** ./diagram/guiNode.ts ***!
-  \****************************/
-/*! exports provided: GUINode */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUINode", function() { return GUINode; });
-var GUINode = /** @class */ (function () {
-    function GUINode(globalState, guiControl) {
-        var _this = this;
-        this.guiControl = guiControl;
-        this._x = 0;
-        this._y = 0;
-        this._gridAlignedX = 0;
-        this._gridAlignedY = 0;
-        this._isVisible = true;
-        this._enclosingFrameId = -1;
-        this.children = [];
-        this._globalState = globalState;
-        this._ownerCanvas = this._globalState.workbench;
-        this.x = guiControl.leftInPixels;
-        this.y = guiControl.topInPixels;
-        this.enableEditorProperties();
-        guiControl.onPointerUpObservable.add(function (evt) {
-            _this.clicked = false;
-        });
-        guiControl.onPointerDownObservable.add(function (evt) {
-            if (!_this._ownerCanvas.isUp)
-                return;
-            _this.clicked = true;
-            _this.isSelected = true;
-            _this._ownerCanvas.isUp = false;
-        });
-        guiControl.onPointerEnterObservable.add(function (evt) {
-            _this._ownerCanvas.isOverGUINode = true;
-        });
-        guiControl.onPointerOutObservable.add(function (evt) {
-            _this._ownerCanvas.isOverGUINode = false;
-        });
-        this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(function (rect1) { });
-    }
-    Object.defineProperty(GUINode.prototype, "isVisible", {
-        get: function () {
-            return this._isVisible;
-        },
-        set: function (value) {
-            this._isVisible = value;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "gridAlignedX", {
-        get: function () {
-            return this._gridAlignedX;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "gridAlignedY", {
-        get: function () {
-            return this._gridAlignedY;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "x", {
-        get: function () {
-            return this._x;
-        },
-        set: function (value) {
-            if (this._x === value) {
-                return;
-            }
-            this._x = value;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "y", {
-        get: function () {
-            return this._y;
-        },
-        set: function (value) {
-            if (this._y === value) {
-                return;
-            }
-            this._y = value;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "width", {
-        get: function () {
-            return this.guiControl.widthInPixels;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "height", {
-        get: function () {
-            return this.guiControl.heightInPixels;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "id", {
-        get: function () {
-            return this.guiControl.uniqueId;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "name", {
-        get: function () {
-            return this.guiControl.name;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "isSelected", {
-        get: function () {
-            return this._isSelected;
-        },
-        set: function (value) {
-            this._isSelected = value;
-            if (value) {
-                this._globalState.onSelectionChangedObservable.notifyObservers(this);
-                ;
-            }
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "enclosingFrameId", {
-        get: function () {
-            return this._enclosingFrameId;
-        },
-        set: function (value) {
-            this._enclosingFrameId = value;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    GUINode.prototype.enableEditorProperties = function () {
-        switch (this.guiControl.typeName) {
-            case "Button":
-                this.guiControl.pointerDownAnimation = function () { return null; };
-                this.guiControl.pointerUpAnimation = function () { return null; };
-                break;
-            case "StackPanel":
-            case "Grid":
-                this.guiControl.isHighlighted = true;
-                break;
-            default:
-                break;
-        }
-    };
-    GUINode.prototype._onMove = function (evt, startPos, ignorClick) {
-        if (ignorClick === void 0) { ignorClick = false; }
-        if (!this.clicked && !ignorClick)
-            return false;
-        var newX = (evt.x - startPos.x);
-        var newY = (evt.y - startPos.y);
-        this.x += newX;
-        this.y += newY;
-        this.children.forEach(function (child) {
-            child._onMove(evt, startPos, true);
-        });
-        this.guiControl.leftInPixels = this.x;
-        this.guiControl.topInPixels = this.y;
-        return true;
-    };
-    GUINode.prototype.updateVisual = function () {
-        if (this.x != this.guiControl.leftInPixels || this.y != this.guiControl.topInPixels) {
-            this.x = this.guiControl.leftInPixels;
-            this.y = this.guiControl.topInPixels;
-        }
-    };
-    GUINode.prototype._isContainer = function () {
-        switch (this.guiControl.typeName) {
-            case "Button":
-            case "StackPanel":
-            case "Rectangle":
-            case "Ellipse":
-                return true;
-            default:
-                return false;
-        }
-    };
-    GUINode.prototype.addGui = function (childNode) {
-        if (!this._isContainer)
-            return;
-        this.children.push(childNode);
-        this.guiControl.addControl(childNode.guiControl);
-        //adjust the position to be relative
-        //childNode.x = this.x - childNode.x;
-        //childNode.y = this.y - childNode.y;
-    };
-    GUINode.prototype.dispose = function () {
-        // notify frame observers that this node is being deleted
-        this._globalState.onGuiNodeRemovalObservable.notifyObservers(this);
-        if (this._onSelectionChangedObserver) {
-            this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
-        }
-        if (this._onUpdateRequiredObserver) {
-            this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
-        }
-        if (this._onSelectionBoxMovedObserver) {
-            this._globalState.onSelectionBoxMoved.remove(this._onSelectionBoxMovedObserver);
-        }
-        this.guiControl.dispose();
-    };
-    return GUINode;
-}());
-
-
-
-/***/ }),
-
 /***/ "./diagram/workbench.tsx":
 /*!*******************************!*\
   !*** ./diagram/workbench.tsx ***!
@@ -41415,11 +41280,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _guiNode__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./guiNode */ "./diagram/guiNode.ts");
-/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/advancedDynamicTexture */ "babylonjs-gui/2D/controls/button");
-/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__);
 
 
 
@@ -41447,7 +41311,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(WorkbenchComponent, _super);
     function WorkbenchComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._guiNodes = [];
         _this._mouseStartPointX = null;
         _this._mouseStartPointY = null;
         _this._selectedGuiNodes = [];
@@ -41457,16 +41320,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.isOverGUINode = false;
         _this.isUp = true;
         props.globalState.onSelectionChangedObservable.add(function (selection) {
-            if (!_this._ctrlKeyIsPressed && selection != null) {
-                _this.selectedGuiNodes.forEach(function (element) {
-                    element.isSelected = false;
-                });
-            }
             if (!selection) {
                 _this._selectedGuiNodes = [];
             }
             else {
-                if (selection instanceof _guiNode__WEBPACK_IMPORTED_MODULE_2__["GUINode"]) {
+                if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["Control"]) {
                     if (_this._ctrlKeyIsPressed) {
                         if (_this._selectedGuiNodes.indexOf(selection) === -1) {
                             _this._selectedGuiNodes.push(selection);
@@ -41497,7 +41355,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     });
     Object.defineProperty(WorkbenchComponent.prototype, "nodes", {
         get: function () {
-            return this._guiNodes;
+            return this.globalState.guiTexture.getChildren()[0].children;
         },
         enumerable: false,
         configurable: true
@@ -41509,17 +41367,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    WorkbenchComponent.prototype.clearGuiTexture = function () {
-        while (this._guiNodes.length > 0) {
-            this._guiNodes[this._guiNodes.length - 1].dispose();
-            this._guiNodes.pop();
-        }
-    };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.clearGuiTexture();
         this.globalState.guiTexture.parseContent(serializationObject);
-        this.props.globalState.workbench.loadFromGuiTexture();
     };
     WorkbenchComponent.prototype.loadFromSnippet = function (snippedID) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
@@ -41527,22 +41377,12 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        this.clearGuiTexture();
                         return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedID)];
                     case 1:
                         _a.sent();
-                        this.props.globalState.workbench.loadFromGuiTexture();
                         return [2 /*return*/];
                 }
             });
-        });
-    };
-    WorkbenchComponent.prototype.loadFromGuiTexture = function () {
-        var _this = this;
-        var children = this.globalState.guiTexture.getChildren();
-        children[0].children.forEach(function (guiElement) {
-            var newGuiNode = new _guiNode__WEBPACK_IMPORTED_MODULE_2__["GUINode"](_this.props.globalState, guiElement);
-            _this._guiNodes.push(newGuiNode);
         });
     };
     WorkbenchComponent.prototype.resizeGuiTexture = function (newvalue) {
@@ -41556,22 +41396,62 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._ctrlKeyIsPressed = false;
     };
     WorkbenchComponent.prototype.findNodeFromGuiElement = function (guiControl) {
-        return this._guiNodes.filter(function (n) { return n.guiControl === guiControl; })[0];
+        return this.nodes.filter(function (n) { return n === guiControl; })[0];
     };
     WorkbenchComponent.prototype.reset = function () {
-        for (var _i = 0, _a = this._guiNodes; _i < _a.length; _i++) {
-            var node = _a[_i];
-            node.dispose();
-        }
-        this._guiNodes = [];
         this._gridCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
     };
     WorkbenchComponent.prototype.appendBlock = function (guiElement) {
-        var newGuiNode = new _guiNode__WEBPACK_IMPORTED_MODULE_2__["GUINode"](this.props.globalState, guiElement);
-        this._guiNodes.push(newGuiNode);
+        var newGuiNode = this.createNewGuiNode(guiElement);
         this.globalState.guiTexture.addControl(guiElement);
         return newGuiNode;
+    };
+    WorkbenchComponent.prototype.createNewGuiNode = function (guiControl) {
+        var _this = this;
+        this.enableEditorProperties(guiControl);
+        guiControl.onPointerUpObservable.add(function (evt) {
+            _this.clicked = false;
+        });
+        guiControl.onPointerDownObservable.add(function (evt) {
+            if (!_this.isUp)
+                return;
+            _this.isSelected(true, guiControl);
+            _this.isUp = false;
+        });
+        guiControl.onPointerEnterObservable.add(function (evt) {
+            _this.isOverGUINode = true;
+        });
+        guiControl.onPointerOutObservable.add(function (evt) {
+            _this.isOverGUINode = false;
+        });
+        return guiControl;
+    };
+    WorkbenchComponent.prototype.enableEditorProperties = function (guiControl) {
+        switch (guiControl.typeName) {
+            case "Button":
+                guiControl.pointerDownAnimation = function () { return null; };
+                guiControl.pointerUpAnimation = function () { return null; };
+                break;
+            case "StackPanel":
+            case "Grid":
+                guiControl.isHighlighted = true;
+                break;
+            default:
+                break;
+        }
+    };
+    WorkbenchComponent.prototype.isSelected = function (value, guiNode) {
+        this.globalState.onSelectionChangedObservable.notifyObservers(guiNode);
+    };
+    WorkbenchComponent.prototype._onMove = function (guiControl, evt, startPos, ignorClick) {
+        if (ignorClick === void 0) { ignorClick = false; }
+        //if (!this.clicked && !ignorClick) return false;
+        var newX = evt.x - startPos.x;
+        var newY = evt.y - startPos.y;
+        guiControl.leftInPixels += newX;
+        guiControl.topInPixels += newY;
+        return true;
     };
     WorkbenchComponent.prototype.componentDidMount = function () {
         this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-container");
@@ -41579,6 +41459,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("workbench-svg-container");
     };
     WorkbenchComponent.prototype.onMove = function (evt) {
+        var _this = this;
         var pos = this.getGroundPosition();
         // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null && !this._panning) {
@@ -41588,8 +41469,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             this.selectedGuiNodes.forEach(function (element) {
                 //var zoom = this._camera.radius;
                 if (pos) {
-                    selected_1 = element._onMove(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](pos.x, -pos.z), //need to add zoom factor here.
-                    new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](x, y), false) || selected_1;
+                    selected_1 =
+                        _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](pos.x, -pos.z), //need to add zoom factor here.
+                        new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](x, y), false) || selected_1;
                 }
             });
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
@@ -41599,7 +41481,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.getGroundPosition = function () {
         var tex = this._textureMesh;
         // Use a predicate to get position on the ground
-        var pickinfo = this._scene.pick(this._scene.pointerX, this._scene.pointerY, function (mesh) { return mesh == tex; });
+        var pickinfo = this._scene.pick(this._scene.pointerX, this._scene.pointerY, function (mesh) {
+            return mesh == tex;
+        });
         if (pickinfo === null || pickinfo === void 0 ? void 0 : pickinfo.hit) {
             return pickinfo.pickedPoint;
         }
@@ -41625,18 +41509,18 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         // Get the canvas element from the DOM.
         var canvas = document.getElementById("workbench-canvas");
         // Associate a Babylon Engine to it.
-        var engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
+        var engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Engine"](canvas);
         // Create our first scene.
-        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](engine);
-        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](0.2, 0.2, 0.3, 1.0);
-        var camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, 1024, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
-        var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
+        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Scene"](engine);
+        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Color4"](0.2, 0.2, 0.3, 1.0);
+        var camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, 1024, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero(), this._scene);
+        var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Axis"].Y, this._scene);
         light.intensity = 0.9;
         var textureSize = 1200;
-        this._textureMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Mesh"].CreateGround("earth", 1, 1, 1, this._scene);
+        this._textureMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Mesh"].CreateGround("earth", 1, 1, 1, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
-        this.globalState.guiTexture = babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize);
+        this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize);
         this._textureMesh.showBoundingBox = true;
         this.addControls(this._scene, camera);
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
@@ -41645,9 +41529,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             engine.resize();
         });
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.");
-        engine.runRenderLoop(function () { _this.updateGUIs(); _this._scene.render(); });
+        engine.runRenderLoop(function () {
+            _this._scene.render();
+        });
     };
-    ;
     //Add map-like controls to an ArcRotate camera
     WorkbenchComponent.prototype.addControls = function (scene, camera) {
         var _this = this;
@@ -41657,9 +41542,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         camera.upperRadiusLimit = 1500;
         camera.upperBetaLimit = Math.PI / 2 - 0.1;
         camera.angularSensibilityX = camera.angularSensibilityY = 500;
-        var plane = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y);
-        var inertialPanning = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
-        var initialPos = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"](0, 0, 0);
+        var plane = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Axis"].Y);
+        var inertialPanning = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero();
+        var initialPos = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"](0, 0, 0);
         var panningFn = function () {
             var pos = _this.getPosition(scene, camera, plane);
             _this.panning(pos, initialPos, camera.inertia, inertialPanning);
@@ -41672,7 +41557,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             }
         };
         var wheelPrecisionFn = function () {
-            camera.wheelPrecision = 1 / camera.radius * 1000;
+            camera.wheelPrecision = (1 / camera.radius) * 1000;
         };
         var zoomFn = function (p, e) {
             var delta = _this.zoomWheel(p, e, camera);
@@ -41685,31 +41570,32 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             removeObservers();
             if (p.event.button !== 0) {
                 initialPos = _this.getPosition(scene, camera, plane);
-                scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERMOVE);
+                scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERMOVE);
                 _this._panning = true;
             }
             else {
                 _this._panning = false;
             }
-        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERDOWN);
+        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERDOWN);
         scene.onPointerObservable.add(function (p, e) {
             removeObservers();
-        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
-        scene.onPointerObservable.add(zoomFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERWHEEL);
+        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERUP);
+        scene.onPointerObservable.add(zoomFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
         // stop context menu showing on canvas right click
-        (_a = scene.getEngine().getRenderingCanvas()) === null || _a === void 0 ? void 0 : _a.addEventListener("contextmenu", function (e) {
+        (_a = scene
+            .getEngine()
+            .getRenderingCanvas()) === null || _a === void 0 ? void 0 : _a.addEventListener("contextmenu", function (e) {
             e.preventDefault();
         });
     };
     //Get pos on plane
     WorkbenchComponent.prototype.getPosition = function (scene, camera, plane) {
-        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
+        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Matrix"].Identity(), camera, false);
         var distance = ray.intersectsPlane(plane);
         //not using this ray again, so modifying its vectors here is fine
-        return distance !== null ?
-            ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
+        return distance !== null ? ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero();
     };
     //Return offsets for inertial panning given initial and current pointer positions
     WorkbenchComponent.prototype.panning = function (newPos, initialPos, inertia, ref) {
@@ -41719,7 +41605,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         ref.copyFromFloats(panningX, 0, panningZ);
         return ref;
     };
-    ;
     //Get the wheel delta divided by the camera wheel precision
     WorkbenchComponent.prototype.zoomWheel = function (p, e, camera) {
         var event = p.event;
@@ -41748,12 +41633,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             return;
         }
         var inertiaComp = 1 - camera.inertia;
-        if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp <
-            lr) {
+        if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp < lr) {
             delta = (camera.radius - lr) * inertiaComp - camera.inertialRadiusOffset;
         }
-        else if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp >
-            ur) {
+        else if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp > ur) {
             delta = (camera.radius - ur) * inertiaComp - camera.inertialRadiusOffset;
         }
         var zoomDistance = delta / inertiaComp;
@@ -41767,29 +41650,24 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     //Sets x y or z of passed in vector to zero if less than Epsilon
     WorkbenchComponent.prototype.zeroIfClose = function (vec) {
-        if (Math.abs(vec.x) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Epsilon"]) {
+        if (Math.abs(vec.x) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Epsilon"]) {
             vec.x = 0;
         }
-        if (Math.abs(vec.y) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Epsilon"]) {
+        if (Math.abs(vec.y) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Epsilon"]) {
             vec.y = 0;
         }
-        if (Math.abs(vec.z) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Epsilon"]) {
+        if (Math.abs(vec.z) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Epsilon"]) {
             vec.z = 0;
         }
     };
-    WorkbenchComponent.prototype.updateGUIs = function () {
-        this._guiNodes.forEach(function (element) {
-            element.updateVisual();
-        });
-    };
     WorkbenchComponent.prototype.render = function () {
         var _this = this;
-        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); } },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "workbench-container" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "workbench-canvas-container" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "frame-container" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { id: "workbench-svg-container" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "selection-container" })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "selection-container" }))));
     };
     return WorkbenchComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -42046,15 +41924,15 @@ var GUINodeTools = /** @class */ (function () {
                 element.isPointerBlocker = true;
                 return element;
             case "InputText":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputText"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputText"]("InputText");
                 element.maxWidth = 0.6;
                 element.text = "Click Me";
                 break;
             case "InputPassword":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]("InputPassword");
                 break;
             case "Grid":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]("Grid");
                 element.addColumnDefinition(100, true);
                 element.addColumnDefinition(0.5);
                 element.addColumnDefinition(0.5);
@@ -42064,12 +41942,12 @@ var GUINodeTools = /** @class */ (function () {
                 element.isHighlighted = true;
                 return element;
             case "DisplayGrid":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]("DisplayGrid");
                 element.width = "100px";
                 element.height = "100px";
                 return element;
             case "StackPanel":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]("StackPanel");
                 element.width = "100px";
                 element.height = "100px";
                 element.isHighlighted = true;
@@ -44931,7 +44809,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                     return;
                 }
                 var selectedItem = selectedItems[0];
-                if (!selectedItem.guiControl) {
+                if (!selectedItem) {
                     return;
                 }
             }
@@ -44965,7 +44843,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         // Create new nodes
         for (var _i = 0, copiedNodes_1 = copiedNodes; _i < copiedNodes_1.length; _i++) {
             var node = copiedNodes_1[_i];
-            var block = node.guiControl;
+            var block = node;
             if (!block) {
                 continue;
             }
