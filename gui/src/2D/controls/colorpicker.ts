@@ -14,6 +14,7 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { CanvasGenerator } from 'babylonjs/Misc/canvasGenerator';
+import { ICanvasElement, ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -156,7 +157,7 @@ export class ColorPicker extends Control {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext2): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
 
         if (parentMeasure.width < parentMeasure.height) {
             this._currentMeasure.height = parentMeasure.width;
@@ -177,7 +178,7 @@ export class ColorPicker extends Control {
         this._squareSize = squareSize;
     }
 
-    private _drawGradientSquare(hueValue: number, left: number, top: number, width: number, height: number, context: ICanvasRenderingContext2) {
+    private _drawGradientSquare(hueValue: number, left: number, top: number, width: number, height: number, context: ICanvasRenderingContext2D) {
         var lgh = context.createLinearGradient(left, top, width + left, top);
         lgh.addColorStop(0, '#fff');
         lgh.addColorStop(1, 'hsl(' + hueValue + ', 100%, 50%)');
@@ -208,7 +209,7 @@ export class ColorPicker extends Control {
 
     private _createColorWheelCanvas(radius: number, thickness: number): ICanvasElement {
         var canvas = CanvasGenerator.CreateCanvas(radius * 2, radius * 2);
-        var context = <ICanvasRenderingContext2>canvas.getContext("2d");
+        var context = canvas.getContext("2d");
         var image = context.getImageData(0, 0, radius * 2, radius * 2);
         var data = image.data;
 
@@ -272,7 +273,7 @@ export class ColorPicker extends Control {
     }
 
     /** @hidden */
-    public _draw(context: ICanvasRenderingContext2): void {
+    public _draw(context: ICanvasRenderingContext2D): void {
         context.save();
 
         this._applyStates(context);

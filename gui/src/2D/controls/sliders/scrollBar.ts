@@ -4,6 +4,7 @@ import { Control } from "../control";
 import { Measure } from "../../measure";
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from "babylonjs/Misc/decorators";
+import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create slider controls

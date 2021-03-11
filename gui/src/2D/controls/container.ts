@@ -7,6 +7,7 @@ import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
+import { ICanvasRenderingContext2D } from 'babylonjs/Engines/ICanvas';
 
 /**
  * Root class for 2D containers
@@ -266,7 +267,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _localDraw(context: ICanvasRenderingContext2): void {
+    protected _localDraw(context: ICanvasRenderingContext2D): void {
         if (this._background) {
             context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -297,7 +298,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext2): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             super._processMeasures(parentMeasure, context);
             this._evaluateClippingState(parentMeasure);
@@ -305,7 +306,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext2): boolean {
+    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext2D): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -386,7 +387,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _draw(context: ICanvasRenderingContext2, invalidatedRectangle?: Measure): void {
+    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
 
         this._localDraw(context);
 
@@ -452,7 +453,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(this._currentMeasure);

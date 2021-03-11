@@ -7,6 +7,7 @@ import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { serialize } from 'babylonjs/Misc/decorators';
+import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create multi line control

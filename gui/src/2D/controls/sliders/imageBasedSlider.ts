@@ -4,6 +4,7 @@ import { Image } from "../image";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { serialize } from "babylonjs/Misc/decorators";
+import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create slider controls based on images
