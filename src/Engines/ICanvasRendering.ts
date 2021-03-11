@@ -5,10 +5,11 @@ export interface ICanvas
     textBaseline: string;
     imageSmoothingEnabled: boolean;
     getContext(contextType: string, contextAttributes?: any): ICanvasRenderingContext2D | null;
+    toDataURL(mime: string): string;
 }
 
 export interface IOffscreenCanvas extends ICanvas{
-    
+
 /*
     // used by ThinEngine only
     convertToBlob(options: any): Promise<Blob>;
@@ -20,7 +21,6 @@ export interface IOffscreenCanvas extends ICanvas{
 }
 
 export interface ICanvasElement extends ICanvas{
-     toDataURL(mime:string): string;
 }
 
 export interface ICanvasGradient {
@@ -49,11 +49,21 @@ export interface ICanvasRenderingContext {
     setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
     fillText(text: string, x: number, y: number, maxWidth?: number): void;
     measureText(text: string): ITextMetrics;
-    strokeText(text: string, x: number, y: number): void;
+    strokeText(text: string, x: number, y: number, maxWidth?: number): void;
+    strokeRect(x: number, y: number, width: number, height: number): void;
+    setLineDash(segments: Array<number>): void;
     save(): void;
     restore(): void;
     moveTo(x: number, y: number): void;
     lineTo(x: number, y: number): void;
+    scale(x: number , y: number): void;
+    rotate(angle: number): void;
+    translate(x: number , y: number): void;
+    rect(x: number, y: number, width: number, height: number): void;
+    clip(): void;
+    quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void;
+    putImageData(imageData: ImageData, dx: number, dy: number) : void;
+    globalAlpha: number;
     lineWidth: number;
     strokeStyle: string;
     fillStyle: string | ICanvasGradient;
