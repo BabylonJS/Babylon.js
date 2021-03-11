@@ -49,6 +49,7 @@
 -   Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
 -   PrePass can now be used in `RenderTargets` speeding up effects like SSAO2 or MotionBlur ([CraigFeldspar](https://github.com/CraigFeldspar))
 -   Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
+-   Added support for local cube map to refraction cube texture ([Popov72](https://github.com/Popov72))
 
 ### Meshes
 
