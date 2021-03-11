@@ -13,11 +13,12 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
+import { CanvasGenerator } from 'babylonjs/Misc/canvasGenerator';
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
     private static _Epsilon = 0.000001;
-    private _colorWheelCanvas: HTMLCanvasElement;
+    private _colorWheelCanvas: ICanvasElement;
 
     private _value: Color3 = Color3.Red();
     private _tmpColor = new Color3();
@@ -155,7 +156,7 @@ export class ColorPicker extends Control {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext2): void {
 
         if (parentMeasure.width < parentMeasure.height) {
             this._currentMeasure.height = parentMeasure.width;
@@ -176,7 +177,7 @@ export class ColorPicker extends Control {
         this._squareSize = squareSize;
     }
 
-    private _drawGradientSquare(hueValue: number, left: number, top: number, width: number, height: number, context: CanvasRenderingContext2D) {
+    private _drawGradientSquare(hueValue: number, left: number, top: number, width: number, height: number, context: ICanvasRenderingContext2) {
         var lgh = context.createLinearGradient(left, top, width + left, top);
         lgh.addColorStop(0, '#fff');
         lgh.addColorStop(1, 'hsl(' + hueValue + ', 100%, 50%)');
@@ -192,7 +193,7 @@ export class ColorPicker extends Control {
         context.fillRect(left, top, width, height);
     }
 
-    private _drawCircle(centerX: number, centerY: number, radius: number, context: CanvasRenderingContext2D) {
+    private _drawCircle(centerX: number, centerY: number, radius: number, context: ICanvasRenderingContext2D) {
         context.beginPath();
         context.arc(centerX, centerY, radius + 1, 0, 2 * Math.PI, false);
         context.lineWidth = 3;
@@ -205,11 +206,9 @@ export class ColorPicker extends Control {
         context.stroke();
     }
 
-    private _createColorWheelCanvas(radius: number, thickness: number): HTMLCanvasElement {
-        var canvas = document.createElement("canvas");
-        canvas.width = radius * 2;
-        canvas.height = radius * 2;
-        var context = <CanvasRenderingContext2D>canvas.getContext("2d");
+    private _createColorWheelCanvas(radius: number, thickness: number): ICanvasElement {
+        var canvas = CanvasGenerator.CreateCanvas(radius * 2, radius * 2);
+        var context = <ICanvasRenderingContext2>canvas.getContext("2d");
         var image = context.getImageData(0, 0, radius * 2, radius * 2);
         var data = image.data;
 
@@ -273,7 +272,7 @@ export class ColorPicker extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: ICanvasRenderingContext2): void {
         context.save();
 
         this._applyStates(context);

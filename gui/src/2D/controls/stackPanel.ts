@@ -96,7 +96,7 @@ export class StackPanel extends Container {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         for (var child of this._children) {
             if (this._isVertical) {
                 child.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
@@ -108,7 +108,7 @@ export class StackPanel extends Container {
         super._preMeasure(parentMeasure, context);
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(parentMeasure);

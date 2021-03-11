@@ -266,7 +266,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _localDraw(context: CanvasRenderingContext2D): void {
+    protected _localDraw(context: ICanvasRenderingContext2): void {
         if (this._background) {
             context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -297,7 +297,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext2): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             super._processMeasures(parentMeasure, context);
             this._evaluateClippingState(parentMeasure);
@@ -305,7 +305,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext2): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -386,7 +386,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
+    public _draw(context: ICanvasRenderingContext2, invalidatedRectangle?: Measure): void {
 
         this._localDraw(context);
 
@@ -452,7 +452,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(this._currentMeasure);

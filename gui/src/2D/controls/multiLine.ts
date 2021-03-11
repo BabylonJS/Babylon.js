@@ -177,7 +177,7 @@ export class MultiLine extends Control {
         return "MultiLine";
     }
 
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -223,7 +223,7 @@ export class MultiLine extends Control {
         context.restore();
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         this._minX = null;
         this._minY = null;
         this._maxX = null;
@@ -257,7 +257,7 @@ export class MultiLine extends Control {
         this._currentMeasure.height = Math.abs(this._maxY - this._minY) + this._lineWidth;
     }
 
-    protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         if (this._minX == null || this._minY == null) {
             return;
         }
