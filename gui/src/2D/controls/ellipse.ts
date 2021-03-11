@@ -3,6 +3,7 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
+import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /** Class used to create 2D ellipse containers */
 export class Ellipse extends Container {

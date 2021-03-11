@@ -7,7 +7,7 @@ export * from "./engineStore";
 export * from "./nullEngine";
 export * from "./Extensions/index";
 export * from "./IPipelineContext";
-export * from "./ICanvasRendering";
+export * from "./ICanvas";
 export * from "./WebGL/webGLPipelineContext";
 export * from "./WebGPU/webgpuConstants";
 export * from "./webgpuEngine";

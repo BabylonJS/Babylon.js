@@ -6,6 +6,7 @@ import { Control } from "./control";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create a 2D stack panel container

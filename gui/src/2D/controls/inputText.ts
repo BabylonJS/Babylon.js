@@ -13,6 +13,7 @@ import { Measure } from '../measure';
 import { TextWrapper } from './textWrapper';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { IKeyboardEvent } from 'babylonjs/Events/deviceInputEvents';
+import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create input text control

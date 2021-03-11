@@ -15,7 +15,7 @@ import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { SerializationHelper, serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext2D } from 'babylonjs/Engines/ICanvasRenderingContext2D';
+import { ICanvasRenderingContext2D } from 'babylonjs/Engines/ICanvas';
 
 /**
  * Root class used for all 2D controls

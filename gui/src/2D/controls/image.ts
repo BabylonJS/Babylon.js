@@ -7,7 +7,7 @@ import { Measure } from "../measure";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { serialize } from "babylonjs/Misc/decorators";
 import { CanvasGenerator } from "babylonjs/Misc/canvasGenerator";
-import { ICanvas } from "babylonjs/Engines/ICanvasRenderingContext2D";
+import { ICanvas, ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create 2D images

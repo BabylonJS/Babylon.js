@@ -12,6 +12,7 @@ import { _ScrollViewerWindow } from "./scrollViewerWindow";
 import { ScrollBar } from "../sliders/scrollBar";
 import { ImageScrollBar } from "../sliders/imageScrollBar";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to hold a viewer window and sliders in a grid

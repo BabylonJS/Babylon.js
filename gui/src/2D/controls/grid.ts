@@ -6,6 +6,7 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { Tools } from 'babylonjs/Misc/tools';
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create a 2D grid container

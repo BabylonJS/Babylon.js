@@ -6,6 +6,7 @@ import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { Nullable } from "babylonjs/types";
 import { serialize } from 'babylonjs/Misc/decorators';
 import { CanvasGenerator } from "babylonjs/Misc/canvasGenerator";
+import { ICanvasRenderingContext2D } from 'babylonjs/Engines/ICanvas';
 
 /**
  * Enum that determines the text-wrapping mode to use.

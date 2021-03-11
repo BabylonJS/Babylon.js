@@ -2,6 +2,7 @@ import { Measure } from "../../measure";
 import { Container } from "../container";
 import { ValueAndUnit } from "../../valueAndUnit";
 import { Control } from "../control";
+import { ICanvasRenderingContext2D } from 'babylonjs/Engines/ICanvas';
 
 /**
  * Class used to hold a the container for ScrollViewer
