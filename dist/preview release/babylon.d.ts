@@ -13299,6 +13299,10 @@ declare module BABYLON {
         _cubeSamplerName: string;
         /** @hidden */
         _2DSamplerName: string;
+        /** @hidden */
+        _reflectionPositionName: string;
+        /** @hidden */
+        _reflectionSizeName: string;
         protected _positionUVWName: string;
         protected _directionWName: string;
         protected _reflectionVectorName: string;
@@ -13534,6 +13538,11 @@ declare module BABYLON {
          * @param name defines the block name
          */
         constructor(name: string);
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
         /**
          * Gets the current class name
          * @returns the class name
@@ -19881,6 +19890,7 @@ declare module BABYLON {
         REFLECTIONMAP_PLANAR: boolean;
         REFLECTIONMAP_CUBIC: boolean;
         USE_LOCAL_REFLECTIONMAP_CUBIC: boolean;
+        USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         REFLECTIONMAP_PROJECTION: boolean;
         REFLECTIONMAP_SKYBOX: boolean;
         REFLECTIONMAP_EXPLICIT: boolean;
@@ -21261,6 +21271,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         /** @hidden */
@@ -22274,6 +22285,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         UNLIT: boolean;

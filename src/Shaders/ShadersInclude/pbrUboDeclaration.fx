@@ -93,6 +93,8 @@ uniform Material {
     vec3 vDiffusionDistance;
     vec4 vTintColor;
     vec3 vSubSurfaceIntensity;
+    vec3 vRefractionPosition;
+    vec3 vRefractionSize;
     float scatteringDiffusionProfile;
 
     vec4 vDetailInfos;
