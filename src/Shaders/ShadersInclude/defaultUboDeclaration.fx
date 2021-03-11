@@ -33,6 +33,8 @@ uniform Material
 	float pointSize;
 	mat4 refractionMatrix;
 	vec4 vRefractionInfos;
+	vec3 vRefractionPosition;
+	vec3 vRefractionSize;
 	vec4 vSpecularColor;
 	vec3 vEmissiveColor;
 	vec4 vDiffuseColor;

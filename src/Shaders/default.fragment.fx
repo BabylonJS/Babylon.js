@@ -274,6 +274,9 @@ void main(void) {
 #ifdef REFRACTION
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
 	#ifdef REFRACTIONMAP_3D
+        #ifdef USE_LOCAL_REFRACTIONMAP_CUBIC
+            refractionVector = parallaxCorrectNormal(vPositionW, refractionVector, vRefractionSize, vRefractionPosition);
+        #endif
 		refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
 		if (dot(refractionVector, viewDirectionW) < 1.0) {

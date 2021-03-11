@@ -39,16 +39,21 @@ uniform mat4 view;
 #endif
 
 #ifdef REFRACTION
-uniform vec4 vRefractionInfos;
+    uniform vec4 vRefractionInfos;
 
-#ifndef REFRACTIONMAP_3D
-uniform mat4 refractionMatrix;
-#endif
+    #ifndef REFRACTIONMAP_3D
+        uniform mat4 refractionMatrix;
+    #endif
 
-#ifdef REFRACTIONFRESNEL
-uniform vec4 refractionLeftColor;
-uniform vec4 refractionRightColor;
-#endif
+    #ifdef REFRACTIONFRESNEL
+        uniform vec4 refractionLeftColor;
+        uniform vec4 refractionRightColor;
+    #endif
+
+    #if defined(USE_LOCAL_REFRACTIONMAP_CUBIC) && defined(REFRACTIONMAP_3D)
+        uniform vec3 vRefractionPosition;
+        uniform vec3 vRefractionSize; 
+    #endif
 #endif
 
 #if defined(SPECULAR) && defined(SPECULARTERM)
