@@ -256,6 +256,7 @@ export class EffectWrapper {
         }
 
         const defines = creationOptions.defines ? creationOptions.defines.join("\n") : "";
+        this._drawWrapper = new DrawWrapper(creationOptions.engine);
 
         if (creationOptions.useShaderStore) {
             effectCreationOptions.fragment = effectCreationOptions.fragmentSource;
@@ -285,9 +286,6 @@ export class EffectWrapper {
                 creationOptions.onCompiled,
             );
         }
-
-        this._drawWrapper = new DrawWrapper(creationOptions.engine);
-        this._drawWrapper.effect = this.effect;
     }
 
     /**
