@@ -6,7 +6,7 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { serialize } from "babylonjs/Misc/decorators";
-import { CanvasGenerator } from "babylonjs/Misc/canvasGenerator";
+import { Engine } from "babylonjs/Engines/engine";
 import { ICanvas, ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
 
 /**
@@ -312,7 +312,7 @@ export class Image extends Control {
         const width = this._domImage.width;
         const height = this._domImage.height;
 
-        let canvas = CanvasGenerator.CreateCanvas(height, width);
+        let canvas = Engine.LastCreatedEngine?.createCanvas(height, width);
 
         const context = canvas.getContext("2d")!;
 
@@ -395,7 +395,7 @@ export class Image extends Control {
         const height = this._domImage.height;
 
         if (!this._workingCanvas) {
-            this._workingCanvas = CanvasGenerator.CreateCanvas(width, height);
+            this._workingCanvas = Engine.LastCreatedEngine?.createCanvas(width, height);
         }
         const canvas = this._workingCanvas;
         const context = canvas.getContext("2d")!;
@@ -747,7 +747,7 @@ export class Image extends Control {
         const height = this._currentMeasure.height;
 
         if (!this._workingCanvas) {
-            this._workingCanvas = CanvasGenerator.CreateCanvas(width, height);
+            this._workingCanvas = Engine.LastCreatedEngine?.createCanvas(width, height);
         }
         const canvas = this._workingCanvas;
 

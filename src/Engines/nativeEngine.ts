@@ -27,6 +27,7 @@ import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarg
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
+import { ICanvas } from "./ICanvas";
 
 interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
@@ -2219,6 +2220,15 @@ export class NativeEngine extends Engine {
 
     public releaseEffects() {
         // TODO
+    }
+
+    /**
+     * Create a canvas
+     * @param width width
+     * @param height height
+     */
+    public createCanvas(width: number, height: number) : ICanvas {
+        throw new Error("CreateCanvas not implemented.");
     }
 
     /** @hidden */
