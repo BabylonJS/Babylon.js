@@ -25,6 +25,13 @@ import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { NativeShaderProcessor } from '../Engines/Native/nativeShaderProcessors';
 import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
+import { IMaterialContext } from "./IMaterialContext";
+import { IDrawContext } from "./IDrawContext";
+
+interface INativeCamera {
+    createVideo(constraints: MediaTrackConstraints): any;
+    updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
+}
 
 interface INativeEngine {
 
@@ -146,15 +153,15 @@ interface INativeEngine {
     createImageBitmap(data: ArrayBufferView): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number) : Uint8Array;
 
-    createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
-    deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
-    bindFramebuffer(framebuffer: WebGLFramebuffer): void;
-    unbindFramebuffer(framebuffer: WebGLFramebuffer): void;
+    createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
+    deleteFrameBuffer(framebuffer: WebGLFramebuffer): void;
+    bindFrameBuffer(framebuffer: WebGLFramebuffer): void;
+    unbindFrameBuffer(framebuffer: WebGLFramebuffer): void;
 
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
     draw(fillMode: number, vertexStart: number, vertexCount: number): void;
 
-    clear(color: Nullable<IColor4Like>, depth?: number, stencil?: number): void;
+    clear(color: IColor4Like | undefined, depth: number | undefined, stencil: number | undefined): void;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
@@ -731,22 +738,24 @@ class NativeDataBuffer extends DataBuffer {
 }
 
 /** @hidden */
-class NativeTexture extends InternalTexture {
-    public getInternalTexture(): InternalTexture {
-        return this;
-    }
-
-    public getViewCount(): number {
-        return 1;
-    }
-}
-
-/** @hidden */
 declare var _native: any;
+
+/**
+ * Options to create the Native engine
+ */
+export interface NativeEngineOptions {
+
+    /**
+     * defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio? : boolean;
+}
 
 /** @hidden */
 export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
+    private _nativeCamera: INativeCamera = _native.NativeCamera ? new _native.NativeCamera() : null;
+
     /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
     private readonly INVALID_HANDLE = 65535;
     private _boundBuffersVertexArray: any = null;
@@ -761,8 +770,8 @@ export class NativeEngine extends Engine {
         this._native.setHardwareScalingLevel(level);
     }
 
-    public constructor() {
-        super(null);
+    public constructor(options: NativeEngineOptions = {}) {
+        super(null, false, undefined, options.adaptToDeviceRatio);
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
@@ -859,6 +868,12 @@ export class NativeEngine extends Engine {
             (window.Blob as any) = function(v: any) { return v; };
         }
 
+        // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
+        // Setup resolution scaling based on display settings.
+        var devicePixelRatio = window ? (window.devicePixelRatio || 1.0) : 1.0;
+        this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
+        this.resize();
+
         // Shader processor
         this._shaderProcessor = new NativeShaderProcessor();
     }
@@ -895,11 +910,11 @@ export class NativeEngine extends Engine {
     public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
         if (this._currentFramebuffer !== framebuffer) {
             if (this._currentFramebuffer) {
-                this._native.unbindFramebuffer(this._currentFramebuffer!);
+                this._native.unbindFrameBuffer(this._currentFramebuffer!);
             }
 
             if (framebuffer) {
-                this._native.bindFramebuffer(framebuffer);
+                this._native.bindFrameBuffer(framebuffer);
             }
 
             this._currentFramebuffer = framebuffer;
@@ -919,7 +934,7 @@ export class NativeEngine extends Engine {
             throw new Error("reverse depth buffer is not currently implemented");
         }
 
-        this._native.clear(backBuffer ? color : null, depth ? 1.0 : undefined, stencil ? 0 : undefined);
+        this._native.clear(backBuffer && color ? color : undefined, depth ? 1.0 : undefined, stencil ? 0 : undefined);
     }
 
     public createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer {
@@ -1051,6 +1066,14 @@ export class NativeEngine extends Engine {
 
     public createPipelineContext(): IPipelineContext {
         return new NativePipelineContext(this);
+    }
+
+    public createMaterialContext(): IMaterialContext | undefined {
+        return undefined;
+    }
+
+    public createDrawContext(): IDrawContext | undefined {
+        return undefined;
     }
 
     public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>) {
@@ -1552,6 +1575,25 @@ export class NativeEngine extends Engine {
         this.createTexture('data:my_image_name', true, invertY, null, Texture.BILINEAR_SAMPLINGMODE, undefined, undefined, imageData, texture, NativeEngine.TEXTUREFORMAT_RGBA, null, undefined);
     }
 
+    public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
+        return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, false, false, samplingMode);
+    }
+
+    public createVideoElement(constraints: MediaTrackConstraints): any {
+        // create native object depending on stream. Only NativeCamera is supported for now.
+        if (this._nativeCamera) {
+            return this._nativeCamera.createVideo(constraints);
+        }
+        return null;
+    }
+
+    public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
+        if (texture && texture._hardwareTexture && this._nativeCamera) {
+            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._nativeCamera.updateVideoTexture(webGLTexture, video, invertY);
+        }
+    }
+
     public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
         let texture = new InternalTexture(this, InternalTextureSource.Raw);
 
@@ -1747,18 +1789,17 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): NativeTexture {
-        var texture = new NativeTexture(this, InternalTextureSource.Depth);
+    public _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture {
+        const texture = new InternalTexture(this, InternalTextureSource.Depth);
 
         const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
         const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
 
-        var framebuffer = this._native.createFramebuffer(
+        const framebuffer = this._native.createFrameBuffer(
             texture._hardwareTexture!.underlyingResource,
             width,
             height,
             this._native.TEXTURE_FORMAT_RGBA8,
-            this._native.TEXTURE_LINEAR_LINEAR,
             false,
             true,
             false);
@@ -1768,7 +1809,7 @@ export class NativeEngine extends Engine {
 
     public _releaseFramebufferObjects(texture: InternalTexture): void {
         if (texture._framebuffer) {
-            this._native.deleteFramebuffer(texture._framebuffer);
+            this._native.deleteFrameBuffer(texture._framebuffer);
             texture._framebuffer = null;
         }
     }
@@ -1930,8 +1971,8 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): NativeTexture {
-        let fullOptions = new RenderTargetCreationOptions();
+    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
+        const fullOptions = new RenderTargetCreationOptions();
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
@@ -1957,22 +1998,21 @@ export class NativeEngine extends Engine {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        var texture = new NativeTexture(this, InternalTextureSource.RenderTarget);
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
-        var width = (<{ width: number, height: number }>size).width || <number>size;
-        var height = (<{ width: number, height: number }>size).height || <number>size;
+        const width = (<{ width: number, height: number }>size).width || <number>size;
+        const height = (<{ width: number, height: number }>size).height || <number>size;
 
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        var framebuffer = this._native.createFramebuffer(
+        const framebuffer = this._native.createFrameBuffer(
             texture._hardwareTexture!.underlyingResource,
             width,
             height,
             this._getNativeTextureFormat(fullOptions.format, fullOptions.type),
-            fullOptions.samplingMode!,
             fullOptions.generateStencilBuffer ? true : false,
             fullOptions.generateDepthBuffer,
             fullOptions.generateMipMaps ? true : false);

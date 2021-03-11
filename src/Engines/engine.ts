@@ -1944,6 +1944,15 @@ export class Engine extends ThinEngine {
         this.loadingScreen.loadingUIBackgroundColor = color;
     }
 
+    /**
+     * creates and returns a new video element
+     * @param constraints video constraints
+     * @returns video element
+     */
+    public createVideoElement(constraints: MediaTrackConstraints): any {
+        return document.createElement("video");
+    }
+
     /** Pointerlock and fullscreen */
 
     /**

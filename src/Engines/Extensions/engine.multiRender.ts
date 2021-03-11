@@ -1,6 +1,5 @@
 import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { IMultiRenderTargetOptions } from '../../Materials/Textures/multiRenderTarget';
-import { IColor4Like } from "../../Maths/math.like";
 import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Constants } from '../constants';
@@ -61,16 +60,6 @@ declare module "../../Engines/thinEngine" {
          * when the frame buffer associated is not the canvas frame buffer
          */
         restoreSingleAttachmentForRenderTarget() : void;
-
-        /**
-         * Clears a list of attachments
-         * @param attachments list of the attachments
-         * @param colorMain clear color for the main attachment (the first one)
-         * @param colorOthers clear color for the other attachments
-         * @param clearDepth true to clear the depth buffer. Used only for the first attachment
-         * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
-         */
-        clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
     }
 }
 
@@ -106,25 +95,6 @@ ThinEngine.prototype.bindAttachments = function(attachments: number[]): void {
     const gl = this._gl;
 
     gl.drawBuffers(attachments);
-};
-
-ThinEngine.prototype.clearAttachments = function(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void {
-    if (attachments.length === 0) {
-        return;
-    }
-
-    const gl = this._gl;
-
-    gl.drawBuffers([attachments[0]]);
-    this.clear(colorMain, colorMain !== null, clearDepth, clearStencil);
-
-    const saveVal = attachments[0];
-    attachments[0] = gl.NONE;
-
-    gl.drawBuffers(attachments);
-    this.clear(colorOthers, colorOthers !== null, false, false);
-
-    attachments[0] = saveVal;
 };
 
 ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
