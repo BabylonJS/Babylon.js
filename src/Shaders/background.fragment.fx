@@ -5,6 +5,7 @@
 precision highp float;
 
 #include<__decl__backgroundFragment>
+#include<helperFunctions>
 
 #define RECIPROCAL_PI2 0.15915494
 
@@ -90,7 +91,6 @@ varying vec3 vNormalW;
 // Lights
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
-#include<helperFunctions>
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
 #include<imageProcessingFunctions>
