@@ -13,8 +13,8 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
-import { CanvasGenerator } from 'babylonjs/Misc/canvasGenerator';
 import { ICanvasElement, ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { Engine } from "babylonjs/Engines/engine";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -208,7 +208,7 @@ export class ColorPicker extends Control {
     }
 
     private _createColorWheelCanvas(radius: number, thickness: number): ICanvasElement {
-        var canvas = CanvasGenerator.CreateCanvas(radius * 2, radius * 2);
+        var canvas = Engine.LastCreatedEngine.createCanvas(radius * 2, radius * 2);
         var context = canvas.getContext("2d");
         var image = context.getImageData(0, 0, radius * 2, radius * 2);
         var data = image.data;
