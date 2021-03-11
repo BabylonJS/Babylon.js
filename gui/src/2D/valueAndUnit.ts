@@ -75,7 +75,7 @@ export class ValueAndUnit {
      * @returns the value
      */
     public getValue(host: AdvancedDynamicTexture): number {
-        if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
+        if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE && host.renderAtIdealSize) {
             var width: number = 0;
             var height: number = 0;
 
