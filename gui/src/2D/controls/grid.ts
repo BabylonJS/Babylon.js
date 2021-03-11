@@ -415,7 +415,7 @@ export class Grid extends Container {
         definitionCallback(lefts, tops, widths, heights);
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
             // Setting child sizes
             for (var key in this._cells) {
@@ -452,7 +452,7 @@ export class Grid extends Container {
         }
     }
 
-    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: ICanvasRenderingContext2D): void {
         super._renderHighlightSpecific(context);
 
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {

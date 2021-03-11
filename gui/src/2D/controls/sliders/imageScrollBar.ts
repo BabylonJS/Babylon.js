@@ -183,7 +183,7 @@ export class ImageScrollBar extends BaseSlider {
         return thumbThickness;
     }
 
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: ICanvasRenderingContext2D): void {
         context.save();
 
         this._applyStates(context);

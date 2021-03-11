@@ -35,7 +35,7 @@ export class Ellipse extends Container {
         return "Ellipse";
     }
 
-    protected _localDraw(context: CanvasRenderingContext2D): void {
+    protected _localDraw(context: ICanvasRenderingContext2D): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -72,7 +72,7 @@ export class Ellipse extends Container {
         context.restore();
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.width -= 2 * this._thickness;
@@ -81,7 +81,7 @@ export class Ellipse extends Container {
         this._measureForChildren.top += this._thickness;
     }
 
-    protected _clipForChildren(context: CanvasRenderingContext2D) {
+    protected _clipForChildren(context: ICanvasRenderingContext2D) {
 
         Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
 

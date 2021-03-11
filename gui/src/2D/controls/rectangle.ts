@@ -54,7 +54,7 @@ export class Rectangle extends Container {
         return "Rectangle";
     }
 
-    protected _localDraw(context: CanvasRenderingContext2D): void {
+    protected _localDraw(context: ICanvasRenderingContext2D): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -100,7 +100,7 @@ export class Rectangle extends Container {
         context.restore();
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.width -= 2 * this._thickness;
@@ -109,7 +109,7 @@ export class Rectangle extends Container {
         this._measureForChildren.top += this._thickness;
     }
 
-    private _drawRoundedRect(context: CanvasRenderingContext2D, offset: number = 0): void {
+    private _drawRoundedRect(context: ICanvasRenderingContext2D, offset: number = 0): void {
         var x = this._currentMeasure.left + offset;
         var y = this._currentMeasure.top + offset;
         var width = this._currentMeasure.width - offset * 2;
@@ -130,7 +130,7 @@ export class Rectangle extends Container {
         context.closePath();
     }
 
-    protected _clipForChildren(context: CanvasRenderingContext2D) {
+    protected _clipForChildren(context: ICanvasRenderingContext2D) {
         if (this._cornerRadius) {
             this._drawRoundedRect(context, this._thickness);
             context.clip();

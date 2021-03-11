@@ -254,7 +254,7 @@ export class ScrollViewer extends Rectangle {
         this._clientHeight = this._window.parentClientHeight;
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._buildClientSizes();
@@ -685,7 +685,7 @@ export class ScrollViewer extends Rectangle {
         });
     }
 
-    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: ICanvasRenderingContext2D): void {
         if (!this.isHighlighted) {
             return;
         }

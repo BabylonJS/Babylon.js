@@ -182,7 +182,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._parentMeasure = parentMeasure;
@@ -195,7 +195,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext2D): boolean {
         if (this._freezeControls) {
             this.invalidateRect(); // will trigger a redraw of the window
             return false;
@@ -243,7 +243,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
+    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
         if (!this._freezeControls) {
             super._draw(context, invalidatedRectangle);
             return;
