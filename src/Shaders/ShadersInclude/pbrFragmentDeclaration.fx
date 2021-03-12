@@ -68,6 +68,12 @@ uniform mat4 view;
     #endif
 #endif
 
+// Refraction
+#if defined(SS_REFRACTION) && defined(SS_USE_LOCAL_REFRACTIONMAP_CUBIC)
+    uniform vec3 vRefractionPosition;
+    uniform vec3 vRefractionSize; 
+#endif
+
 // Clear Coat
 #ifdef CLEARCOAT
     uniform vec2 vClearCoatParams;

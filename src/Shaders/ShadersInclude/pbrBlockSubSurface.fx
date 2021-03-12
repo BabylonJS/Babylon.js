@@ -99,6 +99,10 @@ struct subSurfaceOutParams
         #ifdef REALTIME_FILTERING
             const in vec2 vRefractionFilteringInfo,
         #endif
+        #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+            const in vec3 refractionPosition,
+            const in vec3 refractionSize,
+        #endif
     #endif
     #ifdef SS_TRANSLUCENCY
         const in vec3 vDiffusionDistance,
@@ -178,6 +182,9 @@ struct subSurfaceOutParams
 
         // _____________________________ 2D vs 3D Maps ________________________________
         #ifdef SS_REFRACTIONMAP_3D
+            #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+	            refractionVector = parallaxCorrectNormal(vPositionW, refractionVector, refractionSize, refractionPosition);
+            #endif
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
