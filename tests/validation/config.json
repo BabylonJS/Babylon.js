@@ -50,7 +50,8 @@
             "playgroundId": "#M5VQE9#20",
             "referenceImage": "node-material0.png",
             "renderCount": 5,
-            "excludeFromAutomaticTesting": true
+            "excludeFromAutomaticTesting": true,
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Node material 1",
@@ -102,7 +103,8 @@
         {
             "title": "LOD + Billboards + Instances",
             "playgroundId": "#UAIZCS#0",
-            "referenceImage": "lodbillboardinstances.png"
+            "referenceImage": "lodbillboardinstances.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Nested BBG",
@@ -159,7 +161,7 @@
         },
         {
             "title": "LineEdgesRenderer",
-            "playgroundId": "#T90MQ4#1",
+            "playgroundId": "#T90MQ4#14",
             "renderCount": 50,
             "referenceImage": "LineEdgesRenderer.png"
         },
@@ -854,7 +856,8 @@
         {
             "title": "Instanced Bones",
             "playgroundId": "#2YLJ1L#2",
-            "referenceImage": "instancedBones.png"
+            "referenceImage": "instancedBones.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Thin Instances",
@@ -1044,7 +1047,7 @@
             "title": "Prepass SSAO + instanced bones",
             "renderCount": 50,
             "playgroundId": "#0K8EYN#197",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-instanced-bones.png"
         },
         {
@@ -1058,14 +1061,14 @@
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
             "playgroundId": "#PIZ1GK#212",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
             "playgroundId": "#PIZ1GK#213",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
         {
@@ -1193,6 +1196,25 @@
             "playgroundId": "#12MKMN#7",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-msaa.png"
+        },
+        {
+            "title": "Scissor test",
+            "renderCount": 10,
+            "playgroundId": "#W7E7CF#12",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "scissor-test.png"
+        },
+        {
+            "title": "Refraction local cube map STD",
+            "renderCount": 1,
+            "playgroundId": "#RJN64I#7",
+            "referenceImage": "refraction-local-std.png"
+        },
+        {
+            "title": "Refraction local cube map PBR",
+            "renderCount": 1,
+            "playgroundId": "#RJN64I#5",
+            "referenceImage": "refraction-local-pbr.png"
         }
     ]
 }

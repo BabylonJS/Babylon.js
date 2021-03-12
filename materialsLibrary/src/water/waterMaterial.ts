@@ -314,7 +314,7 @@ export class WaterMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new WaterMaterialDefines();
+            subMesh.materialDefines = new WaterMaterialDefines();
         }
 
         var defines = <WaterMaterialDefines>subMesh._materialDefines;
@@ -479,7 +479,7 @@ export class WaterMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
 
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {

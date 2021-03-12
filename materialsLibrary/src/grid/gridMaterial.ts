@@ -122,7 +122,7 @@ export class GridMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new GridMaterialDefines();
+            subMesh.materialDefines = new GridMaterialDefines();
         }
 
         var defines = <GridMaterialDefines>subMesh._materialDefines;
@@ -192,7 +192,7 @@ export class GridMaterial extends PushMaterial {
                 join,
                 undefined,
                 this.onCompiled,
-                this.onError), defines);
+                this.onError), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {

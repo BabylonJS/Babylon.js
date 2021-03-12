@@ -658,7 +658,7 @@ var SkyMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new SkyMaterialDefines();
+            subMesh.materialDefines = new SkyMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -689,7 +689,7 @@ var SkyMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
                 "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
                 "cameraPosition", "cameraOffset", "up"
-            ], [], join, fallbacks, this.onCompiled, this.onError), defines);
+            ], [], join, fallbacks, this.onCompiled, this.onError), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
