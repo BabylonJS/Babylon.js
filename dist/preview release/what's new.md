@@ -3,12 +3,13 @@
 ## Major updates
 
 - Infinite Morph Targets: When supported (WebGL2+) you are no more limited to 4 morph targets per mesh ([Deltakosh](https://github.com/deltakosh))
+- Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 
 ## Updates
 
 ### General
 
-- Added static CenterToRef for vectors 2/3/4  ([aWeirdo](https://github.com/aWeirdo))
+- Added static CenterToRef for vectors 2/3/4 ([aWeirdo](https://github.com/aWeirdo))
 - Added ability to view images (ktx2, png, jpg) to the sandbox. ([bghgary](https://github.com/bghgary))
 - Added optional smoothed normals for extruded procedural polygons. ([snagy](https://github.com/snagy))
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
@@ -49,7 +50,12 @@
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
 - PrePass can now be used in `RenderTargets` speeding up effects like SSAO2 or MotionBlur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
+- Added support for local cube map to refraction cube texture ([Popov72](https://github.com/Popov72))
 - Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
+
+### Meshes
+
+- `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 
 ### Inspector
 
@@ -79,7 +85,7 @@
 - Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
 - Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
 - Added `ToggleButton` GUI control ([kintz09](https://github.com/kintz09))
-- Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class  ([kintz09](https://github.com/kintz09))
+- Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class ([kintz09](https://github.com/kintz09))
 - Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 - Added `imageWidth()` and `imageHeight()` to access the source image dimensions of `Image` ([Queatz](https://github.com/Queatz))
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
@@ -100,9 +106,7 @@
 ### Gizmos
 
 - Exposed `scaleDragSpeed` and added `axisFactor` for BoundingBoxGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
-
 - Provide additional attributes `_customRotationQuaternion` to customize the posture of the gizmo ([ecojust](https://github.com/ecojust))
-
 
 ### Viewer
 
@@ -118,10 +122,9 @@
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix an issue with keyboard control (re)attachment. ([#9411](https://github.com/BabylonJS/Babylon.js/issues/9411)) ([RaananW](https://github.com/RaananW))
-- Fix issue where PBRSpecularGlossiness materials were excluded from export [#9423](https://github.com/BabylonJS/Babylon.js/issues/9423)([Drigax](https://github.com/drigax))
-- Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet))
-- Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
-- Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
+- Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary)
+- Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix crash of some node materials using instances on iOS ([Popov72](https://github.com/Popov72))
 - Fix the code generated for the NME gradient block ([Popov72](https://github.com/Popov72))
 - Fix ssao2RenderingPipeline for orthographic cameras ([Kesshi](https://github.com/Kesshi))
@@ -144,7 +147,6 @@
 - Fix for warning in chrome about passive wheel events ([#9777](https://github.com/BabylonJS/Babylon.js/pull/9777)) ([kaliatech](https://github.com/kaliatech))
 - Fix crash when cloning material in `AssetContainer.instantiateModelsToScene` when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
 - Fix Normalized quaternion when updating the node components ([CedricGuillemet](https://github.com/CedricGuillemet))
-- Fix Mesh impostor not taking LH/RH into account ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix update absolute position before use in PointerDragBehavior ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix issue with NinePatch displaying half pixel gaps between slices on Firefox browsers. ([Pryme8](https://github.com/Pryme8))
 - Fix issue when canvas loses focus while holding a pointer button ([PolygonalSun](https://github.com/PolygonalSun))

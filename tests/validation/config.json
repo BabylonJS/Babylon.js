@@ -1208,6 +1208,18 @@
             "playgroundId": "#W7E7CF#12",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test.png"
+        },
+        {
+            "title": "Refraction local cube map STD",
+            "renderCount": 1,
+            "playgroundId": "#RJN64I#7",
+            "referenceImage": "refraction-local-std.png"
+        },
+        {
+            "title": "Refraction local cube map PBR",
+            "renderCount": 1,
+            "playgroundId": "#RJN64I#5",
+            "referenceImage": "refraction-local-pbr.png"
         }
     ]
 }
