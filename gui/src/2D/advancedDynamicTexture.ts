@@ -501,6 +501,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         var renderWidth = engine.getRenderWidth() * this._renderScale;
         var renderHeight = engine.getRenderHeight() * this._renderScale;
 
+        if (this._renderAtIdealSize) {
+            if (this._idealWidth) {
+                renderHeight = (renderHeight * this._idealWidth) / renderWidth;
+                renderWidth = this._idealWidth;
+            } else if (this._idealHeight) {
+                renderWidth = (renderWidth * this._idealHeight) / renderHeight;
+                renderHeight = this._idealHeight;
+            }
+        }
         if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
             this.scaleTo(renderWidth, renderHeight);
             this.markAsDirty();
