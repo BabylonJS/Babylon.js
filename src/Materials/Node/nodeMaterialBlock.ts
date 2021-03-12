@@ -322,6 +322,30 @@ export class NodeMaterialBlock {
     }
 
     /**
+     * Checks if the current block is an ancestor of a given block
+     * @param block defines the potential descendant block to check
+     * @returns true if block is a descendant
+     */
+    public isAnAncestorOf(block: NodeMaterialBlock): boolean {
+        for (var output of this._outputs) {
+            if (!output.hasEndpoints) {
+                continue;
+            }
+
+            for (var endpoint of output.endpoints) {
+                if (endpoint.ownerBlock === block) {
+                    return true;
+                }
+                if (endpoint.ownerBlock.isAnAncestorOf(block)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Connect current block with another block
      * @param other defines the block to connect with
      * @param options define the various options to help pick the right connections

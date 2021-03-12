@@ -8,6 +8,7 @@ import { Constants } from '../Engines/constants';
 import { Observable } from '../Misc/observable';
 import { Effect } from './effect';
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { DrawWrapper } from "./drawWrapper";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
@@ -84,7 +85,7 @@ export class EffectRenderer {
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
         this.engine.depthCullingState.depthTest = false;
         this.engine.stencilState.stencilTest = false;
-        this.engine.enableEffect(effectWrapper.effect);
+        this.engine.enableEffect(effectWrapper._drawWrapper);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
     }
@@ -212,7 +213,16 @@ export class EffectWrapper {
     /**
      * The underlying effect
      */
-    public effect: Effect;
+    public get effect(): Effect {
+        return this._drawWrapper.effect!;
+    }
+
+    public set effect(effect: Effect) {
+        this._drawWrapper.effect = effect;
+    }
+
+    /** @hidden */
+    public _drawWrapper: DrawWrapper;
 
     /**
      * Creates an effect to be renderer
@@ -246,6 +256,7 @@ export class EffectWrapper {
         }
 
         const defines = creationOptions.defines ? creationOptions.defines.join("\n") : "";
+        this._drawWrapper = new DrawWrapper(creationOptions.engine);
 
         if (creationOptions.useShaderStore) {
             effectCreationOptions.fragment = effectCreationOptions.fragmentSource;

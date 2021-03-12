@@ -499,6 +499,10 @@ void main(void) {
             #ifdef REALTIME_FILTERING
                 vRefractionFilteringInfo,
             #endif
+            #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+                vRefractionPosition,
+                vRefractionSize,
+            #endif
         #endif
         #ifdef SS_TRANSLUCENCY
             vDiffusionDistance,

@@ -27,6 +27,7 @@ export class LinesMesh extends Mesh {
      * Color of the line (Default: White)
      */
     public color = new Color3(1, 1, 1);
+
     /**
      * Alpha of the line (Default: 1)
      */
@@ -39,7 +40,11 @@ export class LinesMesh extends Mesh {
      */
     public intersectionThreshold: number;
 
-    private _colorShader: ShaderMaterial;
+    private _lineMaterial: Material;
+
+    private _isShaderMaterial(shader: Material): shader is ShaderMaterial {
+        return shader.getClassName() === "ShaderMaterial";
+    }
 
     private color4: Color4;
 
@@ -102,29 +107,35 @@ export class LinesMesh extends Mesh {
             options.attributes.push(VertexBuffer.ColorKind);
         }
 
-        this._colorShader = new ShaderMaterial("colorShader", this.getScene(), "color", options);
+        this._lineMaterial = new ShaderMaterial("colorShader", this.getScene(), "color", options);
     }
 
     private _addClipPlaneDefine(label: string) {
-        const define = "#define " + label;
-        let index = this._colorShader.options.defines.indexOf(define);
+        if (!this._isShaderMaterial(this._lineMaterial)) {
+            return;
+        }
 
+        const define = "#define " + label;
+        const index = this._lineMaterial.options.defines.indexOf(define);
         if (index !== -1) {
             return;
         }
 
-        this._colorShader.options.defines.push(define);
+        this._lineMaterial.options.defines.push(define);
     }
 
     private _removeClipPlaneDefine(label: string) {
-        const define = "#define " + label;
-        let index = this._colorShader.options.defines.indexOf(define);
+        if (!this._isShaderMaterial(this._lineMaterial)) {
+            return;
+        }
 
+        const define = "#define " + label;
+        const index = this._lineMaterial.options.defines.indexOf(define);
         if (index === -1) {
             return;
         }
 
-        this._colorShader.options.defines.splice(index, 1);
+        this._lineMaterial.options.defines.splice(index, 1);
     }
 
     public isReady() {
@@ -138,7 +149,7 @@ export class LinesMesh extends Mesh {
         scene.clipPlane5 ? this._addClipPlaneDefine("CLIPPLANE5") : this._removeClipPlaneDefine("CLIPPLANE5");
         scene.clipPlane6 ? this._addClipPlaneDefine("CLIPPLANE6") : this._removeClipPlaneDefine("CLIPPLANE6");
 
-        if (!this._colorShader.isReady(this)) {
+        if (!this._lineMaterial.isReady(this)) {
             return false;
         }
 
@@ -156,14 +167,14 @@ export class LinesMesh extends Mesh {
      * @hidden
      */
     public get material(): Material {
-        return this._colorShader;
+        return this._lineMaterial;
     }
 
     /**
      * @hidden
      */
     public set material(value: Material) {
-        // Do nothing
+        this._lineMaterial = value;
     }
 
     /**
@@ -182,17 +193,21 @@ export class LinesMesh extends Mesh {
         if (!this._geometry) {
             return this;
         }
-        const colorEffect = this._colorShader.getEffect();
+        const colorEffect = this._lineMaterial.getEffect();
 
         // VBOs
         const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
-        this._geometry._bind(colorEffect, indexToBind);
+        if (!this._userInstancedBuffersStorage) {
+            this._geometry._bind(colorEffect, indexToBind);
+        } else {
+            this._geometry._bind(colorEffect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
+        }
 
         // Color
-        if (!this.useVertexColor) {
+        if (!this.useVertexColor && this._isShaderMaterial(this._lineMaterial)) {
             const { r, g, b } = this.color;
             this.color4.set(r, g, b, this.alpha);
-            this._colorShader.setColor4("color", this.color4);
+            this._lineMaterial.setColor4("color", this.color4);
         }
 
         // Clip planes
@@ -224,7 +239,7 @@ export class LinesMesh extends Mesh {
      * @param doNotRecurse If children should be disposed
      */
     public dispose(doNotRecurse?: boolean): void {
-        this._colorShader.dispose(false, false, true);
+        this._lineMaterial.dispose(false, false, true);
         super.dispose(doNotRecurse);
     }
 

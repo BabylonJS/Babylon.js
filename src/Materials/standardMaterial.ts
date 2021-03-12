@@ -104,6 +104,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public REFLECTIONMAP_PLANAR = false;
     public REFLECTIONMAP_CUBIC = false;
     public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
+    public USE_LOCAL_REFRACTIONMAP_CUBIC = false;
     public REFLECTIONMAP_PROJECTION = false;
     public REFLECTIONMAP_SKYBOX = false;
     public REFLECTIONMAP_EXPLICIT = false;
@@ -856,7 +857,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new StandardMaterialDefines();
+            subMesh.materialDefines = new StandardMaterialDefines();
         }
 
         var scene = this.getScene();
@@ -1024,6 +1025,7 @@ export class StandardMaterial extends PushMaterial {
 
                         defines.REFRACTIONMAP_3D = this._refractionTexture.isCube;
                         defines.RGBDREFRACTION = this._refractionTexture.isRGBD;
+                        defines.USE_LOCAL_REFRACTIONMAP_CUBIC = (<any>this._refractionTexture).boundingBoxSize ? true : false;
                     }
                 } else {
                     defines.REFRACTION = false;
@@ -1214,7 +1216,7 @@ export class StandardMaterial extends PushMaterial {
                 "mBones",
                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                 "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                "vReflectionPosition", "vReflectionSize",
+                "vReflectionPosition", "vReflectionSize", "vRefractionPosition", "vRefractionSize",
                 "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth",
                 "morphTargetTextureInfo", "morphTargetTextureIndices"
             ];
@@ -1229,7 +1231,7 @@ export class StandardMaterial extends PushMaterial {
             DetailMapConfiguration.AddSamplers(samplers);
 
             PrePassConfiguration.AddUniforms(uniforms);
-            PrePassConfiguration.AddSamplers(uniforms);
+            PrePassConfiguration.AddSamplers(samplers);
 
             if (ImageProcessingConfiguration) {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1288,7 +1290,7 @@ export class StandardMaterial extends PushMaterial {
                 } else {
                     this._rebuildInParallel = false;
                     scene.resetCachedMaterial();
-                    subMesh.setEffect(effect, defines);
+                    subMesh.setEffect(effect, defines, this._materialContext);
                     this.buildUniformLayout();
                 }
             }
@@ -1344,6 +1346,8 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("pointSize", 1);
         ubo.addUniform("refractionMatrix", 16);
         ubo.addUniform("vRefractionInfos", 4);
+        ubo.addUniform("vRefractionPosition", 3);
+        ubo.addUniform("vRefractionSize", 3);
         ubo.addUniform("vSpecularColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
         ubo.addUniform("vDiffuseColor", 4);
@@ -1518,6 +1522,13 @@ export class StandardMaterial extends PushMaterial {
                             }
                         }
                         ubo.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
+
+                        if ((<any>this._refractionTexture).boundingBoxSize) {
+                            let cubeTexture = <CubeTexture>this._refractionTexture;
+
+                            ubo.updateVector3("vRefractionPosition", cubeTexture.boundingBoxPosition);
+                            ubo.updateVector3("vRefractionSize", cubeTexture.boundingBoxSize);
+                        }
                     }
                 }
 

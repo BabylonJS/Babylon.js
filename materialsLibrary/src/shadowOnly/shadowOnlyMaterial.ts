@@ -89,7 +89,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new ShadowOnlyMaterialDefines();
+            subMesh.materialDefines = new ShadowOnlyMaterialDefines();
         }
 
         var defines = <ShadowOnlyMaterialDefines>subMesh._materialDefines;
@@ -199,7 +199,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: 1 }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

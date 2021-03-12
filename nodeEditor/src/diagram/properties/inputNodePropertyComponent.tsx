@@ -160,7 +160,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 systemValuesOptions = [
                     { label: "World", value: NodeMaterialSystemValues.World },
                     { label: "World x View", value: NodeMaterialSystemValues.WorldView },
-                    { label: "World x ViewxProjection", value: NodeMaterialSystemValues.WorldViewProjection },
+                    { label: "World x View x Projection", value: NodeMaterialSystemValues.WorldViewProjection },
                     { label: "View", value: NodeMaterialSystemValues.View },
                     { label: "View x Projection", value: NodeMaterialSystemValues.ViewProjection },
                     { label: "Projection", value: NodeMaterialSystemValues.Projection }
