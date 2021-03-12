@@ -56,6 +56,7 @@ export class DeviceInputSystem implements IDisposable {
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
+    private _engine: Engine;
 
     private _keyboardDownEvent = (evt: any) => { };
     private _keyboardUpEvent = (evt: any) => { };
@@ -81,6 +82,7 @@ export class DeviceInputSystem implements IDisposable {
     private constructor(engine: Engine) {
         const inputElement = engine.getInputElement();
         this._eventPrefix = Tools.GetPointerPrefix(engine);
+        this._engine = engine;
 
         if (inputElement) {
             this._elementToAttachTo = inputElement;
@@ -111,13 +113,6 @@ export class DeviceInputSystem implements IDisposable {
 
     // Public functions
     /**
-     * Checks for current device input value, given an id and input index
-     * @param deviceName Id of connected device
-     * @param inputIndex Index of device input
-     * @returns Current value of input
-     */
-
-    /**
      * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
      * @param deviceType Enum specifiying device type
      * @param deviceSlot "Slot" or index that device is referenced in
@@ -135,20 +130,12 @@ export class DeviceInputSystem implements IDisposable {
             this._updateDevice(deviceType, deviceSlot, inputIndex);
         }
 
-        if (device[inputIndex] === undefined) {
+        const currentValue = device[inputIndex];
+        if (currentValue === undefined) {
             throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
         }
 
-        // When the mouse wheel is moved, only clear the value if that input is polled for
-        if (deviceType === DeviceType.Mouse && (inputIndex >= PointerInput.MouseWheelX && inputIndex <= PointerInput.MouseWheelZ)) {
-            const currentValue = device[inputIndex];
-
-            device[inputIndex] = 0;
-
-            return currentValue;
-        }
-
-        return device[inputIndex];
+        return currentValue;
     }
 
     /**
@@ -531,6 +518,23 @@ export class DeviceInputSystem implements IDisposable {
                     if (pointer[PointerInput.MouseWheelZ] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelZ, previousWheelScrollZ, pointer[PointerInput.MouseWheelZ], evt);
                     }
+                }
+
+                // Since there's no up or down event for mouse wheel, clear mouse wheel value at end of frame
+                if (pointer[PointerInput.MouseWheelX] !== 0) {
+                    this._engine.onEndFrameObservable.addOnce(() => {
+                        pointer[PointerInput.MouseWheelX] = 0;
+                    });
+                }
+                if (pointer[PointerInput.MouseWheelY] !== 0) {
+                    this._engine.onEndFrameObservable.addOnce(() => {
+                        pointer[PointerInput.MouseWheelY] = 0;
+                    });
+                }
+                if (pointer[PointerInput.MouseWheelZ] !== 0) {
+                    this._engine.onEndFrameObservable.addOnce(() => {
+                        pointer[PointerInput.MouseWheelZ] = 0;
+                    });
                 }
             }
         });
