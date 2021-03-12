@@ -13299,6 +13299,10 @@ declare module BABYLON {
         _cubeSamplerName: string;
         /** @hidden */
         _2DSamplerName: string;
+        /** @hidden */
+        _reflectionPositionName: string;
+        /** @hidden */
+        _reflectionSizeName: string;
         protected _positionUVWName: string;
         protected _directionWName: string;
         protected _reflectionVectorName: string;
@@ -13534,6 +13538,11 @@ declare module BABYLON {
          * @param name defines the block name
          */
         constructor(name: string);
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
         /**
          * Gets the current class name
          * @returns the class name
@@ -19881,6 +19890,7 @@ declare module BABYLON {
         REFLECTIONMAP_PLANAR: boolean;
         REFLECTIONMAP_CUBIC: boolean;
         USE_LOCAL_REFLECTIONMAP_CUBIC: boolean;
+        USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         REFLECTIONMAP_PROJECTION: boolean;
         REFLECTIONMAP_SKYBOX: boolean;
         REFLECTIONMAP_EXPLICIT: boolean;
@@ -21261,6 +21271,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         /** @hidden */
@@ -22274,6 +22285,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         UNLIT: boolean;
@@ -70775,6 +70787,74 @@ declare module BABYLON {
         get output(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Operations supported by the ConditionalBlock block
+     */
+    export enum ConditionalBlockConditions {
+        /** Equal */
+        Equal = 0,
+        /** NotEqual */
+        NotEqual = 1,
+        /** LessThan */
+        LessThan = 2,
+        /** GreaterThan */
+        GreaterThan = 3,
+        /** LessOrEqual */
+        LessOrEqual = 4,
+        /** GreaterOrEqual */
+        GreaterOrEqual = 5,
+        /** Logical Exclusive OR */
+        Xor = 6,
+        /** Logical Or */
+        Or = 7,
+        /** Logical And */
+        And = 8
+    }
+    /**
+     * Block used to apply conditional operation between floats
+     */
+    export class ConditionalBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the condition applied by the block
+         */
+        condition: ConditionalBlockConditions;
+        /**
+         * Creates a new ConditionalBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the first operand component
+         */
+        get a(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the second operand component
+         */
+        get b(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the value to return if condition is true
+         */
+        get true(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the value to return if condition is false
+         */
+        get false(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
     }
 }
 declare module BABYLON {

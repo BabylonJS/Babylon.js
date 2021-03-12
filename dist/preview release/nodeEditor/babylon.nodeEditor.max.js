@@ -54926,6 +54926,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -55340,6 +55341,42 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FragCoordBlock"]("FragCoord");
             case "ScreenSizeBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ScreenSizeBlock"]("ScreenSize");
+            case "EqualBlock":
+                var equalBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("Equal");
+                equalBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Equal;
+                return equalBlock;
+            case "NotEqualBlock":
+                var notEqualBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("NotEqual");
+                notEqualBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].NotEqual;
+                return notEqualBlock;
+            case "LessThanBlock":
+                var lessThanBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("LessThan");
+                lessThanBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].LessThan;
+                return lessThanBlock;
+            case "LessOrEqualBlock":
+                var lessOrEqualBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("LessOrEqual");
+                lessOrEqualBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].LessOrEqual;
+                return lessOrEqualBlock;
+            case "GreaterThanBlock":
+                var greaterThanBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("GreaterThan");
+                greaterThanBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].GreaterThan;
+                return greaterThanBlock;
+            case "GreaterOrEqualBlock":
+                var greaterOrEqualBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("GreaterOrEqual");
+                greaterOrEqualBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].GreaterOrEqual;
+                return greaterOrEqualBlock;
+            case "XorBlock":
+                var xorBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("Xor");
+                xorBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Xor;
+                return xorBlock;
+            case "OrBlock":
+                var orBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("Or");
+                orBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Or;
+                return orBlock;
+            case "AndBlock":
+                var andBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("And");
+                andBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].And;
+                return andBlock;
         }
         return null;
     };
@@ -55642,6 +55679,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
+            Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
@@ -55841,6 +55879,15 @@ var NodeListComponent = /** @class */ (function (_super) {
         "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
         "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
+        "EqualBlock": "Return a value if two operands are equals",
+        "NotEqualBlock": "Return a value if two operands are not equals",
+        "LessThanBlock": "Return a value if an operand is smaller than a second operand",
+        "LessOrEqualBlock": "Return a value if an operand is smaller or equal to a second operand",
+        "GreaterThanBlock": "Return a value if an operand is greater than a second operand",
+        "GreaterOrEqualBlock": "Return a value if an operand is greater or equal to a second operand",
+        "XorBlock": "Return a value if (a xor b) > 0",
+        "OrBlock": "Return a value if (a or b) > 0",
+        "AndBlock": "Return a value if (a and b) > 0"
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -57530,6 +57577,74 @@ var ClampDisplayManager = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./diagram/display/conditionalDisplayManager.ts":
+/*!******************************************************!*\
+  !*** ./diagram/display/conditionalDisplayManager.ts ***!
+  \******************************************************/
+/*! exports provided: ConditionalDisplayManager */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConditionalDisplayManager", function() { return ConditionalDisplayManager; });
+/* harmony import */ var babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/conditionalBlock */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__);
+
+var ConditionalDisplayManager = /** @class */ (function () {
+    function ConditionalDisplayManager() {
+    }
+    ConditionalDisplayManager.prototype.getHeaderClass = function (block) {
+        return "";
+    };
+    ConditionalDisplayManager.prototype.shouldDisplayPortLabels = function (block) {
+        return true;
+    };
+    ConditionalDisplayManager.prototype.getHeaderText = function (block) {
+        var conditionBlock = block;
+        var desc = "";
+        switch (conditionBlock.condition) {
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Equal:
+                desc = "=";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].NotEqual:
+                desc = "!=";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].LessThan:
+                desc = "<";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].LessOrEqual:
+                desc = "<=";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].GreaterThan:
+                desc = ">";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].GreaterOrEqual:
+                desc = ">=";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Xor:
+                desc = "xor";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Or:
+                desc = "|";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].And:
+                desc = "&";
+                break;
+        }
+        return block.name + " (" + desc + ")";
+    };
+    ConditionalDisplayManager.prototype.getBackgroundColor = function (block) {
+        return "#00A080";
+    };
+    ConditionalDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
+    };
+    return ConditionalDisplayManager;
+}());
+
+
+
+/***/ }),
+
 /***/ "./diagram/display/discardDisplayManager.ts":
 /*!**************************************************!*\
   !*** ./diagram/display/discardDisplayManager.ts ***!
@@ -57999,6 +58114,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./display/textureDisplayManager */ "./diagram/display/textureDisplayManager.ts");
 /* harmony import */ var _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./display/discardDisplayManager */ "./diagram/display/discardDisplayManager.ts");
 /* harmony import */ var _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./display/pbrDisplayManager */ "./diagram/display/pbrDisplayManager.ts");
+/* harmony import */ var _display_conditionalDisplayManager__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./display/conditionalDisplayManager */ "./diagram/display/conditionalDisplayManager.ts");
+
 
 
 
@@ -58022,6 +58139,7 @@ DisplayLedger.RegisteredControls["ClampBlock"] = _display_clampDisplayManager__W
 DisplayLedger.RegisteredControls["GradientBlock"] = _display_gradientDisplayManager__WEBPACK_IMPORTED_MODULE_3__["GradientDisplayManager"];
 DisplayLedger.RegisteredControls["RemapBlock"] = _display_remapDisplayManager__WEBPACK_IMPORTED_MODULE_4__["RemapDisplayManager"];
 DisplayLedger.RegisteredControls["TrigonometryBlock"] = _display_trigonometryDisplayManager__WEBPACK_IMPORTED_MODULE_5__["TrigonometryDisplayManager"];
+DisplayLedger.RegisteredControls["ConditionalBlock"] = _display_conditionalDisplayManager__WEBPACK_IMPORTED_MODULE_9__["ConditionalDisplayManager"];
 DisplayLedger.RegisteredControls["TextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ReflectionBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
@@ -61304,6 +61422,68 @@ var NodePort = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./diagram/properties/conditionalNodePropertyComponent.tsx":
+/*!*****************************************************************!*\
+  !*** ./diagram/properties/conditionalNodePropertyComponent.tsx ***!
+  \*****************************************************************/
+/*! exports provided: ConditionalPropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConditionalPropertyTabComponent", function() { return ConditionalPropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/conditionalBlock */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
+
+
+
+
+
+
+var ConditionalPropertyTabComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ConditionalPropertyTabComponent, _super);
+    function ConditionalPropertyTabComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    ConditionalPropertyTabComponent.prototype.render = function () {
+        var _this = this;
+        var conditionBlock = this.props.block;
+        var conditionOptions = [
+            { label: "Equal", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Equal },
+            { label: "NotEqual", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].NotEqual },
+            { label: "LessThan", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].LessThan },
+            { label: "GreaterThan", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].GreaterThan },
+            { label: "LessOrEqual", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].LessOrEqual },
+            { label: "GreaterOrEqual", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].GreaterOrEqual },
+            { label: "Xor", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Xor },
+            { label: "Or", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Or },
+            { label: "And", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].And }
+        ];
+        conditionOptions.sort(function (a, b) {
+            return a.label.localeCompare(b.label);
+        });
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_5__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Condition", options: conditionOptions, target: conditionBlock, propertyName: "condition", onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.forceUpdate();
+                    } }))));
+    };
+    return ConditionalPropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./diagram/properties/frameNodePortPropertyComponent.tsx":
 /*!***************************************************************!*\
   !*** ./diagram/properties/frameNodePortPropertyComponent.tsx ***!
@@ -62702,6 +62882,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _properties_lightInformationPropertyTabComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./properties/lightInformationPropertyTabComponent */ "./diagram/properties/lightInformationPropertyTabComponent.tsx");
 /* harmony import */ var _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./properties/texturePropertyTabComponent */ "./diagram/properties/texturePropertyTabComponent.tsx");
 /* harmony import */ var _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./properties/trigonometryNodePropertyComponent */ "./diagram/properties/trigonometryNodePropertyComponent.tsx");
+/* harmony import */ var _properties_conditionalNodePropertyComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./properties/conditionalNodePropertyComponent */ "./diagram/properties/conditionalNodePropertyComponent.tsx");
+
 
 
 
@@ -62728,6 +62910,7 @@ PropertyLedger.RegisteredControls["RefractionBlock"] = _properties_textureProper
 PropertyLedger.RegisteredControls["CurrentScreenBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["ParticleTextureBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__["TrigonometryPropertyTabComponent"];
+PropertyLedger.RegisteredControls["ConditionalBlock"] = _properties_conditionalNodePropertyComponent__WEBPACK_IMPORTED_MODULE_7__["ConditionalPropertyTabComponent"];
 
 
 /***/ }),
