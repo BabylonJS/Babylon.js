@@ -7,6 +7,7 @@ import { LightPropertyTabComponent } from './properties/lightPropertyTabComponen
 import { LightInformationPropertyTabComponent } from './properties/lightInformationPropertyTabComponent';
 import { TexturePropertyTabComponent } from './properties/texturePropertyTabComponent';
 import { TrigonometryPropertyTabComponent } from './properties/trigonometryNodePropertyComponent';
+import { ConditionalPropertyTabComponent } from './properties/conditionalNodePropertyComponent';
 
 export class PropertyLedger {
     public static RegisteredControls: {[key: string] : ComponentClass<IPropertyComponentProps>} = {};
@@ -24,3 +25,4 @@ PropertyLedger.RegisteredControls["RefractionBlock"] = TexturePropertyTabCompone
 PropertyLedger.RegisteredControls["CurrentScreenBlock"] = TexturePropertyTabComponent;
 PropertyLedger.RegisteredControls["ParticleTextureBlock"] = TexturePropertyTabComponent;
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryPropertyTabComponent;
+PropertyLedger.RegisteredControls["ConditionalBlock"] = ConditionalPropertyTabComponent;
