@@ -77,9 +77,8 @@ struct subSurfaceOutParams
         #endif
         #ifdef SS_LINEARSPECULARREFRACTION
             const in float roughness,
-        #else
-            const in float alphaG,
         #endif
+        const in float alphaG,
         #ifdef SS_REFRACTIONMAP_3D
             const in samplerCube refractionSampler,
             #ifndef LODBASEDMICROSFURACE
