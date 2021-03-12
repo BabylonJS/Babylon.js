@@ -6,9 +6,6 @@ export interface ICanvas
     toDataURL(mime: string): string;
 }
 
-export interface IOffscreenCanvas extends ICanvas{
-}
-
 export interface ICanvasElement extends ICanvas{
 }
 
@@ -19,6 +16,7 @@ export interface ICanvasGradient {
 export interface ITextMetrics {
     readonly width: number;
 }
+
 /**
  * Class used to abstract canvas rendering
  */
@@ -66,7 +64,4 @@ export interface ICanvasRenderingContext {
 }
 
 export interface ICanvasRenderingContext2D extends ICanvasRenderingContext {
-}
-
-export interface IOffscreenCanvasRenderingContext2D extends ICanvasRenderingContext {
 }

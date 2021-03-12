@@ -208,7 +208,11 @@ export class ColorPicker extends Control {
     }
 
     private _createColorWheelCanvas(radius: number, thickness: number): ICanvasElement {
-        var canvas = Engine.LastCreatedEngine.createCanvas(radius * 2, radius * 2);
+        const engine = Engine.LastCreatedEngine;
+        if (!engine) {
+            throw new Error("Invalid engine. Unable to create a canvas.");
+        }
+        var canvas = engine.createCanvas(radius * 2, radius * 2);
         var context = canvas.getContext("2d");
         var image = context.getImageData(0, 0, radius * 2, radius * 2);
         var data = image.data;

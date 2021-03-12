@@ -312,7 +312,11 @@ export class Image extends Control {
         const width = this._domImage.width;
         const height = this._domImage.height;
 
-        let canvas = Engine.LastCreatedEngine?.createCanvas(height, width);
+        const engine = Engine.LastCreatedEngine;
+        if (!engine) {
+            throw new Error("Invalid engine. Unable to create a canvas.");
+        }
+        let canvas = engine.createCanvas(height, width);
 
         const context = canvas.getContext("2d")!;
 
@@ -395,7 +399,11 @@ export class Image extends Control {
         const height = this._domImage.height;
 
         if (!this._workingCanvas) {
-            this._workingCanvas = Engine.LastCreatedEngine?.createCanvas(width, height);
+            const engine = Engine.LastCreatedEngine;
+            if (!engine) {
+                throw new Error("Invalid engine. Unable to create a canvas.");
+            }
+            this._workingCanvas = engine.createCanvas(width, height);
         }
         const canvas = this._workingCanvas;
         const context = canvas.getContext("2d")!;
@@ -747,7 +755,11 @@ export class Image extends Control {
         const height = this._currentMeasure.height;
 
         if (!this._workingCanvas) {
-            this._workingCanvas = Engine.LastCreatedEngine?.createCanvas(width, height);
+            const engine = Engine.LastCreatedEngine;
+            if (!engine) {
+                throw new Error("Invalid engine. Unable to create a canvas.");
+            }
+            this._workingCanvas = engine.createCanvas(width, height);
         }
         const canvas = this._workingCanvas;
 
