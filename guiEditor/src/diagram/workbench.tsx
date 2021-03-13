@@ -17,7 +17,6 @@ import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Button } from "babylonjs-gui/2D/controls/button";
-import { fogFragment } from "babylonjs/Shaders/ShadersInclude/fogFragment";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
