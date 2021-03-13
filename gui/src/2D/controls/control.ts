@@ -87,6 +87,7 @@ export class Control {
     private _cachedOffsetY: number;
     private _isVisible = true;
     private _isHighlighted = false;
+    private _highlightLineWidth = 2;
     /** @hidden */
     public _linkedMesh: Nullable<TransformNode>;
     private _fontSet = false;
@@ -334,17 +335,33 @@ export class Control {
     }
 
     /**
+     * Gets or sets a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
+     */
+    public get highlightLineWidth(): number {
+        return this._highlightLineWidth;
+    }
+
+    public set highlightLineWidth(value: number) {
+        if (this._highlightLineWidth === value) {
+            return;
+        }
+
+        this._highlightLineWidth = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
      */
     public get isHighlighted(): boolean {
         return this._isHighlighted;
     }
-
+    
     public set isHighlighted(value: boolean) {
         if (this._isHighlighted === value) {
-            return;
+             return;
         }
-
+    
         this._isHighlighted = value;
         this._markAsDirty();
     }
@@ -1438,7 +1455,7 @@ export class Control {
 
         context.save();
         context.strokeStyle = "#4affff";
-        context.lineWidth = 2;
+        context.lineWidth = this._highlightLineWidth;
 
         this._renderHighlightSpecific(context);
         context.restore();
