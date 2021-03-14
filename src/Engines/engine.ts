@@ -26,6 +26,7 @@ import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
 import { CanvasGenerator } from '../Misc/canvasGenerator';
+import { DeviceInputSystem } from "../DeviceInput/deviceInputSystem";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -385,6 +386,11 @@ export class Engine extends ThinEngine {
      * Gets a boolean indicating if the pointer is currently locked
      */
     public isPointerLock = false;
+
+    /**
+     * Stores instance of DeviceInputSystem
+     */
+    public deviceInputSystem: DeviceInputSystem;
 
     // Observables
 
