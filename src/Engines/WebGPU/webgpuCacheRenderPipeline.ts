@@ -135,6 +135,7 @@ export abstract class WebGPUCacheRenderPipeline {
     public disabled: boolean;
 
     private static _NumPipelineCreationCurrentFrame = 0;
+    private static _NumPipelineCreation = 0;
 
     protected _states: number[];
     protected _stateDirtyLowestIndex: number;
@@ -143,7 +144,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private _device: GPUDevice;
     private _isDirty: boolean;
     private _emptyVertexBuffer: VertexBuffer;
-    private _parameter: { token: any, pipeline: Nullable<GPURenderPipeline> };
+    private _parameter: { token: any, pipeline: Nullable<GPURenderPipeline>, id: number };
 
     private _shaderId: number;
     private _alphaToCoverageEnabled: boolean;
@@ -189,13 +190,15 @@ export abstract class WebGPUCacheRenderPipeline {
         this._stateDirtyLowestIndex = 0;
         this._emptyVertexBuffer = emptyVertexBuffer;
         this._mrtFormats = [];
-        this._parameter = { token: undefined, pipeline: null };
+        this._parameter = { token: undefined, pipeline: null, id: 0 };
         this.disabled = false;
+        this.vertexBuffers = [];
         this.reset();
     }
 
     public reset(): void {
         this._isDirty = true;
+        this.vertexBuffers.length = 0;
         this.setAlphaToCoverage(false);
         this.resetDepthCullingState();
         this.setClampDepth(false);
@@ -215,15 +218,21 @@ export abstract class WebGPUCacheRenderPipeline {
     protected abstract _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
     protected abstract _setRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
 
+    public vertexBuffers: VertexBuffer[];
+
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline {
         if (this.disabled) {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
+            this._setVertexState(effect); // to fill this.vertexBuffers with correct data
+
             this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
+            this._parameter.id = WebGPUCacheRenderPipeline._NumPipelineCreation++;
 
             WebGPUCacheRenderPipeline.NumCacheMiss++;
             WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame++;
 
+            this._parameter.pipeline.label = <any>this._parameter.id;
             return this._parameter.pipeline;
         }
 
@@ -254,6 +263,8 @@ export abstract class WebGPUCacheRenderPipeline {
         const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
         this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
+        this._parameter.id = WebGPUCacheRenderPipeline._NumPipelineCreation++;
+        this._parameter.pipeline.label = <any>this._parameter.id;
         this._setRenderPipeline(this._parameter);
 
         WebGPUCacheRenderPipeline.NumCacheMiss++;
@@ -777,6 +788,8 @@ export abstract class WebGPUCacheRenderPipeline {
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
         const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
+
+        this.vertexBuffers.length = attributes.length;
         for (var index = 0; index < attributes.length; index++) {
             const location = locations[index];
             let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
@@ -785,6 +798,8 @@ export abstract class WebGPUCacheRenderPipeline {
                 // So we must bind a dummy buffer when we are not given one for a specific attribute
                 vertexBuffer = this._emptyVertexBuffer;
             }
+
+            this.vertexBuffers[index] = vertexBuffer;
 
             const vid = vertexBuffer.hashCode + (location << 7);
 

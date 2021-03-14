@@ -14,6 +14,7 @@ export * from "./WebGPU/webgpuCacheRenderPipeline";
 export * from "./WebGPU/webgpuCacheRenderPipelineTree";
 export * from "./WebGPU/webgpuCacheBindGroups";
 export * from "./WebGPU/webgpuCacheSampler";
+export * from "./WebGPU/webgpuCacheBundles";
 export * from "./WebGL/webGL2ShaderProcessors";
 export * from "./nativeEngine";
 export * from "./Processors/shaderCodeInliner";
