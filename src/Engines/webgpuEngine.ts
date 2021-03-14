@@ -42,8 +42,9 @@ import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
-import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
+import { WebGPUCacheBindGroups, WebGPUIdentifiedBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
+import { WebGPUCacheBundles } from "./WebGPU/webgpuCacheBundles";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -198,6 +199,7 @@ export class WebGPUEngine extends Engine {
     private _cacheSampler: WebGPUCacheSampler;
     private _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     private _cacheBindGroups: WebGPUCacheBindGroups;
+    private _cacheBundles: WebGPUCacheBundles;
     private _emptyVertexBuffer: VertexBuffer;
     private _mrtAttachments: number[];
     /** @hidden */
@@ -225,8 +227,10 @@ export class WebGPUEngine extends Engine {
     private _mainTexture: GPUTexture;
     private _depthTexture: GPUTexture;
     private _mainTextureExtends: GPUExtent3D;
-    private _depthTextureFormat: GPUTextureFormat | undefined;
-    private _colorFormat: GPUTextureFormat;
+    /** @hidden */
+    public _depthTextureFormat: GPUTextureFormat | undefined;
+    /** @hidden */
+    public _colorFormat: GPUTextureFormat;
 
     // Frame Life Cycle (recreated each frame)
     private _uploadEncoder: GPUCommandEncoder;
@@ -247,7 +251,6 @@ export class WebGPUEngine extends Engine {
     private _defaultMaterialContext: WebGPUMaterialContext;
     private _currentMaterialContext: WebGPUMaterialContext;
     private _currentDrawContext: WebGPUDrawContext | undefined;
-    private _currentVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
@@ -308,6 +311,19 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Sets this to true to disable the cache using bundles
+     */
+     public get disableCacheBundles(): boolean {
+        return this._cacheBundles ? this._cacheBundles.disabled : false;
+    }
+
+    public set disableCacheBundles(disable: boolean) {
+        if (this._cacheBundles) {
+            this._cacheBundles.disabled = disable;
+        }
+    }
+
+    /**
      * Gets a boolean indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
      * @returns true if the engine can be created
      */
@@ -362,6 +378,11 @@ export class WebGPUEngine extends Engine {
      * @hidden
      */
     public compatibilityMode = true;
+
+    /** @hidden */
+    public get currentSampleCount(): number {
+        return this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount;
+    }
 
     /**
      * Create a new instance of the gpu engine asynchronously
@@ -488,6 +509,7 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
+                this._cacheBundles = new WebGPUCacheBundles(this._device, this);
 
                 if (this.dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
@@ -770,7 +792,6 @@ export class WebGPUEngine extends Engine {
                                         // _forceEnableEffect = true assumes the role of _currentEffect = null
         this._forceEnableEffect = true;
         this._currentIndexBuffer = null;
-        this._currentVertexBuffers = null;
         this._currentOverrideVertexBuffers = null;
         this._cacheRenderPipeline.setBuffers(null, null, null);
 
@@ -834,7 +855,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    private _applyViewport(renderPass: GPURenderPassEncoder): void {
+    private _mustUpdateViewport(renderPass: GPURenderPassEncoder): boolean {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
 
         const x = this._viewportCached.x,
@@ -842,21 +863,24 @@ export class WebGPUEngine extends Engine {
               w = this._viewportCached.z,
               h = this._viewportCached.w;
 
-        if (this._viewportsCurrent[index].x !== x || this._viewportsCurrent[index].y !== y ||
-            this._viewportsCurrent[index].w !== w || this._viewportsCurrent[index].h !== h)
-        {
-            this._viewportsCurrent[index].x = x;
-            this._viewportsCurrent[index].y = y;
-            this._viewportsCurrent[index].w = w;
-            this._viewportsCurrent[index].h = h;
+        return this._viewportsCurrent[index].x !== x || this._viewportsCurrent[index].y !== y ||
+            this._viewportsCurrent[index].w !== w || this._viewportsCurrent[index].h !== h;
+    }
 
-            renderPass.setViewport(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h), 0, 1);
+    private _applyViewport(renderPass: GPURenderPassEncoder): void {
+        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
 
-            if (this.dbgVerboseLogsForFirstFrames) {
-                if ((this as any)._count === undefined) { (this as any)._count = 0; }
-                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    console.log("frame #" + (this as any)._count + " - viewport applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
-                }
+        this._viewportsCurrent[index].x = this._viewportCached.x;
+        this._viewportsCurrent[index].y = this._viewportCached.y;
+        this._viewportsCurrent[index].w = this._viewportCached.z;
+        this._viewportsCurrent[index].h = this._viewportCached.w;
+
+        renderPass.setViewport(Math.floor(this._viewportCached.x), Math.floor(this._viewportCached.y), Math.floor(this._viewportCached.z), Math.floor(this._viewportCached.w), 0, 1);
+
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
+                console.log("frame #" + (this as any)._count + " - viewport applied - (", this._viewportCached.x, this._viewportCached.y, this._viewportCached.z, this._viewportCached.w, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
             }
         }
     }
@@ -879,7 +903,7 @@ export class WebGPUEngine extends Engine {
         this._scissorsCurrent[index].h = 0;
     }
 
-    private _applyScissor(renderPass: GPURenderPassEncoder): void {
+    private _mustUpdateScissor(renderPass: GPURenderPassEncoder): boolean {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
 
         const x = this._scissorCached.x,
@@ -887,21 +911,24 @@ export class WebGPUEngine extends Engine {
               w = this._scissorCached.z,
               h = this._scissorCached.w;
 
-        if (this._scissorsCurrent[index].x !== x || this._scissorsCurrent[index].y !== y ||
-            this._scissorsCurrent[index].w !== w || this._scissorsCurrent[index].h !== h)
-        {
-            this._scissorsCurrent[index].x = x;
-            this._scissorsCurrent[index].y = y;
-            this._scissorsCurrent[index].w = w;
-            this._scissorsCurrent[index].h = h;
+        return this._scissorsCurrent[index].x !== x || this._scissorsCurrent[index].y !== y ||
+            this._scissorsCurrent[index].w !== w || this._scissorsCurrent[index].h !== h;
+    }
 
-            renderPass.setScissorRect(x, y, w, h);
+    private _applyScissor(renderPass: GPURenderPassEncoder): void {
+        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
 
-            if (this.dbgVerboseLogsForFirstFrames) {
-                if ((this as any)._count === undefined) { (this as any)._count = 0; }
-                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    console.log("frame #" + (this as any)._count + " - scissor applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
-                }
+        this._scissorsCurrent[index].x = this._scissorCached.x;
+        this._scissorsCurrent[index].y = this._scissorCached.y;
+        this._scissorsCurrent[index].w = this._scissorCached.z;
+        this._scissorsCurrent[index].h = this._scissorCached.w;
+
+        renderPass.setScissorRect(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w);
+
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
+                console.log("frame #" + (this as any)._count + " - scissor applied - (", this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
             }
         }
     }
@@ -936,16 +963,19 @@ export class WebGPUEngine extends Engine {
         this._stencilRefsCurrent[index] = -1;
     }
 
+    
+    private _mustUpdateStencilRef(renderPass: GPURenderPassEncoder): boolean {
+        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
+        return this._stencilState.stencilFuncRef !== this._stencilRefsCurrent[index];
+    }
+
     /** @hidden */
-    public _applyStencilRef(renderPass: GPURenderPassEncoder, force = false): void {
+    public _applyStencilRef(renderPass: GPURenderPassEncoder): void {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
 
-        const stencilRef = this._stencilState.stencilFuncRef;
+        this._stencilRefsCurrent[index] = this._stencilState.stencilFuncRef;
 
-        if (stencilRef !== this._stencilRefsCurrent[index] || force) {
-            this._stencilRefsCurrent[index] = stencilRef;
-            renderPass.setStencilReference(stencilRef);
-        }
+        renderPass.setStencilReference(this._stencilState.stencilFuncRef);
     }
 
     private _blendColorsCurrent: Array<Array<Nullable<number>>> = [[null, null, null, null], [null, null, null, null]];
@@ -957,23 +987,26 @@ export class WebGPUEngine extends Engine {
         this._blendColorsCurrent[index][3] = null;
     }
 
-    private _applyBlendColor(renderPass: GPURenderPassEncoder, force = false): void {
+    private _mustUpdateBlendColor(renderPass: GPURenderPassEncoder): boolean {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
-
         const colorBlend = this._alphaState._blendConstants;
 
-        if (colorBlend[0] !== this._blendColorsCurrent[index][0] ||
-            colorBlend[1] !== this._blendColorsCurrent[index][1] ||
-            colorBlend[2] !== this._blendColorsCurrent[index][2] ||
-            colorBlend[3] !== this._blendColorsCurrent[index][3] || force)
-        {
-            this._blendColorsCurrent[index][0] = colorBlend[0];
-            this._blendColorsCurrent[index][1] = colorBlend[1];
-            this._blendColorsCurrent[index][2] = colorBlend[2];
-            this._blendColorsCurrent[index][3] = colorBlend[3];
+        return  colorBlend[0] !== this._blendColorsCurrent[index][0] ||
+                colorBlend[1] !== this._blendColorsCurrent[index][1] ||
+                colorBlend[2] !== this._blendColorsCurrent[index][2] ||
+                colorBlend[3] !== this._blendColorsCurrent[index][3];
+    }
 
-            renderPass.setBlendColor(colorBlend as GPUColor);
-        }
+    private _applyBlendColor(renderPass: GPURenderPassEncoder): void {
+        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
+        const colorBlend = this._alphaState._blendConstants;
+
+        this._blendColorsCurrent[index][0] = colorBlend[0];
+        this._blendColorsCurrent[index][1] = colorBlend[1];
+        this._blendColorsCurrent[index][2] = colorBlend[2];
+        this._blendColorsCurrent[index][3] = colorBlend[3];
+
+        renderPass.setBlendColor(colorBlend as GPUColor);
     }
 
     /**
@@ -1023,9 +1056,15 @@ export class WebGPUEngine extends Engine {
     }
 
     private _clearFullQuad(clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
+        const renderPass = this._getCurrentRenderPass();
+
+        this._cacheBundles.executeBundles(renderPass);
+
         this._clearQuad.setColorFormat(this._colorFormat);
         this._clearQuad.setDepthStencilFormat(this._depthTextureFormat);
-        this._clearQuad.clear(this._getCurrentRenderPass(), clearColor, clearDepth, clearStencil, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
+        this._clearQuad.clear(renderPass, clearColor, clearDepth, clearStencil, this.currentSampleCount);
+
+        this._applyStencilRef(renderPass);
     }
 
     //------------------------------------------------------------------------------
@@ -1192,7 +1231,6 @@ export class WebGPUEngine extends Engine {
      */
     public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {[kind: string]: Nullable<VertexBuffer>}): void {
         this._currentIndexBuffer = indexBuffer;
-        this._currentVertexBuffers = vertexBuffers;
         this._currentOverrideVertexBuffers = overrideVertexBuffers ?? null;
         this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer, this._currentOverrideVertexBuffers);
     }
@@ -2895,7 +2933,7 @@ export class WebGPUEngine extends Engine {
     public endFrame() {
         this._endMainRenderPass();
 
-        this.flushFramebuffer();
+        this.flushFramebuffer(false);
 
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
@@ -2928,6 +2966,7 @@ export class WebGPUEngine extends Engine {
 
         this._cacheRenderPipeline.endFrame();
         this._cacheBindGroups.endFrame();
+        this._cacheBundles.endFrame();
 
         this._pendingDebugCommands.length = 0;
 
@@ -2949,16 +2988,15 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Force a WebGPU flush (ie. a flush of all waiting commands)
+     * @param reopenPass true to reopen at the end of the function the pass that was active when entering the function
      */
-    public flushFramebuffer(): void {
+    public flushFramebuffer(reopenPass = true): void {
         // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
         let currentPassType = 0; // 0 if no pass, 1 for rtt, 2 for main pass
         if (this._currentRenderPass) {
             if (this._currentRenderTarget) {
-                if (this._currentRenderPass) {
-                    currentPassType = 1;
-                    this._endRenderTargetRenderPass();
-                }
+                currentPassType = 1;
+                this._endRenderTargetRenderPass();
             } else {
                 currentPassType = 2;
                 this._endMainRenderPass();
@@ -2978,10 +3016,12 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
         // restart the render pass
-        if (currentPassType === 1) {
-            this._startRenderTargetRenderPass(this._currentRenderTarget!, false, null, false, false);
-        } else if (currentPassType === 2) {
-            this._startMainRenderPass(false);
+        if (reopenPass) {
+            if (currentPassType === 1) {
+                this._startRenderTargetRenderPass(this._currentRenderTarget!, false, null, false, false);
+            } else if (currentPassType === 2) {
+                this._startMainRenderPass(false);
+            }
         }
     }
 
@@ -3094,6 +3134,7 @@ export class WebGPUEngine extends Engine {
 
     private _endRenderTargetRenderPass() {
         if (this._currentRenderPass) {
+            this._cacheBundles.executeBundles(this._currentRenderPass);
             this._currentRenderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) { (this as any)._count = 0; }
@@ -3173,6 +3214,7 @@ export class WebGPUEngine extends Engine {
 
     private _endMainRenderPass(): void {
         if (this._mainRenderPassWrapper.renderPass !== null) {
+            this._cacheBundles.executeBundles(this._mainRenderPassWrapper.renderPass);
             this._mainRenderPassWrapper.renderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) { (this as any)._count = 0; }
@@ -3549,7 +3591,7 @@ export class WebGPUEngine extends Engine {
         this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
     }
 
-    private _getBindGroupsToRender(): GPUBindGroup[] {
+    private _getBindGroupsToRender(): WebGPUIdentifiedBindGroups {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
         if (webgpuPipelineContext.uniformBuffer) {
@@ -3575,22 +3617,13 @@ export class WebGPUEngine extends Engine {
         return bindGroups;
     }
 
-    private _bindVertexInputs(): void {
-        const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
-
+    private _bindVertexInputs(renderPass: GPURenderPassEncoder | GPURenderBundleEncoder, vertexBuffers: VertexBuffer[]): void {
         if (this._currentIndexBuffer) {
             renderPass.setIndexBuffer(this._currentIndexBuffer.underlyingResource, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, 0);
         }
 
-        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-        const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
-        for (var index = 0; index < attributes.length; index++) {
-            let vertexBuffer = (this._currentOverrideVertexBuffers && this._currentOverrideVertexBuffers[attributes[index]]) ?? this._currentVertexBuffers![attributes[index]];
-            if (!vertexBuffer) {
-                // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
-                // So we must bind a dummy buffer when we are not given one for a specific attribute
-                vertexBuffer = this._emptyVertexBuffer;
-            }
+        for (var index = 0; index < vertexBuffers.length; index++) {
+            let vertexBuffer = vertexBuffers[index];
 
             const buffer = vertexBuffer.getBuffer();
             if (buffer) {
@@ -3599,42 +3632,67 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    private _setRenderBindGroups(bindGroups: GPUBindGroup[]): void {
-        // TODO WEBGPU. Only set groups if changes happened.
-        const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
+    private _setRenderBindGroups(bindGroups: GPUBindGroup[], renderPass: GPURenderPassEncoder | GPURenderBundleEncoder): void {
         for (let i = 0; i < bindGroups.length; i++) {
             renderPass.setBindGroup(i, bindGroups[i]);
         }
     }
 
-    private _setRenderPipeline(fillMode: number): void {
+    private _draw(drawType: number, fillMode: number, start: number, count: number, instancesCount: number): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
+        const isBundleEncoder = renderPass === this._bundleEncoder;
+
+        const mustUpdateViewport = isBundleEncoder ? false : this._mustUpdateViewport(renderPass as GPURenderPassEncoder);
+        const mustUpdateScissor = isBundleEncoder ? false : this._mustUpdateScissor(renderPass as GPURenderPassEncoder);
+        const mustUpdateStencilRef = isBundleEncoder || !this._stencilState.stencilTest ? false : this._mustUpdateStencilRef(renderPass as GPURenderPassEncoder);
+        const mustUpdateBlendColor = isBundleEncoder || !this._alphaState.alphaBlend ? false : this._mustUpdateBlendColor(renderPass as GPURenderPassEncoder);
+
+        let mustUpdateStates = mustUpdateViewport || mustUpdateScissor || mustUpdateStencilRef || mustUpdateBlendColor;
 
         let pipeline = !this.compatibilityMode ? this._currentDrawContext?.fastRenderPipeline : null;
         if (!pipeline) {
-            pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
+            pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount);
         }
-        renderPass.setPipeline(pipeline);
-
         if (!this.compatibilityMode && this._currentDrawContext) {
             this._currentDrawContext.fastRenderPipeline = pipeline;
         }
 
-        this._bindVertexInputs();
+        const identifiedBindGroups = this._getBindGroupsToRender();
 
-        const bindGroups = this._getBindGroupsToRender();
-        this._setRenderBindGroups(bindGroups);
+        if (mustUpdateStates || this._cacheBundles.disabled) {
+            if (!isBundleEncoder) {
+                this._cacheBundles.executeBundles(renderPass as GPURenderPassEncoder);
+            }
 
-        if (renderPass !== this._bundleEncoder) {
-            this._applyViewport(renderPass as GPURenderPassEncoder);
-            this._applyScissor(renderPass as GPURenderPassEncoder);
-            if (this._stencilState.stencilTest) {
+            renderPass.setPipeline(pipeline);
+
+            this._bindVertexInputs(renderPass, this._cacheRenderPipeline.vertexBuffers);
+
+            this._setRenderBindGroups(identifiedBindGroups.bindGroups, renderPass);
+
+            if (mustUpdateViewport) {
+                this._applyViewport(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateScissor) {
+                this._applyScissor(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateStencilRef) {
                 this._applyStencilRef(renderPass as GPURenderPassEncoder);
             }
-            if (this._alphaState.alphaBlend) {
+            if (mustUpdateBlendColor) {
                 this._applyBlendColor(renderPass as GPURenderPassEncoder);
             }
+
+            if (drawType === 0) {
+                renderPass.drawIndexed(count, instancesCount || 1, start, 0, 0);
+            } else {
+                renderPass.draw(count, instancesCount || 1, start, 0);
+            }
+        } else {
+            this._cacheBundles.recordBundle(drawType, start, count, instancesCount, pipeline, identifiedBindGroups, this._currentIndexBuffer, this._cacheRenderPipeline.vertexBuffers);
         }
+
+        this._reportDrawCall();
     }
 
     /**
@@ -3645,12 +3703,7 @@ export class WebGPUEngine extends Engine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount: number = 1): void {
-        const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
-
-        this._setRenderPipeline(fillMode);
-
-        renderPass.drawIndexed(indexCount, instancesCount || 1, indexStart, 0, 0);
-        this._reportDrawCall();
+        this._draw(0, fillMode, indexStart, indexCount, instancesCount);
     }
 
     /**
@@ -3661,14 +3714,8 @@ export class WebGPUEngine extends Engine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
-        const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
-
         this._currentIndexBuffer = null;
-
-        this._setRenderPipeline(fillMode);
-
-        renderPass.draw(verticesCount, instancesCount || 1, verticesStart, 0);
-        this._reportDrawCall();
+        this._draw(1, fillMode, verticesStart, verticesCount, instancesCount);
     }
 
     //------------------------------------------------------------------------------
