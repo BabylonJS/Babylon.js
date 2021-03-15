@@ -361,7 +361,7 @@ export class Control {
         if (this._isHighlighted === value) {
              return;
         }
-    
+
         this._isHighlighted = value;
         this._markAsDirty();
     }
