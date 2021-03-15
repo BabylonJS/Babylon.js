@@ -521,8 +521,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     /** @hidden */
     public _getGlobalViewport(scene: Scene): Viewport {
-        var engine = scene.getEngine();
-        return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+        var size = this.getSize();
+        return this._fullscreenViewport.toGlobal(size.width, size.height);
     }
     /**
     * Get screen coordinates for a vector3
