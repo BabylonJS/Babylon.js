@@ -3689,7 +3689,7 @@ export class WebGPUEngine extends Engine {
                 renderPass.draw(count, instancesCount || 1, start, 0);
             }
         } else {
-            this._cacheBundles.recordBundle(drawType, start, count, instancesCount, pipeline, identifiedBindGroups, this._currentIndexBuffer, this._cacheRenderPipeline.vertexBuffers);
+            this._cacheBundles.recordBundle(drawType, start, count, instancesCount, pipeline, identifiedBindGroups, this._currentIndexBuffer, this._cacheRenderPipeline.vertexBuffers, this._cacheRenderPipeline.colorFormats);
         }
 
         this._reportDrawCall();

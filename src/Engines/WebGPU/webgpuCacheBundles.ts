@@ -41,7 +41,7 @@ export class WebGPUCacheBundles {
     }
 
     public recordBundle(drawType: number, start: number, count: number, instancesCount: number,
-            pipeline: GPURenderPipeline, identifiedBindGroups: WebGPUIdentifiedBindGroups, indexBuffer: Nullable<DataBuffer>, vertexBuffers: VertexBuffer[]): boolean
+            pipeline: GPURenderPipeline, identifiedBindGroups: WebGPUIdentifiedBindGroups, indexBuffer: Nullable<DataBuffer>, vertexBuffers: VertexBuffer[], colorFormats: GPUTextureFormat[]): boolean
     {
         if (this.disabled) {
             return false;
@@ -54,6 +54,7 @@ export class WebGPUCacheBundles {
         const idBindGroups = identifiedBindGroups.id;
         const idIndexBuffer = indexBuffer?.uniqueId ?? 0;
 
+        // note: we have 53 usable bits in a js number as all integers can be represented exactly up to 2^53
         const id0 = drawType + start * 2 + instancesCount * (2**27);
         const id1 = idBindGroups + idPipeline * (2**26);
         const id2 = idIndexBuffer + (vertexBuffers.length > 0 ? vertexBuffers[0].uniqueId * (2**26) : 0);
@@ -104,7 +105,7 @@ export class WebGPUCacheBundles {
         }
 
         const bundleEncoder = this._device.createRenderBundleEncoder({
-            colorFormats: [ this._engine._colorFormat ],
+            colorFormats,
             depthStencilFormat: this._engine._depthTextureFormat,
             sampleCount: this._engine.currentSampleCount,
         });
