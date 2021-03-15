@@ -4,10 +4,14 @@
     background-color: white;
     display: grid;    
     grid-template-columns: 100%;
-    grid-template-rows: 50% 50px 60px 40px 1fr;
+    grid-template-rows: 50% 50px 60px 40px 1fr auto;
     font-family: "acumin-pro-condensed";
     font-weight: normal;   
     font-size: 14px;
+
+    &.with-hints {        
+        height: 380px;
+    }
     
     .color-picker-saturation {
         grid-row: 1;
@@ -177,5 +181,15 @@
                 width: 70px;
             }
         }
+    }
+
+    .color-picker-warning {
+        color: black;
+        font-size: 11px;
+        padding: 4px;
+        justify-self: left;
+        align-self: center;
+        grid-row: 6;
+        grid-column: 1;
     }
 }
