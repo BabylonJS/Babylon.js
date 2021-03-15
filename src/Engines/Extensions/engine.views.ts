@@ -139,7 +139,7 @@ Engine.prototype._renderViews = function() {
         // Set sizes
         const width = Math.floor(canvas.clientWidth / this._hardwareScalingLevel);
         const height = Math.floor(canvas.clientHeight / this._hardwareScalingLevel);
-        
+
         const dimsChanged =
             width !== canvas.width || parent.width !== canvas.width ||
             height !== canvas.height || parent.height !== canvas.height;
