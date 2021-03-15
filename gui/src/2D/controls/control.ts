@@ -356,7 +356,7 @@ export class Control {
     public get isHighlighted(): boolean {
         return this._isHighlighted;
     }
-    
+
     public set isHighlighted(value: boolean) {
         if (this._isHighlighted === value) {
              return;
