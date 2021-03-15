@@ -323,7 +323,8 @@ export class ThinEngine {
     /** @hidden */
     public _badDesktopOS = false;
 
-    protected _hardwareScalingLevel: number;
+    /** @hidden */
+    public _hardwareScalingLevel: number;
     /** @hidden */
     public _caps: EngineCapabilities;
     /** @hidden */
