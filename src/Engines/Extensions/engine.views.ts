@@ -137,14 +137,17 @@ Engine.prototype._renderViews = function() {
         }
 
         // Set sizes
+        const width = Math.floor(canvas.clientWidth / this._hardwareScalingLevel);
+        const height = Math.floor(canvas.clientHeight / this._hardwareScalingLevel);
+
         const dimsChanged =
-            canvas.clientWidth !== canvas.width || parent.width !== canvas.width ||
-            canvas.clientHeight !== canvas.height || parent.height !== canvas.height;
+            width !== canvas.width || parent.width !== canvas.width ||
+            height !== canvas.height || parent.height !== canvas.height;
         if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
-            parent.width = canvas.clientWidth;
-            parent.height = canvas.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+            parent.width = width;
+            parent.height = height;
             this.resize(true);
         }
 
