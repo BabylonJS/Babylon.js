@@ -43069,7 +43069,7 @@ declare module BABYLON {
          * @param options defines further options to be sent to the getContext() function
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
         /**
          * Shared initialization across engines types.
          * @param canvas The canvas associated with this instance of the engine.
