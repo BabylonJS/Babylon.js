@@ -194,9 +194,8 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
                 #ifdef ${refractionBlock?._defineLinearSpecularRefraction ?? "IGNORE"}
                     roughness,
-                #else
-                    alphaG,
                 #endif
+                alphaG,
                 #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
                     ${refractionBlock?._cubeSamplerName ?? ""},
                 #else

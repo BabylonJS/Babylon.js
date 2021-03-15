@@ -487,9 +487,8 @@ void main(void) {
             #endif
             #ifdef SS_LINEARSPECULARREFRACTION
                 roughness,
-            #else
-                alphaG,
             #endif
+            alphaG,
             refractionSampler,
             #ifndef LODBASEDMICROSFURACE
                 refractionSamplerLow,
