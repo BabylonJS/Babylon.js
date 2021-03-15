@@ -95,6 +95,15 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("vRefractionPosition");
+        state._excludeVariableName("vRefractionSize");
+    }
+
+    /**
      * Gets the current class name
      * @returns the class name
      */
@@ -183,6 +192,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         defines.setValue("SS_LINKREFRACTIONTOTRANSPARENCY", this.linkRefractionWithTransparency, true);
         defines.setValue("SS_GAMMAREFRACTION", refractionTexture!.gammaSpace, true);
         defines.setValue("SS_RGBDREFRACTION", refractionTexture!.isRGBD, true);
+        defines.setValue("SS_USE_LOCAL_REFRACTIONMAP_CUBIC", (<any>refractionTexture).boundingBoxSize ? true : false, true);
     }
 
     public isReady() {
@@ -228,6 +238,12 @@ export class RefractionBlock extends NodeMaterialBlock {
         const width = refractionTexture.getSize().width;
 
         effect.setFloat2(this._vRefractionFilteringInfoName, width, Scalar.Log2(width));
+
+        if ((<any>refractionTexture).boundingBoxSize) {
+            let cubeTexture = <CubeTexture>refractionTexture;
+            effect.setVector3("vRefractionPosition", cubeTexture.boundingBoxPosition);
+            effect.setVector3("vRefractionSize", cubeTexture.boundingBoxSize);
+        }
     }
 
     /**
@@ -293,6 +309,9 @@ export class RefractionBlock extends NodeMaterialBlock {
         this._vRefractionFilteringInfoName = state._getFreeVariableName("vRefractionFilteringInfo");
 
         state._emitUniformFromString(this._vRefractionFilteringInfoName, "vec2");
+
+        state._emitUniformFromString("vRefractionPosition", "vec3");
+        state._emitUniformFromString("vRefractionSize", "vec3");
 
         return code;
     }

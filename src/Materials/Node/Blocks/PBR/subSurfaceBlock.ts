@@ -215,6 +215,10 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #ifdef REALTIME_FILTERING
                     ${refractionBlock?._vRefractionFilteringInfoName ?? ""},
                 #endif
+                #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+                    vRefractionPosition,
+                    vRefractionSize,
+                #endif
             #endif
             #ifdef SS_TRANSLUCENCY
                 ${translucencyDiffusionDistance},
