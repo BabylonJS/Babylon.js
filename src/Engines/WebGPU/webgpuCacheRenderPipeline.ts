@@ -157,7 +157,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private _depthBiasClamp: number;
     private _depthBiasSlopeScale: number;
     private _colorFormat: number;
-    private _webgpuColorFormat: GPUTextureFormat;
+    private _webgpuColorFormat: GPUTextureFormat[];
     private _mrtAttachments1: number;
     private _mrtAttachments2: number;
     private _mrtFormats: GPUTextureFormat[];
@@ -204,6 +204,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this.setClampDepth(false);
         //this.setDepthBias(0);
         //this.setDepthBiasClamp(0);
+        this._webgpuColorFormat = [WebGPUConstants.TextureFormat.BGRA8Unorm];
         this.setColorFormat(WebGPUConstants.TextureFormat.BGRA8Unorm);
         this.setMRTAttachments([], []);
         this.setAlphaBlendEnabled(false);
@@ -219,6 +220,10 @@ export abstract class WebGPUCacheRenderPipeline {
     protected abstract _setRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
 
     public vertexBuffers: VertexBuffer[];
+
+    public get colorFormats(): GPUTextureFormat[] {
+        return this._mrtAttachments1 > 0 ? this._mrtFormats : this._webgpuColorFormat;
+    }
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline {
         if (this.disabled) {
@@ -338,7 +343,7 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     public setColorFormat(format: GPUTextureFormat): void {
-        this._webgpuColorFormat = format;
+        this._webgpuColorFormat[0] = format;
         this._colorFormat = textureFormatToIndex[format];
     }
 
@@ -360,7 +365,7 @@ export abstract class WebGPUCacheRenderPipeline {
             const texture = textureArray[index - 1];
             const gpuWrapper = texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-            this._mrtFormats[numRT] = gpuWrapper?.format ?? this._webgpuColorFormat;
+            this._mrtFormats[numRT] = gpuWrapper?.format ?? this._webgpuColorFormat[0];
 
             bits[indexBits] += textureFormatToIndex[this._mrtFormats[numRT]] << mask;
             mask += 6;
@@ -940,7 +945,7 @@ export abstract class WebGPUCacheRenderPipeline {
             }
         } else {
             colorStates.push({
-                format: this._webgpuColorFormat,
+                format: this._webgpuColorFormat[0],
                 alphaBlend,
                 colorBlend,
                 writeMask: this._writeMask,
