@@ -37,6 +37,7 @@ import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
+import { ICanvas } from "./ICanvas";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -4769,5 +4770,21 @@ export class ThinEngine {
         }
 
         return document;
+    }
+
+    /**
+     * Create a canvas
+     * @param width width
+     * @param height height
+     * @return ICanvas interface
+     */
+    public createCanvas(width: number, height: number) : ICanvas {
+        if (typeof document === "undefined") {
+            return <ICanvas>(<any>(new OffscreenCanvas(width, height)));
+        }
+        let canvas = <ICanvas>(<any>(document.createElement("canvas")));
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
     }
 }

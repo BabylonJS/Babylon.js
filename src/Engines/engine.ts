@@ -25,8 +25,6 @@ import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
-import { CanvasGenerator } from '../Misc/canvasGenerator';
-import { ICanvas } from "./ICanvas";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -310,7 +308,7 @@ export class Engine extends ThinEngine {
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
     public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        var canvas = CanvasGenerator.CreateCanvas(bufferWidth, bufferHeight);
+        var canvas = this.createCanvas(bufferWidth, bufferHeight);
         var context = canvas.getContext("2d");
 
         if (!context) {
@@ -323,18 +321,6 @@ export class Engine extends ThinEngine {
         // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
         var buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
         return buffer;
-    }
-
-    /**
-     * Create a canvas
-     * @param width width
-     * @param height height
-     */
-    public createCanvas(width: number, height: number) : ICanvas {
-        let canvas = <ICanvas>(<any>(document.createElement("canvas")));
-        canvas.width = width;
-        canvas.height = height;
-        return canvas;
     }
 
     /**

@@ -5,7 +5,7 @@ import { ISize } from "../../Maths/math.size";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.dynamicTexture";
-import { CanvasGenerator } from '../../Misc/canvasGenerator';
+import { ICanvas } from "../../Engines/ICanvas";
 
 /**
  * A class extending Texture allowing drawing on a texture
@@ -13,7 +13,7 @@ import { CanvasGenerator } from '../../Misc/canvasGenerator';
  */
 export class DynamicTexture extends Texture {
     private _generateMipMaps: boolean;
-    private _canvas: HTMLCanvasElement | OffscreenCanvas;
+    private _canvas: ICanvas;
     private _context: CanvasRenderingContext2D;
 
     /**
@@ -45,7 +45,7 @@ export class DynamicTexture extends Texture {
             this._canvas = options;
             this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
         } else {
-            this._canvas = CanvasGenerator.CreateCanvas(1, 1);
+            this._canvas = engine.createCanvas(1, 1);
 
             if (options.width || options.width === 0) {
                 this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
@@ -134,7 +134,7 @@ export class DynamicTexture extends Texture {
      * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
      */
     public update(invertY?: boolean, premulAlpha = false): void {
-        this._getEngine()!.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined);
+        this._getEngine()!.updateDynamicTexture(this._texture, <HTMLCanvasElement>(this._canvas), invertY === undefined ? true : invertY, premulAlpha, this._format || undefined);
     }
 
     /**
@@ -209,7 +209,7 @@ export class DynamicTexture extends Texture {
         }
 
         const serializationObject = super.serialize();
-        if (this._IsCanvasElement(this._canvas)) {
+        if (this._IsCanvasElement(<HTMLCanvasElement>(this._canvas))) {
             serializationObject.base64String = (this._canvas as HTMLCanvasElement).toDataURL();
         }
 

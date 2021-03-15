@@ -2226,9 +2226,16 @@ export class NativeEngine extends Engine {
      * Create a canvas
      * @param width width
      * @param height height
+     * @return ICanvas interface
      */
     public createCanvas(width: number, height: number) : ICanvas {
-        throw new Error("CreateCanvas not implemented.");
+        if (_native.NativeCanvas) {
+            const canvas = new _native.NativeCanvas();
+            canvas.width = width;
+            canvas.height = height;
+            return canvas;
+        }
+        throw new Error("Native Canvas plugin not available.");
     }
 
     /** @hidden */
