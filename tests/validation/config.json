@@ -695,6 +695,11 @@
             "referenceImage": "gltfExtensionKhrTextureTransform.png"
         },
         {
+            "title": "GLTF Extension KHR_materials_volume",
+            "playgroundId": "#YG3BBF#16",
+            "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
+        },
+        {
             "title": "Asset Containers",
             "playgroundId": "#P3U079#19",
             "referenceImage": "assetContainer.png"

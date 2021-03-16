@@ -63,6 +63,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         super(props);
         props.globalState.onSelectionChangedObservable.add((selection) => {
             if (!selection) {
+                this.changeSelectionHighlight(false);
                 this._selectedGuiNodes = [];
             } else {
                 if (selection instanceof Control) {
@@ -73,6 +74,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     } else {
                         this._selectedGuiNodes = [selection];
                     }
+                    this.changeSelectionHighlight(true);
                 }
             }
         });
@@ -104,6 +106,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     async loadFromSnippet(snippedID: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
+    }
+
+    changeSelectionHighlight(value: boolean)
+    {
+        this.selectedGuiNodes.forEach(node => {
+            node.isHighlighted = value;
+        });
     }
 
     resizeGuiTexture(newvalue: Vector2) {
@@ -169,6 +178,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             default:
                 break;
         }
+        guiControl.highlightLineWidth = 5;
     }
 
     public isSelected(value: boolean, guiNode: Control) {

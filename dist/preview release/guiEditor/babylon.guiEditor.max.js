@@ -41321,6 +41321,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.isUp = true;
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
+                _this.changeSelectionHighlight(false);
                 _this._selectedGuiNodes = [];
             }
             else {
@@ -41333,6 +41334,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     else {
                         _this._selectedGuiNodes = [selection];
                     }
+                    _this.changeSelectionHighlight(true);
                 }
             }
         });
@@ -41383,6 +41385,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         return [2 /*return*/];
                 }
             });
+        });
+    };
+    WorkbenchComponent.prototype.changeSelectionHighlight = function (value) {
+        this.selectedGuiNodes.forEach(function (node) {
+            node.isHighlighted = value;
         });
     };
     WorkbenchComponent.prototype.resizeGuiTexture = function (newvalue) {
@@ -41440,6 +41447,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             default:
                 break;
         }
+        guiControl.highlightLineWidth = 5;
     };
     WorkbenchComponent.prototype.isSelected = function (value, guiNode) {
         this.globalState.onSelectionChangedObservable.notifyObservers(guiNode);

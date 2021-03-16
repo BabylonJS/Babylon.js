@@ -51,6 +51,7 @@
 - PrePass can now be used in `RenderTargets` speeding up effects like SSAO2 or MotionBlur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added support for local cube map to refraction cube texture ([Popov72](https://github.com/Popov72))
+- Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 
 ### Meshes
 
@@ -78,6 +79,7 @@
 - Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
 - Added parenting system ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
+- Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -106,6 +108,7 @@
 
 - Exposed `scaleDragSpeed` and added `axisFactor` for BoundingBoxGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Provide additional attributes `_customRotationQuaternion` to customize the posture of the gizmo ([ecojust](https://github.com/ecojust))
+- Exposed `scaleRatio` for GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Viewer
 
@@ -159,6 +162,9 @@
 - Fix issue with multi-views when using a hardware scaling level different from 1 ([Popov72](https://github.com/Popov72))
 - Fix thin instances + animated bones not rendered in the depth renderer ([Popov72](https://github.com/Popov72))
 - Fix issue with WebXR teleportation logic which would cause positional headlocking on teleporation frames ([syntheticmagus](https://github.com/syntheticmagus))
+- Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))
+- Fix the strength input parameter of the NME `PerturbNormal` block that was handled as a 1/strength value ([Popov72](https://github.com/Popov72))
+- Fix an issue with audio engine not being garbage-collected when engine is disposed ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
