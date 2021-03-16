@@ -736,6 +736,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/colorPicker
      */
     export interface IColorPickerProps {
         color: Color3 | Color4;
+        linearhint?: boolean;
         debugMode?: boolean;
         onColorChanged?: (color: Color3 | Color4) => void;
     }
@@ -2124,6 +2125,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/colorPickerCompon
     import { Color4, Color3 } from 'babylonjs/Maths/math.color';
     export interface IColorPickerComponentProps {
         value: Color4 | Color3;
+        linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
     }
     interface IColorPickerComponentState {
@@ -3536,6 +3538,7 @@ declare module NODEEDITOR {
      */
     export interface IColorPickerProps {
         color: BABYLON.Color3 | BABYLON.Color4;
+        linearhint?: boolean;
         debugMode?: boolean;
         onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
     }
@@ -4729,6 +4732,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     export interface IColorPickerComponentProps {
         value: BABYLON.Color4 | BABYLON.Color3;
+        linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
     }
     interface IColorPickerComponentState {
