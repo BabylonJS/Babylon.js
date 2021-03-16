@@ -49,12 +49,13 @@ export class ConditionalBlock extends NodeMaterialBlock {
 
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerInput("b", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerInput("true", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("false", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("true", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("false", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._linkConnectionTypes(2, 3);
         this._outputs[0]._typeConnectionSource = this._inputs[2];
+        this._outputs[0]._defaultConnectionPointType = NodeMaterialBlockConnectionPointTypes.Float;
     }
 
     /**
@@ -105,41 +106,44 @@ export class ConditionalBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
+        let trueStatement = this.true.isConnected ? this.true.associatedVariableName : "1.0";
+        let falseStatement = this.false.isConnected ? this.false.associatedVariableName : "0.0";
+
         switch (this.condition) {
             case ConditionalBlockConditions.Equal: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} == ${this.b.associatedVariableName}  ? ${this.true.associatedVariableName} : ${this.false.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} == ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.NotEqual: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} != ${this.b.associatedVariableName}  ? ${this.true.associatedVariableName} : ${this.false.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} != ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.LessThan: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} < ${this.b.associatedVariableName}  ? ${this.true.associatedVariableName} : ${this.false.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} < ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.LessOrEqual: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} <= ${this.b.associatedVariableName}  ? ${this.true.associatedVariableName} : ${this.false.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} <= ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.GreaterThan: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} > ${this.b.associatedVariableName}  ? ${this.true.associatedVariableName} : ${this.false.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} > ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.GreaterOrEqual: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} >= ${this.b.associatedVariableName}  ? ${this.true.associatedVariableName} : ${this.false.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} >= ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.Xor: {
-                state.compilationString += this._declareOutput(output, state) + ` = (mod(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 2.0) > 0.0)  ? ${this.true.associatedVariableName} : ${this.false.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = (mod(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 2.0) > 0.0) ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.Or: {
-                state.compilationString += this._declareOutput(output, state) + ` = (min(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 1.0) > 0.0)  ? ${this.true.associatedVariableName} : ${this.false.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = (min(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 1.0) > 0.0) ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.And: {
-                state.compilationString += this._declareOutput(output, state) + ` = (${this.a.associatedVariableName} * ${this.b.associatedVariableName} > 0.0) ? ${this.true.associatedVariableName} : ${this.false.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = (${this.a.associatedVariableName} * ${this.b.associatedVariableName} > 0.0)  ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
         }
