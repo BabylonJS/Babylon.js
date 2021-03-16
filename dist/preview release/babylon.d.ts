@@ -40857,7 +40857,8 @@ declare module BABYLON {
         _badOS: boolean;
         /** @hidden */
         _badDesktopOS: boolean;
-        protected _hardwareScalingLevel: number;
+        /** @hidden */
+        _hardwareScalingLevel: number;
         /** @hidden */
         _caps: EngineCapabilities;
         /** @hidden */
