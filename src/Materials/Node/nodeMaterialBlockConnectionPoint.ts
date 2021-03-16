@@ -169,7 +169,7 @@ export class NodeMaterialConnectionPoint {
         if (this._type === NodeMaterialBlockConnectionPointTypes.BasedOnInput) {
             if (this._typeConnectionSource) {
                 if (!this._typeConnectionSource.isConnected && this._defaultConnectionPointType) {
-                    return this._defaultConnectionPointType;    
+                    return this._defaultConnectionPointType;
                 }
                 return this._typeConnectionSource.type;
             } else if (this._defaultConnectionPointType) {
