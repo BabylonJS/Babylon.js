@@ -392,7 +392,7 @@ export class WebXRHand implements IDisposable {
      * Dispose this Hand object
      */
     public dispose() {
-        this.trackedMeshes.forEach((mesh) => mesh.dispose());
+        this.trackedMeshes.forEach((mesh) => mesh.dispose(true)); // spare anything which might have been parented to one
         this._nearInteractionMesh?.dispose();
         this.onHandMeshReadyObservable.clear();
         // dispose the hand mesh, if it is the default one
