@@ -21273,6 +21273,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -21321,6 +21322,10 @@ declare module BABYLON {
          * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
          */
         useAlbedoToTintRefraction: boolean;
+        /**
+         * When enabled, translucent surfaces will be tinted with the albedo colour (independent of thickness)
+         */
+        useAlbedoToTintTranslucency: boolean;
         private _thicknessTexture;
         /**
          * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
@@ -22287,6 +22292,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;

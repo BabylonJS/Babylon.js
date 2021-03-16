@@ -21273,6 +21273,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -21321,6 +21322,10 @@ declare module BABYLON {
          * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
          */
         useAlbedoToTintRefraction: boolean;
+        /**
+         * When enabled, translucent surfaces will be tinted with the albedo colour (independent of thickness)
+         */
+        useAlbedoToTintTranslucency: boolean;
         private _thicknessTexture;
         /**
          * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
@@ -22287,6 +22292,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -90971,6 +90977,34 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadTranslucentPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1726)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_volume implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadVolumePropertiesAsync;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
