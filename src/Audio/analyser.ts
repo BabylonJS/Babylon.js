@@ -2,7 +2,7 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { IAudioEngine } from "./Interfaces/IAudioEngine";
-import { Tools } from "../Misc";
+import { Tools } from "../Misc/tools";
 
 /**
  * Class used to work with sound analyzer using fast fourier transform (FFT)
