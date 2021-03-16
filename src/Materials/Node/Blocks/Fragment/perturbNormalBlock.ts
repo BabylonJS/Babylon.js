@@ -180,21 +180,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             ]
         });
 
-        let TBNUVName = state._getFreeVariableName("TBNUV");
-        let invTBNName = state._getFreeVariableName("invTBN");
-        let normalScaleName = state._getFreeVariableName("normalScale");
-        let TBNName = state._getFreeVariableName("TBNMat");
-        let uvOffsetName = state._getFreeVariableName("uvOffset");
-
         state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
-                { search: /TBNUV/g, replace: TBNUVName},
-                { search: /invTBN/g, replace: invTBNName},
-                { search: /normalScale/g, replace: normalScaleName},
-                { search: /perturbNormal\(TBNMat,vBumpUV\+uvOffset\)/g, replace: `perturbNormal(TBNMat, ${this.normalMapColor.associatedVariableName})` },
-                { search: /TBNMat/g, replace: TBNName},
-                { search: /uvOffset/g, replace: uvOffsetName},
+                { search: /perturbNormal\(TBN,vBumpUV\+uvOffset\)/g, replace: `perturbNormal(TBN, ${this.normalMapColor.associatedVariableName})` },
                 { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
                 { search: /vBumpUV/g, replace: uv.associatedVariableName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
