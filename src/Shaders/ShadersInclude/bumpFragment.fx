@@ -10,28 +10,28 @@
 	#endif
 
 	#if defined(TANGENT) && defined(NORMAL)
-		mat3 TBN = vTBN;
+		mat3 TBNMat = vTBN;
 	#elif defined(BUMP)
 		// flip the uv for the backface
 		vec2 TBNUV = gl_FrontFacing ? vBumpUV : -vBumpUV;
-		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV);
+		mat3 TBNMat = cotangent_frame(normalW * normalScale, vPositionW, TBNUV);
 	#else
 		// flip the uv for the backface
 		vec2 TBNUV = gl_FrontFacing ? vDetailUV : -vDetailUV;
-		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vec2(1., 1.));
+		mat3 TBNMat = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vec2(1., 1.));
 	#endif
 #elif defined(ANISOTROPIC)
 	#if defined(TANGENT) && defined(NORMAL)
-		mat3 TBN = vTBN;
+		mat3 TBNMat = vTBN;
 	#else
 		// flip the uv for the backface
 		vec2 TBNUV = gl_FrontFacing ? vMainUV1 : -vMainUV1;
-		mat3 TBN = cotangent_frame(normalW, vPositionW, TBNUV, vec2(1., 1.));
+		mat3 TBNMat = cotangent_frame(normalW, vPositionW, TBNUV, vec2(1., 1.));
 	#endif
 #endif
 
 #ifdef PARALLAX
-	mat3 invTBN = transposeMat3(TBN);
+	mat3 invTBN = transposeMat3(TBNMat);
 
 	#ifdef PARALLAXOCCLUSION
 		uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, vBumpUV, vBumpInfos.z);
@@ -52,7 +52,7 @@
 		normalW = normalize(texture2D(bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
 		normalW = normalize(mat3(normalMatrix) * normalW);	
 	#elif !defined(DETAIL)
-		normalW = perturbNormal(TBN, vBumpUV + uvOffset);
+		normalW = perturbNormal(TBNMat, vBumpUV + uvOffset);
     #else
         vec3 bumpNormal = texture2D(bumpSampler, vBumpUV + uvOffset).xyz * 2.0 - 1.0;
         // Reference for normal blending: https://blog.selfshadow.com/publications/blending-in-detail/
@@ -65,9 +65,9 @@
             detailNormal *= vec3(-1.0, -1.0, 1.0);
             vec3 blendedNormal = bumpNormal * dot(bumpNormal, detailNormal) / bumpNormal.z - detailNormal;
         #endif
-        normalW = perturbNormalBase(TBN, blendedNormal, vBumpInfos.y);
+        normalW = perturbNormalBase(TBNMat, blendedNormal, vBumpInfos.y);
 	#endif
 #elif defined(DETAIL)
         detailNormal.xy *= vDetailInfos.z;
-		normalW = perturbNormalBase(TBN, detailNormal, vDetailInfos.z);
+		normalW = perturbNormalBase(TBNMat, detailNormal, vDetailInfos.z);
 #endif
