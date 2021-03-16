@@ -78,6 +78,7 @@
 - Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
 - Added parenting system ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
+- Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -159,6 +160,7 @@
 - Fix issue with multi-views when using a hardware scaling level different from 1 ([Popov72](https://github.com/Popov72))
 - Fix thin instances + animated bones not rendered in the depth renderer ([Popov72](https://github.com/Popov72))
 - Fix issue with WebXR teleportation logic which would cause positional headlocking on teleporation frames ([syntheticmagus](https://github.com/syntheticmagus))
+- Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))
 
 ## Breaking changes
 
