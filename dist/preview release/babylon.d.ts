@@ -73879,14 +73879,16 @@ declare module BABYLON {
         static BaseAssetsUrl: string;
         private _emitterCreationOptions;
         private _emitterNode;
+        private _emitterNodeIsOwned;
         /**
          * Gets the particle system list
          */
         systems: IParticleSystem[];
         /**
-         * Gets the emitter node used with this set
+         * Gets or sets the emitter node used with this set
          */
-        get emitterNode(): Nullable<TransformNode>;
+        get emitterNode(): Nullable<AbstractMesh | Vector3>;
+        set emitterNode(value: Nullable<AbstractMesh | Vector3>);
         /**
          * Creates a new emitter mesh as a sphere
          * @param options defines the options used to create the sphere
