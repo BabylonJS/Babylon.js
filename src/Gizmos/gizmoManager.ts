@@ -40,6 +40,8 @@ export class GizmoManager implements IDisposable {
     private _defaultUtilityLayer: UtilityLayerRenderer;
     private _defaultKeepDepthUtilityLayer: UtilityLayerRenderer;
     private _thickness: number = 1;
+    private _scaleRatio: number = 1;
+
     /** Node Caching for quick lookup */
     private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
     /**
@@ -86,6 +88,21 @@ export class GizmoManager implements IDisposable {
             }
         }
         return hovered;
+    }
+
+    /**
+     * Ratio for the scale of the gizmo (Default: 1)
+     */
+    public set scaleRatio(value: number) {
+        this._scaleRatio = value;
+        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.scaleRatio = value;
+            }
+        });
+    }
+    public get scaleRatio() {
+        return this._scaleRatio;
     }
 
     /**

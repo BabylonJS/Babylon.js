@@ -107,6 +107,7 @@
 
 - Exposed `scaleDragSpeed` and added `axisFactor` for BoundingBoxGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Provide additional attributes `_customRotationQuaternion` to customize the posture of the gizmo ([ecojust](https://github.com/ecojust))
+- Exposed `scaleRatio` for GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Viewer
 
@@ -162,6 +163,7 @@
 - Fix issue with WebXR teleportation logic which would cause positional headlocking on teleporation frames ([syntheticmagus](https://github.com/syntheticmagus))
 - Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))
 - Fix the strength input parameter of the NME `PerturbNormal` block that was handled as a 1/strength value ([Popov72](https://github.com/Popov72))
+- Fix an issue with audio engine not being garbage-collected when engine is disposed ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
