@@ -151,7 +151,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
 
-        let replaceForBumpInfos = this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant ? 
+        let replaceForBumpInfos = this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant ?
             `\r\n#if !defined(NORMALXYSCALE)\r\n1.0/\r\n#endif\r\n${state._emitFloat(this.strength.connectInputBlock!.value)}` :
             `\r\n#if !defined(NORMALXYSCALE)\r\n1.0/\r\n#endif\r\n${this.strength.associatedVariableName}`;
 
