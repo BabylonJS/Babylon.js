@@ -438,7 +438,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
      * @ignorenaming
      */
-    public static audioEngine: IAudioEngine;
+    public static audioEngine: Nullable<IAudioEngine>;
 
     /**
      * Default AudioEngine factory responsible of creating the Audio Engine.
@@ -1823,6 +1823,7 @@ export class Engine extends ThinEngine {
         // Release audio engine
         if (Engine.Instances.length === 1 && Engine.audioEngine) {
             Engine.audioEngine.dispose();
+            Engine.audioEngine = null;
         }
 
         //WebVR
