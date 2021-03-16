@@ -13005,6 +13005,8 @@ declare module BABYLON {
         /** @hidden */
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
+        _defaultConnectionPointType: Nullable<NodeMaterialBlockConnectionPointTypes>;
+        /** @hidden */
         _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
         _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint>;
@@ -40857,7 +40859,8 @@ declare module BABYLON {
         _badOS: boolean;
         /** @hidden */
         _badDesktopOS: boolean;
-        protected _hardwareScalingLevel: number;
+        /** @hidden */
+        _hardwareScalingLevel: number;
         /** @hidden */
         _caps: EngineCapabilities;
         /** @hidden */
@@ -43016,7 +43019,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
          */
-        static audioEngine: IAudioEngine;
+        static audioEngine: Nullable<IAudioEngine>;
         /**
          * Default AudioEngine factory responsible of creating the Audio Engine.
          * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
@@ -59279,6 +59282,7 @@ declare module BABYLON {
         private _defaultUtilityLayer;
         private _defaultKeepDepthUtilityLayer;
         private _thickness;
+        private _scaleRatio;
         /** Node Caching for quick lookup */
         private _gizmoAxisCache;
         /**
@@ -59309,6 +59313,11 @@ declare module BABYLON {
          * True when the mouse pointer is hovering a gizmo mesh
          */
         get isHovered(): boolean;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        set scaleRatio(value: number);
+        get scaleRatio(): number;
         /**
          * Instantiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
@@ -73870,14 +73879,16 @@ declare module BABYLON {
         static BaseAssetsUrl: string;
         private _emitterCreationOptions;
         private _emitterNode;
+        private _emitterNodeIsOwned;
         /**
          * Gets the particle system list
          */
         systems: IParticleSystem[];
         /**
-         * Gets the emitter node used with this set
+         * Gets or sets the emitter node used with this set
          */
-        get emitterNode(): Nullable<TransformNode>;
+        get emitterNode(): Nullable<AbstractMesh | Vector3>;
+        set emitterNode(value: Nullable<AbstractMesh | Vector3>);
         /**
          * Creates a new emitter mesh as a sphere
          * @param options defines the options used to create the sphere
