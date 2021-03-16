@@ -10,6 +10,7 @@ require("./colorPicker.scss");
  */
 export interface IColorPickerProps {
     color: Color3 | Color4,
+    linearhint?: boolean,
     debugMode?: boolean,
     onColorChanged?: (color: Color3 | Color4) => void
 }
@@ -140,7 +141,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         let hasAlpha = this.props.color instanceof Color4;
 
         return (
-            <div className="color-picker-container">
+            <div className={"color-picker-container" + (this.props.linearhint ? " with-hints" : "")}>
                 <div className="color-picker-saturation"  
                     onPointerMove={e => this.onSaturationPointerMove(e)}               
                     onPointerDown={e => this.onSaturationPointerDown(e)}
@@ -212,7 +213,13 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                             this.setState({color: Color3.FromHexString(value)});
                         }}/>            
                     </div>
-                </div>
+                </div>                
+                {
+                    this.props.linearhint &&
+                    <div className="color-picker-warning">
+                        (Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))
+                    </div>
+                }
             </div>
         );
     }
