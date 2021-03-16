@@ -36,6 +36,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
+        this._isUnique = true;
+
         // Vertex
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false);
