@@ -21,7 +21,7 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, sc
     if (parsedData.sounds !== undefined && parsedData.sounds !== null) {
         for (let index = 0, cache = parsedData.sounds.length; index < cache; index++) {
             var parsedSound = parsedData.sounds[index];
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine?.canUseWebAudio) {
                 if (!parsedSound.url) { parsedSound.url = parsedSound.name; }
                 if (!loadedSounds[parsedSound.url]) {
                     loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
