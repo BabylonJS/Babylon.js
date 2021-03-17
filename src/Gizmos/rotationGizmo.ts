@@ -17,6 +17,9 @@ import { GizmoManager } from './gizmoManager';
  * Options for each individual plane rotation gizmo
  */
 export interface RotationGizmoOptions {
+    /**
+     * Color to use for the plane rotation gizmo
+     */
     color?: Color3;
 }
 
