@@ -12,6 +12,14 @@ import { Node } from "../node";
 import { PointerInfo } from "../Events/pointerEvents";
 import { TransformNode } from "../Meshes/transformNode";
 import { GizmoManager } from './gizmoManager';
+
+/**
+ * Options for each individual plane rotation gizmo
+ */
+export interface RotationGizmoOptions {
+    color?:Color3;
+}
+
 /**
  * Gizmo that enables rotating a mesh along 3 axis
  */
@@ -99,14 +107,23 @@ export class RotationGizmo extends Gizmo {
      * @param useEulerRotation Use and update Euler angle instead of quaternion
      * @param thickness display gizmo axis thickness
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1, gizmoManager?: GizmoManager) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1, gizmoManager?: GizmoManager, updateScale?:boolean, xOptions?:RotationGizmoOptions, yOptions?:RotationGizmoOptions, zOptions?:RotationGizmoOptions) {
         super(gizmoLayer);
-        this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, tessellation, this, useEulerRotation, thickness);
-        this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, tessellation, this, useEulerRotation, thickness);
-        this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, tessellation, this, useEulerRotation, thickness);
+        const xColor = xOptions && xOptions.color ? xOptions.color : Color3.Red().scale(0.5);
+        const yColor = yOptions && yOptions.color ? yOptions.color : Color3.Green().scale(0.5);
+        const zColor = zOptions && zOptions.color ? zOptions.color : Color3.Blue().scale(0.5);
+        this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), xColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
+        this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), yColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
+        this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), zColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
 
-        // Relay drag events
+        
+        // Relay drag events and set update scale
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+            //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
+            //currently updateScale is a property with no getter/setter, so no good way to override behavior at runtime, so we will at least set it on startup
+            if(updateScale != undefined) {
+                gizmo.updateScale = updateScale;
+            }
             gizmo.dragBehavior.onDragStartObservable.add(() => {
                 this.onDragStartObservable.notifyObservers({});
             });
