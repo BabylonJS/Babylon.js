@@ -106,6 +106,11 @@ export class RotationGizmo extends Gizmo {
      * @param tessellation Amount of tessellation to be used when creating rotation circles
      * @param useEulerRotation Use and update Euler angle instead of quaternion
      * @param thickness display gizmo axis thickness
+     * @param gizmoManager Gizmo manager
+     * @param updateScale When set, the gizmo will always appear the same size no matter where the camera is (default: true)
+     * @param xOptions Specific options for xGizmo
+     * @param yOptions Specific options for yGizmo
+     * @param zOptions Specific options for zGizmo
      */
     constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1, gizmoManager?: GizmoManager, updateScale?:boolean, xOptions?:RotationGizmoOptions, yOptions?:RotationGizmoOptions, zOptions?:RotationGizmoOptions) {
         super(gizmoLayer);
