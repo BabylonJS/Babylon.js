@@ -13005,6 +13005,8 @@ declare module BABYLON {
         /** @hidden */
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
+        _defaultConnectionPointType: Nullable<NodeMaterialBlockConnectionPointTypes>;
+        /** @hidden */
         _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
         _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint>;
@@ -21271,6 +21273,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -21319,6 +21322,10 @@ declare module BABYLON {
          * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
          */
         useAlbedoToTintRefraction: boolean;
+        /**
+         * When enabled, translucent surfaces will be tinted with the albedo colour (independent of thickness)
+         */
+        useAlbedoToTintTranslucency: boolean;
         private _thicknessTexture;
         /**
          * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
@@ -22285,6 +22292,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -40857,7 +40865,8 @@ declare module BABYLON {
         _badOS: boolean;
         /** @hidden */
         _badDesktopOS: boolean;
-        protected _hardwareScalingLevel: number;
+        /** @hidden */
+        _hardwareScalingLevel: number;
         /** @hidden */
         _caps: EngineCapabilities;
         /** @hidden */
@@ -43016,7 +43025,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
          */
-        static audioEngine: IAudioEngine;
+        static audioEngine: Nullable<IAudioEngine>;
         /**
          * Default AudioEngine factory responsible of creating the Audio Engine.
          * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
@@ -43069,7 +43078,7 @@ declare module BABYLON {
          * @param options defines further options to be sent to the getContext() function
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
         /**
          * Shared initialization across engines types.
          * @param canvas The canvas associated with this instance of the engine.
@@ -59279,6 +59288,7 @@ declare module BABYLON {
         private _defaultUtilityLayer;
         private _defaultKeepDepthUtilityLayer;
         private _thickness;
+        private _scaleRatio;
         /** Node Caching for quick lookup */
         private _gizmoAxisCache;
         /**
@@ -59309,6 +59319,11 @@ declare module BABYLON {
          * True when the mouse pointer is hovering a gizmo mesh
          */
         get isHovered(): boolean;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        set scaleRatio(value: number);
+        get scaleRatio(): number;
         /**
          * Instantiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
@@ -70791,6 +70806,74 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Operations supported by the ConditionalBlock block
+     */
+    export enum ConditionalBlockConditions {
+        /** Equal */
+        Equal = 0,
+        /** NotEqual */
+        NotEqual = 1,
+        /** LessThan */
+        LessThan = 2,
+        /** GreaterThan */
+        GreaterThan = 3,
+        /** LessOrEqual */
+        LessOrEqual = 4,
+        /** GreaterOrEqual */
+        GreaterOrEqual = 5,
+        /** Logical Exclusive OR */
+        Xor = 6,
+        /** Logical Or */
+        Or = 7,
+        /** Logical And */
+        And = 8
+    }
+    /**
+     * Block used to apply conditional operation between floats
+     */
+    export class ConditionalBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the condition applied by the block
+         */
+        condition: ConditionalBlockConditions;
+        /**
+         * Creates a new ConditionalBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the first operand component
+         */
+        get a(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the second operand component
+         */
+        get b(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the value to return if condition is true
+         */
+        get true(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the value to return if condition is false
+         */
+        get false(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
+    }
+}
+declare module BABYLON {
+    /**
      * Configuration for Draco compression
      */
     export interface IDracoCompressionConfiguration {
@@ -73802,14 +73885,16 @@ declare module BABYLON {
         static BaseAssetsUrl: string;
         private _emitterCreationOptions;
         private _emitterNode;
+        private _emitterNodeIsOwned;
         /**
          * Gets the particle system list
          */
         systems: IParticleSystem[];
         /**
-         * Gets the emitter node used with this set
+         * Gets or sets the emitter node used with this set
          */
-        get emitterNode(): Nullable<TransformNode>;
+        get emitterNode(): Nullable<AbstractMesh | Vector3>;
+        set emitterNode(value: Nullable<AbstractMesh | Vector3>);
         /**
          * Creates a new emitter mesh as a sphere
          * @param options defines the options used to create the sphere

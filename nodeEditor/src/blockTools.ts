@@ -19,6 +19,7 @@ import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
 import { ModBlock } from 'babylonjs/Materials/Node/Blocks/modBlock';
 import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
 import { TrigonometryBlock, TrigonometryBlockOperations } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
+import { ConditionalBlockConditions, ConditionalBlock } from 'babylonjs/Materials/Node/Blocks/conditionalBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
 import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
@@ -503,6 +504,42 @@ export class BlockTools {
                 return new FragCoordBlock("FragCoord");
             case "ScreenSizeBlock":
                 return new ScreenSizeBlock("ScreenSize");
+            case "EqualBlock":
+                let equalBlock = new ConditionalBlock("Equal");
+                equalBlock.condition = ConditionalBlockConditions.Equal;
+                return equalBlock;
+            case "NotEqualBlock":
+                let notEqualBlock = new ConditionalBlock("NotEqual");
+                notEqualBlock.condition = ConditionalBlockConditions.NotEqual;
+                return notEqualBlock;             
+            case "LessThanBlock":
+                let lessThanBlock = new ConditionalBlock("LessThan");
+                lessThanBlock.condition = ConditionalBlockConditions.LessThan;
+                return lessThanBlock; 
+            case "LessOrEqualBlock":
+                let lessOrEqualBlock = new ConditionalBlock("LessOrEqual");
+                lessOrEqualBlock.condition = ConditionalBlockConditions.LessOrEqual;
+                return lessOrEqualBlock; 
+            case "GreaterThanBlock":
+                let greaterThanBlock = new ConditionalBlock("GreaterThan");
+                greaterThanBlock.condition = ConditionalBlockConditions.GreaterThan;
+                return greaterThanBlock; 
+            case "GreaterOrEqualBlock":
+                let greaterOrEqualBlock = new ConditionalBlock("GreaterOrEqual");
+                greaterOrEqualBlock.condition = ConditionalBlockConditions.GreaterOrEqual;
+                return greaterOrEqualBlock; 
+            case "XorBlock":
+                let xorBlock = new ConditionalBlock("Xor");
+                xorBlock.condition = ConditionalBlockConditions.Xor;
+                return xorBlock; 
+            case "OrBlock":
+                let orBlock = new ConditionalBlock("Or");
+                orBlock.condition = ConditionalBlockConditions.Or;
+                return orBlock; 
+            case "AndBlock":
+                let andBlock = new ConditionalBlock("And");
+                andBlock.condition = ConditionalBlockConditions.And;
+                return andBlock;                              
         }
 
         return null;

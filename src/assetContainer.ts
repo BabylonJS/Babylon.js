@@ -87,7 +87,7 @@ export class AssetContainer extends AbstractScene {
 
         if (!options) {
             options = {
-                doNotInstantiate: false
+                doNotInstantiate: true
             };
         }
 

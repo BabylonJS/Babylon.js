@@ -4,6 +4,7 @@ import { ColorPicker } from '../colorPicker/colorPicker';
 
 export interface IColorPickerComponentProps {
     value: Color4 | Color3;
+    linearHint?: boolean;
     onColorChanged: (newOne: string) => void;
 }
 
@@ -89,6 +90,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                             }}>
                             <div className="color-picker-float" ref={this._floatRef}>
                                 <ColorPicker color={color}
+                                    linearhint={this.props.linearHint}
                                     onColorChanged={(color: Color3 | Color4) => {
                                         const hex: string = color.toHexString();
                                         this.setState({ hex, color });
