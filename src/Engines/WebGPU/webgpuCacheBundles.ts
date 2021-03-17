@@ -19,16 +19,20 @@ export class WebGPUCacheBundles {
 
     public static NumBundlesCreatedTotal = 0;
     public static NumBundlesCreatedLastFrame = 0;
+    public static NumListsExecutedLastFrame = 0;
 
     private static _Cache: WebGPUBundleCacheNode = new WebGPUBundleCacheNode();
     private static _NumBindGroupsCreatedCurrentFrame = 0;
     private static _BundleList: GPURenderBundle[] = new Array(1000);
     private static _NumBundles = 0;
+    private static _NumListsExecutedCurrentFrame = 0;
 
     private _device: GPUDevice;
     private _engine: WebGPUEngine;
 
     public disabled = false;
+
+    public listSizes: number[] = [];
 
     constructor(device: GPUDevice, engine: WebGPUEngine) {
         this._device = device;
@@ -38,6 +42,8 @@ export class WebGPUCacheBundles {
     public endFrame(): void {
         WebGPUCacheBundles.NumBundlesCreatedLastFrame = WebGPUCacheBundles._NumBindGroupsCreatedCurrentFrame;
         WebGPUCacheBundles._NumBindGroupsCreatedCurrentFrame = 0;
+        WebGPUCacheBundles.NumListsExecutedLastFrame = WebGPUCacheBundles._NumListsExecutedCurrentFrame;
+        WebGPUCacheBundles._NumListsExecutedCurrentFrame = 0;
     }
 
     public recordBundle(drawType: number, start: number, count: number, instancesCount: number,
@@ -144,8 +150,13 @@ export class WebGPUCacheBundles {
         return true;
     }
 
+    public getBundleList(): GPURenderBundle[] {
+        WebGPUCacheBundles._BundleList.length = WebGPUCacheBundles._NumBundles;
+        return WebGPUCacheBundles._BundleList.slice();
+    }
+
     public executeBundles(renderPass: GPURenderPassEncoder): void {
-        if (this.disabled) {
+        if (this.disabled || WebGPUCacheBundles._NumBundles === 0) {
             return;
         }
 
@@ -153,6 +164,7 @@ export class WebGPUCacheBundles {
 
         renderPass.executeBundles(WebGPUCacheBundles._BundleList);
 
+        this.listSizes[WebGPUCacheBundles._NumListsExecutedCurrentFrame++] = WebGPUCacheBundles._NumBundles;
         WebGPUCacheBundles._NumBundles = 0;
     }
 }
