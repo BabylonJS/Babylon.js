@@ -120,7 +120,6 @@ export class RotationGizmo extends Gizmo {
         this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), xColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), yColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), zColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
-
         
         // Relay drag events and set update scale
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
