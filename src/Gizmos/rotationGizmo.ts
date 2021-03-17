@@ -17,7 +17,7 @@ import { GizmoManager } from './gizmoManager';
  * Options for each individual plane rotation gizmo
  */
 export interface RotationGizmoOptions {
-    color?:Color3;
+    color?: Color3;
 }
 
 /**
@@ -112,7 +112,7 @@ export class RotationGizmo extends Gizmo {
      * @param yOptions Specific options for yGizmo
      * @param zOptions Specific options for zGizmo
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1, gizmoManager?: GizmoManager, updateScale?:boolean, xOptions?:RotationGizmoOptions, yOptions?:RotationGizmoOptions, zOptions?:RotationGizmoOptions) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1, gizmoManager?: GizmoManager, updateScale?: boolean, xOptions?: RotationGizmoOptions, yOptions?: RotationGizmoOptions, zOptions?: RotationGizmoOptions) {
         super(gizmoLayer);
         const xColor = xOptions && xOptions.color ? xOptions.color : Color3.Red().scale(0.5);
         const yColor = yOptions && yOptions.color ? yOptions.color : Color3.Green().scale(0.5);
@@ -120,12 +120,11 @@ export class RotationGizmo extends Gizmo {
         this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), xColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), yColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), zColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
-        
         // Relay drag events and set update scale
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
             //currently updateScale is a property with no getter/setter, so no good way to override behavior at runtime, so we will at least set it on startup
-            if(updateScale != undefined) {
+            if (updateScale != undefined) {
                 gizmo.updateScale = updateScale;
             }
             gizmo.dragBehavior.onDragStartObservable.add(() => {
