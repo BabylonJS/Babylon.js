@@ -271,6 +271,15 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public dbgShowEmptyEnableEffectCalls = true;
 
+    private _recordBundles = false;
+    private _playBundles = false;
+    private _mainPassBundleList: Array<Array<GPURenderBundle>> = [];
+    public recordBundles(): void {
+        this._mainPassBundleList.length = 0;
+        this._recordBundles = true;
+        this._playBundles = false;
+    }
+
     /**
      * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
      */
@@ -1022,15 +1031,16 @@ export class WebGPUEngine extends Engine {
             color.a = 1;
         }
 
+        const hasScissor = this._scissorIsActive();
+
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - clear called - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil);
+                console.log("frame #" + (this as any)._count + " - clear called - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil, " scissor is active=", hasScissor);
             }
         }
 
         // We need to recreate the render pass so that the new parameters for clear color / depth / stencil are taken into account
-        const hasScissor = this._scissorIsActive();
         if (this._currentRenderTarget) {
             if (hasScissor) {
                 if (!this._rttRenderPassWrapper.renderPass) {
@@ -2931,6 +2941,18 @@ export class WebGPUEngine extends Engine {
      * End the current frame
      */
     public endFrame() {
+        if (this._recordBundles) {
+            this._mainPassBundleList.push(this._cacheBundles.getBundleList());
+            this._recordBundles = false;
+            this._playBundles = true;
+        }
+
+        if (this._playBundles && this._mainRenderPassWrapper.renderPass !== null) {
+            for (let i = 0; i < this._mainPassBundleList.length; ++i) {
+                this._mainRenderPassWrapper.renderPass.executeBundles(this._mainPassBundleList[i]);
+            }
+        }
+
         this._endMainRenderPass();
 
         this.flushFramebuffer(false);
@@ -3134,7 +3156,17 @@ export class WebGPUEngine extends Engine {
 
     private _endRenderTargetRenderPass() {
         if (this._currentRenderPass) {
-            this._cacheBundles.executeBundles(this._currentRenderPass);
+            if (this._playBundles) {
+                this._currentRenderPass.executeBundles((this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer]);
+            } else {
+                if (this._recordBundles) {
+                    if (!(this._currentRenderTarget as any)._bundles) {
+                        (this._currentRenderTarget as any)._bundles = [];
+                    }
+                    (this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer] = this._cacheBundles.getBundleList();
+                }
+                this._cacheBundles.executeBundles(this._currentRenderPass);
+            }
             this._currentRenderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) { (this as any)._count = 0; }
@@ -3214,7 +3246,11 @@ export class WebGPUEngine extends Engine {
 
     private _endMainRenderPass(): void {
         if (this._mainRenderPassWrapper.renderPass !== null) {
-            this._cacheBundles.executeBundles(this._mainRenderPassWrapper.renderPass);
+            if (this._recordBundles) {
+                this._mainPassBundleList.push(this._cacheBundles.getBundleList());
+            } else if (!this._playBundles) {
+                this._cacheBundles.executeBundles(this._mainRenderPassWrapper.renderPass);
+            }
             this._mainRenderPassWrapper.renderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) { (this as any)._count = 0; }
@@ -3297,6 +3333,7 @@ export class WebGPUEngine extends Engine {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = texture;
+        (this._currentRenderTarget as any)._layer = layer;
 
         this._rttRenderPassWrapper.colorAttachmentGPUTextures[0] = hardwareTexture;
         this._rttRenderPassWrapper.depthTextureFormat = this._currentRenderTarget._depthStencilTexture ? WebGPUTextureHelper.GetWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : undefined;
@@ -3649,26 +3686,13 @@ export class WebGPUEngine extends Engine {
 
         let mustUpdateStates = mustUpdateViewport || mustUpdateScissor || mustUpdateStencilRef || mustUpdateBlendColor;
 
-        let pipeline = !this.compatibilityMode ? this._currentDrawContext?.fastRenderPipeline : null;
-        if (!pipeline) {
-            pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount);
-        }
-        if (!this.compatibilityMode && this._currentDrawContext) {
-            this._currentDrawContext.fastRenderPipeline = pipeline;
-        }
+        if (this._playBundles) {
+            const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
-        const identifiedBindGroups = this._getBindGroupsToRender();
-
-        if (mustUpdateStates || this._cacheBundles.disabled) {
-            if (!isBundleEncoder) {
-                this._cacheBundles.executeBundles(renderPass as GPURenderPassEncoder);
+            if (webgpuPipelineContext.uniformBuffer) {
+                this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
+                webgpuPipelineContext.uniformBuffer.update();
             }
-
-            renderPass.setPipeline(pipeline);
-
-            this._bindVertexInputs(renderPass, this._cacheRenderPipeline.vertexBuffers);
-
-            this._setRenderBindGroups(identifiedBindGroups.bindGroups, renderPass);
 
             if (mustUpdateViewport) {
                 this._applyViewport(renderPass as GPURenderPassEncoder);
@@ -3682,6 +3706,46 @@ export class WebGPUEngine extends Engine {
             if (mustUpdateBlendColor) {
                 this._applyBlendColor(renderPass as GPURenderPassEncoder);
             }
+            return;
+        }
+
+        let pipeline = !this.compatibilityMode ? this._currentDrawContext?.fastRenderPipeline : null;
+        if (!pipeline) {
+            pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount);
+        }
+        if (!this.compatibilityMode && this._currentDrawContext) {
+            this._currentDrawContext.fastRenderPipeline = pipeline;
+        }
+
+        const identifiedBindGroups = this._getBindGroupsToRender();
+
+        if (mustUpdateStates || this._cacheBundles.disabled || isBundleEncoder) {
+            if (!isBundleEncoder) {
+                if (this._recordBundles) {
+                    this._mainPassBundleList.push(this._cacheBundles.getBundleList());
+                } else {
+                    this._cacheBundles.executeBundles(renderPass as GPURenderPassEncoder);
+                }
+            }
+
+            if (mustUpdateViewport) {
+                this._applyViewport(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateScissor) {
+                this._applyScissor(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateStencilRef) {
+                this._applyStencilRef(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateBlendColor) {
+                this._applyBlendColor(renderPass as GPURenderPassEncoder);
+            }
+
+            renderPass.setPipeline(pipeline);
+
+            this._bindVertexInputs(renderPass, this._cacheRenderPipeline.vertexBuffers);
+
+            this._setRenderBindGroups(identifiedBindGroups.bindGroups, renderPass);
 
             if (drawType === 0) {
                 renderPass.drawIndexed(count, instancesCount || 1, start, 0, 0);
@@ -3703,7 +3767,9 @@ export class WebGPUEngine extends Engine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount: number = 1): void {
-        this._draw(0, fillMode, indexStart, indexCount, instancesCount);
+        //if (!this._playBundles) {
+            this._draw(0, fillMode, indexStart, indexCount, instancesCount);
+        //}
     }
 
     /**
@@ -3714,8 +3780,10 @@ export class WebGPUEngine extends Engine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
-        this._currentIndexBuffer = null;
-        this._draw(1, fillMode, verticesStart, verticesCount, instancesCount);
+        //if (!this._playBundles) {
+            this._currentIndexBuffer = null;
+            this._draw(1, fillMode, verticesStart, verticesCount, instancesCount);
+        //}
     }
 
     //------------------------------------------------------------------------------
@@ -3728,11 +3796,10 @@ export class WebGPUEngine extends Engine {
      * Start recording all the gpu calls into a bundle.
      */
     public startRecordBundle(): void {
-        // TODO. WebGPU. options should be dynamic.
         this._bundleEncoder = this._device.createRenderBundleEncoder({
-            colorFormats: [ WebGPUConstants.TextureFormat.BGRA8Unorm ],
-            depthStencilFormat: WebGPUConstants.TextureFormat.Depth24PlusStencil8,
-            sampleCount: this._mainPassSampleCount,
+            colorFormats: this._cacheRenderPipeline.colorFormats,
+            depthStencilFormat: this._depthTextureFormat,
+            sampleCount: this.currentSampleCount,
         });
     }
 
