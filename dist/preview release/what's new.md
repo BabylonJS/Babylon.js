@@ -165,6 +165,7 @@
 - Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))
 - Fix the strength input parameter of the NME `PerturbNormal` block that was handled as a 1/strength value ([Popov72](https://github.com/Popov72))
 - Fix an issue with audio engine not being garbage-collected when engine is disposed ([RaananW](https://github.com/RaananW))
+- Fix the NME `NormalBlend` block ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
