@@ -153,6 +153,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         }
     }
 
+    /**
+     * Update the current camera state depending on the inputs that have been used this frame.
+     * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+     */
     public checkInputs(): void {
         if (this.wheelPrecisionEaseInRatio) {
             var r = this.camera.radius;
