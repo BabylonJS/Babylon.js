@@ -10,7 +10,6 @@ import { Vector3, Matrix } from '../../Maths/math.vector';
 import { Epsilon } from "../../Maths/math.constants";
 import { IWheelEvent } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
-import { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
@@ -60,8 +59,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     public wheelDeltaPercentage = 0;
 
     private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
-    private _move: Nullable<(p: PointerInfo, s: EventState) => void>;
-    private _observers: Array<Nullable<Observer<PointerInfo>>>;
+    private _observer: Nullable<Observer<PointerInfo>>;
     private _hitPlane: Plane;
 
     private computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
@@ -131,22 +129,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
         };
 
-        this._observers = new Array<Nullable<Observer<PointerInfo>>>();
-
-        this._observers.push(this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL));
+        this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
 
         if (this.zoomToMouseLocation) {
             this._inertialPanning = Vector3.Zero();
-
-            this._move =  (p, s) => {
-                var evt = <IPointerEvent>p.event;
-                let isTouch = evt.pointerType === "touch";
-                if (!isTouch) {
-                    this._updateHitPlane();
-                }
-            };
-
-            this._observers.push(this.camera.getScene().onPointerObservable.add(this._move, PointerEventTypes.POINTERMOVE));
         }
     }
 
@@ -160,14 +146,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
      */
     public detachControl(ignored?: any): void {
-        if (this._observers) {
-            this._observers.forEach((i) => {
-                this.camera.getScene().onPointerObservable.remove(i);
-            });
-
-            this._observers = [];
+        if (this._observer) {
+            this.camera.getScene().onPointerObservable.remove(this._observer);
+            this._observer = null;
             this._wheel = null;
-            this._move = null;
         }
     }
 
