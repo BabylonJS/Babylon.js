@@ -437,8 +437,8 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the ratio that slows down the zooming as the camera radius gets
      * smaller (i.e. as the camera gets closer to your object).  It is nice if the
      * mouse wheel steps get smaller so you can be more precise about camera position
-     * as you get close to your object.  If set to non-zero value this causes 
-     * wheelPrecision to be computed automatically using the formula 
+     * as you get close to your object.  If set to non-zero value this causes
+     * wheelPrecision to be computed automatically using the formula
      * "1 / camera.radius * wheelPrecisionEaseInRatio;".  Note that wheelPrecision
      * is used like this: "wheelDelta / (this.wheelPrecision * 40);" which means
      * the larger the wheelPrecision the smaller the zoom amount.  So by inverting
@@ -462,7 +462,7 @@ export class ArcRotateCamera extends TargetCamera {
             mousewheel.wheelPrecisionEaseInRatio = value;
         }
     }
-    
+
     /**
      * Gets or Set the boolean value that controls whether or not the mouse wheel
      * zooms to the location of the mouse pointer or not.  The default is false.

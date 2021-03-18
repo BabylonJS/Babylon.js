@@ -11,7 +11,6 @@ import { Epsilon } from "../../Maths/math.constants";
 import { IWheelEvent } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
 import { IPointerEvent } from "../../Events/deviceInputEvents";
-// import { circleOfConfusionPixelShader } from "Shaders/circleOfConfusion.fragment";
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
@@ -33,8 +32,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * Gets or Set the ratio that slows down the zooming as the camera radius gets
      * smaller (i.e. as the camera gets closer to your object).  It is nice if the
      * mouse wheel steps get smaller so you can be more precise about camera position
-     * as you get close to your object.  If set to non-zero value this causes 
-     * wheelPrecision to be computed automatically using the formula 
+     * as you get close to your object.  If set to non-zero value this causes
+     * wheelPrecision to be computed automatically using the formula
      * "1 / camera.radius * wheelPrecisionEaseInRatio;".  Note that wheelPrecision
      * is used like this: "wheelDelta / (this.wheelPrecision * 40);" which means
      * the larger the wheelPrecision the smaller the zoom amount.  So by inverting
@@ -45,14 +44,14 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      */
      @serialize()
      public wheelPrecisionEaseInRatio = 0;
-     
+
     /**
      * Gets or Set the boolean value that controls whether or not the mouse wheel
      * zooms to the location of the mouse pointer or not.  The default is false.
      */
      @serialize()
      public zoomToMouseLocation = false;
-     
+
     /**
      * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
      * It defines the percentage of current camera.radius to use as delta when wheel is used.
@@ -116,9 +115,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             } else {
                 delta = wheelDelta / (this.wheelPrecision * 40);
             }
-        
+
             if (delta) {
-                if (this.zoomToMouseLocation && this._hitPlane){
+                if (this.zoomToMouseLocation && this._hitPlane) {
                     this._zoomToMouse(delta);
                 } else {
                     this.camera.inertialRadiusOffset += delta;
@@ -132,7 +131,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
         };
 
-        this._observers = new Array<Nullable<Observer<PointerInfo>>>()
+        this._observers = new Array<Nullable<Observer<PointerInfo>>>();
 
         this._observers.push(this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL));
 
@@ -145,7 +144,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                 if (!isTouch) {
                     this._updateHitPlane();
                 }
-            }
+            };
 
             this._observers.push(this.camera.getScene().onPointerObservable.add(this._move, PointerEventTypes.POINTERMOVE));
         }
@@ -161,7 +160,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
      */
     public detachControl(ignored?: any): void {
-        if (this._observers){
+        if (this._observers) {
             this._observers.forEach((i) => {
                 this.camera.getScene().onPointerObservable.remove(i);
             });
@@ -187,14 +186,14 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
             this.wheelPrecision = 1 / r * this.wheelPrecisionEaseInRatio;
         }
-        
+
         var camera = this.camera;
         var motion = 0.0 + camera.inertialAlphaOffset + camera.inertialBetaOffset + camera.inertialRadiusOffset;
         if (motion) {
             // if zooming is still happening as a result of inertia, then we also need to update
             // the hitplane.
             this._updateHitPlane();
-                
+
             // Note we cannot  use arcRotateCamera.inertialPlanning here because arcRotateCamera panning
             // uses a different panningInertia which could cause this panning to get out of sync with
             // the zooming, and for this to work they must be exactly in sync.
@@ -225,7 +224,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         var direction = camera.target.subtract(camera.position);
         this._hitPlane = Plane.FromPositionAndNormal(Vector3.Zero(), direction);
     }
-    
+
     // Get position on the hit plane
     private _getPosition() : Vector3 {
         var camera = this.camera;
@@ -245,7 +244,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
     private _inertialPanning : Vector3;
 
-    private _zoomToMouse(delta: number){
+    private _zoomToMouse(delta: number) {
         var camera = this.camera;
         const inertiaComp = 1 - camera.inertia;
         if (camera.lowerRadiusLimit) {
@@ -269,10 +268,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         const offset = directionToZoomLocation.scale(ratio);
         offset.scaleInPlace(inertiaComp);
         this._inertialPanning.addInPlace(offset);
-        
+
         camera.inertialRadiusOffset += delta;
     }
-     
+
     // Sets x y or z of passed in vector to zero if less than Epsilon.
     private _zeroIfClose(vec: Vector3) {
         if (Math.abs(vec.x) < Epsilon) {
