@@ -1,5 +1,5 @@
 
-function createScene() {
+function createScene(engine) {
      // This creates a basic Babylon Scene object (non-mesh)
      var scene = new BABYLON.Scene(engine);
 
