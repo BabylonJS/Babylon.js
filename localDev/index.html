@@ -68,7 +68,15 @@
         // Global to simulate PG.
         var engine = null;
 
-        var indexjs = 'index.js';
+        // Allow querystring to navigate easily in debug in local samples.
+        var indexjs = 'src/index';
+        var sampleSearch = /sample=([0-9]+)/i;
+        var matches = null;
+        if ((matches = sampleSearch.exec(window.location)) !== null) {
+            indexjs += '.';
+            indexjs += matches[1];
+        }
+        indexjs += '.js';
 
         // var indexjs = "http://localhost:1234/index.js"
 
@@ -124,7 +132,7 @@
                         }
                     }
                     else {
-                        var scene = createScene(engine);
+                        var scene = createScene();
 
                         if (scene) {
 
