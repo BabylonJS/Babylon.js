@@ -28,23 +28,6 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     public wheelPrecision = 3.0;
 
     /**
-     * Gets or Set the ratio that slows down the zooming as the camera radius gets
-     * smaller (i.e. as the camera gets closer to your object).  It is nice if the
-     * mouse wheel steps get smaller so you can be more precise about camera position
-     * as you get close to your object.  If set to non-zero value this causes
-     * wheelPrecision to be computed automatically using the formula
-     * "1 / camera.radius * wheelPrecisionEaseInRatio;".  Note that wheelPrecision
-     * is used like this: "wheelDelta / (this.wheelPrecision * 40);" which means
-     * the larger the wheelPrecision the smaller the zoom amount.  So by inverting
-     * the camera.radius we are getting smaller wheelPrecision amounts the further you
-     * get away from the object, which results in larger zooming steps.  A
-     * wheelPrecisionEaseInRatio of about 300 seems to work nicely in most cases, but
-     * it does depend on the overall size of your scene.
-     */
-     @serialize()
-     public wheelPrecisionEaseInRatio = 0;
-
-    /**
      * Gets or Set the boolean value that controls whether or not the mouse wheel
      * zooms to the location of the mouse pointer or not.  The default is false.
      */
@@ -158,22 +141,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
      */
     public checkInputs(): void {
-        if (!this.wheelPrecisionEaseInRatio) {
+        if (!this._zoomToMouse) {
             return;
         }
-
-        var r = this.camera.radius;
-        if (r > 10000) {
-            r = 10000; // don't want zoom to get out of control.
-        } else if (r < -10000) {
-            r = -10000; // don't want zoom to get out of control.
-        } else if (r > 0 && r < 0.1) {
-            r = 0.1; // don't want zoom to hit zero either or we'll get stuck there.
-        } else if (r < 0 && r > -0.1) {
-            r = -0.1; // don't want zoom to hit zero either or we'll get stuck there.
-        }
-
-        this.wheelPrecision = 1 / r * this.wheelPrecisionEaseInRatio;
 
         var camera = this.camera;
         var motion = 0.0 + camera.inertialAlphaOffset + camera.inertialBetaOffset + camera.inertialRadiusOffset;
