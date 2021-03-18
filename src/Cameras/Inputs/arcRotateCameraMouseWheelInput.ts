@@ -158,26 +158,28 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
      */
     public checkInputs(): void {
-        if (this.wheelPrecisionEaseInRatio) {
-            var r = this.camera.radius;
-            if (r > 10000) {
-                r = 10000; // don't want zoom to get out of control.
-            } else if (r < -10000) {
-                r = -10000; // don't want zoom to get out of control.
-            } else if (r > 0 && r < 0.1) {
-                r = 0.1; // don't want zoom to hit zero either or we'll get stuck there.
-            } else if (r < 0 && r > -0.1) {
-                r = -0.1; // don't want zoom to hit zero either or we'll get stuck there.
-            }
-
-            this.wheelPrecision = 1 / r * this.wheelPrecisionEaseInRatio;
+        if (!this.wheelPrecisionEaseInRatio) {
+            return;
         }
+
+        var r = this.camera.radius;
+        if (r > 10000) {
+            r = 10000; // don't want zoom to get out of control.
+        } else if (r < -10000) {
+            r = -10000; // don't want zoom to get out of control.
+        } else if (r > 0 && r < 0.1) {
+            r = 0.1; // don't want zoom to hit zero either or we'll get stuck there.
+        } else if (r < 0 && r > -0.1) {
+            r = -0.1; // don't want zoom to hit zero either or we'll get stuck there.
+        }
+
+        this.wheelPrecision = 1 / r * this.wheelPrecisionEaseInRatio;
 
         var camera = this.camera;
         var motion = 0.0 + camera.inertialAlphaOffset + camera.inertialBetaOffset + camera.inertialRadiusOffset;
         if (motion) {
             // if zooming is still happening as a result of inertia, then we also need to update
-            // the hitplane.
+            // the hit plane.
             this._updateHitPlane();
 
             // Note we cannot  use arcRotateCamera.inertialPlanning here because arcRotateCamera panning
