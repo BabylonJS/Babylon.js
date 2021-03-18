@@ -14,13 +14,38 @@ import { TransformNode } from "../Meshes/transformNode";
 import { GizmoManager } from './gizmoManager';
 
 /**
- * Options for each individual plane rotation gizmo
+ * Options for each individual plane rotation gizmo contained within RotationGizmo
  */
-export interface RotationGizmoOptions {
+export interface PlaneRotationGizmoOptions {
     /**
      * Color to use for the plane rotation gizmo
      */
     color?: Color3;
+}
+
+/**
+ * Additional options for each rotation gizmo
+ */
+export interface RotationGizmoOptions {
+    /**
+     * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
+     */
+    updateScale?: boolean;
+
+    /**
+     * Specific options for xGizmo
+     */
+    xOptions?: PlaneRotationGizmoOptions;
+
+    /**
+     * Specific options for yGizmo
+     */
+    yOptions?: PlaneRotationGizmoOptions;
+
+    /**
+     * Specific options for zGizmo
+     */
+    zOptions?: PlaneRotationGizmoOptions;
 }
 
 /**
@@ -110,16 +135,13 @@ export class RotationGizmo extends Gizmo {
      * @param useEulerRotation Use and update Euler angle instead of quaternion
      * @param thickness display gizmo axis thickness
      * @param gizmoManager Gizmo manager
-     * @param updateScale When set, the gizmo will always appear the same size no matter where the camera is (default: true)
-     * @param xOptions Specific options for xGizmo
-     * @param yOptions Specific options for yGizmo
-     * @param zOptions Specific options for zGizmo
+     * @param options More options
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1, gizmoManager?: GizmoManager, updateScale?: boolean, xOptions?: RotationGizmoOptions, yOptions?: RotationGizmoOptions, zOptions?: RotationGizmoOptions) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1, gizmoManager?: GizmoManager, options?: RotationGizmoOptions) {
         super(gizmoLayer);
-        const xColor = xOptions && xOptions.color ? xOptions.color : Color3.Red().scale(0.5);
-        const yColor = yOptions && yOptions.color ? yOptions.color : Color3.Green().scale(0.5);
-        const zColor = zOptions && zOptions.color ? zOptions.color : Color3.Blue().scale(0.5);
+        const xColor = options && options.xOptions && options.xOptions.color ? options.xOptions.color : Color3.Red().scale(0.5);
+        const yColor = options && options.yOptions && options.yOptions.color ? options.yOptions.color : Color3.Green().scale(0.5);
+        const zColor = options && options.zOptions && options.zOptions.color ? options.zOptions.color : Color3.Blue().scale(0.5);
         this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), xColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), yColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), zColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
@@ -127,8 +149,8 @@ export class RotationGizmo extends Gizmo {
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
             //currently updateScale is a property with no getter/setter, so no good way to override behavior at runtime, so we will at least set it on startup
-            if (updateScale != undefined) {
-                gizmo.updateScale = updateScale;
+            if (options && options.updateScale != undefined) {
+                gizmo.updateScale = options.updateScale;
             }
             gizmo.dragBehavior.onDragStartObservable.add(() => {
                 this.onDragStartObservable.notifyObservers({});
