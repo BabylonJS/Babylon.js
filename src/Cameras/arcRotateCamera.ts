@@ -434,6 +434,57 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Gets or Set the ratio that slows down the zooming as the camera radius gets
+     * smaller (i.e. as the camera gets closer to your object).  It is nice if the
+     * mouse wheel steps get smaller so you can be more precise about camera position
+     * as you get close to your object.  If set to non-zero value this causes 
+     * wheelPrecision to be computed automatically using the formula 
+     * "1 / camera.radius * wheelPrecisionEaseInRatio;".  Note that wheelPrecision
+     * is used like this: "wheelDelta / (this.wheelPrecision * 40);" which means
+     * the larger the wheelPrecision the smaller the zoom amount.  So by inverting
+     * the camera.radius we are getting smaller wheelPrecision amounts the further you
+     * get away from the object, which results in larger zooming steps.  A
+     * wheelPrecisionEaseInRatio of about 200 seems to work nicely in most cases, but
+     * it does depend on the overall size of your scene.
+     */
+     public get wheelPrecisionEaseInRatio(): number {
+        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        if (mousewheel) {
+            return mousewheel.wheelPrecisionEaseInRatio;
+        }
+
+        return 0;
+    }
+
+    public set wheelPrecisionEaseInRatio(value: number) {
+        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        if (mousewheel) {
+            mousewheel.wheelPrecisionEaseInRatio = value;
+        }
+    }
+    
+    /**
+     * Gets or Set the boolean value that controls whether or not the mouse wheel
+     * zooms to the location of the mouse pointer or not.  The default is false.
+     */
+     @serialize()
+     public get zoomToMouseLocation(): boolean {
+        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        if (mousewheel) {
+            return mousewheel.zoomToMouseLocation;
+        }
+
+        return false;
+    }
+
+    public set zoomToMouseLocation(value: boolean) {
+        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        if (mousewheel) {
+            mousewheel.zoomToMouseLocation = value;
+        }
+    }
+
+    /**
      * Gets or Set the mouse wheel delta percentage or how fast is the camera zooming.
      * It will be used instead of pinchDeltaPrecision if different from 0.
      * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
