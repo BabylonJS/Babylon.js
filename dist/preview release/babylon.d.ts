@@ -58808,6 +58808,36 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options for each individual plane rotation gizmo contained within RotationGizmo
+     */
+    export interface PlaneRotationGizmoOptions {
+        /**
+         * Color to use for the plane rotation gizmo
+         */
+        color?: Color3;
+    }
+    /**
+     * Additional options for each rotation gizmo
+     */
+    export interface RotationGizmoOptions {
+        /**
+         * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
+         */
+        updateScale?: boolean;
+        /**
+         * Specific options for xGizmo
+         */
+        xOptions?: PlaneRotationGizmoOptions;
+        /**
+         * Specific options for yGizmo
+         */
+        yOptions?: PlaneRotationGizmoOptions;
+        /**
+         * Specific options for zGizmo
+         */
+        zOptions?: PlaneRotationGizmoOptions;
+    }
+    /**
      * Gizmo that enables rotating a mesh along 3 axis
      */
     export class RotationGizmo extends Gizmo {
@@ -58847,8 +58877,10 @@ declare module BABYLON {
          * @param tessellation Amount of tessellation to be used when creating rotation circles
          * @param useEulerRotation Use and update Euler angle instead of quaternion
          * @param thickness display gizmo axis thickness
+         * @param gizmoManager Gizmo manager
+         * @param options More options
          */
-        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number, useEulerRotation?: boolean, thickness?: number, gizmoManager?: GizmoManager);
+        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number, useEulerRotation?: boolean, thickness?: number, gizmoManager?: GizmoManager, options?: RotationGizmoOptions);
         set updateGizmoRotationToMatchAttachedMesh(value: boolean);
         get updateGizmoRotationToMatchAttachedMesh(): boolean;
         /**
