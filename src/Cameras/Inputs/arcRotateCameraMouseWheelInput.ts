@@ -190,8 +190,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         var direction = camera.target.subtract(camera.position);
         direction.normalize();
 
-        // to stop degenerate behavior when camera is aligned with a plane where hit detection shoots
-        // off to infinity, we take the closest distance to any of the 3 x-y-z planes.
+        // since the _hitPlane is always updated to be orthogonal to the camera position vector
+        // we don't have to worry about this ray shooting off to infinity. This ray creates
+        // a vector defining where we want to zoom to.
         var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
         const distance = ray.intersectsPlane(this._hitPlane);
         var dist = distance ?? 0;
@@ -222,6 +223,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         const ratio = zoomDistance / camera.radius;
         const vec = this._getPosition();
 
+        // Now this vector tells us how much we also need to pan the camera
+        // so the targeted mouse location becomes the center of zooming.
         const directionToZoomLocation = vec.subtract(camera.target);
         const offset = directionToZoomLocation.scale(ratio);
         offset.scaleInPlace(inertiaComp);
