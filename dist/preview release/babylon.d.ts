@@ -50868,12 +50868,18 @@ declare module BABYLON {
          */
         wheelPrecision: number;
         /**
+         * Gets or Set the boolean value that controls whether or not the mouse wheel
+         * zooms to the location of the mouse pointer or not.  The default is false.
+         */
+        zoomToMouseLocation: boolean;
+        /**
          * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
          * It defines the percentage of current camera.radius to use as delta when wheel is used.
          */
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
+        private _hitPlane;
         private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
@@ -50885,6 +50891,11 @@ declare module BABYLON {
          */
         detachControl(): void;
         /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
          * Gets the class name of the current input.
          * @returns the class name
          */
@@ -50894,6 +50905,11 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
+        private _updateHitPlane;
+        private _getPosition;
+        private _inertialPanning;
+        private _zoomToMouse;
+        private _zeroIfClose;
     }
 }
 declare module BABYLON {
@@ -51107,6 +51123,12 @@ declare module BABYLON {
          */
         get wheelPrecision(): number;
         set wheelPrecision(value: number);
+        /**
+         * Gets or Set the boolean value that controls whether or not the mouse wheel
+         * zooms to the location of the mouse pointer or not.  The default is false.
+         */
+        get zoomToMouseLocation(): boolean;
+        set zoomToMouseLocation(value: boolean);
         /**
          * Gets or Set the mouse wheel delta percentage or how fast is the camera zooming.
          * It will be used instead of pinchDeltaPrecision if different from 0.
