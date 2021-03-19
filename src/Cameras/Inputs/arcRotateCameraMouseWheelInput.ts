@@ -141,7 +141,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
      */
     public checkInputs(): void {
-        if (!this._zoomToMouse) {
+        if (!this.zoomToMouseLocation) {
             return;
         }
 
