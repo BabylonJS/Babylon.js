@@ -1422,6 +1422,8 @@ declare module BABYLON {
         static ColliderVisibility(): number;
         static CollisionWireframe(): boolean;
         static GetColliderMaterial(scene: BABYLON.Scene): BABYLON.Material;
+        static CalculateCombinedFriction(friction0: number, friction1: number): number;
+        static CalculateCombinedRestitution(restitution0: number, restitution1: number): number;
         /** TODO */
         static GetDirectTargetAngle(transform: BABYLON.TransformNode, worldSpaceTarget: BABYLON.Vector3): number;
         /** TODO */
