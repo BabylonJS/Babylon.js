@@ -1,6 +1,3 @@
-#ifndef UBO_SCENE
-#define UBO_SCENE
-
 layout(std140, column_major) uniform;
 
 uniform Scene {
@@ -12,5 +9,3 @@ uniform Scene {
 	mat4 projection;
     vec4 vEyePosition;
 };
-
-#endif

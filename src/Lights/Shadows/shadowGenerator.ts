@@ -29,10 +29,6 @@ import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
-import "../../Shaders/ShadersInclude/sceneVertexDeclaration";
-import "../../Shaders/ShadersInclude/sceneFragmentDeclaration";
-import "../../Shaders/ShadersInclude/meshVertexDeclaration";
-import "../../Shaders/ShadersInclude/meshFragmentDeclaration";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
