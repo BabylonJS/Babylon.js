@@ -584,6 +584,7 @@ declare module NODEEDITOR {
      */
     export interface IColorPickerProps {
         color: BABYLON.Color3 | BABYLON.Color4;
+        linearhint?: boolean;
         debugMode?: boolean;
         onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
     }
@@ -1777,6 +1778,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     export interface IColorPickerComponentProps {
         value: BABYLON.Color4 | BABYLON.Color3;
+        linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
     }
     interface IColorPickerComponentState {

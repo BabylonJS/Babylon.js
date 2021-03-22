@@ -444,7 +444,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
      * @ignorenaming
      */
-    public static audioEngine: IAudioEngine;
+    public static audioEngine: Nullable<IAudioEngine>;
 
     /**
      * Default AudioEngine factory responsible of creating the Audio Engine.
@@ -522,7 +522,7 @@ export class Engine extends ThinEngine {
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+    constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
         Engine.Instances.push(this);
@@ -1829,6 +1829,7 @@ export class Engine extends ThinEngine {
         // Release audio engine
         if (Engine.Instances.length === 1 && Engine.audioEngine) {
             Engine.audioEngine.dispose();
+            Engine.audioEngine = null;
         }
 
         //WebVR

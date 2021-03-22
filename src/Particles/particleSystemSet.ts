@@ -1,6 +1,5 @@
 import { Nullable } from "../types";
 import { Color3 } from '../Maths/math.color';
-import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
 import { IParticleSystem } from "./IParticleSystem";
@@ -9,6 +8,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { ParticleSystem } from "../Particles/particleSystem";
 import { Scene, IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
+import { Vector3 } from "../Maths/math.vector";
 
 /** Internal class used to store shapes for emitters */
 class ParticleSystemSetEmitterCreationOptions {
@@ -27,7 +27,8 @@ export class ParticleSystemSet implements IDisposable {
     public static BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
     private _emitterCreationOptions: ParticleSystemSetEmitterCreationOptions;
-    private _emitterNode: Nullable<TransformNode>;
+    private _emitterNode: Nullable<AbstractMesh | Vector3>;
+    private _emitterNodeIsOwned = true;
 
     /**
      * Gets the particle system list
@@ -35,10 +36,25 @@ export class ParticleSystemSet implements IDisposable {
     public systems = new Array<IParticleSystem>();
 
     /**
-     * Gets the emitter node used with this set
+     * Gets or sets the emitter node used with this set
      */
-    public get emitterNode(): Nullable<TransformNode> {
+    public get emitterNode(): Nullable<AbstractMesh | Vector3> {
         return this._emitterNode;
+    }
+
+    public set emitterNode(value: Nullable<AbstractMesh | Vector3>) {
+        if (this._emitterNodeIsOwned && this._emitterNode) {
+            if ((this._emitterNode as AbstractMesh).dispose) {
+                (this._emitterNode as AbstractMesh).dispose();
+            }
+            this._emitterNodeIsOwned = false;
+        }
+
+        for (var system of this.systems) {
+            system.emitter = value;
+        }
+
+        this._emitterNode = value;
     }
 
     /**
@@ -48,9 +64,13 @@ export class ParticleSystemSet implements IDisposable {
      * @param scene defines the hosting scene
      */
     public setEmitterAsSphere(options: { diameter: number, segments: number, color: Color3 }, renderingGroupId: number, scene: Scene) {
-        if (this._emitterNode) {
-            this._emitterNode.dispose();
+        if (this._emitterNodeIsOwned && this._emitterNode) {
+            if ((this._emitterNode as AbstractMesh).dispose) {
+                (this._emitterNode as AbstractMesh).dispose();
+            }
         }
+
+        this._emitterNodeIsOwned = true;
 
         this._emitterCreationOptions = {
             kind: "Sphere",
@@ -96,7 +116,9 @@ export class ParticleSystemSet implements IDisposable {
         this.systems = [];
 
         if (this._emitterNode) {
-            this._emitterNode.dispose();
+            if ((this._emitterNode as AbstractMesh).dispose) {
+                (this._emitterNode as AbstractMesh).dispose();
+            }
             this._emitterNode = null;
         }
     }
