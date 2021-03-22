@@ -853,7 +853,7 @@ interface GPURenderPassColorAttachment {
     resolveTarget?: GPUTextureView;
 
     loadValue: GPULoadOp | GPUColor;
-    storeOp?: GPUStoreOp; /* default="store" */
+    storeOp: GPUStoreOp;
 }
 
 interface GPURenderPassDepthStencilAttachment {
