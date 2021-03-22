@@ -10,7 +10,10 @@ uniform vec4 vReflectivityColor;
 uniform vec4 vMetallicReflectanceFactors;
 uniform vec3 vEmissiveColor;
 
-uniform float visibility;
+#ifndef UNIFORM_MESH
+#define UNIFORM_MESH
+    uniform float visibility;
+#endif
 
 uniform vec3 vAmbientColor;
 
@@ -49,7 +52,8 @@ uniform vec2 vMicroSurfaceSamplerInfos;
 #endif
 
 // Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION) || defined(PREPASS)
+#if (defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION) || defined(PREPASS)) && !defined(UNIFORM_SCENE)
+#define UNIFORM_SCENE
 uniform mat4 view;
 #endif
 

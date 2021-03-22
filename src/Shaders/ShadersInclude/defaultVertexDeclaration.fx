@@ -1,7 +1,14 @@
 // Uniforms
-uniform mat4 world;
-uniform mat4 viewProjection;
-uniform mat4 view;
+#ifndef UNIFORM_MESH
+#define UNIFORM_MESH
+    uniform mat4 world;
+#endif
+
+#ifndef UNIFORM_SCENE
+#define UNIFORM_SCENE
+    uniform mat4 viewProjection;
+    uniform mat4 view;
+#endif
 
 #ifdef DIFFUSE
 uniform mat4 diffuseMatrix;

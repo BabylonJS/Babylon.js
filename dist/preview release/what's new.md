@@ -24,6 +24,7 @@
 - Added a [helper class](https://doc.babylonjs.com/typedoc/classes/babylon.debug.directionallightfrustumviewer) to display the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Improved collision detection performance ([ottoville](https://github.com/ottoville/))
 - Added new helper functions for Quaternion.FromLookDirection and Matrix.LookDirection ([Alex-MSFT](https://github.com/Alex-MSFT))
+- Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -181,3 +182,4 @@
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
 - Fixed spelling of EventState.initialize() ([seritools](https://github.com/seritools))
 - `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
+- When using a `ShadowDepthWrapper` around a `ShaderMaterial`, you now need to use in the shader code the mesh/scene ubo includes to access their uniforms (world, viewProjection, ...) ([Popov72](https://github.com/Popov72))

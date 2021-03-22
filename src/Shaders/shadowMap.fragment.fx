@@ -1,4 +1,4 @@
-﻿#include<shadowMapFragmentDeclaration>
+﻿#include<shadowMapFragmentExtraDeclaration>
 
 #ifdef ALPHATEST
 varying vec2 vUV;

@@ -1,7 +1,13 @@
-uniform mat4 view;
-uniform mat4 viewProjection;
+#ifndef UNIFORM_MESH
+#define UNIFORM_MESH
+    uniform mat4 world;
+#endif
 
-uniform mat4 world;
+#ifndef UNIFORM_SCENE
+#define UNIFORM_SCENE
+    uniform mat4 viewProjection;
+    uniform mat4 view;
+#endif
 
 #ifdef ALBEDO
 uniform mat4 albedoMatrix;

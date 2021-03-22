@@ -6,7 +6,10 @@ uniform vec4 vSpecularColor;
 #endif
 uniform vec3 vEmissiveColor;
 
-uniform float visibility;
+#ifndef UNIFORM_MESH
+#define UNIFORM_MESH
+    uniform float visibility;
+#endif
 
 // Samplers
 #ifdef DIFFUSE
@@ -34,7 +37,8 @@ uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+#if (defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)) && !defined(UNIFORM_SCENE)
+#define UNIFORM_SCENE
 uniform mat4 view;
 #endif
 
