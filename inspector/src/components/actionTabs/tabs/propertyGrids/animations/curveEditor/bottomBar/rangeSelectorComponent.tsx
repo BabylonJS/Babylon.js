@@ -168,10 +168,10 @@ IRangeSelectorComponentState
                         <img src={handleIcon} />
                     </div>
                     <div id="from-key">
-                        {this.props.context.fromKey}
+                        {this.props.context.fromKey | 0}
                     </div>
                     <div id="to-key">
-                        {this.props.context.toKey}
+                        {this.props.context.toKey | 0}
                     </div>
                     <div id="right-handle" className="handle">
                         <img src={handleIcon} />

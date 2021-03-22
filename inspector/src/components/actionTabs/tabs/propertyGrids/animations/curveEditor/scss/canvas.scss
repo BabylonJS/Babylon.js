@@ -15,6 +15,7 @@
         grid-template-columns: 100%;
         grid-template-rows: 100%;
         overflow: hidden;
+        position: relative;
         
         #svg-graph-grid {
             grid-column: 1;
@@ -35,8 +36,9 @@
             width: calc(100% - 40px);
             height: 100%;
             background: black;
-            opacity: 0.4;
+            opacity: 0.2;
             pointer-events: none;
+            position: absolute;
         }
 
         #svg-graph-curves {
