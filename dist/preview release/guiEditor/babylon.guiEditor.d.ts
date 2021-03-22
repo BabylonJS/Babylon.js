@@ -43,6 +43,7 @@ declare module GUIEDITOR {
         constructor(props: IWorkbenchComponentProps);
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
+        changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
@@ -501,6 +502,7 @@ declare module GUIEDITOR {
      */
     export interface IColorPickerProps {
         color: BABYLON.Color3 | BABYLON.Color4;
+        linearhint?: boolean;
         debugMode?: boolean;
         onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
     }
@@ -536,6 +538,7 @@ declare module GUIEDITOR {
 declare module GUIEDITOR {
     export interface IColorPickerComponentProps {
         value: BABYLON.Color4 | BABYLON.Color3;
+        linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
     }
     interface IColorPickerComponentState {

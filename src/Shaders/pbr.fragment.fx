@@ -1,4 +1,4 @@
-#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -468,11 +468,13 @@ void main(void) {
                 #endif
             #endif
         #endif
+        #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
+            surfaceAlbedo,
+        #endif
         #ifdef SS_REFRACTION
             vPositionW,
             viewDirectionW,
             view,
-            surfaceAlbedo,
             vRefractionInfos,
             refractionMatrix,
             vRefractionMicrosurfaceInfos,
@@ -485,9 +487,8 @@ void main(void) {
             #endif
             #ifdef SS_LINEARSPECULARREFRACTION
                 roughness,
-            #else
-                alphaG,
             #endif
+            alphaG,
             refractionSampler,
             #ifndef LODBASEDMICROSFURACE
                 refractionSamplerLow,
@@ -498,6 +499,10 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 vRefractionFilteringInfo,
+            #endif
+            #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+                vRefractionPosition,
+                vRefractionSize,
             #endif
         #endif
         #ifdef SS_TRANSLUCENCY

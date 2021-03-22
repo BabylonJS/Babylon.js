@@ -21,6 +21,7 @@ declare module "babylonjs-node-editor/blockTools" {
     import { ModBlock } from 'babylonjs/Materials/Node/Blocks/modBlock';
     import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
     import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
+    import { ConditionalBlock } from 'babylonjs/Materials/Node/Blocks/conditionalBlock';
     import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
     import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
     import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
@@ -78,7 +79,7 @@ declare module "babylonjs-node-editor/blockTools" {
     import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
     import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilderBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial): MatrixBuilderBlock | DesaturateBlock | RefractBlock | ReflectBlock | DerivativeBlock | Rotate2dBlock | NormalBlendBlock | WorleyNoise3DBlock | SimplexPerlin3DBlock | BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | NLerpBlock | DivideBlock | SubtractBlock | ModBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | GradientBlock | FrontFacingBlock | WaveBlock | InputBlock | PBRMetallicRoughnessBlock | SheenBlock | AnisotropyBlock | ReflectionBlock | ClearCoatBlock | RefractionBlock | SubSurfaceBlock | CurrentScreenBlock | ParticleTextureBlock | ParticleRampGradientBlock | ParticleBlendMultiplyBlock | FragCoordBlock | ScreenSizeBlock | null;
+        static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial): MatrixBuilderBlock | DesaturateBlock | RefractBlock | ReflectBlock | DerivativeBlock | Rotate2dBlock | NormalBlendBlock | WorleyNoise3DBlock | SimplexPerlin3DBlock | BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | NLerpBlock | DivideBlock | SubtractBlock | ModBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | GradientBlock | FrontFacingBlock | WaveBlock | InputBlock | PBRMetallicRoughnessBlock | SheenBlock | AnisotropyBlock | ReflectionBlock | ClearCoatBlock | RefractionBlock | SubSurfaceBlock | CurrentScreenBlock | ParticleTextureBlock | ParticleRampGradientBlock | ParticleBlendMultiplyBlock | FragCoordBlock | ScreenSizeBlock | ConditionalBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -735,6 +736,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/colorPicker
      */
     export interface IColorPickerProps {
         color: Color3 | Color4;
+        linearhint?: boolean;
         debugMode?: boolean;
         onColorChanged?: (color: Color3 | Color4) => void;
     }
@@ -1332,6 +1334,14 @@ declare module "babylonjs-node-editor/diagram/properties/trigonometryNodePropert
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/diagram/properties/conditionalNodePropertyComponent" {
+    import * as React from "react";
+    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
+    export class ConditionalPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/diagram/propertyLedger" {
     import { ComponentClass } from 'react';
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
@@ -1472,6 +1482,17 @@ declare module "babylonjs-node-editor/diagram/display/pbrDisplayManager" {
     import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     export class PBRDisplayManager implements IDisplayManager {
+        getHeaderClass(block: NodeMaterialBlock): string;
+        shouldDisplayPortLabels(block: NodeMaterialBlock): boolean;
+        getHeaderText(block: NodeMaterialBlock): string;
+        getBackgroundColor(block: NodeMaterialBlock): string;
+        updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void;
+    }
+}
+declare module "babylonjs-node-editor/diagram/display/conditionalDisplayManager" {
+    import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
+    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    export class ConditionalDisplayManager implements IDisplayManager {
         getHeaderClass(block: NodeMaterialBlock): string;
         shouldDisplayPortLabels(block: NodeMaterialBlock): boolean;
         getHeaderText(block: NodeMaterialBlock): string;
@@ -2104,6 +2125,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/colorPickerCompon
     import { Color4, Color3 } from 'babylonjs/Maths/math.color';
     export interface IColorPickerComponentProps {
         value: Color4 | Color3;
+        linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
     }
     interface IColorPickerComponentState {
@@ -2933,7 +2955,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.MatrixBuilderBlock | BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.ModBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | BABYLON.PBRMetallicRoughnessBlock | BABYLON.SheenBlock | BABYLON.AnisotropyBlock | BABYLON.ReflectionBlock | BABYLON.ClearCoatBlock | BABYLON.RefractionBlock | BABYLON.SubSurfaceBlock | BABYLON.CurrentScreenBlock | BABYLON.ParticleTextureBlock | BABYLON.ParticleRampGradientBlock | BABYLON.ParticleBlendMultiplyBlock | BABYLON.FragCoordBlock | BABYLON.ScreenSizeBlock | null;
+        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.MatrixBuilderBlock | BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.ModBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | BABYLON.PBRMetallicRoughnessBlock | BABYLON.SheenBlock | BABYLON.AnisotropyBlock | BABYLON.ReflectionBlock | BABYLON.ClearCoatBlock | BABYLON.RefractionBlock | BABYLON.SubSurfaceBlock | BABYLON.CurrentScreenBlock | BABYLON.ParticleTextureBlock | BABYLON.ParticleRampGradientBlock | BABYLON.ParticleBlendMultiplyBlock | BABYLON.FragCoordBlock | BABYLON.ScreenSizeBlock | BABYLON.ConditionalBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -3516,6 +3538,7 @@ declare module NODEEDITOR {
      */
     export interface IColorPickerProps {
         color: BABYLON.Color3 | BABYLON.Color4;
+        linearhint?: boolean;
         debugMode?: boolean;
         onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
     }
@@ -4028,6 +4051,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class ConditionalPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export class PropertyLedger {
         static RegisteredControls: {
             [key: string]: React.ComponentClass<IPropertyComponentProps>;
@@ -4144,6 +4173,15 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class PBRDisplayManager implements IDisplayManager {
+        getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
+        shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
+        getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+        getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
+        updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
+    }
+}
+declare module NODEEDITOR {
+    export class ConditionalDisplayManager implements IDisplayManager {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
         getHeaderText(block: BABYLON.NodeMaterialBlock): string;
@@ -4694,6 +4732,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     export interface IColorPickerComponentProps {
         value: BABYLON.Color4 | BABYLON.Color3;
+        linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
     }
     interface IColorPickerComponentState {

@@ -107,8 +107,8 @@ IRangeFrameBarComponentState
         const from = this.props.context.fromKey;
         const to = this.props.context.toKey;
 
-        let stepCounts = 20;
         let range = to - from;
+        let stepCounts = Math.min(20, to - from);
         let offset = (range / stepCounts) | 0;
         let convertRatio = range / this._viewWidth;
 
@@ -123,7 +123,7 @@ IRangeFrameBarComponentState
 
         if (steps[steps.length - 1] < end) {
             steps.push(end);
-        }
+        }        
 
         return (
             steps.map((s, i) => {

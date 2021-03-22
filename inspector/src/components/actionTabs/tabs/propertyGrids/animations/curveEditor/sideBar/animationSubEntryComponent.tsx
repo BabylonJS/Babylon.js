@@ -4,7 +4,7 @@ import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { KeyPointComponent } from "../graph/keyPoint";
+import { KeyPointComponent, SelectionState } from "../graph/keyPoint";
 
 const selectedIcon = require("../assets/keySelectedIcon.svg");
 
@@ -30,7 +30,17 @@ IAnimationSubEntryComponentState
     constructor(props: IAnimationSubEntryComponentProps) {
         super(props);
 
-        this.state = { isSelected: false };
+        let isSelected = false;
+
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeKeyPoints) {
+            for (var keyPoint of this.props.context.activeKeyPoints) {
+                if (keyPoint.state.selectedState === SelectionState.Selected && keyPoint.props.channel === this.props.color) {
+                    isSelected = true;
+                }
+            }
+        }
+
+        this.state = { isSelected: isSelected };
 
         this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(animation => {
             this.forceUpdate();

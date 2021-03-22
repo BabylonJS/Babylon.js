@@ -3,12 +3,14 @@
 ## Major updates
 
 - Infinite Morph Targets: When supported (WebGL2+) you are no more limited to 4 morph targets per mesh ([Deltakosh](https://github.com/deltakosh))
+- Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 
 ## Updates
 
 ### General
 
-- Added static CenterToRef for vectors 2/3/4  ([aWeirdo](https://github.com/aWeirdo))
+- Added zoomToMouseLocation on ArcRotateCamera ([lovettchris](https://github.com/lovettchris))
+- Added static CenterToRef for vectors 2/3/4 ([aWeirdo](https://github.com/aWeirdo))
 - Added ability to view images (ktx2, png, jpg) to the sandbox. ([bghgary](https://github.com/bghgary))
 - Added optional smoothed normals for extruded procedural polygons. ([snagy](https://github.com/snagy))
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
@@ -37,7 +39,7 @@
 - Added support for KHR_xmp_json_ld for glTF loader. ([Sebavan](https://github.com/sebavan/), [bghgary](https://github.com/bghgary))
 - Added a `OptimizeNormals` option to the OBJ loader to smooth lighting ([Popov72](https://github.com/Popov72))
 - Added a `Prefiltered` option to the CubeTextureAssetTask ([MackeyK24](https://github.com/MackeyK24))
-- Added support for 6 uv sets to glTF loader. ([bghgary](https://github.com/bghgary))
+- Added support for more uv sets to glTF loader. ([bghgary](https://github.com/bghgary))
 
 ### Navigation
 
@@ -50,6 +52,12 @@
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
 - PrePass can now be used in `RenderTargets` speeding up effects like SSAO2 or MotionBlur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
+- Added support for local cube map to refraction cube texture ([Popov72](https://github.com/Popov72))
+- Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
+
+### Meshes
+
+- `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 
 ### Inspector
 
@@ -73,13 +81,14 @@
 - Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
 - Added parenting system ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
+- Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
 - Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
 - Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
 - Added `ToggleButton` GUI control ([kintz09](https://github.com/kintz09))
-- Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class  ([kintz09](https://github.com/kintz09))
+- Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class ([kintz09](https://github.com/kintz09))
 - Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 - Added `imageWidth()` and `imageHeight()` to access the source image dimensions of `Image` ([Queatz](https://github.com/Queatz))
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
@@ -100,9 +109,10 @@
 ### Gizmos
 
 - Exposed `scaleDragSpeed` and added `axisFactor` for BoundingBoxGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
-
 - Provide additional attributes `_customRotationQuaternion` to customize the posture of the gizmo ([ecojust](https://github.com/ecojust))
-
+- Exposed `scaleRatio` for GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added constructor parameters to customize colors for rotation gizmos on RotationGizmo ([jekelija](https://github.com/jekelija))
+- Added constructor parameters to allow turning off updateScale on RotationGizmo ([jekelija](https://github.com/jekelija))
 
 ### Viewer
 
@@ -118,10 +128,9 @@
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix an issue with keyboard control (re)attachment. ([#9411](https://github.com/BabylonJS/Babylon.js/issues/9411)) ([RaananW](https://github.com/RaananW))
-- Fix issue where PBRSpecularGlossiness materials were excluded from export [#9423](https://github.com/BabylonJS/Babylon.js/issues/9423)([Drigax](https://github.com/drigax))
-- Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet))
-- Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
-- Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
+- Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary)
+- Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix crash of some node materials using instances on iOS ([Popov72](https://github.com/Popov72))
 - Fix the code generated for the NME gradient block ([Popov72](https://github.com/Popov72))
 - Fix ssao2RenderingPipeline for orthographic cameras ([Kesshi](https://github.com/Kesshi))
@@ -154,8 +163,13 @@
 - Fix an issue with hand-detachment when using hand tracking in WebXR ([#9882](https://github.com/BabylonJS/Babylon.js/issues/9882)) ([RaananW](https://github.com/RaananW))
 - Fix issue with cursor and 'doNotHandleCursors' on GUI ([msDestiny14](https://github.com/msDestiny14))
 - Fix issue with multi-views when using a transparent scene clear color ([Popov72](https://github.com/Popov72))
+- Fix issue with multi-views when using a hardware scaling level different from 1 ([Popov72](https://github.com/Popov72))
 - Fix thin instances + animated bones not rendered in the depth renderer ([Popov72](https://github.com/Popov72))
 - Fix issue with WebXR teleportation logic which would cause positional headlocking on teleporation frames ([syntheticmagus](https://github.com/syntheticmagus))
+- Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))
+- Fix the strength input parameter of the NME `PerturbNormal` block that was handled as a 1/strength value ([Popov72](https://github.com/Popov72))
+- Fix an issue with audio engine not being garbage-collected when engine is disposed ([RaananW](https://github.com/RaananW))
+- Fix the NME `NormalBlend` block ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
@@ -167,3 +181,4 @@
 - Mesh.createInstance no longer make a unique Geometry for the Mesh so updating one Geometry can affect more meshes than before. Use Mesh.makeUniqueGeometry for old behaviour. ([breakin](https://github.com/breakin))
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
 - Fixed spelling of EventState.initialize() ([seritools](https://github.com/seritools))
+- `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
