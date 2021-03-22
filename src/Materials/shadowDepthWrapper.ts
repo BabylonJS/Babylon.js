@@ -199,9 +199,7 @@ export class ShadowDepthWrapper {
               fragmentSoftTransparentShadow = this._options && this._options.remappedVariables ? `#include<shadowMapFragmentSoftTransparentShadow>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapFragmentSoftTransparentShadow"],
               fragmentBlockCode = Effect.IncludesShadersStore["shadowMapFragment"];
 
-        const vertexIncludeDeclaration = engine.supportsUniformBuffers ? Effect.IncludesShadersStore["shadowMapUboDeclaration"] : Effect.IncludesShadersStore["shadowMapVertexDeclaration"];
-
-        vertexCode = vertexCode.replace(/void\s+?main/g, vertexIncludeDeclaration + "\r\n" + Effect.IncludesShadersStore["shadowMapVertexExtraDeclaration"] + "\r\nvoid main");
+        vertexCode = vertexCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapVertexExtraDeclaration"] + "\r\nvoid main");
         vertexCode = vertexCode.replace(/#define SHADOWDEPTH_NORMALBIAS|#define CUSTOM_VERTEX_UPDATE_WORLDPOS/g, vertexNormalBiasCode);
 
         if (vertexCode.indexOf("#define SHADOWDEPTH_METRIC") !== -1) {
@@ -240,15 +238,6 @@ export class ShadowDepthWrapper {
 
         uniforms.push("biasAndScaleSM", "depthValuesSM", "lightDataSM", "softTransparentShadowSM");
 
-        const uniformBufferNames = origEffect.getUniformBuffersNames().slice();
-
-        if (uniformBufferNames.indexOf("Mesh") < 0) {
-            uniformBufferNames.push("Mesh");
-        }
-        if (uniformBufferNames.indexOf("Scene") < 0) {
-            uniformBufferNames.push("Scene");
-        }
-
         params.depthWrapper!.effect = engine.createEffect({
             vertexSource: vertexCode,
             fragmentSource: fragmentCode,
@@ -257,7 +246,7 @@ export class ShadowDepthWrapper {
         }, <IEffectCreationOptions>{
             attributes: origEffect.getAttributesNames(),
             uniformsNames: uniforms,
-            uniformBuffersNames: uniformBufferNames,
+            uniformBuffersNames: origEffect.getUniformBuffersNames(),
             samplers: origEffect.getSamplers(),
             defines: join + "\n" + origEffect.defines.replace("#define SHADOWS", "").replace(/#define SHADOW\d/g, ""),
             indexParameters: origEffect.getIndexParameters(),

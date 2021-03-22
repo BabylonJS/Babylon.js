@@ -182,4 +182,3 @@
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
 - Fixed spelling of EventState.initialize() ([seritools](https://github.com/seritools))
 - `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
-- When using a `ShadowDepthWrapper` around a `ShaderMaterial`, you now need to use in the shader code the mesh/scene ubo includes to access their uniforms (world, viewProjection, ...) ([Popov72](https://github.com/Popov72))
