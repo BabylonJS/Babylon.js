@@ -89,9 +89,14 @@ IGraphComponentState
 
             let keys = this._currentAnimation.getKeys()
             let newKeys = keys.slice(0);
-            let deletedFrame: Nullable<number> = null;
+            let deletedFrame: Nullable<number> = null;            
 
             for (var keyPoint of this.props.context.activeKeyPoints) {
+                // Cannot delete 0 and last
+                if (keyPoint.props.keyId === 0 || keyPoint.props.keyId === keys.length - 1) {
+                    continue;
+                }
+
                 let key = keys[keyPoint.props.keyId];
 
                 let keyIndex = newKeys.indexOf(key);
