@@ -743,7 +743,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         x: number;
         y: number;
     }
-    enum SelectionState {
+    export enum SelectionState {
         None = 0,
         Selected = 1,
         Siblings = 2
@@ -753,9 +753,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _onActiveKeyFrameChangedObserver;
         private _onFrameManuallyEnteredObserver;
         private _onValueManuallyEnteredObserver;
+        private _onMainKeyPointSetObserver;
+        private _onMainKeyPointMovedObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
+        private _offsetXToMain;
+        private _offsetYToMain;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
@@ -779,6 +783,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         target: IAnimatable;
         activeAnimation: Nullable<Animation>;
         activeKeyPoints: Nullable<KeyPointComponent[]>;
+        mainKeyPoint: Nullable<KeyPointComponent>;
         activeFrame: number;
         fromKey: number;
         toKey: number;
@@ -793,6 +798,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onActiveKeyFrameChanged: Observable<number>;
         onFrameSet: Observable<number>;
         onFrameManuallyEntered: Observable<number>;
+        onMainKeyPointSet: Observable<void>;
+        onMainKeyPointMoved: Observable<void>;
         onValueSet: Observable<number>;
         onValueManuallyEntered: Observable<number>;
         onFrameRequired: Observable<void>;
@@ -955,6 +962,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     interface ITopBarComponentState {
         keyFrameValue: string;
         keyValue: string;
+        editControlsVisible: boolean;
     }
     export class TopBarComponent extends React.Component<ITopBarComponentProps, ITopBarComponentState> {
         private _onFrameSetObserver;
@@ -4921,7 +4929,7 @@ declare module INSPECTOR {
         x: number;
         y: number;
     }
-    enum SelectionState {
+    export enum SelectionState {
         None = 0,
         Selected = 1,
         Siblings = 2
@@ -4931,9 +4939,13 @@ declare module INSPECTOR {
         private _onActiveKeyFrameChangedObserver;
         private _onFrameManuallyEnteredObserver;
         private _onValueManuallyEnteredObserver;
+        private _onMainKeyPointSetObserver;
+        private _onMainKeyPointMovedObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
+        private _offsetXToMain;
+        private _offsetYToMain;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
@@ -4951,6 +4963,7 @@ declare module INSPECTOR {
         target: BABYLON.IAnimatable;
         activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
+        mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
         activeFrame: number;
         fromKey: number;
         toKey: number;
@@ -4965,6 +4978,8 @@ declare module INSPECTOR {
         onActiveKeyFrameChanged: BABYLON.Observable<number>;
         onFrameSet: BABYLON.Observable<number>;
         onFrameManuallyEntered: BABYLON.Observable<number>;
+        onMainKeyPointSet: BABYLON.Observable<void>;
+        onMainKeyPointMoved: BABYLON.Observable<void>;
         onValueSet: BABYLON.Observable<number>;
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
@@ -5106,6 +5121,7 @@ declare module INSPECTOR {
     interface ITopBarComponentState {
         keyFrameValue: string;
         keyValue: string;
+        editControlsVisible: boolean;
     }
     export class TopBarComponent extends React.Component<ITopBarComponentProps, ITopBarComponentState> {
         private _onFrameSetObserver;
