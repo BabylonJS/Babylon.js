@@ -647,6 +647,7 @@ export class WebGPUTextureHelper {
                     baseArrayLayer: 0,
                 }),
                 loadValue: WebGPUConstants.LoadOp.Load,
+                storeOp: WebGPUConstants.StoreOp.Store,
             }],
         });
 
@@ -852,6 +853,7 @@ export class WebGPUTextureHelper {
                         baseArrayLayer: faceIndex,
                     }),
                     loadValue: WebGPUConstants.LoadOp.Load,
+                    storeOp: WebGPUConstants.StoreOp.Store,
                 }],
             });
 
