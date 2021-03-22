@@ -1,7 +1,7 @@
-uniform mat4 world;
-
-uniform mat4 viewProjection;
 uniform mat4 view;
+uniform mat4 viewProjection;
+
+uniform mat4 world;
 
 #ifdef ALBEDO
 uniform mat4 albedoMatrix;
