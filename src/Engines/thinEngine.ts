@@ -165,6 +165,9 @@ export class ThinEngine {
     /** @hidden */
     public static _TextureLoaders: IInternalTextureLoader[] = [];
 
+    /** @hidden */
+    public static _UBOBaseCache: { [key: number]: DataBuffer } = {};
+
     /**
      * Returns the current npm package of the sdk
      */
