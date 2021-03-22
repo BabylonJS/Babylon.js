@@ -213,11 +213,13 @@ export class PlaneRotationGizmo extends Gizmo {
                     localPlaneNormalTowardsCamera = Vector3.TransformCoordinates(planeNormalTowardsCamera, rotationMatrix);
                 }
                 // Flip up vector depending on which side the camera is on
+                let cameraFlipped = false;
                 if (gizmoLayer.utilityLayerScene.activeCamera) {
                     var camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation).normalize();
                     if (Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0) {
                         planeNormalTowardsCamera.scaleInPlace(-1);
                         localPlaneNormalTowardsCamera.scaleInPlace(-1);
+                        cameraFlipped = true;
                     }
                 }
                 var halfCircleSide = Vector3.Dot(localPlaneNormalTowardsCamera, cross) > 0.0;
@@ -268,7 +270,7 @@ export class PlaneRotationGizmo extends Gizmo {
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
                 }
                 this._angles.y += angle;
-                this.angle += angle;
+                this.angle += cameraFlipped ? -angle : angle;
                 this._rotationShaderMaterial.setVector3("angles", this._angles);
                 this._matrixChanged();
             }
