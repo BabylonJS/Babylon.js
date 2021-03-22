@@ -800,7 +800,7 @@ export class Texture extends BaseTexture {
             } else {
                 var texture: Texture;
                 if (parsedTexture.base64String) {
-                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY, undefined, onLoaded);
+                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
                 } else {
                     let url: string;
                     if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
@@ -813,7 +813,7 @@ export class Texture extends BaseTexture {
                     if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
-                    texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, undefined, onLoaded);
+                    texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
                 }
 
                 return texture;

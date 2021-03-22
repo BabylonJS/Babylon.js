@@ -706,14 +706,13 @@ export class UniformBuffer {
     private _cacheMatrix(name: string, matrix: IMatrixLike): boolean {
         this._checkNewFrame();
 
-        var cache = this._valueCache[name];
-        var flag = matrix.updateFlag;
+        const cache = this._valueCache[name];
+        const flag = matrix.updateFlag;
         if (cache !== undefined && cache === flag) {
             return false;
         }
 
         this._valueCache[name] = flag;
-
         return true;
     }
 
