@@ -745,7 +745,7 @@ export class ShaderMaterial extends Material {
         if (effect && uniformBuffers && uniformBuffers.length > 0 && this.getScene().getEngine().supportsUniformBuffers) {
             for (let i = 0; i < uniformBuffers.length; ++i) {
                 const bufferName = uniformBuffers[i];
-                switch(bufferName) {
+                switch (bufferName) {
                     case "Mesh":
                         if (mesh) {
                             mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
