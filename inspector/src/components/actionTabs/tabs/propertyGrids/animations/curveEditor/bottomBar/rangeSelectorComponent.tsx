@@ -78,15 +78,19 @@ IRangeSelectorComponentState
         }
 
         this._updateLimits();
-
         const left = evt.nativeEvent.offsetX;
         if (this._leftHandleIsActive) {
-            this.props.context.fromKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + (left / this._viewWidth) * (this._maxFrame - this._minFrame)) | 0));            
+            this.props.context.fromKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + (left / this._viewWidth) * (this._maxFrame - this._minFrame)) | 0));  
+            
+            this.props.context.fromKey = Math.min(this.props.context.toKey - 1, this.props.context.fromKey);
         } else {
             this.props.context.toKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + (left / this._viewWidth) * (this._maxFrame - this._minFrame)) | 0));
+            this.props.context.toKey = Math.max(this.props.context.fromKey + 1, this.props.context.toKey);
         }
+        
 
         this.props.context.onRangeUpdated.notifyObservers();
+        this.props.context.stop();
 
         this.forceUpdate();
     }

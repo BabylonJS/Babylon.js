@@ -311,7 +311,13 @@ IGraphComponentState
     }
 
     private _invertY(y: number) {
-        return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * (this._maxValue - this._minValue) + this._minValue;
+        let diff = this._maxValue - this._minValue;
+
+        if (diff === 0) {
+            diff = 1;
+        }
+
+        return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * diff + this._minValue;
     }
 
     private _buildYAxis() {

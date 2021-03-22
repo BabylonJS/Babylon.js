@@ -33,7 +33,7 @@ interface IKeyPointComponentState {
     y: number;
 }
 
-enum SelectionState {
+export enum SelectionState {
     None,
     Selected,
     Siblings
@@ -47,21 +47,68 @@ IKeyPointComponentState
     private _onActiveKeyFrameChangedObserver: Nullable<Observer<number>>;
     private _onFrameManuallyEnteredObserver: Nullable<Observer<number>>;
     private _onValueManuallyEnteredObserver: Nullable<Observer<number>>;
+    private _onMainKeyPointSetObserver: Nullable<Observer<void>>;
+    private _onMainKeyPointMovedObserver: Nullable<Observer<void>>;
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
     private _sourcePointerY: number;
 
+    private _offsetXToMain: number;
+    private _offsetYToMain: number;
+
     constructor(props: IKeyPointComponentProps) {
         super(props);
 
         this.state = { selectedState: SelectionState.None, x: this.props.x, y: this.props.y };
+        
+        this._onMainKeyPointSetObserver = this.props.context.onMainKeyPointSet.add(() => {
+            if (!this.props.context.mainKeyPoint || this.props.context.mainKeyPoint === this) {
+                return;
+            }
+            this._offsetXToMain = this.state.x - this.props.context.mainKeyPoint?.state.x;
+            this._offsetYToMain = this.state.y - this.props.context.mainKeyPoint?.state.y;
+        });
+
+        this._onMainKeyPointMovedObserver = this.props.context.onMainKeyPointMoved.add(() => {
+            let mainKeyPoint = this.props.context.mainKeyPoint!;
+            if (mainKeyPoint === this) {
+                return;
+            }
+
+            if (this.state.selectedState !== SelectionState.None) { // Move frame for every selected or siblins
+                let newFrameValue = mainKeyPoint.state.x + this._offsetXToMain;
+
+                this.setState({x: newFrameValue});
+                this.props.onFrameValueChanged(this.props.invertX(newFrameValue));
+            }
+            
+            if (this.state.selectedState === SelectionState.Selected) { // Move value only for selected
+                let newY = mainKeyPoint.state.y + this._offsetYToMain;
+                this.setState({y: newY});            
+                this.props.onKeyValueChanged(this.props.invertY(newY));
+            }
+        });
 
         this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(data => {
-            const isSelected = data?.keyPoint === this;
+            const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+            
+            if (!isSelected && this.props.context.activeKeyPoints) {
+                let curve = this.props.curve;
+                let state = SelectionState.None;
 
-            this.setState({selectedState: isSelected ? SelectionState.Selected : 
-                (data?.keyPoint.props.curve !== this.props.curve && data?.keyPoint.props.keyId === this.props.keyId ? SelectionState.Siblings : SelectionState.None)});
+                for (let activeKeyPoint of this.props.context.activeKeyPoints) {
+                    if (activeKeyPoint.props.keyId === this.props.keyId && curve !== activeKeyPoint.props.curve) {
+                        state = SelectionState.Siblings;
+                        break;
+                    }
+                }
+
+                this.setState({selectedState: state});
+
+            } else {
+                this.setState({selectedState: SelectionState.Selected});
+            }
 
             if (isSelected) {
                 this.props.context.onFrameSet.notifyObservers(this.props.invertX(this.state.x));
@@ -70,7 +117,7 @@ IKeyPointComponentState
         });
 
         this._onActiveKeyFrameChangedObserver = this.props.context.onActiveKeyFrameChanged.add(newFrameValue => {
-            if (this.state.selectedState !== SelectionState.Siblings) {
+            if (this.state.selectedState !== SelectionState.Siblings || this.props.context.mainKeyPoint) {
                 return;
             }
 
@@ -78,6 +125,7 @@ IKeyPointComponentState
             this.props.onFrameValueChanged(this.props.invertX(newFrameValue));
         });
 
+        // Values set via the UI
         this._onFrameManuallyEnteredObserver = this.props.context.onFrameManuallyEntered.add(newValue => {
             if (this.state.selectedState === SelectionState.None) {
                 return;
@@ -113,6 +161,14 @@ IKeyPointComponentState
     }
 
     componentWillUnmount() {
+        if (this._onMainKeyPointSetObserver) {
+            this.props.context.onMainKeyPointSet.remove(this._onMainKeyPointSetObserver);
+        }
+
+        if (this._onMainKeyPointMovedObserver) {
+            this.props.context.onMainKeyPointMoved.remove(this._onMainKeyPointMovedObserver);
+        }
+
         if (this._onActiveKeyPointChangedObserver) {
             this.props.context.onActiveKeyPointChanged.remove(this._onActiveKeyPointChangedObserver);
         }
@@ -146,9 +202,29 @@ IKeyPointComponentState
 
         let index = this.props.context.activeKeyPoints.indexOf(this);
         if (index === -1) {            
+            if (!evt.nativeEvent.ctrlKey) {
+                this.props.context.activeKeyPoints = [];
+            }
             this.props.context.activeKeyPoints.push(this);
+
+            if (this.props.context.activeKeyPoints.length > 1 ) { // multi selection is engaged
+                this.props.context.mainKeyPoint = this;
+                this.props.context.onMainKeyPointSet.notifyObservers();   
+            } else {
+                this.props.context.mainKeyPoint = null;
+            }
         } else {
-            this.props.context.activeKeyPoints.splice(index, 1);
+            if (evt.nativeEvent.ctrlKey) {
+                this.props.context.activeKeyPoints.splice(index, 1);
+                this.props.context.mainKeyPoint = null;
+            } else {
+                if (this.props.context.activeKeyPoints.length > 1 ) {
+                    this.props.context.mainKeyPoint = this;
+                    this.props.context.onMainKeyPointSet.notifyObservers();
+                } else {
+                    this.props.context.mainKeyPoint = null;
+                }
+            }
         }
 
         this.props.context.onActiveKeyPointChanged.notifyObservers({
@@ -203,6 +279,12 @@ IKeyPointComponentState
         this._sourcePointerY = evt.nativeEvent.offsetY;
 
         this.setState({x: newX, y: newY});
+
+        if (this.props.context.activeKeyPoints!.length > 1) {
+            setTimeout(() => {
+                this.props.context.onMainKeyPointMoved.notifyObservers();
+            });
+        }
 
         evt.stopPropagation();
     }

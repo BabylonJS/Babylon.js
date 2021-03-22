@@ -4,6 +4,7 @@ import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { Observer } from "babylonjs/Misc/observable";
+import { Console } from "console";
 
 interface IRangeFrameBarComponentProps {
     globalState: GlobalState;
@@ -107,8 +108,8 @@ IRangeFrameBarComponentState
         const from = this.props.context.fromKey;
         const to = this.props.context.toKey;
 
-        let stepCounts = 20;
         let range = to - from;
+        let stepCounts = Math.min(20, to - from);
         let offset = (range / stepCounts) | 0;
         let convertRatio = range / this._viewWidth;
 
@@ -123,7 +124,7 @@ IRangeFrameBarComponentState
 
         if (steps[steps.length - 1] < end) {
             steps.push(end);
-        }
+        }        
 
         return (
             steps.map((s, i) => {
