@@ -9,3 +9,4 @@ uniform Scene {
 	mat4 projection;
     vec4 vEyePosition;
 };
+
