@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -11205,7 +11205,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 6; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
+exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 6; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px;\n      min-width: 70px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11223,7 +11223,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: black;\n      opacity: 0.4;\n      pointer-events: none; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n", ""]);
+exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: black;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -47055,12 +47055,19 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MediaPlayerComponent, _super);
     function MediaPlayerComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._isMounted = false;
         _this.state = {};
         _this.props.context.onAnimationStateChanged.add(function () {
+            if (!_this._isMounted) {
+                return;
+            }
             _this.forceUpdate();
         });
         return _this;
     }
+    MediaPlayerComponent.prototype.componentDidMount = function () {
+        this._isMounted = true;
+    };
     MediaPlayerComponent.prototype._onFirstKey = function () {
         this.props.context.onMoveToFrameRequired.notifyObservers(this.props.context.fromKey);
     };
@@ -47183,6 +47190,7 @@ var RangeSelectorComponent = /** @class */ (function (_super) {
         this.forceUpdate();
     };
     RangeSelectorComponent.prototype._onPointerDown = function (evt) {
+        this._bothHandleIsActive = false;
         if (evt.nativeEvent.target.id === "left-handle") {
             this._leftHandleIsActive = true;
         }
@@ -47190,8 +47198,10 @@ var RangeSelectorComponent = /** @class */ (function (_super) {
             this._leftHandleIsActive = false;
         }
         else {
-            this._pointerIsDown = false;
-            return;
+            this._bothHandleIsActive = true;
+            this._currentOffset = evt.nativeEvent.clientX;
+            this._currentFrom = this.props.context.fromKey;
+            this._currentTo = this.props.context.toKey;
         }
         this._pointerIsDown = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
@@ -47205,13 +47215,31 @@ var RangeSelectorComponent = /** @class */ (function (_super) {
         }
         this._updateLimits();
         var left = evt.nativeEvent.offsetX;
-        if (this._leftHandleIsActive) {
-            this.props.context.fromKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + (left / this._viewWidth) * (this._maxFrame - this._minFrame)) | 0));
+        if (this._bothHandleIsActive) {
+            left = evt.nativeEvent.clientX - this._currentOffset;
+        }
+        var offset = (left / this._viewWidth) * (this._maxFrame - this._minFrame);
+        var newValue = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + offset) | 0));
+        if (this._bothHandleIsActive) {
+            if (this._currentTo + offset > this._maxFrame) {
+                offset = this._maxFrame - this._currentTo;
+            }
+            if (this._currentFrom + offset < this._minFrame) {
+                offset = this._minFrame - this._currentFrom;
+            }
+            this.props.context.fromKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._currentFrom + offset) | 0));
+            this.props.context.toKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._currentTo + offset) | 0));
+        }
+        else if (this._leftHandleIsActive) {
+            this.props.context.fromKey = newValue;
+            this.props.context.fromKey = Math.min(this.props.context.toKey - 1, this.props.context.fromKey);
         }
         else {
-            this.props.context.toKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + (left / this._viewWidth) * (this._maxFrame - this._minFrame)) | 0));
+            this.props.context.toKey = newValue;
+            this.props.context.toKey = Math.max(this.props.context.fromKey + 1, this.props.context.toKey);
         }
         this.props.context.onRangeUpdated.notifyObservers();
+        this.props.context.stop();
         this.forceUpdate();
     };
     RangeSelectorComponent.prototype._updateLimits = function () {
@@ -47244,8 +47272,8 @@ var RangeSelectorComponent = /** @class */ (function (_super) {
                 } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "left-handle", className: "handle" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: handleIcon })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "from-key" }, this.props.context.fromKey),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "to-key" }, this.props.context.toKey),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "from-key" }, this.props.context.fromKey | 0),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "to-key" }, this.props.context.toKey | 0),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "right-handle", className: "handle" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: handleIcon })))));
     };
@@ -47278,6 +47306,8 @@ var Context = /** @class */ (function () {
         this.onActiveKeyFrameChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameSet = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameManuallyEntered = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onMainKeyPointSet = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onMainKeyPointMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onValueSet = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onValueManuallyEntered = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47807,6 +47837,9 @@ var GraphComponent = /** @class */ (function (_super) {
             _this._frame();
             _this.forceUpdate();
         });
+        _this.props.context.onRangeUpdated.add(function () {
+            _this.forceUpdate();
+        });
         _this.props.context.onDeleteKeyActiveKeyPoints.add(function () {
             if (!_this._currentAnimation || !_this.props.context.activeKeyPoints) {
                 return;
@@ -47816,6 +47849,10 @@ var GraphComponent = /** @class */ (function (_super) {
             var deletedFrame = null;
             for (var _i = 0, _a = _this.props.context.activeKeyPoints; _i < _a.length; _i++) {
                 var keyPoint = _a[_i];
+                // Cannot delete 0 and last
+                if (keyPoint.props.keyId === 0 || keyPoint.props.keyId === keys.length - 1) {
+                    continue;
+                }
                 var key = keys[keyPoint.props.keyId];
                 var keyIndex = newKeys.indexOf(key);
                 if (keyIndex > -1) {
@@ -48001,7 +48038,11 @@ var GraphComponent = /** @class */ (function (_super) {
         return this._GraphAbsoluteHeight - ((y - this._minValue) / diff) * this._GraphAbsoluteHeight;
     };
     GraphComponent.prototype._invertY = function (y) {
-        return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * (this._maxValue - this._minValue) + this._minValue;
+        var diff = this._maxValue - this._minValue;
+        if (diff === 0) {
+            diff = 1;
+        }
+        return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * diff + this._minValue;
     };
     GraphComponent.prototype._buildYAxis = function () {
         var _this = this;
@@ -48118,18 +48159,27 @@ var GraphComponent = /** @class */ (function (_super) {
         var scale = this._viewScale;
         var viewBoxScalingCurves = -this._offsetX + " " + -this._offsetY + " " + Math.round(scale * this._viewCurveWidth) + " " + Math.round(scale * this._viewHeight);
         var viewBoxScalingGrid = "0 " + -this._offsetY + " " + Math.round(scale * this._viewWidth) + " " + Math.round(scale * this._viewHeight);
+        var activeBoxLeft = 0;
+        var activeBoxRight = 0;
+        if (this.props.context.activeAnimation) {
+            var animation = this.props.context.activeAnimation;
+            var keys = animation.getKeys();
+            var minFrame = keys[0].frame;
+            var maxFrame = keys[keys.length - 1].frame;
+            activeBoxLeft = (((this.props.context.fromKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
+            activeBoxRight = (((this.props.context.toKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "graph", onWheel: function (evt) { return _this._onWheel(evt); }, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { id: "svg-graph-grid", viewBox: viewBoxScalingGrid, ref: this._svgHost }, this._buildYAxis()),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "dark-rectangle" }),
+            this.props.context.activeAnimation &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "dark-rectangle", style: {
+                        left: activeBoxLeft + "px",
+                        width: (activeBoxRight - activeBoxLeft) + "px"
+                    } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { ref: this._svgHost2, id: "svg-graph-curves", tabIndex: 0, viewBox: viewBoxScalingCurves },
-                this._curves !== undefined && this._curves.length > 0 &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveComponent__WEBPACK_IMPORTED_MODULE_5__["CurveComponent"], { context: this.props.context, curve: this._curves[0], convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); } }),
-                this._curves !== undefined && this._curves.length > 1 &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveComponent__WEBPACK_IMPORTED_MODULE_5__["CurveComponent"], { context: this.props.context, curve: this._curves[1], convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); } }),
-                this._curves !== undefined && this._curves.length > 2 &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveComponent__WEBPACK_IMPORTED_MODULE_5__["CurveComponent"], { context: this.props.context, curve: this._curves[2], convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); } }),
-                this._curves !== undefined && this._curves.length > 3 &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveComponent__WEBPACK_IMPORTED_MODULE_5__["CurveComponent"], { context: this.props.context, curve: this._curves[3], convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); } }),
+                this._curves.map(function (c, i) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveComponent__WEBPACK_IMPORTED_MODULE_5__["CurveComponent"], { key: i, context: _this.props.context, curve: c, convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); } }));
+                }),
                 this._dropKeyFrames(0),
                 this._dropKeyFrames(1),
                 this._dropKeyFrames(2),
@@ -48146,11 +48196,12 @@ var GraphComponent = /** @class */ (function (_super) {
 /*!********************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/keyPoint.tsx ***!
   \********************************************************************************************/
-/*! exports provided: KeyPointComponent */
+/*! exports provided: SelectionState, KeyPointComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SelectionState", function() { return SelectionState; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KeyPointComponent", function() { return KeyPointComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
@@ -48171,22 +48222,61 @@ var KeyPointComponent = /** @class */ (function (_super) {
     function KeyPointComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y };
+        _this._onMainKeyPointSetObserver = _this.props.context.onMainKeyPointSet.add(function () {
+            var _a, _b;
+            if (!_this.props.context.mainKeyPoint || _this.props.context.mainKeyPoint === _this) {
+                return;
+            }
+            _this._offsetXToMain = _this.state.x - ((_a = _this.props.context.mainKeyPoint) === null || _a === void 0 ? void 0 : _a.state.x);
+            _this._offsetYToMain = _this.state.y - ((_b = _this.props.context.mainKeyPoint) === null || _b === void 0 ? void 0 : _b.state.y);
+        });
+        _this._onMainKeyPointMovedObserver = _this.props.context.onMainKeyPointMoved.add(function () {
+            var mainKeyPoint = _this.props.context.mainKeyPoint;
+            if (mainKeyPoint === _this) {
+                return;
+            }
+            if (_this.state.selectedState !== SelectionState.None && _this.props.keyId !== 0) { // Move frame for every selected or siblins
+                var newFrameValue = mainKeyPoint.state.x + _this._offsetXToMain;
+                _this.setState({ x: newFrameValue });
+                _this.props.onFrameValueChanged(_this.props.invertX(newFrameValue));
+            }
+            if (_this.state.selectedState === SelectionState.Selected) { // Move value only for selected
+                var newY = mainKeyPoint.state.y + _this._offsetYToMain;
+                _this.setState({ y: newY });
+                _this.props.onKeyValueChanged(_this.props.invertY(newY));
+            }
+        });
         _this._onActiveKeyPointChangedObserver = _this.props.context.onActiveKeyPointChanged.add(function (data) {
-            var isSelected = (data === null || data === void 0 ? void 0 : data.keyPoint) === _this;
-            _this.setState({ selectedState: isSelected ? SelectionState.Selected :
-                    ((data === null || data === void 0 ? void 0 : data.keyPoint.props.curve) !== _this.props.curve && (data === null || data === void 0 ? void 0 : data.keyPoint.props.keyId) === _this.props.keyId ? SelectionState.Siblings : SelectionState.None) });
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected && _this.props.context.activeKeyPoints) {
+                var curve = _this.props.curve;
+                var state = SelectionState.None;
+                for (var _i = 0, _b = _this.props.context.activeKeyPoints; _i < _b.length; _i++) {
+                    var activeKeyPoint = _b[_i];
+                    if (activeKeyPoint.props.keyId === _this.props.keyId && curve !== activeKeyPoint.props.curve) {
+                        state = SelectionState.Siblings;
+                        break;
+                    }
+                }
+                _this.setState({ selectedState: state });
+            }
+            else {
+                _this.setState({ selectedState: SelectionState.Selected });
+            }
             if (isSelected) {
                 _this.props.context.onFrameSet.notifyObservers(_this.props.invertX(_this.state.x));
                 _this.props.context.onValueSet.notifyObservers(_this.props.invertY(_this.state.y));
             }
         });
         _this._onActiveKeyFrameChangedObserver = _this.props.context.onActiveKeyFrameChanged.add(function (newFrameValue) {
-            if (_this.state.selectedState !== SelectionState.Siblings) {
+            if (_this.state.selectedState !== SelectionState.Siblings || _this.props.context.mainKeyPoint) {
                 return;
             }
             _this.setState({ x: newFrameValue });
             _this.props.onFrameValueChanged(_this.props.invertX(newFrameValue));
         });
+        // Values set via the UI
         _this._onFrameManuallyEnteredObserver = _this.props.context.onFrameManuallyEntered.add(function (newValue) {
             if (_this.state.selectedState === SelectionState.None) {
                 return;
@@ -48216,6 +48306,12 @@ var KeyPointComponent = /** @class */ (function (_super) {
         return _this;
     }
     KeyPointComponent.prototype.componentWillUnmount = function () {
+        if (this._onMainKeyPointSetObserver) {
+            this.props.context.onMainKeyPointSet.remove(this._onMainKeyPointSetObserver);
+        }
+        if (this._onMainKeyPointMovedObserver) {
+            this.props.context.onMainKeyPointMoved.remove(this._onMainKeyPointMovedObserver);
+        }
         if (this._onActiveKeyPointChangedObserver) {
             this.props.context.onActiveKeyPointChanged.remove(this._onActiveKeyPointChangedObserver);
         }
@@ -48242,10 +48338,32 @@ var KeyPointComponent = /** @class */ (function (_super) {
         }
         var index = this.props.context.activeKeyPoints.indexOf(this);
         if (index === -1) {
+            if (!evt.nativeEvent.ctrlKey) {
+                this.props.context.activeKeyPoints = [];
+            }
             this.props.context.activeKeyPoints.push(this);
+            if (this.props.context.activeKeyPoints.length > 1) { // multi selection is engaged
+                this.props.context.mainKeyPoint = this;
+                this.props.context.onMainKeyPointSet.notifyObservers();
+            }
+            else {
+                this.props.context.mainKeyPoint = null;
+            }
         }
         else {
-            this.props.context.activeKeyPoints.splice(index, 1);
+            if (evt.nativeEvent.ctrlKey) {
+                this.props.context.activeKeyPoints.splice(index, 1);
+                this.props.context.mainKeyPoint = null;
+            }
+            else {
+                if (this.props.context.activeKeyPoints.length > 1) {
+                    this.props.context.mainKeyPoint = this;
+                    this.props.context.onMainKeyPointSet.notifyObservers();
+                }
+                else {
+                    this.props.context.mainKeyPoint = null;
+                }
+            }
         }
         this.props.context.onActiveKeyPointChanged.notifyObservers({
             keyPoint: this,
@@ -48258,6 +48376,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
         evt.stopPropagation();
     };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
+        var _this = this;
         if (!this._pointerIsDown) {
             return;
         }
@@ -48288,6 +48407,11 @@ var KeyPointComponent = /** @class */ (function (_super) {
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
         this.setState({ x: newX, y: newY });
+        if (this.props.context.activeKeyPoints.length > 1) {
+            setTimeout(function () {
+                _this.props.context.onMainKeyPointMoved.notifyObservers();
+            });
+        }
         evt.stopPropagation();
     };
     KeyPointComponent.prototype._onPointerUp = function (evt) {
@@ -48454,6 +48578,7 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._viewWidth = 748;
         _this._offsetX = 10;
+        _this._isMounted = false;
         _this.state = {};
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this.props.context.onHostWindowResized.add(function () {
@@ -48461,21 +48586,34 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
         });
         _this._onActiveAnimationChangedObserver = _this.props.context.onActiveAnimationChanged.add(function () {
             _this._currentAnimation = _this.props.context.activeAnimation;
+            if (!_this._isMounted) {
+                return;
+            }
             _this._computeSizes();
             _this.forceUpdate();
         });
         _this.props.context.onFrameSet.add(function () {
+            if (!_this._isMounted) {
+                return;
+            }
             _this.forceUpdate();
         });
         _this.props.context.onRangeUpdated.add(function () {
+            if (!_this._isMounted) {
+                return;
+            }
             _this.forceUpdate();
         });
         return _this;
     }
+    RangeFrameBarComponent.prototype.componentDidMount = function () {
+        this._isMounted = true;
+    };
     RangeFrameBarComponent.prototype.componentWillUnmount = function () {
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
+        this._isMounted = false;
     };
     RangeFrameBarComponent.prototype._computeSizes = function () {
         if (!this._svgHost.current) {
@@ -48507,8 +48645,8 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
         }
         var from = this.props.context.fromKey;
         var to = this.props.context.toKey;
-        var stepCounts = 20;
         var range = to - from;
+        var stepCounts = Math.min(20, to - from);
         var offset = (range / stepCounts) | 0;
         var convertRatio = range / this._viewWidth;
         var steps = [];
@@ -48523,11 +48661,11 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
         return (steps.map(function (s, i) {
             var x = (s - from) / convertRatio;
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("g", { key: "axis" + s },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { key: "line" + s, x1: x, y1: "22px", x2: x, y2: "40px", style: {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { key: "line" + s + i, x1: x, y1: "22px", x2: x, y2: "40px", style: {
                         stroke: "#333333",
                         strokeWidth: 0.5,
                     } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { key: "label" + s, x: x, y: 0, dx: "6px", textAnchor: "middle", dy: "14px", style: {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { key: "label" + s + i, x: x, y: 0, dx: "6px", textAnchor: "middle", dy: "14px", style: {
                         fontFamily: "acumin-pro-condensed",
                         fontSize: "12px",
                         fill: "#555555",
@@ -48851,6 +48989,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _graph_keyPoint__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../graph/keyPoint */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/keyPoint.tsx");
+
 
 
 var selectedIcon = __webpack_require__(/*! ../assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/keySelectedIcon.svg");
@@ -48858,7 +48998,16 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationSubEntryComponent, _super);
     function AnimationSubEntryComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { isSelected: false };
+        var isSelected = false;
+        if (_this.props.animation === _this.props.context.activeAnimation && _this.props.context.activeKeyPoints) {
+            for (var _i = 0, _a = _this.props.context.activeKeyPoints; _i < _a.length; _i++) {
+                var keyPoint = _a[_i];
+                if (keyPoint.state.selectedState === _graph_keyPoint__WEBPACK_IMPORTED_MODULE_2__["SelectionState"].Selected && keyPoint.props.channel === _this.props.color) {
+                    isSelected = true;
+                }
+            }
+        }
+        _this.state = { isSelected: isSelected };
         _this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(function (animation) {
             _this.forceUpdate();
         });
@@ -49023,7 +49172,7 @@ var TopBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TopBarComponent, _super);
     function TopBarComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { keyFrameValue: "", keyValue: "" };
+        _this.state = { keyFrameValue: "", keyValue: "", editControlsVisible: false };
         _this._onFrameSetObserver = _this.props.context.onFrameSet.add(function (newFrameValue) {
             _this.setState({ keyFrameValue: newFrameValue.toFixed(2) });
         });
@@ -49034,7 +49183,8 @@ var TopBarComponent = /** @class */ (function (_super) {
             _this.setState({ keyFrameValue: "", keyValue: "" });
         });
         _this.onActiveKeyPointChanged = _this.props.context.onActiveKeyPointChanged.add(function () {
-            _this.setState({ keyFrameValue: "", keyValue: "" });
+            var _a;
+            _this.setState({ keyFrameValue: "", keyValue: "", editControlsVisible: ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.length) === 1 });
         });
         return _this;
     }
@@ -49057,8 +49207,10 @@ var TopBarComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "top-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: logoIcon }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "parent-name" }, this.props.context.title),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyFrameValue, tooltip: "Frame", id: "key-frame", onValueAsNumberChanged: function (newValue) { return _this.props.context.onFrameManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
+            this.state.editControlsVisible &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyFrameValue, tooltip: "Frame", id: "key-frame", onValueAsNumberChanged: function (newValue) { return _this.props.context.onFrameManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } })));
     };
     return TopBarComponent;
@@ -51090,7 +51242,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -62782,7 +62934,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -63089,7 +63241,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -63506,7 +63658,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -63845,14 +63997,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/image":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 
