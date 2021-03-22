@@ -13005,6 +13005,8 @@ declare module BABYLON {
         /** @hidden */
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
+        _defaultConnectionPointType: Nullable<NodeMaterialBlockConnectionPointTypes>;
+        /** @hidden */
         _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
         _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint>;
@@ -21271,6 +21273,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -21319,6 +21322,10 @@ declare module BABYLON {
          * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
          */
         useAlbedoToTintRefraction: boolean;
+        /**
+         * When enabled, translucent surfaces will be tinted with the albedo colour (independent of thickness)
+         */
+        useAlbedoToTintTranslucency: boolean;
         private _thicknessTexture;
         /**
          * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
@@ -22285,6 +22292,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -40857,7 +40865,8 @@ declare module BABYLON {
         _badOS: boolean;
         /** @hidden */
         _badDesktopOS: boolean;
-        protected _hardwareScalingLevel: number;
+        /** @hidden */
+        _hardwareScalingLevel: number;
         /** @hidden */
         _caps: EngineCapabilities;
         /** @hidden */
@@ -43016,7 +43025,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
          */
-        static audioEngine: IAudioEngine;
+        static audioEngine: Nullable<IAudioEngine>;
         /**
          * Default AudioEngine factory responsible of creating the Audio Engine.
          * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
@@ -50859,12 +50868,18 @@ declare module BABYLON {
          */
         wheelPrecision: number;
         /**
+         * Gets or Set the boolean value that controls whether or not the mouse wheel
+         * zooms to the location of the mouse pointer or not.  The default is false.
+         */
+        zoomToMouseLocation: boolean;
+        /**
          * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
          * It defines the percentage of current camera.radius to use as delta when wheel is used.
          */
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
+        private _hitPlane;
         private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
@@ -50876,6 +50891,11 @@ declare module BABYLON {
          */
         detachControl(): void;
         /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
          * Gets the class name of the current input.
          * @returns the class name
          */
@@ -50885,6 +50905,11 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
+        private _updateHitPlane;
+        private _getPosition;
+        private _inertialPanning;
+        private _zoomToMouse;
+        private _zeroIfClose;
     }
 }
 declare module BABYLON {
@@ -51098,6 +51123,12 @@ declare module BABYLON {
          */
         get wheelPrecision(): number;
         set wheelPrecision(value: number);
+        /**
+         * Gets or Set the boolean value that controls whether or not the mouse wheel
+         * zooms to the location of the mouse pointer or not.  The default is false.
+         */
+        get zoomToMouseLocation(): boolean;
+        set zoomToMouseLocation(value: boolean);
         /**
          * Gets or Set the mouse wheel delta percentage or how fast is the camera zooming.
          * It will be used instead of pinchDeltaPrecision if different from 0.
@@ -58799,6 +58830,36 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options for each individual plane rotation gizmo contained within RotationGizmo
+     */
+    export interface PlaneRotationGizmoOptions {
+        /**
+         * Color to use for the plane rotation gizmo
+         */
+        color?: Color3;
+    }
+    /**
+     * Additional options for each rotation gizmo
+     */
+    export interface RotationGizmoOptions {
+        /**
+         * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
+         */
+        updateScale?: boolean;
+        /**
+         * Specific options for xGizmo
+         */
+        xOptions?: PlaneRotationGizmoOptions;
+        /**
+         * Specific options for yGizmo
+         */
+        yOptions?: PlaneRotationGizmoOptions;
+        /**
+         * Specific options for zGizmo
+         */
+        zOptions?: PlaneRotationGizmoOptions;
+    }
+    /**
      * Gizmo that enables rotating a mesh along 3 axis
      */
     export class RotationGizmo extends Gizmo {
@@ -58838,8 +58899,10 @@ declare module BABYLON {
          * @param tessellation Amount of tessellation to be used when creating rotation circles
          * @param useEulerRotation Use and update Euler angle instead of quaternion
          * @param thickness display gizmo axis thickness
+         * @param gizmoManager Gizmo manager
+         * @param options More options
          */
-        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number, useEulerRotation?: boolean, thickness?: number, gizmoManager?: GizmoManager);
+        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number, useEulerRotation?: boolean, thickness?: number, gizmoManager?: GizmoManager, options?: RotationGizmoOptions);
         set updateGizmoRotationToMatchAttachedMesh(value: boolean);
         get updateGizmoRotationToMatchAttachedMesh(): boolean;
         /**
@@ -59279,6 +59342,7 @@ declare module BABYLON {
         private _defaultUtilityLayer;
         private _defaultKeepDepthUtilityLayer;
         private _thickness;
+        private _scaleRatio;
         /** Node Caching for quick lookup */
         private _gizmoAxisCache;
         /**
@@ -59309,6 +59373,11 @@ declare module BABYLON {
          * True when the mouse pointer is hovering a gizmo mesh
          */
         get isHovered(): boolean;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        set scaleRatio(value: number);
+        get scaleRatio(): number;
         /**
          * Instantiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
@@ -73870,14 +73939,16 @@ declare module BABYLON {
         static BaseAssetsUrl: string;
         private _emitterCreationOptions;
         private _emitterNode;
+        private _emitterNodeIsOwned;
         /**
          * Gets the particle system list
          */
         systems: IParticleSystem[];
         /**
-         * Gets the emitter node used with this set
+         * Gets or sets the emitter node used with this set
          */
-        get emitterNode(): Nullable<TransformNode>;
+        get emitterNode(): Nullable<AbstractMesh | Vector3>;
+        set emitterNode(value: Nullable<AbstractMesh | Vector3>);
         /**
          * Creates a new emitter mesh as a sphere
          * @param options defines the options used to create the sphere

@@ -56121,17 +56121,6 @@ var PreviewManager = /** @class */ (function () {
             _this._lightParent.rotation.y += rotateLighting;
             lastOffsetX = evt.event.offsetX;
         });
-        // this._scene.registerBeforeRender(() => {
-        //     if (this._camera.alpha === cameraLastRotation) {
-        //         return;
-        //     }
-        //     if (!this._globalState.controlCamera) {
-        //         return;
-        //     }
-        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed;
-        //     this._lightParent.rotate(Vector3.Up(), rotateLighting);
-        //     cameraLastRotation = this._camera.alpha;
-        // });
     }
     PreviewManager.prototype._handleAnimations = function () {
         this._scene.stopAllAnimations();
@@ -62657,6 +62646,20 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 label: "Spherical", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SPHERICAL_MODE
             },
         ];
+        var samplingMode = [
+            { label: "Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_NEAREST },
+            { label: "Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_LINEAR },
+            { label: "Linear & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_LINEAR_MIPLINEAR },
+            { label: "Linear & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_LINEAR_MIPNEAREST },
+            { label: "Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_NEAREST_MIPLINEAR },
+            { label: "Nearest & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_NEAREST_MIPNEAREST },
+            { label: "Nearest/Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_LINEAR },
+            { label: "Nearest/Linear & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_LINEAR_MIPLINEAR },
+            { label: "Nearest/Linear & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_LINEAR_MIPNEAREST },
+            { label: "Linear/Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_NEAREST },
+            { label: "Linear/Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_NEAREST_MIPLINEAR },
+            { label: "Linear/Nearest & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_NEAREST_MIPNEAREST }, // 9
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_11__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
@@ -62673,6 +62676,11 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                 texture && showIsInGammaSpace &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Is in gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
+                texture && texture.updateSamplingMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
+                            texture.updateSamplingMode(value);
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && isInReflectionMode &&

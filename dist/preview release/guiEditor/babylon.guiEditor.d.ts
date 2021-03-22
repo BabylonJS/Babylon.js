@@ -43,6 +43,7 @@ declare module GUIEDITOR {
         constructor(props: IWorkbenchComponentProps);
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
+        changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
