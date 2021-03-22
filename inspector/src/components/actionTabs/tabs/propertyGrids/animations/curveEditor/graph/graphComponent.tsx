@@ -82,6 +82,10 @@ IGraphComponentState
             this.forceUpdate();
         });
 
+        this.props.context.onRangeUpdated.add(() => {
+            this.forceUpdate();
+        });
+
         this.props.context.onDeleteKeyActiveKeyPoints.add(() => { // Delete keypoint
             if (!this._currentAnimation || !this.props.context.activeKeyPoints) {
                 return;
@@ -514,6 +518,18 @@ IGraphComponentState
         const viewBoxScalingCurves = `${-this._offsetX} ${-this._offsetY} ${Math.round(scale * this._viewCurveWidth)} ${Math.round(scale * this._viewHeight)}`;
         const viewBoxScalingGrid = `0 ${-this._offsetY} ${Math.round(scale * this._viewWidth)} ${Math.round(scale * this._viewHeight)}`;
 
+        let activeBoxLeft = 0;
+        let activeBoxRight = 0;
+        if (this.props.context.activeAnimation) {
+            let animation = this.props.context.activeAnimation;
+            let keys = animation.getKeys();
+            let minFrame = keys[0].frame;
+            let maxFrame = keys[keys.length - 1].frame;
+        
+            activeBoxLeft = (((this.props.context.fromKey - minFrame) /  (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
+            activeBoxRight = (((this.props.context.toKey - minFrame) /  (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
+        }
+
         return (
             <div 
                 id="graph"                
@@ -531,7 +547,13 @@ IGraphComponentState
                         this._buildYAxis()
                     }
                 </svg>
-                <div id="dark-rectangle"/>
+                {
+                    this.props.context.activeAnimation && 
+                    <div id="dark-rectangle" style={ {
+                        left: activeBoxLeft + "px",
+                        width: (activeBoxRight - activeBoxLeft) + "px"
+                    }}/>
+                }
                 <svg
                     ref={this._svgHost2}
                     id="svg-graph-curves"
@@ -539,20 +561,11 @@ IGraphComponentState
                     viewBox={viewBoxScalingCurves}
                     >
                     {
-                        this._curves !== undefined && this._curves.length > 0 &&
-                        <CurveComponent context={this.props.context} curve={this._curves[0]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
-                    }
-                    {
-                        this._curves !== undefined && this._curves.length > 1 &&
-                        <CurveComponent context={this.props.context} curve={this._curves[1]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
-                    }
-                    {
-                        this._curves !== undefined && this._curves.length > 2 &&
-                        <CurveComponent context={this.props.context} curve={this._curves[2]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
-                    }
-                    {
-                        this._curves !== undefined && this._curves.length > 3 &&
-                        <CurveComponent context={this.props.context} curve={this._curves[3]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
+                        this._curves.map((c, i) => {
+                            return (
+                                <CurveComponent key={i} context={this.props.context} curve={c} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
+                            )
+                        })
                     }
                     {
                         this._dropKeyFrames(0)
