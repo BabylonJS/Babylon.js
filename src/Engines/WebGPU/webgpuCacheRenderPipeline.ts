@@ -138,6 +138,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private static _NumPipelineCreation = 0;
 
     protected _states: number[];
+    protected _statesLength: number;
     protected _stateDirtyLowestIndex: number;
     public lastStateDirtyLowestIndex: number; // for stats only
 
@@ -185,8 +186,8 @@ export abstract class WebGPUCacheRenderPipeline {
 
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         this._device = device;
-        this._states = [];
-        this._states.length = StatePosition.NumStates;
+        this._states = new Array(30); // pre-allocate enough room so that no new allocation will take place afterwards
+        this._statesLength = 0;
         this._stateDirtyLowestIndex = 0;
         this._emptyVertexBuffer = emptyVertexBuffer;
         this._mrtFormats = [];
@@ -250,7 +251,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this.lastStateDirtyLowestIndex = this._stateDirtyLowestIndex;
 
         if (!this._isDirty && this._parameter.pipeline) {
-            this._stateDirtyLowestIndex = this._states.length;
+            this._stateDirtyLowestIndex = this._statesLength;
             WebGPUCacheRenderPipeline.NumCacheHitWithoutHash++;
             return this._parameter.pipeline;
         }
@@ -258,7 +259,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._getRenderPipeline(this._parameter);
 
         this._isDirty = false;
-        this._stateDirtyLowestIndex = this._states.length;
+        this._stateDirtyLowestIndex = this._statesLength;
 
         if (this._parameter.pipeline) {
             WebGPUCacheRenderPipeline.NumCacheHitWithHash++;
@@ -787,7 +788,7 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     private _setVertexState(effect: Effect): void {
-        const currStateLen = this._states.length;
+        const currStateLen = this._statesLength;
         let newNumStates = StatePosition.VertexState;
 
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
@@ -812,7 +813,7 @@ export abstract class WebGPUCacheRenderPipeline {
             this._states[newNumStates++] = vid;
         }
 
-        this._states.length = newNumStates;
+        this._statesLength = newNumStates;
         this._isDirty = this._isDirty || newNumStates !== currStateLen;
         if (this._isDirty) {
             this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.VertexState);

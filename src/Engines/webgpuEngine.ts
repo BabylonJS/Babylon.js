@@ -644,7 +644,7 @@ export class WebGPUEngine extends Engine {
             supportRenderAndCopyToLodForFloatTextures: true,
             supportDepthStencilTexture: true,
             supportShadowSamplers: true,
-            uniformBufferHardCheckMatrix: true,
+            uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: true,
             trackUbosInFrame: true,
             supportCSM: true,
