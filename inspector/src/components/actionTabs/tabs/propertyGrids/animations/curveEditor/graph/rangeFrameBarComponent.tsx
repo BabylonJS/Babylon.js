@@ -4,7 +4,6 @@ import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { Observer } from "babylonjs/Misc/observable";
-import { Console } from "console";
 
 interface IRangeFrameBarComponentProps {
     globalState: GlobalState;
