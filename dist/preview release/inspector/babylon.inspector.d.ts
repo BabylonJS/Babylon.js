@@ -756,7 +756,9 @@ declare module INSPECTOR {
     interface IMediaPlayerComponentState {
     }
     export class MediaPlayerComponent extends React.Component<IMediaPlayerComponentProps, IMediaPlayerComponentState> {
+        private _isMounted;
         constructor(props: IMediaPlayerComponentProps);
+        componentDidMount(): void;
         private _onFirstKey;
         private _onPrevKey;
         private _onRewind;
@@ -782,6 +784,10 @@ declare module INSPECTOR {
         private _minFrame;
         private _maxFrame;
         private _leftHandleIsActive;
+        private _bothHandleIsActive;
+        private _currentOffset;
+        private _currentFrom;
+        private _currentTo;
         constructor(props: IRangeSelectorComponentProps);
         private _computeSizes;
         private _onPointerDown;
@@ -997,9 +1003,11 @@ declare module INSPECTOR {
         private _svgHost;
         private _viewWidth;
         private _offsetX;
+        private _isMounted;
         private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IRangeFrameBarComponentProps);
+        componentDidMount(): void;
         componentWillUnmount(): void;
         private _computeSizes;
         private _dropKeyFrames;
