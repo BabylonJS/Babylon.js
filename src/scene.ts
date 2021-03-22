@@ -56,6 +56,7 @@ import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
+import { MaterialHelper } from "./Materials/materialHelper";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -4071,6 +4072,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 }
 
                 if (this._renderBundles) {
+                    this._clear();
+                    MaterialHelper.FinalizeSceneUbo(this);
                     webgpuEngine.executeBundles(this._renderBundles);
                     return;
                 }
