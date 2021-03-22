@@ -20,9 +20,9 @@ IRangeFrameBarComponentState
     private _svgHost: React.RefObject<SVGSVGElement>;
     private _viewWidth = 748;
     private _offsetX = 10;
+    private _isMounted = false;
 
     private _currentAnimation: Nullable<Animation>;
-
     
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
 
@@ -39,23 +39,42 @@ IRangeFrameBarComponentState
 
         this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
             this._currentAnimation = this.props.context.activeAnimation;
+
+            if (!this._isMounted) {
+                return;
+            }
+
             this._computeSizes();
             this.forceUpdate();
         });
 
         this.props.context.onFrameSet.add(() => {
+            if (!this._isMounted) {
+                return;
+            }
+
             this.forceUpdate();
         });
 
         this.props.context.onRangeUpdated.add(() => {
+            if (!this._isMounted) {
+                return;
+            }
+
             this.forceUpdate();
         })
+    }
+
+    componentDidMount() {
+        this._isMounted = true;
     }
 
     componentWillUnmount() {
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
+
+        this._isMounted = false;
     }
 
     private _computeSizes() {
@@ -131,7 +150,7 @@ IRangeFrameBarComponentState
                 return (
                     <g key={"axis" + s}>
                         <line
-                            key={"line" + s}
+                            key={"line" + s + i}
                             x1={x}
                             y1="22px"
                             x2={x}
@@ -142,7 +161,7 @@ IRangeFrameBarComponentState
                             }}>
                         </line>
                         <text
-                            key={"label" + s}
+                            key={"label" + s + i}
                             x={x}
                             y={0}
                             dx="6px"
