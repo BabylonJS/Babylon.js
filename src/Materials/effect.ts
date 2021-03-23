@@ -188,6 +188,7 @@ export class Effect implements IDisposable {
     /** @hidden */
     private _rawFragmentSourceCode: string = "";
 
+    private static _baseCache: { [key: number]: DataBuffer } = {};
     private _processingContext: Nullable<ShaderProcessingContext>;
 
     /**
@@ -885,9 +886,10 @@ export class Effect implements IDisposable {
      */
     public bindUniformBuffer(buffer: DataBuffer, name: string): void {
         let bufferName = this._uniformBuffersNames[name];
-        if (bufferName === undefined) {
+        if (bufferName === undefined || (Effect._baseCache[bufferName] === buffer && this._engine._features.useUBOBindingCache)) {
             return;
         }
+        Effect._baseCache[bufferName] = buffer;
         this._engine.bindUniformBufferBase(buffer, bufferName, name);
     }
 
@@ -1295,6 +1297,6 @@ export class Effect implements IDisposable {
      * Resets the cache of effects.
      */
     public static ResetCache() {
-        ThinEngine._UBOBaseCache = {};
+        Effect._baseCache = {};
     }
 }
