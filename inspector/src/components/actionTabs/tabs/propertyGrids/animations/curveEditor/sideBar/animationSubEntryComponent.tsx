@@ -4,7 +4,7 @@ import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { KeyPointComponent, SelectionState } from "../graph/keyPoint";
+import { SelectionState } from "../graph/keyPoint";
 
 const selectedIcon = require("../assets/keySelectedIcon.svg");
 
@@ -25,7 +25,7 @@ IAnimationSubEntryComponentProps,
 IAnimationSubEntryComponentState
 > {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
-    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: KeyPointComponent, channel: string}>>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
 
     constructor(props: IAnimationSubEntryComponentProps) {
         super(props);
@@ -46,8 +46,19 @@ IAnimationSubEntryComponentState
             this.forceUpdate();
         });
 
-        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(data => {
-            this.setState({isSelected: data?.channel === this.props.color && this.props.animation === this.props.context.activeAnimation})
+        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(() => {
+            let isSelected = false;
+
+            if (this.props.context.activeKeyPoints) {
+                for (let activeKeyPoint of this.props.context.activeKeyPoints) {
+                    if (activeKeyPoint.props.channel === this.props.color && this.props.animation === this.props.context.activeAnimation) {
+                        isSelected = true;
+                        break;
+                    }
+                }
+            }
+
+            this.setState({isSelected: isSelected});
         });
     }
 
@@ -66,7 +77,7 @@ IAnimationSubEntryComponentState
             return;
         }
 
-        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
