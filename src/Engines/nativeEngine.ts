@@ -837,6 +837,7 @@ export class NativeEngine extends Engine {
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
             needsInvertingBitmap: true,
+            useUBOBindingCache: true,
             _collectUbosUpdatedInFrame: false,
         };
 

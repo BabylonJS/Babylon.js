@@ -1096,6 +1096,7 @@ export class ThinEngine {
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
             needsInvertingBitmap: true,
+            useUBOBindingCache: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
