@@ -406,12 +406,23 @@ IGraphComponentState
             return;
         }
 
-        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
 
         this._offsetX = 20;
         this._offsetY = 20;
 
         let keys = this._currentAnimation.getKeys();
+
+        // Only keep selected keys
+        if (this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 1) {
+            let newKeys = [];
+            for (var keyPoint of this.props.context.activeKeyPoints) {
+                newKeys.push(keys[keyPoint.props.keyId]);
+            }
+
+            keys = newKeys;
+        }
+
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
 
@@ -479,7 +490,7 @@ IGraphComponentState
         this._inSelectionMode = evt.nativeEvent.ctrlKey;
 
         if (this._inSelectionMode) {
-            this._selectionStartX = this._sourcePointerX;
+            this._selectionStartX = this._sourcePointerX + 40;
             this._selectionStartY = this._sourcePointerY;
         }
     }
@@ -511,6 +522,9 @@ IGraphComponentState
                 style.top = `${localY}px`;
                 style.height = `${(this._selectionStartY - localY)}px`;
             }
+            
+            this.props.context.onSelectionRectangleMoved.notifyObservers(this._selectionRectangle.current!.getBoundingClientRect());
+
             return;
         }
 
@@ -580,6 +594,14 @@ IGraphComponentState
                 onPointerMove={evt => this._onPointerMove(evt)}
                 onPointerUp={evt => this._onPointerUp(evt)}
             >
+                {
+                    this.props.context.activeAnimation && 
+                    <div id="dark-rectangle" style={ {
+                        left: activeBoxLeft + "px",
+                        width: (activeBoxRight - activeBoxLeft) + "px"
+                    }}/>
+                }
+                <div id="block-rectangle"/>
                 <svg
                     id="svg-graph-grid"
                     viewBox={viewBoxScalingGrid}
@@ -589,13 +611,6 @@ IGraphComponentState
                         this._buildYAxis()
                     }
                 </svg>
-                {
-                    this.props.context.activeAnimation && 
-                    <div id="dark-rectangle" style={ {
-                        left: activeBoxLeft + "px",
-                        width: (activeBoxRight - activeBoxLeft) + "px"
-                    }}/>
-                }
                 <svg
                     ref={this._svgHost2}
                     id="svg-graph-curves"

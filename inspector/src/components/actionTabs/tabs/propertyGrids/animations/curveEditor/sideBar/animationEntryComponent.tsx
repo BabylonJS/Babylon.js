@@ -6,7 +6,6 @@ import { ActionButtonComponent } from "../controls/actionButtonComponent";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { AnimationSubEntryComponent } from "./animationSubEntryComponent";
-import { KeyPointComponent } from "../graph/keyPoint";
 
 const gearIcon = require("../assets/animationOptionsIcon.svg");
 const deleteIcon = require("../assets/closeWindowIcon.svg");
@@ -31,7 +30,7 @@ IAnimationEntryComponentProps,
 IAnimationEntryComponentState
 > {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
-    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: KeyPointComponent, channel: string}>>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
 
     constructor(props: IAnimationEntryComponentProps) {
         super(props);
@@ -45,7 +44,7 @@ IAnimationEntryComponentState
             this.forceUpdate();
         });
 
-        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(data => {
+        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(() => {
             this.setState({isSelected: this.props.animation.dataType === Animation.ANIMATIONTYPE_FLOAT && this.props.animation === this.props.context.activeAnimation})
         });
     }
@@ -73,7 +72,8 @@ IAnimationEntryComponentState
             return;
         }
         
-        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+        this.props.context.activeKeyPoints = [];
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }

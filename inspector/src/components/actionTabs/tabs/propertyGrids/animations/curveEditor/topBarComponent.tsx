@@ -29,7 +29,7 @@ ITopBarComponentState
     private _onFrameSetObserver: Nullable<Observer<number>>;
     private _onValueSetObserver: Nullable<Observer<number>>;
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
-    private onActiveKeyPointChanged: Nullable<Observer<any>>;
+    private onActiveKeyPointChanged: Nullable<Observer<void>>;
 
     constructor(props: ITopBarComponentProps) {
         super(props);
