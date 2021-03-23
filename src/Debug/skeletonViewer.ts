@@ -313,7 +313,7 @@ export class SkeletonViewer {
     private _localAxes: Nullable<LinesMesh> = null;
 
     /** If SkeletonViewer is enabled. */
-    private _isEnabled = false;
+    private _isEnabled = true;
 
     /** If SkeletonViewer is ready. */
     private _ready : boolean;

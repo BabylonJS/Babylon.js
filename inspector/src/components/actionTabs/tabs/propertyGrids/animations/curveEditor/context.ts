@@ -12,6 +12,7 @@ export class Context {
     target: IAnimatable;
     activeAnimation: Nullable<Animation>;
     activeKeyPoints: Nullable<KeyPointComponent[]>;
+    mainKeyPoint: Nullable<KeyPointComponent>;
 
     activeFrame: number;
     fromKey: number;
@@ -27,6 +28,9 @@ export class Context {
     
     onFrameSet = new Observable<number>();
     onFrameManuallyEntered = new Observable<number>();
+
+    onMainKeyPointSet = new Observable<void>();
+    onMainKeyPointMoved = new Observable<void>();
 
     onValueSet = new Observable<number>();
     onValueManuallyEntered = new Observable<number>();

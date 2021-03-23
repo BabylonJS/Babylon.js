@@ -36,6 +36,7 @@ export class MediaPlayerComponent extends React.Component<
 IMediaPlayerComponentProps,
 IMediaPlayerComponentState
 > {
+    private _isMounted = false;
 
     constructor(props: IMediaPlayerComponentProps) {
         super(props);
@@ -43,8 +44,15 @@ IMediaPlayerComponentState
         this.state = { };
 
         this.props.context.onAnimationStateChanged.add(() => {
+            if (!this._isMounted) {
+                return;
+            }
             this.forceUpdate();
         });
+    }
+
+    componentDidMount() {
+        this._isMounted = true;
     }
 
     private _onFirstKey() {
