@@ -9,6 +9,7 @@
 
 ### General
 
+- Added zoomToMouseLocation on ArcRotateCamera ([lovettchris](https://github.com/lovettchris))
 - Added static CenterToRef for vectors 2/3/4 ([aWeirdo](https://github.com/aWeirdo))
 - Added ability to view images (ktx2, png, jpg) to the sandbox. ([bghgary](https://github.com/bghgary))
 - Added optional smoothed normals for extruded procedural polygons. ([snagy](https://github.com/snagy))
@@ -38,6 +39,7 @@
 - Added support for KHR_xmp_json_ld for glTF loader. ([Sebavan](https://github.com/sebavan/), [bghgary](https://github.com/bghgary))
 - Added a `OptimizeNormals` option to the OBJ loader to smooth lighting ([Popov72](https://github.com/Popov72))
 - Added a `Prefiltered` option to the CubeTextureAssetTask ([MackeyK24](https://github.com/MackeyK24))
+- Added support for more uv sets to glTF loader. ([bghgary](https://github.com/bghgary))
 
 ### Navigation
 
@@ -109,6 +111,8 @@
 - Exposed `scaleDragSpeed` and added `axisFactor` for BoundingBoxGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Provide additional attributes `_customRotationQuaternion` to customize the posture of the gizmo ([ecojust](https://github.com/ecojust))
 - Exposed `scaleRatio` for GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added constructor parameters to customize colors for rotation gizmos on RotationGizmo ([jekelija](https://github.com/jekelija))
+- Added constructor parameters to allow turning off updateScale on RotationGizmo ([jekelija](https://github.com/jekelija))
 
 ### Viewer
 
@@ -165,6 +169,7 @@
 - Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))
 - Fix the strength input parameter of the NME `PerturbNormal` block that was handled as a 1/strength value ([Popov72](https://github.com/Popov72))
 - Fix an issue with audio engine not being garbage-collected when engine is disposed ([RaananW](https://github.com/RaananW))
+- Fix the NME `NormalBlend` block ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
@@ -176,3 +181,4 @@
 - Mesh.createInstance no longer make a unique Geometry for the Mesh so updating one Geometry can affect more meshes than before. Use Mesh.makeUniqueGeometry for old behaviour. ([breakin](https://github.com/breakin))
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
 - Fixed spelling of EventState.initialize() ([seritools](https://github.com/seritools))
+- `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))

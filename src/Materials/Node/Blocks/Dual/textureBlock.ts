@@ -434,7 +434,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return "";
         }
 
-        var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY});\r\n`;
+        var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY}, ${this.texture.samplingMode});\r\n`;
         codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\r\n`;
         codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\r\n`;
         codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\r\n`;
