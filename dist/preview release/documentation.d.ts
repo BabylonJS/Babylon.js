@@ -30036,7 +30036,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var shadowMapFragmentDeclaration: {
+    export var shadowMapFragmentExtraDeclaration: {
         name: string;
         shader: string;
     };
@@ -30057,7 +30057,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var sceneVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var meshVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var shadowMapVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapUboDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapVertexExtraDeclaration: {
         name: string;
         shader: string;
     };
@@ -30574,6 +30602,7 @@ declare module BABYLON {
         protected _textureType: number;
         protected _defaultTextureMatrix: Matrix;
         protected _storedUniqueId: Nullable<number>;
+        protected _useUBO: boolean;
         /** @hidden */
         _nameForDrawWrapper: string;
         /** @hidden */
@@ -30598,7 +30627,7 @@ declare module BABYLON {
         protected _initializeShadowMap(): void;
         protected _initializeBlurRTTAndPostProcesses(): void;
         protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void;
         protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent?: boolean): void;
         protected _applyFilterValues(): void;
         /**
@@ -30700,8 +30729,6 @@ declare module BABYLON {
         private _subMeshToEffect;
         private _subMeshToDepthWrapper;
         private _meshes;
-        /** @hidden */
-        _matriceNames: any;
         /** Gets the standalone status of the wrapper */
         get standalone(): boolean;
         /** Gets the base material the wrapper is built upon */
@@ -40481,6 +40508,8 @@ declare module BABYLON {
         supportSyncTextureRead: boolean;
         /** Indicates that y should be inverted when dealing with bitmaps (notably in environment tools) */
         needsInvertingBitmap: boolean;
+        /** Indicates that the engine should cache the bound UBO */
+        useUBOBindingCache: boolean;
         /** @hidden */
         _collectUbosUpdatedInFrame: boolean;
     }
@@ -65878,7 +65907,7 @@ declare module BABYLON {
         protected _initializeGenerator(): void;
         protected _createTargetRenderTexture(): void;
         protected _initializeShadowMap(): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void;
         protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
@@ -82031,7 +82060,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var meshFragmentDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var pointCloudVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var sceneFragmentDeclaration: {
         name: string;
         shader: string;
     };
