@@ -1127,9 +1127,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
     };
     /** @hidden */
-    AdvancedDynamicTexture.prototype._getGlobalViewport = function (scene) {
-        var engine = scene.getEngine();
-        return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    AdvancedDynamicTexture.prototype._getGlobalViewport = function () {
+        var size = this.getSize();
+        return this._fullscreenViewport.toGlobal(size.width, size.height);
     };
     /**
     * Get screen coordinates for a vector3
@@ -1142,7 +1142,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (!scene) {
             return babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
         }
-        var globalViewport = this._getGlobalViewport(scene);
+        var globalViewport = this._getGlobalViewport();
         var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
         projectedPosition.scaleInPlace(this.renderScale);
         return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"](projectedPosition.x, projectedPosition.y);
@@ -1158,7 +1158,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (!scene) {
             return babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
         }
-        var globalViewport = this._getGlobalViewport(scene);
+        var globalViewport = this._getGlobalViewport();
         var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
         projectedPosition.scaleInPlace(this.renderScale);
         return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"](projectedPosition.x, projectedPosition.y, projectedPosition.z);
@@ -1174,7 +1174,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             if (!scene) {
                 return;
             }
-            var globalViewport = this._getGlobalViewport(scene);
+            var globalViewport = this._getGlobalViewport();
             var _loop_1 = function (control) {
                 if (!control.isVisible) {
                     return "continue";
@@ -4010,6 +4010,7 @@ var Control = /** @class */ (function () {
         this._isMatrixDirty = true;
         this._isVisible = true;
         this._isHighlighted = false;
+        this._highlightLineWidth = 2;
         this._fontSet = false;
         this._dummyVector2 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
         this._downCount = 0;
@@ -4225,6 +4226,23 @@ var Control = /** @class */ (function () {
             }
             this._alphaSet = true;
             this._alpha = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Control.prototype, "highlightLineWidth", {
+        /**
+         * Gets or sets a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
+         */
+        get: function () {
+            return this._highlightLineWidth;
+        },
+        set: function (value) {
+            if (this._highlightLineWidth === value) {
+                return;
+            }
+            this._highlightLineWidth = value;
             this._markAsDirty();
         },
         enumerable: false,
@@ -5053,7 +5071,7 @@ var Control = /** @class */ (function () {
         }
         this.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-        var globalViewport = this._host._getGlobalViewport(scene);
+        var globalViewport = this._host._getGlobalViewport();
         var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Identity(), scene.getTransformMatrix(), globalViewport);
         this._moveToProjectedPosition(projectedPosition);
         if (projectedPosition.z < 0 || projectedPosition.z > 1) {
@@ -5284,7 +5302,7 @@ var Control = /** @class */ (function () {
         }
         context.save();
         context.strokeStyle = "#4affff";
-        context.lineWidth = 2;
+        context.lineWidth = this._highlightLineWidth;
         this._renderHighlightSpecific(context);
         context.restore();
     };
@@ -9372,7 +9390,7 @@ var Line = /** @class */ (function (_super) {
             babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Cannot move a control to a vector3 if the control is not at root level");
             return;
         }
-        var globalViewport = this._host._getGlobalViewport(scene);
+        var globalViewport = this._host._getGlobalViewport();
         var projectedPosition = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Identity(), scene.getTransformMatrix(), globalViewport);
         this._moveToProjectedPosition(projectedPosition, end);
         if (projectedPosition.z < 0 || projectedPosition.z > 1) {

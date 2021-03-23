@@ -603,7 +603,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         dispose(): void;
         private _onResize;
         /** @hidden */
-        _getGlobalViewport(scene: Scene): Viewport;
+        _getGlobalViewport(): Viewport;
         /**
         * Get screen coordinates for a vector3
         * @param position defines the position to project
@@ -803,6 +803,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _cachedOffsetY;
         private _isVisible;
         private _isHighlighted;
+        private _highlightLineWidth;
         /** @hidden */
         _linkedMesh: Nullable<TransformNode>;
         private _fontSet;
@@ -945,6 +946,11 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
         get alpha(): number;
         set alpha(value: number);
+        /**
+         * Gets or sets a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
+         */
+        get highlightLineWidth(): number;
+        set highlightLineWidth(value: number);
         /**
          * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
          */
@@ -5760,7 +5766,7 @@ declare module BABYLON.GUI {
         dispose(): void;
         private _onResize;
         /** @hidden */
-        _getGlobalViewport(scene: BABYLON.Scene): BABYLON.Viewport;
+        _getGlobalViewport(): BABYLON.Viewport;
         /**
         * Get screen coordinates for a vector3
         * @param position defines the position to project
@@ -5948,6 +5954,7 @@ declare module BABYLON.GUI {
         private _cachedOffsetY;
         private _isVisible;
         private _isHighlighted;
+        private _highlightLineWidth;
         /** @hidden */
         _linkedMesh: BABYLON.Nullable<BABYLON.TransformNode>;
         private _fontSet;
@@ -6090,6 +6097,11 @@ declare module BABYLON.GUI {
         /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
         get alpha(): number;
         set alpha(value: number);
+        /**
+         * Gets or sets a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
+         */
+        get highlightLineWidth(): number;
+        set highlightLineWidth(value: number);
         /**
          * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
          */

@@ -69,8 +69,8 @@ export class NormalBlendBlock extends NodeMaterialBlock {
         state.compilationString += `float ${stepR} = step(0.5, ${input0.associatedVariableName}.r);\r\n`;
         state.compilationString += `float ${stepG} = step(0.5, ${input0.associatedVariableName}.g);\r\n`;
         state.compilationString += this._declareOutput(output, state) + `;\r\n`;
-        state.compilationString += `${output.associatedVariableName}.r = (1.0 - ${stepR}) * ${input0.associatedVariableName}.r * ${input1.associatedVariableName}.r * 2.0 + ${stepR} * (1.0 - ${input0.associatedVariableName}.r) * (1.0 - ${input1.associatedVariableName}.r) * 2.0;\r\n`;
-        state.compilationString += `${output.associatedVariableName}.g = (1.0 - ${stepG}) * ${input0.associatedVariableName}.g * ${input1.associatedVariableName}.g * 2.0 + ${stepG} * (1.0 - ${input0.associatedVariableName}.g) * (1.0 - ${input1.associatedVariableName}.g) * 2.0;\r\n`;
+        state.compilationString += `${output.associatedVariableName}.r = (1.0 - ${stepR}) * ${input0.associatedVariableName}.r * ${input1.associatedVariableName}.r * 2.0 + ${stepR} * (1.0 - (1.0 - ${input0.associatedVariableName}.r) * (1.0 - ${input1.associatedVariableName}.r) * 2.0);\r\n`;
+        state.compilationString += `${output.associatedVariableName}.g = (1.0 - ${stepG}) * ${input0.associatedVariableName}.g * ${input1.associatedVariableName}.g * 2.0 + ${stepG} * (1.0 - (1.0 - ${input0.associatedVariableName}.g) * (1.0 - ${input1.associatedVariableName}.g) * 2.0);\r\n`;
         state.compilationString += `${output.associatedVariableName}.b = ${input0.associatedVariableName}.b * ${input1.associatedVariableName}.b;\r\n`;
 
         return this;

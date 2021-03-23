@@ -397,6 +397,7 @@ declare module INSPECTOR {
      */
     export interface IColorPickerProps {
         color: BABYLON.Color3 | BABYLON.Color4;
+        linearhint?: boolean;
         debugMode?: boolean;
         onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
     }
@@ -432,6 +433,7 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     export interface IColorPickerComponentProps {
         value: BABYLON.Color4 | BABYLON.Color3;
+        linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
     }
     interface IColorPickerComponentState {
@@ -661,7 +663,7 @@ declare module INSPECTOR {
         x: number;
         y: number;
     }
-    enum SelectionState {
+    export enum SelectionState {
         None = 0,
         Selected = 1,
         Siblings = 2
@@ -671,9 +673,13 @@ declare module INSPECTOR {
         private _onActiveKeyFrameChangedObserver;
         private _onFrameManuallyEnteredObserver;
         private _onValueManuallyEnteredObserver;
+        private _onMainKeyPointSetObserver;
+        private _onMainKeyPointMovedObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
+        private _offsetXToMain;
+        private _offsetYToMain;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
@@ -691,6 +697,7 @@ declare module INSPECTOR {
         target: BABYLON.IAnimatable;
         activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
+        mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
         activeFrame: number;
         fromKey: number;
         toKey: number;
@@ -705,6 +712,8 @@ declare module INSPECTOR {
         onActiveKeyFrameChanged: BABYLON.Observable<number>;
         onFrameSet: BABYLON.Observable<number>;
         onFrameManuallyEntered: BABYLON.Observable<number>;
+        onMainKeyPointSet: BABYLON.Observable<void>;
+        onMainKeyPointMoved: BABYLON.Observable<void>;
         onValueSet: BABYLON.Observable<number>;
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
@@ -747,7 +756,9 @@ declare module INSPECTOR {
     interface IMediaPlayerComponentState {
     }
     export class MediaPlayerComponent extends React.Component<IMediaPlayerComponentProps, IMediaPlayerComponentState> {
+        private _isMounted;
         constructor(props: IMediaPlayerComponentProps);
+        componentDidMount(): void;
         private _onFirstKey;
         private _onPrevKey;
         private _onRewind;
@@ -773,6 +784,10 @@ declare module INSPECTOR {
         private _minFrame;
         private _maxFrame;
         private _leftHandleIsActive;
+        private _bothHandleIsActive;
+        private _currentOffset;
+        private _currentFrom;
+        private _currentTo;
         constructor(props: IRangeSelectorComponentProps);
         private _computeSizes;
         private _onPointerDown;
@@ -846,6 +861,7 @@ declare module INSPECTOR {
     interface ITopBarComponentState {
         keyFrameValue: string;
         keyValue: string;
+        editControlsVisible: boolean;
     }
     export class TopBarComponent extends React.Component<ITopBarComponentProps, ITopBarComponentState> {
         private _onFrameSetObserver;
@@ -987,9 +1003,11 @@ declare module INSPECTOR {
         private _svgHost;
         private _viewWidth;
         private _offsetX;
+        private _isMounted;
         private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IRangeFrameBarComponentProps);
+        componentDidMount(): void;
         componentWillUnmount(): void;
         private _computeSizes;
         private _dropKeyFrames;

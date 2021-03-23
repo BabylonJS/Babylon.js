@@ -170,14 +170,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.14";
+        return "babylonjs@5.0.0-alpha.15";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.14";
+        return "5.0.0-alpha.15";
     }
 
     /**
@@ -1096,6 +1096,7 @@ export class ThinEngine {
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
             needsInvertingBitmap: true,
+            useUBOBindingCache: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
