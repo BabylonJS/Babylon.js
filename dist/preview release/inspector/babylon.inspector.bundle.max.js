@@ -11223,7 +11223,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: black;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n", ""]);
+exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: black;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11259,7 +11259,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
+exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -47318,6 +47318,8 @@ var Context = /** @class */ (function () {
         this.onMoveToFrameRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onAnimationStateChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDeleteKeyActiveKeyPoints = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onSelectionRectangleMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onSwitchToEditMode = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     Context.prototype.prepare = function () {
         this.isPlaying = false;
@@ -48084,10 +48086,19 @@ var GraphComponent = /** @class */ (function (_super) {
         if (!this._currentAnimation) {
             return;
         }
-        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
         this._offsetX = 20;
         this._offsetY = 20;
         var keys = this._currentAnimation.getKeys();
+        // Only keep selected keys
+        if (this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 1) {
+            var newKeys = [];
+            for (var _i = 0, _a = this.props.context.activeKeyPoints; _i < _a.length; _i++) {
+                var keyPoint = _a[_i];
+                newKeys.push(keys[keyPoint.props.keyId]);
+            }
+            keys = newKeys;
+        }
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
         var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false);
@@ -48126,7 +48137,7 @@ var GraphComponent = /** @class */ (function (_super) {
         this._sourcePointerY = evt.nativeEvent.offsetY;
         this._inSelectionMode = evt.nativeEvent.ctrlKey;
         if (this._inSelectionMode) {
-            this._selectionStartX = this._sourcePointerX;
+            this._selectionStartX = this._sourcePointerX + 40;
             this._selectionStartY = this._sourcePointerY;
         }
     };
@@ -48155,6 +48166,7 @@ var GraphComponent = /** @class */ (function (_super) {
                 style.top = localY + "px";
                 style.height = (this._selectionStartY - localY) + "px";
             }
+            this.props.context.onSelectionRectangleMoved.notifyObservers(this._selectionRectangle.current.getBoundingClientRect());
             return;
         }
         this._offsetX += (evt.nativeEvent.offsetX - this._sourcePointerX) * this._viewScale;
@@ -48200,12 +48212,13 @@ var GraphComponent = /** @class */ (function (_super) {
             activeBoxRight = (((this.props.context.toKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "graph", onWheel: function (evt) { return _this._onWheel(evt); }, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { id: "svg-graph-grid", viewBox: viewBoxScalingGrid, ref: this._svgHost }, this._buildYAxis()),
             this.props.context.activeAnimation &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "dark-rectangle", style: {
                         left: activeBoxLeft + "px",
                         width: (activeBoxRight - activeBoxLeft) + "px"
                     } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "block-rectangle" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { id: "svg-graph-grid", viewBox: viewBoxScalingGrid, ref: this._svgHost }, this._buildYAxis()),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { ref: this._svgHost2, id: "svg-graph-curves", tabIndex: 0, viewBox: viewBoxScalingCurves },
                 this._curves.map(function (c, i) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveComponent__WEBPACK_IMPORTED_MODULE_5__["CurveComponent"], { key: i, context: _this.props.context, curve: c, convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); } }));
@@ -48253,6 +48266,30 @@ var KeyPointComponent = /** @class */ (function (_super) {
     function KeyPointComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y };
+        _this._svgHost = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._onSelectionRectangleMovedObserver = _this.props.context.onSelectionRectangleMoved.add(function (rect1) {
+            var rect2 = _this._svgHost.current.getBoundingClientRect();
+            var overlap = !(rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom);
+            if (!_this.props.context.activeKeyPoints) {
+                _this.props.context.activeKeyPoints = [];
+            }
+            var index = _this.props.context.activeKeyPoints.indexOf(_this);
+            if (overlap) {
+                if (index === -1) {
+                    _this.props.context.activeKeyPoints.push(_this);
+                    _this.props.context.onActiveKeyPointChanged.notifyObservers();
+                }
+            }
+            else {
+                if (index > -1) {
+                    _this.props.context.activeKeyPoints.splice(index, 1);
+                    _this.props.context.onActiveKeyPointChanged.notifyObservers();
+                }
+            }
+        });
         _this._onMainKeyPointSetObserver = _this.props.context.onMainKeyPointSet.add(function () {
             var _a, _b;
             if (!_this.props.context.mainKeyPoint || _this.props.context.mainKeyPoint === _this) {
@@ -48263,7 +48300,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
         });
         _this._onMainKeyPointMovedObserver = _this.props.context.onMainKeyPointMoved.add(function () {
             var mainKeyPoint = _this.props.context.mainKeyPoint;
-            if (mainKeyPoint === _this) {
+            if (mainKeyPoint === _this || !mainKeyPoint) {
                 return;
             }
             if (_this.state.selectedState !== SelectionState.None && _this.props.keyId !== 0) { // Move frame for every selected or siblins
@@ -48277,7 +48314,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
                 _this.props.onKeyValueChanged(_this.props.invertY(newY));
             }
         });
-        _this._onActiveKeyPointChangedObserver = _this.props.context.onActiveKeyPointChanged.add(function (data) {
+        _this._onActiveKeyPointChangedObserver = _this.props.context.onActiveKeyPointChanged.add(function () {
             var _a;
             var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
             if (!isSelected && _this.props.context.activeKeyPoints) {
@@ -48337,6 +48374,9 @@ var KeyPointComponent = /** @class */ (function (_super) {
         return _this;
     }
     KeyPointComponent.prototype.componentWillUnmount = function () {
+        if (this._onSelectionRectangleMovedObserver) {
+            this.props.context.onSelectionRectangleMoved.remove(this._onSelectionRectangleMovedObserver);
+        }
         if (this._onMainKeyPointSetObserver) {
             this.props.context.onMainKeyPointSet.remove(this._onMainKeyPointSetObserver);
         }
@@ -48363,13 +48403,13 @@ var KeyPointComponent = /** @class */ (function (_super) {
         }
         return true;
     };
-    KeyPointComponent.prototype._onPointerDown = function (evt) {
+    KeyPointComponent.prototype._select = function (allowMultipleSelection) {
         if (!this.props.context.activeKeyPoints) {
-            this.props.context.activeKeyPoints = [];
+            return;
         }
         var index = this.props.context.activeKeyPoints.indexOf(this);
         if (index === -1) {
-            if (!evt.nativeEvent.ctrlKey) {
+            if (!allowMultipleSelection) {
                 this.props.context.activeKeyPoints = [];
             }
             this.props.context.activeKeyPoints.push(this);
@@ -48382,7 +48422,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
             }
         }
         else {
-            if (evt.nativeEvent.ctrlKey) {
+            if (allowMultipleSelection) {
                 this.props.context.activeKeyPoints.splice(index, 1);
                 this.props.context.mainKeyPoint = null;
             }
@@ -48396,10 +48436,13 @@ var KeyPointComponent = /** @class */ (function (_super) {
                 }
             }
         }
-        this.props.context.onActiveKeyPointChanged.notifyObservers({
-            keyPoint: this,
-            channel: this.props.channel
-        });
+    };
+    KeyPointComponent.prototype._onPointerDown = function (evt) {
+        if (!this.props.context.activeKeyPoints) {
+            this.props.context.activeKeyPoints = [];
+        }
+        this._select(evt.nativeEvent.ctrlKey);
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
         this._pointerIsDown = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
@@ -48408,7 +48451,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
     };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
         var _this = this;
-        if (!this._pointerIsDown) {
+        if (!this._pointerIsDown || this.state.selectedState !== SelectionState.Selected) {
             return;
         }
         var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
@@ -48440,7 +48483,9 @@ var KeyPointComponent = /** @class */ (function (_super) {
         this.setState({ x: newX, y: newY });
         if (this.props.context.activeKeyPoints.length > 1) {
             setTimeout(function () {
-                _this.props.context.onMainKeyPointMoved.notifyObservers();
+                if (_this.props.context.mainKeyPoint) {
+                    _this.props.context.onMainKeyPointMoved.notifyObservers();
+                }
             });
         }
         evt.stopPropagation();
@@ -48453,7 +48498,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
     KeyPointComponent.prototype.render = function () {
         var _this = this;
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { ref: this._svgHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, href: svgImageIcon })));
     };
     return KeyPointComponent;
@@ -48521,7 +48566,7 @@ var PlayHeadComponent = /** @class */ (function (_super) {
         return _this;
     }
     PlayHeadComponent.prototype._moveHead = function (frame) {
-        if (!this._playHead.current || !this._playHeadCircle.current) {
+        if (!this._playHead.current || !this._playHeadCircle.current || frame === undefined) {
             return;
         }
         this._playHead.current.style.left = this._frameToPixel(frame) + "px";
@@ -48901,7 +48946,7 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
             }
             _this.forceUpdate();
         });
-        _this._onActiveKeyPointChangedObserver = _this.props.context.onActiveKeyPointChanged.add(function (data) {
+        _this._onActiveKeyPointChangedObserver = _this.props.context.onActiveKeyPointChanged.add(function () {
             _this.setState({ isSelected: _this.props.animation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT && _this.props.animation === _this.props.context.activeAnimation });
         });
         return _this;
@@ -48923,7 +48968,8 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
         if (this.props.animation === this.props.context.activeAnimation) {
             return;
         }
-        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+        this.props.context.activeKeyPoints = [];
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
@@ -49042,8 +49088,18 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
         _this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(function (animation) {
             _this.forceUpdate();
         });
-        _this._onActiveKeyPointChangedObserver = _this.props.context.onActiveKeyPointChanged.add(function (data) {
-            _this.setState({ isSelected: (data === null || data === void 0 ? void 0 : data.channel) === _this.props.color && _this.props.animation === _this.props.context.activeAnimation });
+        _this._onActiveKeyPointChangedObserver = _this.props.context.onActiveKeyPointChanged.add(function () {
+            var isSelected = false;
+            if (_this.props.context.activeKeyPoints) {
+                for (var _i = 0, _a = _this.props.context.activeKeyPoints; _i < _a.length; _i++) {
+                    var activeKeyPoint = _a[_i];
+                    if (activeKeyPoint.props.channel === _this.props.color && _this.props.animation === _this.props.context.activeAnimation) {
+                        isSelected = true;
+                        break;
+                    }
+                }
+            }
+            _this.setState({ isSelected: isSelected });
         });
         return _this;
     }
@@ -49059,7 +49115,7 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
         if (this.props.animation === this.props.context.activeAnimation) {
             return;
         }
-        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
@@ -49082,6 +49138,229 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/loadAnimationComponent.tsx":
+/*!************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/loadAnimationComponent.tsx ***!
+  \************************************************************************************************************/
+/*! exports provided: LoadAnimationComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LoadAnimationComponent", function() { return LoadAnimationComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+
+var LoadAnimationComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LoadAnimationComponent, _super);
+    function LoadAnimationComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {};
+        _this._root = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        _this._textInput = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        return _this;
+    }
+    LoadAnimationComponent.prototype.loadFromFile = function (evt) {
+        var _this = this;
+        var files = evt.target.files;
+        if (!files || !files.length) {
+            return;
+        }
+        var file = files[0];
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].ReadFile(file, function (data) {
+            var context = _this.props.context;
+            var decoder = new TextDecoder("utf-8");
+            var parsedAnimations = JSON.parse(decoder.decode(data)).animations;
+            context.animations = [];
+            for (var _i = 0, parsedAnimations_1 = parsedAnimations; _i < parsedAnimations_1.length; _i++) {
+                var parsedAnimation = parsedAnimations_1[_i];
+                context.animations.push(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Animation"].Parse(parsedAnimation));
+            }
+            context.stop();
+            context.target.animations = context.animations;
+            context.activeAnimation = null;
+            context.onActiveAnimationChanged.notifyObservers();
+            context.onSwitchToEditMode.notifyObservers();
+        }, undefined, true);
+        evt.target.value = "";
+    };
+    LoadAnimationComponent.prototype.loadFromSnippetServer = function () {
+        var _this = this;
+        var context = this.props.context;
+        var snippetId = this._textInput.current.value;
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Animation"].CreateFromSnippetAsync(snippetId).then(function (animations) {
+            context.snippetId = snippetId;
+            if (animations.length !== undefined) {
+                context.animations = animations;
+            }
+            else {
+                context.animations = [animations];
+            }
+            context.stop();
+            context.target.animations = context.animations;
+            context.activeAnimation = null;
+            context.onActiveAnimationChanged.notifyObservers();
+            context.onSwitchToEditMode.notifyObservers();
+        }).catch(function (err) {
+            var _a;
+            (_a = _this._root.current) === null || _a === void 0 ? void 0 : _a.ownerDocument.defaultView.alert("Unable to load your animations: " + err);
+        });
+    };
+    LoadAnimationComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "load-animation-pane", ref: this._root },
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "load-animation-snippet-id-label" }, "Snippet Id"),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "load-animation-local-file-label" }, "Local File"),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("input", { type: "text", id: "load-snippet-id", ref: this._textInput }),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("button", { className: "simple-button", id: "load-snippet", type: "button", onClick: function () { return _this.loadFromSnippetServer(); } }, "Load"),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("label", { htmlFor: "upload-snippet", id: "file-snippet-label", className: "simple-button" }, "Browse"),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("input", { id: "upload-snippet", type: "file", accept: ".json", onChange: function (evt) { return _this.loadFromFile(evt); } }),
+            this.props.context.snippetId &&
+                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "load-animation-snippet" },
+                    "Snippet ID: ",
+                    this.props.context.snippetId)));
+    };
+    return LoadAnimationComponent;
+}(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/saveAnimationComponent.tsx":
+/*!************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/saveAnimationComponent.tsx ***!
+  \************************************************************************************************************/
+/*! exports provided: SaveAnimationComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SaveAnimationComponent", function() { return SaveAnimationComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../../sharedUiComponents/stringTools */ "./sharedUiComponents/stringTools.ts");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Animations/animation */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+var SaveAnimationComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SaveAnimationComponent, _super);
+    function SaveAnimationComponent(props) {
+        var _a;
+        var _this = _super.call(this, props) || this;
+        _this._selectedAnimations = [];
+        _this.state = {};
+        _this._root = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        if (_this.props.context.animations) {
+            _this._selectedAnimations = (_a = _this.props.context.animations) === null || _a === void 0 ? void 0 : _a.slice(0);
+        }
+        return _this;
+    }
+    SaveAnimationComponent.prototype._getJson = function () {
+        var json = {
+            animations: []
+        };
+        for (var _i = 0, _a = this._selectedAnimations; _i < _a.length; _i++) {
+            var animation = _a[_i];
+            json.animations.push(animation.serialize());
+        }
+        return JSON.stringify(json);
+    };
+    SaveAnimationComponent.prototype.saveToSnippetServer = function () {
+        var _this = this;
+        var xmlHttp = new XMLHttpRequest();
+        var hostDocument = this._root.current.ownerDocument;
+        var json = this._getJson();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4) {
+                if (xmlHttp.status == 200) {
+                    var snippet = JSON.parse(xmlHttp.responseText);
+                    var oldId = _this.props.context.snippetId;
+                    _this.props.context.snippetId = snippet.id;
+                    if (snippet.version && snippet.version != "0") {
+                        _this.props.context.snippetId += "#" + snippet.version;
+                    }
+                    _this.forceUpdate();
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(_this.props.context.snippetId);
+                    }
+                    var windowAsAny = window;
+                    if (windowAsAny.Playground && oldId) {
+                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                            regex: new RegExp(oldId, "g"),
+                            replace: _this.props.context.snippetId
+                        });
+                    }
+                    hostDocument.defaultView.alert("Animations saved with ID: " + _this.props.context.snippetId + " (please note that the id was also saved to your clipboard)");
+                }
+                else {
+                    hostDocument.defaultView.alert("Unable to save your animations. It may be too large (" + (dataToSend.payload.length / 1024).toFixed(2) + " KB). Please try reducing the number of animations or the number of keys per animation and try again.");
+                }
+            }
+        };
+        xmlHttp.open("POST", babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].SnippetUrl + (this.props.context.snippetId ? "/" + this.props.context.snippetId : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+        var dataToSend = {
+            payload: JSON.stringify({
+                animations: json
+            }),
+            name: "",
+            description: "",
+            tags: ""
+        };
+        xmlHttp.send(JSON.stringify(dataToSend));
+    };
+    SaveAnimationComponent.prototype.saveToFile = function () {
+        _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_2__["StringTools"].DownloadAsFile(this._root.current.ownerDocument, this._getJson(), "animations.json");
+    };
+    SaveAnimationComponent.prototype.render = function () {
+        var _this = this;
+        var _a;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-pane", ref: this._root },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-list" }, (_a = this.props.context.animations) === null || _a === void 0 ? void 0 : _a.map(function (a, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "save-animation-list-entry", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", value: a.name, checked: true, onClick: function (evt) {
+                            if (evt.currentTarget.checked) {
+                                _this._selectedAnimations.push(a);
+                            }
+                            else {
+                                var index = _this._selectedAnimations.indexOf(a);
+                                if (index > -1) {
+                                    _this._selectedAnimations.splice(index, 1);
+                                }
+                            }
+                        } }),
+                    a.name));
+            })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-buttons" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "save-snippet", type: "button", onClick: function () {
+                        _this.saveToSnippetServer();
+                    } }, "Save Snippet"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "save-file", type: "button", onClick: function () {
+                        _this.saveToFile();
+                    } }, "Save File")),
+            this.props.context.snippetId &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-snippet" },
+                    "Snippet ID: ",
+                    this.props.context.snippetId)));
+    };
+    return SaveAnimationComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/sideBarComponent.tsx":
 /*!******************************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/sideBarComponent.tsx ***!
@@ -49098,6 +49377,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../controls/actionButtonComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/actionButtonComponent.tsx");
 /* harmony import */ var _animationListComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./animationListComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/animationListComponent.tsx");
 /* harmony import */ var _controls_textInputComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../controls/textInputComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent.tsx");
+/* harmony import */ var _saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./saveAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/saveAnimationComponent.tsx");
+/* harmony import */ var _loadAnimationComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./loadAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/loadAnimationComponent.tsx");
+
+
 
 
 
@@ -49132,6 +49415,7 @@ var SideBarComponent = /** @class */ (function (_super) {
                 _this.forceUpdate();
             }
         });
+        _this.props.context.onSwitchToEditMode.add(function () { return _this.setState({ mode: Mode.Edit }); });
         return _this;
     }
     SideBarComponent.prototype._onAddAnimation = function () {
@@ -49168,7 +49452,11 @@ var SideBarComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Edit animations", isActive: this.state.mode === Mode.Edit, id: "edit-animation", globalState: this.props.globalState, context: this.props.context, icon: editIcon, onClick: function () { return _this._onEditAnimation(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputComponent"], { value: this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond.toString() : "60", complement: " fps", isNumber: true, onValueAsNumberChanged: function (value) { var _a; return (_a = _this.props.context.animations) === null || _a === void 0 ? void 0 : _a.forEach(function (anim) { return anim.framePerSecond = value; }); }, tooltip: "Framerate", id: "framerate-animation", globalState: this.props.globalState, context: this.props.context })),
             this.state.mode === Mode.Edit &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListComponent__WEBPACK_IMPORTED_MODULE_3__["AnimationListComponent"], { globalState: this.props.globalState, context: this.props.context })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListComponent__WEBPACK_IMPORTED_MODULE_3__["AnimationListComponent"], { globalState: this.props.globalState, context: this.props.context }),
+            this.state.mode === Mode.Save &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__["SaveAnimationComponent"], { globalState: this.props.globalState, context: this.props.context }),
+            this.state.mode === Mode.Load &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_loadAnimationComponent__WEBPACK_IMPORTED_MODULE_6__["LoadAnimationComponent"], { globalState: this.props.globalState, context: this.props.context })));
     };
     return SideBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -62862,6 +63150,105 @@ var Vector4LineComponent = /** @class */ (function (_super) {
     };
     return Vector4LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/stringTools.ts":
+/*!*******************************************!*\
+  !*** ./sharedUiComponents/stringTools.ts ***!
+  \*******************************************/
+/*! exports provided: StringTools */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StringTools", function() { return StringTools; });
+var StringTools = /** @class */ (function () {
+    function StringTools() {
+    }
+    /*
+     * Based on FileSaver.js
+     * A saveAs() FileSaver implementation.
+     *
+     * By Eli Grey, http://eligrey.com
+     *
+     * License : https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md (MIT)
+     * source  : http://purl.eligrey.com/github/FileSaver.js
+     */
+    StringTools._SaveAs = function (blob, name, document) {
+        var _this = this;
+        if ('download' in HTMLAnchorElement.prototype) {
+            var URL = window.URL || window.webkitURL;
+            var a = document.createElement('a');
+            a.download = name;
+            a.rel = 'noopener'; // tabnabbing
+            a.href = URL.createObjectURL(blob);
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 4E4); // 40s
+            setTimeout(function () { _this._Click(a, document); }, 0);
+            return;
+        }
+        // Open a popup immediately do go around popup blocker
+        // Mostly only available on user interaction and the fileReader is async so...
+        var popup = open('', '_blank');
+        if (popup) {
+            popup.document.title = popup.document.body.innerText = 'downloading...';
+        }
+        var force = blob.type === 'application/octet-stream';
+        var isSafari = /constructor/i.test(window.HTMLElement) || window.safari;
+        var isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent);
+        if ((isChromeIOS || (force && isSafari)) && typeof FileReader !== 'undefined') {
+            // Safari doesn't allow downloading of blob URLs
+            var reader = new FileReader();
+            reader.onloadend = function () {
+                var url = reader.result;
+                url = isChromeIOS ? url : url.replace(/^data:[^;]*;/, 'data:attachment/file;');
+                if (popup) {
+                    popup.location.href = url;
+                }
+                else {
+                    location = url;
+                }
+                popup = null;
+            };
+            reader.readAsDataURL(blob);
+        }
+        else {
+            var URL = window.URL || window.webkitURL;
+            var url = URL.createObjectURL(blob);
+            if (popup) {
+                popup.location.href = url;
+            }
+            else {
+                location.href = url;
+            }
+            popup = null;
+            setTimeout(function () { URL.revokeObjectURL(url); }, 4E4);
+        }
+    };
+    StringTools._Click = function (node, document) {
+        try {
+            node.dispatchEvent(new MouseEvent('click'));
+        }
+        catch (e) {
+            var evt = document.createEvent('MouseEvents');
+            evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
+            node.dispatchEvent(evt);
+        }
+    };
+    /**
+     * Download a string into a file that will be saved locally by the browser
+     * @param content defines the string to download locally as a file
+     */
+    StringTools.DownloadAsFile = function (document, content, filename) {
+        var blob = new Blob([content], {
+            type: "application/octet-stream"
+        });
+        this._SaveAs(blob, filename, document);
+    };
+    return StringTools;
+}());
 
 
 
