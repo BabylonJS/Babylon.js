@@ -33,6 +33,8 @@ IGraphComponentState
     private _viewScale = 1;
     private _offsetX = 0;
     private _offsetY = 0;
+
+    private _inSelectionMode: boolean;
     
     private _graphOffsetX = 30;
 
@@ -41,12 +43,17 @@ IGraphComponentState
     private _minFrame: number;
     private _maxFrame: number;
     private _svgHost: React.RefObject<SVGSVGElement>;
-    private _svgHost2: React.RefObject<SVGSVGElement>;
+    private _svgHost2: React.RefObject<SVGSVGElement>;    
+    private _selectionRectangle: React.RefObject<HTMLDivElement>;
     private _curves: Curve[];
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
     private _sourcePointerY: number;
+
+    
+    private _selectionStartX: number;
+    private _selectionStartY: number;
 
     private _currentAnimation: Nullable<Animation>;
    
@@ -55,10 +62,11 @@ IGraphComponentState
     constructor(props: IGraphComponentProps) {
         super(props);
 
-        this.state = { };
+        this.state = {};
         
         this._svgHost = React.createRef();
         this._svgHost2 = React.createRef();
+        this._selectionRectangle = React.createRef();
 
         this._evaluateKeys();
 
@@ -467,18 +475,50 @@ IGraphComponentState
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
+
+        this._inSelectionMode = evt.nativeEvent.ctrlKey;
+
+        if (this._inSelectionMode) {
+            this._selectionStartX = this._sourcePointerX;
+            this._selectionStartY = this._sourcePointerY;
+        }
     }
 
     private _onPointerMove(evt: React.PointerEvent<HTMLDivElement>) {
         if (!this._pointerIsDown) {
             return;
         }
+
+        if (this._inSelectionMode) {
+            let style = this._selectionRectangle.current!.style;
+            style.visibility = "visible";
+
+            const localX = evt.nativeEvent.offsetX;
+            const localY = evt.nativeEvent.offsetY;
+
+            if (localX > this._selectionStartX) {
+                style.left = `${this._selectionStartX}px`;
+                style.width = `${(localX - this._selectionStartX)}px`;
+            } else {
+                style.left = `${localX}px`;
+                style.width = `${(this._selectionStartX - localX)}px`;
+            }
+
+            if (localY > this._selectionStartY) {                
+                style.top = `${this._selectionStartY}px`;
+                style.height = `${(localY - this._selectionStartY)}px`;
+            } else {
+                style.top = `${localY}px`;
+                style.height = `${(this._selectionStartY - localY)}px`;
+            }
+            return;
+        }
+
         this._offsetX += (evt.nativeEvent.offsetX - this._sourcePointerX) * this._viewScale;
         this._offsetY += (evt.nativeEvent.offsetY - this._sourcePointerY) * this._viewScale;
         
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-
         
         this.props.context.onGraphMoved.notifyObservers(this._offsetX);
 
@@ -488,6 +528,8 @@ IGraphComponentState
     private _onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
         this._pointerIsDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
+
+        this._selectionRectangle.current!.style.visibility = "hidden";
     }
 
     private _onWheel(evt: React.WheelEvent) {
@@ -580,6 +622,10 @@ IGraphComponentState
                         this._dropKeyFrames(3)
                     }
                 </svg>
+                <div 
+                    ref={this._selectionRectangle}
+                    id="selection-rectangle">
+                </div>
             </div>
         );
     }

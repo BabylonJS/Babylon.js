@@ -933,6 +933,7 @@ declare module INSPECTOR {
         private _viewScale;
         private _offsetX;
         private _offsetY;
+        private _inSelectionMode;
         private _graphOffsetX;
         private _minValue;
         private _maxValue;
@@ -940,10 +941,13 @@ declare module INSPECTOR {
         private _maxFrame;
         private _svgHost;
         private _svgHost2;
+        private _selectionRectangle;
         private _curves;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
+        private _selectionStartX;
+        private _selectionStartY;
         private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IGraphComponentProps);
