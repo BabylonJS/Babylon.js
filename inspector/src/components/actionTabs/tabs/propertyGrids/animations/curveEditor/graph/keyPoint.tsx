@@ -43,12 +43,13 @@ export class KeyPointComponent extends React.Component<
 IKeyPointComponentProps,
 IKeyPointComponentState
 > {    
-    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: KeyPointComponent, channel: string}>>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
     private _onActiveKeyFrameChangedObserver: Nullable<Observer<number>>;
     private _onFrameManuallyEnteredObserver: Nullable<Observer<number>>;
     private _onValueManuallyEnteredObserver: Nullable<Observer<number>>;
     private _onMainKeyPointSetObserver: Nullable<Observer<void>>;
     private _onMainKeyPointMovedObserver: Nullable<Observer<void>>;
+    private _onSelectionRectangleMovedObserver: Nullable<Observer<DOMRect>>;
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
@@ -56,11 +57,41 @@ IKeyPointComponentState
 
     private _offsetXToMain: number;
     private _offsetYToMain: number;
+    
+    private _svgHost: React.RefObject<SVGSVGElement>;
 
     constructor(props: IKeyPointComponentProps) {
         super(props);
 
         this.state = { selectedState: SelectionState.None, x: this.props.x, y: this.props.y };
+        
+        this._svgHost = React.createRef();
+
+        this._onSelectionRectangleMovedObserver = this.props.context.onSelectionRectangleMoved.add(rect1 => {
+            const rect2 = this._svgHost.current!.getBoundingClientRect();
+            var overlap = !(rect1.right < rect2.left || 
+                rect1.left > rect2.right || 
+                rect1.bottom < rect2.top || 
+                rect1.top > rect2.bottom);
+
+            if (!this.props.context.activeKeyPoints) {
+                this.props.context.activeKeyPoints = [];
+            }
+
+            let index = this.props.context.activeKeyPoints.indexOf(this);
+            if (overlap) {
+                if (index === -1) {
+                    this.props.context.activeKeyPoints.push(this);
+
+                    this.props.context.onActiveKeyPointChanged.notifyObservers();
+                }
+            } else {
+                if (index > -1) {
+                    this.props.context.activeKeyPoints.splice(index, 1);
+                    this.props.context.onActiveKeyPointChanged.notifyObservers();
+                }
+            }
+        });
         
         this._onMainKeyPointSetObserver = this.props.context.onMainKeyPointSet.add(() => {
             if (!this.props.context.mainKeyPoint || this.props.context.mainKeyPoint === this) {
@@ -71,8 +102,8 @@ IKeyPointComponentState
         });
 
         this._onMainKeyPointMovedObserver = this.props.context.onMainKeyPointMoved.add(() => {
-            let mainKeyPoint = this.props.context.mainKeyPoint!;
-            if (mainKeyPoint === this) {
+            let mainKeyPoint = this.props.context.mainKeyPoint;
+            if (mainKeyPoint === this || !mainKeyPoint) {
                 return;
             }
 
@@ -90,7 +121,7 @@ IKeyPointComponentState
             }
         });
 
-        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(data => {
+        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(() => {
             const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
             
             if (!isSelected && this.props.context.activeKeyPoints) {
@@ -161,6 +192,11 @@ IKeyPointComponentState
     }
 
     componentWillUnmount() {
+
+        if (this._onSelectionRectangleMovedObserver) {
+            this.props.context.onSelectionRectangleMoved.remove(this._onSelectionRectangleMovedObserver);
+        }
+
         if (this._onMainKeyPointSetObserver) {
             this.props.context.onMainKeyPointSet.remove(this._onMainKeyPointSetObserver);
         }
@@ -195,14 +231,14 @@ IKeyPointComponentState
         return true;
     }
 
-    private _onPointerDown(evt: React.PointerEvent<SVGSVGElement>) {
+    private _select(allowMultipleSelection: boolean) {
         if (!this.props.context.activeKeyPoints) {
-            this.props.context.activeKeyPoints = [];
+            return;
         }
 
         let index = this.props.context.activeKeyPoints.indexOf(this);
         if (index === -1) {            
-            if (!evt.nativeEvent.ctrlKey) {
+            if (!allowMultipleSelection) {
                 this.props.context.activeKeyPoints = [];
             }
             this.props.context.activeKeyPoints.push(this);
@@ -214,7 +250,7 @@ IKeyPointComponentState
                 this.props.context.mainKeyPoint = null;
             }
         } else {
-            if (evt.nativeEvent.ctrlKey) {
+            if (allowMultipleSelection) {
                 this.props.context.activeKeyPoints.splice(index, 1);
                 this.props.context.mainKeyPoint = null;
             } else {
@@ -226,11 +262,16 @@ IKeyPointComponentState
                 }
             }
         }
+    }
 
-        this.props.context.onActiveKeyPointChanged.notifyObservers({
-            keyPoint: this,
-            channel: this.props.channel
-        });
+    private _onPointerDown(evt: React.PointerEvent<SVGSVGElement>) {
+        if (!this.props.context.activeKeyPoints) {
+            this.props.context.activeKeyPoints = [];
+        }
+
+        this._select(evt.nativeEvent.ctrlKey);
+
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
 
         this._pointerIsDown = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
@@ -241,7 +282,7 @@ IKeyPointComponentState
     }
 
     private _onPointerMove(evt: React.PointerEvent<SVGSVGElement>) {
-        if (!this._pointerIsDown) {
+        if (!this._pointerIsDown || this.state.selectedState !==  SelectionState.Selected) {
             return;
         }
 
@@ -282,7 +323,9 @@ IKeyPointComponentState
 
         if (this.props.context.activeKeyPoints!.length > 1) {
             setTimeout(() => {
-                this.props.context.onMainKeyPointMoved.notifyObservers();
+                if (this.props.context.mainKeyPoint) {
+                    this.props.context.onMainKeyPointMoved.notifyObservers();
+                }
             });
         }
 
@@ -301,6 +344,7 @@ IKeyPointComponentState
 
         return (
             <svg
+                ref={this._svgHost}
                 onPointerDown={evt => this._onPointerDown(evt)}
                 onPointerMove={evt => this._onPointerMove(evt)}
                 onPointerUp={evt => this._onPointerUp(evt)}

@@ -13,6 +13,7 @@ export class Context {
     activeAnimation: Nullable<Animation>;
     activeKeyPoints: Nullable<KeyPointComponent[]>;
     mainKeyPoint: Nullable<KeyPointComponent>;
+    snippetId: string;
 
     activeFrame: number;
     fromKey: number;
@@ -21,7 +22,7 @@ export class Context {
     isPlaying: boolean
 
     onActiveAnimationChanged = new Observable<void>();
-    onActiveKeyPointChanged = new Observable<Nullable<{keyPoint: KeyPointComponent, channel: string}>>();
+    onActiveKeyPointChanged = new Observable<void>();
     onHostWindowResized = new Observable<void>();
 
     onActiveKeyFrameChanged = new Observable<number>();
@@ -49,6 +50,10 @@ export class Context {
     onAnimationStateChanged = new Observable<void>();
 
     onDeleteKeyActiveKeyPoints = new Observable<void>();
+
+    onSelectionRectangleMoved = new Observable<DOMRect>();
+
+    onSwitchToEditMode = new Observable<void>();
 
     public prepare() {        
         this.isPlaying = false;

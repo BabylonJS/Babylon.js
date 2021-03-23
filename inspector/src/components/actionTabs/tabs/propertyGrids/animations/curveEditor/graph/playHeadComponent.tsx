@@ -77,7 +77,7 @@ IPlayHeadComponentState
     }
 
     private _moveHead(frame: number) {
-        if (!this._playHead.current || !this._playHeadCircle.current) {
+        if (!this._playHead.current || !this._playHeadCircle.current || frame === undefined) {
             return;
         }
 

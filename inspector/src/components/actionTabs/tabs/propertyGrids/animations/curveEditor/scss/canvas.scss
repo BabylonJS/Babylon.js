@@ -27,6 +27,7 @@
             &:focus {
                 outline: none;
             }
+            z-index: 1;
         }
 
         #dark-rectangle {
@@ -39,6 +40,15 @@
             opacity: 0.2;
             pointer-events: none;
             position: absolute;
+        }
+
+        #block-rectangle {
+            grid-column: 1;
+            grid-row: 1;
+            width:40px;
+            height: 100%;            
+            background: #222222;
+            z-index: 1;
         }
 
         #svg-graph-curves {
