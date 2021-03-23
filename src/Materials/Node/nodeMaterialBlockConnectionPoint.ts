@@ -85,6 +85,9 @@ export class NodeMaterialConnectionPoint {
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
     /** @hidden */
+    public _defaultConnectionPointType: Nullable<NodeMaterialBlockConnectionPointTypes> = null;
+
+    /** @hidden */
     public _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
     /** @hidden */
@@ -163,8 +166,15 @@ export class NodeMaterialConnectionPoint {
             }
         }
 
-        if (this._type === NodeMaterialBlockConnectionPointTypes.BasedOnInput && this._typeConnectionSource) {
-            return this._typeConnectionSource.type;
+        if (this._type === NodeMaterialBlockConnectionPointTypes.BasedOnInput) {
+            if (this._typeConnectionSource) {
+                if (!this._typeConnectionSource.isConnected && this._defaultConnectionPointType) {
+                    return this._defaultConnectionPointType;
+                }
+                return this._typeConnectionSource.type;
+            } else if (this._defaultConnectionPointType) {
+                return this._defaultConnectionPointType;
+            }
         }
 
         return this._type;
@@ -402,7 +412,7 @@ export class NodeMaterialConnectionPoint {
             }
 
             for (var output of otherBlock.outputs) {
-                if (output.isConnectedInVertexShader) {
+                if (output.ownerBlock.target != NodeMaterialBlockTargets.Neutral && output.isConnectedInVertexShader) {
                     return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
                 }
             }

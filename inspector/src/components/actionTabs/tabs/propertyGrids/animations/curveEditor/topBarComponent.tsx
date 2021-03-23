@@ -19,6 +19,7 @@ interface ITopBarComponentProps {
 interface ITopBarComponentState {
     keyFrameValue: string;
     keyValue: string;
+    editControlsVisible: boolean;
 }
 
 export class TopBarComponent extends React.Component<
@@ -33,7 +34,7 @@ ITopBarComponentState
     constructor(props: ITopBarComponentProps) {
         super(props);
 
-        this.state = {keyFrameValue: "", keyValue: "" };
+        this.state = {keyFrameValue: "", keyValue: "", editControlsVisible: false };
 
         this._onFrameSetObserver = this.props.context.onFrameSet.add(newFrameValue => {
             this.setState({keyFrameValue: newFrameValue.toFixed(2)});
@@ -48,7 +49,7 @@ ITopBarComponentState
         });
 
         this.onActiveKeyPointChanged = this.props.context.onActiveKeyPointChanged.add(() => {
-            this.setState({keyFrameValue: "", keyValue: ""});
+            this.setState({keyFrameValue: "", keyValue: "", editControlsVisible: this.props.context.activeKeyPoints?.length === 1});
         })
     }
 
@@ -74,20 +75,25 @@ ITopBarComponentState
                 <div id="parent-name">
                     {this.props.context.title}
                 </div>
-                <TextInputComponent 
-                    isNumber={true}
-                    value={this.state.keyFrameValue}
-                    tooltip="Frame"
-                    id="key-frame"
-                    onValueAsNumberChanged={newValue => this.props.context.onFrameManuallyEntered.notifyObservers(newValue)}
-                    globalState={this.props.globalState} context={this.props.context} />  
-                <TextInputComponent 
-                    isNumber={true}
-                    value={this.state.keyValue}
-                    tooltip="Value"
-                    id="key-value"
-                    onValueAsNumberChanged={newValue => this.props.context.onValueManuallyEntered.notifyObservers(newValue)}
-                    globalState={this.props.globalState} context={this.props.context} />                      
+                {
+                    this.state.editControlsVisible && 
+                    <>
+                        <TextInputComponent 
+                            isNumber={true}
+                            value={this.state.keyFrameValue}
+                            tooltip="Frame"
+                            id="key-frame"
+                            onValueAsNumberChanged={newValue => this.props.context.onFrameManuallyEntered.notifyObservers(newValue)}
+                            globalState={this.props.globalState} context={this.props.context} />  
+                        <TextInputComponent 
+                            isNumber={true}
+                            value={this.state.keyValue}
+                            tooltip="Value"
+                            id="key-value"
+                            onValueAsNumberChanged={newValue => this.props.context.onValueManuallyEntered.notifyObservers(newValue)}
+                            globalState={this.props.globalState} context={this.props.context} />  
+                    </>  
+                }                  
                 <ActionButtonComponent 
                     tooltip="Frame canvas"
                     id="frame-canvas" globalState={this.props.globalState} context={this.props.context} 

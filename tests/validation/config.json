@@ -405,7 +405,7 @@
         },
         {
             "title": "Shadow depth wrappers",
-            "playgroundId": "#PNQRY1#9",
+            "playgroundId": "#PNQRY1#73",
             "referenceImage": "shadowDepthWrappers.png",
             "renderCount": 20
         },
@@ -693,6 +693,11 @@
             "title": "GLTF Extension KHR_texture_transform",
             "playgroundId": "#RNT7K4#2",
             "referenceImage": "gltfExtensionKhrTextureTransform.png"
+        },
+        {
+            "title": "GLTF Extension KHR_materials_volume",
+            "playgroundId": "#YG3BBF#16",
+            "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
         },
         {
             "title": "Asset Containers",
