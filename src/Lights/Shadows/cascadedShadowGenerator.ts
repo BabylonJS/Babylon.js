@@ -24,6 +24,7 @@ import { DepthReducer } from '../../Misc/depthReducer';
 
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from '../../Engines/engineStore';
+import { MaterialHelper } from "../../Materials/materialHelper";
 
 interface ICascade {
     prevBreakDistance: number;
@@ -35,8 +36,7 @@ const ZeroVec = Vector3.Zero();
 
 let tmpv1 = new Vector3(),
     tmpv2 = new Vector3(),
-    tmpMatrix = new Matrix(),
-    tmpMatrix2 = new Matrix();
+    tmpMatrix = new Matrix();
 
 /**
  * A CSM implementation allowing casting shadows on large scenes.
@@ -808,6 +808,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 engine.setColorWrite(false);
             }
             this._scene.setTransformMatrix(this.getCascadeViewMatrix(layer)!, this.getCascadeProjectionMatrix(layer)!);
+            if (this._useUBO) {
+                MaterialHelper.FinalizeSceneUbo(this._scene);
+            }
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
@@ -821,24 +824,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._splitFrustum();
     }
 
-    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void {
-        effect.setMatrix(matriceNames?.viewProjection ?? "viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
-
-        effect.setMatrix(matriceNames?.view ?? "view", this.getCascadeViewMatrix(this._currentLayer)!);
-
-        effect.setMatrix(matriceNames?.projection ?? "projection", this.getCascadeProjectionMatrix(this._currentLayer)!);
-
-        const world = mesh.getWorldMatrix();
-
-        effect.setMatrix(matriceNames?.world ?? "world", world);
-
-        world.multiplyToRef(this.getCascadeTransformMatrix(this._currentLayer)!, tmpMatrix);
-
-        effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);
-
-        world.multiplyToRef(this.getCascadeViewMatrix(this._currentLayer)!, tmpMatrix2);
-
-        effect.setMatrix(matriceNames?.worldView ?? "worldView", tmpMatrix2);
+    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void {
+        effect.setMatrix("viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
     }
 
     protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {
