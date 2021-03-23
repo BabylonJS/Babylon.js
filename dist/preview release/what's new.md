@@ -4,6 +4,7 @@
 
 - Infinite Morph Targets: When supported (WebGL2+) you are no more limited to 4 morph targets per mesh ([Deltakosh](https://github.com/deltakosh))
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
+- Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
@@ -24,7 +25,6 @@
 - Added a [helper class](https://doc.babylonjs.com/typedoc/classes/babylon.debug.directionallightfrustumviewer) to display the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Improved collision detection performance ([ottoville](https://github.com/ottoville/))
 - Added new helper functions for Quaternion.FromLookDirection and Matrix.LookDirection ([Alex-MSFT](https://github.com/Alex-MSFT))
-- Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 
 ### Engine
 

@@ -165,9 +165,6 @@ export class ThinEngine {
     /** @hidden */
     public static _TextureLoaders: IInternalTextureLoader[] = [];
 
-    /** @hidden */
-    public static _UBOBaseCache: { [key: number]: DataBuffer } = {};
-
     /**
      * Returns the current npm package of the sdk
      */
@@ -1099,6 +1096,7 @@ export class ThinEngine {
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
             needsInvertingBitmap: true,
+            useUBOBindingCache: true,
             _collectUbosUpdatedInFrame: false,
         };
     }

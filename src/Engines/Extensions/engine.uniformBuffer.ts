@@ -130,10 +130,7 @@ ThinEngine.prototype.bindUniformBuffer = function(buffer: Nullable<DataBuffer>):
 };
 
 ThinEngine.prototype.bindUniformBufferBase = function(buffer: DataBuffer, location: number, name: string): void {
-    if (ThinEngine._UBOBaseCache[location] !== buffer) {
-        ThinEngine._UBOBaseCache[location] = buffer;
-        this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer ? buffer.underlyingResource : null);
-    }
+    this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer ? buffer.underlyingResource : null);
 };
 
 ThinEngine.prototype.bindUniformBlock = function(pipelineContext: IPipelineContext, blockName: string, index: number): void {
