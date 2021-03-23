@@ -5,6 +5,7 @@ import { Effect } from "./effect";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { ThinEngine } from "../Engines/thinEngine";
+import { Tools } from "../Misc/tools";
 
 import "../Engines/Extensions/engine.uniformBuffer";
 
@@ -629,7 +630,7 @@ export class UniformBuffer {
             for (var i = 0; i < size; i++) {
                 // We are checking the matrix cache before calling updateUniform so we do not need to check it here
                 // Hence the test for size === 16 to simply commit the matrix values
-                if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== data[i]) {
+                if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== Tools.FloatRound(data[i])) {
                     changed = true;
                     if (this._createBufferOnWrite) {
                         this._createNewBuffer();
@@ -674,7 +675,7 @@ export class UniformBuffer {
             let countToFour = 0;
             let baseStride = 0;
             for (var i = 0; i < size; i++) {
-                if (this._bufferData[location + baseStride * 4 + countToFour] !== data[i]) {
+                if (this._bufferData[location + baseStride * 4 + countToFour] !== Tools.FloatRound(data[i])) {
                     changed = true;
                     if (this._createBufferOnWrite) {
                         this._createNewBuffer();
