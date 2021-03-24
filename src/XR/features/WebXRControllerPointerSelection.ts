@@ -456,6 +456,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         discMesh.parent = controllerData.selectionMesh;
         let timer = 0;
         let downTriggered = false;
+        const pointerEventInit: PointerEventInit = {
+            pointerId: controllerData.id,
+            pointerType: "xr",
+        };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
             if (!controllerData.pick) {
                 return;
@@ -470,11 +474,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
                     timer += this._scene.getEngine().getDeltaTime();
                     if (timer >= timeToSelect) {
-                        this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                        this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                         downTriggered = true;
                         // pointer up right after down, if disable on touch out
                         if (this._options.disablePointerUpOnTouchOut) {
-                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                            this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                         }
                         discMesh.isVisible = false;
                     } else {
@@ -484,7 +488,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 } else {
                     if (downTriggered) {
                         if (!this._options.disablePointerUpOnTouchOut) {
-                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                            this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                         }
                     }
                     downTriggered = false;
@@ -495,7 +499,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 timer = 0;
             }
 
-            this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+            this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
 
             oldPick = controllerData.pick;
         });
@@ -506,7 +510,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (xrController) {
             xrController.onDisposeObservable.addOnce(() => {
                 if (controllerData.pick && !this._options.disablePointerUpOnTouchOut && downTriggered) {
-                    this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                 }
                 discMesh.dispose();
             });
@@ -516,23 +520,27 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _attachScreenRayMode(xrController: WebXRInputSource) {
         const controllerData = this._controllers[xrController.uniqueId];
         let downTriggered = false;
+        const pointerEventInit: PointerEventInit = {
+            pointerId: controllerData.id,
+            pointerType: "xr",
+        };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
             if (!controllerData.pick || (this._options.disablePointerUpOnTouchOut && downTriggered)) {
                 return;
             }
             if (!downTriggered) {
-                this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 downTriggered = true;
                 if (this._options.disablePointerUpOnTouchOut) {
-                    this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                 }
             } else {
-                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+                this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
         });
         xrController.onDisposeObservable.addOnce(() => {
             if (controllerData.pick && downTriggered && !this._options.disablePointerUpOnTouchOut) {
-                this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
             }
         });
     }
@@ -542,12 +550,16 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (this._options.forceGazeMode) {
             return this._attachGazeMode(xrController);
         }
+        const pointerEventInit: PointerEventInit = {
+            pointerId: controllerData.id,
+            pointerType: "xr",
+        };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
             (<StandardMaterial>controllerData.laserPointer.material).disableLighting = this.disablePointerLighting;
             (<StandardMaterial>controllerData.selectionMesh.material).disableLighting = this.disableSelectionMeshLighting;
 
             if (controllerData.pick) {
-                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+                this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
         });
         if (xrController.inputSource.gamepad) {
@@ -565,11 +577,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         if (controllerData.pick) {
                             if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
                                 if (pressed) {
-                                    this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
                                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
                                 } else {
-                                    this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
                                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                                 }
@@ -592,7 +604,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // use the select and squeeze events
             const selectStartListener = (event: XRInputSourceEvent) => {
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
                 }
@@ -600,7 +612,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
             const selectEndListener = (event: XRInputSourceEvent) => {
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                 }
@@ -778,7 +790,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return pickingInfo;
     }
 }
-
 
 //register the plugin
 WebXRFeaturesManager.AddWebXRFeature(
