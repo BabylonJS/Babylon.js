@@ -54,7 +54,7 @@ ISideBarComponentState
             }
         });
 
-        this.props.context.onSwitchToEditMode.add(() => this.setState({mode: Mode.Edit}));
+        this.props.context.onAnimationsLoaded.add(() => this.setState({mode: Mode.Edit}));
     }
 
     private _onAddAnimation() {
