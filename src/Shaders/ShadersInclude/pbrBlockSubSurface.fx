@@ -196,13 +196,22 @@ struct subSurfaceOutParams
         // Scale roughness with IOR so that an IOR of 1.0 results in no microfacet refraction and
         // an IOR of 1.5 results in the default amount of microfacet refraction.
         #ifdef SS_LODINREFRACTIONALPHA
-            float refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            float refractionAlphaG = alphaG;
+            if (thickness > 0.0) {
+                float refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            }
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
         #elif defined(SS_LINEARSPECULARREFRACTION)
-            float refractionRoughness = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            float refractionRoughness = alphaG;
+            if (thickness > 0.0) {
+                refractionRoughness = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            }
             float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, refractionRoughness);
         #else
-            float refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            float refractionAlphaG = alphaG;
+            if (thickness > 0.0) {
+                refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            }
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG);
         #endif
 
