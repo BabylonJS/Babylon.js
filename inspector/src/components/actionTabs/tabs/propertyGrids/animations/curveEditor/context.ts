@@ -21,8 +21,8 @@ export class Context {
     forwardAnimation = true;
     isPlaying: boolean;
 
-    referenceMinFrame: number;
-    referenceMaxFrame: number;
+    referenceMinFrame = 0;
+    referenceMaxFrame = 100;
 
     onActiveAnimationChanged = new Observable<void>();
     onActiveKeyPointChanged = new Observable<void>();
