@@ -707,6 +707,8 @@ declare module INSPECTOR {
         toKey: number;
         forwardAnimation: boolean;
         isPlaying: boolean;
+        referenceMinFrame: number;
+        referenceMaxFrame: number;
         onActiveAnimationChanged: BABYLON.Observable<void>;
         onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
@@ -726,7 +728,7 @@ declare module INSPECTOR {
         onAnimationStateChanged: BABYLON.Observable<void>;
         onDeleteKeyActiveKeyPoints: BABYLON.Observable<void>;
         onSelectionRectangleMoved: BABYLON.Observable<DOMRect>;
-        onSwitchToEditMode: BABYLON.Observable<void>;
+        onAnimationsLoaded: BABYLON.Observable<void>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
@@ -762,6 +764,7 @@ declare module INSPECTOR {
         private _isMounted;
         constructor(props: IMediaPlayerComponentProps);
         componentDidMount(): void;
+        componentWillUnmount(): void;
         private _onFirstKey;
         private _onPrevKey;
         private _onRewind;
@@ -889,8 +892,6 @@ declare module INSPECTOR {
         private _viewWidth;
         private _viewScale;
         private _offsetX;
-        private _minFrame;
-        private _maxFrame;
         private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IFrameBarComponentProps);
@@ -1129,6 +1130,24 @@ declare module INSPECTOR {
         constructor(props: ILoadAnimationComponentProps);
         loadFromFile(evt: React.ChangeEvent<HTMLInputElement>): void;
         loadFromSnippetServer(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IAddAnimationComponentProps {
+        globalState: GlobalState;
+        context: Context;
+    }
+    interface IAddAnimationComponentState {
+    }
+    export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
+        private _root;
+        private _displayName;
+        private _property;
+        private _typeElement;
+        private _loopModeElement;
+        constructor(props: IAddAnimationComponentProps);
+        createNew(): void;
         render(): JSX.Element;
     }
 }
