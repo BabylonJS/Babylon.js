@@ -6,6 +6,7 @@ import { AnimationListComponent } from "./animationListComponent";
 import { TextInputComponent } from "../controls/textInputComponent";
 import { SaveAnimationComponent } from "./saveAnimationComponent";
 import { LoadAnimationComponent } from "./loadAnimationComponent";
+import { AddAnimationComponent } from "./addAnimationComponent";
 
 require("../scss/sideBar.scss");
 
@@ -54,7 +55,7 @@ ISideBarComponentState
             }
         });
 
-        this.props.context.onSwitchToEditMode.add(() => this.setState({mode: Mode.Edit}));
+        this.props.context.onAnimationsLoaded.add(() => this.setState({mode: Mode.Edit}));
     }
 
     private _onAddAnimation() {
@@ -134,6 +135,10 @@ ISideBarComponentState
                 {
                     this.state.mode === Mode.Load &&
                     <LoadAnimationComponent globalState={this.props.globalState} context={this.props.context} />
+                }               
+                {
+                    this.state.mode === Mode.Add &&
+                    <AddAnimationComponent globalState={this.props.globalState} context={this.props.context} />
                 }
             </div>
         );

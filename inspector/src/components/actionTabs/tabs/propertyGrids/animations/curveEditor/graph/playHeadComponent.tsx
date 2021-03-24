@@ -52,8 +52,10 @@ IPlayHeadComponentState
             let runtimeAnimation = animation.runtimeAnimations[0];
     
             if (runtimeAnimation) {
-                this._moveHead(runtimeAnimation.currentFrame)
-            }          
+                this._moveHead(runtimeAnimation.currentFrame);
+            } else if (!this._playHeadCircle.current?.innerHTML){
+                this._moveHead(0);
+            }       
         });
 
         this.props.context.onMoveToFrameRequired.add(frame => {
@@ -82,16 +84,14 @@ IPlayHeadComponentState
         }
 
         this._playHead.current.style.left = this._frameToPixel(frame) + "px"
-        this._playHeadCircle.current.innerHTML = frame.toFixed(1);
+        this._playHeadCircle.current.innerHTML = frame.toFixed(0);
 
         this.props.context.activeFrame = frame;
     }
 
     private _frameToPixel(frame: number) {
-        let animation = this.props.context.activeAnimation!;
-        let keys = animation.getKeys();
-        let minFrame = keys[0].frame;
-        let maxFrame = keys[keys.length - 1].frame;
+        let minFrame = this.props.context.referenceMinFrame;
+        let maxFrame = this.props.context.referenceMaxFrame;
 
         return (((frame - minFrame) /  (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) * this._viewScale;
     }
@@ -99,10 +99,10 @@ IPlayHeadComponentState
     private _pixelToFrame(pixel: number) {
         let animation = this.props.context.activeAnimation!;
         let keys = animation.getKeys();
-        let minFrame = keys[0].frame;
-        let maxFrame = keys[keys.length - 1].frame;
+        let minFrame = this.props.context.referenceMinFrame;
+        let maxFrame = this.props.context.referenceMaxFrame;
 
-        return  Math.max(Math.min(maxFrame, ((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame), minFrame);
+        return  Math.max(Math.min(keys[keys.length - 1].frame, ((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame), keys[0].frame);
     }
 
     componentWillUnmount() {

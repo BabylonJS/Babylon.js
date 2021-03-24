@@ -45,6 +45,10 @@ IRangeSelectorComponentState
             this.forceUpdate();
         });
 
+        this.props.context.onAnimationsLoaded.add(() => {
+            this.forceUpdate();
+        });
+
         this._updateLimits();
     }
 

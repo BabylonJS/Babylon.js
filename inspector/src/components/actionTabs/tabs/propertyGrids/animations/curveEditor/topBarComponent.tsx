@@ -37,7 +37,7 @@ ITopBarComponentState
         this.state = {keyFrameValue: "", keyValue: "", editControlsVisible: false };
 
         this._onFrameSetObserver = this.props.context.onFrameSet.add(newFrameValue => {
-            this.setState({keyFrameValue: newFrameValue.toFixed(2)});
+            this.setState({keyFrameValue: newFrameValue.toFixed(0)});
         });
 
         this._onValueSetObserver = this.props.context.onValueSet.add(newValue => {
