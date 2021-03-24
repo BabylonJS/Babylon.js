@@ -414,10 +414,11 @@ export class PBRSubSurfaceConfiguration {
                 var width = refractionTexture.getSize().width;
                 var refractionIor = this.volumeIndexOfRefraction;
                 uniformBuffer.updateFloat4("vRefractionInfos", refractionTexture.level, 1 / refractionIor, depth, this._invertRefractionY ? -1 : 1);
-                uniformBuffer.updateFloat3("vRefractionMicrosurfaceInfos",
+                uniformBuffer.updateFloat4("vRefractionMicrosurfaceInfos",
                     width,
                     refractionTexture.lodGenerationScale,
-                    refractionTexture.lodGenerationOffset);
+                    refractionTexture.lodGenerationOffset,
+                    1.0 / this.indexOfRefraction);
 
                 if (realTimeFiltering) {
                     uniformBuffer.updateFloat2("vRefractionFilteringInfo", width, Scalar.Log2(width));
@@ -637,7 +638,7 @@ export class PBRSubSurfaceConfiguration {
      * @param uniformBuffer defines the current uniform buffer.
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
+        uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 4);
         uniformBuffer.addUniform("vRefractionFilteringInfo", 2);
         uniformBuffer.addUniform("vRefractionInfos", 4);
         uniformBuffer.addUniform("refractionMatrix", 16);

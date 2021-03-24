@@ -67,7 +67,7 @@ struct subSurfaceOutParams
         const in mat4 view,
         const in vec4 vRefractionInfos,
         const in mat4 refractionMatrix,
-        const in vec3 vRefractionMicrosurfaceInfos,
+        const in vec4 vRefractionMicrosurfaceInfos,
         const in vec4 vLightingIntensity,
         #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
             const in float alpha,
@@ -195,22 +195,31 @@ struct subSurfaceOutParams
 
         // Scale roughness with IOR so that an IOR of 1.0 results in no microfacet refraction and
         // an IOR of 1.5 results in the default amount of microfacet refraction.
+        // vRefractionInfos.y is the IOR of the volume.
+        // vRefractionMicrosurfaceInfos.w is the IOR of the surface.
+        bool thicknessEnabled = vThicknessParam.y != 0.0 && vThicknessParam.x != 0.0;
         #ifdef SS_LODINREFRACTIONALPHA
             float refractionAlphaG = alphaG;
-            if (thickness > 0.0) {
-                float refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            if (thicknessEnabled) {
+                refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            } else {
+                refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionMicrosurfaceInfos.w * 3.0 - 2.0, 0.0, 1.0));
             }
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
         #elif defined(SS_LINEARSPECULARREFRACTION)
             float refractionRoughness = alphaG;
-            if (thickness > 0.0) {
+            if (thicknessEnabled) {
                 refractionRoughness = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            } else {
+                refractionRoughness = mix(alphaG, 0.0, clamp(vRefractionMicrosurfaceInfos.w * 3.0 - 2.0, 0.0, 1.0));
             }
             float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, refractionRoughness);
         #else
             float refractionAlphaG = alphaG;
-            if (thickness > 0.0) {
+            if (thicknessEnabled) {
                 refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            } else {
+                refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionMicrosurfaceInfos.w * 3.0 - 2.0, 0.0, 1.0));
             }
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG);
         #endif
