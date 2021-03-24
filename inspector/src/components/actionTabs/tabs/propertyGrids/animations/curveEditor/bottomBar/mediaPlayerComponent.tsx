@@ -55,6 +55,10 @@ IMediaPlayerComponentState
         this._isMounted = true;
     }
 
+    componentWillUnmount() {
+        this._isMounted = false;
+    }
+
     private _onFirstKey() {
         this.props.context.onMoveToFrameRequired.notifyObservers(this.props.context.fromKey);
     }

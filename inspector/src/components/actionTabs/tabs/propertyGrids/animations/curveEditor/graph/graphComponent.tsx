@@ -430,6 +430,9 @@ IGraphComponentState
         this._minValue = values.min;
         this._maxValue = values.max;
 
+        this.props.context.referenceMinFrame = this._minFrame;
+        this.props.context.referenceMaxFrame = this._maxFrame;
+
         const frameConvert = Math.abs(this._convertX(this._maxFrame ) - this._convertX(this._minFrame)) + this._offsetX * 2;
         const valueConvert = this._minValue !== this._maxValue ? Math.abs(this._convertY(this._minValue) - this._convertY(this._maxValue)) + this._offsetY * 2 : 1;
 
@@ -577,10 +580,8 @@ IGraphComponentState
         let activeBoxLeft = 0;
         let activeBoxRight = 0;
         if (this.props.context.activeAnimation) {
-            let animation = this.props.context.activeAnimation;
-            let keys = animation.getKeys();
-            let minFrame = keys[0].frame;
-            let maxFrame = keys[keys.length - 1].frame;
+            let minFrame = this.props.context.referenceMinFrame;
+            let maxFrame = this.props.context.referenceMaxFrame;
         
             activeBoxLeft = (((this.props.context.fromKey - minFrame) /  (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
             activeBoxRight = (((this.props.context.toKey - minFrame) /  (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;

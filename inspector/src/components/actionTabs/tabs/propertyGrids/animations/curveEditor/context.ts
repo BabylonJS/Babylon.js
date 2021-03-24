@@ -19,7 +19,10 @@ export class Context {
     fromKey: number;
     toKey: number;
     forwardAnimation = true;
-    isPlaying: boolean
+    isPlaying: boolean;
+
+    referenceMinFrame: number;
+    referenceMaxFrame: number;
 
     onActiveAnimationChanged = new Observable<void>();
     onActiveKeyPointChanged = new Observable<void>();
@@ -53,7 +56,7 @@ export class Context {
 
     onSelectionRectangleMoved = new Observable<DOMRect>();
 
-    onSwitchToEditMode = new Observable<void>();
+    onAnimationsLoaded = new Observable<void>();
 
     public prepare() {        
         this.isPlaying = false;
@@ -65,6 +68,9 @@ export class Context {
         const keys = animation.getKeys();
         this.fromKey = keys[0].frame;
         this.toKey = keys[keys.length - 1].frame;
+
+        this.referenceMinFrame = 0;
+        this.referenceMaxFrame = this.toKey;
     
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
