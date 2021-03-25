@@ -572,6 +572,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 if (system.emitter === source) {
                     system.clone(system.name, this);
+                } else {
+                    this.metadata = source.metadata;
                 }
             }
             this.refreshBoundingInfo();
