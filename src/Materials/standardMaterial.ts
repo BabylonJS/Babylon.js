@@ -1545,6 +1545,8 @@ export class StandardMaterial extends PushMaterial {
 
                 ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
+
+                scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
                 ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
             }
 
@@ -1602,8 +1604,6 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.BindClipPlane(effect, scene);
 
             // Colors
-            scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-
             this.bindEyePosition(effect);
         }
 
