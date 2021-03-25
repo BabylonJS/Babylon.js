@@ -845,9 +845,10 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+     * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
-        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel);
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false, receiveShadows = true): void {
+        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel, receiveShadows);
     }
 
     /**
@@ -865,7 +866,7 @@ export class MaterialHelper {
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel, mesh.receiveShadows);
         }
     }
 
