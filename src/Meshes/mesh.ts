@@ -517,8 +517,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Metadata
             if (source.metadata && source.metadata.clone) {
                 this.metadata = source.metadata.clone();
-            } else {
-                this.metadata = source.metadata;
             }
 
             // Tags
@@ -577,7 +575,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
             this.refreshBoundingInfo();
-            this.computeWorldMatrix(true);
+            this.computeWorldMatrix(true); 
         }
 
         // Parent
