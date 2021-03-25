@@ -178,9 +178,9 @@ export class InstancesBlock extends NodeMaterialBlock {
         state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\r\n`;
         state.compilationString += `#endif\r\n`;
         if (engine._caps.canUseGLInstanceID) {
-            state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
-        } else {
             state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\r\n`;
+        } else {
+            state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
         }
         state.compilationString += `#else\r\n`;
         state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\r\n`;
