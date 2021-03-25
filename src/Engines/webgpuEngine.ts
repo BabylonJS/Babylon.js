@@ -647,6 +647,7 @@ export class WebGPUEngine extends Engine {
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: true,
             trackUbosInFrame: true,
+            checkUbosContentBeforeUpload: true,
             supportCSM: true,
             basisNeedsPOT: false,
             support3DTextures: false, // TODO WEBGPU change to true when Chrome supports 3D textures

@@ -25,7 +25,7 @@ export class UniformBuffer {
 
     private _engine: ThinEngine;
     private _buffer: Nullable<DataBuffer>;
-    private _buffers : Array<DataBuffer>;
+    private _buffers : Array<[DataBuffer, Float32Array | undefined]>;
     private _bufferIndex: number;
     private _createBufferOnWrite: boolean;
     private _data: number[];
@@ -518,7 +518,7 @@ export class UniformBuffer {
         }
 
         if (this._engine._features.trackUbosInFrame) {
-            this._buffers.push(this._buffer);
+            this._buffers.push([this._buffer, this._engine._features.checkUbosContentBeforeUpload ? this._bufferData.slice() : undefined]);
             this._bufferIndex = this._buffers.length - 1;
             this._createBufferOnWrite = false;
         }
@@ -539,6 +539,21 @@ export class UniformBuffer {
         return this._name;
     }
 
+    private _buffersEqual(buf1: Float32Array, buf2: Float32Array): boolean {
+        for (let i = 0; i < buf1.length; ++i) {
+            if (buf1[i] !== buf2[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private _copyBuffer(src: Float32Array, dst: Float32Array): void {
+        for (let i = 0; i < src.length; ++i) {
+            dst[i] = src[i];
+        }
+    }
+
     /**
      * Updates the WebGL Uniform Buffer on the GPU.
      * If the `dynamic` flag is set to true, no cache comparison is done.
@@ -553,6 +568,16 @@ export class UniformBuffer {
         if (!this._dynamic && !this._needSync) {
             this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
             return;
+        }
+
+        if (this._buffers?.[this._bufferIndex][1]) {
+            if (this._buffersEqual(this._bufferData, this._buffers[this._bufferIndex][1]!)) {
+                this._needSync = false;
+                this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
+                return;
+            } else {
+                this._copyBuffer(this._bufferData, this._buffers[this._bufferIndex][1]!);
+            }
         }
 
         this._engine.updateUniformBuffer(this._buffer, this._bufferData);
@@ -571,7 +596,7 @@ export class UniformBuffer {
     private _createNewBuffer() {
         if (this._bufferIndex + 1 < this._buffers.length) {
             this._bufferIndex++;
-            this._buffer = this._buffers[this._bufferIndex];
+            this._buffer = this._buffers[this._bufferIndex][0];
             this._createBufferOnWrite = false;
             this._needSync = true;
         } else {
@@ -589,7 +614,7 @@ export class UniformBuffer {
             if (this._buffers && this._buffers.length > 0) {
                 this._needSync = this._bufferIndex !== 0;
                 this._bufferIndex = 0;
-                this._buffer = this._buffers[this._bufferIndex];
+                this._buffer = this._buffers[this._bufferIndex][0];
             } else {
                 this._bufferIndex = -1;
             }
@@ -979,7 +1004,7 @@ export class UniformBuffer {
 
         if (this._engine._features.trackUbosInFrame && this._buffers) {
             for (let i = 0; i < this._buffers.length; ++i) {
-                const buffer = this._buffers[i];
+                const buffer = this._buffers[i][0];
                 this._engine._releaseBuffer(buffer!);
             }
         } else if (this._buffer && this._engine._releaseBuffer(this._buffer)) {
