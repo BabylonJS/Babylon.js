@@ -664,7 +664,7 @@ declare class GPUCommandEncoder implements GPUObjectBase {
         firstQuery: GPUSize32,
         queryCount: GPUSize32,
         destination: GPUBuffer,
-        destinationOffse: GPUSize64
+        destinationOffset: GPUSize64
     ): void;
 
     finish(descriptor?: GPUCommandBufferDescriptor): GPUCommandBuffer;
