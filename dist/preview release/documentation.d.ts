@@ -40628,6 +40628,11 @@ declare module BABYLON {
          * @param settings allows finer control over video usage
          */
         constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings);
+        /**
+         * Get the current class name of the video texture useful for serialization or dynamic coding.
+         * @returns "VideoTexture"
+         */
+        getClassName(): string;
         private _getName;
         private _getVideo;
         private _createInternalTexture;
@@ -44467,7 +44472,9 @@ declare module BABYLON {
         /** Delta X */
         DeltaHorizontal = 10,
         /** Delta Y */
-        DeltaVertical = 11
+        DeltaVertical = 11,
+        /** MoveBeing Hijack for simultaneous buttons pressed for instance */
+        FakeMove = 12
     }
     /**
      * Enum for Dual Shock Gamepad

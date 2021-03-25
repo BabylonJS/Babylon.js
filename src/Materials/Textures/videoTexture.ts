@@ -148,6 +148,14 @@ export class VideoTexture extends Texture {
         }
     }
 
+    /**
+     * Get the current class name of the video texture useful for serialization or dynamic coding.
+     * @returns "VideoTexture"
+     */
+     public getClassName(): string {
+        return "VideoTexture";
+    }
+
     private _getName(src: string | string[] | HTMLVideoElement): string {
         if (src instanceof HTMLVideoElement) {
             return src.currentSrc;
