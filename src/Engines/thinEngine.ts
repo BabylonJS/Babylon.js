@@ -1086,6 +1086,7 @@ export class ThinEngine {
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: this._webGLVersion !== 1,
             trackUbosInFrame: false,
+            checkUbosContentBeforeUpload: false,
             supportCSM: this._webGLVersion !== 1,
             basisNeedsPOT: this._webGLVersion === 1,
             support3DTextures: this._webGLVersion !== 1,
