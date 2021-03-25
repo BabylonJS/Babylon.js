@@ -45,6 +45,10 @@ IRangeSelectorComponentState
             this.forceUpdate();
         });
 
+        this.props.context.onAnimationsLoaded.add(() => {
+            this.forceUpdate();
+        });
+
         this._updateLimits();
     }
 
@@ -149,6 +153,10 @@ IRangeSelectorComponentState
         this._updateLimits();
 
         const ratio = this._maxFrame - this._minFrame
+
+        if (this.props.context.toKey > this._maxFrame ) {
+            this.props.context.toKey = this._maxFrame;
+        }
 
         return (
             <div id="range-selector" ref={this._rangeHost}

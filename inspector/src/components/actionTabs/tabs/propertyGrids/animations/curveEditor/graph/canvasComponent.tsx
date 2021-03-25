@@ -33,7 +33,8 @@ ICanvasComponentState
                 <GraphComponent globalState={this.props.globalState} context={this.props.context}/>
                 <FrameBarComponent globalState={this.props.globalState} context={this.props.context}/>                
                 <PlayHeadComponent context={this.props.context} globalState={this.props.globalState}/>
-                <RangeFrameBarComponent context={this.props.context} globalState={this.props.globalState}/>
+                <RangeFrameBarComponent context={this.props.context} globalState={this.props.globalState}/>                
+                <div id="angle-mode"/>
             </div>
         );
     }

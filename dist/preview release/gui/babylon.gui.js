@@ -16420,7 +16420,7 @@ var Control3D = /** @class */ (function () {
             if (!this.node) {
                 return;
             }
-            this._injectGUI3DMetadata(this.node).control = this; // Store the control on the metadata field in order to get it when picking
+            this._injectGUI3DReservedDataStore(this.node).control = this; // Store the control on the reservedDataStore field in order to get it when picking
             var mesh = this.mesh;
             if (mesh) {
                 mesh.isPickable = true;
@@ -16428,11 +16428,11 @@ var Control3D = /** @class */ (function () {
             }
         }
     };
-    Control3D.prototype._injectGUI3DMetadata = function (node) {
+    Control3D.prototype._injectGUI3DReservedDataStore = function (node) {
         var _a, _b;
-        node.metadata = (_a = node.metadata) !== null && _a !== void 0 ? _a : {};
-        node.metadata.GUI3D = (_b = node.metadata.GUI3D) !== null && _b !== void 0 ? _b : {};
-        return node.metadata.GUI3D;
+        node.reservedDataStore = (_a = node.reservedDataStore) !== null && _a !== void 0 ? _a : {};
+        node.reservedDataStore.GUI3D = (_b = node.reservedDataStore.GUI3D) !== null && _b !== void 0 ? _b : {};
+        return node.reservedDataStore.GUI3D;
     };
     /**
      * Node creation.
@@ -17179,7 +17179,7 @@ var MeshButton3D = /** @class */ (function (_super) {
     MeshButton3D.prototype._createNode = function (scene) {
         var _this = this;
         this._currentMesh.getChildMeshes().forEach(function (mesh) {
-            _this._injectGUI3DMetadata(mesh).control = _this;
+            _this._injectGUI3DReservedDataStore(mesh).control = _this;
         });
         return this._currentMesh;
     };
@@ -17678,7 +17678,7 @@ var TouchButton3D = /** @class */ (function (_super) {
                 collisionMesh.setParent(this.mesh);
             }
             this._collisionMesh = collisionMesh;
-            this._injectGUI3DMetadata(this._collisionMesh).control = this;
+            this._injectGUI3DReservedDataStore(this._collisionMesh).control = this;
             this.collidableFrontDirection = collisionMesh.forward;
             this._collidableInitialized = true;
         },
@@ -18355,7 +18355,7 @@ var TouchMeshButton3D = /** @class */ (function (_super) {
     TouchMeshButton3D.prototype._createNode = function (scene) {
         var _this = this;
         this._currentMesh.getChildMeshes().forEach(function (mesh) {
-            _this._injectGUI3DMetadata(mesh).control = _this;
+            _this._injectGUI3DReservedDataStore(mesh).control = _this;
         });
         return this._currentMesh;
     };
@@ -18730,7 +18730,7 @@ var GUI3DManager = /** @class */ (function () {
         this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.mainSceneTrackerPredicate = function (mesh) {
             var _a, _b, _c;
-            return mesh && ((_c = (_b = (_a = mesh.metadata) === null || _a === void 0 ? void 0 : _a.GUI3D) === null || _b === void 0 ? void 0 : _b.control) === null || _c === void 0 ? void 0 : _c._node);
+            return mesh && ((_c = (_b = (_a = mesh.reservedDataStore) === null || _a === void 0 ? void 0 : _a.GUI3D) === null || _b === void 0 ? void 0 : _b.control) === null || _c === void 0 ? void 0 : _c._node);
         };
         // Root
         this._rootContainer = new _controls_container3D__WEBPACK_IMPORTED_MODULE_1__["Container3D"]("RootContainer");
@@ -18794,7 +18794,7 @@ var GUI3DManager = /** @class */ (function () {
         if (pickingInfo.pickedPoint) {
             this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
         }
-        var control = ((_b = (_a = pickingInfo.pickedMesh.metadata) === null || _a === void 0 ? void 0 : _a.GUI3D) === null || _b === void 0 ? void 0 : _b.control);
+        var control = ((_b = (_a = pickingInfo.pickedMesh.reservedDataStore) === null || _a === void 0 ? void 0 : _a.GUI3D) === null || _b === void 0 ? void 0 : _b.control);
         if (!!control && !control._processObservables(pi.type, pickingInfo.pickedPoint, pointerId, buttonIndex)) {
             if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {

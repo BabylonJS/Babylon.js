@@ -793,6 +793,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         toKey: number;
         forwardAnimation: boolean;
         isPlaying: boolean;
+        referenceMinFrame: number;
+        referenceMaxFrame: number;
         onActiveAnimationChanged: Observable<void>;
         onActiveKeyPointChanged: Observable<void>;
         onHostWindowResized: Observable<void>;
@@ -804,6 +806,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onValueSet: Observable<number>;
         onValueManuallyEntered: Observable<number>;
         onFrameRequired: Observable<void>;
+        onNewKeyPointRequired: Observable<void>;
         onDeleteAnimation: Observable<Animation>;
         onGraphMoved: Observable<number>;
         onGraphScaled: Observable<number>;
@@ -812,7 +815,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onAnimationStateChanged: Observable<void>;
         onDeleteKeyActiveKeyPoints: Observable<void>;
         onSelectionRectangleMoved: Observable<DOMRect>;
-        onSwitchToEditMode: Observable<void>;
+        onAnimationsLoaded: Observable<void>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
@@ -854,6 +857,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _isMounted;
         constructor(props: IMediaPlayerComponentProps);
         componentDidMount(): void;
+        componentWillUnmount(): void;
         private _onFirstKey;
         private _onPrevKey;
         private _onRewind;
@@ -999,8 +1003,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _viewWidth;
         private _viewScale;
         private _offsetX;
-        private _minFrame;
-        private _maxFrame;
         private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IFrameBarComponentProps);
@@ -1271,6 +1273,27 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         constructor(props: ILoadAnimationComponentProps);
         loadFromFile(evt: React.ChangeEvent<HTMLInputElement>): void;
         loadFromSnippetServer(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/addAnimationComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Context } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/context";
+    interface IAddAnimationComponentProps {
+        globalState: GlobalState;
+        context: Context;
+    }
+    interface IAddAnimationComponentState {
+    }
+    export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
+        private _root;
+        private _displayName;
+        private _property;
+        private _typeElement;
+        private _loopModeElement;
+        constructor(props: IAddAnimationComponentProps);
+        createNew(): void;
         render(): JSX.Element;
     }
 }
@@ -5027,6 +5050,8 @@ declare module INSPECTOR {
         toKey: number;
         forwardAnimation: boolean;
         isPlaying: boolean;
+        referenceMinFrame: number;
+        referenceMaxFrame: number;
         onActiveAnimationChanged: BABYLON.Observable<void>;
         onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
@@ -5038,6 +5063,7 @@ declare module INSPECTOR {
         onValueSet: BABYLON.Observable<number>;
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
+        onNewKeyPointRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
@@ -5046,7 +5072,7 @@ declare module INSPECTOR {
         onAnimationStateChanged: BABYLON.Observable<void>;
         onDeleteKeyActiveKeyPoints: BABYLON.Observable<void>;
         onSelectionRectangleMoved: BABYLON.Observable<DOMRect>;
-        onSwitchToEditMode: BABYLON.Observable<void>;
+        onAnimationsLoaded: BABYLON.Observable<void>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
@@ -5082,6 +5108,7 @@ declare module INSPECTOR {
         private _isMounted;
         constructor(props: IMediaPlayerComponentProps);
         componentDidMount(): void;
+        componentWillUnmount(): void;
         private _onFirstKey;
         private _onPrevKey;
         private _onRewind;
@@ -5209,8 +5236,6 @@ declare module INSPECTOR {
         private _viewWidth;
         private _viewScale;
         private _offsetX;
-        private _minFrame;
-        private _maxFrame;
         private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IFrameBarComponentProps);
@@ -5449,6 +5474,24 @@ declare module INSPECTOR {
         constructor(props: ILoadAnimationComponentProps);
         loadFromFile(evt: React.ChangeEvent<HTMLInputElement>): void;
         loadFromSnippetServer(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IAddAnimationComponentProps {
+        globalState: GlobalState;
+        context: Context;
+    }
+    interface IAddAnimationComponentState {
+    }
+    export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
+        private _root;
+        private _displayName;
+        private _property;
+        private _typeElement;
+        private _loopModeElement;
+        constructor(props: IAddAnimationComponentProps);
+        createNew(): void;
         render(): JSX.Element;
     }
 }

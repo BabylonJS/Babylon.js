@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -11223,7 +11223,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: black;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n", ""]);
+exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: black;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11259,7 +11259,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
+exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11277,7 +11277,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n", ""]);
+exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -46529,7 +46529,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         var animatableAsAny = this.props.animatable;
         var animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
         this._isPlaying = animatablesForTarget.length > 0;
-        if (this._isPlaying && !this._mainAnimatable) {
+        if (this._isPlaying) {
             this._mainAnimatable = animatablesForTarget[0];
             if (this._mainAnimatable) {
                 this._animationControl.from = this._mainAnimatable.fromFrame;
@@ -46636,9 +46636,16 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationCurveEditorComponent.prototype.shouldComponentUpdate = function (newProps, newState) {
+        var _this = this;
         if (newState.isOpen !== this.state.isOpen) {
             if (newState.isOpen) {
                 this.props.context.prepare();
+                if (this.props.context.animations && this.props.context.animations.length) {
+                    setTimeout(function () {
+                        _this.props.context.activeAnimation = _this.props.context.animations[0];
+                        _this.props.context.onActiveAnimationChanged.notifyObservers();
+                    });
+                }
             }
             return true;
         }
@@ -46959,6 +46966,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/newKeyIcon.svg":
+/*!***********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/newKeyIcon.svg ***!
+  \***********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M21.83,14.83l3.34,3.34a2.59,2.59,0,0,1,0,3.66l-3.34,3.34a2.59,2.59,0,0,1-3.66,0l-3.34-3.34a2.59,2.59,0,0,1,0-3.66l3.34-3.34A2.59,2.59,0,0,1,21.83,14.83ZM19,15.68,15.68,19a1.37,1.37,0,0,0,0,2L19,24.32a1.37,1.37,0,0,0,2,0L24.32,21a1.37,1.37,0,0,0,0-2L21,15.68A1.37,1.37,0,0,0,19,15.68Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/saveIcon.svg":
 /*!*********************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/saveIcon.svg ***!
@@ -47067,6 +47085,9 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
     }
     MediaPlayerComponent.prototype.componentDidMount = function () {
         this._isMounted = true;
+    };
+    MediaPlayerComponent.prototype.componentWillUnmount = function () {
+        this._isMounted = false;
     };
     MediaPlayerComponent.prototype._onFirstKey = function () {
         this.props.context.onMoveToFrameRequired.notifyObservers(this.props.context.fromKey);
@@ -47179,6 +47200,9 @@ var RangeSelectorComponent = /** @class */ (function (_super) {
         _this.props.context.onFrameSet.add(function () {
             _this.forceUpdate();
         });
+        _this.props.context.onAnimationsLoaded.add(function () {
+            _this.forceUpdate();
+        });
         _this._updateLimits();
         return _this;
     }
@@ -47265,6 +47289,9 @@ var RangeSelectorComponent = /** @class */ (function (_super) {
         var _this = this;
         this._updateLimits();
         var ratio = this._maxFrame - this._minFrame;
+        if (this.props.context.toKey > this._maxFrame) {
+            this.props.context.toKey = this._maxFrame;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "range-selector", ref: this._rangeHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "range-scrollbar", ref: this._rangeScrollbarHost, style: {
                     left: 2 + ((this.props.context.fromKey - this._minFrame) / ratio) * this._viewWidth + "px",
@@ -47300,6 +47327,8 @@ __webpack_require__.r(__webpack_exports__);
 var Context = /** @class */ (function () {
     function Context() {
         this.forwardAnimation = true;
+        this.referenceMinFrame = 0;
+        this.referenceMaxFrame = 100;
         this.onActiveAnimationChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onActiveKeyPointChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onHostWindowResized = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47311,6 +47340,7 @@ var Context = /** @class */ (function () {
         this.onValueSet = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onValueManuallyEntered = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onNewKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDeleteAnimation = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphScaled = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47319,7 +47349,7 @@ var Context = /** @class */ (function () {
         this.onAnimationStateChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDeleteKeyActiveKeyPoints = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionRectangleMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onSwitchToEditMode = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onAnimationsLoaded = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     Context.prototype.prepare = function () {
         this.isPlaying = false;
@@ -47330,6 +47360,8 @@ var Context = /** @class */ (function () {
         var keys = animation.getKeys();
         this.fromKey = keys[0].frame;
         this.toKey = keys[keys.length - 1].frame;
+        this.referenceMinFrame = 0;
+        this.referenceMaxFrame = this.toKey;
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
         }
@@ -47556,7 +47588,8 @@ var CanvasComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graphComponent__WEBPACK_IMPORTED_MODULE_3__["GraphComponent"], { globalState: this.props.globalState, context: this.props.context }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_frameBarComponent__WEBPACK_IMPORTED_MODULE_2__["FrameBarComponent"], { globalState: this.props.globalState, context: this.props.context }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_playHeadComponent__WEBPACK_IMPORTED_MODULE_4__["PlayHeadComponent"], { context: this.props.context, globalState: this.props.globalState }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeFrameBarComponent__WEBPACK_IMPORTED_MODULE_5__["RangeFrameBarComponent"], { context: this.props.context, globalState: this.props.globalState })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeFrameBarComponent__WEBPACK_IMPORTED_MODULE_5__["RangeFrameBarComponent"], { context: this.props.context, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "angle-mode" })));
     };
     return CanvasComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47736,22 +47769,21 @@ var FrameBarComponent = /** @class */ (function (_super) {
         if (!this._currentAnimation) {
             return null;
         }
-        var keys = this._currentAnimation.getKeys();
-        this._minFrame = keys[0].frame;
-        this._maxFrame = keys[keys.length - 1].frame;
+        var minFrame = this.props.context.referenceMinFrame;
+        var maxFrame = this.props.context.referenceMaxFrame;
         var stepCounts = 20;
-        var range = this._maxFrame - this._minFrame;
+        var range = maxFrame - minFrame;
         var offset = (range / stepCounts) | 0;
         var convertRatio = range / this._GraphAbsoluteWidth;
         var steps = [];
         var startPosition = this._offsetX * convertRatio;
-        var start = this._minFrame - ((startPosition / offset) | 0) * offset;
+        var start = minFrame - ((startPosition / offset) | 0) * offset;
         var end = start + (this._viewWidth * this._viewScale) * convertRatio;
         for (var step = start - offset; step <= end + offset; step += offset) {
             steps.push(step);
         }
         return (steps.map(function (s, i) {
-            var x = (s - _this._minFrame) / convertRatio;
+            var x = (s - minFrame) / convertRatio;
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("g", { key: "axis" + s },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { key: "line" + s, x1: x, y1: 5 * _this._viewScale + "px", x2: x, y2: 30 * _this._viewScale + "px", style: {
                         stroke: "#333333",
@@ -47832,8 +47864,8 @@ var GraphComponent = /** @class */ (function (_super) {
                 return;
             }
             _this._currentAnimation = _this.props.context.activeAnimation;
-            _this._computeSizes();
             _this._evaluateKeys();
+            _this._computeSizes();
             _this.forceUpdate();
         });
         _this.props.context.onFrameRequired.add(function () {
@@ -47843,6 +47875,7 @@ var GraphComponent = /** @class */ (function (_super) {
         _this.props.context.onRangeUpdated.add(function () {
             _this.forceUpdate();
         });
+        // Delete keypoint
         _this.props.context.onDeleteKeyActiveKeyPoints.add(function () {
             if (!_this._currentAnimation || !_this.props.context.activeKeyPoints) {
                 return;
@@ -47873,6 +47906,35 @@ var GraphComponent = /** @class */ (function (_super) {
             _this.props.context.activeKeyPoints = [];
             _this._currentAnimation = null;
             _this.props.context.onActiveAnimationChanged.notifyObservers();
+        });
+        // New keypoint
+        _this.props.context.onNewKeyPointRequired.add(function () {
+            if (!_this._currentAnimation) {
+                return;
+            }
+            var keys = _this._currentAnimation.getKeys();
+            var currentFrame = _this.props.context.activeFrame;
+            var indexToAdd = -1;
+            for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+                var key = keys_1[_i];
+                if (key.frame < currentFrame) {
+                    indexToAdd++;
+                }
+                else {
+                    break;
+                }
+            }
+            var value = _this._currentAnimation.evaluate(currentFrame);
+            keys.splice(indexToAdd + 1, 0, {
+                frame: currentFrame,
+                value: value
+            });
+            _this._currentAnimation.setKeys(keys);
+            _this._evaluateKeys();
+            _this.props.context.activeKeyPoints = [];
+            _this.props.context.onActiveKeyPointChanged.notifyObservers();
+            _this.props.context.onActiveAnimationChanged.notifyObservers();
+            _this.forceUpdate();
         });
         return _this;
     }
@@ -47938,8 +48000,8 @@ var GraphComponent = /** @class */ (function (_super) {
     GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, pushToCurves) {
         var minValue = Number.MAX_VALUE;
         var maxValue = -Number.MAX_VALUE;
-        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-            var key = keys_1[_i];
+        for (var _i = 0, keys_2 = keys; _i < keys_2.length; _i++) {
+            var key = keys_2[_i];
             switch (dataType) {
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
                     minValue = Math.min(minValue, key.value);
@@ -48086,7 +48148,6 @@ var GraphComponent = /** @class */ (function (_super) {
         if (!this._currentAnimation) {
             return;
         }
-        this.props.context.onActiveKeyPointChanged.notifyObservers();
         this._offsetX = 20;
         this._offsetY = 20;
         var keys = this._currentAnimation.getKeys();
@@ -48104,6 +48165,8 @@ var GraphComponent = /** @class */ (function (_super) {
         var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false);
         this._minValue = values.min;
         this._maxValue = values.max;
+        this.props.context.referenceMinFrame = this._minFrame;
+        this.props.context.referenceMaxFrame = this._maxFrame;
         var frameConvert = Math.abs(this._convertX(this._maxFrame) - this._convertX(this._minFrame)) + this._offsetX * 2;
         var valueConvert = this._minValue !== this._maxValue ? Math.abs(this._convertY(this._minValue) - this._convertY(this._maxValue)) + this._offsetY * 2 : 1;
         var scaleWidth = frameConvert / this._viewCurveWidth;
@@ -48204,10 +48267,8 @@ var GraphComponent = /** @class */ (function (_super) {
         var activeBoxLeft = 0;
         var activeBoxRight = 0;
         if (this.props.context.activeAnimation) {
-            var animation = this.props.context.activeAnimation;
-            var keys = animation.getKeys();
-            var minFrame = keys[0].frame;
-            var maxFrame = keys[keys.length - 1].frame;
+            var minFrame = this.props.context.referenceMinFrame;
+            var maxFrame = this.props.context.referenceMaxFrame;
             activeBoxLeft = (((this.props.context.fromKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
             activeBoxRight = (((this.props.context.toKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
         }
@@ -48537,6 +48598,7 @@ var PlayHeadComponent = /** @class */ (function (_super) {
             _this.forceUpdate();
         });
         _this._onBeforeRenderObserver = _this.props.context.scene.onBeforeRenderObservable.add(function () {
+            var _a;
             if (!_this.props.context.activeAnimation) {
                 return;
             }
@@ -48547,6 +48609,9 @@ var PlayHeadComponent = /** @class */ (function (_super) {
             var runtimeAnimation = animation.runtimeAnimations[0];
             if (runtimeAnimation) {
                 _this._moveHead(runtimeAnimation.currentFrame);
+            }
+            else if (!((_a = _this._playHeadCircle.current) === null || _a === void 0 ? void 0 : _a.innerHTML)) {
+                _this._moveHead(0);
             }
         });
         _this.props.context.onMoveToFrameRequired.add(function (frame) {
@@ -48570,22 +48635,20 @@ var PlayHeadComponent = /** @class */ (function (_super) {
             return;
         }
         this._playHead.current.style.left = this._frameToPixel(frame) + "px";
-        this._playHeadCircle.current.innerHTML = frame.toFixed(1);
+        this._playHeadCircle.current.innerHTML = frame.toFixed(0);
         this.props.context.activeFrame = frame;
     };
     PlayHeadComponent.prototype._frameToPixel = function (frame) {
-        var animation = this.props.context.activeAnimation;
-        var keys = animation.getKeys();
-        var minFrame = keys[0].frame;
-        var maxFrame = keys[keys.length - 1].frame;
+        var minFrame = this.props.context.referenceMinFrame;
+        var maxFrame = this.props.context.referenceMaxFrame;
         return (((frame - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) * this._viewScale;
     };
     PlayHeadComponent.prototype._pixelToFrame = function (pixel) {
         var animation = this.props.context.activeAnimation;
         var keys = animation.getKeys();
-        var minFrame = keys[0].frame;
-        var maxFrame = keys[keys.length - 1].frame;
-        return Math.max(Math.min(maxFrame, ((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame), minFrame);
+        var minFrame = this.props.context.referenceMinFrame;
+        var maxFrame = this.props.context.referenceMaxFrame;
+        return Math.max(Math.min(keys[keys.length - 1].frame, ((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame), keys[0].frame);
     };
     PlayHeadComponent.prototype.componentWillUnmount = function () {
         if (this._onBeforeRenderObserver) {
@@ -48709,7 +48772,7 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
         var keys = this._currentAnimation.getKeys();
         return (keys.map(function (k, i) {
             var x = (k.frame - from) / convertRatio;
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { key: "frame-line" + k.frame, x1: x, y1: "0px", x2: x, y2: "40px", style: {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { key: "frame-line" + k.frame + i, x1: x, y1: "0px", x2: x, y2: "40px", style: {
                     stroke: "#ffc017",
                     strokeWidth: 0.5,
                 } }));
@@ -48731,12 +48794,12 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
         for (var step = start; step <= end; step += offset) {
             steps.push(step);
         }
-        if (steps[steps.length - 1] < end) {
+        if (steps[steps.length - 1] < end - offset / 2) {
             steps.push(end);
         }
         return (steps.map(function (s, i) {
             var x = (s - from) / convertRatio;
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("g", { key: "axis" + s },
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("g", { key: "axis" + s + i },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { key: "line" + s + i, x1: x, y1: "22px", x2: x, y2: "40px", style: {
                         stroke: "#333333",
                         strokeWidth: 0.5,
@@ -48905,6 +48968,151 @@ var update = api(content, options);
 
 
 module.exports = content.locals || {};
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/addAnimationComponent.tsx":
+/*!***********************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/addAnimationComponent.tsx ***!
+  \***********************************************************************************************************/
+/*! exports provided: AddAnimationComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AddAnimationComponent", function() { return AddAnimationComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Animations/animation */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+
+
+var AddAnimationComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AddAnimationComponent, _super);
+    function AddAnimationComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {};
+        _this._root = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._displayName = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._property = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._typeElement = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._loopModeElement = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        return _this;
+    }
+    AddAnimationComponent.prototype.createNew = function () {
+        var context = this.props.context;
+        var document = this._displayName.current.ownerDocument;
+        var displayName = this._displayName.current.value;
+        var property = this._property.current.value;
+        var type = this._typeElement.current.value;
+        var loopModeValue = this._loopModeElement.current.value;
+        if (!displayName) {
+            document.defaultView.alert("Please define a display name");
+            return;
+        }
+        if (!property) {
+            document.defaultView.alert("Please define a property");
+            return;
+        }
+        var fps = this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond : 60;
+        var dataType = 0;
+        var loopMode = 0;
+        var defaultValue;
+        switch (type) {
+            case "Float": {
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT;
+                defaultValue = 0;
+                break;
+            }
+            case "Vector2": {
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2;
+                defaultValue = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero();
+                break;
+            }
+            case "Vector3": {
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3;
+                defaultValue = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+                break;
+            }
+            case "Quaternion": {
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION;
+                defaultValue = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero();
+                break;
+            }
+            case "Color3": {
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3;
+                defaultValue = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black();
+                break;
+            }
+            case "Color4": {
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4;
+                defaultValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](0, 0, 0, 0);
+                break;
+            }
+        }
+        switch (loopModeValue) {
+            case "Cycle": {
+                loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_CYCLE;
+                break;
+            }
+            case "Relative": {
+                loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_RELATIVE;
+                break;
+            }
+            case "Constant": {
+                loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_CONSTANT;
+                break;
+            }
+        }
+        var animation = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"](displayName, property, fps, dataType, loopMode);
+        var keys = [];
+        keys.push({
+            frame: context.referenceMinFrame,
+            value: defaultValue
+        });
+        keys.push({
+            frame: context.referenceMaxFrame,
+            value: defaultValue
+        });
+        animation.setKeys(keys);
+        context.stop();
+        if (!context.animations || context.animations.length === 0) {
+            context.animations = [];
+            context.target.animations = context.animations;
+        }
+        context.animations.push(animation);
+        context.activeAnimation = animation;
+        context.prepare();
+        context.onActiveAnimationChanged.notifyObservers();
+        context.onAnimationsLoaded.notifyObservers();
+    };
+    AddAnimationComponent.prototype.render = function () {
+        var _this = this;
+        var types = ["Float", "Vector2", "Vector3", "Quaternion", "Color3", "Color4"];
+        var loopModes = ["Cycle", "Relative", "Constant"];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-pane", ref: this._root },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-display-name-label" }, "Display Name"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-property-label" }, "Property"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-type-label" }, "Type"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-loop-mode-label" }, "Loop Mode"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "add-animation-name", ref: this._displayName, className: "input-text", defaultValue: "" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "add-animation-property", ref: this._property, className: "input-text", defaultValue: "" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "add-animation-type", className: "option", ref: this._typeElement }, types.map(function (type, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: type + i, value: type, title: type }, type));
+            })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "add-animation-loop-mode", className: "option", ref: this._loopModeElement }, loopModes.map(function (loopMode, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: loopMode + i, value: loopMode, title: loopMode }, loopMode));
+            })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "add-animation", type: "button", onClick: function () { return _this.createNew(); } }, "Create")));
+    };
+    return AddAnimationComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
 
 /***/ }),
 
@@ -49184,9 +49392,10 @@ var LoadAnimationComponent = /** @class */ (function (_super) {
             }
             context.stop();
             context.target.animations = context.animations;
-            context.activeAnimation = null;
+            context.activeAnimation = context.animations.length ? context.animations[0] : null;
+            context.prepare();
+            context.onAnimationsLoaded.notifyObservers();
             context.onActiveAnimationChanged.notifyObservers();
-            context.onSwitchToEditMode.notifyObservers();
         }, undefined, true);
         evt.target.value = "";
     };
@@ -49204,9 +49413,10 @@ var LoadAnimationComponent = /** @class */ (function (_super) {
             }
             context.stop();
             context.target.animations = context.animations;
-            context.activeAnimation = null;
+            context.activeAnimation = context.animations.length ? context.animations[0] : null;
+            context.prepare();
+            context.onAnimationsLoaded.notifyObservers();
             context.onActiveAnimationChanged.notifyObservers();
-            context.onSwitchToEditMode.notifyObservers();
         }).catch(function (err) {
             var _a;
             (_a = _this._root.current) === null || _a === void 0 ? void 0 : _a.ownerDocument.defaultView.alert("Unable to load your animations: " + err);
@@ -49379,6 +49589,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _controls_textInputComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../controls/textInputComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent.tsx");
 /* harmony import */ var _saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./saveAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/saveAnimationComponent.tsx");
 /* harmony import */ var _loadAnimationComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./loadAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/loadAnimationComponent.tsx");
+/* harmony import */ var _addAnimationComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./addAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/addAnimationComponent.tsx");
+
 
 
 
@@ -49415,7 +49627,7 @@ var SideBarComponent = /** @class */ (function (_super) {
                 _this.forceUpdate();
             }
         });
-        _this.props.context.onSwitchToEditMode.add(function () { return _this.setState({ mode: Mode.Edit }); });
+        _this.props.context.onAnimationsLoaded.add(function () { return _this.setState({ mode: Mode.Edit }); });
         return _this;
     }
     SideBarComponent.prototype._onAddAnimation = function () {
@@ -49456,7 +49668,9 @@ var SideBarComponent = /** @class */ (function (_super) {
             this.state.mode === Mode.Save &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__["SaveAnimationComponent"], { globalState: this.props.globalState, context: this.props.context }),
             this.state.mode === Mode.Load &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_loadAnimationComponent__WEBPACK_IMPORTED_MODULE_6__["LoadAnimationComponent"], { globalState: this.props.globalState, context: this.props.context })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_loadAnimationComponent__WEBPACK_IMPORTED_MODULE_6__["LoadAnimationComponent"], { globalState: this.props.globalState, context: this.props.context }),
+            this.state.mode === Mode.Add &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_addAnimationComponent__WEBPACK_IMPORTED_MODULE_7__["AddAnimationComponent"], { globalState: this.props.globalState, context: this.props.context })));
     };
     return SideBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -49487,13 +49701,14 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__(/*! ./scss/topBar.scss */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss");
 var logoIcon = __webpack_require__(/*! ./assets/babylonLogo.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/babylonLogo.svg");
 var frameIcon = __webpack_require__(/*! ./assets/frameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg");
+var newKeyIcon = __webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/newKeyIcon.svg");
 var TopBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TopBarComponent, _super);
     function TopBarComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { keyFrameValue: "", keyValue: "", editControlsVisible: false };
         _this._onFrameSetObserver = _this.props.context.onFrameSet.add(function (newFrameValue) {
-            _this.setState({ keyFrameValue: newFrameValue.toFixed(2) });
+            _this.setState({ keyFrameValue: newFrameValue.toFixed(0) });
         });
         _this._onValueSetObserver = _this.props.context.onValueSet.add(function (newValue) {
             _this.setState({ keyValue: newValue.toFixed(2) });
@@ -49526,10 +49741,12 @@ var TopBarComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "top-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: logoIcon }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "parent-name" }, this.props.context.title),
-            this.state.editControlsVisible &&
+            this.props.context.activeAnimation && this.state.editControlsVisible &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyFrameValue, tooltip: "Frame", id: "key-frame", onValueAsNumberChanged: function (newValue) { return _this.props.context.onFrameManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context })),
+            this.props.context.activeAnimation &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } })));
     };
     return TopBarComponent;
@@ -51561,7 +51778,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -63352,7 +63569,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -63659,7 +63876,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -64076,7 +64293,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -64415,14 +64632,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/adtInstrumentation":
+/***/ "babylonjs-gui/2D/controls/image":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
 
 /***/ }),
 

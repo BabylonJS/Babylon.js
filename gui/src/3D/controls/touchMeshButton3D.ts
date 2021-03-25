@@ -70,7 +70,7 @@ export class TouchMeshButton3D extends TouchButton3D {
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         this._currentMesh.getChildMeshes().forEach((mesh) => {
-            this._injectGUI3DMetadata(mesh).control = this;
+            this._injectGUI3DReservedDataStore(mesh).control = this;
         });
 
         return this._currentMesh;

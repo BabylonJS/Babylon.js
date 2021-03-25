@@ -355,17 +355,29 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[PointerInput.DeltaVertical] = evt.movementY;
 
                 if (this.onInputChanged) {
+                    // The browser might use a move event in case
+                    // of simultaneous mouse buttons click for instance. So
+                    // in this case we stil need to propagate it.
+                    let fireFakeMove = true;
                     if (previousHorizontal !== evt.clientX) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal], evt);
+                        fireFakeMove = false;
                     }
                     if (previousVertical !== evt.clientY) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical], evt);
+                        fireFakeMove = false;
                     }
                     if (pointer[PointerInput.DeltaHorizontal] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaHorizontal, previousDeltaHorizontal, pointer[PointerInput.DeltaHorizontal], evt);
+                        fireFakeMove = false;
                     }
                     if (pointer[PointerInput.DeltaVertical] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaVertical, previousDeltaVertical, pointer[PointerInput.DeltaVertical], evt);
+                        fireFakeMove = false;
+                    }
+                    // Lets Propagate the event for move with same position.
+                    if (fireFakeMove) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.FakeMove, 0, 0, evt);
                     }
                 }
             }
