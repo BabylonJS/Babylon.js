@@ -9,9 +9,6 @@ precision highp float;
 
 #define RECIPROCAL_PI2 0.15915494
 
-// Constants
-uniform vec4 vEyePosition;
-
 // Input
 varying vec3 vPositionW;
 
