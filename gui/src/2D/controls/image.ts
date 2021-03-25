@@ -576,17 +576,11 @@ export class Image extends Control {
             var vb = svgDoc.documentElement.getAttribute("viewBox");
             var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
             var docheight = Number(svgDoc.documentElement.getAttribute("height"));
-            var vb_width = Number(vb?.split(" ")[2]);
-            var vb_height = Number(vb?.split(" ")[3]);
-            if (!docwidth) {
-                var docwidth = vb_width;
-            }
-            if (!docheight) {
-                var docheight = vb_height;
-            }
             // get element bbox and matrix transform
             var elem = svgDoc.getElementById(elemid) as Nullable<SVGGraphicsElement>;
-            if (vb && elem) {
+            if (vb && docwidth && docheight && elem) {
+                var vb_width = Number(vb.split(" ")[2]);
+                var vb_height = Number(vb.split(" ")[3]);
                 var elem_bbox = elem.getBBox();
                 var elem_matrix_a = 1;
                 var elem_matrix_d = 1;
