@@ -575,7 +575,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
             this.refreshBoundingInfo();
-            this.computeWorldMatrix(true); 
+            this.computeWorldMatrix(true);
         }
 
         // Parent
