@@ -806,6 +806,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onValueSet: Observable<number>;
         onValueManuallyEntered: Observable<number>;
         onFrameRequired: Observable<void>;
+        onNewKeyPointRequired: Observable<void>;
         onDeleteAnimation: Observable<Animation>;
         onGraphMoved: Observable<number>;
         onGraphScaled: Observable<number>;
@@ -5062,6 +5063,7 @@ declare module INSPECTOR {
         onValueSet: BABYLON.Observable<number>;
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
+        onNewKeyPointRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
