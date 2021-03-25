@@ -103,7 +103,7 @@ IRangeFrameBarComponentState
                 let x = (k.frame - from) / convertRatio;
                 return (
                     <line
-                        key={"frame-line" + k.frame}
+                        key={"frame-line" + k.frame + i}
                         x1={x}
                         y1="0px"
                         x2={x}
@@ -140,7 +140,7 @@ IRangeFrameBarComponentState
             steps.push(step);
         }
 
-        if (steps[steps.length - 1] < end) {
+        if (steps[steps.length - 1] < end - offset / 2) {
             steps.push(end);
         }        
 
@@ -148,7 +148,7 @@ IRangeFrameBarComponentState
             steps.map((s, i) => {
                 let x = (s - from) / convertRatio;
                 return (
-                    <g key={"axis" + s}>
+                    <g key={"axis" + s + i}>
                         <line
                             key={"line" + s + i}
                             x1={x}

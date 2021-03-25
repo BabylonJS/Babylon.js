@@ -80,8 +80,8 @@ IGraphComponentState
             }
 
             this._currentAnimation = this.props.context.activeAnimation;
-            this._computeSizes();
             this._evaluateKeys();
+            this._computeSizes();
             this.forceUpdate();
         });
 
@@ -94,12 +94,13 @@ IGraphComponentState
             this.forceUpdate();
         });
 
-        this.props.context.onDeleteKeyActiveKeyPoints.add(() => { // Delete keypoint
+        // Delete keypoint
+        this.props.context.onDeleteKeyActiveKeyPoints.add(() => { 
             if (!this._currentAnimation || !this.props.context.activeKeyPoints) {
                 return;
             }
 
-            let keys = this._currentAnimation.getKeys()
+            let keys = this._currentAnimation.getKeys();
             let newKeys = keys.slice(0);
             let deletedFrame: Nullable<number> = null;            
 
@@ -131,6 +132,41 @@ IGraphComponentState
             this._currentAnimation = null;
 
             this.props.context.onActiveAnimationChanged.notifyObservers();
+        });
+
+        // New keypoint
+        this.props.context.onNewKeyPointRequired.add(() => {
+            if (!this._currentAnimation) {
+                return;
+            }
+
+            let keys = this._currentAnimation.getKeys();
+
+            const currentFrame = this.props.context.activeFrame;
+
+            let indexToAdd = -1;
+            for (var key of keys) {
+                if (key.frame < currentFrame) {
+                    indexToAdd++;
+                } else {
+                    break;
+                }
+            }
+
+            const value = this._currentAnimation.evaluate(currentFrame);
+
+            keys.splice(indexToAdd + 1, 0, {
+                frame: currentFrame,
+                value: value
+            });
+
+            this._currentAnimation.setKeys(keys);
+            this._evaluateKeys();
+
+            this.props.context.activeKeyPoints = [];            
+            this.props.context.onActiveKeyPointChanged.notifyObservers();
+            this.props.context.onActiveAnimationChanged.notifyObservers();        
+            this.forceUpdate();    
         });
     }
 
@@ -405,8 +441,6 @@ IGraphComponentState
         if (!this._currentAnimation) {
             return;
         }
-
-        this.props.context.onActiveKeyPointChanged.notifyObservers();
 
         this._offsetX = 20;
         this._offsetY = 20;
