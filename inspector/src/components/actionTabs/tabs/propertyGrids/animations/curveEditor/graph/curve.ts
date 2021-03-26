@@ -1,5 +1,4 @@
 import { Animation } from "babylonjs/Animations/animation";
-import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 
 export interface KeyEntry {
