@@ -3,35 +3,48 @@ import { Scene } from "../../scene";
 import { Vector3, TmpVectors, Vector4, Matrix } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { RibbonBuilder } from "./ribbonBuilder";
-import { Path3D } from '../../Maths/math.path';
+import { Path3D } from "../../Maths/math.path";
 
 Mesh.ExtrudeShape = (name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
-    var options = {
+    const options = {
         shape: shape,
         path: path,
         scale: scale,
         rotation: rotation,
-        cap: (cap === 0) ? 0 : cap || Mesh.NO_CAP,
+        cap: cap === 0 ? 0 : cap || Mesh.NO_CAP,
         sideOrientation: sideOrientation,
         instance: instance,
-        updatable: updatable
+        updatable: updatable,
     };
 
     return ShapeBuilder.ExtrudeShape(name, options, scene);
 };
 
-Mesh.ExtrudeShapeCustom = (name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
-    var options = {
+Mesh.ExtrudeShapeCustom = (
+    name: string,
+    shape: Vector3[],
+    path: Vector3[],
+    scaleFunction: Nullable<{ (i: number, distance: number): number }>,
+    rotationFunction: Nullable<{ (i: number, distance: number): number }>,
+    ribbonCloseArray: boolean,
+    ribbonClosePath: boolean,
+    cap: number,
+    scene: Scene,
+    updatable?: boolean,
+    sideOrientation?: number,
+    instance?: Mesh
+): Mesh => {
+    const options = {
         shape: shape,
         path: path,
         scaleFunction: scaleFunction,
         rotationFunction: rotationFunction,
         ribbonCloseArray: ribbonCloseArray,
         ribbonClosePath: ribbonClosePath,
-        cap: (cap === 0) ? 0 : cap || Mesh.NO_CAP,
+        cap: cap === 0 ? 0 : cap || Mesh.NO_CAP,
         sideOrientation: sideOrientation,
         instance: instance,
-        updatable: updatable
+        updatable: updatable,
     };
 
     return ShapeBuilder.ExtrudeShapeCustom(name, options, scene);
@@ -61,16 +74,20 @@ export class ShapeBuilder {
      * @see https://doc.babylonjs.com/how_to/parametric_shapes
      * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
      */
-    public static ExtrudeShape(name: string, options: { shape: Vector3[], path: Vector3[], scale?: number, rotation?: number, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
-        var path = options.path;
-        var shape = options.shape;
-        var scale = options.scale || 1;
-        var rotation = options.rotation || 0;
-        var cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
-        var updatable = options.updatable;
-        var sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        var instance = options.instance || null;
-        var invertUV = options.invertUV || false;
+    public static ExtrudeShape(
+        name: string,
+        options: { shape: Vector3[]; path: Vector3[]; scale?: number; rotation?: number; cap?: number; updatable?: boolean; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4; instance?: Mesh; invertUV?: boolean },
+        scene: Nullable<Scene> = null
+    ): Mesh {
+        const path = options.path;
+        const shape = options.shape;
+        const scale = options.scale || 1;
+        const rotation = options.rotation || 0;
+        const cap = options.cap === 0 ? 0 : options.cap || Mesh.NO_CAP;
+        const updatable = options.updatable;
+        const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+        const instance = options.instance || null;
+        const invertUV = options.invertUV || false;
 
         return ShapeBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable ? true : false, sideOrientation, instance, invertUV, options.frontUVs || null, options.backUVs || null);
     }
@@ -101,48 +118,105 @@ export class ShapeBuilder {
      * @see https://doc.babylonjs.com/how_to/parametric_shapes
      * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
      */
-    public static ExtrudeShapeCustom(name: string, options: { shape: Vector3[], path: Vector3[], scaleFunction?: any, rotationFunction?: any, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
-        var path = options.path;
-        var shape = options.shape;
-        var scaleFunction = options.scaleFunction || (() => { return 1; });
-        var rotationFunction = options.rotationFunction || (() => { return 0; });
-        var ribbonCloseArray = options.ribbonCloseArray || false;
-        var ribbonClosePath = options.ribbonClosePath || false;
-        var cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
-        var updatable = options.updatable;
-        var sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        var instance = options.instance;
-        var invertUV = options.invertUV || false;
+    public static ExtrudeShapeCustom(
+        name: string,
+        options: {
+            shape: Vector3[];
+            path: Vector3[];
+            scaleFunction?: Nullable<{ (i: number, distance: number): number }>;
+            rotationFunction?: Nullable<{ (i: number, distance: number): number }>;
+            ribbonCloseArray?: boolean;
+            ribbonClosePath?: boolean;
+            cap?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            instance?: Mesh;
+            invertUV?: boolean;
+        },
+        scene: Nullable<Scene> = null
+    ): Mesh {
+        const path = options.path;
+        const shape = options.shape;
+        const scaleFunction =
+            options.scaleFunction ||
+            (() => {
+                return 1;
+            });
+        const rotationFunction =
+            options.rotationFunction ||
+            (() => {
+                return 0;
+            });
+        const ribbonCloseArray = options.ribbonCloseArray || false;
+        const ribbonClosePath = options.ribbonClosePath || false;
+        const cap = options.cap === 0 ? 0 : options.cap || Mesh.NO_CAP;
+        const updatable = options.updatable;
+        const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+        const instance = options.instance;
+        const invertUV = options.invertUV || false;
         return ShapeBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable ? true : false, sideOrientation, instance || null, invertUV, options.frontUVs || null, options.backUVs || null);
     }
 
-    private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: Nullable<number>, rotation: Nullable<number>, scaleFunction: Nullable<{ (i: number, distance: number): number; }>,
-        rotateFunction: Nullable<{ (i: number, distance: number): number; }>, rbCA: boolean, rbCP: boolean, cap: number, custom: boolean,
-        scene: Nullable<Scene>, updtbl: boolean, side: number, instance: Nullable<Mesh>, invertUV: boolean, frontUVs: Nullable<Vector4>, backUVs: Nullable<Vector4>): Mesh {
+    private static _ExtrudeShapeGeneric(
+        name: string,
+        shape: Vector3[],
+        curve: Vector3[],
+        scale: Nullable<number>,
+        rotation: Nullable<number>,
+        scaleFunction: Nullable<{ (i: number, distance: number): number }>,
+        rotateFunction: Nullable<{ (i: number, distance: number): number }>,
+        rbCA: boolean,
+        rbCP: boolean,
+        cap: number,
+        custom: boolean,
+        scene: Nullable<Scene>,
+        updtbl: boolean,
+        side: number,
+        instance: Nullable<Mesh>,
+        invertUV: boolean,
+        frontUVs: Nullable<Vector4>,
+        backUVs: Nullable<Vector4>
+    ): Mesh {
         // extrusion geometry
-        var extrusionPathArray = (shape: Vector3[], curve: Vector3[], path3D: Path3D, shapePaths: Vector3[][], scale: Nullable<number>, rotation: Nullable<number>,
-            scaleFunction: Nullable<{ (i: number, distance: number): number; }>, rotateFunction: Nullable<{ (i: number, distance: number): number; }>, cap: number, custom: boolean) => {
-            var tangents = path3D.getTangents();
-            var normals = path3D.getNormals();
-            var binormals = path3D.getBinormals();
-            var distances = path3D.getDistances();
+        const extrusionPathArray = (
+            shape: Vector3[],
+            curve: Vector3[],
+            path3D: Path3D,
+            shapePaths: Vector3[][],
+            scale: Nullable<number>,
+            rotation: Nullable<number>,
+            scaleFunction: Nullable<{ (i: number, distance: number): number }>,
+            rotateFunction: Nullable<{ (i: number, distance: number): number }>,
+            cap: number,
+            custom: boolean
+        ) => {
+            const tangents = path3D.getTangents();
+            const normals = path3D.getNormals();
+            const binormals = path3D.getBinormals();
+            const distances = path3D.getDistances();
 
-            var angle = 0;
-            var returnScale: { (i: number, distance: number): number; } = () => { return scale !== null ? scale : 1; };
-            var returnRotation: { (i: number, distance: number): number; } = () => { return rotation !== null ? rotation : 0; };
-            var rotate: { (i: number, distance: number): number; } = custom && rotateFunction ? rotateFunction : returnRotation;
-            var scl: { (i: number, distance: number): number; } = custom && scaleFunction ? scaleFunction : returnScale;
-            var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
-            var rotationMatrix: Matrix = TmpVectors.Matrix[0];
+            let angle = 0;
+            const returnScale = () => {
+                return scale !== null ? scale : 1;
+            };
+            const returnRotation = () => {
+                return rotation !== null ? rotation : 0;
+            };
+            const rotate: { (i: number, distance: number): number } = custom && rotateFunction ? rotateFunction : returnRotation;
+            const scl: { (i: number, distance: number): number } = custom && scaleFunction ? scaleFunction : returnScale;
+            let index = cap === Mesh.NO_CAP || cap === Mesh.CAP_END ? 0 : 2;
+            const rotationMatrix: Matrix = TmpVectors.Matrix[0];
 
-            for (var i = 0; i < curve.length; i++) {
-                var shapePath = new Array<Vector3>();
-                var angleStep = rotate(i, distances[i]);
-                var scaleRatio = scl(i, distances[i]);
-                for (var p = 0; p < shape.length; p++) {
+            for (let i = 0; i < curve.length; i++) {
+                const shapePath = new Array<Vector3>();
+                const angleStep = rotate(i, distances[i]);
+                const scaleRatio = scl(i, distances[i]);
+                for (let p = 0; p < shape.length; p++) {
                     Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
-                    var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
-                    var rotated = shapePath[p] ? shapePath[p] : Vector3.Zero();
+                    const planed = tangents[i].scale(shape[p].z).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y));
+                    const rotated = shapePath[p] ? shapePath[p] : Vector3.Zero();
                     Vector3.TransformCoordinatesToRef(planed, rotationMatrix, rotated);
                     rotated.scaleInPlace(scaleRatio).addInPlace(curve[i]);
                     shapePath[p] = rotated;
@@ -152,10 +226,10 @@ export class ShapeBuilder {
                 index++;
             }
             // cap
-            var capPath = (shapePath: Vector3[]) => {
-                var pointCap = Array<Vector3>();
-                var barycenter = Vector3.Zero();
-                var i: number;
+            const capPath = (shapePath: Vector3[]) => {
+                const pointCap = Array<Vector3>();
+                const barycenter = Vector3.Zero();
+                let i: number;
                 for (i = 0; i < shapePath.length; i++) {
                     barycenter.addInPlace(shapePath[i]);
                 }
@@ -187,9 +261,10 @@ export class ShapeBuilder {
             }
             return shapePaths;
         };
-        var path3D;
-        var pathArray;
-        if (instance) { // instance update
+        let path3D;
+        let pathArray;
+        if (instance) {
+            // instance update
             let storage = instance._creationDataStorage!;
             path3D = storage.path3D.update(curve);
             pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scale, rotation, scaleFunction, rotateFunction, storage.cap, custom);
@@ -199,10 +274,10 @@ export class ShapeBuilder {
         }
         // extruded shape creation
         path3D = <any>new Path3D(curve);
-        var newShapePaths = new Array<Array<Vector3>>();
-        cap = (cap < 0 || cap > 3) ? 0 : cap;
+        const newShapePaths = new Array<Array<Vector3>>();
+        cap = cap < 0 || cap > 3 ? 0 : cap;
         pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
-        var extrudedGeneric = RibbonBuilder.CreateRibbon(name, { pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV, frontUVs: frontUVs || undefined, backUVs: backUVs || undefined }, scene);
+        const extrudedGeneric = RibbonBuilder.CreateRibbon(name, { pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV, frontUVs: frontUVs || undefined, backUVs: backUVs || undefined }, scene);
         extrudedGeneric._creationDataStorage!.pathArray = pathArray;
         extrudedGeneric._creationDataStorage!.path3D = path3D;
         extrudedGeneric._creationDataStorage!.cap = cap;
