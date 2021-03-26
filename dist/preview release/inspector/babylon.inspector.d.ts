@@ -627,8 +627,14 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface KeyEntry {
+        frame: number;
+        value: number;
+        inTangent?: number;
+        outTangent?: number;
+    }
     export class Curve {
-        keys: BABYLON.Vector2[];
+        keys: KeyEntry[];
         animation: BABYLON.Animation;
         color: string;
         onDataUpdatedObservable: BABYLON.Observable<void>;
