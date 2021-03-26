@@ -6,7 +6,6 @@ import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 class NodeState {
     public values: { [name: number]: NodeState };
     public pipeline: GPURenderPipeline;
-    public id: number;
 
     constructor() {
         this.values = {};
@@ -44,7 +43,7 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
         this._nodeStack[0] = WebGPUCacheRenderPipelineTree._Cache;
     }
 
-    protected _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline>, id: number }): void {
+    protected _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void {
         let node = this._nodeStack[this._stateDirtyLowestIndex];
         for (let i = this._stateDirtyLowestIndex; i < this._statesLength; ++i) {
             let nn: NodeState | undefined = node!.values[this._states[i]];
@@ -58,11 +57,9 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
 
         param.token = node;
         param.pipeline = node.pipeline;
-        param.id = node.id;
     }
 
-    protected _setRenderPipeline(param: { token: NodeState, pipeline: Nullable<GPURenderPipeline>, id: number }): void {
+    protected _setRenderPipeline(param: { token: NodeState, pipeline: Nullable<GPURenderPipeline> }): void {
         param.token.pipeline = param.pipeline!;
-        param.token.id = param.id;
     }
 }

@@ -42,7 +42,7 @@ import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
-import { WebGPUCacheBindGroups, WebGPUIdentifiedBindGroups } from "./WebGPU/webgpuCacheBindGroups";
+import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
 import { WebGPUCacheBundles } from "./WebGPU/webgpuCacheBundles";
 
@@ -1069,8 +1069,6 @@ export class WebGPUEngine extends Engine {
 
     private _clearFullQuad(clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
         const renderPass = this._getCurrentRenderPass();
-
-        this._cacheBundles.executeBundles(renderPass);
 
         this._clearQuad.setColorFormat(this._colorFormat);
         this._clearQuad.setDepthStencilFormat(this._depthTextureFormat);
@@ -2990,7 +2988,6 @@ export class WebGPUEngine extends Engine {
 
         this._cacheRenderPipeline.endFrame();
         this._cacheBindGroups.endFrame();
-        this._cacheBundles.endFrame();
 
         this._pendingDebugCommands.length = 0;
 
@@ -3630,7 +3627,7 @@ export class WebGPUEngine extends Engine {
         this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
     }
 
-    private _getBindGroupsToRender(): WebGPUIdentifiedBindGroups {
+    private _getBindGroupsToRender(): GPUBindGroup[] {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
         if (webgpuPipelineContext.uniformBuffer) {
@@ -3719,7 +3716,7 @@ export class WebGPUEngine extends Engine {
             this._currentDrawContext.fastRenderPipeline = pipeline;
         }
 
-        const identifiedBindGroups = this._getBindGroupsToRender();
+        const bindGroups = this._getBindGroupsToRender();
 
         if (mustUpdateStates || this._cacheBundles.disabled || isBundleEncoder) {
             if (!isBundleEncoder) {

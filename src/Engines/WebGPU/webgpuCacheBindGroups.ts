@@ -6,22 +6,9 @@ import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUEngine } from "../webgpuEngine";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
-/** @hidden */
-export class WebGPUIdentifiedBindGroups {
-    private static _Counter = 0;
-
-    public bindGroups: GPUBindGroup[];
-    public id: number;
-
-    constructor() {
-        this.bindGroups = [];
-        this.id = WebGPUIdentifiedBindGroups._Counter++;
-    }
-}
-
 class WebGPUBindGroupCacheNode {
     public values: { [id: number]: WebGPUBindGroupCacheNode };
-    public bindGroups: WebGPUIdentifiedBindGroups;
+    public bindGroups: GPUBindGroup[];
 
     constructor() {
         this.values = {};
@@ -64,8 +51,8 @@ export class WebGPUCacheBindGroups {
      * Note also that all uniform buffers have an offset of 0 in Babylon and we don't have a use case where we would have the same buffer used with different capacity values:
      * that means we don't need to factor in the offset/size of the buffer in the cache, only the id
      */
-    public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, materialContext: WebGPUMaterialContext, uniformsBuffers: { [name: string]: WebGPUDataBuffer }): WebGPUIdentifiedBindGroups {
-        let identifiedBindGroups: WebGPUIdentifiedBindGroups | undefined = undefined;
+    public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, materialContext: WebGPUMaterialContext, uniformsBuffers: { [name: string]: WebGPUDataBuffer }): GPUBindGroup[] {
+        let bindGroups: GPUBindGroup[] | undefined = undefined;
         let node = WebGPUCacheBindGroups._Cache;
 
         if (!this.disabled) {
@@ -94,17 +81,17 @@ export class WebGPUCacheBindGroups {
                 node = nextNode;
             }
 
-            identifiedBindGroups = node.bindGroups;
+            bindGroups = node.bindGroups;
         }
 
-        if (identifiedBindGroups) {
-            return identifiedBindGroups;
+        if (bindGroups) {
+            return bindGroups;
         }
 
-        identifiedBindGroups = new WebGPUIdentifiedBindGroups();
+        bindGroups = [];
 
         if (!this.disabled) {
-            node.bindGroups = identifiedBindGroups;
+            node.bindGroups = bindGroups;
         }
 
         WebGPUCacheBindGroups.NumBindGroupsCreatedTotal++;
@@ -116,7 +103,7 @@ export class WebGPUCacheBindGroups {
             const setDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
                 let groupLayout = bindGroupLayouts[i];
-                identifiedBindGroups.bindGroups[i] = this._device.createBindGroup({
+                bindGroups[i] = this._device.createBindGroup({
                     layout: groupLayout,
                     entries: [],
                 });
@@ -186,14 +173,14 @@ export class WebGPUCacheBindGroups {
 
             if (entries.length > 0) {
                 let groupLayout = bindGroupLayouts[i];
-                identifiedBindGroups.bindGroups[i] = this._device.createBindGroup({
+                bindGroups[i] = this._device.createBindGroup({
                     layout: groupLayout,
                     entries,
                 });
             }
         }
 
-        return identifiedBindGroups;
+        return bindGroups;
     }
 
     public clearTextureEntries(textureId: number): void {

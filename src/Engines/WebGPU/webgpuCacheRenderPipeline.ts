@@ -135,7 +135,6 @@ export abstract class WebGPUCacheRenderPipeline {
     public disabled: boolean;
 
     private static _NumPipelineCreationCurrentFrame = 0;
-    private static _NumPipelineCreation = 0;
 
     protected _states: number[];
     protected _statesLength: number;
@@ -145,7 +144,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private _device: GPUDevice;
     private _isDirty: boolean;
     private _emptyVertexBuffer: VertexBuffer;
-    private _parameter: { token: any, pipeline: Nullable<GPURenderPipeline>, id: number };
+    private _parameter: { token: any, pipeline: Nullable<GPURenderPipeline> };
 
     private _shaderId: number;
     private _alphaToCoverageEnabled: boolean;
@@ -191,7 +190,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._stateDirtyLowestIndex = 0;
         this._emptyVertexBuffer = emptyVertexBuffer;
         this._mrtFormats = [];
-        this._parameter = { token: undefined, pipeline: null, id: 0 };
+        this._parameter = { token: undefined, pipeline: null };
         this.disabled = false;
         this.vertexBuffers = [];
         this.reset();
@@ -233,12 +232,10 @@ export abstract class WebGPUCacheRenderPipeline {
             this._setVertexState(effect); // to fill this.vertexBuffers with correct data
 
             this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
-            this._parameter.id = WebGPUCacheRenderPipeline._NumPipelineCreation++;
 
             WebGPUCacheRenderPipeline.NumCacheMiss++;
             WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame++;
 
-            this._parameter.pipeline.label = <any>this._parameter.id;
             return this._parameter.pipeline;
         }
 
@@ -269,8 +266,6 @@ export abstract class WebGPUCacheRenderPipeline {
         const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
         this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
-        this._parameter.id = WebGPUCacheRenderPipeline._NumPipelineCreation++;
-        this._parameter.pipeline.label = <any>this._parameter.id;
         this._setRenderPipeline(this._parameter);
 
         WebGPUCacheRenderPipeline.NumCacheMiss++;
