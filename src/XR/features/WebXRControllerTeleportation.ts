@@ -807,11 +807,13 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             return;
         }
 
+        const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._xrSessionManager.scene;
+
         const controllerData = this._controllers[this._currentTeleportationControllerId];
 
         const quadraticBezierVectors = Curve3.CreateQuadraticBezier(controllerData.xrController.pointer.absolutePosition, pickInfo.ray!.origin, pickInfo.pickedPoint, 25);
         if (!this._options.generateRayPathMesh) {
-            this._quadraticBezierCurve = LinesBuilder.CreateLines("teleportation path line", { points: quadraticBezierVectors.getPoints(), instance: this._quadraticBezierCurve as LinesMesh, updatable: true });
+            this._quadraticBezierCurve = LinesBuilder.CreateLines("teleportation path line", { points: quadraticBezierVectors.getPoints(), instance: this._quadraticBezierCurve as LinesMesh, updatable: true }, sceneToRenderTo);
         } else {
             this._quadraticBezierCurve = this._options.generateRayPathMesh(quadraticBezierVectors.getPoints());
         }
