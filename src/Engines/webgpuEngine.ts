@@ -44,6 +44,7 @@ import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
+import { WebGPUSnapshotRenderer } from "./WebGPU/webgpuSnapshotRenderer";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 
 import "../Shaders/clearQuad.vertex";
@@ -200,7 +201,7 @@ export class WebGPUEngine extends Engine {
     private _cacheSampler: WebGPUCacheSampler;
     private _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     private _cacheBindGroups: WebGPUCacheBindGroups;
-    private _cacheBundles: WebGPUCacheBundles;
+    private _snapshotRenderer: WebGPUSnapshotRenderer;
     private _emptyVertexBuffer: VertexBuffer;
     private _mrtAttachments: number[];
     private _timestampQuery: WebGPUTimestampQuery;
@@ -275,11 +276,13 @@ export class WebGPUEngine extends Engine {
 
     private _recordBundles = false;
     private _playBundles = false;
-    private _mainPassBundleList: Array<Array<GPURenderBundle>> = [];
-    public recordBundles(): void {
+    private _mainPassBundleList: Array<GPURenderBundle> = [];
+
+    public activateSnapshotRendering(activate = true): void {
         this._mainPassBundleList.length = 0;
-        this._recordBundles = true;
+        this._recordBundles = activate;
         this._playBundles = false;
+        this._snapshotRenderer.disabled = !activate;
     }
 
     /**
@@ -318,19 +321,6 @@ export class WebGPUEngine extends Engine {
     public set disableCacheBindGroups(disable: boolean) {
         if (this._cacheBindGroups) {
             this._cacheBindGroups.disabled = disable;
-        }
-    }
-
-    /**
-     * Sets this to true to disable the cache using bundles
-     */
-     public get disableCacheBundles(): boolean {
-        return this._cacheBundles ? this._cacheBundles.disabled : false;
-    }
-
-    public set disableCacheBundles(disable: boolean) {
-        if (this._cacheBundles) {
-            this._cacheBundles.disabled = disable;
         }
     }
 
@@ -520,6 +510,7 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
+                this._snapshotRenderer = new WebGPUSnapshotRenderer(this._device, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
 
                 if (this.dbgVerboseLogsForFirstFrames) {
@@ -2960,15 +2951,17 @@ export class WebGPUEngine extends Engine {
      */
     public endFrame() {
         if (this._recordBundles) {
-            this._mainPassBundleList.push(this._cacheBundles.getBundleList());
+            const bundle = this._snapshotRenderer.getBundle();
+            if (bundle) {
+                this._mainPassBundleList.push(bundle);
+            }
             this._recordBundles = false;
             this._playBundles = true;
+            this._snapshotRenderer.disabled = true;
         }
 
         if (this._playBundles && this._mainRenderPassWrapper.renderPass !== null) {
-            for (let i = 0; i < this._mainPassBundleList.length; ++i) {
-                this._mainRenderPassWrapper.renderPass.executeBundles(this._mainPassBundleList[i]);
-            }
+            this._mainRenderPassWrapper.renderPass.executeBundles(this._mainPassBundleList);
         }
 
         this._endMainRenderPass();
@@ -3178,15 +3171,19 @@ export class WebGPUEngine extends Engine {
     private _endRenderTargetRenderPass() {
         if (this._currentRenderPass) {
             if (this._playBundles) {
-                this._currentRenderPass.executeBundles((this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer]);
+                if ((this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer]) {
+                    this._currentRenderPass.executeBundles((this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer]);
+                }
             } else {
                 if (this._recordBundles) {
                     if (!(this._currentRenderTarget as any)._bundles) {
                         (this._currentRenderTarget as any)._bundles = [];
                     }
-                    (this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer] = this._cacheBundles.getBundleList();
+                    const bundle = this._snapshotRenderer.getBundle();
+                    if (bundle) {
+                        (this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer] = [bundle];
+                    }
                 }
-                this._cacheBundles.executeBundles(this._currentRenderPass);
             }
             this._currentRenderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
@@ -3268,9 +3265,10 @@ export class WebGPUEngine extends Engine {
     private _endMainRenderPass(): void {
         if (this._mainRenderPassWrapper.renderPass !== null) {
             if (this._recordBundles) {
-                this._mainPassBundleList.push(this._cacheBundles.getBundleList());
-            } else if (!this._playBundles) {
-                this._cacheBundles.executeBundles(this._mainRenderPassWrapper.renderPass);
+                const bundle = this._snapshotRenderer.getBundle();
+                if (bundle) {
+                    this._mainPassBundleList.push(bundle);
+                }
             }
             this._mainRenderPassWrapper.renderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
@@ -3649,55 +3647,8 @@ export class WebGPUEngine extends Engine {
         this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
     }
 
-    private _getBindGroupsToRender(): GPUBindGroup[] {
-        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-
-        if (webgpuPipelineContext.uniformBuffer) {
-            this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
-            webgpuPipelineContext.uniformBuffer.update();
-        }
-
-        const sceneBufferId = this._uniformsBuffers?.["Scene"]?.uniqueId ?? 0;
-
-        if (!this.compatibilityMode && this._currentDrawContext) {
-            let bindGroups = this._currentDrawContext.fastBindGroups[sceneBufferId];
-            if (bindGroups) {
-                return bindGroups;
-            }
-        }
-
-        let bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext, this._uniformsBuffers);
-
-        if (!this.compatibilityMode && this._currentDrawContext) {
-            this._currentDrawContext.fastBindGroups[sceneBufferId] = bindGroups;
-        }
-
-        return bindGroups;
-    }
-
-    private _bindVertexInputs(renderPass: GPURenderPassEncoder | GPURenderBundleEncoder, vertexBuffers: VertexBuffer[]): void {
-        if (this._currentIndexBuffer) {
-            renderPass.setIndexBuffer(this._currentIndexBuffer.underlyingResource, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, 0);
-        }
-
-        for (var index = 0; index < vertexBuffers.length; index++) {
-            let vertexBuffer = vertexBuffers[index];
-
-            const buffer = vertexBuffer.getBuffer();
-            if (buffer) {
-                renderPass.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer.byteOffset);
-            }
-        }
-    }
-
-    private _setRenderBindGroups(bindGroups: GPUBindGroup[], renderPass: GPURenderPassEncoder | GPURenderBundleEncoder): void {
-        for (let i = 0; i < bindGroups.length; i++) {
-            renderPass.setBindGroup(i, bindGroups[i]);
-        }
-    }
-
     private _draw(drawType: number, fillMode: number, start: number, count: number, instancesCount: number): void {
-        const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
+        let renderPass = this._bundleEncoder || this._getCurrentRenderPass();
         const isBundleEncoder = renderPass === this._bundleEncoder;
 
         const mustUpdateViewport = isBundleEncoder ? false : this._mustUpdateViewport(renderPass as GPURenderPassEncoder);
@@ -3707,14 +3658,13 @@ export class WebGPUEngine extends Engine {
 
         let mustUpdateStates = mustUpdateViewport || mustUpdateScissor || mustUpdateStencilRef || mustUpdateBlendColor;
 
+        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+
+        if (webgpuPipelineContext.uniformBuffer) {
+            webgpuPipelineContext.uniformBuffer.update();
+        }
+
         if (this._playBundles) {
-            const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-
-            if (webgpuPipelineContext.uniformBuffer) {
-                this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
-                webgpuPipelineContext.uniformBuffer.update();
-            }
-
             if (mustUpdateViewport) {
                 this._applyViewport(renderPass as GPURenderPassEncoder);
             }
@@ -3730,22 +3680,40 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        let pipeline = !this.compatibilityMode ? this._currentDrawContext?.fastRenderPipeline : null;
-        if (!pipeline) {
-            pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount);
-        }
-        if (!this.compatibilityMode && this._currentDrawContext) {
-            this._currentDrawContext.fastRenderPipeline = pipeline;
+        //const sceneId = this._uniformsBuffers?.["Scene"]?.uniqueId ?? 0;
+
+        if (!this.compatibilityMode && this._currentDrawContext?.fastBundleSingle/*[sceneId]*/) {
+            if (mustUpdateViewport) {
+                this._applyViewport(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateScissor) {
+                this._applyScissor(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateStencilRef) {
+                this._applyStencilRef(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateBlendColor) {
+                this._applyBlendColor(renderPass as GPURenderPassEncoder);
+            }
+
+            (renderPass as GPURenderPassEncoder).executeBundles(this._currentDrawContext.fastBundleSingle/*[sceneId]*/);
+            return;
         }
 
-        const bindGroups = this._getBindGroupsToRender();
+        if (webgpuPipelineContext.uniformBuffer) {
+            this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
+        }
 
-        if (mustUpdateStates || this._cacheBundles.disabled || isBundleEncoder) {
+        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount);
+        const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext, this._uniformsBuffers);
+
+        if (mustUpdateStates || this._snapshotRenderer.disabled || isBundleEncoder) {
             if (!isBundleEncoder) {
                 if (this._recordBundles) {
-                    this._mainPassBundleList.push(this._cacheBundles.getBundleList());
-                } else {
-                    this._cacheBundles.executeBundles(renderPass as GPURenderPassEncoder);
+                    const bundle = this._snapshotRenderer.getBundle();
+                    if (bundle) {
+                        this._mainPassBundleList.push(bundle);
+                    }
                 }
             }
 
@@ -3762,19 +3730,53 @@ export class WebGPUEngine extends Engine {
                 this._applyBlendColor(renderPass as GPURenderPassEncoder);
             }
 
-            renderPass.setPipeline(pipeline);
+            if (this._snapshotRenderer.disabled) {
+                if (!this.compatibilityMode) {
+                    renderPass = this._device.createRenderBundleEncoder({
+                        colorFormats: this._cacheRenderPipeline.colorFormats,
+                        depthStencilFormat: this._depthTextureFormat,
+                        sampleCount: this.currentSampleCount,
+                    });
+                }
 
-            this._bindVertexInputs(renderPass, this._cacheRenderPipeline.vertexBuffers);
+                // bind pipeline
+                renderPass.setPipeline(pipeline);
 
-            this._setRenderBindGroups(identifiedBindGroups.bindGroups, renderPass);
+                // bind index/vertex buffers
+                if (this._currentIndexBuffer) {
+                    renderPass.setIndexBuffer(this._currentIndexBuffer.underlyingResource, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, 0);
+                }
+        
+                const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
+                for (var index = 0; index < vertexBuffers.length; index++) {
+                    let vertexBuffer = vertexBuffers[index];
+        
+                    const buffer = vertexBuffer.getBuffer();
+                    if (buffer) {
+                        renderPass.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer.byteOffset);
+                    }
+                }
 
-            if (drawType === 0) {
-                renderPass.drawIndexed(count, instancesCount || 1, start, 0, 0);
+                // bind bind groups
+                for (let i = 0; i < bindGroups.length; i++) {
+                    renderPass.setBindGroup(i, bindGroups[i]);
+                }
+
+                // draw
+                if (drawType === 0) {
+                    renderPass.drawIndexed(count, instancesCount || 1, start, 0, 0);
+                } else {
+                    renderPass.draw(count, instancesCount || 1, start, 0);
+                }
+
+                if (!this.compatibilityMode) {
+                    this._currentDrawContext!.fastBundleSingle/*[sceneId]*/ = [(renderPass as GPURenderBundleEncoder).finish()];
+                }
             } else {
-                renderPass.draw(count, instancesCount || 1, start, 0);
+                this._snapshotRenderer.recordDrawCall(drawType, start, count, instancesCount, pipeline, bindGroups, this._currentIndexBuffer, this._cacheRenderPipeline.vertexBuffers, this._cacheRenderPipeline.colorFormats);
             }
         } else {
-            this._cacheBundles.recordBundle(drawType, start, count, instancesCount, pipeline, identifiedBindGroups, this._currentIndexBuffer, this._cacheRenderPipeline.vertexBuffers, this._cacheRenderPipeline.colorFormats);
+            this._snapshotRenderer.recordDrawCall(drawType, start, count, instancesCount, pipeline, bindGroups, this._currentIndexBuffer, this._cacheRenderPipeline.vertexBuffers, this._cacheRenderPipeline.colorFormats);
         }
 
         this._reportDrawCall();

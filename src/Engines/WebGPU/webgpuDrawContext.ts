@@ -4,8 +4,8 @@ import { IDrawContext } from "../IDrawContext";
 export class WebGPUDrawContext implements IDrawContext {
     private static _Counter = 0;
 
-    public fastRenderPipeline: GPURenderPipeline | undefined;
-    public fastBindGroups: { [id: number]: GPUBindGroup[] } = {};
+    public fastBundle: { [id: number]: GPURenderBundle[] } = {};
+    public fastBundleSingle: GPURenderBundle[];
 
     public uniqueId: number;
 
