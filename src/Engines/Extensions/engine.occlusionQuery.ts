@@ -2,6 +2,9 @@ import { Nullable, int } from "../../types";
 import { Engine } from "../../Engines/engine";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
+import { PerfCounter } from "../../Misc/perfCounter";
+
+declare type Observer<Engine> = import('../../Misc/observable').Observer<Engine>;
 
 /** @hidden */
 export class _OcclusionDataStorage {
@@ -84,8 +87,30 @@ declare module "../../Engines/engine" {
          */
         endTimeQuery(token: _TimeToken): int;
 
+        /**
+         * Get the performance counter associated with the frame time computation
+         * @returns the perf counter
+         */
+        getGPUFrameTimeCounter(): PerfCounter;
+
+        /**
+         * Enable or disable the GPU frame time capture
+         * @param value True to enable, false to disable
+         */
+        captureGPUFrameTime(value: boolean): void;
+        
         /** @hidden */
         _currentNonTimestampToken: Nullable<_TimeToken>;
+        /** @hidden */
+        _captureGPUFrameTime: boolean;
+        /** @hidden */
+        _gpuFrameTimeToken: Nullable<_TimeToken>;
+        /** @hidden */
+        _gpuFrameTime: PerfCounter;
+        /** @hidden */
+        _onBeginFrameObserver: Nullable<Observer<Engine>>;
+        /** @hidden */
+        _onEndFrameObserver: Nullable<Observer<Engine>>;
 
         /** @hidden */
         _createTimeQuery(): WebGLQuery;
@@ -270,6 +295,47 @@ Engine.prototype.endTimeQuery = function(token: _TimeToken): int {
 
     return -1;
 };
+
+Engine.prototype._captureGPUFrameTime = false;
+Engine.prototype._gpuFrameTime = new PerfCounter();
+
+Engine.prototype.getGPUFrameTimeCounter = function () {
+    return this._gpuFrameTime;
+};
+
+Engine.prototype.captureGPUFrameTime = function (value: boolean) {
+    if (value === this._captureGPUFrameTime) {
+        return;
+    }
+
+    this._captureGPUFrameTime = value;
+
+    if (value) {
+        this._onBeginFrameObserver = this.onBeginFrameObservable.add(() => {
+            if (!this._gpuFrameTimeToken) {
+                this._gpuFrameTimeToken = this.startTimeQuery();
+            }
+        });
+
+        this._onEndFrameObserver = this.onEndFrameObservable.add(() => {
+            if (!this._gpuFrameTimeToken) {
+                return;
+            }
+            let time = this.endTimeQuery(this._gpuFrameTimeToken);
+
+            if (time > -1) {
+                this._gpuFrameTimeToken = null;
+                this._gpuFrameTime.fetchNewFrame();
+                this._gpuFrameTime.addCount(time, true);
+            }
+        });
+    } else {
+        this.onBeginFrameObservable.remove(this._onBeginFrameObserver);
+        this._onBeginFrameObserver = null;
+        this.onEndFrameObservable.remove(this._onEndFrameObserver);
+        this._onEndFrameObserver = null;
+    }
+}
 
 Engine.prototype._getGlAlgorithmType = function(algorithmType: number): number {
     return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
