@@ -44,13 +44,14 @@ import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
-import { WebGPUCacheBundles } from "./WebGPU/webgpuCacheBundles";
+import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type PerfCounter = import("../Misc/perfCounter").PerfCounter;
 
 // TODO WEBGPU remove when not needed anymore
 function assert(condition: any, msg?: string): asserts condition {
@@ -202,6 +203,7 @@ export class WebGPUEngine extends Engine {
     private _cacheBundles: WebGPUCacheBundles;
     private _emptyVertexBuffer: VertexBuffer;
     private _mrtAttachments: number[];
+    private _timestampQuery: WebGPUTimestampQuery;
     /** @hidden */
     public _counters: {
         numEnableEffects: number;
@@ -518,7 +520,7 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
-                this._cacheBundles = new WebGPUCacheBundles(this._device, this);
+                this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
 
                 if (this.dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
@@ -626,8 +628,8 @@ export class WebGPUEngine extends Engine {
             depthTextureExtension: true,
             vertexArrayObject: false,
             instancedArrays: true,
-            timerQuery: undefined,
-            canUseTimestampForTimerQuery: false,
+            timerQuery: typeof(BigUint64Array) !== "undefined" && this.enabledExtensions.indexOf(WebGPUConstants.FeatureName.TimestampQuery) !== -1 ? true as any : undefined,
+            canUseTimestampForTimerQuery: true,
             multiview: false,
             oculusMultiview: false,
             parallelShaderCompile: undefined,
@@ -783,6 +785,22 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
         return new WebGPUShaderProcessingContext();
+    }
+
+    /**
+     * Get the performance counter associated with the frame time computation
+     * @returns the perf counter
+     */
+    public getGPUFrameTimeCounter(): PerfCounter {
+        return this._timestampQuery.gpuFrameTimeCounter;
+    }
+
+    /**
+     * Enable or disable the GPU frame time capture
+     * @param value True to enable, fale to disable
+     */
+    public captureGPUFrameTime(value: boolean) {
+        this._timestampQuery.enable = value;
     }
 
     //------------------------------------------------------------------------------
@@ -2955,6 +2973,8 @@ export class WebGPUEngine extends Engine {
 
         this._endMainRenderPass();
 
+        this._timestampQuery.endFrame(this._renderEncoder);
+
         this.flushFramebuffer(false);
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -3033,6 +3053,8 @@ export class WebGPUEngine extends Engine {
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
         this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
+
+        this._timestampQuery.startFrame(this._uploadEncoder);
 
         this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
