@@ -44,7 +44,7 @@ import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
-import { WebGPUSnapshotRenderer } from "./WebGPU/webgpuSnapshotRenderer";
+import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 
 import "../Shaders/clearQuad.vertex";
@@ -201,7 +201,6 @@ export class WebGPUEngine extends Engine {
     private _cacheSampler: WebGPUCacheSampler;
     private _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     private _cacheBindGroups: WebGPUCacheBindGroups;
-    private _snapshotRenderer: WebGPUSnapshotRenderer;
     private _emptyVertexBuffer: VertexBuffer;
     private _mrtAttachments: number[];
     private _timestampQuery: WebGPUTimestampQuery;
@@ -247,6 +246,7 @@ export class WebGPUEngine extends Engine {
     private _mainRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
     private _rttRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
     private _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
+    private _bundleList: WebGPUBundleList;
 
     // DrawCall Life Cycle
     // Effect is on the parent class
@@ -274,15 +274,14 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public dbgShowEmptyEnableEffectCalls = true;
 
-    private _recordBundles = false;
-    private _playBundles = false;
-    private _mainPassBundleList: Array<GPURenderBundle> = [];
+    private _snapshotRenderingRecordBundles = false;
+    private _snapshotRenderingPlayBundles = false;
+    private _snapshotRenderingMainPassBundleList: WebGPUBundleList[] = [];
 
     public activateSnapshotRendering(activate = true): void {
-        this._mainPassBundleList.length = 0;
-        this._recordBundles = activate;
-        this._playBundles = false;
-        this._snapshotRenderer.disabled = !activate;
+        this._snapshotRenderingMainPassBundleList.length = 0;
+        this._snapshotRenderingRecordBundles = activate;
+        this._snapshotRenderingPlayBundles = false;
     }
 
     /**
@@ -510,8 +509,8 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
-                this._snapshotRenderer = new WebGPUSnapshotRenderer(this._device, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
+                this._bundleList = new WebGPUBundleList(this._device);
 
                 if (this.dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
@@ -2950,18 +2949,18 @@ export class WebGPUEngine extends Engine {
      * End the current frame
      */
     public endFrame() {
-        if (this._recordBundles) {
-            const bundle = this._snapshotRenderer.getBundle();
-            if (bundle) {
-                this._mainPassBundleList.push(bundle);
-            }
-            this._recordBundles = false;
-            this._playBundles = true;
-            this._snapshotRenderer.disabled = true;
+        if (this._snapshotRenderingRecordBundles) {
+            this._snapshotRenderingMainPassBundleList.push(this._bundleList.clone());
+            this._snapshotRenderingRecordBundles = false;
+            this._snapshotRenderingPlayBundles = true;
         }
 
-        if (this._playBundles && this._mainRenderPassWrapper.renderPass !== null) {
-            this._mainRenderPassWrapper.renderPass.executeBundles(this._mainPassBundleList);
+        if (this._mainRenderPassWrapper.renderPass !== null) {
+            if (this._snapshotRenderingPlayBundles) {
+                for (let i = 0; i < this._snapshotRenderingMainPassBundleList.length; ++i) {
+                    this._snapshotRenderingMainPassBundleList[i].run(this._mainRenderPassWrapper.renderPass);
+                }
+            }
         }
 
         this._endMainRenderPass();
@@ -3050,6 +3049,8 @@ export class WebGPUEngine extends Engine {
         this._timestampQuery.startFrame(this._uploadEncoder);
 
         this._textureHelper.setCommandEncoder(this._uploadEncoder);
+
+        this._bundleList.reset();
 
         // restart the render pass
         if (reopenPass) {
@@ -3170,20 +3171,20 @@ export class WebGPUEngine extends Engine {
 
     private _endRenderTargetRenderPass() {
         if (this._currentRenderPass) {
-            if (this._playBundles) {
-                if ((this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer]) {
-                    this._currentRenderPass.executeBundles((this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer]);
+            if (this._snapshotRenderingPlayBundles) {
+                if ((this._currentRenderTarget as any)._bundleLists[(this._currentRenderTarget as any)._layer]) {
+                    (this._currentRenderTarget as any)._bundleLists[(this._currentRenderTarget as any)._layer].run(this._currentRenderPass);
                 }
-            } else {
-                if (this._recordBundles) {
-                    if (!(this._currentRenderTarget as any)._bundles) {
-                        (this._currentRenderTarget as any)._bundles = [];
-                    }
-                    const bundle = this._snapshotRenderer.getBundle();
-                    if (bundle) {
-                        (this._currentRenderTarget as any)._bundles[(this._currentRenderTarget as any)._layer] = [bundle];
-                    }
+            } else if (this._snapshotRenderingRecordBundles) {
+                if (!(this._currentRenderTarget as any)._bundleLists) {
+                    (this._currentRenderTarget as any)._bundleLists = [];
                 }
+                (this._currentRenderTarget as any)._bundleLists[(this._currentRenderTarget as any)._layer] = this._bundleList.clone();
+                this._bundleList.reset();
+                (this._currentRenderTarget as any)._bundleLists[(this._currentRenderTarget as any)._layer].run(this._currentRenderPass);
+            } else if (!this.compatibilityMode) {
+                this._bundleList.run(this._currentRenderPass);
+                this._bundleList.reset();
             }
             this._currentRenderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
@@ -3264,11 +3265,12 @@ export class WebGPUEngine extends Engine {
 
     private _endMainRenderPass(): void {
         if (this._mainRenderPassWrapper.renderPass !== null) {
-            if (this._recordBundles) {
-                const bundle = this._snapshotRenderer.getBundle();
-                if (bundle) {
-                    this._mainPassBundleList.push(bundle);
-                }
+            if (this._snapshotRenderingRecordBundles) {
+                this._snapshotRenderingMainPassBundleList.push(this._bundleList.clone());
+            }
+            if (!this.compatibilityMode && !this._snapshotRenderingPlayBundles) {
+                this._bundleList.run(this._mainRenderPassWrapper.renderPass);
+                this._bundleList.reset();
             }
             this._mainRenderPassWrapper.renderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
@@ -3648,15 +3650,14 @@ export class WebGPUEngine extends Engine {
     }
 
     private _draw(drawType: number, fillMode: number, start: number, count: number, instancesCount: number): void {
-        let renderPass = this._bundleEncoder || this._getCurrentRenderPass();
-        const isBundleEncoder = renderPass === this._bundleEncoder;
+        const renderPass = this._getCurrentRenderPass();
 
-        const mustUpdateViewport = isBundleEncoder ? false : this._mustUpdateViewport(renderPass as GPURenderPassEncoder);
-        const mustUpdateScissor = isBundleEncoder ? false : this._mustUpdateScissor(renderPass as GPURenderPassEncoder);
-        const mustUpdateStencilRef = isBundleEncoder || !this._stencilState.stencilTest ? false : this._mustUpdateStencilRef(renderPass as GPURenderPassEncoder);
-        const mustUpdateBlendColor = isBundleEncoder || !this._alphaState.alphaBlend ? false : this._mustUpdateBlendColor(renderPass as GPURenderPassEncoder);
+        const mustUpdateViewport = this._mustUpdateViewport(renderPass as GPURenderPassEncoder);
+        const mustUpdateScissor = this._mustUpdateScissor(renderPass as GPURenderPassEncoder);
+        const mustUpdateStencilRef = !this._stencilState.stencilTest ? false : this._mustUpdateStencilRef(renderPass as GPURenderPassEncoder);
+        const mustUpdateBlendColor = !this._alphaState.alphaBlend ? false : this._mustUpdateBlendColor(renderPass as GPURenderPassEncoder);
 
-        let mustUpdateStates = mustUpdateViewport || mustUpdateScissor || mustUpdateStencilRef || mustUpdateBlendColor;
+        //let mustUpdateStates = mustUpdateViewport || mustUpdateScissor || mustUpdateStencilRef || mustUpdateBlendColor;
 
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
@@ -3664,8 +3665,8 @@ export class WebGPUEngine extends Engine {
             webgpuPipelineContext.uniformBuffer.update();
         }
 
-        if (this._playBundles) {
-            if (mustUpdateViewport) {
+        if (this._snapshotRenderingPlayBundles) {
+            /*if (mustUpdateViewport) {
                 this._applyViewport(renderPass as GPURenderPassEncoder);
             }
             if (mustUpdateScissor) {
@@ -3676,27 +3677,27 @@ export class WebGPUEngine extends Engine {
             }
             if (mustUpdateBlendColor) {
                 this._applyBlendColor(renderPass as GPURenderPassEncoder);
-            }
+            }*/
             return;
         }
 
         //const sceneId = this._uniformsBuffers?.["Scene"]?.uniqueId ?? 0;
 
-        if (!this.compatibilityMode && this._currentDrawContext?.fastBundleSingle/*[sceneId]*/) {
+        if (!this.compatibilityMode && this._currentDrawContext?.fastBundle) {
             if (mustUpdateViewport) {
-                this._applyViewport(renderPass as GPURenderPassEncoder);
+                this._bundleList.addItem(new WebGPURenderItemViewport(this._viewportCached.x, this._viewportCached.y, this._viewportCached.z, this._viewportCached.w));
             }
             if (mustUpdateScissor) {
-                this._applyScissor(renderPass as GPURenderPassEncoder);
+                this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
             }
             if (mustUpdateStencilRef) {
-                this._applyStencilRef(renderPass as GPURenderPassEncoder);
+                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilState.stencilFuncRef));
             }
             if (mustUpdateBlendColor) {
-                this._applyBlendColor(renderPass as GPURenderPassEncoder);
+                this._bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));
             }
 
-            (renderPass as GPURenderPassEncoder).executeBundles(this._currentDrawContext.fastBundleSingle/*[sceneId]*/);
+            this._bundleList.addBundle(this._currentDrawContext.fastBundle);
             return;
         }
 
@@ -3707,16 +3708,23 @@ export class WebGPUEngine extends Engine {
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount);
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext, this._uniformsBuffers);
 
-        if (mustUpdateStates || this._snapshotRenderer.disabled || isBundleEncoder) {
-            if (!isBundleEncoder) {
-                if (this._recordBundles) {
-                    const bundle = this._snapshotRenderer.getBundle();
-                    if (bundle) {
-                        this._mainPassBundleList.push(bundle);
-                    }
-                }
-            }
+        let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
 
+        if (this._snapshotRenderingRecordBundles) {
+            if (mustUpdateViewport) {
+                this._bundleList.addItem(new WebGPURenderItemViewport(this._viewportCached.x, this._viewportCached.y, this._viewportCached.z, this._viewportCached.w));
+            }
+            if (mustUpdateScissor) {
+                this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
+            }
+            if (mustUpdateStencilRef) {
+                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilState.stencilFuncRef));
+            }
+            if (mustUpdateBlendColor) {
+                this._bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));
+            }
+            renderPass2 = this._bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount);
+        } else {
             if (mustUpdateViewport) {
                 this._applyViewport(renderPass as GPURenderPassEncoder);
             }
@@ -3729,54 +3737,48 @@ export class WebGPUEngine extends Engine {
             if (mustUpdateBlendColor) {
                 this._applyBlendColor(renderPass as GPURenderPassEncoder);
             }
-
-            if (this._snapshotRenderer.disabled) {
-                if (!this.compatibilityMode) {
-                    renderPass = this._device.createRenderBundleEncoder({
-                        colorFormats: this._cacheRenderPipeline.colorFormats,
-                        depthStencilFormat: this._depthTextureFormat,
-                        sampleCount: this.currentSampleCount,
-                    });
-                }
-
-                // bind pipeline
-                renderPass.setPipeline(pipeline);
-
-                // bind index/vertex buffers
-                if (this._currentIndexBuffer) {
-                    renderPass.setIndexBuffer(this._currentIndexBuffer.underlyingResource, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, 0);
-                }
-        
-                const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
-                for (var index = 0; index < vertexBuffers.length; index++) {
-                    let vertexBuffer = vertexBuffers[index];
-        
-                    const buffer = vertexBuffer.getBuffer();
-                    if (buffer) {
-                        renderPass.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer.byteOffset);
-                    }
-                }
-
-                // bind bind groups
-                for (let i = 0; i < bindGroups.length; i++) {
-                    renderPass.setBindGroup(i, bindGroups[i]);
-                }
-
-                // draw
-                if (drawType === 0) {
-                    renderPass.drawIndexed(count, instancesCount || 1, start, 0, 0);
-                } else {
-                    renderPass.draw(count, instancesCount || 1, start, 0);
-                }
-
-                if (!this.compatibilityMode) {
-                    this._currentDrawContext!.fastBundleSingle/*[sceneId]*/ = [(renderPass as GPURenderBundleEncoder).finish()];
-                }
-            } else {
-                this._snapshotRenderer.recordDrawCall(drawType, start, count, instancesCount, pipeline, bindGroups, this._currentIndexBuffer, this._cacheRenderPipeline.vertexBuffers, this._cacheRenderPipeline.colorFormats);
+            if (!this.compatibilityMode) {
+                renderPass2 = this._device.createRenderBundleEncoder({
+                    colorFormats: this._cacheRenderPipeline.colorFormats,
+                    depthStencilFormat: this._depthTextureFormat,
+                    sampleCount: this.currentSampleCount,
+                });
             }
+        }
+
+        // bind pipeline
+        renderPass2.setPipeline(pipeline);
+
+        // bind index/vertex buffers
+        if (this._currentIndexBuffer) {
+            renderPass2.setIndexBuffer(this._currentIndexBuffer.underlyingResource, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, 0);
+        }
+
+        const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
+        for (var index = 0; index < vertexBuffers.length; index++) {
+            let vertexBuffer = vertexBuffers[index];
+
+            const buffer = vertexBuffer.getBuffer();
+            if (buffer) {
+                renderPass2.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer.byteOffset);
+            }
+        }
+
+        // bind bind groups
+        for (let i = 0; i < bindGroups.length; i++) {
+            renderPass2.setBindGroup(i, bindGroups[i]);
+        }
+
+        // draw
+        if (drawType === 0) {
+            renderPass2.drawIndexed(count, instancesCount || 1, start, 0, 0);
         } else {
-            this._snapshotRenderer.recordDrawCall(drawType, start, count, instancesCount, pipeline, bindGroups, this._currentIndexBuffer, this._cacheRenderPipeline.vertexBuffers, this._cacheRenderPipeline.colorFormats);
+            renderPass2.draw(count, instancesCount || 1, start, 0);
+        }
+
+        if (!this.compatibilityMode) {
+            this._currentDrawContext!.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
+            this._bundleList.addBundle(this._currentDrawContext!.fastBundle);
         }
 
         this._reportDrawCall();
