@@ -700,11 +700,16 @@ declare module "babylonjs-inspector/components/popupComponent" {
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/curve" {
-    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Animation } from "babylonjs/Animations/animation";
     import { Observable } from "babylonjs/Misc/observable";
+    export interface KeyEntry {
+        frame: number;
+        value: number;
+        inTangent?: number;
+        outTangent?: number;
+    }
     export class Curve {
-        keys: Vector2[];
+        keys: KeyEntry[];
         animation: Animation;
         color: string;
         onDataUpdatedObservable: Observable<void>;
@@ -4970,8 +4975,14 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface KeyEntry {
+        frame: number;
+        value: number;
+        inTangent?: number;
+        outTangent?: number;
+    }
     export class Curve {
-        keys: BABYLON.Vector2[];
+        keys: KeyEntry[];
         animation: BABYLON.Animation;
         color: string;
         onDataUpdatedObservable: BABYLON.Observable<void>;

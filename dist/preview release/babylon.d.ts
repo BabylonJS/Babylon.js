@@ -33929,16 +33929,16 @@ declare module BABYLON {
          */
         get onBeforeBindObservable(): Observable<Mesh>;
         /**
-        * An event triggered after rendering the mesh
-        */
+         * An event triggered after rendering the mesh
+         */
         get onAfterRenderObservable(): Observable<Mesh>;
         /**
-        * An event triggeredbetween rendering pass when using separateCullingPass = true
-        */
+         * An event triggeredbetween rendering pass when using separateCullingPass = true
+         */
         get onBetweenPassObservable(): Observable<SubMesh>;
         /**
-        * An event triggered before drawing the mesh
-        */
+         * An event triggered before drawing the mesh
+         */
         get onBeforeDrawObservable(): Observable<Mesh>;
         private _onBeforeDrawObserver;
         /**
@@ -34640,15 +34640,15 @@ declare module BABYLON {
          */
         static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
         /**
-          * Creates a plane polygonal mesh.  By default, this is a disc. Please consider using the same method from the MeshBuilder class instead
-          * @param name defines the name of the mesh to create
-          * @param radius sets the radius size (float) of the polygon (default 0.5)
-          * @param tessellation sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
-          * @param scene defines the hosting scene
-          * @param updatable defines if the mesh must be flagged as updatable
-          * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-          * @returns a new Mesh
-          */
+         * Creates a plane polygonal mesh.  By default, this is a disc. Please consider using the same method from the MeshBuilder class instead
+         * @param name defines the name of the mesh to create
+         * @param radius sets the radius size (float) of the polygon (default 0.5)
+         * @param tessellation sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
+         * @param scene defines the hosting scene
+         * @param updatable defines if the mesh must be flagged as updatable
+         * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+         * @returns a new Mesh
+         */
         static CreateDisc(name: string, radius: number, tessellation: number, scene?: Nullable<Scene>, updatable?: boolean, sideOrientation?: number): Mesh;
         /**
          * Creates a box mesh. Please consider using the same method from the MeshBuilder class instead
@@ -34661,24 +34661,24 @@ declare module BABYLON {
          */
         static CreateBox(name: string, size: number, scene?: Nullable<Scene>, updatable?: boolean, sideOrientation?: number): Mesh;
         /**
-          * Creates a sphere mesh. Please consider using the same method from the MeshBuilder class instead
-          * @param name defines the name of the mesh to create
-          * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
-          * @param diameter sets the diameter size (float) of the sphere (default 1)
-          * @param scene defines the hosting scene
-          * @param updatable defines if the mesh must be flagged as updatable
-          * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-          * @returns a new Mesh
-          */
+         * Creates a sphere mesh. Please consider using the same method from the MeshBuilder class instead
+         * @param name defines the name of the mesh to create
+         * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
+         * @param diameter sets the diameter size (float) of the sphere (default 1)
+         * @param scene defines the hosting scene
+         * @param updatable defines if the mesh must be flagged as updatable
+         * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+         * @returns a new Mesh
+         */
         static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         /**
-          * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
-          * @param name defines the name of the mesh to create
-          * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
-          * @param diameter sets the diameter size (float) of the sphere (default 1)
-          * @param scene defines the hosting scene
-          * @returns a new Mesh
-          */
+         * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
+         * @param name defines the name of the mesh to create
+         * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
+         * @param diameter sets the diameter size (float) of the sphere (default 1)
+         * @param scene defines the hosting scene
+         * @returns a new Mesh
+         */
         static CreateHemisphere(name: string, segments: number, diameter: number, scene?: Scene): Mesh;
         /**
          * Creates a cylinder or a cone mesh. Please consider using the same method from the MeshBuilder class instead
@@ -34814,7 +34814,11 @@ declare module BABYLON {
          * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape)
          * @returns a new Mesh
          */
-        static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
+        static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: Nullable<{
+            (i: number, distance: number): number;
+        }>, rotationFunction: Nullable<{
+            (i: number, distance: number): number;
+        }>, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
         /**
          * Creates lathe mesh.
          * The lathe is a shape with a symmetry axis : a 2D model shape is rotated around this axis to design the lathe.
@@ -34912,24 +34916,24 @@ declare module BABYLON {
             (i: number, distance: number): number;
         }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
         /**
-          * Creates a polyhedron mesh.
-          * Please consider using the same method from the MeshBuilder class instead.
-          * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embedded types. Please refer to the type sheet in the tutorial to choose the wanted type
-          * * The parameter `size` (positive float, default 1) sets the polygon size
-          * * You can overwrite the `size` on each dimension bu using the parameters `sizeX`, `sizeY` or `sizeZ` (positive floats, default to `size` value)
-          * * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`
-          * * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron
-          * * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (Color4, default `(1, 1, 1, 1)`) and faceUV (Vector4, default `(0, 0, 1, 1)`)
-          * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
-          * * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored
-          * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-          * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-          * @param name defines the name of the mesh to create
-          * @param options defines the options used to create the mesh
-          * @param scene defines the hosting scene
-          * @returns a new Mesh
-          */
+         * Creates a polyhedron mesh.
+         * Please consider using the same method from the MeshBuilder class instead.
+         * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embedded types. Please refer to the type sheet in the tutorial to choose the wanted type
+         * * The parameter `size` (positive float, default 1) sets the polygon size
+         * * You can overwrite the `size` on each dimension bu using the parameters `sizeX`, `sizeY` or `sizeZ` (positive floats, default to `size` value)
+         * * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`
+         * * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron
+         * * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (Color4, default `(1, 1, 1, 1)`) and faceUV (Vector4, default `(0, 0, 1, 1)`)
+         * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
+         * * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored
+         * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh to create
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns a new Mesh
+         */
         static CreatePolyhedron(name: string, options: {
             type?: number;
             size?: number;
@@ -60181,8 +60185,12 @@ declare module BABYLON {
         static ExtrudeShapeCustom(name: string, options: {
             shape: Vector3[];
             path: Vector3[];
-            scaleFunction?: any;
-            rotationFunction?: any;
+            scaleFunction?: Nullable<{
+                (i: number, distance: number): number;
+            }>;
+            rotationFunction?: Nullable<{
+                (i: number, distance: number): number;
+            }>;
             ribbonCloseArray?: boolean;
             ribbonClosePath?: boolean;
             cap?: number;
@@ -63879,7 +63887,7 @@ declare module BABYLON {
              * @param options experience options
              * @returns a promise for a new WebXRDefaultExperience
              */
-            createDefaultXRExperienceAsync(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
+            createDefaultXRExperienceAsync(options?: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
         }
 }
 declare module BABYLON {
