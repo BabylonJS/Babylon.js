@@ -4,8 +4,7 @@ import { IDrawContext } from "../IDrawContext";
 export class WebGPUDrawContext implements IDrawContext {
     private static _Counter = 0;
 
-    public fastBundle: { [id: number]: GPURenderBundle[] } = {};
-    public fastBundleSingle: GPURenderBundle[];
+    public fastBundle: GPURenderBundle;
 
     public uniqueId: number;
 
