@@ -50,7 +50,6 @@
         "@types/react-color": "^3.0.2",
         "@types/react-dom": "^16.9.8",
         "@types/sinon": "^9.0.4",
-        "ajv": "^6.12.2",
         "base64-font-loader": "^0.0.4",
         "chai": "^4.2.0",
         "clean-webpack-plugin": "^3.0.0",
@@ -112,7 +111,6 @@
         "webpack-cli": "^3.3.11",
         "webpack-dev-server": "^3.11.0",
         "webpack-stream": "~5.2.1",
-        "xhr2": "^0.2.0",
         "xmlbuilder": "15.1.1"
     },
     "dependencies": {}
