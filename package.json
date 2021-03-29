@@ -99,6 +99,7 @@
         "style-loader": "^1.2.1",
         "svg-url-loader": "^6.0.0",
         "symlink-dir": "^4.1.0",
+        "thread-loader": "^3.0.1",
         "through2": "~3.0.1",
         "ts-loader": "^7.0.5",
         "ts-node": "^9.1.1",

@@ -46,14 +46,19 @@ module.exports = function defaultConfig(options) {
         module: {
             rules: [{
                 test: /\.tsx?$/,
-                loader: 'ts-loader',
-                options: {
-                    configFile: settings.computed.tsConfigPath,
-                    transpileOnly: true,
-                    compilerOptions: {
-                        declaration: false,
+                use: [
+                    'thread-loader',
+                    {
+                        loader: 'ts-loader',
+                        options: {
+                            configFile: settings.computed.tsConfigPath,
+                            happyPackMode: true,
+                            compilerOptions: {
+                                declaration: false,
+                            }
+                        }
                     }
-                }
+                ]
             }, ...options.moduleRules]
         },
         mode: "production",
