@@ -49,9 +49,9 @@ module.exports = function defaultConfig(options) {
                 loader: 'ts-loader',
                 options: {
                     configFile: settings.computed.tsConfigPath,
+                    transpileOnly: true,
                     compilerOptions: {
                         declaration: false,
-                        transpileOnly: true,
                     }
                 }
             }, ...options.moduleRules]
