@@ -51,7 +51,6 @@
         "@types/react-dom": "^16.9.8",
         "@types/sinon": "^9.0.4",
         "ajv": "^6.12.2",
-        "awesome-typescript-loader": "^5.2.1",
         "base64-font-loader": "^0.0.4",
         "chai": "^4.2.0",
         "clean-webpack-plugin": "^3.0.0",
