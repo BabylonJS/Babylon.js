@@ -51,6 +51,9 @@ module.exports = function defaultConfig(options) {
                     configFile: settings.computed.tsConfigPath,
                     compilerOptions: {
                         declaration: false,
+                        exclude: [
+                            'node_modules'
+                        ]
                     }
                 }
             }, ...options.moduleRules]
