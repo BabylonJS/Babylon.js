@@ -50,7 +50,8 @@ module.exports = function defaultConfig(options) {
                 options: {
                     configFile: settings.computed.tsConfigPath,
                     compilerOptions: {
-                        declaration: false
+                        declaration: false,
+                        transpileOnly: true,
                     }
                 }
             }, ...options.moduleRules]
