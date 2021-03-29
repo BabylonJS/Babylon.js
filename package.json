@@ -106,11 +106,11 @@
         "tslint": "^6.1.2",
         "typedoc": "^0.17.7",
         "typescript": "^4.2.3",
-        "webpack": "~4.43.0",
-        "webpack-bundle-analyzer": "^3.8.0",
-        "webpack-cli": "^3.3.11",
-        "webpack-dev-server": "^3.11.0",
-        "webpack-stream": "~5.2.1",
+        "webpack": "~4.46.0",
+        "webpack-bundle-analyzer": "^4.4.0",
+        "webpack-cli": "^4.6.0",
+        "webpack-dev-server": "^3.11.2",
+        "webpack-stream": "~6.1.2",
         "xmlbuilder": "15.1.1"
     },
     "dependencies": {}
