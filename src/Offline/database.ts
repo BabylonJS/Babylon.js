@@ -329,7 +329,7 @@ export class Database implements IOfflineProvider {
 
                 xhr.addEventListener("load", () => {
                     if (xhr.status === 200 && this._db) {
-                        // Blob as response (XHR2)
+                        // Blob as response
                         blob = xhr.response;
 
                         var transaction = this._db.transaction(["textures"], "readwrite");
@@ -594,7 +594,7 @@ export class Database implements IOfflineProvider {
 
             xhr.addEventListener("load", () => {
                 if (xhr.status === 200 || (xhr.status < 400 && Database._ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6))) {
-                    // Blob as response (XHR2)
+                    // Blob as response
                     fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
 
                     if (!this._hasReachedQuota && this._db) {
