@@ -40,6 +40,7 @@ export class Context {
     onValueManuallyEntered = new Observable<number>();
 
     onFrameRequired = new Observable<void>();
+    onNewKeyPointRequired = new Observable<void>();
 
     onDeleteAnimation = new Observable<Animation>();
 

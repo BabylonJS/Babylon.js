@@ -72,7 +72,7 @@ export class GUI3DManager implements IDisposable {
         this._utilityLayer.onlyCheckPointerDownEvents = false;
         this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.mainSceneTrackerPredicate = (mesh: Nullable<AbstractMesh>) => {
-            return mesh && mesh.metadata?.GUI3D?.control?._node;
+            return mesh && mesh.reservedDataStore?.GUI3D?.control?._node;
         };
 
         // Root
@@ -132,7 +132,7 @@ export class GUI3DManager implements IDisposable {
             this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
         }
 
-        const control = <Control3D>(pickingInfo.pickedMesh!.metadata?.GUI3D?.control);
+        const control = <Control3D>(pickingInfo.pickedMesh!.reservedDataStore?.GUI3D?.control);
         if (!!control && !control._processObservables(pi.type, pickingInfo.pickedPoint!, pointerId, buttonIndex)) {
 
             if (pi.type === PointerEventTypes.POINTERMOVE) {

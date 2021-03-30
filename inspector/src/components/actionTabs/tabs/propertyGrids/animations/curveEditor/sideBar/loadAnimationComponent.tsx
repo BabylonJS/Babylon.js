@@ -48,10 +48,10 @@ ILoadAnimationComponentState
             context.stop();
 
             context.target.animations = context.animations;
-            context.activeAnimation = null;
+            context.activeAnimation = context.animations.length ? context.animations[0] : null;
             context.prepare();
-            context.onActiveAnimationChanged.notifyObservers();
             context.onAnimationsLoaded.notifyObservers();
+            context.onActiveAnimationChanged.notifyObservers();
         }, undefined, true);
 
         evt.target.value = "";
@@ -73,11 +73,11 @@ ILoadAnimationComponentState
             context.stop();
 
             context.target.animations = context.animations;
-            context.activeAnimation = null;
+            context.activeAnimation = context.animations.length ? context.animations[0] : null;
             context.prepare();
+            context.onAnimationsLoaded.notifyObservers();
             context.onActiveAnimationChanged.notifyObservers();    
             
-            context.onAnimationsLoaded.notifyObservers();
         }).catch((err) => {
             this._root.current?.ownerDocument.defaultView!.alert("Unable to load your animations: " + err);
         });

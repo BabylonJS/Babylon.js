@@ -4114,7 +4114,7 @@ declare module BABYLON.GUI {
         linkToTransformNode(node: BABYLON.Nullable<BABYLON.TransformNode>): Control3D;
         /** @hidden **/
         _prepareNode(scene: BABYLON.Scene): void;
-        protected _injectGUI3DMetadata(node: BABYLON.TransformNode): any;
+        protected _injectGUI3DReservedDataStore(node: BABYLON.TransformNode): any;
         /**
          * Node creation.
          * Can be overriden by children

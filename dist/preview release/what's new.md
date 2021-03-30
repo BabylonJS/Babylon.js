@@ -172,6 +172,7 @@
 - Fix an issue with audio engine not being garbage-collected when engine is disposed ([RaananW](https://github.com/RaananW))
 - Fix the NME `NormalBlend` block ([Popov72](https://github.com/Popov72))
 - Fix Compatibility with NPM 7 ([Sebavan](https://github.com/sebavan))
+- Fix for cloning meshes for 3D GUIs ([msDestiny14](https://github.com/msDestiny14))
 
 ## Breaking changes
 
