@@ -410,13 +410,6 @@
             "renderCount": 20
         },
         {
-            "title": "Displacement map",
-            "scriptToRun": "/Demos/DisplacementMap/displacementMap.js",
-            "functionToCall": "CreateDisplacementTestScene",
-            "referenceImage": "displacementMap.png",
-            "replace": "/Scenes/Customs/skybox/, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Assets/skybox/"
-        },
-        {
             "title": "Normals",
             "playgroundId": "#WXKLLJ#2",
             "referenceImage": "normals.png"
