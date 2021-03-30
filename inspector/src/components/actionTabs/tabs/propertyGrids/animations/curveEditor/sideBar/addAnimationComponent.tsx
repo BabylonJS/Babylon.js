@@ -154,8 +154,8 @@ IAddAnimationComponentState
                 <div id="add-animation-loop-mode-label">
                     Loop Mode
                 </div>
-                <input type="text" id="add-animation-name" ref={this._displayName} className="input-text"/>
-                <input type="text" id="add-animation-property" ref={this._property} className="input-text"/>
+                <input type="text" id="add-animation-name" ref={this._displayName} className="input-text" defaultValue=""/>
+                <input type="text" id="add-animation-property" ref={this._property} className="input-text" defaultValue=""/>
                 <select id="add-animation-type" className="option" ref={this._typeElement}>
                     {types.map((type, i) => {
                         return (

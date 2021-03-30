@@ -154,6 +154,10 @@ IRangeSelectorComponentState
 
         const ratio = this._maxFrame - this._minFrame
 
+        if (this.props.context.toKey > this._maxFrame ) {
+            this.props.context.toKey = this._maxFrame;
+        }
+
         return (
             <div id="range-selector" ref={this._rangeHost}
                 onPointerDown={evt => this._onPointerDown(evt)}

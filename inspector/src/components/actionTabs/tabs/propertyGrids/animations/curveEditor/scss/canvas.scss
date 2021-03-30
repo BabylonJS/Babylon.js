@@ -184,4 +184,13 @@
             cursor: pointer;       
         }            
     }
+
+    #angle-mode {
+        grid-column: 1;
+        grid-row: 2;
+        width: 40px;
+        height: 100%;
+        z-index: 1;
+        background: black;
+    }
 }
