@@ -6,7 +6,6 @@ import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
 import { CurveComponent } from "./curveComponent";
 import { Nullable } from "babylonjs/types";
-import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Observer } from "babylonjs/Misc/observable";
 import { IAnimationKey } from "babylonjs/Animations/animationKey";
 
@@ -251,7 +250,12 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value);
 
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value));
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value,
+                            inTangent: key.inTangent,
+                            outTangent: key.outTangent,
+                        });
                     }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR2:
@@ -261,8 +265,18 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.y);
 
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.x,
+                            inTangent: key.inTangent?.x,
+                            outTangent: key.outTangent?.x,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.y,
+                            inTangent: key.inTangent?.y,
+                            outTangent: key.outTangent?.y,
+                        });
                     }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
@@ -274,9 +288,24 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.z);
                     
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
-                        this._curves[2].keys.push(new Vector2(key.frame, key.value.z));
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.x,
+                            inTangent: key.inTangent?.x,
+                            outTangent: key.outTangent?.x,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.y,
+                            inTangent: key.inTangent?.y,
+                            outTangent: key.outTangent?.y,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame, 
+                            value: key.value.z,
+                            inTangent: key.inTangent?.z,
+                            outTangent: key.outTangent?.z,
+                        });
                     }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
@@ -288,9 +317,24 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.b);
 
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.r));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.g));
-                        this._curves[2].keys.push(new Vector2(key.frame, key.value.b));
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.r,
+                            inTangent: key.inTangent?.r,
+                            outTangent: key.outTangent?.r,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.g,
+                            inTangent: key.inTangent?.g,
+                            outTangent: key.outTangent?.g,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame, 
+                            value: key.value.b,
+                            inTangent: key.inTangent?.b,
+                            outTangent: key.outTangent?.b,
+                        });
                     }
                     break;                    
                 case Animation.ANIMATIONTYPE_QUATERNION:
@@ -304,10 +348,30 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.w);
                     
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
-                        this._curves[2].keys.push(new Vector2(key.frame, key.value.z));  
-                        this._curves[3].keys.push(new Vector2(key.frame, key.value.w));     
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.x,
+                            inTangent: key.inTangent?.x,
+                            outTangent: key.outTangent?.x,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.y,
+                            inTangent: key.inTangent?.y,
+                            outTangent: key.outTangent?.y,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame, 
+                            value: key.value.z,
+                            inTangent: key.inTangent?.z,
+                            outTangent: key.outTangent?.z,
+                        });   
+                        this._curves[3].keys.push({
+                            frame: key.frame, 
+                            value: key.value.w,
+                            inTangent: key.inTangent?.w,
+                            outTangent: key.outTangent?.w,
+                        }); 
                     }                   
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
@@ -321,10 +385,30 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.a);
                     
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.r));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.g));
-                        this._curves[2].keys.push(new Vector2(key.frame, key.value.b));  
-                        this._curves[3].keys.push(new Vector2(key.frame, key.value.a));                        
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.r,
+                            inTangent: key.inTangent?.r,
+                            outTangent: key.outTangent?.r,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.g,
+                            inTangent: key.inTangent?.g,
+                            outTangent: key.outTangent?.g,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame, 
+                            value: key.value.b,
+                            inTangent: key.inTangent?.b,
+                            outTangent: key.outTangent?.b,
+                        });   
+                        this._curves[3].keys.push({
+                            frame: key.frame, 
+                            value: key.value.a,
+                            inTangent: key.inTangent?.a,
+                            outTangent: key.outTangent?.a,
+                        });                  
                     }
                     break;                    
             }
@@ -490,15 +574,15 @@ IGraphComponentState
         let curve = this._curves[curveId];
 
         return curve.keys.map((key, i) => {
-            let x = this._convertX(key.x);
-            let y = this._convertY(key.y);
+            let x = this._convertX(key.frame);
+            let y = this._convertY(key.value);
 
             return (
                <KeyPointComponent 
                     x={x} y={y} context={this.props.context} 
                     scale={this._viewScale} 
-                    getPreviousX={() => i > 0 ? this._convertX(curve.keys[i - 1].x) : null}
-                    getNextX={() => i < curve.keys.length - 1 ? this._convertX(curve.keys[i + 1].x) : null}
+                    getPreviousX={() => i > 0 ? this._convertX(curve.keys[i - 1].frame) : null}
+                    getNextX={() => i < curve.keys.length - 1 ? this._convertX(curve.keys[i + 1].frame) : null}
                     channel={curve.color}
                     keyId={i}
                     curve={curve}

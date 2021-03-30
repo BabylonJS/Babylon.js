@@ -122,11 +122,9 @@ declare module BABYLON {
         static GetTime(): number;
         /** Get the total game time in seconds */
         static GetGameTime(): number;
-        /** Get the raw delta time in milliseconds */
-        static GetDeltaTime(scene: BABYLON.Scene): number;
         /** Get the current delta time in seconds */
-        static GetDeltaSeconds(scene: BABYLON.Scene, applyAnimationRatio?: boolean): number;
-        /** Get the delta time animation ratio at 60 fps */
+        static GetDeltaSeconds(scene: BABYLON.Scene): number;
+        /** Get the delta time animation ratio for 60 fps */
         static GetAnimationRatio(scene: BABYLON.Scene): number;
         /** Delays a function call using request animation frames. Returns a handle object */
         static SetTimeout(timeout: number, func: () => void): any;
@@ -678,7 +676,9 @@ declare module BABYLON {
         /** Get the total game time in seconds */
         getGameTime(): number;
         /** Get the current delta time in seconds */
-        getDeltaSeconds(applyAnimationRatio?: boolean): number;
+        getDeltaSeconds(): number;
+        /** Get the delta time animation ratio for 60 fps */
+        getAnimationRatio(): number;
         /** Gets the safe transform mesh entity */
         getTransformMesh(): BABYLON.Mesh;
         /** Gets the safe transform abstract mesh entity */
