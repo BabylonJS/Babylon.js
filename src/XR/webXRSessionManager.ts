@@ -184,6 +184,8 @@ export class WebXRSessionManager implements IDisposable {
                 () => {
                     this._sessionEnded = true;
 
+                    // Notify frame observers
+                    this.onXRSessionEnded.notifyObservers(null);
                     // Remove render target texture
                     this._rttProvider = null;
 
@@ -199,12 +201,11 @@ export class WebXRSessionManager implements IDisposable {
                         this._engine._renderLoop();
                     }
 
-                    // Notify frame observers
-                    this.onXRSessionEnded.notifyObservers(null);
-
-                    // Dispose render target textures.
-                    this._renderTargetTextures.forEach((rtt) => rtt.dispose());
-                    this._renderTargetTextures = [];
+                    // Dispose render target textures
+                    if (this.isNative) {
+                        this._renderTargetTextures.forEach((rtt) => rtt.dispose());
+                        this._renderTargetTextures.length = 0;
+                    }
                 },
                 { once: true }
             );
@@ -257,10 +258,7 @@ export class WebXRSessionManager implements IDisposable {
         };
 
         if (this._xrNavigator.xr.native) {
-            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(
-                this.session,
-                this._createRenderTargetTexture.bind(this),
-                this._destroyRenderTargetTexture.bind(this));
+            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, this._createRenderTargetTexture.bind(this), this._destroyRenderTargetTexture.bind(this));
         } else {
             // Create render target texture from xr's webgl render target
             let rtt: RenderTargetTexture, framebufferWidth: number, framebufferHeight: number, framebuffer: WebGLFramebuffer;

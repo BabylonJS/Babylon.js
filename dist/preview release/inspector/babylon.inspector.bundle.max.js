@@ -47624,19 +47624,33 @@ var Curve = /** @class */ (function () {
         if (keys.length < 2) {
             return "";
         }
-        var pathData = "M" + convertX(keys[0].x) + " " + convertY(keys[0].y);
+        var pathData = "M" + convertX(keys[0].frame) + " " + convertY(keys[0].value);
         for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
-            pathData += " L" + convertX(keys[keyIndex].x) + " " + convertY(keys[keyIndex].y);
+            var outTangent = keys[keyIndex - 1].outTangent || 0;
+            var inTangent = keys[keyIndex].inTangent || 0;
+            //if (inTangent && outTangent) {
+            var prevFrame = keys[keyIndex - 1].frame;
+            var currentFrame = keys[keyIndex].frame;
+            var prevValue = keys[keyIndex - 1].value;
+            var currentValue = keys[keyIndex].value;
+            var controlPoint0Frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
+            var controlPoint1Frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
+            var controlPoint0Value = prevValue + outTangent / 3;
+            var controlPoint1Value = currentValue - inTangent / 3;
+            pathData += " C" + convertX(controlPoint0Frame) + " " + convertY(controlPoint0Value) + ", " + convertX(controlPoint1Frame) + " " + convertY(controlPoint1Value) + ", " + convertX(currentFrame) + " " + convertY(currentValue);
+            //} else {
+            //pathData += ` L${convertX(keys[keyIndex].frame)} ${convertY(keys[keyIndex].value)}`;
+            // }
         }
         return pathData;
     };
     Curve.prototype.updateKeyFrame = function (keyId, frame) {
-        this.keys[keyId].x = frame;
+        this.keys[keyId].frame = frame;
         this.animation.getKeys()[keyId].frame = frame;
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyValue = function (keyId, value) {
-        this.keys[keyId].y = value;
+        this.keys[keyId].value = value;
         var sourceKey = this.animation.getKeys()[keyId];
         if (this.property) {
             sourceKey.value[this.property] = value;
@@ -47776,6 +47790,9 @@ var FrameBarComponent = /** @class */ (function (_super) {
         var offset = (range / stepCounts) | 0;
         var convertRatio = range / this._GraphAbsoluteWidth;
         var steps = [];
+        if (offset === 0) {
+            offset = 1;
+        }
         var startPosition = this._offsetX * convertRatio;
         var start = minFrame - ((startPosition / offset) | 0) * offset;
         var end = start + (this._viewWidth * this._viewScale) * convertRatio;
@@ -47829,7 +47846,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _curve__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./curve */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/curve.ts");
 /* harmony import */ var _keyPoint__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./keyPoint */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/keyPoint.tsx");
 /* harmony import */ var _curveComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./curveComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/curveComponent.tsx");
-
 
 
 
@@ -47998,6 +48014,7 @@ var GraphComponent = /** @class */ (function (_super) {
         this._frame();
     };
     GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, pushToCurves) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
         var minValue = Number.MAX_VALUE;
         var maxValue = -Number.MAX_VALUE;
         for (var _i = 0, keys_2 = keys; _i < keys_2.length; _i++) {
@@ -48007,7 +48024,12 @@ var GraphComponent = /** @class */ (function (_super) {
                     minValue = Math.min(minValue, key.value);
                     maxValue = Math.max(maxValue, key.value);
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value));
+                        this._curves[0].keys.push({
+                            frame: key.frame,
+                            value: key.value,
+                            inTangent: key.inTangent,
+                            outTangent: key.outTangent,
+                        });
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
@@ -48016,8 +48038,18 @@ var GraphComponent = /** @class */ (function (_super) {
                     maxValue = Math.max(maxValue, key.value.x);
                     maxValue = Math.max(maxValue, key.value.y);
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.x));
-                        this._curves[1].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.y));
+                        this._curves[0].keys.push({
+                            frame: key.frame,
+                            value: key.value.x,
+                            inTangent: (_a = key.inTangent) === null || _a === void 0 ? void 0 : _a.x,
+                            outTangent: (_b = key.outTangent) === null || _b === void 0 ? void 0 : _b.x,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame,
+                            value: key.value.y,
+                            inTangent: (_c = key.inTangent) === null || _c === void 0 ? void 0 : _c.y,
+                            outTangent: (_d = key.outTangent) === null || _d === void 0 ? void 0 : _d.y,
+                        });
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
@@ -48028,9 +48060,24 @@ var GraphComponent = /** @class */ (function (_super) {
                     maxValue = Math.max(maxValue, key.value.y);
                     maxValue = Math.max(maxValue, key.value.z);
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.x));
-                        this._curves[1].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.y));
-                        this._curves[2].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.z));
+                        this._curves[0].keys.push({
+                            frame: key.frame,
+                            value: key.value.x,
+                            inTangent: (_e = key.inTangent) === null || _e === void 0 ? void 0 : _e.x,
+                            outTangent: (_f = key.outTangent) === null || _f === void 0 ? void 0 : _f.x,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame,
+                            value: key.value.y,
+                            inTangent: (_g = key.inTangent) === null || _g === void 0 ? void 0 : _g.y,
+                            outTangent: (_h = key.outTangent) === null || _h === void 0 ? void 0 : _h.y,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame,
+                            value: key.value.z,
+                            inTangent: (_j = key.inTangent) === null || _j === void 0 ? void 0 : _j.z,
+                            outTangent: (_k = key.outTangent) === null || _k === void 0 ? void 0 : _k.z,
+                        });
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
@@ -48041,9 +48088,24 @@ var GraphComponent = /** @class */ (function (_super) {
                     maxValue = Math.max(maxValue, key.value.g);
                     maxValue = Math.max(maxValue, key.value.b);
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.r));
-                        this._curves[1].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.g));
-                        this._curves[2].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.b));
+                        this._curves[0].keys.push({
+                            frame: key.frame,
+                            value: key.value.r,
+                            inTangent: (_l = key.inTangent) === null || _l === void 0 ? void 0 : _l.r,
+                            outTangent: (_m = key.outTangent) === null || _m === void 0 ? void 0 : _m.r,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame,
+                            value: key.value.g,
+                            inTangent: (_o = key.inTangent) === null || _o === void 0 ? void 0 : _o.g,
+                            outTangent: (_p = key.outTangent) === null || _p === void 0 ? void 0 : _p.g,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame,
+                            value: key.value.b,
+                            inTangent: (_q = key.inTangent) === null || _q === void 0 ? void 0 : _q.b,
+                            outTangent: (_r = key.outTangent) === null || _r === void 0 ? void 0 : _r.b,
+                        });
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
@@ -48056,10 +48118,30 @@ var GraphComponent = /** @class */ (function (_super) {
                     maxValue = Math.max(maxValue, key.value.z);
                     maxValue = Math.max(maxValue, key.value.w);
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.x));
-                        this._curves[1].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.y));
-                        this._curves[2].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.z));
-                        this._curves[3].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.w));
+                        this._curves[0].keys.push({
+                            frame: key.frame,
+                            value: key.value.x,
+                            inTangent: (_s = key.inTangent) === null || _s === void 0 ? void 0 : _s.x,
+                            outTangent: (_t = key.outTangent) === null || _t === void 0 ? void 0 : _t.x,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame,
+                            value: key.value.y,
+                            inTangent: (_u = key.inTangent) === null || _u === void 0 ? void 0 : _u.y,
+                            outTangent: (_v = key.outTangent) === null || _v === void 0 ? void 0 : _v.y,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame,
+                            value: key.value.z,
+                            inTangent: (_w = key.inTangent) === null || _w === void 0 ? void 0 : _w.z,
+                            outTangent: (_x = key.outTangent) === null || _x === void 0 ? void 0 : _x.z,
+                        });
+                        this._curves[3].keys.push({
+                            frame: key.frame,
+                            value: key.value.w,
+                            inTangent: (_y = key.inTangent) === null || _y === void 0 ? void 0 : _y.w,
+                            outTangent: (_z = key.outTangent) === null || _z === void 0 ? void 0 : _z.w,
+                        });
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
@@ -48072,10 +48154,30 @@ var GraphComponent = /** @class */ (function (_super) {
                     maxValue = Math.max(maxValue, key.value.b);
                     maxValue = Math.max(maxValue, key.value.a);
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.r));
-                        this._curves[1].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.g));
-                        this._curves[2].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.b));
-                        this._curves[3].keys.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, key.value.a));
+                        this._curves[0].keys.push({
+                            frame: key.frame,
+                            value: key.value.r,
+                            inTangent: (_0 = key.inTangent) === null || _0 === void 0 ? void 0 : _0.r,
+                            outTangent: (_1 = key.outTangent) === null || _1 === void 0 ? void 0 : _1.r,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame,
+                            value: key.value.g,
+                            inTangent: (_2 = key.inTangent) === null || _2 === void 0 ? void 0 : _2.g,
+                            outTangent: (_3 = key.outTangent) === null || _3 === void 0 ? void 0 : _3.g,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame,
+                            value: key.value.b,
+                            inTangent: (_4 = key.inTangent) === null || _4 === void 0 ? void 0 : _4.b,
+                            outTangent: (_5 = key.outTangent) === null || _5 === void 0 ? void 0 : _5.b,
+                        });
+                        this._curves[3].keys.push({
+                            frame: key.frame,
+                            value: key.value.a,
+                            inTangent: (_6 = key.inTangent) === null || _6 === void 0 ? void 0 : _6.a,
+                            outTangent: (_7 = key.outTangent) === null || _7 === void 0 ? void 0 : _7.a,
+                        });
                     }
                     break;
             }
@@ -48185,9 +48287,9 @@ var GraphComponent = /** @class */ (function (_super) {
         }
         var curve = this._curves[curveId];
         return curve.keys.map(function (key, i) {
-            var x = _this._convertX(key.x);
-            var y = _this._convertY(key.y);
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyPoint__WEBPACK_IMPORTED_MODULE_4__["KeyPointComponent"], { x: x, y: y, context: _this.props.context, scale: _this._viewScale, getPreviousX: function () { return i > 0 ? _this._convertX(curve.keys[i - 1].x) : null; }, getNextX: function () { return i < curve.keys.length - 1 ? _this._convertX(curve.keys[i + 1].x) : null; }, channel: curve.color, keyId: i, curve: curve, key: curveId + "-" + i, invertX: function (x) { return _this._invertX(x); }, invertY: function (y) { return _this._invertY(y); }, convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); }, onFrameValueChanged: function (value) { curve.updateKeyFrame(i, value); }, onKeyValueChanged: function (value) { curve.updateKeyValue(i, value); } }));
+            var x = _this._convertX(key.frame);
+            var y = _this._convertY(key.value);
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyPoint__WEBPACK_IMPORTED_MODULE_4__["KeyPointComponent"], { x: x, y: y, context: _this.props.context, scale: _this._viewScale, getPreviousX: function () { return i > 0 ? _this._convertX(curve.keys[i - 1].frame) : null; }, getNextX: function () { return i < curve.keys.length - 1 ? _this._convertX(curve.keys[i + 1].frame) : null; }, channel: curve.color, keyId: i, curve: curve, key: curveId + "-" + i, invertX: function (x) { return _this._invertX(x); }, invertY: function (y) { return _this._invertY(y); }, convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); }, onFrameValueChanged: function (value) { curve.updateKeyFrame(i, value); }, onKeyValueChanged: function (value) { curve.updateKeyValue(i, value); } }));
         });
     };
     GraphComponent.prototype._onPointerDown = function (evt) {

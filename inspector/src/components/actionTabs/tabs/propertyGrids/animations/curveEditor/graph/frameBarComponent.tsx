@@ -90,6 +90,10 @@ IFrameBarComponentState
 
         let steps = [];
 
+        if (offset === 0) {
+            offset = 1;
+        }
+
         let startPosition = this._offsetX * convertRatio;
         let start = minFrame - ((startPosition / offset) | 0) * offset;
         let end = start + (this._viewWidth * this._viewScale ) * convertRatio;
