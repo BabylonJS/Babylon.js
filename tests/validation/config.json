@@ -410,6 +410,11 @@
             "renderCount": 20
         },
         {
+            "title": "Displacement map",
+            "playgroundId": "#WZ8JL4#0",
+            "referenceImage": "displacementMap.png"
+        },
+        {
             "title": "Normals",
             "playgroundId": "#WXKLLJ#2",
             "referenceImage": "normals.png"
