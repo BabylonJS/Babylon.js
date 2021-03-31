@@ -124,7 +124,7 @@ declare module BABYLON {
         static GetGameTime(): number;
         /** Get the current delta time in seconds */
         static GetDeltaSeconds(scene: BABYLON.Scene): number;
-        /** Get the delta time animation ratio multiplier */
+        /** Get the delta time animation ratio for 60 fps */
         static GetAnimationRatio(scene: BABYLON.Scene): number;
         /** Delays a function call using request animation frames. Returns a handle object */
         static SetTimeout(timeout: number, func: () => void): any;
@@ -677,7 +677,7 @@ declare module BABYLON {
         getGameTime(): number;
         /** Get the current delta time in seconds */
         getDeltaSeconds(): number;
-        /** Get the delta time animation ratio multiplier */
+        /** Get the delta time animation ratio for 60 fps */
         getAnimationRatio(): number;
         /** Gets the safe transform mesh entity */
         getTransformMesh(): BABYLON.Mesh;
@@ -1417,11 +1417,14 @@ declare module BABYLON {
         private static TmpAmmoNormalC;
         static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean, normals?: boolean): number;
         static AddHullVerts(btConvexHullShape: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean): number;
-        static CreateImpostorCustomShape(scene: BABYLON.Scene, impostor: BABYLON.PhysicsImpostor, type: number, showDebugColliders?: boolean, colliderVisibility?: number): any;
+        static CreateImpostorCustomShape(scene: BABYLON.Scene, impostor: BABYLON.PhysicsImpostor, type: number, showDebugColliders?: boolean, colliderVisibility?: number, useTriangleNormals?: boolean): any;
+        static UseTriangleNormals(): boolean;
         static ShowDebugColliders(): boolean;
         static ColliderVisibility(): number;
         static CollisionWireframe(): boolean;
         static GetColliderMaterial(scene: BABYLON.Scene): BABYLON.Material;
+        static CalculateCombinedFriction(friction0: number, friction1: number): number;
+        static CalculateCombinedRestitution(restitution0: number, restitution1: number): number;
         /** TODO */
         static GetDirectTargetAngle(transform: BABYLON.TransformNode, worldSpaceTarget: BABYLON.Vector3): number;
         /** TODO */
@@ -1546,7 +1549,7 @@ declare module BABYLON {
         /** Get all loaded scene transform nodes. */
         static GetSceneTransforms(scene: BABYLON.Scene): BABYLON.TransformNode[];
         /** Parse scene component metadata. */
-        static ParseSceneComponents(scene: BABYLON.Scene, transforms: BABYLON.TransformNode[], preloadList: Array<BABYLON.ScriptComponent>): void;
+        static PostParseSceneComponents(scene: BABYLON.Scene, transforms: BABYLON.TransformNode[], preloadList: Array<BABYLON.ScriptComponent>): void;
         /**
          * Gets the specified asset container mesh.
          * @param container defines the asset container
@@ -1637,8 +1640,7 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     readonly name = "CVTOOLS_unity_metadata";
     /** Defines whether this extension is enabled. */
     enabled: boolean;
-    private static LastRootUrl;
-    private static LastParseScene;
+    private static LastLoaderScene;
     private static LastBabylonScene;
     private static LastAssetsManager;
     private _loader;
@@ -1651,14 +1653,15 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private _lightmapMap;
     private _reflectionMap;
     private _reflectionCache;
+    private _assetContainer;
     private _activeMeshes;
     private _parseScene;
     private _leftHanded;
     private _disposeRoot;
     private _sceneParsed;
     private _preWarmTime;
-    private _postWarmTime;
     private _hideLoader;
+    private _fileName;
     private _rootUrl;
     /** @hidden */
     constructor(loader: BABYLON.GLTF2.GLTFLoader);
@@ -1667,10 +1670,20 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     /** @hidden */
     onLoading(): void;
     /** @hidden */
+    onReady(): void;
+    /** @hidden */
+    onComplete(): void;
+    /** @hidden */
+    onValidate(): void;
+    /** @hidden */
+    onCleanup(): void;
+    /** @hidden */
+    setupLoader(): void;
+    /** @hidden */
+    startParsing(): void;
+    /** @hidden */
     loadSceneAsync(context: string, scene: BABYLON.GLTF2.IScene): BABYLON.Nullable<Promise<void>>;
     private loadSceneExAsync;
-    /** @hidden */
-    onReady(): void;
     private _processActiveMeshes;
     private _processUnityMeshes;
     private _processPreloadTimeout;

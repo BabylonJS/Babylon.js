@@ -13005,6 +13005,8 @@ declare module BABYLON {
         /** @hidden */
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
+        _defaultConnectionPointType: Nullable<NodeMaterialBlockConnectionPointTypes>;
+        /** @hidden */
         _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
         _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint>;
@@ -21271,6 +21273,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -21319,6 +21322,10 @@ declare module BABYLON {
          * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
          */
         useAlbedoToTintRefraction: boolean;
+        /**
+         * When enabled, translucent surfaces will be tinted with the albedo colour (independent of thickness)
+         */
+        useAlbedoToTintTranslucency: boolean;
         private _thicknessTexture;
         /**
          * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
@@ -22285,6 +22292,7 @@ declare module BABYLON {
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
+        SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -25084,7 +25092,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
          * Information about the result of picking within a scene
-         * @see https://doc.babylonjs.com/babylon101/picking_collisions
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/interactions/picking_collisions
          */
     export class PickingInfo {
         /** @hidden */
@@ -30028,7 +30036,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var shadowMapFragmentDeclaration: {
+    export var shadowMapFragmentExtraDeclaration: {
         name: string;
         shader: string;
     };
@@ -30049,7 +30057,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var sceneVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var meshVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var shadowMapVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapUboDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapVertexExtraDeclaration: {
         name: string;
         shader: string;
     };
@@ -30566,6 +30602,7 @@ declare module BABYLON {
         protected _textureType: number;
         protected _defaultTextureMatrix: Matrix;
         protected _storedUniqueId: Nullable<number>;
+        protected _useUBO: boolean;
         /** @hidden */
         _nameForDrawWrapper: string;
         /** @hidden */
@@ -30590,7 +30627,7 @@ declare module BABYLON {
         protected _initializeShadowMap(): void;
         protected _initializeBlurRTTAndPostProcesses(): void;
         protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void;
         protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent?: boolean): void;
         protected _applyFilterValues(): void;
         /**
@@ -30692,8 +30729,6 @@ declare module BABYLON {
         private _subMeshToEffect;
         private _subMeshToDepthWrapper;
         private _meshes;
-        /** @hidden */
-        _matriceNames: any;
         /** Gets the standalone status of the wrapper */
         get standalone(): boolean;
         /** Gets the base material the wrapper is built upon */
@@ -33894,16 +33929,16 @@ declare module BABYLON {
          */
         get onBeforeBindObservable(): Observable<Mesh>;
         /**
-        * An event triggered after rendering the mesh
-        */
+         * An event triggered after rendering the mesh
+         */
         get onAfterRenderObservable(): Observable<Mesh>;
         /**
-        * An event triggeredbetween rendering pass when using separateCullingPass = true
-        */
+         * An event triggeredbetween rendering pass when using separateCullingPass = true
+         */
         get onBetweenPassObservable(): Observable<SubMesh>;
         /**
-        * An event triggered before drawing the mesh
-        */
+         * An event triggered before drawing the mesh
+         */
         get onBeforeDrawObservable(): Observable<Mesh>;
         private _onBeforeDrawObserver;
         /**
@@ -34605,15 +34640,15 @@ declare module BABYLON {
          */
         static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
         /**
-          * Creates a plane polygonal mesh.  By default, this is a disc. Please consider using the same method from the MeshBuilder class instead
-          * @param name defines the name of the mesh to create
-          * @param radius sets the radius size (float) of the polygon (default 0.5)
-          * @param tessellation sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
-          * @param scene defines the hosting scene
-          * @param updatable defines if the mesh must be flagged as updatable
-          * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-          * @returns a new Mesh
-          */
+         * Creates a plane polygonal mesh.  By default, this is a disc. Please consider using the same method from the MeshBuilder class instead
+         * @param name defines the name of the mesh to create
+         * @param radius sets the radius size (float) of the polygon (default 0.5)
+         * @param tessellation sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
+         * @param scene defines the hosting scene
+         * @param updatable defines if the mesh must be flagged as updatable
+         * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+         * @returns a new Mesh
+         */
         static CreateDisc(name: string, radius: number, tessellation: number, scene?: Nullable<Scene>, updatable?: boolean, sideOrientation?: number): Mesh;
         /**
          * Creates a box mesh. Please consider using the same method from the MeshBuilder class instead
@@ -34626,24 +34661,24 @@ declare module BABYLON {
          */
         static CreateBox(name: string, size: number, scene?: Nullable<Scene>, updatable?: boolean, sideOrientation?: number): Mesh;
         /**
-          * Creates a sphere mesh. Please consider using the same method from the MeshBuilder class instead
-          * @param name defines the name of the mesh to create
-          * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
-          * @param diameter sets the diameter size (float) of the sphere (default 1)
-          * @param scene defines the hosting scene
-          * @param updatable defines if the mesh must be flagged as updatable
-          * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-          * @returns a new Mesh
-          */
+         * Creates a sphere mesh. Please consider using the same method from the MeshBuilder class instead
+         * @param name defines the name of the mesh to create
+         * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
+         * @param diameter sets the diameter size (float) of the sphere (default 1)
+         * @param scene defines the hosting scene
+         * @param updatable defines if the mesh must be flagged as updatable
+         * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+         * @returns a new Mesh
+         */
         static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         /**
-          * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
-          * @param name defines the name of the mesh to create
-          * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
-          * @param diameter sets the diameter size (float) of the sphere (default 1)
-          * @param scene defines the hosting scene
-          * @returns a new Mesh
-          */
+         * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
+         * @param name defines the name of the mesh to create
+         * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
+         * @param diameter sets the diameter size (float) of the sphere (default 1)
+         * @param scene defines the hosting scene
+         * @returns a new Mesh
+         */
         static CreateHemisphere(name: string, segments: number, diameter: number, scene?: Scene): Mesh;
         /**
          * Creates a cylinder or a cone mesh. Please consider using the same method from the MeshBuilder class instead
@@ -34779,7 +34814,11 @@ declare module BABYLON {
          * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape)
          * @returns a new Mesh
          */
-        static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
+        static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: Nullable<{
+            (i: number, distance: number): number;
+        }>, rotationFunction: Nullable<{
+            (i: number, distance: number): number;
+        }>, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
         /**
          * Creates lathe mesh.
          * The lathe is a shape with a symmetry axis : a 2D model shape is rotated around this axis to design the lathe.
@@ -34877,24 +34916,24 @@ declare module BABYLON {
             (i: number, distance: number): number;
         }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
         /**
-          * Creates a polyhedron mesh.
-          * Please consider using the same method from the MeshBuilder class instead.
-          * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embedded types. Please refer to the type sheet in the tutorial to choose the wanted type
-          * * The parameter `size` (positive float, default 1) sets the polygon size
-          * * You can overwrite the `size` on each dimension bu using the parameters `sizeX`, `sizeY` or `sizeZ` (positive floats, default to `size` value)
-          * * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`
-          * * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron
-          * * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (Color4, default `(1, 1, 1, 1)`) and faceUV (Vector4, default `(0, 0, 1, 1)`)
-          * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
-          * * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored
-          * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-          * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-          * @param name defines the name of the mesh to create
-          * @param options defines the options used to create the mesh
-          * @param scene defines the hosting scene
-          * @returns a new Mesh
-          */
+         * Creates a polyhedron mesh.
+         * Please consider using the same method from the MeshBuilder class instead.
+         * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embedded types. Please refer to the type sheet in the tutorial to choose the wanted type
+         * * The parameter `size` (positive float, default 1) sets the polygon size
+         * * You can overwrite the `size` on each dimension bu using the parameters `sizeX`, `sizeY` or `sizeZ` (positive floats, default to `size` value)
+         * * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`
+         * * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron
+         * * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (Color4, default `(1, 1, 1, 1)`) and faceUV (Vector4, default `(0, 0, 1, 1)`)
+         * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
+         * * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored
+         * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh to create
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns a new Mesh
+         */
         static CreatePolyhedron(name: string, options: {
             type?: number;
             size?: number;
@@ -40473,6 +40512,8 @@ declare module BABYLON {
         supportSyncTextureRead: boolean;
         /** Indicates that y should be inverted when dealing with bitmaps (notably in environment tools) */
         needsInvertingBitmap: boolean;
+        /** Indicates that the engine should cache the bound UBO */
+        useUBOBindingCache: boolean;
         /** @hidden */
         _collectUbosUpdatedInFrame: boolean;
     }
@@ -40591,6 +40632,11 @@ declare module BABYLON {
          * @param settings allows finer control over video usage
          */
         constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings);
+        /**
+         * Get the current class name of the video texture useful for serialization or dynamic coding.
+         * @returns "VideoTexture"
+         */
+        getClassName(): string;
         private _getName;
         private _getVideo;
         private _createInternalTexture;
@@ -40857,7 +40903,8 @@ declare module BABYLON {
         _badOS: boolean;
         /** @hidden */
         _badDesktopOS: boolean;
-        protected _hardwareScalingLevel: number;
+        /** @hidden */
+        _hardwareScalingLevel: number;
         /** @hidden */
         _caps: EngineCapabilities;
         /** @hidden */
@@ -43016,7 +43063,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
          */
-        static audioEngine: IAudioEngine;
+        static audioEngine: Nullable<IAudioEngine>;
         /**
          * Default AudioEngine factory responsible of creating the Audio Engine.
          * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
@@ -44429,7 +44476,9 @@ declare module BABYLON {
         /** Delta X */
         DeltaHorizontal = 10,
         /** Delta Y */
-        DeltaVertical = 11
+        DeltaVertical = 11,
+        /** MoveBeing Hijack for simultaneous buttons pressed for instance */
+        FakeMove = 12
     }
     /**
      * Enum for Dual Shock Gamepad
@@ -50859,12 +50908,18 @@ declare module BABYLON {
          */
         wheelPrecision: number;
         /**
+         * Gets or Set the boolean value that controls whether or not the mouse wheel
+         * zooms to the location of the mouse pointer or not.  The default is false.
+         */
+        zoomToMouseLocation: boolean;
+        /**
          * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
          * It defines the percentage of current camera.radius to use as delta when wheel is used.
          */
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
+        private _hitPlane;
         private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
@@ -50876,6 +50931,11 @@ declare module BABYLON {
          */
         detachControl(): void;
         /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
          * Gets the class name of the current input.
          * @returns the class name
          */
@@ -50885,6 +50945,11 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
+        private _updateHitPlane;
+        private _getPosition;
+        private _inertialPanning;
+        private _zoomToMouse;
+        private _zeroIfClose;
     }
 }
 declare module BABYLON {
@@ -51098,6 +51163,12 @@ declare module BABYLON {
          */
         get wheelPrecision(): number;
         set wheelPrecision(value: number);
+        /**
+         * Gets or Set the boolean value that controls whether or not the mouse wheel
+         * zooms to the location of the mouse pointer or not.  The default is false.
+         */
+        get zoomToMouseLocation(): boolean;
+        set zoomToMouseLocation(value: boolean);
         /**
          * Gets or Set the mouse wheel delta percentage or how fast is the camera zooming.
          * It will be used instead of pinchDeltaPrecision if different from 0.
@@ -58799,6 +58870,36 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options for each individual plane rotation gizmo contained within RotationGizmo
+     */
+    export interface PlaneRotationGizmoOptions {
+        /**
+         * Color to use for the plane rotation gizmo
+         */
+        color?: Color3;
+    }
+    /**
+     * Additional options for each rotation gizmo
+     */
+    export interface RotationGizmoOptions {
+        /**
+         * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
+         */
+        updateScale?: boolean;
+        /**
+         * Specific options for xGizmo
+         */
+        xOptions?: PlaneRotationGizmoOptions;
+        /**
+         * Specific options for yGizmo
+         */
+        yOptions?: PlaneRotationGizmoOptions;
+        /**
+         * Specific options for zGizmo
+         */
+        zOptions?: PlaneRotationGizmoOptions;
+    }
+    /**
      * Gizmo that enables rotating a mesh along 3 axis
      */
     export class RotationGizmo extends Gizmo {
@@ -58838,8 +58939,10 @@ declare module BABYLON {
          * @param tessellation Amount of tessellation to be used when creating rotation circles
          * @param useEulerRotation Use and update Euler angle instead of quaternion
          * @param thickness display gizmo axis thickness
+         * @param gizmoManager Gizmo manager
+         * @param options More options
          */
-        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number, useEulerRotation?: boolean, thickness?: number, gizmoManager?: GizmoManager);
+        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number, useEulerRotation?: boolean, thickness?: number, gizmoManager?: GizmoManager, options?: RotationGizmoOptions);
         set updateGizmoRotationToMatchAttachedMesh(value: boolean);
         get updateGizmoRotationToMatchAttachedMesh(): boolean;
         /**
@@ -59279,6 +59382,7 @@ declare module BABYLON {
         private _defaultUtilityLayer;
         private _defaultKeepDepthUtilityLayer;
         private _thickness;
+        private _scaleRatio;
         /** Node Caching for quick lookup */
         private _gizmoAxisCache;
         /**
@@ -59309,6 +59413,11 @@ declare module BABYLON {
          * True when the mouse pointer is hovering a gizmo mesh
          */
         get isHovered(): boolean;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        set scaleRatio(value: number);
+        get scaleRatio(): number;
         /**
          * Instantiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
@@ -60076,8 +60185,12 @@ declare module BABYLON {
         static ExtrudeShapeCustom(name: string, options: {
             shape: Vector3[];
             path: Vector3[];
-            scaleFunction?: any;
-            rotationFunction?: any;
+            scaleFunction?: Nullable<{
+                (i: number, distance: number): number;
+            }>;
+            rotationFunction?: Nullable<{
+                (i: number, distance: number): number;
+            }>;
             ribbonCloseArray?: boolean;
             ribbonClosePath?: boolean;
             cap?: number;
@@ -63774,7 +63887,7 @@ declare module BABYLON {
              * @param options experience options
              * @returns a promise for a new WebXRDefaultExperience
              */
-            createDefaultXRExperienceAsync(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
+            createDefaultXRExperienceAsync(options?: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
         }
 }
 declare module BABYLON {
@@ -65809,7 +65922,7 @@ declare module BABYLON {
         protected _initializeGenerator(): void;
         protected _createTargetRenderTexture(): void;
         protected _initializeShadowMap(): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void;
         protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
@@ -73870,14 +73983,16 @@ declare module BABYLON {
         static BaseAssetsUrl: string;
         private _emitterCreationOptions;
         private _emitterNode;
+        private _emitterNodeIsOwned;
         /**
          * Gets the particle system list
          */
         systems: IParticleSystem[];
         /**
-         * Gets the emitter node used with this set
+         * Gets or sets the emitter node used with this set
          */
-        get emitterNode(): Nullable<TransformNode>;
+        get emitterNode(): Nullable<AbstractMesh | Vector3>;
+        set emitterNode(value: Nullable<AbstractMesh | Vector3>);
         /**
          * Creates a new emitter mesh as a sphere
          * @param options defines the options used to create the sphere
@@ -81960,7 +82075,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var meshFragmentDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var pointCloudVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var sceneFragmentDeclaration: {
         name: string;
         shader: string;
     };
@@ -83965,7 +84094,7 @@ interface XRImageTrackingResult {
 // They are intended for use with either Babylon Native https://github.com/BabylonJS/BabylonNative or
 // Babylon React Native: https://github.com/BabylonJS/BabylonReactNative
 
-type XRSceneObjectType = "unknown" | "background" | "wall" | "floor" | "ceiling" | "platform";
+type XRSceneObjectType = "unknown" | "background" | "wall" | "floor" | "ceiling" | "platform" | "inferred" | "world";
 
 interface XRSceneObject {
     type: XRSceneObjectType;

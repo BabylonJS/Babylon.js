@@ -30,9 +30,6 @@ import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
 
-const tmpMatrix = new Matrix(),
-      tmpMatrix2 = new Matrix();
-
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
  */
@@ -805,6 +802,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _textureType: number;
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
+    protected _useUBO: boolean;
     /** @hidden */
     public _nameForDrawWrapper: string;
 
@@ -841,6 +839,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._scene = light.getScene();
         light._shadowGenerator = this;
         this.id = light.id;
+        this._useUBO = this._scene.getEngine().supportsUniformBuffers;
 
         this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++;
 
@@ -931,6 +930,9 @@ export class ShadowGenerator implements IShadowGenerator {
             }
             this.getTransformMatrix(); // generate the view/projection matrix
             this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+            if (this._useUBO) {
+                MaterialHelper.FinalizeSceneUbo(this._scene);
+            }
         });
 
         // Blur if required after render.
@@ -1060,24 +1062,8 @@ export class ShadowGenerator implements IShadowGenerator {
         }
     }
 
-    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void {
-        effect.setMatrix(matriceNames?.viewProjection ?? "viewProjection", this.getTransformMatrix());
-
-        effect.setMatrix(matriceNames?.view ?? "view", this._viewMatrix);
-
-        effect.setMatrix(matriceNames?.projection ?? "projection", this._projectionMatrix);
-
-        const world = mesh.getWorldMatrix();
-
-        effect.setMatrix(matriceNames?.world ?? "world", world);
-
-        world.multiplyToRef(this.getTransformMatrix(), tmpMatrix);
-
-        effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);
-
-        world.multiplyToRef(this._viewMatrix, tmpMatrix2);
-
-        effect.setMatrix(matriceNames?.worldView ?? "worldView", tmpMatrix2);
+    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void {
+        effect.setMatrix("viewProjection", this.getTransformMatrix());
     }
 
     protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent: boolean = false): void {
@@ -1120,7 +1106,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
             renderingMesh._bind(subMesh, effect, material.fillMode);
 
-            this.getTransformMatrix(); // make sur _cachedDirection et _cachedPosition are up to date
+            this.getTransformMatrix(); // make sure _cachedDirection et _cachedPosition are up to date
 
             effect.setFloat3("biasAndScaleSM", this.bias, this.normalBias, this.depthScale);
 
@@ -1148,7 +1134,6 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
                 subMesh._setMainDrawWrapperOverride(null);
             } else {
-                effect.setMatrix("viewProjection", this.getTransformMatrix());
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
                     var alphaTexture = material.getAlphaTestTexture();
@@ -1187,7 +1172,16 @@ export class ShadowGenerator implements IShadowGenerator {
                 MaterialHelper.BindClipPlane(effect, scene);
             }
 
-            this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect, shadowDepthWrapper?._matriceNames, effectiveMesh);
+            if (!this._useUBO && !shadowDepthWrapper) {
+                this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect, effectiveMesh);
+            }
+
+            MaterialHelper.BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
+
+            const world = effectiveMesh.getWorldMatrix();
+
+            effectiveMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+            effectiveMesh.transferToEffect(world);
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, true);
@@ -1475,10 +1469,11 @@ export class ShadowGenerator implements IShadowGenerator {
                 cachedDefines = join;
 
                 let shaderName = "shadowMap";
-                let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
+                const uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
                                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM",
                                 "morphTargetTextureInfo", "morphTargetTextureIndices"];
-                let samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
+                const samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
+                const uniformBuffers = ["Mesh", "Scene"];
 
                 // Custom shader?
                 if (this.customShaderOptions) {
@@ -1514,7 +1509,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
-                    uniformBuffersNames: [],
+                    uniformBuffersNames: uniformBuffers,
                     samplers: samplers,
                     defines: join,
                     fallbacks: fallbacks,
