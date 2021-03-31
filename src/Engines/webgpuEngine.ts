@@ -3167,17 +3167,16 @@ export class WebGPUEngine extends Engine {
 
     private _endRenderTargetRenderPass() {
         if (this._currentRenderPass) {
+            const gpuWrapper = this._currentRenderTarget!._hardwareTexture as WebGPUHardwareTexture;
             if (this._snapshotRenderingPlayBundles) {
-                if ((this._currentRenderTarget as any)._bundleLists[(this._currentRenderTarget as any)._layer]) {
-                    (this._currentRenderTarget as any)._bundleLists[(this._currentRenderTarget as any)._layer].run(this._currentRenderPass);
-                }
+                gpuWrapper._bundleLists[gpuWrapper._currentLayer]?.run(this._currentRenderPass);
             } else if (this._snapshotRenderingRecordBundles) {
-                if (!(this._currentRenderTarget as any)._bundleLists) {
-                    (this._currentRenderTarget as any)._bundleLists = [];
+                if (!gpuWrapper._bundleLists) {
+                    gpuWrapper._bundleLists = [];
                 }
-                (this._currentRenderTarget as any)._bundleLists[(this._currentRenderTarget as any)._layer] = this._bundleList.clone();
+                gpuWrapper._bundleLists[gpuWrapper._currentLayer] = this._bundleList.clone();
+                gpuWrapper._bundleLists[gpuWrapper._currentLayer].run(this._currentRenderPass);
                 this._bundleList.reset();
-                (this._currentRenderTarget as any)._bundleLists[(this._currentRenderTarget as any)._layer].run(this._currentRenderPass);
             } else if (!this.compatibilityMode) {
                 this._bundleList.run(this._currentRenderPass);
                 this._bundleList.reset();
@@ -3350,7 +3349,7 @@ export class WebGPUEngine extends Engine {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = texture;
-        (this._currentRenderTarget as any)._layer = layer;
+        hardwareTexture._currentLayer = layer;
 
         this._rttRenderPassWrapper.colorAttachmentGPUTextures[0] = hardwareTexture;
         this._rttRenderPassWrapper.depthTextureFormat = this._currentRenderTarget._depthStencilTexture ? WebGPUTextureHelper.GetWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : undefined;
