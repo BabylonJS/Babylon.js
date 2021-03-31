@@ -229,10 +229,8 @@ export class WebGPUEngine extends Engine {
     private _mainTexture: GPUTexture;
     private _depthTexture: GPUTexture;
     private _mainTextureExtends: GPUExtent3D;
-    /** @hidden */
-    public _depthTextureFormat: GPUTextureFormat | undefined;
-    /** @hidden */
-    public _colorFormat: GPUTextureFormat;
+    private _depthTextureFormat: GPUTextureFormat | undefined;
+    private _colorFormat: GPUTextureFormat;
 
     // Frame Life Cycle (recreated each frame)
     private _uploadEncoder: GPUCommandEncoder;
@@ -2955,11 +2953,9 @@ export class WebGPUEngine extends Engine {
             this._snapshotRenderingPlayBundles = true;
         }
 
-        if (this._mainRenderPassWrapper.renderPass !== null) {
-            if (this._snapshotRenderingPlayBundles) {
-                for (let i = 0; i < this._snapshotRenderingMainPassBundleList.length; ++i) {
-                    this._snapshotRenderingMainPassBundleList[i].run(this._mainRenderPassWrapper.renderPass);
-                }
+        if (this._mainRenderPassWrapper.renderPass !== null && this._snapshotRenderingPlayBundles) {
+            for (let i = 0; i < this._snapshotRenderingMainPassBundleList.length; ++i) {
+                this._snapshotRenderingMainPassBundleList[i].run(this._mainRenderPassWrapper.renderPass);
             }
         }
 
@@ -3769,9 +3765,7 @@ export class WebGPUEngine extends Engine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount: number = 1): void {
-        //if (!this._playBundles) {
-            this._draw(0, fillMode, indexStart, indexCount, instancesCount);
-        //}
+        this._draw(0, fillMode, indexStart, indexCount, instancesCount);
     }
 
     /**
@@ -3782,10 +3776,8 @@ export class WebGPUEngine extends Engine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
-        //if (!this._playBundles) {
-            this._currentIndexBuffer = null;
-            this._draw(1, fillMode, verticesStart, verticesCount, instancesCount);
-        //}
+        this._currentIndexBuffer = null;
+        this._draw(1, fillMode, verticesStart, verticesCount, instancesCount);
     }
 
     //------------------------------------------------------------------------------
