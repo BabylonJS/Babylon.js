@@ -129,8 +129,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             pick: null,
             hover: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
-            pointForNearInteration: new Vector3(),
-            hoverMesh: new AbstractMesh("Index Mesh"),
+            pickMesh: new AbstractMesh("Index Pick Mesh"),
+            hoverMesh: new AbstractMesh("Index Hover Mesh"),
             nearPick: false,
             nearHover: false,
             id: WebXRControllerPointerSelection._idCounter++,
@@ -174,7 +174,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             hover: Nullable<PickingInfo>;
             id: number;
             tmpRay: Ray;
-            pointForNearInteration: Vector3;
+            pickMesh: AbstractMesh;
             hoverMesh: AbstractMesh;
             nearPick: boolean;
             nearHover: boolean;
@@ -280,8 +280,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 pick: null,
                 hover: null,
                 tmpRay: new Ray(new Vector3(), new Vector3()),
-                pointForNearInteration: new Vector3(),
-                hoverMesh: new AbstractMesh("Index Mesh"),
+                pickMesh: new AbstractMesh("Index Pick Mesh"),
+                hoverMesh: new AbstractMesh("Index Hover Mesh"),
                 nearPick: false,
                 nearHover: false,
                 id: WebXRControllerPointerSelection._idCounter++,
@@ -374,17 +374,23 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         if (!pose || !pose.transform) {
                             return;
                         }
-                        // populate information for near pick
                         const pos = pose.transform.position;
-                        controllerData.pointForNearInteration.set(pos.x, pos.y, pos.z);
+                        const originalMesh = SphereBuilder.CreateSphere("ParentSphere", { diameter: 1 });
+                        originalMesh.scaling.set(0.01, 0.01, 0.01);
+
+                        // populate information for near pick
+                        const pickRadius = (pose.radius || 0.008)/2;
+                        controllerData.pickMesh = originalMesh.createInstance("IndexPickSphere");
+                        controllerData.pickMesh.position.set(pos.x, pos.y, pos.z);
+                        controllerData.pickMesh.scaling.set(pickRadius, pickRadius, pickRadius);
+                        controllerData.pickMesh.showBoundingBox = true;
 
                         // populate information for hover
-                        const scaleFactor = 2;
-                        const radius = (pose.radius || 0.008) * scaleFactor;
-                        controllerData.hoverMesh = SphereBuilder.CreateSphere("IndexSphere", { diameter: 1 });
-                        controllerData.hoverMesh.scaling.set(0.01, 0.01, 0.01);
+                        const hoverRadius = (pose.radius || 0.008);
+                        controllerData.hoverMesh = originalMesh.createInstance("IndexHoverSphere");
                         controllerData.hoverMesh.position.set(pos.x, pos.y, pos.z);
-                        controllerData.hoverMesh.scaling.set(radius, radius, radius);
+                        controllerData.hoverMesh.scaling.set(hoverRadius, hoverRadius, hoverRadius);
+                        controllerData.hoverMesh.showBoundingBox = true;
                     }
                 }
             } else if (controllerData.webXRCamera) {
@@ -436,14 +442,16 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             /*let hover = this._pickWithMesh(controllerData.handIndexMesh);
             if(hover)
             {
+                console.log("HOVER SUCCESS");
                 controllerData.hover = hover;
                 controllerData.nearHover = true;
             }
 
-            let pick = this._pickWithPoint(controllerData.pointForNearInteration);
+            let pick = this._pickWithMesh(controllerData.pickMesh, true);
             let nearPick = pick && pick.pickedPoint && pick.hit;
  
             if (nearPick) {
+                console.log("PICK SUCCESS");
                 controllerData.laserPointer.isVisible = false;
                 controllerData.nearPick = true;
             }
@@ -816,7 +824,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return this.laserPointerDefaultColor;
     }
 
-    private _pickWithMesh(handMesh: AbstractMesh, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
+    private _pickWithMesh(handMesh: AbstractMesh, precise: boolean, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
         var pickingInfo = new PickingInfo();
         for (let meshIndex = 0; meshIndex < this._scene.meshes.length; meshIndex++) {
             let mesh = this._scene.meshes[meshIndex];
@@ -827,42 +835,21 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable || !mesh.isNearInteractable) {
                 continue;
             }
-            let result = mesh.intersectsMesh(handMesh);
+
+            let result = mesh.intersectsMesh(handMesh, precise);
             if(result)
             {
+                console.log("intersection successful for ", mesh.name);
                 pickingInfo.hit = result;
                 pickingInfo.pickedMesh = mesh;
+                pickingInfo.pickedPoint = handMesh.position;
                 pickingInfo.originMesh = handMesh;
                 pickingInfo.distance = 0;
                 pickingInfo.subMeshId = 0;
             }
         }
         return pickingInfo;
-    }
-
-    private _pickWithPoint(point: Vector3, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
-        var pickingInfo = new PickingInfo();
-        for (let meshIndex = 0; meshIndex < this._scene.meshes.length; meshIndex++) {
-            let mesh = this._scene.meshes[meshIndex];
-            if (predicate) {
-                if (!predicate(mesh)) {
-                    continue;
-                }
-            } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable || !mesh.isNearInteractable) {
-                continue;
-            }
-            let result = mesh.intersectsPoint(point);
-            if(result)
-            {
-                pickingInfo.hit = result;
-                pickingInfo.pickedMesh = mesh;
-                pickingInfo.pickedPoint = point;
-                pickingInfo.distance = 0;
-                pickingInfo.subMeshId = 0;
-            }
-        }
-        return pickingInfo;
-    }
+    }    
 }
 
 //register the plugin
