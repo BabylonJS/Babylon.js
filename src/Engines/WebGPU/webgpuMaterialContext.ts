@@ -20,6 +20,9 @@ interface IWebGPUMaterialContextTextureCache {
 
 /** @hidden */
 export class WebGPUMaterialContext implements IMaterialContext {
+    private static _Counter = 0;
+
+    public uniqueId: number;
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
 
@@ -29,6 +32,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
         this._cacheBindGroups = cachBindGroups;
         this.samplers = {};
         this.textures = {};
+        this.uniqueId = WebGPUMaterialContext._Counter++;
     }
 
     public setTexture(name: string, internalTexture: Nullable<InternalTexture>): boolean {
