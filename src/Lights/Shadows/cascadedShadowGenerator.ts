@@ -108,7 +108,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         this._numCascades = value;
+        this._setNamesForDrawWrapper();
         this.recreateShadowMap();
+    }
+
+    private _setNamesForDrawWrapper(): void {
+        this._nameForDrawWrapper.length = this._numCascades;
+        for (let i = 0; i < this._numCascades; ++i) {
+            this._nameForDrawWrapper[i] = this._nameForDrawWrapperOrig + "_" + i;
+        }
     }
 
     /**
@@ -705,6 +713,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         throw _DevTools.WarnImport("ShadowGeneratorSceneComponent");
     }
 
+    private _nameForDrawWrapperOrig: string;
+
     /**
      * Creates a Cascaded Shadow Generator object.
      * A ShadowGenerator is the required tool to use the shadows.
@@ -723,11 +733,13 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         super(mapSize, light, usefulFloatFirst);
 
         this.usePercentageCloserFiltering = true;
+        this._nameForDrawWrapperOrig = this._nameForDrawWrapper[0];
     }
 
     protected _initializeGenerator(): void {
         this.penumbraDarkness = this.penumbraDarkness ?? 1.0;
         this._numCascades = this._numCascades ?? CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
+        this._setNamesForDrawWrapper();
         this.stabilizeCascades = this.stabilizeCascades ?? false;
         this._freezeShadowCastersBoundingInfoObservable = this._freezeShadowCastersBoundingInfoObservable ?? null;
         this.freezeShadowCastersBoundingInfo = this.freezeShadowCastersBoundingInfo ?? false;
@@ -803,6 +815,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._shadowMap.onBeforeRenderObservable.clear();
 
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
+            this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[layer];
             this._currentLayer = layer;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
