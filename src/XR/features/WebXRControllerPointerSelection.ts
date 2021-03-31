@@ -351,6 +351,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.pick = null;
                 return;
             }
+
             controllerData.laserPointer.isVisible = this.displayLaserPointer;
 
             let controllerGlobalPosition: Vector3;
@@ -795,7 +796,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable || !mesh.isNearInteractable) {
                 continue;
             }
-
             let result = mesh.intersectsMesh(handMesh);
             if(result)
             {
@@ -806,7 +806,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 pickingInfo.subMeshId = 0;
             }
         }
-
         return pickingInfo;
     }
 
@@ -821,7 +820,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable || !mesh.isNearInteractable) {
                 continue;
             }
-
             let result = mesh.intersectsPoint(point);
             if(result)
             {
@@ -832,7 +830,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 pickingInfo.subMeshId = 0;
             }
         }
-
         return pickingInfo;
     }
 }
