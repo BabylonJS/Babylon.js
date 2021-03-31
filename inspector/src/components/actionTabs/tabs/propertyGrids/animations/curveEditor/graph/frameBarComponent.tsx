@@ -22,9 +22,6 @@ IFrameBarComponentState
     private _viewWidth = 748;
     private _viewScale = 1;
     private _offsetX = 0;
-
-    private _minFrame: number;
-    private _maxFrame: number;
     
     private _currentAnimation: Nullable<Animation>;
 
@@ -83,19 +80,22 @@ IFrameBarComponentState
             return null;
         }
 
-        let keys = this._currentAnimation!.getKeys();
-        this._minFrame = keys[0].frame;
-        this._maxFrame = keys[keys.length - 1].frame;
+        let minFrame = this.props.context.referenceMinFrame;
+        let maxFrame = this.props.context.referenceMaxFrame;
 
         let stepCounts = 20;
-        let range = this._maxFrame - this._minFrame;
+        let range = maxFrame - minFrame;
         let offset = (range / stepCounts) | 0;
         let convertRatio = range / this._GraphAbsoluteWidth;
 
         let steps = [];
 
+        if (offset === 0) {
+            offset = 1;
+        }
+
         let startPosition = this._offsetX * convertRatio;
-        let start = this._minFrame - ((startPosition / offset) | 0) * offset;
+        let start = minFrame - ((startPosition / offset) | 0) * offset;
         let end = start + (this._viewWidth * this._viewScale ) * convertRatio;
 
         for (var step = start - offset; step <= end + offset; step += offset) {
@@ -104,7 +104,7 @@ IFrameBarComponentState
 
         return (
             steps.map((s, i) => {
-                let x = (s - this._minFrame) / convertRatio;
+                let x = (s - minFrame) / convertRatio;
                 return (
                     <g key={"axis" + s}>
                         <line

@@ -259,7 +259,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             if (!this.node) {
                 return;
             }
-            this._injectGUI3DMetadata(this.node).control = this; // Store the control on the metadata field in order to get it when picking
+            this._injectGUI3DReservedDataStore(this.node).control = this; // Store the control on the reservedDataStore field in order to get it when picking
 
             let mesh = this.mesh;
             if (mesh) {
@@ -270,10 +270,10 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
         }
     }
 
-    protected _injectGUI3DMetadata(node: TransformNode): any {
-        node.metadata = node.metadata ?? {};
-        node.metadata.GUI3D = node.metadata.GUI3D ?? {};
-        return node.metadata.GUI3D;
+    protected _injectGUI3DReservedDataStore(node: TransformNode): any {
+        node.reservedDataStore = node.reservedDataStore ?? {};
+        node.reservedDataStore.GUI3D = node.reservedDataStore.GUI3D ?? {};
+        return node.reservedDataStore.GUI3D;
     }
 
     /**

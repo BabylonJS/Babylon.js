@@ -189,6 +189,25 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                 label: "Spherical", value: Texture.SPHERICAL_MODE
             },
         ];
+
+        var samplingMode = [
+            { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
+            { label: "Linear", value: Texture.LINEAR_LINEAR }, // 2
+
+            { label: "Linear & linear mip", value: Texture.LINEAR_LINEAR_MIPLINEAR }, // 3
+            { label: "Linear & nearest mip", value: Texture.LINEAR_LINEAR_MIPNEAREST }, // 11
+
+            { label: "Nearest & linear mip", value: Texture.NEAREST_NEAREST_MIPLINEAR }, // 8
+            { label: "Nearest & nearest mip", value: Texture.NEAREST_NEAREST_MIPNEAREST }, // 4
+
+            { label: "Nearest/Linear", value: Texture.NEAREST_LINEAR }, // 7
+            { label: "Nearest/Linear & linear mip", value: Texture.NEAREST_LINEAR_MIPLINEAR }, // 6
+            { label: "Nearest/Linear & nearest mip", value: Texture.NEAREST_LINEAR_MIPNEAREST }, // 5
+
+            { label: "Linear/Nearest", value: Texture.LINEAR_NEAREST }, // 12
+            { label: "Linear/Nearest & linear mip", value: Texture.LINEAR_NEAREST_MIPLINEAR }, // 10
+            { label: "Linear/Nearest & nearest mip", value: Texture.LINEAR_NEAREST_MIPNEAREST }, // 9
+        ];
         
         return (
             <div>                
@@ -214,6 +233,13 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         <CheckBoxLineComponent label="Is in gamma space" propertyName="gammaSpace" target={texture} onValueChanged={() => {                        
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}/>
+                    }
+                    {
+                        texture && texture.updateSamplingMode &&
+                        <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onSelect={(value) => {
+                            texture.updateSamplingMode(value as number);
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
                     }
                     {
                         texture && isInReflectionMode &&

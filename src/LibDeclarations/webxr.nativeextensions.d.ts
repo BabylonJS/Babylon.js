@@ -2,7 +2,7 @@
 // They are intended for use with either Babylon Native https://github.com/BabylonJS/BabylonNative or
 // Babylon React Native: https://github.com/BabylonJS/BabylonReactNative
 
-type XRSceneObjectType = "unknown" | "background" | "wall" | "floor" | "ceiling" | "platform";
+type XRSceneObjectType = "unknown" | "background" | "wall" | "floor" | "ceiling" | "platform" | "inferred" | "world";
 
 interface XRSceneObject {
     type: XRSceneObjectType;

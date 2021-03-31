@@ -15,7 +15,6 @@ import { Scene } from '../../../../scene';
 import { NodeMaterialModes } from '../../Enums/nodeMaterialModes';
 import { Engine } from "../../../../Engines/engine";
 import { Constants } from '../../../../Engines/constants';
-
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 
 /**
@@ -434,7 +433,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return "";
         }
 
-        var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY});\r\n`;
+        var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY}, ${this.texture.samplingMode});\r\n`;
         codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\r\n`;
         codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\r\n`;
         codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\r\n`;
@@ -457,7 +456,7 @@ export class TextureBlock extends NodeMaterialBlock {
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
         serializationObject.fragmentOnly = this._fragmentOnly;
-        if (this.texture && !this.texture.isRenderTarget) {
+        if (this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
             serializationObject.texture = this.texture.serialize();
         }
 
@@ -471,7 +470,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
         this._fragmentOnly = !!serializationObject.fragmentOnly;
 
-        if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {
+        if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
