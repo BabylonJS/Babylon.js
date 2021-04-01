@@ -908,18 +908,21 @@ export class WebGPUEngine extends Engine {
               w = this._viewportCached.z,
               h = this._viewportCached.w;
 
-        return this._viewportsCurrent[index].x !== x || this._viewportsCurrent[index].y !== y ||
+        const update =
+            this._viewportsCurrent[index].x !== x || this._viewportsCurrent[index].y !== y ||
             this._viewportsCurrent[index].w !== w || this._viewportsCurrent[index].h !== h;
+
+        if (update) {
+            this._viewportsCurrent[index].x = this._viewportCached.x;
+            this._viewportsCurrent[index].y = this._viewportCached.y;
+            this._viewportsCurrent[index].w = this._viewportCached.z;
+            this._viewportsCurrent[index].h = this._viewportCached.w;
+        }
+
+        return update;
     }
 
     private _applyViewport(renderPass: GPURenderPassEncoder): void {
-        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
-
-        this._viewportsCurrent[index].x = this._viewportCached.x;
-        this._viewportsCurrent[index].y = this._viewportCached.y;
-        this._viewportsCurrent[index].w = this._viewportCached.z;
-        this._viewportsCurrent[index].h = this._viewportCached.w;
-
         renderPass.setViewport(Math.floor(this._viewportCached.x), Math.floor(this._viewportCached.y), Math.floor(this._viewportCached.z), Math.floor(this._viewportCached.w), 0, 1);
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -956,18 +959,21 @@ export class WebGPUEngine extends Engine {
               w = this._scissorCached.z,
               h = this._scissorCached.w;
 
-        return this._scissorsCurrent[index].x !== x || this._scissorsCurrent[index].y !== y ||
+        const update =
+            this._scissorsCurrent[index].x !== x || this._scissorsCurrent[index].y !== y ||
             this._scissorsCurrent[index].w !== w || this._scissorsCurrent[index].h !== h;
+
+        if (update) {
+            this._scissorsCurrent[index].x = this._scissorCached.x;
+            this._scissorsCurrent[index].y = this._scissorCached.y;
+            this._scissorsCurrent[index].w = this._scissorCached.z;
+            this._scissorsCurrent[index].h = this._scissorCached.w;
+        }
+
+        return update;
     }
 
     private _applyScissor(renderPass: GPURenderPassEncoder): void {
-        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
-
-        this._scissorsCurrent[index].x = this._scissorCached.x;
-        this._scissorsCurrent[index].y = this._scissorCached.y;
-        this._scissorsCurrent[index].w = this._scissorCached.z;
-        this._scissorsCurrent[index].h = this._scissorCached.w;
-
         renderPass.setScissorRect(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w);
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -1011,15 +1017,15 @@ export class WebGPUEngine extends Engine {
     
     private _mustUpdateStencilRef(renderPass: GPURenderPassEncoder): boolean {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
-        return this._stencilState.stencilFuncRef !== this._stencilRefsCurrent[index];
+        const update = this._stencilState.stencilFuncRef !== this._stencilRefsCurrent[index];
+        if (update) {
+            this._stencilRefsCurrent[index] = this._stencilState.stencilFuncRef;
+        }
+        return update;
     }
 
     /** @hidden */
     public _applyStencilRef(renderPass: GPURenderPassEncoder): void {
-        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
-
-        this._stencilRefsCurrent[index] = this._stencilState.stencilFuncRef;
-
         renderPass.setStencilReference(this._stencilState.stencilFuncRef);
     }
 
@@ -1036,22 +1042,24 @@ export class WebGPUEngine extends Engine {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
         const colorBlend = this._alphaState._blendConstants;
 
-        return  colorBlend[0] !== this._blendColorsCurrent[index][0] ||
+        const update =
+                colorBlend[0] !== this._blendColorsCurrent[index][0] ||
                 colorBlend[1] !== this._blendColorsCurrent[index][1] ||
                 colorBlend[2] !== this._blendColorsCurrent[index][2] ||
                 colorBlend[3] !== this._blendColorsCurrent[index][3];
+
+        if (update) {
+            this._blendColorsCurrent[index][0] = colorBlend[0];
+            this._blendColorsCurrent[index][1] = colorBlend[1];
+            this._blendColorsCurrent[index][2] = colorBlend[2];
+            this._blendColorsCurrent[index][3] = colorBlend[3];
+        }
+
+        return update;
     }
 
     private _applyBlendColor(renderPass: GPURenderPassEncoder): void {
-        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
-        const colorBlend = this._alphaState._blendConstants;
-
-        this._blendColorsCurrent[index][0] = colorBlend[0];
-        this._blendColorsCurrent[index][1] = colorBlend[1];
-        this._blendColorsCurrent[index][2] = colorBlend[2];
-        this._blendColorsCurrent[index][3] = colorBlend[3];
-
-        renderPass.setBlendColor(colorBlend as GPUColor);
+        renderPass.setBlendColor(this._alphaState._blendConstants as GPUColor);
     }
 
     /**
