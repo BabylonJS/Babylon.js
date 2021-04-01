@@ -350,10 +350,10 @@ IKeyPointComponentState
         let outVec = new Vector2(outControlPoint ? (this.props.convertX(outControlPoint.frame) - this.state.x) : 0, outControlPoint ? (this.props.convertY(outControlPoint.value) - this.state.y) : 0);
 
         inVec.normalize();
-        inVec.scaleInPlace(50);
+        inVec.scaleInPlace(50 * this.props.scale);
         
         outVec.normalize();
-        outVec.scaleInPlace(50);
+        outVec.scaleInPlace(50 * this.props.scale);
 
         return (
             <svg
