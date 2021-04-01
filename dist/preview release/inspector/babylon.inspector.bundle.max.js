@@ -47567,12 +47567,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 
 var Curve = /** @class */ (function () {
-    function Curve(color, animation, property) {
+    function Curve(color, animation, property, tangentBuilder) {
         this.keys = new Array();
         this.onDataUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.color = color;
         this.animation = animation;
         this.property = property;
+        this.tangentBuilder = tangentBuilder;
     }
     Curve.prototype.gePathData = function (convertX, convertY) {
         var keys = this.keys;
@@ -47650,6 +47651,34 @@ var Curve = /** @class */ (function () {
                 value: prevValue + (currentValue - prevValue) / 2
             };
         }
+    };
+    Curve.prototype.updateInTangentFromControlPoint = function (keyId, frame, value) {
+        var slope = (this.keys[keyId].value - value) / (this.keys[keyId].frame - frame);
+        this.keys[keyId].inTangent = slope * (this.keys[keyId].frame - this.keys[keyId - 1].frame);
+        if (this.property) {
+            if (!this.animation.getKeys()[keyId].inTangent) {
+                this.animation.getKeys()[keyId].inTangent = this.tangentBuilder();
+            }
+            this.animation.getKeys()[keyId].inTangent[this.property] = this.keys[keyId].inTangent;
+        }
+        else {
+            this.animation.getKeys()[keyId].inTangent = this.keys[keyId].inTangent;
+        }
+        this.onDataUpdatedObservable.notifyObservers();
+    };
+    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, frame, value) {
+        var slope = (value - this.keys[keyId].value) / (frame - this.keys[keyId].frame);
+        this.keys[keyId].outTangent = slope * (this.keys[keyId + 1].frame - this.keys[keyId].frame);
+        if (this.property) {
+            if (!this.animation.getKeys()[keyId].outTangent) {
+                this.animation.getKeys()[keyId].outTangent = this.tangentBuilder();
+            }
+            this.animation.getKeys()[keyId].outTangent[this.property] = this.keys[keyId].outTangent;
+        }
+        else {
+            this.animation.getKeys()[keyId].outTangent = this.keys[keyId].outTangent;
+        }
+        this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyFrame = function (keyId, frame) {
         this.keys[keyId].frame = frame;
@@ -47859,6 +47888,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var GraphComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphComponent, _super);
     function GraphComponent(props) {
@@ -47988,29 +48019,29 @@ var GraphComponent = /** @class */ (function (_super) {
                 this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
                 break;
         }
         var values = this._extractValuesFromKeys(keys, animation.dataType, true);
@@ -48434,10 +48465,18 @@ var SelectionState;
     SelectionState[SelectionState["Selected"] = 1] = "Selected";
     SelectionState[SelectionState["Siblings"] = 2] = "Siblings";
 })(SelectionState || (SelectionState = {}));
+var ControlMode;
+(function (ControlMode) {
+    ControlMode[ControlMode["None"] = 0] = "None";
+    ControlMode[ControlMode["Key"] = 1] = "Key";
+    ControlMode[ControlMode["TangentLeft"] = 2] = "TangentLeft";
+    ControlMode[ControlMode["TangentRight"] = 3] = "TangentRight";
+})(ControlMode || (ControlMode = {}));
 var KeyPointComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(KeyPointComponent, _super);
     function KeyPointComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._controlMode = ControlMode.None;
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._onSelectionRectangleMovedObserver = _this.props.context.onSelectionRectangleMoved.add(function (rect1) {
@@ -48620,6 +48659,16 @@ var KeyPointComponent = /** @class */ (function (_super) {
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
+        var target = evt.nativeEvent.target;
+        if (target.tagName === "image") {
+            this._controlMode = ControlMode.Key;
+        }
+        else if (target.classList.contains("left-tangent")) {
+            this._controlMode = ControlMode.TangentLeft;
+        }
+        else if (target.classList.contains("right-tangent")) {
+            this._controlMode = ControlMode.TangentRight;
+        }
         evt.stopPropagation();
     };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
@@ -48627,72 +48676,99 @@ var KeyPointComponent = /** @class */ (function (_super) {
         if (!this._pointerIsDown || this.state.selectedState !== SelectionState.Selected) {
             return;
         }
-        var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-        var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-        var previousX = this.props.getPreviousX();
-        var nextX = this.props.getNextX();
-        if (previousX !== null) {
-            newX = Math.max(previousX, newX);
+        if (this._controlMode === ControlMode.TangentLeft) {
+            var currentX = this.props.convertX(this._currentLeftControlPoint.frame);
+            var currentY = this.props.convertY(this._currentLeftControlPoint.value);
+            var newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            var newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            var newFrame = this.props.invertX(newX);
+            var newValue = this.props.invertY(newY);
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.forceUpdate();
         }
-        if (nextX !== null) {
-            newX = Math.min(nextX, newX);
+        else if (this._controlMode === ControlMode.TangentRight) {
+            var currentX = this.props.convertX(this._currentRightControlPoint.frame);
+            var currentY = this.props.convertY(this._currentRightControlPoint.value);
+            var newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            var newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            var newFrame = this.props.invertX(newX);
+            var newValue = this.props.invertY(newY);
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.forceUpdate();
         }
-        if (this.props.keyId !== 0) {
-            var frame = this.props.invertX(newX);
-            this.props.onFrameValueChanged(frame);
-            this.props.context.onFrameSet.notifyObservers(frame);
-            if (newX !== this.state.x) {
-                this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+        else if (this._controlMode === ControlMode.Key) {
+            var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            var previousX = this.props.getPreviousX();
+            var nextX = this.props.getNextX();
+            if (previousX !== null) {
+                newX = Math.max(previousX, newX);
+            }
+            if (nextX !== null) {
+                newX = Math.min(nextX, newX);
+            }
+            if (this.props.keyId !== 0) {
+                var frame = this.props.invertX(newX);
+                this.props.onFrameValueChanged(frame);
+                this.props.context.onFrameSet.notifyObservers(frame);
+                if (newX !== this.state.x) {
+                    this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+                }
+            }
+            else {
+                newX = this.state.x;
+            }
+            var value = this.props.invertY(newY);
+            this.props.onKeyValueChanged(value);
+            this.props.context.onValueSet.notifyObservers(value);
+            this.setState({ x: newX, y: newY });
+            if (this.props.context.activeKeyPoints.length > 1) {
+                setTimeout(function () {
+                    if (_this.props.context.mainKeyPoint) {
+                        _this.props.context.onMainKeyPointMoved.notifyObservers();
+                    }
+                });
             }
         }
-        else {
-            newX = this.state.x;
-        }
-        var value = this.props.invertY(newY);
-        this.props.onKeyValueChanged(value);
-        this.props.context.onValueSet.notifyObservers(value);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-        this.setState({ x: newX, y: newY });
-        if (this.props.context.activeKeyPoints.length > 1) {
-            setTimeout(function () {
-                if (_this.props.context.mainKeyPoint) {
-                    _this.props.context.onMainKeyPointMoved.notifyObservers();
-                }
-            });
-        }
         evt.stopPropagation();
     };
     KeyPointComponent.prototype._onPointerUp = function (evt) {
         this._pointerIsDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
         evt.stopPropagation();
+        this._controlMode = ControlMode.None;
     };
     KeyPointComponent.prototype.render = function () {
         var _this = this;
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
-        var inControlPoint = this.props.curve.getInControlPoint(this.props.keyId);
-        var outControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);
-        var inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](inControlPoint ? (this.props.convertX(inControlPoint.frame) - this.state.x) : 0, inControlPoint ? (this.props.convertY(inControlPoint.value) - this.state.y) : 0);
-        var outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](outControlPoint ? (this.props.convertX(outControlPoint.frame) - this.state.x) : 0, outControlPoint ? (this.props.convertY(outControlPoint.value) - this.state.y) : 0);
-        inVec.normalize();
-        inVec.scaleInPlace(50 * this.props.scale);
-        outVec.normalize();
-        outVec.scaleInPlace(50 * this.props.scale);
+        this._currentLeftControlPoint = this.props.curve.getInControlPoint(this.props.keyId);
+        this._currentRightControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);
+        var inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
+        var outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
         return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("svg", { ref: this._svgHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, href: svgImageIcon }),
             this.state.selectedState === SelectionState.Selected &&
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("g", null,
-                    inControlPoint !== null &&
-                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: inVec.x + "px", y2: inVec.y + "px", style: {
-                                stroke: "#F9BF00",
-                                strokeWidth: 1,
-                            } }),
-                    outControlPoint !== null &&
-                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: outVec.x + "px", y2: outVec.y + "px", style: {
-                                stroke: "#F9BF00",
-                                strokeWidth: 1,
-                            } }))));
+                    this._currentLeftControlPoint !== null &&
+                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: inVec.x + "px", y2: inVec.y + "px", style: {
+                                    stroke: "#F9BF00",
+                                    strokeWidth: 1,
+                                } }),
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: inVec.x + "px", cy: inVec.y + "px", r: "4", style: {
+                                    fill: "#F9BF00",
+                                } })),
+                    this._currentRightControlPoint !== null &&
+                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: outVec.x + "px", y2: outVec.y + "px", style: {
+                                    stroke: "#F9BF00",
+                                    strokeWidth: 1,
+                                } }),
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: outVec.x + "px", cy: outVec.y + "px", r: "4", style: {
+                                    fill: "#F9BF00",
+                                } })))));
     };
     return KeyPointComponent;
 }(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
