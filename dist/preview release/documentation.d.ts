@@ -42312,6 +42312,7 @@ declare module BABYLON {
         private _loadingDivBackgroundColor;
         private _loadingDiv;
         private _loadingTextDiv;
+        private _style;
         /** Gets or sets the logo url to use for the default loading screen */
         static DefaultLogoUrl: string;
         /** Gets or sets the spinner url to use for the default loading screen */
