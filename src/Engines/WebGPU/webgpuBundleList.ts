@@ -5,12 +5,13 @@ interface IWebGPURenderItem {
     clone(): IWebGPURenderItem;
 }
 
+/** @hidden */
 export class WebGPURenderItemViewport implements IWebGPURenderItem {
     public x: number;
     public y: number;
     public w: number;
     public h: number;
-    
+
     public constructor(x: number, y: number, w: number, h: number) {
         this.x = Math.floor(x);
         this.y = Math.floor(y);
@@ -27,6 +28,7 @@ export class WebGPURenderItemViewport implements IWebGPURenderItem {
     }
 }
 
+/** @hidden */
 export class WebGPURenderItemScissor implements IWebGPURenderItem {
     public constructor(public x: number, public y: number, public w: number, public h: number) {
     }
@@ -40,6 +42,7 @@ export class WebGPURenderItemScissor implements IWebGPURenderItem {
     }
 }
 
+/** @hidden */
 export class WebGPURenderItemStencilRef implements IWebGPURenderItem {
     public constructor(public ref: number) {
     }
@@ -53,6 +56,7 @@ export class WebGPURenderItemStencilRef implements IWebGPURenderItem {
     }
 }
 
+/** @hidden */
 export class WebGPURenderItemBlendColor implements IWebGPURenderItem {
     public constructor(public color: Nullable<number>[]) {
     }
@@ -84,6 +88,7 @@ class WebGPURenderItemBundles implements IWebGPURenderItem {
     }
 }
 
+/** @hidden */
 export class WebGPUBundleList {
     private _device: GPUDevice;
     private _bundleEncoder: GPURenderBundleEncoder | undefined;
@@ -148,7 +153,7 @@ export class WebGPUBundleList {
     public run(renderPass: GPURenderPassEncoder) {
         this.close();
         for (let i = 0; i < this._listLength; ++i) {
-            this._list[i].run(renderPass)
+            this._list[i].run(renderPass);
         }
     }
 
