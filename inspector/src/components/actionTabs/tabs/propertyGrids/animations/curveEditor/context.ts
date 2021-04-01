@@ -12,15 +12,20 @@ export class Context {
     target: IAnimatable;
     activeAnimation: Nullable<Animation>;
     activeKeyPoints: Nullable<KeyPointComponent[]>;
+    mainKeyPoint: Nullable<KeyPointComponent>;
+    snippetId: string;
 
     activeFrame: number;
     fromKey: number;
     toKey: number;
     forwardAnimation = true;
-    isPlaying: boolean
+    isPlaying: boolean;
+
+    referenceMinFrame = 0;
+    referenceMaxFrame = 100;
 
     onActiveAnimationChanged = new Observable<void>();
-    onActiveKeyPointChanged = new Observable<Nullable<{keyPoint: KeyPointComponent, channel: string}>>();
+    onActiveKeyPointChanged = new Observable<void>();
     onHostWindowResized = new Observable<void>();
 
     onActiveKeyFrameChanged = new Observable<number>();
@@ -28,10 +33,14 @@ export class Context {
     onFrameSet = new Observable<number>();
     onFrameManuallyEntered = new Observable<number>();
 
+    onMainKeyPointSet = new Observable<void>();
+    onMainKeyPointMoved = new Observable<void>();
+
     onValueSet = new Observable<number>();
     onValueManuallyEntered = new Observable<number>();
 
     onFrameRequired = new Observable<void>();
+    onNewKeyPointRequired = new Observable<void>();
 
     onDeleteAnimation = new Observable<Animation>();
 
@@ -46,6 +55,10 @@ export class Context {
 
     onDeleteKeyActiveKeyPoints = new Observable<void>();
 
+    onSelectionRectangleMoved = new Observable<DOMRect>();
+
+    onAnimationsLoaded = new Observable<void>();
+
     public prepare() {        
         this.isPlaying = false;
         if (!this.animations || !this.animations.length) {
@@ -56,6 +69,9 @@ export class Context {
         const keys = animation.getKeys();
         this.fromKey = keys[0].frame;
         this.toKey = keys[keys.length - 1].frame;
+
+        this.referenceMinFrame = 0;
+        this.referenceMaxFrame = this.toKey;
     
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;

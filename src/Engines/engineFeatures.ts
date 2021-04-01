@@ -51,6 +51,9 @@ export interface EngineFeatures {
     /** Indicates that y should be inverted when dealing with bitmaps (notably in environment tools) */
     needsInvertingBitmap: boolean;
 
+    /** Indicates that the engine should cache the bound UBO */
+    useUBOBindingCache: boolean;
+
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }

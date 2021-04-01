@@ -6,7 +6,6 @@ import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
 import { CurveComponent } from "./curveComponent";
 import { Nullable } from "babylonjs/types";
-import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Observer } from "babylonjs/Misc/observable";
 import { IAnimationKey } from "babylonjs/Animations/animationKey";
 
@@ -33,6 +32,8 @@ IGraphComponentState
     private _viewScale = 1;
     private _offsetX = 0;
     private _offsetY = 0;
+
+    private _inSelectionMode: boolean;
     
     private _graphOffsetX = 30;
 
@@ -41,12 +42,17 @@ IGraphComponentState
     private _minFrame: number;
     private _maxFrame: number;
     private _svgHost: React.RefObject<SVGSVGElement>;
-    private _svgHost2: React.RefObject<SVGSVGElement>;
+    private _svgHost2: React.RefObject<SVGSVGElement>;    
+    private _selectionRectangle: React.RefObject<HTMLDivElement>;
     private _curves: Curve[];
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
     private _sourcePointerY: number;
+
+    
+    private _selectionStartX: number;
+    private _selectionStartY: number;
 
     private _currentAnimation: Nullable<Animation>;
    
@@ -55,10 +61,11 @@ IGraphComponentState
     constructor(props: IGraphComponentProps) {
         super(props);
 
-        this.state = { };
+        this.state = {};
         
         this._svgHost = React.createRef();
         this._svgHost2 = React.createRef();
+        this._selectionRectangle = React.createRef();
 
         this._evaluateKeys();
 
@@ -72,8 +79,8 @@ IGraphComponentState
             }
 
             this._currentAnimation = this.props.context.activeAnimation;
-            this._computeSizes();
             this._evaluateKeys();
+            this._computeSizes();
             this.forceUpdate();
         });
 
@@ -82,16 +89,26 @@ IGraphComponentState
             this.forceUpdate();
         });
 
-        this.props.context.onDeleteKeyActiveKeyPoints.add(() => { // Delete keypoint
+        this.props.context.onRangeUpdated.add(() => {
+            this.forceUpdate();
+        });
+
+        // Delete keypoint
+        this.props.context.onDeleteKeyActiveKeyPoints.add(() => { 
             if (!this._currentAnimation || !this.props.context.activeKeyPoints) {
                 return;
             }
 
-            let keys = this._currentAnimation.getKeys()
+            let keys = this._currentAnimation.getKeys();
             let newKeys = keys.slice(0);
-            let deletedFrame: Nullable<number> = null;
+            let deletedFrame: Nullable<number> = null;            
 
             for (var keyPoint of this.props.context.activeKeyPoints) {
+                // Cannot delete 0 and last
+                if (keyPoint.props.keyId === 0 || keyPoint.props.keyId === keys.length - 1) {
+                    continue;
+                }
+
                 let key = keys[keyPoint.props.keyId];
 
                 let keyIndex = newKeys.indexOf(key);
@@ -114,6 +131,41 @@ IGraphComponentState
             this._currentAnimation = null;
 
             this.props.context.onActiveAnimationChanged.notifyObservers();
+        });
+
+        // New keypoint
+        this.props.context.onNewKeyPointRequired.add(() => {
+            if (!this._currentAnimation) {
+                return;
+            }
+
+            let keys = this._currentAnimation.getKeys();
+
+            const currentFrame = this.props.context.activeFrame;
+
+            let indexToAdd = -1;
+            for (var key of keys) {
+                if (key.frame < currentFrame) {
+                    indexToAdd++;
+                } else {
+                    break;
+                }
+            }
+
+            const value = this._currentAnimation.evaluate(currentFrame);
+
+            keys.splice(indexToAdd + 1, 0, {
+                frame: currentFrame,
+                value: value
+            });
+
+            this._currentAnimation.setKeys(keys);
+            this._evaluateKeys();
+
+            this.props.context.activeKeyPoints = [];            
+            this.props.context.onActiveKeyPointChanged.notifyObservers();
+            this.props.context.onActiveAnimationChanged.notifyObservers();        
+            this.forceUpdate();    
         });
     }
 
@@ -198,7 +250,12 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value);
 
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value));
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value,
+                            inTangent: key.inTangent,
+                            outTangent: key.outTangent,
+                        });
                     }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR2:
@@ -208,8 +265,18 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.y);
 
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.x,
+                            inTangent: key.inTangent?.x,
+                            outTangent: key.outTangent?.x,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.y,
+                            inTangent: key.inTangent?.y,
+                            outTangent: key.outTangent?.y,
+                        });
                     }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
@@ -221,9 +288,24 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.z);
                     
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
-                        this._curves[2].keys.push(new Vector2(key.frame, key.value.z));
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.x,
+                            inTangent: key.inTangent?.x,
+                            outTangent: key.outTangent?.x,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.y,
+                            inTangent: key.inTangent?.y,
+                            outTangent: key.outTangent?.y,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame, 
+                            value: key.value.z,
+                            inTangent: key.inTangent?.z,
+                            outTangent: key.outTangent?.z,
+                        });
                     }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
@@ -235,9 +317,24 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.b);
 
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.r));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.g));
-                        this._curves[2].keys.push(new Vector2(key.frame, key.value.b));
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.r,
+                            inTangent: key.inTangent?.r,
+                            outTangent: key.outTangent?.r,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.g,
+                            inTangent: key.inTangent?.g,
+                            outTangent: key.outTangent?.g,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame, 
+                            value: key.value.b,
+                            inTangent: key.inTangent?.b,
+                            outTangent: key.outTangent?.b,
+                        });
                     }
                     break;                    
                 case Animation.ANIMATIONTYPE_QUATERNION:
@@ -251,10 +348,30 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.w);
                     
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
-                        this._curves[2].keys.push(new Vector2(key.frame, key.value.z));  
-                        this._curves[3].keys.push(new Vector2(key.frame, key.value.w));     
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.x,
+                            inTangent: key.inTangent?.x,
+                            outTangent: key.outTangent?.x,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.y,
+                            inTangent: key.inTangent?.y,
+                            outTangent: key.outTangent?.y,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame, 
+                            value: key.value.z,
+                            inTangent: key.inTangent?.z,
+                            outTangent: key.outTangent?.z,
+                        });   
+                        this._curves[3].keys.push({
+                            frame: key.frame, 
+                            value: key.value.w,
+                            inTangent: key.inTangent?.w,
+                            outTangent: key.outTangent?.w,
+                        }); 
                     }                   
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
@@ -268,10 +385,30 @@ IGraphComponentState
                     maxValue = Math.max(maxValue, key.value.a);
                     
                     if (pushToCurves) {
-                        this._curves[0].keys.push(new Vector2(key.frame, key.value.r));
-                        this._curves[1].keys.push(new Vector2(key.frame, key.value.g));
-                        this._curves[2].keys.push(new Vector2(key.frame, key.value.b));  
-                        this._curves[3].keys.push(new Vector2(key.frame, key.value.a));                        
+                        this._curves[0].keys.push({
+                            frame: key.frame, 
+                            value: key.value.r,
+                            inTangent: key.inTangent?.r,
+                            outTangent: key.outTangent?.r,
+                        });
+                        this._curves[1].keys.push({
+                            frame: key.frame, 
+                            value: key.value.g,
+                            inTangent: key.inTangent?.g,
+                            outTangent: key.outTangent?.g,
+                        });
+                        this._curves[2].keys.push({
+                            frame: key.frame, 
+                            value: key.value.b,
+                            inTangent: key.inTangent?.b,
+                            outTangent: key.outTangent?.b,
+                        });   
+                        this._curves[3].keys.push({
+                            frame: key.frame, 
+                            value: key.value.a,
+                            inTangent: key.inTangent?.a,
+                            outTangent: key.outTangent?.a,
+                        });                  
                     }
                     break;                    
             }
@@ -311,7 +448,13 @@ IGraphComponentState
     }
 
     private _invertY(y: number) {
-        return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * (this._maxValue - this._minValue) + this._minValue;
+        let diff = this._maxValue - this._minValue;
+
+        if (diff === 0) {
+            diff = 1;
+        }
+
+        return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * diff + this._minValue;
     }
 
     private _buildYAxis() {
@@ -383,18 +526,30 @@ IGraphComponentState
             return;
         }
 
-        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
-
         this._offsetX = 20;
         this._offsetY = 20;
 
         let keys = this._currentAnimation.getKeys();
+
+        // Only keep selected keys
+        if (this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 1) {
+            let newKeys = [];
+            for (var keyPoint of this.props.context.activeKeyPoints) {
+                newKeys.push(keys[keyPoint.props.keyId]);
+            }
+
+            keys = newKeys;
+        }
+
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
 
         let values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false);
         this._minValue = values.min;
         this._maxValue = values.max;
+
+        this.props.context.referenceMinFrame = this._minFrame;
+        this.props.context.referenceMaxFrame = this._maxFrame;
 
         const frameConvert = Math.abs(this._convertX(this._maxFrame ) - this._convertX(this._minFrame)) + this._offsetX * 2;
         const valueConvert = this._minValue !== this._maxValue ? Math.abs(this._convertY(this._minValue) - this._convertY(this._maxValue)) + this._offsetY * 2 : 1;
@@ -419,15 +574,15 @@ IGraphComponentState
         let curve = this._curves[curveId];
 
         return curve.keys.map((key, i) => {
-            let x = this._convertX(key.x);
-            let y = this._convertY(key.y);
+            let x = this._convertX(key.frame);
+            let y = this._convertY(key.value);
 
             return (
                <KeyPointComponent 
                     x={x} y={y} context={this.props.context} 
                     scale={this._viewScale} 
-                    getPreviousX={() => i > 0 ? this._convertX(curve.keys[i - 1].x) : null}
-                    getNextX={() => i < curve.keys.length - 1 ? this._convertX(curve.keys[i + 1].x) : null}
+                    getPreviousX={() => i > 0 ? this._convertX(curve.keys[i - 1].frame) : null}
+                    getNextX={() => i < curve.keys.length - 1 ? this._convertX(curve.keys[i + 1].frame) : null}
                     channel={curve.color}
                     keyId={i}
                     curve={curve}
@@ -452,18 +607,53 @@ IGraphComponentState
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
+
+        this._inSelectionMode = evt.nativeEvent.ctrlKey;
+
+        if (this._inSelectionMode) {
+            this._selectionStartX = this._sourcePointerX + 40;
+            this._selectionStartY = this._sourcePointerY;
+        }
     }
 
     private _onPointerMove(evt: React.PointerEvent<HTMLDivElement>) {
         if (!this._pointerIsDown) {
             return;
         }
+
+        if (this._inSelectionMode) {
+            let style = this._selectionRectangle.current!.style;
+            style.visibility = "visible";
+
+            const localX = evt.nativeEvent.offsetX;
+            const localY = evt.nativeEvent.offsetY;
+
+            if (localX > this._selectionStartX) {
+                style.left = `${this._selectionStartX}px`;
+                style.width = `${(localX - this._selectionStartX)}px`;
+            } else {
+                style.left = `${localX}px`;
+                style.width = `${(this._selectionStartX - localX)}px`;
+            }
+
+            if (localY > this._selectionStartY) {                
+                style.top = `${this._selectionStartY}px`;
+                style.height = `${(localY - this._selectionStartY)}px`;
+            } else {
+                style.top = `${localY}px`;
+                style.height = `${(this._selectionStartY - localY)}px`;
+            }
+            
+            this.props.context.onSelectionRectangleMoved.notifyObservers(this._selectionRectangle.current!.getBoundingClientRect());
+
+            return;
+        }
+
         this._offsetX += (evt.nativeEvent.offsetX - this._sourcePointerX) * this._viewScale;
         this._offsetY += (evt.nativeEvent.offsetY - this._sourcePointerY) * this._viewScale;
         
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-
         
         this.props.context.onGraphMoved.notifyObservers(this._offsetX);
 
@@ -473,6 +663,8 @@ IGraphComponentState
     private _onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
         this._pointerIsDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
+
+        this._selectionRectangle.current!.style.visibility = "hidden";
     }
 
     private _onWheel(evt: React.WheelEvent) {
@@ -503,6 +695,16 @@ IGraphComponentState
         const viewBoxScalingCurves = `${-this._offsetX} ${-this._offsetY} ${Math.round(scale * this._viewCurveWidth)} ${Math.round(scale * this._viewHeight)}`;
         const viewBoxScalingGrid = `0 ${-this._offsetY} ${Math.round(scale * this._viewWidth)} ${Math.round(scale * this._viewHeight)}`;
 
+        let activeBoxLeft = 0;
+        let activeBoxRight = 0;
+        if (this.props.context.activeAnimation) {
+            let minFrame = this.props.context.referenceMinFrame;
+            let maxFrame = this.props.context.referenceMaxFrame;
+        
+            activeBoxLeft = (((this.props.context.fromKey - minFrame) /  (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
+            activeBoxRight = (((this.props.context.toKey - minFrame) /  (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
+        }
+
         return (
             <div 
                 id="graph"                
@@ -511,6 +713,14 @@ IGraphComponentState
                 onPointerMove={evt => this._onPointerMove(evt)}
                 onPointerUp={evt => this._onPointerUp(evt)}
             >
+                {
+                    this.props.context.activeAnimation && 
+                    <div id="dark-rectangle" style={ {
+                        left: activeBoxLeft + "px",
+                        width: (activeBoxRight - activeBoxLeft) + "px"
+                    }}/>
+                }
+                <div id="block-rectangle"/>
                 <svg
                     id="svg-graph-grid"
                     viewBox={viewBoxScalingGrid}
@@ -520,7 +730,6 @@ IGraphComponentState
                         this._buildYAxis()
                     }
                 </svg>
-                <div id="dark-rectangle"/>
                 <svg
                     ref={this._svgHost2}
                     id="svg-graph-curves"
@@ -528,20 +737,11 @@ IGraphComponentState
                     viewBox={viewBoxScalingCurves}
                     >
                     {
-                        this._curves !== undefined && this._curves.length > 0 &&
-                        <CurveComponent context={this.props.context} curve={this._curves[0]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
-                    }
-                    {
-                        this._curves !== undefined && this._curves.length > 1 &&
-                        <CurveComponent context={this.props.context} curve={this._curves[1]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
-                    }
-                    {
-                        this._curves !== undefined && this._curves.length > 2 &&
-                        <CurveComponent context={this.props.context} curve={this._curves[2]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
-                    }
-                    {
-                        this._curves !== undefined && this._curves.length > 3 &&
-                        <CurveComponent context={this.props.context} curve={this._curves[3]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
+                        this._curves.map((c, i) => {
+                            return (
+                                <CurveComponent key={i} context={this.props.context} curve={c} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
+                            )
+                        })
                     }
                     {
                         this._dropKeyFrames(0)
@@ -556,6 +756,10 @@ IGraphComponentState
                         this._dropKeyFrames(3)
                     }
                 </svg>
+                <div 
+                    ref={this._selectionRectangle}
+                    id="selection-rectangle">
+                </div>
             </div>
         );
     }
