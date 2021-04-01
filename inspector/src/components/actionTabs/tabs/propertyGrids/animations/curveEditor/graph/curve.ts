@@ -56,17 +56,30 @@ export class Curve {
         }
 
         const keys = this.keys;
-        const inTangent = keys[keyIndex].inTangent || 0;
-        const prevFrame = keys[keyIndex - 1].frame;
-        const currentFrame = keys[keyIndex].frame;
-        const currentValue = keys[keyIndex].value;
+        const inTangent = keys[keyIndex].inTangent;
 
-        const frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
-        const value = currentValue - inTangent / 3;
+        if (inTangent) {
+            const prevFrame = keys[keyIndex - 1].frame;
+            const currentFrame = keys[keyIndex].frame;
+            const currentValue = keys[keyIndex].value;
 
-        return {
-            frame: frame,
-            value: value
+            const frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
+            const value = currentValue - inTangent / 3;
+
+            return {
+                frame: frame,
+                value: value
+            }
+        } else {
+            const prevFrame = keys[keyIndex - 1].frame;                
+            const prevValue = keys[keyIndex - 1].value;
+            const currentFrame = keys[keyIndex].frame;
+            const currentValue = keys[keyIndex].value;
+
+            return {
+                frame: prevFrame + (currentFrame - prevFrame) / 2,
+                value: prevValue + (currentValue - prevValue) / 2
+            }
         }
     }
 
@@ -75,17 +88,30 @@ export class Curve {
         if (keyIndex === keys.length - 1) {
             return null;
         }
-        const outTangent = keys[keyIndex].outTangent || 0;
-        const prevFrame = keys[keyIndex].frame;        
-        const prevValue = keys[keyIndex].value;
-        const currentFrame = keys[keyIndex + 1].frame;
+        const outTangent = keys[keyIndex].outTangent;
 
-        const frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
-        const value = prevValue + outTangent / 3;
+        if (outTangent) {
+            const prevFrame = keys[keyIndex].frame;        
+            const prevValue = keys[keyIndex].value;
+            const currentFrame = keys[keyIndex + 1].frame;
 
-        return {
-            frame: frame,
-            value: value
+            const frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
+            const value = prevValue + outTangent / 3;
+
+            return {
+                frame: frame,
+                value: value
+            }
+        } else {
+            const prevFrame = keys[keyIndex].frame;                
+            const prevValue = keys[keyIndex].value;
+            const currentFrame = keys[keyIndex + 1].frame;
+            const currentValue = keys[keyIndex + 1].value;
+
+            return {
+                frame: prevFrame + (currentFrame - prevFrame) / 2,
+                value: prevValue + (currentValue - prevValue) / 2
+            }
         }
     }
 
