@@ -54,7 +54,7 @@ export class WebXRSessionManager implements IDisposable {
      */
     public onXRSessionEnded: Observable<any> = new Observable<any>();
     /**
-     * Fires when the xr session is ended either by the device or manually done
+     * Fires when the xr session is initialized: right after requestSession was called and returned with a successful result
      */
     public onXRSessionInit: Observable<XRSession> = new Observable<XRSession>();
     /**
