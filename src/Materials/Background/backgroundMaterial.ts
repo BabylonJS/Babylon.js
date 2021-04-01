@@ -1130,7 +1130,7 @@ export class BackgroundMaterial extends PushMaterial {
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
-            MaterialHelper.BindEyePosition(effect, scene);
+            Scene.BindEyePosition(effect, scene);
         }
 
         if (mustRebind || !this.isFrozen) {

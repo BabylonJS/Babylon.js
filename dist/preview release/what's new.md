@@ -183,3 +183,4 @@
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
 - Fixed spelling of EventState.initialize() ([seritools](https://github.com/seritools))
 - `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
+- `BindEyePosition` has been moved from `Material` to `Scene` to avoid a circular dependency problem ([Popov72](https://github.com/Popov72))

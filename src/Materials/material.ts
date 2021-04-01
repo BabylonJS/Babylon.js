@@ -22,12 +22,12 @@ import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
 import { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
+import { Scene } from "../scene";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
-declare type Scene = import("../scene").Scene;
 
 declare var BABYLON: any;
 
@@ -977,7 +977,7 @@ export class Material implements IAnimatable {
      */
     public bindEyePosition(effect: Effect, variableName?: string): void {
         if (!this._useUBO) {
-            MaterialHelper.BindEyePosition(effect, this._scene, variableName);
+            Scene.BindEyePosition(effect, this._scene, variableName);
         } else {
             this._needToBindSceneUbo = true;
         }
@@ -992,7 +992,7 @@ export class Material implements IAnimatable {
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
-                MaterialHelper.FinalizeSceneUbo(this.getScene());
+                Scene.FinalizeSceneUbo(this.getScene());
                 MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         }
