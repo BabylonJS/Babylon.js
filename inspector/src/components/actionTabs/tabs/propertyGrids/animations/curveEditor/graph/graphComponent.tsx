@@ -8,6 +8,8 @@ import { CurveComponent } from "./curveComponent";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { IAnimationKey } from "babylonjs/Animations/animationKey";
+import { Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Color3, Color4 } from "babylonjs/Maths/math.color";
 
 interface IGraphComponentProps {
     globalState: GlobalState;
@@ -202,29 +204,29 @@ IGraphComponentState
                 this._curves.push(new Curve("#DB3E3E", animation)); 
             break;
             case Animation.ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new Curve("#DB3E3E", animation, "x")); 
-                this._curves.push(new Curve("#51E22D", animation, "y")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "x", () => Vector2.Zero())); 
+                this._curves.push(new Curve("#51E22D", animation, "y", () => Vector2.Zero())); 
             case Animation.ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new Curve("#DB3E3E", animation, "x")); 
-                this._curves.push(new Curve("#51E22D", animation, "y")); 
-                this._curves.push(new Curve("#00A3FF", animation, "z")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "x", () => Vector3.Zero())); 
+                this._curves.push(new Curve("#51E22D", animation, "y", () => Vector3.Zero())); 
+                this._curves.push(new Curve("#00A3FF", animation, "z", () => Vector3.Zero())); 
                 break;
             case Animation.ANIMATIONTYPE_COLOR3:
-                this._curves.push(new Curve("#DB3E3E", animation, "r")); 
-                this._curves.push(new Curve("#51E22D", animation, "g")); 
-                this._curves.push(new Curve("#00A3FF", animation, "b")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "r", () => Color3.Black())); 
+                this._curves.push(new Curve("#51E22D", animation, "g", () => Color3.Black())); 
+                this._curves.push(new Curve("#00A3FF", animation, "b", () => Color3.Black())); 
                 break;
             case Animation.ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new Curve("#DB3E3E", animation, "x")); 
-                this._curves.push(new Curve("#51E22D", animation, "y")); 
-                this._curves.push(new Curve("#00A3FF", animation, "z")); 
-                this._curves.push(new Curve("#8700FF", animation, "w")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "x", () => Quaternion.Zero())); 
+                this._curves.push(new Curve("#51E22D", animation, "y", () => Quaternion.Zero())); 
+                this._curves.push(new Curve("#00A3FF", animation, "z", () => Quaternion.Zero())); 
+                this._curves.push(new Curve("#8700FF", animation, "w", () => Quaternion.Zero())); 
                 break;
             case Animation.ANIMATIONTYPE_COLOR4:
-                this._curves.push(new Curve("#DB3E3E", animation, "r")); 
-                this._curves.push(new Curve("#51E22D", animation, "g")); 
-                this._curves.push(new Curve("#00A3FF", animation, "b")); 
-                this._curves.push(new Curve("#8700FF", animation, "a")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "r", () => new Color4())); 
+                this._curves.push(new Curve("#51E22D", animation, "g", () => new Color4())); 
+                this._curves.push(new Curve("#00A3FF", animation, "b", () => new Color4())); 
+                this._curves.push(new Curve("#8700FF", animation, "a", () => new Color4())); 
                 break;
         }
 
