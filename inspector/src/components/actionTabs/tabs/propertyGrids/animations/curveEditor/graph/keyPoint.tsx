@@ -1,3 +1,4 @@
+import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
@@ -342,6 +343,18 @@ IKeyPointComponentState
     public render() {
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
 
+        const inControlPoint = this.props.curve.getInControlPoint(this.props.keyId);        
+        const outControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);    
+        
+        let inVec = new Vector2(inControlPoint ? (this.props.convertX(inControlPoint.frame) - this.state.x) : 0, inControlPoint ? (this.props.convertY(inControlPoint.value) - this.state.y) : 0);
+        let outVec = new Vector2(outControlPoint ? (this.props.convertX(outControlPoint.frame) - this.state.x) : 0, outControlPoint ? (this.props.convertY(outControlPoint.value) - this.state.y) : 0);
+
+        inVec.normalize();
+        inVec.scaleInPlace(50);
+        
+        outVec.normalize();
+        outVec.scaleInPlace(50);
+
         return (
             <svg
                 ref={this._svgHost}
@@ -359,6 +372,37 @@ IKeyPointComponentState
                 height={`${16 * this.props.scale}`}
                 href={svgImageIcon}
             />
+            {
+                this.state.selectedState === SelectionState.Selected && 
+                <g>
+                    {
+                        inControlPoint !== null &&
+                        <line
+                            x1={0}
+                            y1={0}
+                            x2={`${inVec.x}px`}
+                            y2={`${inVec.y}px`}
+                            style={{
+                                stroke: "#F9BF00",
+                                strokeWidth: 1,
+                            }}>
+                        </line>
+                    }
+                    {
+                        outControlPoint !== null &&
+                        <line
+                            x1={0}
+                            y1={0}
+                            x2={`${outVec.x}px`}
+                            y2={`${outVec.y}px`}
+                            style={{
+                                stroke: "#F9BF00",
+                                strokeWidth: 1,
+                            }}>
+                        </line>
+                    }
+                </g>
+            }
         </svg>
         );
     }
