@@ -1,3 +1,4 @@
+import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
@@ -39,6 +40,13 @@ export enum SelectionState {
     Siblings
 }
 
+enum ControlMode {
+    None,
+    Key,
+    TangentLeft,
+    TangentRight
+}
+
 export class KeyPointComponent extends React.Component<
 IKeyPointComponentProps,
 IKeyPointComponentState
@@ -59,6 +67,11 @@ IKeyPointComponentState
     private _offsetYToMain: number;
     
     private _svgHost: React.RefObject<SVGSVGElement>;
+
+    private _controlMode = ControlMode.None;
+
+    private _currentLeftControlPoint: Nullable<{frame: number, value: number}>;
+    private _currentRightControlPoint: Nullable<{frame: number, value: number}>;
 
     constructor(props: IKeyPointComponentProps) {
         super(props);
@@ -278,6 +291,15 @@ IKeyPointComponentState
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
 
+        const target = evt.nativeEvent.target as HTMLElement;
+        if (target.tagName === "image") {
+            this._controlMode = ControlMode.Key;
+        } else if (target.classList.contains("left-tangent")) {
+            this._controlMode = ControlMode.TangentLeft;
+        } else if (target.classList.contains("right-tangent")) {
+            this._controlMode = ControlMode.TangentRight;
+        }
+
         evt.stopPropagation();
     }
 
@@ -286,49 +308,77 @@ IKeyPointComponentState
             return;
         }
 
-        let newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-        let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-        let previousX = this.props.getPreviousX();
-        let nextX = this.props.getNextX();
+        if (this._controlMode === ControlMode.TangentLeft) {
+            let currentX = this.props.convertX(this._currentLeftControlPoint!.frame);
+            let currentY = this.props.convertY(this._currentLeftControlPoint!.value);
+
+            let newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            let newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+
+            let newFrame = this.props.invertX(newX);
+            let newValue = this.props.invertY(newY);
+
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.forceUpdate();
+
+        } else if (this._controlMode === ControlMode.TangentRight) {
+            let currentX = this.props.convertX(this._currentRightControlPoint!.frame);
+            let currentY = this.props.convertY(this._currentRightControlPoint!.value);
+
+            let newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            let newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+
+            let newFrame = this.props.invertX(newX);
+            let newValue = this.props.invertY(newY);
+
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.forceUpdate();
+
+        } else if (this._controlMode === ControlMode.Key) {
+
+            let newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            let previousX = this.props.getPreviousX();
+            let nextX = this.props.getNextX();
 
 
-        if (previousX !== null) {
-            newX = Math.max(previousX, newX);
-        }
-
-        if (nextX !== null) {
-            newX = Math.min(nextX, newX);
-        }
-
-        if (this.props.keyId !== 0) {
-            let frame = this.props.invertX(newX);
-            this.props.onFrameValueChanged(frame);
-            this.props.context.onFrameSet.notifyObservers(frame);
-
-            if (newX !== this.state.x) {
-                this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+            if (previousX !== null) {
+                newX = Math.max(previousX, newX);
             }
-        } else {
-            newX = this.state.x;
+
+            if (nextX !== null) {
+                newX = Math.min(nextX, newX);
+            }
+
+            if (this.props.keyId !== 0) {
+                let frame = this.props.invertX(newX);
+                this.props.onFrameValueChanged(frame);
+                this.props.context.onFrameSet.notifyObservers(frame);
+
+                if (newX !== this.state.x) {
+                    this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+                }
+            } else {
+                newX = this.state.x;
+            }
+
+            let value = this.props.invertY(newY);
+            this.props.onKeyValueChanged(value);
+            this.props.context.onValueSet.notifyObservers(value);
+                
+            this.setState({x: newX, y: newY});
+
+            if (this.props.context.activeKeyPoints!.length > 1) {
+                setTimeout(() => {
+                    if (this.props.context.mainKeyPoint) {
+                        this.props.context.onMainKeyPointMoved.notifyObservers();
+                    }
+                });
+            }
         }
 
-        let value = this.props.invertY(newY);
-        this.props.onKeyValueChanged(value);
-        this.props.context.onValueSet.notifyObservers(value);
-              
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-
-        this.setState({x: newX, y: newY});
-
-        if (this.props.context.activeKeyPoints!.length > 1) {
-            setTimeout(() => {
-                if (this.props.context.mainKeyPoint) {
-                    this.props.context.onMainKeyPointMoved.notifyObservers();
-                }
-            });
-        }
-
         evt.stopPropagation();
     }
 
@@ -337,10 +387,18 @@ IKeyPointComponentState
         evt.currentTarget.releasePointerCapture(evt.pointerId);
 
         evt.stopPropagation();
+
+        this._controlMode = ControlMode.None;
     }
 
     public render() {
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
+
+        this._currentLeftControlPoint = this.props.curve.getInControlPoint(this.props.keyId);        
+        this._currentRightControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);    
+        
+        let inVec = new Vector2(this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
+        let outVec = new Vector2(this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
 
         return (
             <svg
@@ -357,8 +415,61 @@ IKeyPointComponentState
                 y={`-${8 * this.props.scale}`}
                 width={`${16 * this.props.scale}`}
                 height={`${16 * this.props.scale}`}
-                href={svgImageIcon}
+                href={svgImageIcon}                
             />
+            {
+                this.state.selectedState === SelectionState.Selected && 
+                <g>
+                    {
+                        this._currentLeftControlPoint !== null &&
+                        <>
+                            <line
+                                x1={0}
+                                y1={0}
+                                x2={`${inVec.x}px`}
+                                y2={`${inVec.y}px`}
+                                style={{
+                                    stroke: "#F9BF00",
+                                    strokeWidth: 1,
+                                }}>
+                            </line>
+                            <circle
+                                className="left-tangent"
+                                cx={`${inVec.x}px`}
+                                cy={`${inVec.y}px`}
+                                r="4"
+                                style={{
+                                    fill: "#F9BF00",
+                                }}>
+                            </circle>
+                        </>
+                    }
+                    {
+                        this._currentRightControlPoint !== null &&
+                        <>
+                            <line
+                                x1={0}
+                                y1={0}
+                                x2={`${outVec.x}px`}
+                                y2={`${outVec.y}px`}
+                                style={{
+                                    stroke: "#F9BF00",
+                                    strokeWidth: 1,
+                                }}>
+                            </line>                        
+                            <circle
+                                className="right-tangent"
+                                cx={`${outVec.x}px`}
+                                cy={`${outVec.y}px`}
+                                r="4"
+                                style={{
+                                    fill: "#F9BF00",
+                                }}>
+                            </circle>
+                        </>
+                    }
+                </g>
+            }
         </svg>
         );
     }
