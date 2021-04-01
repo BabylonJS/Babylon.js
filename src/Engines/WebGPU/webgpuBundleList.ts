@@ -94,6 +94,8 @@ export class WebGPUBundleList {
     private _currentItemIsBundle: boolean;
     private _currentBundleList: GPURenderBundle[];
 
+    public numDrawCalls = 0;
+
     public constructor(device: GPUDevice) {
         this._device = device;
         this._list = new Array(10);
@@ -153,6 +155,7 @@ export class WebGPUBundleList {
     public reset() {
         this._listLength = 0;
         this._currentItemIsBundle = false;
+        this.numDrawCalls = 0;
     }
 
     public clone(): WebGPUBundleList {
@@ -162,6 +165,7 @@ export class WebGPUBundleList {
 
         cloned._list = [];
         cloned._listLength = this._listLength;
+        cloned.numDrawCalls = this.numDrawCalls;
 
         for (let i = 0; i < this._listLength; ++i) {
             cloned._list.push(this._list[i].clone());
