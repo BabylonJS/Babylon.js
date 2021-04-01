@@ -98,7 +98,7 @@ declare module "../../Engines/engine" {
          * @param value True to enable, false to disable
          */
         captureGPUFrameTime(value: boolean): void;
-        
+
         /** @hidden */
         _currentNonTimestampToken: Nullable<_TimeToken>;
         /** @hidden */
@@ -335,7 +335,7 @@ Engine.prototype.captureGPUFrameTime = function (value: boolean) {
         this.onEndFrameObservable.remove(this._onEndFrameObserver);
         this._onEndFrameObserver = null;
     }
-}
+};
 
 Engine.prototype._getGlAlgorithmType = function(algorithmType: number): number {
     return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;

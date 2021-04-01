@@ -1014,7 +1014,6 @@ export class WebGPUEngine extends Engine {
         this._stencilRefsCurrent[index] = -1;
     }
 
-    
     private _mustUpdateStencilRef(renderPass: GPURenderPassEncoder): boolean {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
         const update = this._stencilState.stencilFuncRef !== this._stencilRefsCurrent[index];

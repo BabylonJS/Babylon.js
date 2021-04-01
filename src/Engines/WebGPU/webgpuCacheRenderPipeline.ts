@@ -969,7 +969,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 frontFace: this._frontFace === 1 ? WebGPUConstants.FrontFace.CCW : WebGPUConstants.FrontFace.CW,
                 cullMode: !this._cullEnabled ? WebGPUConstants.CullMode.None : this._cullFace === 2 ? WebGPUConstants.CullMode.Front : WebGPUConstants.CullMode.Back,
             },
-            fragment: !webgpuPipelineContext.stages!.fragmentStage ? undefined: {
+            fragment: !webgpuPipelineContext.stages!.fragmentStage ? undefined : {
                 module: webgpuPipelineContext.stages!.fragmentStage.module,
                 entryPoint: webgpuPipelineContext.stages!.fragmentStage.entryPoint,
                 targets: colorStates,
