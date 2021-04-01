@@ -173,6 +173,7 @@
 - Fix the NME `NormalBlend` block ([Popov72](https://github.com/Popov72))
 - Fix Compatibility with NPM 7 ([Sebavan](https://github.com/sebavan))
 - Fix for cloning meshes for 3D GUIs ([msDestiny14](https://github.com/msDestiny14))
+- Fix computation of min/max values in glTF loader when using normalized integers ([#10112](https://github.com/BabylonJS/Babylon.js/issues/10112)) ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

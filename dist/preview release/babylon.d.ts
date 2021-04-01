@@ -42312,6 +42312,7 @@ declare module BABYLON {
         private _loadingDivBackgroundColor;
         private _loadingDiv;
         private _loadingTextDiv;
+        private _style;
         /** Gets or sets the logo url to use for the default loading screen */
         static DefaultLogoUrl: string;
         /** Gets or sets the spinner url to use for the default loading screen */
@@ -55103,7 +55104,7 @@ declare module BABYLON {
          */
         onXRSessionEnded: Observable<any>;
         /**
-         * Fires when the xr session is ended either by the device or manually done
+         * Fires when the xr session is initialized: right after requestSession was called and returned with a successful result
          */
         onXRSessionInit: Observable<XRSession>;
         /**

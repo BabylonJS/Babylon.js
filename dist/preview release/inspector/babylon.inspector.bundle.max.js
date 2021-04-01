@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -117,7 +117,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findIconDefinition", function() { return findIconDefinition; });
 /*!
- * Font Awesome Free 5.15.0 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 5.15.3 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  */
 function _typeof(obj) {
@@ -1214,7 +1214,7 @@ var p = config.measurePerformance && PERFORMANCE && PERFORMANCE.mark && PERFORMA
   mark: noop$1,
   measure: noop$1
 };
-var preamble = "FA \"5.15.0\"";
+var preamble = "FA \"5.15.3\"";
 
 var begin = function begin(name) {
   p.mark("".concat(preamble, " ").concat(name, " begins"));
@@ -1290,35 +1290,6 @@ function toHex(unicode) {
   }
 
   return result;
-}
-function codePointAt(string, index) {
-  /*! https://mths.be/codepointat v0.2.0 by @mathias */
-  var size = string.length;
-  var first = string.charCodeAt(index);
-  var second;
-
-  if (first >= 0xD800 && first <= 0xDBFF && size > index + 1) {
-    second = string.charCodeAt(index + 1);
-
-    if (second >= 0xDC00 && second <= 0xDFFF) {
-      return (first - 0xD800) * 0x400 + second - 0xDC00 + 0x10000;
-    }
-  }
-
-  return first;
-}
-/**
- * Used to check that the character is between the E000..F8FF private unicode
- * range
- */
-
-function isPrivateUnicode(iconName) {
-  if (iconName.length !== 1) {
-    return false;
-  } else {
-    var cp = codePointAt(iconName, 0);
-    return cp >= 57344 && cp <= 63743;
-  }
 }
 
 function defineIcons(prefix, icons) {
@@ -1898,27 +1869,6 @@ var missing = {
 };
 
 var styles$2 = namespace.styles;
-function resolveCustomIconVersion() {
-  var kitConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var iconName = arguments.length > 1 ? arguments[1] : undefined;
-
-  if (iconName && isPrivateUnicode(iconName)) {
-    if (kitConfig && kitConfig.iconUploads) {
-      var iconUploads = kitConfig.iconUploads;
-      var descriptiveIconName = Object.keys(iconUploads).find(function (key) {
-        return iconUploads[key] && iconUploads[key].u && iconUploads[key].u === toHex(iconName);
-      });
-
-      if (descriptiveIconName) {
-        return iconUploads[descriptiveIconName].v;
-      }
-    }
-  } else {
-    if (kitConfig && kitConfig.iconUploads && kitConfig.iconUploads[iconName] && kitConfig.iconUploads[iconName].v) {
-      return kitConfig.iconUploads[iconName].v;
-    }
-  }
-}
 function asFoundIcon(icon) {
   var width = icon[0];
   var height = icon[1];
@@ -1980,12 +1930,6 @@ function findIcon(iconName, prefix) {
     if (iconName && prefix && styles$2[prefix] && styles$2[prefix][iconName]) {
       var icon = styles$2[prefix][iconName];
       return resolve(asFoundIcon(icon));
-    }
-    var kitToken = null;
-    var iconVersion = resolveCustomIconVersion(WINDOW.FontAwesomeKitConfig, iconName);
-
-    if (WINDOW.FontAwesomeKitConfig && WINDOW.FontAwesomeKitConfig.token) {
-      kitToken = WINDOW.FontAwesomeKitConfig.token;
     }
 
     if (iconName && prefix && !config.showMissingIcons) {
@@ -10992,9 +10936,12 @@ function log () {
   }
 }
 
-// Normalize icon arguments
 function normalizeIconArgs(icon) {
-  // if the icon is null, there's nothing to do
+  if (_fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].icon) {
+    return _fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].icon(icon);
+  } // if the icon is null, there's nothing to do
+
+
   if (icon === null) {
     return null;
   } // if the icon is an object and has a prefix and an icon name, return it
@@ -11041,14 +10988,16 @@ function FontAwesomeIcon(_ref) {
       maskArgs = props.mask,
       symbol = props.symbol,
       className = props.className,
-      title = props.title;
+      title = props.title,
+      titleId = props.titleId;
   var iconLookup = normalizeIconArgs(iconArgs);
   var classes = objectWithKey('classes', [].concat(_toConsumableArray(classList(props)), _toConsumableArray(className.split(' '))));
   var transform = objectWithKey('transform', typeof props.transform === 'string' ? _fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].transform(props.transform) : props.transform);
   var mask = objectWithKey('mask', normalizeIconArgs(maskArgs));
   var renderedIcon = Object(_fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["icon"])(iconLookup, _objectSpread2({}, classes, {}, transform, {}, mask, {
     symbol: symbol,
-    title: title
+    title: title,
+    titleId: titleId
   }));
 
   if (!renderedIcon) {
@@ -11122,7 +11071,7 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-  Copyright (c) 2017 Jed Watson.
+  Copyright (c) 2018 Jed Watson.
   Licensed under the MIT License (MIT), see
   http://jedwatson.github.io/classnames
 */
@@ -11133,7 +11082,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 
 	var hasOwn = {}.hasOwnProperty;
 
-	function classNames () {
+	function classNames() {
 		var classes = [];
 
 		for (var i = 0; i < arguments.length; i++) {
@@ -11144,16 +11093,22 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 
 			if (argType === 'string' || argType === 'number') {
 				classes.push(arg);
-			} else if (Array.isArray(arg) && arg.length) {
-				var inner = classNames.apply(null, arg);
-				if (inner) {
-					classes.push(inner);
+			} else if (Array.isArray(arg)) {
+				if (arg.length) {
+					var inner = classNames.apply(null, arg);
+					if (inner) {
+						classes.push(inner);
+					}
 				}
 			} else if (argType === 'object') {
-				for (var key in arg) {
-					if (hasOwn.call(arg, key) && arg[key]) {
-						classes.push(key);
+				if (arg.toString === Object.prototype.toString) {
+					for (var key in arg) {
+						if (hasOwn.call(arg, key) && arg[key]) {
+							classes.push(key);
+						}
 					}
+				} else {
+					classes.push(arg.toString());
 				}
 			}
 		}
@@ -44454,7 +44409,7 @@ function applyToTag(style, options, obj) {
     style.removeAttribute('media');
   }
 
-  if (sourceMap && btoa) {
+  if (sourceMap && typeof btoa !== 'undefined') {
     css += "\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))), " */");
   } // For old IE
 
@@ -47612,12 +47567,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 
 var Curve = /** @class */ (function () {
-    function Curve(color, animation, property) {
+    function Curve(color, animation, property, tangentBuilder) {
         this.keys = new Array();
         this.onDataUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.color = color;
         this.animation = animation;
         this.property = property;
+        this.tangentBuilder = tangentBuilder;
     }
     Curve.prototype.gePathData = function (convertX, convertY) {
         var keys = this.keys;
@@ -47628,7 +47584,6 @@ var Curve = /** @class */ (function () {
         for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
             var outTangent = keys[keyIndex - 1].outTangent || 0;
             var inTangent = keys[keyIndex].inTangent || 0;
-            //if (inTangent && outTangent) {
             var prevFrame = keys[keyIndex - 1].frame;
             var currentFrame = keys[keyIndex].frame;
             var prevValue = keys[keyIndex - 1].value;
@@ -47638,11 +47593,92 @@ var Curve = /** @class */ (function () {
             var controlPoint0Value = prevValue + outTangent / 3;
             var controlPoint1Value = currentValue - inTangent / 3;
             pathData += " C" + convertX(controlPoint0Frame) + " " + convertY(controlPoint0Value) + ", " + convertX(controlPoint1Frame) + " " + convertY(controlPoint1Value) + ", " + convertX(currentFrame) + " " + convertY(currentValue);
-            //} else {
-            //pathData += ` L${convertX(keys[keyIndex].frame)} ${convertY(keys[keyIndex].value)}`;
-            // }
         }
         return pathData;
+    };
+    Curve.prototype.getInControlPoint = function (keyIndex) {
+        if (keyIndex === 0) {
+            return null;
+        }
+        var keys = this.keys;
+        var inTangent = keys[keyIndex].inTangent;
+        if (inTangent) {
+            var prevFrame = keys[keyIndex - 1].frame;
+            var currentFrame = keys[keyIndex].frame;
+            var currentValue = keys[keyIndex].value;
+            var frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
+            var value = currentValue - inTangent / 3;
+            return {
+                frame: frame,
+                value: value
+            };
+        }
+        else {
+            var prevFrame = keys[keyIndex - 1].frame;
+            var prevValue = keys[keyIndex - 1].value;
+            var currentFrame = keys[keyIndex].frame;
+            var currentValue = keys[keyIndex].value;
+            return {
+                frame: prevFrame + (currentFrame - prevFrame) / 2,
+                value: prevValue + (currentValue - prevValue) / 2
+            };
+        }
+    };
+    Curve.prototype.getOutControlPoint = function (keyIndex) {
+        var keys = this.keys;
+        if (keyIndex === keys.length - 1) {
+            return null;
+        }
+        var outTangent = keys[keyIndex].outTangent;
+        if (outTangent) {
+            var prevFrame = keys[keyIndex].frame;
+            var prevValue = keys[keyIndex].value;
+            var currentFrame = keys[keyIndex + 1].frame;
+            var frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
+            var value = prevValue + outTangent / 3;
+            return {
+                frame: frame,
+                value: value
+            };
+        }
+        else {
+            var prevFrame = keys[keyIndex].frame;
+            var prevValue = keys[keyIndex].value;
+            var currentFrame = keys[keyIndex + 1].frame;
+            var currentValue = keys[keyIndex + 1].value;
+            return {
+                frame: prevFrame + (currentFrame - prevFrame) / 2,
+                value: prevValue + (currentValue - prevValue) / 2
+            };
+        }
+    };
+    Curve.prototype.updateInTangentFromControlPoint = function (keyId, frame, value) {
+        var slope = (this.keys[keyId].value - value) / (this.keys[keyId].frame - frame);
+        this.keys[keyId].inTangent = slope * (this.keys[keyId].frame - this.keys[keyId - 1].frame);
+        if (this.property) {
+            if (!this.animation.getKeys()[keyId].inTangent) {
+                this.animation.getKeys()[keyId].inTangent = this.tangentBuilder();
+            }
+            this.animation.getKeys()[keyId].inTangent[this.property] = this.keys[keyId].inTangent;
+        }
+        else {
+            this.animation.getKeys()[keyId].inTangent = this.keys[keyId].inTangent;
+        }
+        this.onDataUpdatedObservable.notifyObservers();
+    };
+    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, frame, value) {
+        var slope = (value - this.keys[keyId].value) / (frame - this.keys[keyId].frame);
+        this.keys[keyId].outTangent = slope * (this.keys[keyId + 1].frame - this.keys[keyId].frame);
+        if (this.property) {
+            if (!this.animation.getKeys()[keyId].outTangent) {
+                this.animation.getKeys()[keyId].outTangent = this.tangentBuilder();
+            }
+            this.animation.getKeys()[keyId].outTangent[this.property] = this.keys[keyId].outTangent;
+        }
+        else {
+            this.animation.getKeys()[keyId].outTangent = this.keys[keyId].outTangent;
+        }
+        this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyFrame = function (keyId, frame) {
         this.keys[keyId].frame = frame;
@@ -47852,6 +47888,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var GraphComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphComponent, _super);
     function GraphComponent(props) {
@@ -47981,29 +48019,29 @@ var GraphComponent = /** @class */ (function (_super) {
                 this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
                 break;
         }
         var values = this._extractValuesFromKeys(keys, animation.dataType, true);
@@ -48411,8 +48449,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SelectionState", function() { return SelectionState; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KeyPointComponent", function() { return KeyPointComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 var keyInactive = __webpack_require__(/*! ../assets/keyInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/keyInactiveIcon.svg");
@@ -48424,12 +48465,20 @@ var SelectionState;
     SelectionState[SelectionState["Selected"] = 1] = "Selected";
     SelectionState[SelectionState["Siblings"] = 2] = "Siblings";
 })(SelectionState || (SelectionState = {}));
+var ControlMode;
+(function (ControlMode) {
+    ControlMode[ControlMode["None"] = 0] = "None";
+    ControlMode[ControlMode["Key"] = 1] = "Key";
+    ControlMode[ControlMode["TangentLeft"] = 2] = "TangentLeft";
+    ControlMode[ControlMode["TangentRight"] = 3] = "TangentRight";
+})(ControlMode || (ControlMode = {}));
 var KeyPointComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(KeyPointComponent, _super);
     function KeyPointComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._controlMode = ControlMode.None;
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y };
-        _this._svgHost = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._onSelectionRectangleMovedObserver = _this.props.context.onSelectionRectangleMoved.add(function (rect1) {
             var rect2 = _this._svgHost.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left ||
@@ -48610,6 +48659,16 @@ var KeyPointComponent = /** @class */ (function (_super) {
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
+        var target = evt.nativeEvent.target;
+        if (target.tagName === "image") {
+            this._controlMode = ControlMode.Key;
+        }
+        else if (target.classList.contains("left-tangent")) {
+            this._controlMode = ControlMode.TangentLeft;
+        }
+        else if (target.classList.contains("right-tangent")) {
+            this._controlMode = ControlMode.TangentRight;
+        }
         evt.stopPropagation();
     };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
@@ -48617,55 +48676,102 @@ var KeyPointComponent = /** @class */ (function (_super) {
         if (!this._pointerIsDown || this.state.selectedState !== SelectionState.Selected) {
             return;
         }
-        var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-        var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-        var previousX = this.props.getPreviousX();
-        var nextX = this.props.getNextX();
-        if (previousX !== null) {
-            newX = Math.max(previousX, newX);
+        if (this._controlMode === ControlMode.TangentLeft) {
+            var currentX = this.props.convertX(this._currentLeftControlPoint.frame);
+            var currentY = this.props.convertY(this._currentLeftControlPoint.value);
+            var newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            var newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            var newFrame = this.props.invertX(newX);
+            var newValue = this.props.invertY(newY);
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.forceUpdate();
         }
-        if (nextX !== null) {
-            newX = Math.min(nextX, newX);
+        else if (this._controlMode === ControlMode.TangentRight) {
+            var currentX = this.props.convertX(this._currentRightControlPoint.frame);
+            var currentY = this.props.convertY(this._currentRightControlPoint.value);
+            var newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            var newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            var newFrame = this.props.invertX(newX);
+            var newValue = this.props.invertY(newY);
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.forceUpdate();
         }
-        if (this.props.keyId !== 0) {
-            var frame = this.props.invertX(newX);
-            this.props.onFrameValueChanged(frame);
-            this.props.context.onFrameSet.notifyObservers(frame);
-            if (newX !== this.state.x) {
-                this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+        else if (this._controlMode === ControlMode.Key) {
+            var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            var previousX = this.props.getPreviousX();
+            var nextX = this.props.getNextX();
+            if (previousX !== null) {
+                newX = Math.max(previousX, newX);
+            }
+            if (nextX !== null) {
+                newX = Math.min(nextX, newX);
+            }
+            if (this.props.keyId !== 0) {
+                var frame = this.props.invertX(newX);
+                this.props.onFrameValueChanged(frame);
+                this.props.context.onFrameSet.notifyObservers(frame);
+                if (newX !== this.state.x) {
+                    this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+                }
+            }
+            else {
+                newX = this.state.x;
+            }
+            var value = this.props.invertY(newY);
+            this.props.onKeyValueChanged(value);
+            this.props.context.onValueSet.notifyObservers(value);
+            this.setState({ x: newX, y: newY });
+            if (this.props.context.activeKeyPoints.length > 1) {
+                setTimeout(function () {
+                    if (_this.props.context.mainKeyPoint) {
+                        _this.props.context.onMainKeyPointMoved.notifyObservers();
+                    }
+                });
             }
         }
-        else {
-            newX = this.state.x;
-        }
-        var value = this.props.invertY(newY);
-        this.props.onKeyValueChanged(value);
-        this.props.context.onValueSet.notifyObservers(value);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-        this.setState({ x: newX, y: newY });
-        if (this.props.context.activeKeyPoints.length > 1) {
-            setTimeout(function () {
-                if (_this.props.context.mainKeyPoint) {
-                    _this.props.context.onMainKeyPointMoved.notifyObservers();
-                }
-            });
-        }
         evt.stopPropagation();
     };
     KeyPointComponent.prototype._onPointerUp = function (evt) {
         this._pointerIsDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
         evt.stopPropagation();
+        this._controlMode = ControlMode.None;
     };
     KeyPointComponent.prototype.render = function () {
         var _this = this;
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { ref: this._svgHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, href: svgImageIcon })));
+        this._currentLeftControlPoint = this.props.curve.getInControlPoint(this.props.keyId);
+        this._currentRightControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);
+        var inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
+        var outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("svg", { ref: this._svgHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, href: svgImageIcon }),
+            this.state.selectedState === SelectionState.Selected &&
+                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("g", null,
+                    this._currentLeftControlPoint !== null &&
+                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: inVec.x + "px", y2: inVec.y + "px", style: {
+                                    stroke: "#F9BF00",
+                                    strokeWidth: 1,
+                                } }),
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: inVec.x + "px", cy: inVec.y + "px", r: "4", style: {
+                                    fill: "#F9BF00",
+                                } })),
+                    this._currentRightControlPoint !== null &&
+                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: outVec.x + "px", y2: outVec.y + "px", style: {
+                                    stroke: "#F9BF00",
+                                    strokeWidth: 1,
+                                } }),
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: outVec.x + "px", cy: outVec.y + "px", r: "4", style: {
+                                    fill: "#F9BF00",
+                                } })))));
     };
     return KeyPointComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+}(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
 
 
 
@@ -51880,7 +51986,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -63671,7 +63777,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -63978,7 +64084,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -64395,7 +64501,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -64734,14 +64840,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/image":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 
