@@ -641,6 +641,14 @@ declare module INSPECTOR {
         property?: string;
         constructor(color: string, animation: BABYLON.Animation, property?: string);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
+        getInControlPoint(keyIndex: number): {
+            frame: number;
+            value: number;
+        } | null;
+        getOutControlPoint(keyIndex: number): {
+            frame: number;
+            value: number;
+        } | null;
         updateKeyFrame(keyId: number, frame: number): void;
         updateKeyValue(keyId: number, value: number): void;
     }
