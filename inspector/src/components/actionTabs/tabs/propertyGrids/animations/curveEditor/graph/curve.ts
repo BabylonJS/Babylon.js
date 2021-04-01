@@ -22,7 +22,7 @@ export class Curve {
     }
 
     public gePathData(convertX: (x: number) => number, convertY: (y: number) => number, ) {
-        let keys = this.keys;
+        const keys = this.keys;
         if (keys.length < 2) {
             return "";
         }
@@ -33,25 +33,60 @@ export class Curve {
             const outTangent = keys[keyIndex - 1].outTangent || 0;
             const inTangent = keys[keyIndex].inTangent || 0;
 
-            //if (inTangent && outTangent) {
-                const prevFrame = keys[keyIndex - 1].frame;
-                const currentFrame = keys[keyIndex].frame;
-                const prevValue = keys[keyIndex - 1].value;
-                const currentValue = keys[keyIndex].value;
+            const prevFrame = keys[keyIndex - 1].frame;
+            const currentFrame = keys[keyIndex].frame;
+            const prevValue = keys[keyIndex - 1].value;
+            const currentValue = keys[keyIndex].value;
 
-                const controlPoint0Frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
-                const controlPoint1Frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
+            const controlPoint0Frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
+            const controlPoint1Frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
 
-                const controlPoint0Value = prevValue + outTangent / 3;
-                const controlPoint1Value = currentValue - inTangent / 3;
+            const controlPoint0Value = prevValue + outTangent / 3;
+            const controlPoint1Value = currentValue - inTangent / 3;
 
-                pathData += ` C${convertX(controlPoint0Frame)} ${convertY(controlPoint0Value)}, ${convertX(controlPoint1Frame)} ${convertY(controlPoint1Value)}, ${convertX(currentFrame)} ${convertY(currentValue)}`;
-            //} else {
-                //pathData += ` L${convertX(keys[keyIndex].frame)} ${convertY(keys[keyIndex].value)}`;
-           // }
+            pathData += ` C${convertX(controlPoint0Frame)} ${convertY(controlPoint0Value)}, ${convertX(controlPoint1Frame)} ${convertY(controlPoint1Value)}, ${convertX(currentFrame)} ${convertY(currentValue)}`;
         }
 
         return pathData;
+    }
+
+    public getInControlPoint(keyIndex: number) {
+        if (keyIndex === 0) {
+            return null;
+        }
+
+        const keys = this.keys;
+        const inTangent = keys[keyIndex].inTangent || 0;
+        const prevFrame = keys[keyIndex - 1].frame;
+        const currentFrame = keys[keyIndex].frame;
+        const currentValue = keys[keyIndex].value;
+
+        const frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
+        const value = currentValue - inTangent / 3;
+
+        return {
+            frame: frame,
+            value: value
+        }
+    }
+
+    public getOutControlPoint(keyIndex: number) {
+        const keys = this.keys;        
+        if (keyIndex === keys.length - 1) {
+            return null;
+        }
+        const outTangent = keys[keyIndex].outTangent || 0;
+        const prevFrame = keys[keyIndex].frame;        
+        const prevValue = keys[keyIndex].value;
+        const currentFrame = keys[keyIndex + 1].frame;
+
+        const frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
+        const value = prevValue + outTangent / 3;
+
+        return {
+            frame: frame,
+            value: value
+        }
     }
 
     public updateKeyFrame(keyId: number, frame: number) {
