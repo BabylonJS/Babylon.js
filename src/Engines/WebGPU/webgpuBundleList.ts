@@ -1,5 +1,6 @@
 import { Nullable } from "../../types";
 
+/** @hidden */
 interface IWebGPURenderItem {
     run(renderPass: GPURenderPassEncoder): void;
     clone(): IWebGPURenderItem;
