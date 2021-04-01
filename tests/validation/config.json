@@ -405,16 +405,14 @@
         },
         {
             "title": "Shadow depth wrappers",
-            "playgroundId": "#PNQRY1#9",
+            "playgroundId": "#PNQRY1#73",
             "referenceImage": "shadowDepthWrappers.png",
             "renderCount": 20
         },
         {
             "title": "Displacement map",
-            "scriptToRun": "/Demos/DisplacementMap/displacementMap.js",
-            "functionToCall": "CreateDisplacementTestScene",
-            "referenceImage": "displacementMap.png",
-            "replace": "/Scenes/Customs/skybox/, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Assets/skybox/"
+            "playgroundId": "#WZ8JL4#0",
+            "referenceImage": "displacementMap.png"
         },
         {
             "title": "Normals",

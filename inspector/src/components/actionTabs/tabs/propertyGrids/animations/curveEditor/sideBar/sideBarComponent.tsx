@@ -4,6 +4,9 @@ import { ActionButtonComponent } from "../controls/actionButtonComponent";
 import { Context } from "../context";
 import { AnimationListComponent } from "./animationListComponent";
 import { TextInputComponent } from "../controls/textInputComponent";
+import { SaveAnimationComponent } from "./saveAnimationComponent";
+import { LoadAnimationComponent } from "./loadAnimationComponent";
+import { AddAnimationComponent } from "./addAnimationComponent";
 
 require("../scss/sideBar.scss");
 
@@ -51,6 +54,8 @@ ISideBarComponentState
                 this.forceUpdate();
             }
         });
+
+        this.props.context.onAnimationsLoaded.add(() => this.setState({mode: Mode.Edit}));
     }
 
     private _onAddAnimation() {
@@ -122,6 +127,18 @@ ISideBarComponentState
                 {
                     this.state.mode === Mode.Edit &&
                     <AnimationListComponent globalState={this.props.globalState} context={this.props.context} />
+                }
+                {
+                    this.state.mode === Mode.Save &&
+                    <SaveAnimationComponent globalState={this.props.globalState} context={this.props.context} />
+                }                
+                {
+                    this.state.mode === Mode.Load &&
+                    <LoadAnimationComponent globalState={this.props.globalState} context={this.props.context} />
+                }               
+                {
+                    this.state.mode === Mode.Add &&
+                    <AddAnimationComponent globalState={this.props.globalState} context={this.props.context} />
                 }
             </div>
         );
