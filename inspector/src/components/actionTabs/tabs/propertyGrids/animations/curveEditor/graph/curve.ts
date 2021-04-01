@@ -14,11 +14,13 @@ export class Curve {
     public color: string;
     public onDataUpdatedObservable = new Observable<void>();
     public property?: string;
+    public tangentBuilder?: () => any;
 
-    public constructor(color: string, animation: Animation, property?: string) {
+    public constructor(color: string, animation: Animation, property?: string, tangentBuilder?: () => any) {
         this.color = color;
         this.animation = animation;
         this.property = property;
+        this.tangentBuilder = tangentBuilder;
     }
 
     public gePathData(convertX: (x: number) => number, convertY: (y: number) => number, ) {
@@ -113,6 +115,40 @@ export class Curve {
                 value: prevValue + (currentValue - prevValue) / 2
             }
         }
+    }
+
+    public updateInTangentFromControlPoint(keyId: number, frame: number, value: number) {
+        const slope = (this.keys[keyId].value - value) / (this.keys[keyId].frame - frame);
+        this.keys[keyId].inTangent = slope * (this.keys[keyId].frame - this.keys[keyId - 1].frame);
+
+        if (this.property) {
+            if (!this.animation.getKeys()[keyId].inTangent) {
+                this.animation.getKeys()[keyId].inTangent = this.tangentBuilder!();
+            }
+
+            this.animation.getKeys()[keyId].inTangent[this.property] = this.keys[keyId].inTangent;
+        } else {
+            this.animation.getKeys()[keyId].inTangent = this.keys[keyId].inTangent;
+        }
+
+        this.onDataUpdatedObservable.notifyObservers();
+    }
+
+    public updateOutTangentFromControlPoint(keyId: number, frame: number, value: number) {
+        const slope = (value - this.keys[keyId].value) / (frame - this.keys[keyId].frame);
+        this.keys[keyId].outTangent = slope * (this.keys[keyId + 1].frame - this.keys[keyId].frame);
+
+        if (this.property) {
+            if (!this.animation.getKeys()[keyId].outTangent) {
+                this.animation.getKeys()[keyId].outTangent = this.tangentBuilder!();
+            }
+
+            this.animation.getKeys()[keyId].outTangent[this.property] = this.keys[keyId].outTangent;
+        } else {
+            this.animation.getKeys()[keyId].outTangent = this.keys[keyId].outTangent;
+        }
+
+        this.onDataUpdatedObservable.notifyObservers();
     }
 
     public updateKeyFrame(keyId: number, frame: number) {
