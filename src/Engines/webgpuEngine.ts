@@ -275,11 +275,39 @@ export class WebGPUEngine extends Engine {
     private _snapshotRenderingRecordBundles = false;
     private _snapshotRenderingPlayBundles = false;
     private _snapshotRenderingMainPassBundleList: WebGPUBundleList[] = [];
+    private _snapshotRenderingModeSaved: number;
 
-    public activateSnapshotRendering(activate = true): void {
+    /**
+     * Gets or sets the snapshot rendering mode
+     */
+     public get snapshotRenderingMode(): number {
+        return this._snapshotRenderingMode;
+    }
+
+    public set snapshotRenderingMode(mode: number) {
+        if (this._snapshotRenderingRecordBundles) {
+            this._snapshotRenderingModeSaved = mode;
+        } else {
+            this._snapshotRenderingMode = mode;
+        }
+    }
+
+    /**
+     * Enables or disables the snapshot rendering mode
+     * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
+     */
+     public get snapshotRendering(): boolean {
+        return this._snapshotRenderingEnabled;
+    }
+
+    public set snapshotRendering(activate) {
         this._snapshotRenderingMainPassBundleList.length = 0;
-        this._snapshotRenderingRecordBundles = activate;
+        this._snapshotRenderingRecordBundles = this._snapshotRenderingEnabled = activate;
         this._snapshotRenderingPlayBundles = false;
+        if (activate) {
+            this._snapshotRenderingModeSaved = this._snapshotRenderingMode;
+            this._snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD; // need to reset to standard for the recording pass to avoid some code being bypassed
+        }
     }
 
     /**
@@ -2951,11 +2979,15 @@ export class WebGPUEngine extends Engine {
             this._snapshotRenderingMainPassBundleList.push(this._bundleList.clone());
             this._snapshotRenderingRecordBundles = false;
             this._snapshotRenderingPlayBundles = true;
+            this._snapshotRenderingMode = this._snapshotRenderingModeSaved;
         }
 
         if (this._mainRenderPassWrapper.renderPass !== null && this._snapshotRenderingPlayBundles) {
             for (let i = 0; i < this._snapshotRenderingMainPassBundleList.length; ++i) {
                 this._snapshotRenderingMainPassBundleList[i].run(this._mainRenderPassWrapper.renderPass);
+                if (this._snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+                    this._reportDrawCall(this._snapshotRenderingMainPassBundleList[i].numDrawCalls);
+                }
             }
         }
 
@@ -3170,6 +3202,9 @@ export class WebGPUEngine extends Engine {
             const gpuWrapper = this._currentRenderTarget!._hardwareTexture as WebGPUHardwareTexture;
             if (this._snapshotRenderingPlayBundles) {
                 gpuWrapper._bundleLists[gpuWrapper._currentLayer]?.run(this._currentRenderPass);
+                if (this._snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+                    this._reportDrawCall(gpuWrapper._bundleLists[gpuWrapper._currentLayer]?.numDrawCalls);
+                }
             } else if (this._snapshotRenderingRecordBundles) {
                 if (!gpuWrapper._bundleLists) {
                     gpuWrapper._bundleLists = [];
@@ -3385,6 +3420,11 @@ export class WebGPUEngine extends Engine {
         }
 
         this._currentRenderPass = null; // lazy creation of the render pass, hoping the render pass will be created by a call to clear()...
+
+        if (this.snapshotRendering && this.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            // force the creation of the render pass as we know in fast snapshot rendering mode clear() won't be called
+            this._getCurrentRenderPass();
+        }
 
         if (this._cachedViewport && !forceFullscreenViewport) {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
@@ -3680,13 +3720,14 @@ export class WebGPUEngine extends Engine {
                 this._bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));
             }
 
-            if (useFastPath) {
+            if (!this._snapshotRenderingRecordBundles) {
                 this._bundleList.addBundle(this._currentDrawContext!.fastBundle);
                 this._reportDrawCall();
                 return;
             }
 
             renderPass2 = this._bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount); // for snapshot recording mode
+            this._bundleList.numDrawCalls++;
         }
 
         if (webgpuPipelineContext.uniformBuffer) {
@@ -3748,7 +3789,7 @@ export class WebGPUEngine extends Engine {
             renderPass2.draw(count, instancesCount || 1, start, 0);
         }
 
-        if (!this.compatibilityMode && this._currentDrawContext) {
+        if (!this.compatibilityMode && this._currentDrawContext && !this._snapshotRenderingRecordBundles) {
             this._currentDrawContext.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
             this._bundleList.addBundle(this._currentDrawContext.fastBundle);
         }

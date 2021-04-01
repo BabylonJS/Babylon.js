@@ -65,7 +65,6 @@ declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Collider = import("./Collisions/collider").Collider;
-declare type WebGPUEngine = import("./Engines/webgpuEngine").WebGPUEngine;
 declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 
 /**
@@ -1393,8 +1392,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * an optional map from Geometry Id to Geometry index in the 'geometries' array
      */
     private geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
-
-    private _renderBundles: Nullable<GPURenderBundle[]> = null;
 
     /**
      * Creates a new Scene
@@ -3524,6 +3521,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _evaluateActiveMeshes(): void {
+        if (this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            if (this._activeMeshes.length > 0) {
+                this.activeCamera?._activeMeshes.reset();
+                this._activeMeshes.reset();
+                this._renderingManager.reset();
+                this._processedMaterials.reset();
+                this._activeParticleSystems.reset();
+                this._activeSkeletons.reset();
+                this._softwareSkinnedMeshes.reset();
+            }
+            return;
+        }
+
         if (this._activeMeshesFrozen && this._activeMeshes.length) {
 
             if (!this._skipEvaluateActiveMeshesCompletely) {
@@ -3818,6 +3828,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
+        if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            MaterialHelper.FinalizeSceneUbo(this);
+        }
         this._renderingManager.render(null, null, true, true);
         this.onAfterDrawPhaseObservable.notifyObservers(this);
 
@@ -4057,40 +4070,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onBeforeRenderObservable.notifyObservers(this);
 
         var engine = this.getEngine();
-        if (engine.isWebGPU) {
-            const webgpuEngine = (engine as WebGPUEngine);
-            if (this._activeMeshesFrozen) {
-                if (this.activeCameras?.length) {
-                    for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                        const camera = this.activeCameras[cameraIndex];
-                        this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
-                    }
-                }
-                else {
-                    const camera = this.activeCamera!;
-                    this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
-                }
-
-                if (this._renderBundles) {
-                    this._clear();
-                    MaterialHelper.FinalizeSceneUbo(this);
-                    webgpuEngine.executeBundles(this._renderBundles);
-                    return;
-                }
-
-                webgpuEngine.startRecordBundle();
-                webgpuEngine.onEndFrameObservable.addOnce(() => {
-                    this._renderBundles = [ webgpuEngine.stopRecordBundle() ];
-                    // TODO. WEBGPU. Frame lost.
-                    // webgpuEngine.executeBundles(this._renderBundles);
-                });
-            }
-            else {
-                if (this._renderBundles) {
-                    this._renderBundles = null;
-                }
-            }
-        }
 
         // Customs render targets
         this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
@@ -4229,8 +4208,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Releases all held ressources
      */
     public dispose(): void {
-        this._renderBundles = null;
-
         this.beforeRender = null;
         this.afterRender = null;
 
