@@ -24,7 +24,6 @@ import { DepthReducer } from '../../Misc/depthReducer';
 
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from '../../Engines/engineStore';
-import { MaterialHelper } from "../../Materials/materialHelper";
 
 interface ICascade {
     prevBreakDistance: number;
@@ -822,7 +821,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             }
             this._scene.setTransformMatrix(this.getCascadeViewMatrix(layer)!, this.getCascadeProjectionMatrix(layer)!);
             if (this._useUBO) {
-                MaterialHelper.FinalizeSceneUbo(this._scene);
+                Scene.FinalizeSceneUbo(this._scene);
             }
         });
 

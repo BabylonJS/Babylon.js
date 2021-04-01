@@ -753,7 +753,7 @@ export class ShaderMaterial extends Material {
                         }
                         break;
                     case "Scene":
-                        MaterialHelper.FinalizeSceneUbo(this.getScene());
+                        Scene.FinalizeSceneUbo(this.getScene());
                         MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
                         useSceneUBO = true;
                         break;

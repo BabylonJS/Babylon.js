@@ -6,7 +6,7 @@ import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Vector2, Vector3, Matrix } from "./Maths/math.vector";
+import { Vector2, Vector3, Matrix, TmpVectors, Vector4 } from "./Maths/math.vector";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -21,7 +21,6 @@ import { AbstractScene } from "./abstractScene";
 import { BaseTexture } from "./Materials/Textures/baseTexture";
 import { Texture } from "./Materials/Textures/texture";
 import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
-import { Material } from "./Materials/material";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { Effect } from "./Materials/effect";
 import { UniformBuffer } from "./Materials/uniformBuffer";
@@ -56,7 +55,7 @@ import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
-import { MaterialHelper } from "./Materials/materialHelper";
+import { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -66,6 +65,7 @@ declare type AnimationGroup = import("./Animations/animationGroup").AnimationGro
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Collider = import("./Collisions/collider").Collider;
 declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
+declare type Material = import("./Materials/material").Material;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -761,6 +761,54 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     public static set ExclusiveDoubleClickMode(value: boolean) {
         InputManager.ExclusiveDoubleClickMode = value;
+    }
+
+    /**
+     * Bind the current view position to an effect.
+     * @param effect The effect to be bound
+     * @param scene The scene the eyes position is used from
+     * @param variableName name of the shader variable that will hold the eye position
+     * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
+     * @return the computed eye position
+     */
+     public static BindEyePosition(effect: Nullable<Effect>, scene: Scene, variableName = "vEyePosition", isVector3 = false): Vector4 {
+        const eyePosition =
+            scene._forcedViewPosition ? scene._forcedViewPosition :
+            scene._mirroredCameraPosition ? scene._mirroredCameraPosition :
+            scene.activeCamera!.globalPosition ?? (scene.activeCamera as WebVRFreeCamera).devicePosition;
+
+        const invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
+
+        TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+
+        if (effect) {
+            if (isVector3) {
+                effect.setFloat3(variableName, TmpVectors.Vector4[0].x, TmpVectors.Vector4[0].y, TmpVectors.Vector4[0].z);
+            } else {
+                effect.setVector4(variableName, TmpVectors.Vector4[0]);
+            }
+        }
+
+        return TmpVectors.Vector4[0];
+    }
+
+    /**
+     * Update the scene ubo before it can be used in rendering processing
+     * @param scene the scene to retrieve the ubo from
+     * @returns the scene UniformBuffer
+     */
+    public static FinalizeSceneUbo(scene: Scene): UniformBuffer {
+        const ubo = scene.getSceneUniformBuffer();
+        const eyePosition = Scene.BindEyePosition(null, scene);
+        ubo.updateFloat4("vEyePosition",
+            eyePosition.x,
+            eyePosition.y,
+            eyePosition.z,
+            eyePosition.w);
+
+        ubo.update();
+
+        return ubo;
     }
 
     // Mirror
@@ -3829,7 +3877,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
         if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
-            MaterialHelper.FinalizeSceneUbo(this);
+            Scene.FinalizeSceneUbo(this);
         }
         this._renderingManager.render(null, null, true, true);
         this.onAfterDrawPhaseObservable.notifyObservers(this);
