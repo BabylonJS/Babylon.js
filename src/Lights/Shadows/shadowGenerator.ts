@@ -842,7 +842,12 @@ export class ShadowGenerator implements IShadowGenerator {
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
 
         this._nameForDrawWrapper = [Constants.SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++];
-        this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[0];
+        if (light.needCube()) {
+            const baseName = this._nameForDrawWrapper[0];
+            for (let i = 0; i < 6; ++i) {
+                this._nameForDrawWrapper[i] = baseName + "_" + i;
+            }
+        }
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -925,6 +930,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
+            this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[faceIndex];
             this._currentFaceIndex = faceIndex;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
