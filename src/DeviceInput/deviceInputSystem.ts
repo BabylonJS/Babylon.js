@@ -1,4 +1,5 @@
 import { Engine } from '../Engines/engine';
+import { Observer } from '../Misc/observable';
 import { Tools } from '../Misc/tools';
 import { IDisposable } from '../scene';
 import { Nullable } from '../types';
@@ -68,6 +69,8 @@ export class DeviceInputSystem implements IDisposable {
     private _pointerWheelEvent = (evt: any) => { };
     private _pointerBlurEvent = (evt: any) => { };
     private _wheelEventName: string;
+
+    private _pointerWheelClearObserver: Nullable<Observer<Engine>> = null;
 
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
@@ -167,6 +170,10 @@ export class DeviceInputSystem implements IDisposable {
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
             this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
+
+            if (this._pointerWheelClearObserver) {
+                this._engine.onEndFrameObservable.remove(this._pointerWheelClearObserver);
+            }
         }
 
         // Gamepad Events
@@ -519,23 +526,6 @@ export class DeviceInputSystem implements IDisposable {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelZ, previousWheelScrollZ, pointer[PointerInput.MouseWheelZ], evt);
                     }
                 }
-
-                // Since there's no up or down event for mouse wheel, clear mouse wheel value at end of frame
-                if (pointer[PointerInput.MouseWheelX] !== 0) {
-                    this._engine.onEndFrameObservable.addOnce(() => {
-                        pointer[PointerInput.MouseWheelX] = 0;
-                    });
-                }
-                if (pointer[PointerInput.MouseWheelY] !== 0) {
-                    this._engine.onEndFrameObservable.addOnce(() => {
-                        pointer[PointerInput.MouseWheelY] = 0;
-                    });
-                }
-                if (pointer[PointerInput.MouseWheelZ] !== 0) {
-                    this._engine.onEndFrameObservable.addOnce(() => {
-                        pointer[PointerInput.MouseWheelZ] = 0;
-                    });
-                }
             }
         });
 
@@ -544,6 +534,16 @@ export class DeviceInputSystem implements IDisposable {
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
+
+        // Since there's no up or down event for mouse wheel, clear mouse wheel value at end of frame
+        this._pointerWheelClearObserver = this._engine.onEndFrameObservable.add(() => {
+            if (this.isDeviceAvailable(DeviceType.Mouse)) {
+                const pointer = this._inputs[DeviceType.Mouse][0];
+                pointer[PointerInput.MouseWheelX] = 0;
+                pointer[PointerInput.MouseWheelY] = 0;
+                pointer[PointerInput.MouseWheelZ] = 0;
+            }
+        });
     }
 
     /**
