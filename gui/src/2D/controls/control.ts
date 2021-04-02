@@ -1488,7 +1488,7 @@ export class Control {
         if (Control.AllowAlphaInheritance) {
             context.globalAlpha *= this._alpha;
         } else if (this._alphaSet) {
-            context.globalAlpha = this.parent ? this.parent.alpha * this._alpha : this._alpha;
+            context.globalAlpha = (this.parent && !this.parent._renderToIntermediateTexture) ? this.parent.alpha * this._alpha : this._alpha;
         }
     }
 
