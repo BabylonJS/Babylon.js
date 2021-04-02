@@ -38343,7 +38343,7 @@ declare module BABYLON {
          * Sets the easing function of the animation
          * @param easingFunction A custom mathematical formula for animation
          */
-        setEasingFunction(easingFunction: EasingFunction): void;
+        setEasingFunction(easingFunction: IEasingFunction): void;
         /**
          * Interpolates a scalar linearly
          * @param startValue Start value of the animation curve
