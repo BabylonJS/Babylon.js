@@ -367,24 +367,17 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerGlobalPosition = controllerData.xrController.pointer.position;
                 controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
                 const hand = controllerData.xrController.inputSource.hand;
-                if(hand)
-                {
+                if(hand) {
                     const xrJoint = hand.get("index-finger-tip");
-                    if(xrJoint)
-                    {
+                    if(xrJoint) {
                         let pose = _xrFrame.getJointPose!(xrJoint, this._xrSessionManager.referenceSpace);
-                        if (pose && pose.transform) 
-                        {
+                        if (pose && pose.transform) {
                             const pos = pose.transform.position;
-
                             // set positions for near pick and hover
-                            if(controllerData.pickMesh)
-                            {
+                            if(controllerData.pickMesh) {
                                 controllerData.pickMesh.position.set(pos.x, pos.y, pos.z);
                             }
-                             
-                            if(controllerData.hoverMesh)
-                            {
+                            if(controllerData.hoverMesh) {
                                 controllerData.hoverMesh.position.set(pos.x, pos.y, pos.z);
                             }
                         }   
@@ -441,27 +434,21 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             {
                 let hoverInfo = this._pickWithMesh(controllerData.hoverMesh, false);
                 let nearHover = hoverInfo && hoverInfo.pickedPoint && hoverInfo.hit;
-                if(nearHover)
-                {
-                    console.log("HOVER SUCCESS");
+                if(nearHover) {
                     controllerData.hover = hoverInfo;
                     controllerData.nearHover = true;
                 }
             }
 
-            if(controllerData.pickMesh)
-            {
+            if(controllerData.pickMesh) {
                 let pickInfo = this._pickWithMesh(controllerData.pickMesh, true);
                 let nearPick = pickInfo && pickInfo.pickedPoint && pickInfo.hit;
-                if(nearPick)
-                {
-                    console.log("PICK SUCCESS");
+                if(nearPick) {
                     controllerData.nearPick = true;
                     pick = pickInfo;
                 }
             }
 
- 
             if (!controllerData.nearHover && !controllerData.nearPick) {
                 pick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
                 if (pick && pick.pickedPoint && pick.hit) {
@@ -473,9 +460,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             controllerData.pick = pick;
 
             if (pick && pick.pickedPoint && pick.hit) {
-                // Update laser state
-                this._updatePointerDistance(controllerData.laserPointer, pick.distance);
-
                 // Update cursor state
                 controllerData.selectionMesh.position.copyFrom(pick.pickedPoint);
                 controllerData.selectionMesh.scaling.x = Math.sqrt(pick.distance);
@@ -846,8 +830,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _pickWithMesh(handMesh: AbstractMesh, precise: boolean, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
         var pickingInfo = new PickingInfo();
-        if(handMesh)
-        {
+        if(handMesh) {
             for (let meshIndex = 0; meshIndex < this._scene.meshes.length; meshIndex++) {
                 let mesh = this._scene.meshes[meshIndex];
                 if (predicate) {
@@ -857,11 +840,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable || !mesh.isNearPickable) {
                     continue;
                 }
-    
                 let result = mesh.intersectsMesh(handMesh, precise);
-                if(result)
-                {
-                    console.log("INTERSECTION SUCCESSFUL FOR ", mesh.name);
+                if(result) {
                     pickingInfo.hit = result;
                     pickingInfo.pickedMesh = mesh;
                     pickingInfo.pickedPoint = handMesh.position;
