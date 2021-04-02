@@ -96,7 +96,7 @@ IRangeSelectorComponentState
         }
 
         let offset = (left / this._viewWidth) * (this._maxFrame - this._minFrame);
-        const newValue = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + offset) | 0));
+        const newValue = Math.min(this._maxFrame, Math.max(this._minFrame, Math.round(this._minFrame + offset)));
 
         if (this._bothHandleIsActive) {
 
