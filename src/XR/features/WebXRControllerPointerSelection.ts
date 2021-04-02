@@ -372,7 +372,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     const xrJoint = hand.get("index-finger-tip");
                     if(xrJoint)
                     {
-                        console.log("JOINT FOUND");
                         let pose = _xrFrame.getJointPose!(xrJoint, this._xrSessionManager.referenceSpace);
                         if (pose && pose.transform) 
                         {
@@ -381,13 +380,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                             // set positions for near pick and hover
                             if(controllerData.pickMesh)
                             {
-                                console.log("PICKMESH SET")
                                 controllerData.pickMesh.position.set(pos.x, pos.y, pos.z);
                             }
                              
                             if(controllerData.hoverMesh)
                             {
-                                console.log("HOVERMESH SET");
                                 controllerData.hoverMesh.position.set(pos.x, pos.y, pos.z);
                             }
                         }   
@@ -803,8 +800,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         // populate information for near pick and hover
         const pickMesh = SphereBuilder.CreateSphere("IndexPickSphere", { diameter: 1 });
         pickMesh.scaling.set(0.005, 0.005, 0.005);
-        const hoverMesh = SphereBuilder.CreateSphere("IndexHoverSphere", { diameter: 1 });
-        hoverMesh.scaling.set(0.01, 0.01, 0.01);
+        pickMesh.isVisible = false;
+        const hoverMesh = SphereBuilder.CreateSphere("IndexHoverSphere", { diameter: 1});
+        hoverMesh.isVisible = false;
         return {
             pickMesh,
             hoverMesh,
@@ -847,7 +845,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 
     private _pickWithMesh(handMesh: AbstractMesh, precise: boolean, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
-        console.log("PickwithMesh invoked");
         var pickingInfo = new PickingInfo();
         if(handMesh)
         {
@@ -857,11 +854,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     if (!predicate(mesh)) {
                         continue;
                     }
-                } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable || !mesh.isNearInteractable) {
+                } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable || !mesh.isNearPickable) {
                     continue;
                 }
     
-                console.log("mesh recognized: ", mesh.name);
                 let result = mesh.intersectsMesh(handMesh, precise);
                 if(result)
                 {
