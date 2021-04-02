@@ -640,6 +640,7 @@ declare module INSPECTOR {
         onDataUpdatedObservable: BABYLON.Observable<void>;
         property?: string;
         tangentBuilder?: () => any;
+        static readonly TangentLength: number;
         constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         getInControlPoint(keyIndex: number): {
@@ -650,8 +651,8 @@ declare module INSPECTOR {
             frame: number;
             value: number;
         } | null;
-        updateInTangentFromControlPoint(keyId: number, frame: number, value: number): void;
-        updateOutTangentFromControlPoint(keyId: number, frame: number, value: number): void;
+        updateInTangentFromControlPoint(keyId: number, value: number): void;
+        updateOutTangentFromControlPoint(keyId: number, value: number): void;
         updateKeyFrame(keyId: number, frame: number): void;
         updateKeyValue(keyId: number, value: number): void;
     }
@@ -699,14 +700,18 @@ declare module INSPECTOR {
         private _offsetXToMain;
         private _offsetYToMain;
         private _svgHost;
+        private _keyPointSVG;
         private _controlMode;
         private _currentLeftControlPoint;
         private _currentRightControlPoint;
+        private _tangentReferenceX;
+        private _tangentReferenceY;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
         private _select;
         private _onPointerDown;
+        private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
         render(): JSX.Element;
