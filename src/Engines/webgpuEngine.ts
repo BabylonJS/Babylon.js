@@ -54,8 +54,6 @@ declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTe
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type PerfCounter = import("../Misc/perfCounter").PerfCounter;
 
-declare var BigUint64Array: any; // to make ts happy...
-
 // TODO WEBGPU remove when not needed anymore
 function assert(condition: any, msg?: string): asserts condition {
     if (!condition) {
