@@ -660,7 +660,7 @@ export class Animation {
      * Sets the easing function of the animation
      * @param easingFunction A custom mathematical formula for animation
      */
-    public setEasingFunction(easingFunction: EasingFunction): void {
+    public setEasingFunction(easingFunction: IEasingFunction): void {
         this._easingFunction = easingFunction;
     }
 
