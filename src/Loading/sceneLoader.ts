@@ -543,19 +543,15 @@ export class SceneLoader {
                 : scene._requestFile(fileInfo.url, successCallback, onProgress, true, useArrayBuffer, errorCallback);
         };
 
-        if (StringTools.StartsWith(fileInfo.url, "file:")) {
+        if (StringTools.StartsWith(fileInfo.url, "file:") && fileInfo.file) {
             // Loading file from disk via input file or drag'n'drop
-            if (fileInfo.file) {
-                const errorCallback = (error: ReadFileError) => {
-                    onError(error.message, error);
-                };
+            const errorCallback = (error: ReadFileError) => {
+                onError(error.message, error);
+            };
 
-                request = plugin.readFile
-                    ? plugin.readFile(scene, fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback)
-                    : scene._readFile(fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback);
-            } else {
-                onError("Unable to find file named " + fileInfo.name);
-            }
+            request = plugin.readFile
+                ? plugin.readFile(scene, fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback)
+                : scene._readFile(fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback);
         } else {
             const engine = scene.getEngine();
             let canUseOfflineSupport = engine.enableOfflineSupport;
