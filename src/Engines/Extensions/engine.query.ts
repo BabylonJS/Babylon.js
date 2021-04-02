@@ -3,8 +3,7 @@ import { Engine } from "../../Engines/engine";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { PerfCounter } from "../../Misc/perfCounter";
-
-declare type Observer<Engine> = import('../../Misc/observable').Observer<Engine>;
+import { Observer } from "../../Misc/observable";
 
 /** @hidden */
 export class _OcclusionDataStorage {

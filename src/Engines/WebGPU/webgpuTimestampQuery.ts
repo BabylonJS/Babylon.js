@@ -2,8 +2,6 @@ import { WebGPUBufferManager } from './webgpuBufferManager';
 import * as WebGPUConstants from './webgpuConstants';
 import { PerfCounter } from "../../Misc/perfCounter";
 
-declare var BigUint64Array: any; // to make ts happy...
-
 /** @hidden */
 export class WebGPUTimestampQuery {
     private _device: GPUDevice;
