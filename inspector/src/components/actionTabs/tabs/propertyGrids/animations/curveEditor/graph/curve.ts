@@ -16,6 +16,8 @@ export class Curve {
     public property?: string;
     public tangentBuilder?: () => any;
 
+    public static readonly TangentLength = 50;
+
     public constructor(color: string, animation: Animation, property?: string, tangentBuilder?: () => any) {
         this.color = color;
         this.animation = animation;
@@ -40,8 +42,8 @@ export class Curve {
             const prevValue = keys[keyIndex - 1].value;
             const currentValue = keys[keyIndex].value;
 
-            const controlPoint0Frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
-            const controlPoint1Frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
+            const controlPoint0Frame = outTangent ? prevFrame + (currentFrame - prevFrame) / 2 : prevFrame;
+            const controlPoint1Frame = inTangent ? prevFrame + (currentFrame - prevFrame) / 2 : currentFrame;
 
             const controlPoint0Value = prevValue + outTangent / 3;
             const controlPoint1Value = currentValue - inTangent / 3;
@@ -65,8 +67,8 @@ export class Curve {
             const currentFrame = keys[keyIndex].frame;
             const currentValue = keys[keyIndex].value;
 
-            const frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
             const value = currentValue - inTangent / 3;
+            const frame = prevFrame + (currentFrame - prevFrame) / 2;
 
             return {
                 frame: frame,
@@ -97,7 +99,7 @@ export class Curve {
             const prevValue = keys[keyIndex].value;
             const currentFrame = keys[keyIndex + 1].frame;
 
-            const frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
+            const frame = prevFrame + (currentFrame - prevFrame) / 2;
             const value = prevValue + outTangent / 3;
 
             return {
@@ -117,9 +119,9 @@ export class Curve {
         }
     }
 
-    public updateInTangentFromControlPoint(keyId: number, frame: number, value: number) {
-        const slope = (this.keys[keyId].value - value) / (this.keys[keyId].frame - frame);
-        this.keys[keyId].inTangent = slope * (this.keys[keyId].frame - this.keys[keyId - 1].frame);
+    public updateInTangentFromControlPoint(keyId: number, value: number) {
+        const slope = (this.keys[keyId].value - value);
+        this.keys[keyId].inTangent = slope;
 
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
@@ -134,9 +136,9 @@ export class Curve {
         this.onDataUpdatedObservable.notifyObservers();
     }
 
-    public updateOutTangentFromControlPoint(keyId: number, frame: number, value: number) {
-        const slope = (value - this.keys[keyId].value) / (frame - this.keys[keyId].frame);
-        this.keys[keyId].outTangent = slope * (this.keys[keyId + 1].frame - this.keys[keyId].frame);
+    public updateOutTangentFromControlPoint(keyId: number, value: number) {
+        const slope = (value - this.keys[keyId].value);
+        this.keys[keyId].outTangent = slope;
 
         if (this.property) {
             if (!this.animation.getKeys()[keyId].outTangent) {

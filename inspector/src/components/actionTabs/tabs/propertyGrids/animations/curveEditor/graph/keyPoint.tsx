@@ -67,11 +67,15 @@ IKeyPointComponentState
     private _offsetYToMain: number;
     
     private _svgHost: React.RefObject<SVGSVGElement>;
+    private _keyPointSVG: React.RefObject<SVGImageElement>;
 
     private _controlMode = ControlMode.None;
 
     private _currentLeftControlPoint: Nullable<{frame: number, value: number}>;
     private _currentRightControlPoint: Nullable<{frame: number, value: number}>;
+
+    private _tangentReferenceX: number;
+    private _tangentReferenceY: number;
 
     constructor(props: IKeyPointComponentProps) {
         super(props);
@@ -79,6 +83,7 @@ IKeyPointComponentState
         this.state = { selectedState: SelectionState.None, x: this.props.x, y: this.props.y };
         
         this._svgHost = React.createRef();
+        this._keyPointSVG = React.createRef();
 
         this._onSelectionRectangleMovedObserver = this.props.context.onSelectionRectangleMoved.add(rect1 => {
             const rect2 = this._svgHost.current!.getBoundingClientRect();
@@ -291,6 +296,10 @@ IKeyPointComponentState
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
 
+        const bbox = (evt.nativeEvent.target as HTMLElement).getBoundingClientRect();
+        this._tangentReferenceX = bbox.left;
+        this._tangentReferenceY = bbox.top;
+
         const target = evt.nativeEvent.target as HTMLElement;
         if (target.tagName === "image") {
             this._controlMode = ControlMode.Key;
@@ -303,35 +312,32 @@ IKeyPointComponentState
         evt.stopPropagation();
     }
 
+    private _processTangentMove(evt: React.PointerEvent<SVGSVGElement>, cp: {frame: number, value: number}) {
+        const key = this.props.curve.keys[this.props.keyId];
+        let expectedFrame = cp.frame;
+
+        this._tangentReferenceX += evt.nativeEvent.offsetX - this._sourcePointerX;
+        this._tangentReferenceY += evt.nativeEvent.offsetY - this._sourcePointerY;
+
+        let bbox = this._keyPointSVG.current!.getBoundingClientRect();
+        let keyCenterX = bbox.left + bbox.width / 2;
+        let keyCenterY = bbox.top + bbox.height / 4;
+        let slope = -(keyCenterY - this._tangentReferenceY) / (keyCenterX - this._tangentReferenceX);
+
+        return key.value - (key.frame - expectedFrame) * slope;
+    }
+
     private _onPointerMove(evt: React.PointerEvent<SVGSVGElement>) {
         if (!this._pointerIsDown || this.state.selectedState !==  SelectionState.Selected) {
             return;
         }
 
         if (this._controlMode === ControlMode.TangentLeft) {
-            let currentX = this.props.convertX(this._currentLeftControlPoint!.frame);
-            let currentY = this.props.convertY(this._currentLeftControlPoint!.value);
-
-            let newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-            let newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-
-            let newFrame = this.props.invertX(newX);
-            let newValue = this.props.invertY(newY);
-
-            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentLeftControlPoint!));
             this.forceUpdate();
 
         } else if (this._controlMode === ControlMode.TangentRight) {
-            let currentX = this.props.convertX(this._currentRightControlPoint!.frame);
-            let currentY = this.props.convertY(this._currentRightControlPoint!.value);
-
-            let newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-            let newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-
-            let newFrame = this.props.invertX(newX);
-            let newValue = this.props.invertY(newY);
-
-            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentRightControlPoint!));
             this.forceUpdate();
 
         } else if (this._controlMode === ControlMode.Key) {
@@ -400,6 +406,12 @@ IKeyPointComponentState
         let inVec = new Vector2(this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
         let outVec = new Vector2(this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
 
+        inVec.normalize();
+        inVec.scaleInPlace(100 * this.props.scale);
+
+        outVec.normalize();
+        outVec.scaleInPlace(100 * this.props.scale);
+
         return (
             <svg
                 ref={this._svgHost}
@@ -415,6 +427,7 @@ IKeyPointComponentState
                 y={`-${8 * this.props.scale}`}
                 width={`${16 * this.props.scale}`}
                 height={`${16 * this.props.scale}`}
+                ref={this._keyPointSVG}
                 href={svgImageIcon}                
             />
             {
@@ -430,14 +443,14 @@ IKeyPointComponentState
                                 y2={`${inVec.y}px`}
                                 style={{
                                     stroke: "#F9BF00",
-                                    strokeWidth: 1,
+                                    strokeWidth: `${1 * this.props.scale}`
                                 }}>
                             </line>
                             <circle
                                 className="left-tangent"
                                 cx={`${inVec.x}px`}
                                 cy={`${inVec.y}px`}
-                                r="4"
+                                r={`${4 * this.props.scale}`}
                                 style={{
                                     fill: "#F9BF00",
                                 }}>
@@ -454,14 +467,14 @@ IKeyPointComponentState
                                 y2={`${outVec.y}px`}
                                 style={{
                                     stroke: "#F9BF00",
-                                    strokeWidth: 1,
+                                    strokeWidth: `${1 * this.props.scale}`
                                 }}>
                             </line>                        
                             <circle
                                 className="right-tangent"
                                 cx={`${outVec.x}px`}
                                 cy={`${outVec.y}px`}
-                                r="4"
+                                r={`${4 * this.props.scale}`}
                                 style={{
                                     fill: "#F9BF00",
                                 }}>
