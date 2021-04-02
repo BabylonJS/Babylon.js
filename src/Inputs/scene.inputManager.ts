@@ -657,7 +657,8 @@ export class InputManager {
 
             this._updatePointerPosition(evt);
 
-            if (scene.preventDefaultOnPointerDown && elementToAttachTo) { // TODO: DO WE NEED THIS?
+            if (scene.preventDefaultOnPointerDown && elementToAttachTo) {
+                evt.preventDefault();
                 elementToAttachTo.focus();
             }
 
@@ -706,7 +707,8 @@ export class InputManager {
 
             this._updatePointerPosition(evt);
 
-            if (scene.preventDefaultOnPointerUp && elementToAttachTo) { // TODO: DO WE NEED THIS?
+            if (scene.preventDefaultOnPointerUp && elementToAttachTo) {
+                evt.preventDefault();
                 elementToAttachTo.focus();
             }
 
