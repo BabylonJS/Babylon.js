@@ -47198,7 +47198,7 @@ var RangeSelectorComponent = /** @class */ (function (_super) {
             left = evt.nativeEvent.clientX - this._currentOffset;
         }
         var offset = (left / this._viewWidth) * (this._maxFrame - this._minFrame);
-        var newValue = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + offset) | 0));
+        var newValue = Math.min(this._maxFrame, Math.max(this._minFrame, Math.round(this._minFrame + offset)));
         if (this._bothHandleIsActive) {
             if (this._currentTo + offset > this._maxFrame) {
                 offset = this._maxFrame - this._currentTo;
@@ -47588,8 +47588,8 @@ var Curve = /** @class */ (function () {
             var currentFrame = keys[keyIndex].frame;
             var prevValue = keys[keyIndex - 1].value;
             var currentValue = keys[keyIndex].value;
-            var controlPoint0Frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
-            var controlPoint1Frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
+            var controlPoint0Frame = outTangent ? prevFrame + (currentFrame - prevFrame) / 2 : prevFrame;
+            var controlPoint1Frame = inTangent ? prevFrame + (currentFrame - prevFrame) / 2 : currentFrame;
             var controlPoint0Value = prevValue + outTangent / 3;
             var controlPoint1Value = currentValue - inTangent / 3;
             pathData += " C" + convertX(controlPoint0Frame) + " " + convertY(controlPoint0Value) + ", " + convertX(controlPoint1Frame) + " " + convertY(controlPoint1Value) + ", " + convertX(currentFrame) + " " + convertY(currentValue);
@@ -47606,8 +47606,8 @@ var Curve = /** @class */ (function () {
             var prevFrame = keys[keyIndex - 1].frame;
             var currentFrame = keys[keyIndex].frame;
             var currentValue = keys[keyIndex].value;
-            var frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
             var value = currentValue - inTangent / 3;
+            var frame = prevFrame + (currentFrame - prevFrame) / 2;
             return {
                 frame: frame,
                 value: value
@@ -47634,7 +47634,7 @@ var Curve = /** @class */ (function () {
             var prevFrame = keys[keyIndex].frame;
             var prevValue = keys[keyIndex].value;
             var currentFrame = keys[keyIndex + 1].frame;
-            var frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
+            var frame = prevFrame + (currentFrame - prevFrame) / 2;
             var value = prevValue + outTangent / 3;
             return {
                 frame: frame,
@@ -47652,9 +47652,9 @@ var Curve = /** @class */ (function () {
             };
         }
     };
-    Curve.prototype.updateInTangentFromControlPoint = function (keyId, frame, value) {
-        var slope = (this.keys[keyId].value - value) / (this.keys[keyId].frame - frame);
-        this.keys[keyId].inTangent = slope * (this.keys[keyId].frame - this.keys[keyId - 1].frame);
+    Curve.prototype.updateInTangentFromControlPoint = function (keyId, value) {
+        var slope = (this.keys[keyId].value - value);
+        this.keys[keyId].inTangent = slope;
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
                 this.animation.getKeys()[keyId].inTangent = this.tangentBuilder();
@@ -47666,9 +47666,9 @@ var Curve = /** @class */ (function () {
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
-    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, frame, value) {
-        var slope = (value - this.keys[keyId].value) / (frame - this.keys[keyId].frame);
-        this.keys[keyId].outTangent = slope * (this.keys[keyId + 1].frame - this.keys[keyId].frame);
+    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, value) {
+        var slope = (value - this.keys[keyId].value);
+        this.keys[keyId].outTangent = slope;
         if (this.property) {
             if (!this.animation.getKeys()[keyId].outTangent) {
                 this.animation.getKeys()[keyId].outTangent = this.tangentBuilder();
@@ -47696,6 +47696,7 @@ var Curve = /** @class */ (function () {
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
+    Curve.TangentLength = 50;
     return Curve;
 }());
 
@@ -48479,6 +48480,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
         _this._controlMode = ControlMode.None;
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        _this._keyPointSVG = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._onSelectionRectangleMovedObserver = _this.props.context.onSelectionRectangleMoved.add(function (rect1) {
             var rect2 = _this._svgHost.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left ||
@@ -48659,6 +48661,9 @@ var KeyPointComponent = /** @class */ (function (_super) {
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
+        var bbox = evt.nativeEvent.target.getBoundingClientRect();
+        this._tangentReferenceX = bbox.left;
+        this._tangentReferenceY = bbox.top;
         var target = evt.nativeEvent.target;
         if (target.tagName === "image") {
             this._controlMode = ControlMode.Key;
@@ -48671,29 +48676,28 @@ var KeyPointComponent = /** @class */ (function (_super) {
         }
         evt.stopPropagation();
     };
+    KeyPointComponent.prototype._processTangentMove = function (evt, cp) {
+        var key = this.props.curve.keys[this.props.keyId];
+        var expectedFrame = cp.frame;
+        this._tangentReferenceX += evt.nativeEvent.offsetX - this._sourcePointerX;
+        this._tangentReferenceY += evt.nativeEvent.offsetY - this._sourcePointerY;
+        var bbox = this._keyPointSVG.current.getBoundingClientRect();
+        var keyCenterX = bbox.left + bbox.width / 2;
+        var keyCenterY = bbox.top + bbox.height / 4;
+        var slope = -(keyCenterY - this._tangentReferenceY) / (keyCenterX - this._tangentReferenceX);
+        return key.value - (key.frame - expectedFrame) * slope;
+    };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
         var _this = this;
         if (!this._pointerIsDown || this.state.selectedState !== SelectionState.Selected) {
             return;
         }
         if (this._controlMode === ControlMode.TangentLeft) {
-            var currentX = this.props.convertX(this._currentLeftControlPoint.frame);
-            var currentY = this.props.convertY(this._currentLeftControlPoint.value);
-            var newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-            var newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-            var newFrame = this.props.invertX(newX);
-            var newValue = this.props.invertY(newY);
-            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentLeftControlPoint));
             this.forceUpdate();
         }
         else if (this._controlMode === ControlMode.TangentRight) {
-            var currentX = this.props.convertX(this._currentRightControlPoint.frame);
-            var currentY = this.props.convertY(this._currentRightControlPoint.value);
-            var newX = currentX + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-            var newY = currentY + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-            var newFrame = this.props.invertX(newX);
-            var newValue = this.props.invertY(newY);
-            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, newFrame, newValue);
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentRightControlPoint));
             this.forceUpdate();
         }
         else if (this._controlMode === ControlMode.Key) {
@@ -48747,26 +48751,30 @@ var KeyPointComponent = /** @class */ (function (_super) {
         this._currentRightControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);
         var inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
         var outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
+        inVec.normalize();
+        inVec.scaleInPlace(100 * this.props.scale);
+        outVec.normalize();
+        outVec.scaleInPlace(100 * this.props.scale);
         return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("svg", { ref: this._svgHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, href: svgImageIcon }),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, ref: this._keyPointSVG, href: svgImageIcon }),
             this.state.selectedState === SelectionState.Selected &&
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("g", null,
                     this._currentLeftControlPoint !== null &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: inVec.x + "px", y2: inVec.y + "px", style: {
                                     stroke: "#F9BF00",
-                                    strokeWidth: 1,
+                                    strokeWidth: "" + 1 * this.props.scale
                                 } }),
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: inVec.x + "px", cy: inVec.y + "px", r: "4", style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: inVec.x + "px", cy: inVec.y + "px", r: "" + 4 * this.props.scale, style: {
                                     fill: "#F9BF00",
                                 } })),
                     this._currentRightControlPoint !== null &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: outVec.x + "px", y2: outVec.y + "px", style: {
                                     stroke: "#F9BF00",
-                                    strokeWidth: 1,
+                                    strokeWidth: "" + 1 * this.props.scale
                                 } }),
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: outVec.x + "px", cy: outVec.y + "px", r: "4", style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: outVec.x + "px", cy: outVec.y + "px", r: "" + 4 * this.props.scale, style: {
                                     fill: "#F9BF00",
                                 } })))));
     };
