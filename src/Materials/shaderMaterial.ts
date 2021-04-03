@@ -787,18 +787,41 @@ export class ShaderMaterial extends Material {
 
         const effect = effectOverride ?? this.getEffect();
 
+        const uniformBuffers = this._options.uniformBuffers;
+
+        let useSceneUBO = false;
+
+        if (effect && uniformBuffers && uniformBuffers.length > 0 && this.getScene().getEngine().supportsUniformBuffers) {
+            for (let i = 0; i < uniformBuffers.length; ++i) {
+                const bufferName = uniformBuffers[i];
+                switch (bufferName) {
+                    case "Mesh":
+                        if (mesh) {
+                            mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+                            mesh.transferToEffect(world);
+                        }
+                        break;
+                    case "Scene":
+                        MaterialHelper.FinalizeSceneUbo(this.getScene());
+                        MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                        useSceneUBO = true;
+                        break;
+                }
+            }
+        }
+
         let mustRebind = this.getScene().getCachedMaterial() !== this;
 
         if (effect && mustRebind) {
-            if (this._options.uniforms.indexOf("view") !== -1) {
+            if (!useSceneUBO && this._options.uniforms.indexOf("view") !== -1) {
                 effect.setMatrix("view", this.getScene().getViewMatrix());
             }
 
-            if (this._options.uniforms.indexOf("projection") !== -1) {
+            if (!useSceneUBO && this._options.uniforms.indexOf("projection") !== -1) {
                 effect.setMatrix("projection", this.getScene().getProjectionMatrix());
             }
 
-            if (this._options.uniforms.indexOf("viewProjection") !== -1) {
+            if (!useSceneUBO && this._options.uniforms.indexOf("viewProjection") !== -1) {
                 effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
                 if (this._multiview) {
                     effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);

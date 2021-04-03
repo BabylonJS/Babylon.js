@@ -626,6 +626,7 @@ export class WebGPUEngine extends Engine {
             supportSwitchCaseInShader: true,
             supportSyncTextureRead: false,
             needsInvertingBitmap: false,
+            useUBOBindingCache: false,
             _collectUbosUpdatedInFrame: true,
         };
     }

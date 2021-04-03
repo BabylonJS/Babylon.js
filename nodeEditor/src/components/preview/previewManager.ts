@@ -144,18 +144,6 @@ export class PreviewManager {
             this._lightParent.rotation.y += rotateLighting;
             lastOffsetX = evt.event.offsetX;
         });
-
-        // this._scene.registerBeforeRender(() => {
-        //     if (this._camera.alpha === cameraLastRotation) {
-        //         return;
-        //     }
-        //     if (!this._globalState.controlCamera) {
-        //         return;
-        //     }
-        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed;
-        //     this._lightParent.rotate(Vector3.Up(), rotateLighting);
-        //     cameraLastRotation = this._camera.alpha;
-        // });
     }
 
     private _handleAnimations() {
