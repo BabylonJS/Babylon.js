@@ -27,9 +27,22 @@ export class Container extends Control {
     /** @hidden */
     protected _adaptHeightToChildren = false;
     /** @hidden */
-    protected _intermediateTexture: Nullable<DynamicTexture> = null;
+    protected _renderToIntermediateTexture: boolean = false;
     /** @hidden */
-    public _renderToIntermediateTexture: boolean = false;
+    protected _intermediateTexture: Nullable<DynamicTexture> = null;
+
+    /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
+    @serialize()
+    public get renderToIntermediateTexture(): boolean {
+        return this._renderToIntermediateTexture;
+    }
+    public set renderToIntermediateTexture(value: boolean) {
+        if (this._renderToIntermediateTexture == value) {
+            return;
+        }
+        this._renderToIntermediateTexture = value;
+        this._markAsDirty();
+    }
 
     /**
      * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
@@ -105,11 +118,9 @@ export class Container extends Control {
     /**
      * Creates a new Container
      * @param name defines the name of the container
-     * @param renderToIntermediateTexture renders children to an intermediate texture rather than directly to host, useful for alpha blending
      */
-    constructor(public name?: string, renderToIntermediateTexture?: boolean) {
+    constructor(public name?: string) {
         super(name);
-        this._renderToIntermediateTexture = renderToIntermediateTexture ? true : false;
     }
 
     protected _getTypeName(): string {
@@ -409,9 +420,10 @@ export class Container extends Control {
 
     /** @hidden */
     public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
-        let contextToDrawTo: CanvasRenderingContext2D = (this._intermediateTexture) ? this._intermediateTexture.getContext() : context;
+        const renderToIntermediateTextureThisDraw = this._renderToIntermediateTexture && this._intermediateTexture;
+        const contextToDrawTo: CanvasRenderingContext2D = renderToIntermediateTextureThisDraw ? (<DynamicTexture>this._intermediateTexture).getContext() : context;
 
-        if (this._intermediateTexture) {
+        if (renderToIntermediateTextureThisDraw) {
             contextToDrawTo.save();
             contextToDrawTo.translate(-this._currentMeasure.left, -this._currentMeasure.top);
             if (invalidatedRectangle) {
@@ -437,7 +449,7 @@ export class Container extends Control {
             child._render(contextToDrawTo, invalidatedRectangle);
         }
 
-        if (this._intermediateTexture) {
+        if (renderToIntermediateTextureThisDraw) {
             contextToDrawTo.restore();
             context.save();
             context.globalAlpha = this.alpha;
@@ -525,9 +537,7 @@ export class Container extends Control {
         for (var index = this.children.length - 1; index >= 0; index--) {
             this.children[index].dispose();
         }
-        if (this._intermediateTexture) {
-            this._intermediateTexture.dispose();
-        }
+        this._intermediateTexture?.dispose();
     }
 
     /** @hidden */
