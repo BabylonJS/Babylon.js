@@ -709,6 +709,17 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
+        it('File url (Babylon Native)', () => {
+            const urlRedirects = {
+                "file:///Box.gltf": "/Playground/scenes/Box/Box.gltf",
+                "file:///Box.bin": "/Playground/scenes/Box/Box.bin"
+            };
+            const oldPreprocessUrl = BABYLON.FileTools.PreprocessUrl;
+            BABYLON.FileTools.PreprocessUrl = (url) => urlRedirects[url] || url;
+            const resetPreprocessUrl = () => BABYLON.FileTools.PreprocessUrl = oldPreprocessUrl;
+            return BABYLON.SceneLoader.LoadAsync("file:///", "Box.gltf").then(resetPreprocessUrl, resetPreprocessUrl);
+        });
+
         it('Files input', () => {
             return Promise.all([
                 BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.gltf", true),
@@ -719,6 +730,5 @@ describe('Babylon Scene Loader', function() {
                 return BABYLON.SceneLoader.LoadAsync("file:", "Box.gltf");
             });
         });
-
     });
 });
