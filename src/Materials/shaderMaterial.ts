@@ -57,6 +57,11 @@ export interface IShaderMaterialOptions {
      * The list of defines used in the shader
      */
     defines: string[];
+
+    /**
+     * Defines if clip planes have to be turned on: true to turn them on, false to turn them off and null to turn them on/off depending on the scene configuration (scene.clipPlaneX)
+     */
+    useClipPlane: Nullable<boolean>;
 }
 
 /**
@@ -126,6 +131,7 @@ export class ShaderMaterial extends Material {
             uniformBuffers: [],
             samplers: [],
             defines: [],
+            useClipPlane: false,
             ...options
         };
     }
@@ -520,7 +526,7 @@ export class ShaderMaterial extends Material {
             this._multiview = true;
             defines.push("#define MULTIVIEW");
             if (this._options.uniforms.indexOf("viewProjection") !== -1 &&
-                this._options.uniforms.push("viewProjectionR") === -1) {
+                this._options.uniforms.indexOf("viewProjectionR") === -1) {
                 this._options.uniforms.push("viewProjectionR");
             }
         }
@@ -637,6 +643,49 @@ export class ShaderMaterial extends Material {
         // Alpha test
         if (mesh && this._shouldTurnAlphaTestOn(mesh)) {
             defines.push("#define ALPHATEST");
+        }
+
+        // Clip planes
+        if ((this._options.useClipPlane === null && !!scene.clipPlane) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE");
+            if (uniforms.indexOf("vClipPlane") === -1) {
+                uniforms.push("vClipPlane");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane2) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE2");
+            if (uniforms.indexOf("vClipPlane2") === -1) {
+                uniforms.push("vClipPlane2");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane3) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE3");
+            if (uniforms.indexOf("vClipPlane3") === -1) {
+                uniforms.push("vClipPlane3");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane4) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE4");
+            if (uniforms.indexOf("vClipPlane4") === -1) {
+                uniforms.push("vClipPlane4");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane5) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE5");
+            if (uniforms.indexOf("vClipPlane5") === -1) {
+                uniforms.push("vClipPlane5");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane6) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE6");
+            if (uniforms.indexOf("vClipPlane6") === -1) {
+                uniforms.push("vClipPlane6");
+            }
         }
 
         if (this.customShaderNameResolve) {
@@ -762,6 +811,9 @@ export class ShaderMaterial extends Material {
 
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
+
+            // Clip plane
+            MaterialHelper.BindClipPlane(effect, this.getScene());
 
             var name: string;
             // Texture
