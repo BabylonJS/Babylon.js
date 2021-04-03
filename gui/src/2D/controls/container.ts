@@ -37,7 +37,7 @@ export class Container extends Control {
         return this._renderToIntermediateTexture;
     }
     public set renderToIntermediateTexture(value: boolean) {
-        if (this._renderToIntermediateTexture == value) {
+        if (this._renderToIntermediateTexture === value) {
             return;
         }
         this._renderToIntermediateTexture = value;
