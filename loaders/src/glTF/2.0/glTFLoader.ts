@@ -905,6 +905,27 @@ export class GLTFLoader implements IGLTFLoader {
                 if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind && !this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
                     const mmin = accessor.min as [number, number, number], mmax = accessor.max as [number, number, number];
                     if (mmin !== undefined && mmax !== undefined) {
+                        if (accessor.normalized && accessor.componentType !== AccessorComponentType.FLOAT) {
+                            let divider = 1;
+                            switch (accessor.componentType) {
+                                case AccessorComponentType.BYTE:
+                                    divider = 127.0;
+                                    break;
+                                case AccessorComponentType.UNSIGNED_BYTE:
+                                    divider = 255.0;
+                                    break;
+                                case AccessorComponentType.SHORT:
+                                    divider = 32767.0;
+                                    break;
+                                case AccessorComponentType.UNSIGNED_SHORT:
+                                    divider = 65535.0;
+                                    break;
+                            }
+                            for (let i = 0; i < 3; ++i) {
+                                mmin[i] = Math.max(mmin[i] / divider, -1.0);
+                                mmax[i] = Math.max(mmax[i] / divider, -1.0);
+                            }
+                        }
                         const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
                         min.copyFromFloats(...mmin);
                         max.copyFromFloats(...mmax);
@@ -929,6 +950,10 @@ export class GLTFLoader implements IGLTFLoader {
         loadAttribute("TANGENT", VertexBuffer.TangentKind);
         loadAttribute("TEXCOORD_0", VertexBuffer.UVKind);
         loadAttribute("TEXCOORD_1", VertexBuffer.UV2Kind);
+        loadAttribute("TEXCOORD_2", VertexBuffer.UV3Kind);
+        loadAttribute("TEXCOORD_3", VertexBuffer.UV4Kind);
+        loadAttribute("TEXCOORD_4", VertexBuffer.UV5Kind);
+        loadAttribute("TEXCOORD_5", VertexBuffer.UV6Kind);
         loadAttribute("JOINTS_0", VertexBuffer.MatricesIndicesKind);
         loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
         loadAttribute("JOINTS_1", VertexBuffer.MatricesIndicesExtraKind);

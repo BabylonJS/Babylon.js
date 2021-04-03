@@ -37,12 +37,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
     }    
 
     public render() {
-        var engineVersionSub = Engine.Version.indexOf("-");
-        var engineVersion = Engine.Version;
-
-        if (engineVersionSub ! -1) {
-            engineVersion = engineVersion.substr(0, engineVersionSub);
-        }
+        var engineVersion = Engine.Version.split("-")[0];
 
         return (
             <>

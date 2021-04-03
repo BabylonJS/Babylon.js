@@ -660,7 +660,7 @@ export class Animation {
      * Sets the easing function of the animation
      * @param easingFunction A custom mathematical formula for animation
      */
-    public setEasingFunction(easingFunction: EasingFunction): void {
+    public setEasingFunction(easingFunction: IEasingFunction): void {
         this._easingFunction = easingFunction;
     }
 
@@ -1307,12 +1307,14 @@ export class Animation {
 
                         if (snippet.animations) {
                             let serializationObject = JSON.parse(snippet.animations);
-                            let output = new Array<Animation>();
-                            for (var serializedAnimation of serializationObject) {
-                                output.push(this.Parse(serializedAnimation));
+                            let outputs = new Array<Animation>();
+                            for (var serializedAnimation of serializationObject.animations) {
+                                let output = this.Parse(serializedAnimation);
+                                output.snippetId = snippetId;
+                                outputs.push(output);
                             }
 
-                            resolve(output);
+                            resolve(outputs);
                         } else {
                             let serializationObject = JSON.parse(snippet.animation);
                             let output = this.Parse(serializationObject);

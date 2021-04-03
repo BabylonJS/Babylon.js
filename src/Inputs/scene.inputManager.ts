@@ -657,7 +657,8 @@ export class InputManager {
 
             this._updatePointerPosition(evt);
 
-            if (scene.preventDefaultOnPointerDown && elementToAttachTo) { // TODO: DO WE NEED THIS?
+            if (scene.preventDefaultOnPointerDown && elementToAttachTo) {
+                evt.preventDefault();
                 elementToAttachTo.focus();
             }
 
@@ -706,7 +707,8 @@ export class InputManager {
 
             this._updatePointerPosition(evt);
 
-            if (scene.preventDefaultOnPointerUp && elementToAttachTo) { // TODO: DO WE NEED THIS?
+            if (scene.preventDefaultOnPointerUp && elementToAttachTo) {
+                evt.preventDefault();
                 elementToAttachTo.focus();
             }
 
@@ -877,7 +879,11 @@ export class InputManager {
                 }
 
                 if (attachMove) {
-                    if (inputIndex === PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) {
+                    if (inputIndex === PointerInput.Horizontal
+                        || inputIndex === PointerInput.Vertical
+                        || inputIndex === PointerInput.DeltaHorizontal
+                        || inputIndex === PointerInput.DeltaVertical
+                        || inputIndex === PointerInput.FakeMove) {
                         evt.type = "pointermove";
                         let currentEvent = eventData || evt;
 

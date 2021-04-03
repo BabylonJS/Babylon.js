@@ -11,10 +11,17 @@ attribute vec3 position;
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
 // Uniforms
-#include<instancesDeclaration>
+// #include<instancesDeclaration>
+#ifdef INSTANCES
+	attribute vec4 world0;
+	attribute vec4 world1;
+	attribute vec4 world2;
+	attribute vec4 world3;
+#endif
+
 #include<helperFunctions>
 
-uniform mat4 viewProjection;
+#include<__decl__shadowMapVertex>
 
 #ifdef ALPHATEST
 varying vec2 vUV;
@@ -27,7 +34,7 @@ attribute vec2 uv2;
 #endif
 #endif
 
-#include<shadowMapVertexDeclaration>
+#include<shadowMapVertexExtraDeclaration>
 
 #include<clipPlaneVertexDeclaration>
 
