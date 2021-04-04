@@ -240,9 +240,10 @@ export class ThinEngine {
     public isFullscreen = false;
 
     /**
-     * Gets or sets a boolean indicating if back faces must be culled (true by default)
+     * Gets or sets a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
+     * If non null, this takes precedence over the value from the material
      */
-    public cullBackFaces = true;
+    public cullBackFaces: Nullable<boolean> = null;
 
     /**
      * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foregroun
