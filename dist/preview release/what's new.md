@@ -93,6 +93,7 @@
 - Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 - Added `imageWidth()` and `imageHeight()` to access the source image dimensions of `Image` ([Queatz](https://github.com/Queatz))
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
+- Added property `renderToIntermediateTexture` to `Container` which when set to true, will render children to an intermediate texture rather than direct to host allowing for DOM style alpha blending ([BlindingHues](https://github.com/blindinghues))
 
 ### WebXR
 
