@@ -740,19 +740,20 @@ export class Engine extends ThinEngine {
 
     /**
      * Set various states to the webGL context
-     * @param culling defines backface culling state
+     * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
      * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
         }
 
         // Cull face
-        var cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+        var cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? this._gl.BACK : this._gl.FRONT;
         if (this._depthCullingState.cullFace !== cullFace || force) {
             this._depthCullingState.cullFace = cullFace;
         }
