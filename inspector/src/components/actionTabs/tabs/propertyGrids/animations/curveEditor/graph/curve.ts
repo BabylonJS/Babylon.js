@@ -42,11 +42,27 @@ export class Curve {
             const prevValue = keys[keyIndex - 1].value;
             const currentValue = keys[keyIndex].value;
 
-            const controlPoint0Frame = outTangent ? prevFrame + (currentFrame - prevFrame) / 2 : prevFrame;
-            const controlPoint1Frame = inTangent ? prevFrame + (currentFrame - prevFrame) / 2 : currentFrame;
+            let controlPoint0Frame = prevFrame + (currentFrame - prevFrame) / 2;
+            let controlPoint1Frame = prevFrame + (currentFrame - prevFrame) / 2;
 
-            const controlPoint0Value = prevValue + outTangent / 3;
-            const controlPoint1Value = currentValue - inTangent / 3;
+            let controlPoint0Value: number;
+            let controlPoint1Value: number;
+
+            if (outTangent) {
+                controlPoint0Frame = 2 * prevFrame / 3 + currentFrame / 3;
+                controlPoint0Value = prevValue + outTangent / 3;
+            } else {
+                const animEval = this.animation.evaluate(controlPoint0Frame);
+                controlPoint0Value = this.property ? animEval[this.property] : animEval;
+            }
+
+            if (inTangent) {
+                controlPoint1Frame = prevFrame / 3 + 2 * currentFrame / 3;
+                controlPoint1Value = currentValue - inTangent / 3;
+            } else {
+                const animEval = this.animation.evaluate(controlPoint1Frame);
+                controlPoint1Value = this.property ? animEval[this.property] : animEval;
+            }
 
             pathData += ` C${convertX(controlPoint0Frame)} ${convertY(controlPoint0Value)}, ${convertX(controlPoint1Frame)} ${convertY(controlPoint1Value)}, ${convertX(currentFrame)} ${convertY(currentValue)}`;
         }
@@ -68,7 +84,7 @@ export class Curve {
             const currentValue = keys[keyIndex].value;
 
             const value = currentValue - inTangent / 3;
-            const frame = prevFrame + (currentFrame - prevFrame) / 2;
+            const frame = prevFrame / 3 + 2 * currentFrame / 3;
 
             return {
                 frame: frame,
@@ -76,13 +92,14 @@ export class Curve {
             }
         } else {
             const prevFrame = keys[keyIndex - 1].frame;                
-            const prevValue = keys[keyIndex - 1].value;
             const currentFrame = keys[keyIndex].frame;
-            const currentValue = keys[keyIndex].value;
+            const midFrame = prevFrame + (currentFrame - prevFrame) / 2;
+
+            let evaluatedValue = this.animation.evaluate(midFrame);
 
             return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
+                frame: midFrame,
+                value: this.property ? evaluatedValue[this.property] : evaluatedValue
             }
         }
     }
@@ -99,7 +116,7 @@ export class Curve {
             const prevValue = keys[keyIndex].value;
             const currentFrame = keys[keyIndex + 1].frame;
 
-            const frame = prevFrame + (currentFrame - prevFrame) / 2;
+            const frame = 2 * prevFrame / 3 + currentFrame / 3;
             const value = prevValue + outTangent / 3;
 
             return {
@@ -108,20 +125,21 @@ export class Curve {
             }
         } else {
             const prevFrame = keys[keyIndex].frame;                
-            const prevValue = keys[keyIndex].value;
             const currentFrame = keys[keyIndex + 1].frame;
-            const currentValue = keys[keyIndex + 1].value;
+            const midFrame = prevFrame + (currentFrame - prevFrame) / 2;
+
+            let evaluatedValue = this.animation.evaluate(midFrame);
 
             return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
+                frame: midFrame,
+                value: this.property ? evaluatedValue[this.property] : evaluatedValue
             }
         }
     }
 
     public updateInTangentFromControlPoint(keyId: number, value: number) {
         const slope = (this.keys[keyId].value - value);
-        this.keys[keyId].inTangent = slope;
+        this.keys[keyId].inTangent = slope * (this.keys[keyId].inTangent ? 2 / 3 : 1 / 2);
 
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
@@ -138,7 +156,7 @@ export class Curve {
 
     public updateOutTangentFromControlPoint(keyId: number, value: number) {
         const slope = (value - this.keys[keyId].value);
-        this.keys[keyId].outTangent = slope;
+        this.keys[keyId].outTangent = slope * (this.keys[keyId].outTangent ? 2 / 3 : 1 / 2);
 
         if (this.property) {
             if (!this.animation.getKeys()[keyId].outTangent) {
