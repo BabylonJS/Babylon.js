@@ -170,14 +170,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.15";
+        return "babylonjs@5.0.0-alpha.16";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.15";
+        return "5.0.0-alpha.16";
     }
 
     /**
@@ -240,9 +240,10 @@ export class ThinEngine {
     public isFullscreen = false;
 
     /**
-     * Gets or sets a boolean indicating if back faces must be culled (true by default)
+     * Gets or sets a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
+     * If non null, this takes precedence over the value from the material
      */
-    public cullBackFaces = true;
+    public cullBackFaces: Nullable<boolean> = null;
 
     /**
      * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foregroun
