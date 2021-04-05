@@ -7414,7 +7414,7 @@ var WaterMaterial = /** @class */ (function (_super) {
             scene.clipPlane = clipPlane;
             // Transform
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = true;
+            scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
         };
     };

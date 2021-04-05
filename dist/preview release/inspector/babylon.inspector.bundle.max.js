@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -47198,7 +47198,7 @@ var RangeSelectorComponent = /** @class */ (function (_super) {
             left = evt.nativeEvent.clientX - this._currentOffset;
         }
         var offset = (left / this._viewWidth) * (this._maxFrame - this._minFrame);
-        var newValue = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + offset) | 0));
+        var newValue = Math.min(this._maxFrame, Math.max(this._minFrame, Math.round(this._minFrame + offset)));
         if (this._bothHandleIsActive) {
             if (this._currentTo + offset > this._maxFrame) {
                 offset = this._maxFrame - this._currentTo;
@@ -47478,6 +47478,9 @@ var TextInputComponent = /** @class */ (function (_super) {
         if (this.props.isNumber) {
             var valueAsNumber = parseFloat(this.state.value);
             if (!isNaN(valueAsNumber)) {
+                if (this.props.onValueAsNumberChanged) {
+                    this.props.onValueAsNumberChanged(valueAsNumber);
+                }
                 this.setState({ value: valueAsNumber.toString(), isFocused: false });
             }
             else {
@@ -47567,12 +47570,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 
 var Curve = /** @class */ (function () {
-    function Curve(color, animation, property) {
+    function Curve(color, animation, property, tangentBuilder) {
         this.keys = new Array();
         this.onDataUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.color = color;
         this.animation = animation;
         this.property = property;
+        this.tangentBuilder = tangentBuilder;
     }
     Curve.prototype.gePathData = function (convertX, convertY) {
         var keys = this.keys;
@@ -47587,10 +47591,26 @@ var Curve = /** @class */ (function () {
             var currentFrame = keys[keyIndex].frame;
             var prevValue = keys[keyIndex - 1].value;
             var currentValue = keys[keyIndex].value;
-            var controlPoint0Frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
-            var controlPoint1Frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
-            var controlPoint0Value = prevValue + outTangent / 3;
-            var controlPoint1Value = currentValue - inTangent / 3;
+            var controlPoint0Frame = prevFrame + (currentFrame - prevFrame) / 2;
+            var controlPoint1Frame = prevFrame + (currentFrame - prevFrame) / 2;
+            var controlPoint0Value = void 0;
+            var controlPoint1Value = void 0;
+            if (outTangent) {
+                controlPoint0Frame = 2 * prevFrame / 3 + currentFrame / 3;
+                controlPoint0Value = prevValue + outTangent / 3;
+            }
+            else {
+                var animEval = this.animation.evaluate(controlPoint0Frame);
+                controlPoint0Value = this.property ? animEval[this.property] : animEval;
+            }
+            if (inTangent) {
+                controlPoint1Frame = prevFrame / 3 + 2 * currentFrame / 3;
+                controlPoint1Value = currentValue - inTangent / 3;
+            }
+            else {
+                var animEval = this.animation.evaluate(controlPoint1Frame);
+                controlPoint1Value = this.property ? animEval[this.property] : animEval;
+            }
             pathData += " C" + convertX(controlPoint0Frame) + " " + convertY(controlPoint0Value) + ", " + convertX(controlPoint1Frame) + " " + convertY(controlPoint1Value) + ", " + convertX(currentFrame) + " " + convertY(currentValue);
         }
         return pathData;
@@ -47605,8 +47625,8 @@ var Curve = /** @class */ (function () {
             var prevFrame = keys[keyIndex - 1].frame;
             var currentFrame = keys[keyIndex].frame;
             var currentValue = keys[keyIndex].value;
-            var frame = inTangent ? prevFrame / 3 + 2 * currentFrame / 3 : currentFrame;
             var value = currentValue - inTangent / 3;
+            var frame = prevFrame / 3 + 2 * currentFrame / 3;
             return {
                 frame: frame,
                 value: value
@@ -47614,12 +47634,12 @@ var Curve = /** @class */ (function () {
         }
         else {
             var prevFrame = keys[keyIndex - 1].frame;
-            var prevValue = keys[keyIndex - 1].value;
             var currentFrame = keys[keyIndex].frame;
-            var currentValue = keys[keyIndex].value;
+            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
+            var evaluatedValue = this.animation.evaluate(midFrame);
             return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
+                frame: midFrame,
+                value: this.property ? evaluatedValue[this.property] : evaluatedValue
             };
         }
     };
@@ -47633,7 +47653,7 @@ var Curve = /** @class */ (function () {
             var prevFrame = keys[keyIndex].frame;
             var prevValue = keys[keyIndex].value;
             var currentFrame = keys[keyIndex + 1].frame;
-            var frame = outTangent ? 2 * prevFrame / 3 + currentFrame / 3 : prevFrame;
+            var frame = 2 * prevFrame / 3 + currentFrame / 3;
             var value = prevValue + outTangent / 3;
             return {
                 frame: frame,
@@ -47642,14 +47662,42 @@ var Curve = /** @class */ (function () {
         }
         else {
             var prevFrame = keys[keyIndex].frame;
-            var prevValue = keys[keyIndex].value;
             var currentFrame = keys[keyIndex + 1].frame;
-            var currentValue = keys[keyIndex + 1].value;
+            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
+            var evaluatedValue = this.animation.evaluate(midFrame);
             return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
+                frame: midFrame,
+                value: this.property ? evaluatedValue[this.property] : evaluatedValue
             };
         }
+    };
+    Curve.prototype.updateInTangentFromControlPoint = function (keyId, value) {
+        var slope = (this.keys[keyId].value - value);
+        this.keys[keyId].inTangent = slope * (this.keys[keyId].inTangent ? 2 / 3 : 1 / 2);
+        if (this.property) {
+            if (!this.animation.getKeys()[keyId].inTangent) {
+                this.animation.getKeys()[keyId].inTangent = this.tangentBuilder();
+            }
+            this.animation.getKeys()[keyId].inTangent[this.property] = this.keys[keyId].inTangent;
+        }
+        else {
+            this.animation.getKeys()[keyId].inTangent = this.keys[keyId].inTangent;
+        }
+        this.onDataUpdatedObservable.notifyObservers();
+    };
+    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, value) {
+        var slope = (value - this.keys[keyId].value);
+        this.keys[keyId].outTangent = slope * (this.keys[keyId].outTangent ? 2 / 3 : 1 / 2);
+        if (this.property) {
+            if (!this.animation.getKeys()[keyId].outTangent) {
+                this.animation.getKeys()[keyId].outTangent = this.tangentBuilder();
+            }
+            this.animation.getKeys()[keyId].outTangent[this.property] = this.keys[keyId].outTangent;
+        }
+        else {
+            this.animation.getKeys()[keyId].outTangent = this.keys[keyId].outTangent;
+        }
+        this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyFrame = function (keyId, frame) {
         this.keys[keyId].frame = frame;
@@ -47667,6 +47715,7 @@ var Curve = /** @class */ (function () {
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
+    Curve.TangentLength = 50;
     return Curve;
 }());
 
@@ -47859,6 +47908,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var GraphComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphComponent, _super);
     function GraphComponent(props) {
@@ -47948,10 +47999,19 @@ var GraphComponent = /** @class */ (function (_super) {
                 }
             }
             var value = _this._currentAnimation.evaluate(currentFrame);
-            keys.splice(indexToAdd + 1, 0, {
+            //  const prevValue = this._currentAnimation.evaluate(currentFrame - 0.01);
+            //const nextValue = this._currentAnimation.evaluate(currentFrame + 0.01);
+            var newKey = {
                 frame: currentFrame,
                 value: value
-            });
+            };
+            // if (keys[indexToAdd].outTangent) {
+            //     newKey.inTangent = value.subtract ? value.subtract(prevValue).scaleInPlace(2 / 3) : (value - prevValue) * 1 / 3;
+            // }
+            // if (keys[indexToAdd + 1].inTangent) {
+            //     newKey.outTangent = nextValue.subtract ? nextValue.subtract(value).scaleInPlace(1/ 3) : (nextValue - value) * 2 / 3;
+            // }
+            keys.splice(indexToAdd + 1, 0, newKey);
             _this._currentAnimation.setKeys(keys);
             _this._evaluateKeys();
             _this.props.context.activeKeyPoints = [];
@@ -47988,29 +48048,29 @@ var GraphComponent = /** @class */ (function (_super) {
                 this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b"));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a"));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
                 break;
         }
         var values = this._extractValuesFromKeys(keys, animation.dataType, true);
@@ -48434,12 +48494,21 @@ var SelectionState;
     SelectionState[SelectionState["Selected"] = 1] = "Selected";
     SelectionState[SelectionState["Siblings"] = 2] = "Siblings";
 })(SelectionState || (SelectionState = {}));
+var ControlMode;
+(function (ControlMode) {
+    ControlMode[ControlMode["None"] = 0] = "None";
+    ControlMode[ControlMode["Key"] = 1] = "Key";
+    ControlMode[ControlMode["TangentLeft"] = 2] = "TangentLeft";
+    ControlMode[ControlMode["TangentRight"] = 3] = "TangentRight";
+})(ControlMode || (ControlMode = {}));
 var KeyPointComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(KeyPointComponent, _super);
     function KeyPointComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._controlMode = ControlMode.None;
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        _this._keyPointSVG = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._onSelectionRectangleMovedObserver = _this.props.context.onSelectionRectangleMoved.add(function (rect1) {
             var rect2 = _this._svgHost.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left ||
@@ -48620,79 +48689,122 @@ var KeyPointComponent = /** @class */ (function (_super) {
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
+        var bbox = evt.nativeEvent.target.getBoundingClientRect();
+        this._tangentReferenceX = bbox.left + bbox.width / 2;
+        this._tangentReferenceY = bbox.top + bbox.width / 2;
+        var target = evt.nativeEvent.target;
+        if (target.tagName === "image") {
+            this._controlMode = ControlMode.Key;
+        }
+        else if (target.classList.contains("left-tangent")) {
+            this._controlMode = ControlMode.TangentLeft;
+        }
+        else if (target.classList.contains("right-tangent")) {
+            this._controlMode = ControlMode.TangentRight;
+        }
         evt.stopPropagation();
+    };
+    KeyPointComponent.prototype._processTangentMove = function (evt, cp) {
+        var key = this.props.curve.keys[this.props.keyId];
+        var expectedFrame = cp.frame;
+        this._tangentReferenceX += evt.nativeEvent.offsetX - this._sourcePointerX;
+        this._tangentReferenceY += evt.nativeEvent.offsetY - this._sourcePointerY;
+        var bbox = this._keyPointSVG.current.getBoundingClientRect();
+        var keyCenterX = bbox.left + bbox.width / 2;
+        var keyCenterY = bbox.top + bbox.width / 2;
+        var slope = -(keyCenterY - this._tangentReferenceY) / (keyCenterX - this._tangentReferenceX);
+        return key.value - (key.frame - expectedFrame) * slope;
     };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
         var _this = this;
         if (!this._pointerIsDown || this.state.selectedState !== SelectionState.Selected) {
             return;
         }
-        var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-        var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-        var previousX = this.props.getPreviousX();
-        var nextX = this.props.getNextX();
-        if (previousX !== null) {
-            newX = Math.max(previousX, newX);
+        if (this._controlMode === ControlMode.TangentLeft) {
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentLeftControlPoint));
+            this.forceUpdate();
         }
-        if (nextX !== null) {
-            newX = Math.min(nextX, newX);
+        else if (this._controlMode === ControlMode.TangentRight) {
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentRightControlPoint));
+            this.forceUpdate();
         }
-        if (this.props.keyId !== 0) {
-            var frame = this.props.invertX(newX);
-            this.props.onFrameValueChanged(frame);
-            this.props.context.onFrameSet.notifyObservers(frame);
-            if (newX !== this.state.x) {
-                this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+        else if (this._controlMode === ControlMode.Key) {
+            var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            var previousX = this.props.getPreviousX();
+            var nextX = this.props.getNextX();
+            if (previousX !== null) {
+                newX = Math.max(previousX, newX);
+            }
+            if (nextX !== null) {
+                newX = Math.min(nextX, newX);
+            }
+            if (this.props.keyId !== 0) {
+                var frame = this.props.invertX(newX);
+                this.props.onFrameValueChanged(frame);
+                this.props.context.onFrameSet.notifyObservers(frame);
+                if (newX !== this.state.x) {
+                    this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+                }
+            }
+            else {
+                newX = this.state.x;
+            }
+            var value = this.props.invertY(newY);
+            this.props.onKeyValueChanged(value);
+            this.props.context.onValueSet.notifyObservers(value);
+            this.setState({ x: newX, y: newY });
+            if (this.props.context.activeKeyPoints.length > 1) {
+                setTimeout(function () {
+                    if (_this.props.context.mainKeyPoint) {
+                        _this.props.context.onMainKeyPointMoved.notifyObservers();
+                    }
+                });
             }
         }
-        else {
-            newX = this.state.x;
-        }
-        var value = this.props.invertY(newY);
-        this.props.onKeyValueChanged(value);
-        this.props.context.onValueSet.notifyObservers(value);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-        this.setState({ x: newX, y: newY });
-        if (this.props.context.activeKeyPoints.length > 1) {
-            setTimeout(function () {
-                if (_this.props.context.mainKeyPoint) {
-                    _this.props.context.onMainKeyPointMoved.notifyObservers();
-                }
-            });
-        }
         evt.stopPropagation();
     };
     KeyPointComponent.prototype._onPointerUp = function (evt) {
         this._pointerIsDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
         evt.stopPropagation();
+        this._controlMode = ControlMode.None;
     };
     KeyPointComponent.prototype.render = function () {
         var _this = this;
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
-        var inControlPoint = this.props.curve.getInControlPoint(this.props.keyId);
-        var outControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);
-        var inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](inControlPoint ? (this.props.convertX(inControlPoint.frame) - this.state.x) : 0, inControlPoint ? (this.props.convertY(inControlPoint.value) - this.state.y) : 0);
-        var outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](outControlPoint ? (this.props.convertX(outControlPoint.frame) - this.state.x) : 0, outControlPoint ? (this.props.convertY(outControlPoint.value) - this.state.y) : 0);
+        this._currentLeftControlPoint = this.props.curve.getInControlPoint(this.props.keyId);
+        this._currentRightControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);
+        var inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
+        var outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
         inVec.normalize();
-        inVec.scaleInPlace(50 * this.props.scale);
+        inVec.scaleInPlace(100 * this.props.scale);
         outVec.normalize();
-        outVec.scaleInPlace(50 * this.props.scale);
+        outVec.scaleInPlace(100 * this.props.scale);
         return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("svg", { ref: this._svgHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, href: svgImageIcon }),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, ref: this._keyPointSVG, href: svgImageIcon }),
             this.state.selectedState === SelectionState.Selected &&
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("g", null,
-                    inControlPoint !== null &&
-                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: inVec.x + "px", y2: inVec.y + "px", style: {
-                                stroke: "#F9BF00",
-                                strokeWidth: 1,
-                            } }),
-                    outControlPoint !== null &&
-                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: outVec.x + "px", y2: outVec.y + "px", style: {
-                                stroke: "#F9BF00",
-                                strokeWidth: 1,
-                            } }))));
+                    this._currentLeftControlPoint !== null &&
+                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: inVec.x + "px", y2: inVec.y + "px", style: {
+                                    stroke: "#F9BF00",
+                                    strokeWidth: "" + 1 * this.props.scale
+                                } }),
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: inVec.x + "px", cy: inVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                                    fill: "#F9BF00",
+                                } })),
+                    this._currentRightControlPoint !== null &&
+                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: outVec.x + "px", y2: outVec.y + "px", style: {
+                                    stroke: "#F9BF00",
+                                    strokeWidth: "" + 1 * this.props.scale
+                                } }),
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: outVec.x + "px", cy: outVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                                    fill: "#F9BF00",
+                                } })))));
     };
     return KeyPointComponent;
 }(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
@@ -51910,7 +52022,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -63701,7 +63813,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -64008,7 +64120,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -64425,7 +64537,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -64764,14 +64876,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/adtInstrumentation":
+/***/ "babylonjs-gui/2D/controls/image":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
 
 /***/ }),
 

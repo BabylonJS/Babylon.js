@@ -668,7 +668,7 @@ export class WaterMaterial extends PushMaterial {
 
             // Transform
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = true;
+            scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
         };
     }

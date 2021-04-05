@@ -28838,6 +28838,8 @@ declare module BABYLON {
         private _currentLOD;
         /** @hidden */
         _indexInSourceMeshInstanceArray: number;
+        /** @hidden */
+        _distanceToCamera: number;
         constructor(name: string, source: Mesh);
         /**
          * Returns the string "InstancedMesh".
@@ -29090,6 +29092,10 @@ declare module BABYLON {
          * The list of defines used in the shader
          */
         defines: string[];
+        /**
+         * Defines if clip planes have to be turned on: true to turn them on, false to turn them off and null to turn them on/off depending on the scene configuration (scene.clipPlaneX)
+         */
+        useClipPlane: Nullable<boolean>;
     }
     /**
      * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
@@ -30964,16 +30970,28 @@ declare module BABYLON {
          */
         protected _backFaceCulling: boolean;
         /**
-         * Sets the back-face culling state
+         * Sets the culling state (true to enable culling, false to disable)
          */
         set backFaceCulling(value: boolean);
         /**
-         * Gets the back-face culling state
+         * Gets the culling state
          */
         get backFaceCulling(): boolean;
         /**
-         * Stores the value for side orientation
+         * Specifies if back or front faces should be culled (when culling is enabled)
          */
+        protected _cullBackFaces: boolean;
+        /**
+         * Sets the type of faces that should be culled (true for back faces, false for front faces)
+         */
+        set cullBackFaces(value: boolean);
+        /**
+         * Gets the type of faces that should be culled
+         */
+        get cullBackFaces(): boolean;
+        /**
+        * Stores the value for side orientation
+        */
         sideOrientation: number;
         /**
          * Callback triggered when the material is compiled
@@ -33910,6 +33928,10 @@ declare module BABYLON {
          * Mesh tile positioning : part tiles on bottom
          */
         static readonly BOTTOM: number;
+        /**
+         * Indicates that the instanced meshes should be sorted from back to front before rendering if their material is transparent
+         */
+        static INSTANCEDMESH_SORT_TRANSPARENT: boolean;
         /**
          * Gets the default side orientation.
          * @param orientation the orientation to value to attempt to get
@@ -38343,7 +38365,7 @@ declare module BABYLON {
          * Sets the easing function of the animation
          * @param easingFunction A custom mathematical formula for animation
          */
-        setEasingFunction(easingFunction: EasingFunction): void;
+        setEasingFunction(easingFunction: IEasingFunction): void;
         /**
          * Interpolates a scalar linearly
          * @param startValue Start value of the animation curve
@@ -40846,9 +40868,10 @@ declare module BABYLON {
          */
         isFullscreen: boolean;
         /**
-         * Gets or sets a boolean indicating if back faces must be culled (true by default)
+         * Gets or sets a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
+         * If non null, this takes precedence over the value from the material
          */
-        cullBackFaces: boolean;
+        cullBackFaces: Nullable<boolean>;
         /**
          * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foregroun
          */
@@ -43173,12 +43196,13 @@ declare module BABYLON {
         /** States */
         /**
          * Set various states to the webGL context
-         * @param culling defines backface culling state
+         * @param culling defines culling state: true to enable culling, false to disable it
          * @param zOffset defines the value to apply to zOffset (0 by default)
          * @param force defines if states must be applied even if cache is up to date
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+         * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean): void;
         /**
          * Set the z offset to apply to current rendering
          * @param value defines the offset to apply
@@ -47072,12 +47096,13 @@ declare module BABYLON {
         setRasterizerState(value: boolean): void;
         /**
          * Set various states to the context
-         * @param culling defines backface culling state
+         * @param culling defines culling state: true to enable culling, false to disable it
          * @param zOffset defines the value to apply to zOffset (0 by default)
          * @param force defines if states must be applied even if cache is up to date
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+         * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean): void;
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
@@ -61591,7 +61616,7 @@ declare module BABYLON {
         getRenderWidth(useScreen?: boolean): number;
         getRenderHeight(useScreen?: boolean): number;
         setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean): void;
         /**
          * Gets the client rect of native canvas.  Needed for InputManager.
          * @returns a client rectangle
@@ -85559,6 +85584,13 @@ declare module BABYLON.GUI {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /** @hidden */
+        protected _renderToIntermediateTexture: boolean;
+        /** @hidden */
+        protected _intermediateTexture: BABYLON.Nullable<BABYLON.DynamicTexture>;
+        /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
+        get renderToIntermediateTexture(): boolean;
+        set renderToIntermediateTexture(value: boolean);
         /**
          * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
          */

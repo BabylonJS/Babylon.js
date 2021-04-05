@@ -714,16 +714,20 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         color: string;
         onDataUpdatedObservable: Observable<void>;
         property?: string;
-        constructor(color: string, animation: Animation, property?: string);
+        tangentBuilder?: () => any;
+        static readonly TangentLength: number;
+        constructor(color: string, animation: Animation, property?: string, tangentBuilder?: () => any);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         getInControlPoint(keyIndex: number): {
             frame: number;
-            value: number;
+            value: any;
         } | null;
         getOutControlPoint(keyIndex: number): {
             frame: number;
-            value: number;
+            value: any;
         } | null;
+        updateInTangentFromControlPoint(keyId: number, value: number): void;
+        updateOutTangentFromControlPoint(keyId: number, value: number): void;
         updateKeyFrame(keyId: number, frame: number): void;
         updateKeyValue(keyId: number, value: number): void;
     }
@@ -775,11 +779,18 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _offsetXToMain;
         private _offsetYToMain;
         private _svgHost;
+        private _keyPointSVG;
+        private _controlMode;
+        private _currentLeftControlPoint;
+        private _currentRightControlPoint;
+        private _tangentReferenceX;
+        private _tangentReferenceY;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
         private _select;
         private _onPointerDown;
+        private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
         render(): JSX.Element;
@@ -4995,16 +5006,20 @@ declare module INSPECTOR {
         color: string;
         onDataUpdatedObservable: BABYLON.Observable<void>;
         property?: string;
-        constructor(color: string, animation: BABYLON.Animation, property?: string);
+        tangentBuilder?: () => any;
+        static readonly TangentLength: number;
+        constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         getInControlPoint(keyIndex: number): {
             frame: number;
-            value: number;
+            value: any;
         } | null;
         getOutControlPoint(keyIndex: number): {
             frame: number;
-            value: number;
+            value: any;
         } | null;
+        updateInTangentFromControlPoint(keyId: number, value: number): void;
+        updateOutTangentFromControlPoint(keyId: number, value: number): void;
         updateKeyFrame(keyId: number, frame: number): void;
         updateKeyValue(keyId: number, value: number): void;
     }
@@ -5052,11 +5067,18 @@ declare module INSPECTOR {
         private _offsetXToMain;
         private _offsetYToMain;
         private _svgHost;
+        private _keyPointSVG;
+        private _controlMode;
+        private _currentLeftControlPoint;
+        private _currentRightControlPoint;
+        private _tangentReferenceX;
+        private _tangentReferenceY;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
         private _select;
         private _onPointerDown;
+        private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
         render(): JSX.Element;

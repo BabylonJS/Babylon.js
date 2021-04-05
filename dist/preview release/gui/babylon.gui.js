@@ -3479,6 +3479,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
 /**
  * Root class for 2D containers
  * @see https://doc.babylonjs.com/how_to/gui#containers
@@ -3502,6 +3505,10 @@ var Container = /** @class */ (function (_super) {
         _this._adaptWidthToChildren = false;
         /** @hidden */
         _this._adaptHeightToChildren = false;
+        /** @hidden */
+        _this._renderToIntermediateTexture = false;
+        /** @hidden */
+        _this._intermediateTexture = null;
         /**
          * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
          */
@@ -3512,6 +3519,21 @@ var Container = /** @class */ (function (_super) {
         _this.maxLayoutCycle = 3;
         return _this;
     }
+    Object.defineProperty(Container.prototype, "renderToIntermediateTexture", {
+        /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
+        get: function () {
+            return this._renderToIntermediateTexture;
+        },
+        set: function (value) {
+            if (this._renderToIntermediateTexture === value) {
+                return;
+            }
+            this._renderToIntermediateTexture = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(Container.prototype, "adaptHeightToChildren", {
         /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
         get: function () {
@@ -3738,6 +3760,19 @@ var Container = /** @class */ (function (_super) {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             _super.prototype._processMeasures.call(this, parentMeasure, context);
             this._evaluateClippingState(parentMeasure);
+            if (this._renderToIntermediateTexture) {
+                if (this._intermediateTexture && this._host.getScene() != this._intermediateTexture.getScene()) {
+                    this._intermediateTexture.dispose();
+                    this._intermediateTexture = null;
+                }
+                if (!this._intermediateTexture) {
+                    this._intermediateTexture = new babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["DynamicTexture"]('', { width: this._currentMeasure.width, height: this._currentMeasure.height }, this._host.getScene(), false, babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE, babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA, false);
+                    this._intermediateTexture.hasAlpha = true;
+                }
+                else {
+                    this._intermediateTexture.scaleTo(this._currentMeasure.width, this._currentMeasure.height);
+                }
+            }
         }
     };
     /** @hidden */
@@ -3804,9 +3839,21 @@ var Container = /** @class */ (function (_super) {
     };
     /** @hidden */
     Container.prototype._draw = function (context, invalidatedRectangle) {
-        this._localDraw(context);
+        var renderToIntermediateTextureThisDraw = this._renderToIntermediateTexture && this._intermediateTexture;
+        var contextToDrawTo = renderToIntermediateTextureThisDraw ? this._intermediateTexture.getContext() : context;
+        if (renderToIntermediateTextureThisDraw) {
+            contextToDrawTo.save();
+            contextToDrawTo.translate(-this._currentMeasure.left, -this._currentMeasure.top);
+            if (invalidatedRectangle) {
+                contextToDrawTo.clearRect(invalidatedRectangle.left, invalidatedRectangle.top, invalidatedRectangle.width, invalidatedRectangle.height);
+            }
+            else {
+                contextToDrawTo.clearRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            }
+        }
+        this._localDraw(contextToDrawTo);
         if (this.clipChildren) {
-            this._clipForChildren(context);
+            this._clipForChildren(contextToDrawTo);
         }
         for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
             var child = _a[_i];
@@ -3816,7 +3863,14 @@ var Container = /** @class */ (function (_super) {
                     continue;
                 }
             }
-            child._render(context, invalidatedRectangle);
+            child._render(contextToDrawTo, invalidatedRectangle);
+        }
+        if (renderToIntermediateTextureThisDraw) {
+            contextToDrawTo.restore();
+            context.save();
+            context.globalAlpha = this.alpha;
+            context.drawImage(contextToDrawTo.canvas, this._currentMeasure.left, this._currentMeasure.top);
+            context.restore();
         }
     };
     Container.prototype.getDescendantsToRef = function (results, directDescendantsOnly, predicate) {
@@ -3881,10 +3935,12 @@ var Container = /** @class */ (function (_super) {
     };
     /** Releases associated resources */
     Container.prototype.dispose = function () {
+        var _a;
         _super.prototype.dispose.call(this);
         for (var index = this.children.length - 1; index >= 0; index--) {
             this.children[index].dispose();
         }
+        (_a = this._intermediateTexture) === null || _a === void 0 ? void 0 : _a.dispose();
     };
     /** @hidden */
     Container.prototype._parseFromContent = function (serializedObject, host) {
@@ -3898,6 +3954,9 @@ var Container = /** @class */ (function (_super) {
             this.addControl(_control__WEBPACK_IMPORTED_MODULE_2__["Control"].Parse(childData, host));
         }
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Container.prototype, "renderToIntermediateTexture", null);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Container.prototype, "maxLayoutCycle", void 0);
@@ -5329,7 +5388,7 @@ var Control = /** @class */ (function () {
             context.globalAlpha *= this._alpha;
         }
         else if (this._alphaSet) {
-            context.globalAlpha = this.parent ? this.parent.alpha * this._alpha : this._alpha;
+            context.globalAlpha = (this.parent && !this.parent.renderToIntermediateTexture) ? this.parent.alpha * this._alpha : this._alpha;
         }
     };
     /** @hidden */
