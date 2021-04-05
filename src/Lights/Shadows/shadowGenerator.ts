@@ -1080,7 +1080,7 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Culling
-        engine.setState(material.backFaceCulling);
+        engine.setState(material.backFaceCulling, undefined, undefined, undefined, material.cullBackFaces);
 
         // Managing instances
         var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
@@ -1184,7 +1184,7 @@ export class ShadowGenerator implements IShadowGenerator {
             effectiveMesh.transferToEffect(world);
 
             if (this.forceBackFacesOnly) {
-                engine.setState(true, 0, false, true);
+                engine.setState(true, 0, false, true, material.cullBackFaces);
             }
 
             // Observables
@@ -1196,7 +1196,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 (isInstance, world) => effect.setMatrix("world", world));
 
             if (this.forceBackFacesOnly) {
-                engine.setState(true, 0, false, false);
+                engine.setState(true, 0, false, false, material.cullBackFaces);
             }
 
             // Observables
