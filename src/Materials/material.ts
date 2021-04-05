@@ -306,7 +306,7 @@ export class Material implements IAnimatable {
      */
      @serialize("cullBackFaces")
      protected _cullBackFaces = true;
- 
+
      /**
       * Sets the type of faces that should be culled (true for back faces, false for front faces)
       */
@@ -317,14 +317,14 @@ export class Material implements IAnimatable {
          this._cullBackFaces = value;
          this.markAsDirty(Material.TextureDirtyFlag);
      }
- 
+
      /**
       * Gets the type of faces that should be culled
       */
      public get cullBackFaces(): boolean {
          return this._cullBackFaces;
      }
- 
+
      /**
      * Stores the value for side orientation
      */
