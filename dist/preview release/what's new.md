@@ -41,8 +41,9 @@
 - Update glTF validator to `2.0.0-dev.3.3`. ([bghgary](https://github.com/bghgary))
 - Added support for KHR_xmp_json_ld for glTF loader. ([Sebavan](https://github.com/sebavan/), [bghgary](https://github.com/bghgary))
 - Added a `OptimizeNormals` option to the OBJ loader to smooth lighting ([Popov72](https://github.com/Popov72))
-- Added a `Prefiltered` option to the CubeTextureAssetTask ([MackeyK24](https://github.com/MackeyK24))
+- Added a `Prefiltered` option to the `CubeTextureAssetTask` ([MackeyK24](https://github.com/MackeyK24))
 - Added support for more uv sets to glTF loader. ([bghgary](https://github.com/bghgary))
+- Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 
 ### Navigation
 
@@ -57,7 +58,7 @@
 - Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added support for clip planes to the `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added support for local cube map to refraction cube texture ([Popov72](https://github.com/Popov72))
-- Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
+- Added the `cullBackFaces` property to `Material` ([Popov72](https://github.com/Popov72))
 
 ### Meshes
 
