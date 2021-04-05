@@ -47478,6 +47478,9 @@ var TextInputComponent = /** @class */ (function (_super) {
         if (this.props.isNumber) {
             var valueAsNumber = parseFloat(this.state.value);
             if (!isNaN(valueAsNumber)) {
+                if (this.props.onValueAsNumberChanged) {
+                    this.props.onValueAsNumberChanged(valueAsNumber);
+                }
                 this.setState({ value: valueAsNumber.toString(), isFocused: false });
             }
             else {
@@ -47588,10 +47591,26 @@ var Curve = /** @class */ (function () {
             var currentFrame = keys[keyIndex].frame;
             var prevValue = keys[keyIndex - 1].value;
             var currentValue = keys[keyIndex].value;
-            var controlPoint0Frame = outTangent ? prevFrame + (currentFrame - prevFrame) / 2 : prevFrame;
-            var controlPoint1Frame = inTangent ? prevFrame + (currentFrame - prevFrame) / 2 : currentFrame;
-            var controlPoint0Value = prevValue + outTangent / 3;
-            var controlPoint1Value = currentValue - inTangent / 3;
+            var controlPoint0Frame = prevFrame + (currentFrame - prevFrame) / 2;
+            var controlPoint1Frame = prevFrame + (currentFrame - prevFrame) / 2;
+            var controlPoint0Value = void 0;
+            var controlPoint1Value = void 0;
+            if (outTangent) {
+                controlPoint0Frame = 2 * prevFrame / 3 + currentFrame / 3;
+                controlPoint0Value = prevValue + outTangent / 3;
+            }
+            else {
+                var animEval = this.animation.evaluate(controlPoint0Frame);
+                controlPoint0Value = this.property ? animEval[this.property] : animEval;
+            }
+            if (inTangent) {
+                controlPoint1Frame = prevFrame / 3 + 2 * currentFrame / 3;
+                controlPoint1Value = currentValue - inTangent / 3;
+            }
+            else {
+                var animEval = this.animation.evaluate(controlPoint1Frame);
+                controlPoint1Value = this.property ? animEval[this.property] : animEval;
+            }
             pathData += " C" + convertX(controlPoint0Frame) + " " + convertY(controlPoint0Value) + ", " + convertX(controlPoint1Frame) + " " + convertY(controlPoint1Value) + ", " + convertX(currentFrame) + " " + convertY(currentValue);
         }
         return pathData;
@@ -47607,7 +47626,7 @@ var Curve = /** @class */ (function () {
             var currentFrame = keys[keyIndex].frame;
             var currentValue = keys[keyIndex].value;
             var value = currentValue - inTangent / 3;
-            var frame = prevFrame + (currentFrame - prevFrame) / 2;
+            var frame = prevFrame / 3 + 2 * currentFrame / 3;
             return {
                 frame: frame,
                 value: value
@@ -47615,12 +47634,12 @@ var Curve = /** @class */ (function () {
         }
         else {
             var prevFrame = keys[keyIndex - 1].frame;
-            var prevValue = keys[keyIndex - 1].value;
             var currentFrame = keys[keyIndex].frame;
-            var currentValue = keys[keyIndex].value;
+            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
+            var evaluatedValue = this.animation.evaluate(midFrame);
             return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
+                frame: midFrame,
+                value: this.property ? evaluatedValue[this.property] : evaluatedValue
             };
         }
     };
@@ -47634,7 +47653,7 @@ var Curve = /** @class */ (function () {
             var prevFrame = keys[keyIndex].frame;
             var prevValue = keys[keyIndex].value;
             var currentFrame = keys[keyIndex + 1].frame;
-            var frame = prevFrame + (currentFrame - prevFrame) / 2;
+            var frame = 2 * prevFrame / 3 + currentFrame / 3;
             var value = prevValue + outTangent / 3;
             return {
                 frame: frame,
@@ -47643,18 +47662,18 @@ var Curve = /** @class */ (function () {
         }
         else {
             var prevFrame = keys[keyIndex].frame;
-            var prevValue = keys[keyIndex].value;
             var currentFrame = keys[keyIndex + 1].frame;
-            var currentValue = keys[keyIndex + 1].value;
+            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
+            var evaluatedValue = this.animation.evaluate(midFrame);
             return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
+                frame: midFrame,
+                value: this.property ? evaluatedValue[this.property] : evaluatedValue
             };
         }
     };
     Curve.prototype.updateInTangentFromControlPoint = function (keyId, value) {
         var slope = (this.keys[keyId].value - value);
-        this.keys[keyId].inTangent = slope;
+        this.keys[keyId].inTangent = slope * (this.keys[keyId].inTangent ? 2 / 3 : 1 / 2);
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
                 this.animation.getKeys()[keyId].inTangent = this.tangentBuilder();
@@ -47668,7 +47687,7 @@ var Curve = /** @class */ (function () {
     };
     Curve.prototype.updateOutTangentFromControlPoint = function (keyId, value) {
         var slope = (value - this.keys[keyId].value);
-        this.keys[keyId].outTangent = slope;
+        this.keys[keyId].outTangent = slope * (this.keys[keyId].outTangent ? 2 / 3 : 1 / 2);
         if (this.property) {
             if (!this.animation.getKeys()[keyId].outTangent) {
                 this.animation.getKeys()[keyId].outTangent = this.tangentBuilder();
@@ -47980,10 +47999,19 @@ var GraphComponent = /** @class */ (function (_super) {
                 }
             }
             var value = _this._currentAnimation.evaluate(currentFrame);
-            keys.splice(indexToAdd + 1, 0, {
+            //  const prevValue = this._currentAnimation.evaluate(currentFrame - 0.01);
+            //const nextValue = this._currentAnimation.evaluate(currentFrame + 0.01);
+            var newKey = {
                 frame: currentFrame,
                 value: value
-            });
+            };
+            // if (keys[indexToAdd].outTangent) {
+            //     newKey.inTangent = value.subtract ? value.subtract(prevValue).scaleInPlace(2 / 3) : (value - prevValue) * 1 / 3;
+            // }
+            // if (keys[indexToAdd + 1].inTangent) {
+            //     newKey.outTangent = nextValue.subtract ? nextValue.subtract(value).scaleInPlace(1/ 3) : (nextValue - value) * 2 / 3;
+            // }
+            keys.splice(indexToAdd + 1, 0, newKey);
             _this._currentAnimation.setKeys(keys);
             _this._evaluateKeys();
             _this.props.context.activeKeyPoints = [];
@@ -48662,8 +48690,8 @@ var KeyPointComponent = /** @class */ (function (_super) {
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
         var bbox = evt.nativeEvent.target.getBoundingClientRect();
-        this._tangentReferenceX = bbox.left;
-        this._tangentReferenceY = bbox.top;
+        this._tangentReferenceX = bbox.left + bbox.width / 2;
+        this._tangentReferenceY = bbox.top + bbox.width / 2;
         var target = evt.nativeEvent.target;
         if (target.tagName === "image") {
             this._controlMode = ControlMode.Key;
@@ -48683,7 +48711,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
         this._tangentReferenceY += evt.nativeEvent.offsetY - this._sourcePointerY;
         var bbox = this._keyPointSVG.current.getBoundingClientRect();
         var keyCenterX = bbox.left + bbox.width / 2;
-        var keyCenterY = bbox.top + bbox.height / 4;
+        var keyCenterY = bbox.top + bbox.width / 2;
         var slope = -(keyCenterY - this._tangentReferenceY) / (keyCenterX - this._tangentReferenceX);
         return key.value - (key.frame - expectedFrame) * slope;
     };

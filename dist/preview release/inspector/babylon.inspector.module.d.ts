@@ -720,11 +720,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         getInControlPoint(keyIndex: number): {
             frame: number;
-            value: number;
+            value: any;
         } | null;
         getOutControlPoint(keyIndex: number): {
             frame: number;
-            value: number;
+            value: any;
         } | null;
         updateInTangentFromControlPoint(keyId: number, value: number): void;
         updateOutTangentFromControlPoint(keyId: number, value: number): void;
@@ -5012,11 +5012,11 @@ declare module INSPECTOR {
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         getInControlPoint(keyIndex: number): {
             frame: number;
-            value: number;
+            value: any;
         } | null;
         getOutControlPoint(keyIndex: number): {
             frame: number;
-            value: number;
+            value: any;
         } | null;
         updateInTangentFromControlPoint(keyId: number, value: number): void;
         updateOutTangentFromControlPoint(keyId: number, value: number): void;
