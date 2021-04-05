@@ -7,6 +7,9 @@ import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
+import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Constants } from 'babylonjs/Engines/constants';
 
 /**
  * Root class for 2D containers
@@ -23,6 +26,23 @@ export class Container extends Control {
     protected _adaptWidthToChildren = false;
     /** @hidden */
     protected _adaptHeightToChildren = false;
+    /** @hidden */
+    protected _renderToIntermediateTexture: boolean = false;
+    /** @hidden */
+    protected _intermediateTexture: Nullable<DynamicTexture> = null;
+
+    /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
+    @serialize()
+    public get renderToIntermediateTexture(): boolean {
+        return this._renderToIntermediateTexture;
+    }
+    public set renderToIntermediateTexture(value: boolean) {
+        if (this._renderToIntermediateTexture === value) {
+            return;
+        }
+        this._renderToIntermediateTexture = value;
+        this._markAsDirty();
+    }
 
     /**
      * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
@@ -301,6 +321,19 @@ export class Container extends Control {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             super._processMeasures(parentMeasure, context);
             this._evaluateClippingState(parentMeasure);
+            if (this._renderToIntermediateTexture) {
+                if (this._intermediateTexture && this._host.getScene() != this._intermediateTexture.getScene()) {
+                    this._intermediateTexture.dispose();
+                    this._intermediateTexture = null;
+                }
+                if (!this._intermediateTexture) {
+                    this._intermediateTexture = new DynamicTexture('', {width: this._currentMeasure.width, height: this._currentMeasure.height},
+                        this._host.getScene(), false, Texture.NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA, false);
+                    this._intermediateTexture.hasAlpha = true;
+                } else {
+                    this._intermediateTexture.scaleTo(this._currentMeasure.width, this._currentMeasure.height);
+                }
+            }
         }
     }
 
@@ -387,11 +420,23 @@ export class Container extends Control {
 
     /** @hidden */
     public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
+        const renderToIntermediateTextureThisDraw = this._renderToIntermediateTexture && this._intermediateTexture;
+        const contextToDrawTo: CanvasRenderingContext2D = renderToIntermediateTextureThisDraw ? (<DynamicTexture>this._intermediateTexture).getContext() : context;
 
-        this._localDraw(context);
+        if (renderToIntermediateTextureThisDraw) {
+            contextToDrawTo.save();
+            contextToDrawTo.translate(-this._currentMeasure.left, -this._currentMeasure.top);
+            if (invalidatedRectangle) {
+                contextToDrawTo.clearRect(invalidatedRectangle.left, invalidatedRectangle.top, invalidatedRectangle.width, invalidatedRectangle.height);
+            } else {
+                contextToDrawTo.clearRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            }
+        }
+
+        this._localDraw(contextToDrawTo);
 
         if (this.clipChildren) {
-            this._clipForChildren(context);
+            this._clipForChildren(contextToDrawTo);
         }
 
         for (var child of this._children) {
@@ -401,7 +446,15 @@ export class Container extends Control {
                     continue;
                 }
             }
-            child._render(context, invalidatedRectangle);
+            child._render(contextToDrawTo, invalidatedRectangle);
+        }
+
+        if (renderToIntermediateTextureThisDraw) {
+            contextToDrawTo.restore();
+            context.save();
+            context.globalAlpha = this.alpha;
+            context.drawImage(contextToDrawTo.canvas, this._currentMeasure.left, this._currentMeasure.top);
+            context.restore();
         }
     }
 
@@ -484,6 +537,7 @@ export class Container extends Control {
         for (var index = this.children.length - 1; index >= 0; index--) {
             this.children[index].dispose();
         }
+        this._intermediateTexture?.dispose();
     }
 
     /** @hidden */
