@@ -3969,6 +3969,27 @@ var GLTFLoader = /** @class */ (function () {
                 if (babylonVertexBuffer.getKind() === babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind && !_this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
                     var mmin = accessor.min, mmax = accessor.max;
                     if (mmin !== undefined && mmax !== undefined) {
+                        if (accessor.normalized && accessor.componentType !== 5126 /* FLOAT */) {
+                            var divider = 1;
+                            switch (accessor.componentType) {
+                                case 5120 /* BYTE */:
+                                    divider = 127.0;
+                                    break;
+                                case 5121 /* UNSIGNED_BYTE */:
+                                    divider = 255.0;
+                                    break;
+                                case 5122 /* SHORT */:
+                                    divider = 32767.0;
+                                    break;
+                                case 5123 /* UNSIGNED_SHORT */:
+                                    divider = 65535.0;
+                                    break;
+                            }
+                            for (var i = 0; i < 3; ++i) {
+                                mmin[i] = Math.max(mmin[i] / divider, -1.0);
+                                mmax[i] = Math.max(mmax[i] / divider, -1.0);
+                            }
+                        }
                         var min = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Vector3[0], max = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Vector3[1];
                         min.copyFromFloats.apply(min, mmin);
                         max.copyFromFloats.apply(max, mmax);
@@ -3990,6 +4011,10 @@ var GLTFLoader = /** @class */ (function () {
         loadAttribute("TANGENT", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind);
         loadAttribute("TEXCOORD_0", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UVKind);
         loadAttribute("TEXCOORD_1", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV2Kind);
+        loadAttribute("TEXCOORD_2", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV3Kind);
+        loadAttribute("TEXCOORD_3", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV4Kind);
+        loadAttribute("TEXCOORD_4", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV5Kind);
+        loadAttribute("TEXCOORD_5", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV6Kind);
         loadAttribute("JOINTS_0", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].MatricesIndicesKind);
         loadAttribute("WEIGHTS_0", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].MatricesWeightsKind);
         loadAttribute("JOINTS_1", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].MatricesIndicesExtraKind);

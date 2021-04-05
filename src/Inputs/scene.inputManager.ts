@@ -877,7 +877,11 @@ export class InputManager {
                 }
 
                 if (attachMove) {
-                    if (inputIndex === PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) {
+                    if (inputIndex === PointerInput.Horizontal
+                        || inputIndex === PointerInput.Vertical
+                        || inputIndex === PointerInput.DeltaHorizontal
+                        || inputIndex === PointerInput.DeltaVertical
+                        || inputIndex === PointerInput.FakeMove) {
                         evt.type = "pointermove";
                         let currentEvent = eventData || evt;
 

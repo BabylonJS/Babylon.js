@@ -627,14 +627,28 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface KeyEntry {
+        frame: number;
+        value: number;
+        inTangent?: number;
+        outTangent?: number;
+    }
     export class Curve {
-        keys: BABYLON.Vector2[];
+        keys: KeyEntry[];
         animation: BABYLON.Animation;
         color: string;
         onDataUpdatedObservable: BABYLON.Observable<void>;
         property?: string;
         constructor(color: string, animation: BABYLON.Animation, property?: string);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
+        getInControlPoint(keyIndex: number): {
+            frame: number;
+            value: number;
+        } | null;
+        getOutControlPoint(keyIndex: number): {
+            frame: number;
+            value: number;
+        } | null;
         updateKeyFrame(keyId: number, frame: number): void;
         updateKeyValue(keyId: number, value: number): void;
     }
@@ -663,7 +677,7 @@ declare module INSPECTOR {
         x: number;
         y: number;
     }
-    enum SelectionState {
+    export enum SelectionState {
         None = 0,
         Selected = 1,
         Siblings = 2
@@ -673,12 +687,19 @@ declare module INSPECTOR {
         private _onActiveKeyFrameChangedObserver;
         private _onFrameManuallyEnteredObserver;
         private _onValueManuallyEnteredObserver;
+        private _onMainKeyPointSetObserver;
+        private _onMainKeyPointMovedObserver;
+        private _onSelectionRectangleMovedObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
+        private _offsetXToMain;
+        private _offsetYToMain;
+        private _svgHost;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
+        private _select;
         private _onPointerDown;
         private _onPointerMove;
         private _onPointerUp;
@@ -693,23 +714,27 @@ declare module INSPECTOR {
         target: BABYLON.IAnimatable;
         activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
+        mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
+        snippetId: string;
         activeFrame: number;
         fromKey: number;
         toKey: number;
         forwardAnimation: boolean;
         isPlaying: boolean;
+        referenceMinFrame: number;
+        referenceMaxFrame: number;
         onActiveAnimationChanged: BABYLON.Observable<void>;
-        onActiveKeyPointChanged: BABYLON.Observable<BABYLON.Nullable<{
-            keyPoint: KeyPointComponent;
-            channel: string;
-        }>>;
+        onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
         onActiveKeyFrameChanged: BABYLON.Observable<number>;
         onFrameSet: BABYLON.Observable<number>;
         onFrameManuallyEntered: BABYLON.Observable<number>;
+        onMainKeyPointSet: BABYLON.Observable<void>;
+        onMainKeyPointMoved: BABYLON.Observable<void>;
         onValueSet: BABYLON.Observable<number>;
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
+        onNewKeyPointRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
@@ -717,6 +742,8 @@ declare module INSPECTOR {
         onMoveToFrameRequired: BABYLON.Observable<number>;
         onAnimationStateChanged: BABYLON.Observable<void>;
         onDeleteKeyActiveKeyPoints: BABYLON.Observable<void>;
+        onSelectionRectangleMoved: BABYLON.Observable<DOMRect>;
+        onAnimationsLoaded: BABYLON.Observable<void>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
@@ -749,7 +776,10 @@ declare module INSPECTOR {
     interface IMediaPlayerComponentState {
     }
     export class MediaPlayerComponent extends React.Component<IMediaPlayerComponentProps, IMediaPlayerComponentState> {
+        private _isMounted;
         constructor(props: IMediaPlayerComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         private _onFirstKey;
         private _onPrevKey;
         private _onRewind;
@@ -775,6 +805,10 @@ declare module INSPECTOR {
         private _minFrame;
         private _maxFrame;
         private _leftHandleIsActive;
+        private _bothHandleIsActive;
+        private _currentOffset;
+        private _currentFrom;
+        private _currentTo;
         constructor(props: IRangeSelectorComponentProps);
         private _computeSizes;
         private _onPointerDown;
@@ -848,6 +882,7 @@ declare module INSPECTOR {
     interface ITopBarComponentState {
         keyFrameValue: string;
         keyValue: string;
+        editControlsVisible: boolean;
     }
     export class TopBarComponent extends React.Component<ITopBarComponentProps, ITopBarComponentState> {
         private _onFrameSetObserver;
@@ -872,8 +907,6 @@ declare module INSPECTOR {
         private _viewWidth;
         private _viewScale;
         private _offsetX;
-        private _minFrame;
-        private _maxFrame;
         private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IFrameBarComponentProps);
@@ -919,6 +952,7 @@ declare module INSPECTOR {
         private _viewScale;
         private _offsetX;
         private _offsetY;
+        private _inSelectionMode;
         private _graphOffsetX;
         private _minValue;
         private _maxValue;
@@ -926,10 +960,13 @@ declare module INSPECTOR {
         private _maxFrame;
         private _svgHost;
         private _svgHost2;
+        private _selectionRectangle;
         private _curves;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
+        private _selectionStartX;
+        private _selectionStartY;
         private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IGraphComponentProps);
@@ -989,9 +1026,11 @@ declare module INSPECTOR {
         private _svgHost;
         private _viewWidth;
         private _offsetX;
+        private _isMounted;
         private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IRangeFrameBarComponentProps);
+        componentDidMount(): void;
         componentWillUnmount(): void;
         private _computeSizes;
         private _dropKeyFrames;
@@ -1062,6 +1101,68 @@ declare module INSPECTOR {
     }
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
         constructor(props: IAnimationListComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
+    }
+}
+declare module INSPECTOR {
+    interface ISaveAnimationComponentProps {
+        globalState: GlobalState;
+        context: Context;
+    }
+    interface ISaveAnimationComponentState {
+    }
+    export class SaveAnimationComponent extends React.Component<ISaveAnimationComponentProps, ISaveAnimationComponentState> {
+        private _selectedAnimations;
+        private _root;
+        constructor(props: ISaveAnimationComponentProps);
+        private _getJson;
+        saveToSnippetServer(): void;
+        saveToFile(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ILoadAnimationComponentProps {
+        globalState: GlobalState;
+        context: Context;
+    }
+    interface ILoadAnimationComponentState {
+    }
+    export class LoadAnimationComponent extends React.Component<ILoadAnimationComponentProps, ILoadAnimationComponentState> {
+        private _root;
+        private _textInput;
+        constructor(props: ILoadAnimationComponentProps);
+        loadFromFile(evt: React.ChangeEvent<HTMLInputElement>): void;
+        loadFromSnippetServer(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IAddAnimationComponentProps {
+        globalState: GlobalState;
+        context: Context;
+    }
+    interface IAddAnimationComponentState {
+    }
+    export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
+        private _root;
+        private _displayName;
+        private _property;
+        private _typeElement;
+        private _loopModeElement;
+        constructor(props: IAddAnimationComponentProps);
+        createNew(): void;
         render(): JSX.Element;
     }
 }
@@ -3457,17 +3558,6 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Contrast: IToolData;
-}
-declare module INSPECTOR {
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
 }
 declare module INSPECTOR {
     export interface IButtonLineComponentProps {

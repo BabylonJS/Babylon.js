@@ -412,7 +412,7 @@ export class NodeMaterialConnectionPoint {
             }
 
             for (var output of otherBlock.outputs) {
-                if (output.isConnectedInVertexShader) {
+                if (output.ownerBlock.target != NodeMaterialBlockTargets.Neutral && output.isConnectedInVertexShader) {
                     return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
                 }
             }

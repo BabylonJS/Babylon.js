@@ -258,7 +258,7 @@ export class Sound {
                                     url.indexOf(".m4a", url.length - 4) !== -1 ||
                                     url.indexOf("blob:") !== -1;
                                 if (codecSupportedFound) {
-                                    // Loading sound using XHR2
+                                    // Loading sound
                                     if (!this._streaming) {
                                         this._scene._loadFile(
                                             url,

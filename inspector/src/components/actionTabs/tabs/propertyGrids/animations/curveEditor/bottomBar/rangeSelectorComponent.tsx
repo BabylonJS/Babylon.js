@@ -24,6 +24,10 @@ IRangeSelectorComponentState
     private _maxFrame: number;
 
     private _leftHandleIsActive: boolean;
+    private _bothHandleIsActive: boolean;
+    private _currentOffset: number;
+    private _currentFrom: number;
+    private _currentTo: number;
 
     constructor(props: IRangeSelectorComponentProps) {
         super(props);
@@ -41,6 +45,10 @@ IRangeSelectorComponentState
             this.forceUpdate();
         });
 
+        this.props.context.onAnimationsLoaded.add(() => {
+            this.forceUpdate();
+        });
+
         this._updateLimits();
     }
 
@@ -54,14 +62,17 @@ IRangeSelectorComponentState
     }
 
     private _onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+        this._bothHandleIsActive = false;
+
         if ((evt.nativeEvent.target as HTMLDivElement).id === "left-handle" ) {
             this._leftHandleIsActive = true;
         } else if ((evt.nativeEvent.target as HTMLDivElement).id === "right-handle" ) {
             this._leftHandleIsActive = false;
-        } else {
-            
-            this._pointerIsDown = false;
-            return;
+        } else {           
+            this._bothHandleIsActive = true;
+            this._currentOffset = evt.nativeEvent.clientX;
+            this._currentFrom = this.props.context.fromKey;            
+            this._currentTo = this.props.context.toKey;
         }
 
         this._pointerIsDown = true;
@@ -78,15 +89,38 @@ IRangeSelectorComponentState
         }
 
         this._updateLimits();
+        let left = evt.nativeEvent.offsetX;
 
-        const left = evt.nativeEvent.offsetX;
-        if (this._leftHandleIsActive) {
-            this.props.context.fromKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + (left / this._viewWidth) * (this._maxFrame - this._minFrame)) | 0));            
-        } else {
-            this.props.context.toKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + (left / this._viewWidth) * (this._maxFrame - this._minFrame)) | 0));
+        if (this._bothHandleIsActive) {
+            left = evt.nativeEvent.clientX - this._currentOffset;
         }
 
+        let offset = (left / this._viewWidth) * (this._maxFrame - this._minFrame);
+        const newValue = Math.min(this._maxFrame, Math.max(this._minFrame, (this._minFrame + offset) | 0));
+
+        if (this._bothHandleIsActive) {
+
+            if (this._currentTo + offset > this._maxFrame) {
+                offset = this._maxFrame - this._currentTo;
+            }
+            if (this._currentFrom + offset < this._minFrame) {
+                offset = this._minFrame - this._currentFrom;
+            }
+
+            this.props.context.fromKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._currentFrom + offset) | 0));  
+            this.props.context.toKey = Math.min(this._maxFrame, Math.max(this._minFrame, (this._currentTo + offset) | 0));
+        } else if (this._leftHandleIsActive) {
+            this.props.context.fromKey = newValue;  
+            
+            this.props.context.fromKey = Math.min(this.props.context.toKey - 1, this.props.context.fromKey);
+        } else {
+            this.props.context.toKey = newValue;
+            this.props.context.toKey = Math.max(this.props.context.fromKey + 1, this.props.context.toKey);
+        }
+        
+
         this.props.context.onRangeUpdated.notifyObservers();
+        this.props.context.stop();
 
         this.forceUpdate();
     }
@@ -120,6 +154,10 @@ IRangeSelectorComponentState
 
         const ratio = this._maxFrame - this._minFrame
 
+        if (this.props.context.toKey > this._maxFrame ) {
+            this.props.context.toKey = this._maxFrame;
+        }
+
         return (
             <div id="range-selector" ref={this._rangeHost}
                 onPointerDown={evt => this._onPointerDown(evt)}
@@ -138,10 +176,10 @@ IRangeSelectorComponentState
                         <img src={handleIcon} />
                     </div>
                     <div id="from-key">
-                        {this.props.context.fromKey}
+                        {this.props.context.fromKey | 0}
                     </div>
                     <div id="to-key">
-                        {this.props.context.toKey}
+                        {this.props.context.toKey | 0}
                     </div>
                     <div id="right-handle" className="handle">
                         <img src={handleIcon} />

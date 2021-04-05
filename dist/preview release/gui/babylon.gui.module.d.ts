@@ -4366,7 +4366,7 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         linkToTransformNode(node: Nullable<TransformNode>): Control3D;
         /** @hidden **/
         _prepareNode(scene: Scene): void;
-        protected _injectGUI3DMetadata(node: TransformNode): any;
+        protected _injectGUI3DReservedDataStore(node: TransformNode): any;
         /**
          * Node creation.
          * Can be overriden by children
@@ -9301,7 +9301,7 @@ declare module BABYLON.GUI {
         linkToTransformNode(node: BABYLON.Nullable<BABYLON.TransformNode>): Control3D;
         /** @hidden **/
         _prepareNode(scene: BABYLON.Scene): void;
-        protected _injectGUI3DMetadata(node: BABYLON.TransformNode): any;
+        protected _injectGUI3DReservedDataStore(node: BABYLON.TransformNode): any;
         /**
          * Node creation.
          * Can be overriden by children

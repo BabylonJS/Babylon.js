@@ -143,7 +143,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         let animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
         this._isPlaying = animatablesForTarget.length > 0;
 
-        if (this._isPlaying && !this._mainAnimatable) {
+        if (this._isPlaying) {
             this._mainAnimatable = animatablesForTarget[0];
             if (this._mainAnimatable) {
                 this._animationControl.from = this._mainAnimatable.fromFrame;
