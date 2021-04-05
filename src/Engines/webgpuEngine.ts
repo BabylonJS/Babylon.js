@@ -3828,43 +3828,6 @@ export class WebGPUEngine extends Engine {
     }
 
     //------------------------------------------------------------------------------
-    //                              Render Bundle
-    //------------------------------------------------------------------------------
-
-    private _bundleEncoder: Nullable<GPURenderBundleEncoder>;
-
-    /**
-     * Start recording all the gpu calls into a bundle.
-     */
-    public startRecordBundle(): void {
-        this._bundleEncoder = this._device.createRenderBundleEncoder({
-            colorFormats: this._cacheRenderPipeline.colorFormats,
-            depthStencilFormat: this._depthTextureFormat,
-            sampleCount: this.currentSampleCount,
-        });
-    }
-
-    /**
-     * Stops recording the bundle.
-     * @returns the recorded bundle
-     */
-    public stopRecordBundle(): GPURenderBundle {
-        const bundle = this._bundleEncoder!.finish();
-        this._bundleEncoder = null;
-        return bundle;
-    }
-
-    /**
-     * Execute the previously recorded bundle.
-     * @param bundles defines the bundle to replay
-     */
-    public executeBundles(bundles: GPURenderBundle[]): void {
-        const renderPass = this._getCurrentRenderPass();
-
-        renderPass.executeBundles(bundles);
-    }
-
-    //------------------------------------------------------------------------------
     //                              Dispose
     //------------------------------------------------------------------------------
 
