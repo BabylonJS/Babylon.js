@@ -302,7 +302,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Specifies if back or front faces should be called (when culling is enabled)
+     * Specifies if back or front faces should be culled (when culling is enabled)
      */
      @serialize("cullBackFaces")
      protected _cullBackFaces = true;
