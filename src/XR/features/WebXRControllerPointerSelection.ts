@@ -783,7 +783,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _generateNewHandMeshPair() {
         // populate information for near pick and hover
         const pickMesh = SphereBuilder.CreateSphere("IndexPickSphere", { diameter: 1 });
-        pickMesh.scaling.set(0.005, 0.005, 0.005);
+        pickMesh.scaling.set(0.7, 0.7, 0.7);
         pickMesh.isVisible = false;
         const hoverMesh = SphereBuilder.CreateSphere("IndexHoverSphere", { diameter: 1});
         hoverMesh.isVisible = false;
