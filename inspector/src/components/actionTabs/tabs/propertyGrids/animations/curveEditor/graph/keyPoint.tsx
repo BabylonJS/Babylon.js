@@ -297,8 +297,8 @@ IKeyPointComponentState
         this._sourcePointerY = evt.nativeEvent.offsetY;
 
         const bbox = (evt.nativeEvent.target as HTMLElement).getBoundingClientRect();
-        this._tangentReferenceX = bbox.left;
-        this._tangentReferenceY = bbox.top;
+        this._tangentReferenceX = bbox.left + bbox.width / 2;
+        this._tangentReferenceY = bbox.top + bbox.width / 2;
 
         const target = evt.nativeEvent.target as HTMLElement;
         if (target.tagName === "image") {
@@ -321,7 +321,7 @@ IKeyPointComponentState
 
         let bbox = this._keyPointSVG.current!.getBoundingClientRect();
         let keyCenterX = bbox.left + bbox.width / 2;
-        let keyCenterY = bbox.top + bbox.height / 4;
+        let keyCenterY = bbox.top + bbox.width / 2;
         let slope = -(keyCenterY - this._tangentReferenceY) / (keyCenterX - this._tangentReferenceX);
 
         return key.value - (key.frame - expectedFrame) * slope;
