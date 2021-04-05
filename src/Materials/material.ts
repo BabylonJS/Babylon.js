@@ -284,7 +284,7 @@ export class Material implements IAnimatable {
     protected _backFaceCulling = true;
 
     /**
-     * Sets the back-face culling state
+     * Sets the culling state (true to enable culling, false to disable)
      */
     public set backFaceCulling(value: boolean) {
         if (this._backFaceCulling === value) {
@@ -295,13 +295,37 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the back-face culling state
+     * Gets the culling state
      */
     public get backFaceCulling(): boolean {
         return this._backFaceCulling;
     }
 
     /**
+     * Specifies if back or front faces should be culled (when culling is enabled)
+     */
+     @serialize("cullBackFaces")
+     protected _cullBackFaces = true;
+
+     /**
+      * Sets the type of faces that should be culled (true for back faces, false for front faces)
+      */
+     public set cullBackFaces(value: boolean) {
+         if (this._cullBackFaces === value) {
+             return;
+         }
+         this._cullBackFaces = value;
+         this.markAsDirty(Material.TextureDirtyFlag);
+     }
+
+     /**
+      * Gets the type of faces that should be culled
+      */
+     public get cullBackFaces(): boolean {
+         return this._cullBackFaces;
+     }
+
+     /**
      * Stores the value for side orientation
      */
     @serialize()
@@ -916,7 +940,7 @@ export class Material implements IAnimatable {
         var reverse = orientation === Material.ClockWiseSideOrientation;
 
         engine.enableEffect(effect ? effect : this._getDrawWrapper());
-        engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
+        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces);
 
         return reverse;
     }
