@@ -40,6 +40,13 @@ export enum SelectionState {
     Siblings
 }
 
+enum ControlMode {
+    None,
+    Key,
+    TangentLeft,
+    TangentRight
+}
+
 export class KeyPointComponent extends React.Component<
 IKeyPointComponentProps,
 IKeyPointComponentState
@@ -60,6 +67,15 @@ IKeyPointComponentState
     private _offsetYToMain: number;
     
     private _svgHost: React.RefObject<SVGSVGElement>;
+    private _keyPointSVG: React.RefObject<SVGImageElement>;
+
+    private _controlMode = ControlMode.None;
+
+    private _currentLeftControlPoint: Nullable<{frame: number, value: number}>;
+    private _currentRightControlPoint: Nullable<{frame: number, value: number}>;
+
+    private _tangentReferenceX: number;
+    private _tangentReferenceY: number;
 
     constructor(props: IKeyPointComponentProps) {
         super(props);
@@ -67,6 +83,7 @@ IKeyPointComponentState
         this.state = { selectedState: SelectionState.None, x: this.props.x, y: this.props.y };
         
         this._svgHost = React.createRef();
+        this._keyPointSVG = React.createRef();
 
         this._onSelectionRectangleMovedObserver = this.props.context.onSelectionRectangleMoved.add(rect1 => {
             const rect2 = this._svgHost.current!.getBoundingClientRect();
@@ -279,7 +296,35 @@ IKeyPointComponentState
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
 
+        const bbox = (evt.nativeEvent.target as HTMLElement).getBoundingClientRect();
+        this._tangentReferenceX = bbox.left + bbox.width / 2;
+        this._tangentReferenceY = bbox.top + bbox.width / 2;
+
+        const target = evt.nativeEvent.target as HTMLElement;
+        if (target.tagName === "image") {
+            this._controlMode = ControlMode.Key;
+        } else if (target.classList.contains("left-tangent")) {
+            this._controlMode = ControlMode.TangentLeft;
+        } else if (target.classList.contains("right-tangent")) {
+            this._controlMode = ControlMode.TangentRight;
+        }
+
         evt.stopPropagation();
+    }
+
+    private _processTangentMove(evt: React.PointerEvent<SVGSVGElement>, cp: {frame: number, value: number}) {
+        const key = this.props.curve.keys[this.props.keyId];
+        let expectedFrame = cp.frame;
+
+        this._tangentReferenceX += evt.nativeEvent.offsetX - this._sourcePointerX;
+        this._tangentReferenceY += evt.nativeEvent.offsetY - this._sourcePointerY;
+
+        let bbox = this._keyPointSVG.current!.getBoundingClientRect();
+        let keyCenterX = bbox.left + bbox.width / 2;
+        let keyCenterY = bbox.top + bbox.width / 2;
+        let slope = -(keyCenterY - this._tangentReferenceY) / (keyCenterX - this._tangentReferenceX);
+
+        return key.value - (key.frame - expectedFrame) * slope;
     }
 
     private _onPointerMove(evt: React.PointerEvent<SVGSVGElement>) {
@@ -287,49 +332,59 @@ IKeyPointComponentState
             return;
         }
 
-        let newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-        let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-        let previousX = this.props.getPreviousX();
-        let nextX = this.props.getNextX();
+        if (this._controlMode === ControlMode.TangentLeft) {
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentLeftControlPoint!));
+            this.forceUpdate();
+
+        } else if (this._controlMode === ControlMode.TangentRight) {
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentRightControlPoint!));
+            this.forceUpdate();
+
+        } else if (this._controlMode === ControlMode.Key) {
+
+            let newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+            let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            let previousX = this.props.getPreviousX();
+            let nextX = this.props.getNextX();
 
 
-        if (previousX !== null) {
-            newX = Math.max(previousX, newX);
-        }
-
-        if (nextX !== null) {
-            newX = Math.min(nextX, newX);
-        }
-
-        if (this.props.keyId !== 0) {
-            let frame = this.props.invertX(newX);
-            this.props.onFrameValueChanged(frame);
-            this.props.context.onFrameSet.notifyObservers(frame);
-
-            if (newX !== this.state.x) {
-                this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+            if (previousX !== null) {
+                newX = Math.max(previousX, newX);
             }
-        } else {
-            newX = this.state.x;
+
+            if (nextX !== null) {
+                newX = Math.min(nextX, newX);
+            }
+
+            if (this.props.keyId !== 0) {
+                let frame = this.props.invertX(newX);
+                this.props.onFrameValueChanged(frame);
+                this.props.context.onFrameSet.notifyObservers(frame);
+
+                if (newX !== this.state.x) {
+                    this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+                }
+            } else {
+                newX = this.state.x;
+            }
+
+            let value = this.props.invertY(newY);
+            this.props.onKeyValueChanged(value);
+            this.props.context.onValueSet.notifyObservers(value);
+                
+            this.setState({x: newX, y: newY});
+
+            if (this.props.context.activeKeyPoints!.length > 1) {
+                setTimeout(() => {
+                    if (this.props.context.mainKeyPoint) {
+                        this.props.context.onMainKeyPointMoved.notifyObservers();
+                    }
+                });
+            }
         }
 
-        let value = this.props.invertY(newY);
-        this.props.onKeyValueChanged(value);
-        this.props.context.onValueSet.notifyObservers(value);
-              
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-
-        this.setState({x: newX, y: newY});
-
-        if (this.props.context.activeKeyPoints!.length > 1) {
-            setTimeout(() => {
-                if (this.props.context.mainKeyPoint) {
-                    this.props.context.onMainKeyPointMoved.notifyObservers();
-                }
-            });
-        }
-
         evt.stopPropagation();
     }
 
@@ -338,22 +393,24 @@ IKeyPointComponentState
         evt.currentTarget.releasePointerCapture(evt.pointerId);
 
         evt.stopPropagation();
+
+        this._controlMode = ControlMode.None;
     }
 
     public render() {
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
 
-        const inControlPoint = this.props.curve.getInControlPoint(this.props.keyId);        
-        const outControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);    
+        this._currentLeftControlPoint = this.props.curve.getInControlPoint(this.props.keyId);        
+        this._currentRightControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);    
         
-        let inVec = new Vector2(inControlPoint ? (this.props.convertX(inControlPoint.frame) - this.state.x) : 0, inControlPoint ? (this.props.convertY(inControlPoint.value) - this.state.y) : 0);
-        let outVec = new Vector2(outControlPoint ? (this.props.convertX(outControlPoint.frame) - this.state.x) : 0, outControlPoint ? (this.props.convertY(outControlPoint.value) - this.state.y) : 0);
+        let inVec = new Vector2(this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
+        let outVec = new Vector2(this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
 
         inVec.normalize();
-        inVec.scaleInPlace(50 * this.props.scale);
-        
+        inVec.scaleInPlace(100 * this.props.scale);
+
         outVec.normalize();
-        outVec.scaleInPlace(50 * this.props.scale);
+        outVec.scaleInPlace(100 * this.props.scale);
 
         return (
             <svg
@@ -370,36 +427,59 @@ IKeyPointComponentState
                 y={`-${8 * this.props.scale}`}
                 width={`${16 * this.props.scale}`}
                 height={`${16 * this.props.scale}`}
-                href={svgImageIcon}
+                ref={this._keyPointSVG}
+                href={svgImageIcon}                
             />
             {
                 this.state.selectedState === SelectionState.Selected && 
                 <g>
                     {
-                        inControlPoint !== null &&
-                        <line
-                            x1={0}
-                            y1={0}
-                            x2={`${inVec.x}px`}
-                            y2={`${inVec.y}px`}
-                            style={{
-                                stroke: "#F9BF00",
-                                strokeWidth: 1,
-                            }}>
-                        </line>
+                        this._currentLeftControlPoint !== null &&
+                        <>
+                            <line
+                                x1={0}
+                                y1={0}
+                                x2={`${inVec.x}px`}
+                                y2={`${inVec.y}px`}
+                                style={{
+                                    stroke: "#F9BF00",
+                                    strokeWidth: `${1 * this.props.scale}`
+                                }}>
+                            </line>
+                            <circle
+                                className="left-tangent"
+                                cx={`${inVec.x}px`}
+                                cy={`${inVec.y}px`}
+                                r={`${4 * this.props.scale}`}
+                                style={{
+                                    fill: "#F9BF00",
+                                }}>
+                            </circle>
+                        </>
                     }
                     {
-                        outControlPoint !== null &&
-                        <line
-                            x1={0}
-                            y1={0}
-                            x2={`${outVec.x}px`}
-                            y2={`${outVec.y}px`}
-                            style={{
-                                stroke: "#F9BF00",
-                                strokeWidth: 1,
-                            }}>
-                        </line>
+                        this._currentRightControlPoint !== null &&
+                        <>
+                            <line
+                                x1={0}
+                                y1={0}
+                                x2={`${outVec.x}px`}
+                                y2={`${outVec.y}px`}
+                                style={{
+                                    stroke: "#F9BF00",
+                                    strokeWidth: `${1 * this.props.scale}`
+                                }}>
+                            </line>                        
+                            <circle
+                                className="right-tangent"
+                                cx={`${outVec.x}px`}
+                                cy={`${outVec.y}px`}
+                                r={`${4 * this.props.scale}`}
+                                style={{
+                                    fill: "#F9BF00",
+                                }}>
+                            </circle>
+                        </>
                     }
                 </g>
             }
