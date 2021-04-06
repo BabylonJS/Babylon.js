@@ -26,8 +26,8 @@ import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
 import { CanvasGenerator } from '../Misc/canvasGenerator';
-import { DeviceInputSystem } from "../DeviceInput/deviceInputSystem";
 
+declare type DeviceInputSystem = import("../DeviceInput/deviceInputSystem").DeviceInputSystem;
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
