@@ -53,12 +53,8 @@ export class AxisScaleGizmo extends Gizmo {
     private _tmpVector = new Vector3();
     private _tmpMatrix = new Matrix();
     private _tmpMatrix2 = new Matrix();
-    
-    private _arrowTail: AbstractMesh;
-    
-    public get dragScale(): number {
-        return this._arrowTail.scaling.y;
-    }
+        
+    public dragScale = 0;
 
     /**
      * Creates an AxisScaleGizmo
@@ -85,7 +81,6 @@ export class AxisScaleGizmo extends Gizmo {
         // Build mesh + Collider
         this._gizmoMesh = new Mesh("axis", gizmoLayer.utilityLayerScene);
         const { arrowMesh, arrowTail } = this._createGizmoMesh(this._gizmoMesh, thickness);
-        this._arrowTail = arrowTail;
         const collider = this._createGizmoMesh(this._gizmoMesh, thickness + 4, true);
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(dragAxis));
@@ -102,6 +97,7 @@ export class AxisScaleGizmo extends Gizmo {
 
             arrowMesh.position.z += dragStrength / 3.5;
             arrowTail.scaling.y += dragStrength;
+            this.dragScale = arrowTail.scaling.y;
             arrowTail.position.z = arrowMesh.position.z / 2;
         };
 
@@ -109,6 +105,7 @@ export class AxisScaleGizmo extends Gizmo {
             arrowMesh.position.set(nodePosition.x, nodePosition.y, nodePosition.z);
             arrowTail.position.set(linePosition.x, linePosition.y, linePosition.z);
             arrowTail.scaling.set(lineScale.x, lineScale.y, lineScale.z);
+            this.dragScale = arrowTail.scaling.y;
             this._dragging = false;
         };
 
