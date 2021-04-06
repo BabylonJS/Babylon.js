@@ -41,24 +41,25 @@ export class Curve {
             const currentFrame = keys[keyIndex].frame;
             const prevValue = keys[keyIndex - 1].value;
             const currentValue = keys[keyIndex].value;
+            const frameDist = currentFrame - prevFrame;
 
-            let controlPoint0Frame = prevFrame + (currentFrame - prevFrame) / 2;
-            let controlPoint1Frame = prevFrame + (currentFrame - prevFrame) / 2;
+            let controlPoint0Frame = prevFrame + frameDist / 2;
+            let controlPoint1Frame = prevFrame + frameDist / 2;
 
             let controlPoint0Value: number;
             let controlPoint1Value: number;
 
             if (outTangent) {
-                controlPoint0Frame = 2 * prevFrame / 3 + currentFrame / 3;
-                controlPoint0Value = prevValue + outTangent / 3;
+                controlPoint0Frame = prevFrame + frameDist / 3;
+                controlPoint0Value = prevValue + outTangent * frameDist / 3;
             } else {
                 const animEval = this.animation.evaluate(controlPoint0Frame);
                 controlPoint0Value = this.property ? animEval[this.property] : animEval;
             }
 
             if (inTangent) {
-                controlPoint1Frame = prevFrame / 3 + 2 * currentFrame / 3;
-                controlPoint1Value = currentValue - inTangent / 3;
+                controlPoint1Frame = currentFrame - frameDist / 3;
+                controlPoint1Value = currentValue - inTangent * frameDist / 3;
             } else {
                 const animEval = this.animation.evaluate(controlPoint1Frame);
                 controlPoint1Value = this.property ? animEval[this.property] : animEval;
@@ -70,76 +71,60 @@ export class Curve {
         return pathData;
     }
 
-    public getInControlPoint(keyIndex: number) {
+    public getInControlPoint(keyIndex: number, length: number) {
         if (keyIndex === 0) {
-            return null;
+            return 0;
         }
 
         const keys = this.keys;
-        const inTangent = keys[keyIndex].inTangent;
+        let inTangent = keys[keyIndex].inTangent;
 
-        if (inTangent) {
-            const prevFrame = keys[keyIndex - 1].frame;
-            const currentFrame = keys[keyIndex].frame;
-            const currentValue = keys[keyIndex].value;
-
-            const value = currentValue - inTangent / 3;
-            const frame = prevFrame / 3 + 2 * currentFrame / 3;
-
-            return {
-                frame: frame,
-                value: value
-            }
-        } else {
+        if (!inTangent) {
             const prevFrame = keys[keyIndex - 1].frame;                
             const currentFrame = keys[keyIndex].frame;
             const midFrame = prevFrame + (currentFrame - prevFrame) / 2;
 
-            let evaluatedValue = this.animation.evaluate(midFrame);
+            const evaluatedValueEntry = this.animation.evaluate(midFrame);
+            let evaluatedValue = 0;
 
-            return {
-                frame: midFrame,
-                value: this.property ? evaluatedValue[this.property] : evaluatedValue
+            if (this.property) {
+                evaluatedValue = evaluatedValueEntry[this.property];
             }
+
+            inTangent = (keys[keyIndex].value - evaluatedValue) / (currentFrame - midFrame);
         }
+
+        return length * inTangent;
     }
 
-    public getOutControlPoint(keyIndex: number) {
+    public getOutControlPoint(keyIndex: number, length: number) {
         const keys = this.keys;        
         if (keyIndex === keys.length - 1) {
-            return null;
+            return 0;
         }
-        const outTangent = keys[keyIndex].outTangent;
 
-        if (outTangent) {
-            const prevFrame = keys[keyIndex].frame;        
-            const prevValue = keys[keyIndex].value;
-            const currentFrame = keys[keyIndex + 1].frame;
+        let outTangent = keys[keyIndex].outTangent;
 
-            const frame = 2 * prevFrame / 3 + currentFrame / 3;
-            const value = prevValue + outTangent / 3;
-
-            return {
-                frame: frame,
-                value: value
-            }
-        } else {
+        if (!outTangent) {
             const prevFrame = keys[keyIndex].frame;                
             const currentFrame = keys[keyIndex + 1].frame;
             const midFrame = prevFrame + (currentFrame - prevFrame) / 2;
 
-            let evaluatedValue = this.animation.evaluate(midFrame);
+            const evaluatedValueEntry = this.animation.evaluate(midFrame);
+            let evaluatedValue = 0;
 
-            return {
-                frame: midFrame,
-                value: this.property ? evaluatedValue[this.property] : evaluatedValue
+            if (this.property) {
+                evaluatedValue = evaluatedValueEntry[this.property];
             }
+
+            outTangent = (evaluatedValue - keys[keyIndex].value) / (midFrame - currentFrame);
         }
+
+        return length * outTangent;
     }
 
-    public updateInTangentFromControlPoint(keyId: number, value: number) {
-        const slope = (this.keys[keyId].value - value);
-        this.keys[keyId].inTangent = slope * (this.keys[keyId].inTangent ? 2 / 3 : 1 / 2);
+    public updateInTangentFromControlPoint(keyId: number, slope: number) {
+        this.keys[keyId].inTangent = slope;
 
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
@@ -154,9 +139,9 @@ export class Curve {
         this.onDataUpdatedObservable.notifyObservers();
     }
 
-    public updateOutTangentFromControlPoint(keyId: number, value: number) {
-        const slope = (value - this.keys[keyId].value);
-        this.keys[keyId].outTangent = slope * (this.keys[keyId].outTangent ? 2 / 3 : 1 / 2);
+    public updateOutTangentFromControlPoint(keyId: number, slope: number) {
+        console.log(slope)
+        this.keys[keyId].outTangent = slope;
 
         if (this.property) {
             if (!this.animation.getKeys()[keyId].outTangent) {
