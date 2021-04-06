@@ -22,7 +22,17 @@ void main(void) {
 
 #include<fogFragment>
 
+#ifdef PREPASS
+    float writeGeometryInfo = color.a > 0.4 ? 1.0 : 0.0;
+    #ifdef PREPASS_VELOCITY
+    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(0.5, 0.5, 0.0, writeGeometryInfo);
+    #endif
+    gl_FragData[0] = color;
+#endif
+
+#if !defined(PREPASS) || defined(WEBGL2) 
 	gl_FragColor = color;
+#endif
 
 #include<imageProcessingCompatibility>
 }
