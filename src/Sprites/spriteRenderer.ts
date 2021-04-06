@@ -5,6 +5,8 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "../Meshes/dataBuffer";
 import { Buffer, VertexBuffer } from "../Meshes/buffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
+import { MaterialHelper } from "../Materials/materialHelper";
+import { MaterialDefines } from "../Materials/materialDefines";
 import { ThinSprite } from './thinSprite';
 import { ISize } from '../Maths/math.size';
 
@@ -17,6 +19,20 @@ import "../Engines/Extensions/engine.dynamicBuffer";
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
 
+/** @hidden */
+export class SpriteDefines extends MaterialDefines {
+    public PREPASS = false;
+    public PREPASS_VELOCITY = false;
+    public PREPASS_VELOCITY_INDEX = -1;
+    public SCENE_MRT_COUNT = 0;
+    public FOG = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
+
+    constructor() {
+        super();
+        this.rebuild();
+    }
+}
 /**
  * Class used to render sprites.
  *
@@ -87,6 +103,7 @@ export class SpriteRenderer {
     private _drawWrapperBase: DrawWrapper;
     private _drawWrapperFog: DrawWrapper;
     private _vertexArrayObject: WebGLVertexArrayObject;
+    private _defines: SpriteDefines;
 
     /**
      * Creates a new sprite Renderer
@@ -110,6 +127,8 @@ export class SpriteRenderer {
         this._scene = scene;
         this._drawWrapperBase = new DrawWrapper(engine);
         this._drawWrapperFog = new DrawWrapper(engine);
+
+        this._defines = new SpriteDefines();
 
         if (!this._useInstancing) {
             const indices = [];
@@ -160,17 +179,23 @@ export class SpriteRenderer {
         this._vertexBuffers["cellInfo"] = cellInfo;
         this._vertexBuffers[VertexBuffer.ColorKind] = colors;
 
+        
         // Effects
         this._drawWrapperBase.effect = this._engine.createEffect("sprites",
-            [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
-            ["view", "projection", "textureInfos", "alphaTest"],
-            ["diffuseSampler"], "");
-
+        [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
+        ["view", "projection", "textureInfos", "alphaTest"],
+        ["diffuseSampler"], "");
+        
         if (this._scene) {
+            // TODO : should we go on with this ?
+            const defines = this._defines;
+            defines.FOG = true;
+            MaterialHelper.PrepareDefinesForPrePass(this._scene, defines, true);
+
             this._drawWrapperFog.effect = this._scene.getEngine().createEffect("sprites",
                 [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
                 ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
-                ["diffuseSampler"], "#define FOG");
+                ["diffuseSampler"], defines.toString());
         }
     }
 
