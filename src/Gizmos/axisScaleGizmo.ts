@@ -53,6 +53,12 @@ export class AxisScaleGizmo extends Gizmo {
     private _tmpVector = new Vector3();
     private _tmpMatrix = new Matrix();
     private _tmpMatrix2 = new Matrix();
+    
+    private _arrowTail: AbstractMesh;
+    
+    public get dragScale(): number {
+        return this._arrowTail.scaling.y;
+    }
 
     /**
      * Creates an AxisScaleGizmo
@@ -79,6 +85,7 @@ export class AxisScaleGizmo extends Gizmo {
         // Build mesh + Collider
         this._gizmoMesh = new Mesh("axis", gizmoLayer.utilityLayerScene);
         const { arrowMesh, arrowTail } = this._createGizmoMesh(this._gizmoMesh, thickness);
+        this._arrowTail = arrowTail;
         const collider = this._createGizmoMesh(this._gizmoMesh, thickness + 4, true);
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(dragAxis));
