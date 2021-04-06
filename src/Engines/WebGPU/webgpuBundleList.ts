@@ -169,12 +169,12 @@ export class WebGPUBundleList {
 
         const cloned = new WebGPUBundleList(this._device);
 
-        cloned._list = [];
+        cloned._list = new Array(this._listLength);
         cloned._listLength = this._listLength;
         cloned.numDrawCalls = this.numDrawCalls;
 
         for (let i = 0; i < this._listLength; ++i) {
-            cloned._list.push(this._list[i].clone());
+            cloned._list[i] = this._list[i].clone();
         }
 
         return cloned;
