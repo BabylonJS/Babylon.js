@@ -285,7 +285,8 @@ export class PlaneRotationGizmo extends Gizmo {
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
-            active: false
+            active: false,
+            dragBehavior: this.dragBehavior
         };
         this._parent?.addToAxisCache(this._gizmoMesh, cache);
 
@@ -297,7 +298,7 @@ export class PlaneRotationGizmo extends Gizmo {
             this.dragBehavior.maxDragAngle = PlaneRotationGizmo.MaxDragAngle;
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
-                var material = this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial;
+                var material = ((this._isHovered || this._dragging) && cache.dragBehavior.enabled) ? this._hoverMaterial : this._coloredMaterial;
                 cache.gizmoMeshes.forEach((m: Mesh) => {
                     m.material = material;
                     if ((<LinesMesh>m).color) {
