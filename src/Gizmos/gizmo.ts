@@ -339,7 +339,7 @@ export class Gizmo implements IDisposable {
                     gizmoAxisCache.forEach((cache) => {
                         if (cache.colliderMeshes && cache.gizmoMeshes) {
                             const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
-                            const material = cache.dragBehavior.enabled ? ((isHovered || cache.active ) ? cache.hoverMaterial : cache.material) : cache.disableMaterial;
+                            const material = cache.dragBehavior.enabled ? (isHovered || cache.active ? cache.hoverMaterial : cache.material) : cache.disableMaterial;
                             cache.gizmoMeshes.forEach((m: Mesh) => {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {
