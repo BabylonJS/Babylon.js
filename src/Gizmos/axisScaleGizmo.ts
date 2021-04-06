@@ -54,7 +54,7 @@ export class AxisScaleGizmo extends Gizmo {
     private _tmpMatrix = new Matrix();
     private _tmpMatrix2 = new Matrix();
         
-    public dragScale = 0;
+    public dragScale = 1;
 
     /**
      * Creates an AxisScaleGizmo
