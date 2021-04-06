@@ -771,13 +771,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
      * @return the computed eye position
      */
-     public static BindEyePosition(effect: Nullable<Effect>, scene: Scene, variableName = "vEyePosition", isVector3 = false): Vector4 {
+     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
         const eyePosition =
-            scene._forcedViewPosition ? scene._forcedViewPosition :
-            scene._mirroredCameraPosition ? scene._mirroredCameraPosition :
-            scene.activeCamera!.globalPosition ?? (scene.activeCamera as WebVRFreeCamera).devicePosition;
+            this._forcedViewPosition ? this._forcedViewPosition :
+            this._mirroredCameraPosition ? this._mirroredCameraPosition :
+            this.activeCamera!.globalPosition ?? (this.activeCamera as WebVRFreeCamera).devicePosition;
 
-        const invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
+        const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
 
         TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
 
@@ -797,9 +797,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param scene the scene to retrieve the ubo from
      * @returns the scene UniformBuffer
      */
-    public static FinalizeSceneUbo(scene: Scene): UniformBuffer {
-        const ubo = scene.getSceneUniformBuffer();
-        const eyePosition = Scene.BindEyePosition(null, scene);
+    public finalizeSceneUbo(): UniformBuffer {
+        const ubo = this.getSceneUniformBuffer();
+        const eyePosition = this.bindEyePosition(null);
         ubo.updateFloat4("vEyePosition",
             eyePosition.x,
             eyePosition.y,
@@ -3877,7 +3877,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
         if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
-            Scene.FinalizeSceneUbo(this);
+            this.finalizeSceneUbo();
         }
         this._renderingManager.render(null, null, true, true);
         this.onAfterDrawPhaseObservable.notifyObservers(this);

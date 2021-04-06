@@ -337,7 +337,7 @@ export class LavaMaterial extends PushMaterial {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
 
-            Scene.BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
 
         this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);

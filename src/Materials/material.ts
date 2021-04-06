@@ -977,7 +977,7 @@ export class Material implements IAnimatable {
      */
     public bindEyePosition(effect: Effect, variableName?: string): void {
         if (!this._useUBO) {
-            Scene.BindEyePosition(effect, this._scene, variableName);
+            this._scene.bindEyePosition(effect, variableName);
         } else {
             this._needToBindSceneUbo = true;
         }
@@ -992,7 +992,7 @@ export class Material implements IAnimatable {
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
-                Scene.FinalizeSceneUbo(this.getScene());
+                this._scene.finalizeSceneUbo();
                 MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         }

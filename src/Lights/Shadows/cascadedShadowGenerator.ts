@@ -821,7 +821,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             }
             this._scene.setTransformMatrix(this.getCascadeViewMatrix(layer)!, this.getCascadeProjectionMatrix(layer)!);
             if (this._useUBO) {
-                Scene.FinalizeSceneUbo(this._scene);
+                this._scene.finalizeSceneUbo();
             }
         });
 
