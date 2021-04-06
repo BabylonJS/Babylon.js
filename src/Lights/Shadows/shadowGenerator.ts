@@ -938,7 +938,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.getTransformMatrix(); // generate the view/projection matrix
             this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
             if (this._useUBO) {
-                Scene.FinalizeSceneUbo(this._scene);
+                this._scene.finalizeSceneUbo();
             }
         });
 

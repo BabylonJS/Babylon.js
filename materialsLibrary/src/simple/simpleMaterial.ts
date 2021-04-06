@@ -252,7 +252,7 @@ export class SimpleMaterial extends PushMaterial {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
 
-            Scene.BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
 
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
