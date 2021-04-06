@@ -1835,6 +1835,9 @@ export class Engine extends ThinEngine {
         //WebVR
         this.disableVR();
 
+        // DeviceInputSystem
+        this.deviceInputSystem.dispose();
+
         // Events
         if (DomManagement.IsWindowObjectExist()) {
             window.removeEventListener("blur", this._onBlur);
