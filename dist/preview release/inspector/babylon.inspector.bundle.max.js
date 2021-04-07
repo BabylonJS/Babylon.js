@@ -47597,7 +47597,7 @@ var Curve = /** @class */ (function () {
             var controlPoint0Value = void 0;
             var controlPoint1Value = void 0;
             if (outTangent) {
-                controlPoint0Frame = prevFrame + frameDist / 3;
+                controlPoint0Frame = prevFrame + outTangent / 3;
                 controlPoint0Value = prevValue + outTangent / 3;
             }
             else {
@@ -47605,7 +47605,7 @@ var Curve = /** @class */ (function () {
                 controlPoint0Value = this.property ? animEval[this.property] : animEval;
             }
             if (inTangent) {
-                controlPoint1Frame = currentFrame - frameDist / 3;
+                controlPoint1Frame = currentFrame - inTangent / 3;
                 controlPoint1Value = currentValue - inTangent / 3;
             }
             else {
