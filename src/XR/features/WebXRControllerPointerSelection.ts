@@ -235,10 +235,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     public raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
     /** filter used for near interaction pick and hover */
-    public nearPickPredicate(mesh: AbstractMesh): boolean { return mesh.isEnabled() || mesh.isVisible || mesh.isPickable || mesh.isNearPickable};
+    public nearPickPredicate(mesh: AbstractMesh): boolean { return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearPickable};
     
     /** filter used for near interaction grab */
-    public nearGrabPredicate(mesh: AbstractMesh): boolean {return mesh.isEnabled() || mesh.isVisible || mesh.isPickable || mesh.isNearGrabbable};
+    public nearGrabPredicate(mesh: AbstractMesh): boolean {return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearGrabbable};
 
     /**
      * constructs a new background remover module
@@ -375,7 +375,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         let indexTipPose = _xrFrame.getJointPose!(xrIndexTip, this._xrSessionManager.referenceSpace);
                         if (indexTipPose && indexTipPose.transform) {
                             let zAxisMultiplier = 1;
-                            if(this._scene.useRightHandedSystem)
+                            if(!this._scene.useRightHandedSystem)
                             {
                                 zAxisMultiplier = -1;
                             }
@@ -776,6 +776,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
         controllerData.selectionMesh.dispose();
         controllerData.laserPointer.dispose();
+        controllerData.pickIndexMesh?.dispose();
+        controllerData.hoverIndexMesh?.dispose();
         // remove from the map
         delete this._controllers[xrControllerUniqueId];
         if (this._attachedController === xrControllerUniqueId) {
