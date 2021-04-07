@@ -32,7 +32,7 @@ var _copySource = function <T>(creationFunction: () => T, source: T, instanciate
         var sourceProperty = (<any>source)[property];
         var propertyType = propertyDescriptor.type;
 
-        if (sourceProperty !== undefined && sourceProperty !== null && property !== "uniqueId") {
+        if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
             switch (propertyType) {
                 case 0:     // Value
                 case 6:     // Mesh reference
@@ -214,6 +214,8 @@ export function serializeAsCameraReference(sourceName?: string) {
  * Class used to help serialization objects
  */
 export class SerializationHelper {
+    public static AllowLoadingUniqueId = false;
+
     /** @hidden */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
         throw _DevTools.WarnImport("ImageProcessingConfiguration");
@@ -275,7 +277,7 @@ export class SerializationHelper {
             var propertyType = propertyDescriptor.type;
             var sourceProperty = (<any>entity)[property];
 
-            if (sourceProperty !== undefined && sourceProperty !== null && property !== "uniqueId") {
+            if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
                 switch (propertyType) {
                     case 0:     // Value
                         serializationObject[targetPropertyName] = sourceProperty;
@@ -351,7 +353,7 @@ export class SerializationHelper {
             var sourceProperty = source[propertyDescriptor.sourceName || property];
             var propertyType = propertyDescriptor.type;
 
-            if (sourceProperty !== undefined && sourceProperty !== null && property !== "uniqueId") {
+            if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
                 var dest = <any>destination;
                 switch (propertyType) {
                     case 0:     // Value
