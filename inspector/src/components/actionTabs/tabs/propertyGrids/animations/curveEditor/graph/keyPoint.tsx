@@ -71,7 +71,7 @@ IKeyPointComponentState
 
     private _controlMode = ControlMode.None;
 
-    private _storedLengthin: number;
+    private _storedLengthIn: number;
     private _storedLengthOut: number;
 
     private _inVec: Vector2;
@@ -308,21 +308,24 @@ IKeyPointComponentState
         evt.stopPropagation();
     }
 
-    private _processTangentMove(evt: React.PointerEvent<SVGSVGElement>, vec: Vector2, storedLength: number) {
+    private _processTangentMove(evt: React.PointerEvent<SVGSVGElement>, vec: Vector2, storedLength: number, isIn: boolean) {
         vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
         vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+
+        if (isIn && vec.x >= 0) {
+            vec.x = -0.01;
+        } else if (!isIn && vec.x <= 0) {
+            vec.x = 0.01;
+        }
 
         let currentPosition = vec.clone();
 
         currentPosition.normalize();
         currentPosition.scaleInPlace(storedLength);
-
-        console.log(">>")
-        console.log(currentPosition.x, currentPosition.y);
-        console.log(this.props.invertX(currentPosition.x), this.props.invertY(currentPosition.y));
-
-        const value = this.props.invertY(currentPosition.y);
-        const frame = this.props.invertX(currentPosition.x);
+        
+        const keys = this.props.curve.keys;
+        const value = isIn ? keys[this.props.keyId].value - this.props.invertY(currentPosition.y + this.state.y) : this.props.invertY(currentPosition.y + this.state.y) - keys[this.props.keyId].value;
+        const frame = isIn ? keys[this.props.keyId].frame - this.props.invertX(currentPosition.x + this.state.x) : this.props.invertX(currentPosition.x + this.state.x) - keys[this.props.keyId].frame;
 
         return value / frame;
     }
@@ -333,11 +336,11 @@ IKeyPointComponentState
         }
 
         if (this._controlMode === ControlMode.TangentLeft) {
-            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthin));
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
             this.forceUpdate();
 
         } else if (this._controlMode === ControlMode.TangentRight) {
-            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut));
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
             this.forceUpdate();
 
         } else if (this._controlMode === ControlMode.Key) {
@@ -399,24 +402,25 @@ IKeyPointComponentState
 
     public render() {
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
+        const keys = this.props.curve.keys;
 
-        if (!this._outVec) {
-            const keys = this.props.curve.keys;
-            const prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
-            const currentFrame = keys[this.props.keyId].frame;
-            const nextFrame = this.props.keyId < keys.length - 1 ? keys[this.props.keyId + 1].frame : 0;
-    
-            let inFrameLength = (currentFrame - prevFrame) / 3;
-            let outFrameLength = (nextFrame - currentFrame) / 3;
-    
-            const inControlPointValue = this.props.curve.getInControlPoint(this.props.keyId, inFrameLength);
-            const outControlPointValue = this.props.curve.getOutControlPoint(this.props.keyId, outFrameLength);
-            
-            this._inVec = new Vector2(this.props.convertX(inFrameLength), this.props.convertY(inControlPointValue));
-            this._outVec = new Vector2(this.props.convertX(outFrameLength), this.props.convertY(outControlPointValue));
-            this._storedLengthin = this._inVec.length();
-            this._storedLengthOut = this._outVec.length();
-        }
+        const prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
+        const currentFrame = keys[this.props.keyId].frame;
+        const nextFrame = this.props.keyId < keys.length - 1 ? keys[this.props.keyId + 1].frame : 0;
+
+        let inFrameLength = (currentFrame - prevFrame) / 3;
+        let outFrameLength = (nextFrame - currentFrame) / 3;
+
+        const convertedX = this.props.invertX(this.state.x);
+        const convertedY = this.props.invertY(this.state.y);
+        const inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId, inFrameLength);
+        const outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId, outFrameLength);
+        
+        // We want to store the delta in the key local space
+        this._outVec = new Vector2(this.props.convertX(convertedX + outFrameLength) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
+        this._inVec = new Vector2(this.props.convertX(convertedX - inFrameLength) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        this._storedLengthIn = this._inVec.length();
+        this._storedLengthOut = this._outVec.length();
 
         this._inVec.normalize();
         this._inVec.scaleInPlace(100 * this.props.scale);
@@ -445,14 +449,14 @@ IKeyPointComponentState
             {
                 this.state.selectedState === SelectionState.Selected && 
                 <g>
-                    {/* {
-                        inControlPointValue !== 0 &&
+                    {
+                        this.props.keyId !== 0 &&
                         <>
                             <line
                                 x1={0}
                                 y1={0}
-                                x2={`${inVec.x}px`}
-                                y2={`${inVec.y}px`}
+                                x2={`${this._inVec.x}px`}
+                                y2={`${this._inVec.y}px`}
                                 style={{
                                     stroke: "#F9BF00",
                                     strokeWidth: `${1 * this.props.scale}`
@@ -460,16 +464,17 @@ IKeyPointComponentState
                             </line>
                             <circle
                                 className="left-tangent"
-                                cx={`${inVec.x}px`}
-                                cy={`${inVec.y}px`}
+                                cx={`${this._inVec.x}px`}
+                                cy={`${this._inVec.y}px`}
                                 r={`${4 * this.props.scale}`}
                                 style={{
                                     fill: "#F9BF00",
                                 }}>
                             </circle>
                         </>
-                    } */}
+                    }
                     {
+                        this.props.keyId !== keys.length - 1 &&
                         <>
                             <line
                                 x1={0}
