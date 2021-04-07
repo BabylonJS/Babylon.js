@@ -355,7 +355,7 @@ export class PBRSubSurfaceConfiguration {
                     }
                 }
 
-                defines.SS_HAS_THICKNESS = this.minimumThickness !== 0.0 && this.maximumThickness !== 0.0;
+                defines.SS_HAS_THICKNESS = (this.maximumThickness - this.minimumThickness) !== 0.0;
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture;
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = this._useMaskFromThicknessTextureGltf;
             }
