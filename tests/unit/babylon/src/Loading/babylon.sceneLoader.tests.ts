@@ -703,9 +703,20 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
+        it('Files input', () => {
+            return Promise.all([
+                BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.gltf", true),
+                BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.bin", true)
+            ]).then(([gltf, bin]: [ArrayBuffer, ArrayBuffer]) => {
+                BABYLON.FilesInput.FilesToLoad["box.gltf"] = new File([gltf], "Box.gltf");
+                BABYLON.FilesInput.FilesToLoad["box.bin"] = new File([bin], "Box.bin");
+                return BABYLON.SceneLoader.LoadAsync("file:", "Box.gltf");
+            });
+        });
+
         it('File object', () => {
-            BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.gltf").then((gltf) => {
-                return BABYLON.SceneLoader.LoadAsync("/Playground/scenes/Box/", new File([gltf], "Box.gltf"));
+            return BABYLON.Tools.LoadFileAsync("/Playground/scenes/BoomBox.glb").then((glb) => {
+                return BABYLON.SceneLoader.LoadAsync("", new File([glb], "BoomBox.glb"));
             });
         });
 
@@ -718,17 +729,6 @@ describe('Babylon Scene Loader', function() {
             BABYLON.FileTools.PreprocessUrl = (url) => urlRedirects[url] || url;
             const resetPreprocessUrl = () => BABYLON.FileTools.PreprocessUrl = oldPreprocessUrl;
             return BABYLON.SceneLoader.LoadAsync("file:///", "Box.gltf").then(resetPreprocessUrl, resetPreprocessUrl);
-        });
-
-        it('Files input', () => {
-            return Promise.all([
-                BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.gltf", true),
-                BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.bin", true)
-            ]).then(([gltf, bin]: [ArrayBuffer, ArrayBuffer]) => {
-                BABYLON.FilesInput.FilesToLoad["box.gltf"] = new File([gltf], "Box.gltf");
-                BABYLON.FilesInput.FilesToLoad["box.bin"] = new File([bin], "Box.bin");
-                return BABYLON.SceneLoader.LoadAsync("file:", "Box.gltf");
-            });
         });
     });
 });
