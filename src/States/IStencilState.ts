@@ -1,6 +1,4 @@
-/**
- * Defines all the stencil states
- */
+/** @hidden */
 export interface IStencilState {
     enabled: boolean;
 
