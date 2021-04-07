@@ -1824,6 +1824,8 @@ export class StandardMaterial extends PushMaterial {
         result.name = name;
         result.id = name;
 
+        this.stencil.copyTo(result.stencil);
+
         return result;
     }
 
@@ -1832,7 +1834,11 @@ export class StandardMaterial extends PushMaterial {
      * @returns the serialized material object
      */
     public serialize(): any {
-        return SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
+
+        serializationObject.stencil = this.stencil.serialize();
+
+        return serializationObject;
     }
 
     /**
@@ -1843,7 +1849,13 @@ export class StandardMaterial extends PushMaterial {
      * @returns a new standard material
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
-        return SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
+
+        if (source.stencil) {
+            material.stencil.parse(source.stencil, scene, rootUrl);
+        }
+
+        return material;
     }
 
     // Flags used to enable or disable a type of texture for all Standard Materials
