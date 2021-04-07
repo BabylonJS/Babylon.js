@@ -64,6 +64,7 @@
 
 - `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 - `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
+- Add option to decompose the `newWorldMatrix` when passed into `TransformNode.freezeWorldMatrix`. ([bghgary](https://github.com/bghgary))
 
 ### Inspector
 
@@ -137,7 +138,7 @@
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix an issue with keyboard control (re)attachment. ([#9411](https://github.com/BabylonJS/Babylon.js/issues/9411)) ([RaananW](https://github.com/RaananW))
 - Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
-- Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary)
+- Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
 - Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix crash of some node materials using instances on iOS ([Popov72](https://github.com/Popov72))
 - Fix the code generated for the NME gradient block ([Popov72](https://github.com/Popov72))
@@ -181,6 +182,7 @@
 - Fix Compatibility with NPM 7 ([Sebavan](https://github.com/sebavan))
 - Fix for cloning meshes for 3D GUIs ([msDestiny14](https://github.com/msDestiny14))
 - Fix computation of min/max values in glTF loader when using normalized integers ([#10112](https://github.com/BabylonJS/Babylon.js/issues/10112)) ([Popov72](https://github.com/Popov72))
+- Fix NME generation code missing `target` and `visibleInInspector` properties ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
