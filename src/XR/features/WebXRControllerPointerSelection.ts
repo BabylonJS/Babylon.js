@@ -795,6 +795,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
         controllerData.selectionMesh.dispose();
         controllerData.laserPointer.dispose();
+        controllerData.pickIndexMesh?.dispose();
+        controllerData.hoverIndexMesh?.dispose();
         // remove from the map
         delete this._controllers[xrControllerUniqueId];
         if (this._attachedController === xrControllerUniqueId) {
