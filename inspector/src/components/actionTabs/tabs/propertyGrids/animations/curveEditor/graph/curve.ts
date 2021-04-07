@@ -50,7 +50,7 @@ export class Curve {
             let controlPoint1Value: number;
 
             if (outTangent) {
-                controlPoint0Frame = prevFrame + outTangent / 3;
+                controlPoint0Frame = prevFrame + frameDist / 3;
                 controlPoint0Value = prevValue + outTangent / 3;
             } else {
                 const animEval = this.animation.evaluate(controlPoint0Frame);
@@ -58,7 +58,7 @@ export class Curve {
             }
 
             if (inTangent) {
-                controlPoint1Frame = currentFrame - inTangent / 3;
+                controlPoint1Frame = currentFrame - frameDist / 3;
                 controlPoint1Value = currentValue - inTangent / 3;
             } else {
                 const animEval = this.animation.evaluate(controlPoint1Frame);
