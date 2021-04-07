@@ -41,8 +41,9 @@
 - Update glTF validator to `2.0.0-dev.3.3`. ([bghgary](https://github.com/bghgary))
 - Added support for KHR_xmp_json_ld for glTF loader. ([Sebavan](https://github.com/sebavan/), [bghgary](https://github.com/bghgary))
 - Added a `OptimizeNormals` option to the OBJ loader to smooth lighting ([Popov72](https://github.com/Popov72))
-- Added a `Prefiltered` option to the CubeTextureAssetTask ([MackeyK24](https://github.com/MackeyK24))
+- Added a `Prefiltered` option to the `CubeTextureAssetTask` ([MackeyK24](https://github.com/MackeyK24))
 - Added support for more uv sets to glTF loader. ([bghgary](https://github.com/bghgary))
+- Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 
 ### Navigation
 
@@ -57,11 +58,13 @@
 - Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added support for clip planes to the `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added support for local cube map to refraction cube texture ([Popov72](https://github.com/Popov72))
-- Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
+- Added the `cullBackFaces` property to `Material` ([Popov72](https://github.com/Popov72))
 
 ### Meshes
 
 - `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
+- `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
+- Add option to decompose the `newWorldMatrix` when passed into `TransformNode.freezeWorldMatrix`. ([bghgary](https://github.com/bghgary))
 
 ### Inspector
 
@@ -86,6 +89,7 @@
 - Added parenting system ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
 - Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
+- Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -96,6 +100,7 @@
 - Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 - Added `imageWidth()` and `imageHeight()` to access the source image dimensions of `Image` ([Queatz](https://github.com/Queatz))
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
+- Added property `renderToIntermediateTexture` to `Container` which when set to true, will render children to an intermediate texture rather than direct to host allowing for DOM style alpha blending ([BlindingHues](https://github.com/blindinghues))
 
 ### WebXR
 
@@ -133,7 +138,7 @@
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix an issue with keyboard control (re)attachment. ([#9411](https://github.com/BabylonJS/Babylon.js/issues/9411)) ([RaananW](https://github.com/RaananW))
 - Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
-- Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary)
+- Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
 - Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix crash of some node materials using instances on iOS ([Popov72](https://github.com/Popov72))
 - Fix the code generated for the NME gradient block ([Popov72](https://github.com/Popov72))
@@ -178,6 +183,7 @@
 - Fix for cloning meshes for 3D GUIs ([msDestiny14](https://github.com/msDestiny14))
 - Fix computation of min/max values in glTF loader when using normalized integers ([#10112](https://github.com/BabylonJS/Babylon.js/issues/10112)) ([Popov72](https://github.com/Popov72))
 - Fix instance picking when in billboard mode ([Popov72](https://github.com/Popov72))
+- Fix NME generation code missing `target` and `visibleInInspector` properties ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

@@ -38,6 +38,8 @@ export class InstancedMesh extends AbstractMesh {
 
     /** @hidden */
     public _indexInSourceMeshInstanceArray = -1;
+    /** @hidden */
+    public _distanceToCamera: number = 0;
 
     constructor(name: string, source: Mesh) {
         super(name, source.getScene());

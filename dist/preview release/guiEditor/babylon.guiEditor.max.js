@@ -41836,7 +41836,6 @@ var GUINodeTools = /** @class */ (function () {
     function GUINodeTools() {
     }
     GUINodeTools.CreateControlFromString = function (data) {
-        //TODO: Add more elements and create default values for certain types.
         var element;
         switch (data) {
             case "Slider":
@@ -41844,7 +41843,11 @@ var GUINodeTools = /** @class */ (function () {
                 break;
             case "Checkbox":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Checkbox"]("Checkbox");
-                break;
+                element.width = "5%";
+                element.height = "5%";
+                element.color = "#FFFFFFFF";
+                element.isPointerBlocker = true;
+                return element;
             case "ColorPicker":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["ColorPicker"]("ColorPicker");
                 break;
@@ -41856,17 +41859,21 @@ var GUINodeTools = /** @class */ (function () {
                 break;
             case "Line":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Line"]();
-                element.x1 = 10;
-                element.y1 = 10;
-                element.x2 = 100;
+                element.x1 = 0;
+                element.y1 = 0;
                 element.y2 = 100;
+                element.x2 = 100;
                 element.lineWidth = 5;
                 element.dash = [50, 10];
+                element.isPointerBlocker = true;
                 return element;
             case "Text":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]("Textblock");
                 element.text = "My Text";
+                element.color = "#FFFFFFFF";
+                element.fontSize = 20;
                 element.resizeToFit = true;
+                element.isPointerBlocker = true;
                 return element;
             case "ImageButton":
                 element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Button"].CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
@@ -41883,38 +41890,37 @@ var GUINodeTools = /** @class */ (function () {
             case "InputText":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputText"]("InputText");
                 element.maxWidth = 0.6;
-                element.text = "Click Me";
+                element.text = "Input Text";
                 break;
             case "InputPassword":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]("InputPassword");
+                element.maxWidth = 0.6;
+                element.text = "Input Text";
                 break;
             case "Grid":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]("Grid");
-                element.addColumnDefinition(100, true);
+                element.addColumnDefinition(50, false);
                 element.addColumnDefinition(0.5);
                 element.addColumnDefinition(0.5);
-                element.addColumnDefinition(100, true);
+                element.addColumnDefinition(50, false);
                 element.addRowDefinition(0.5);
                 element.addRowDefinition(0.5);
                 element.isHighlighted = true;
+                element.isPointerBlocker = true;
                 return element;
             case "DisplayGrid":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]("DisplayGrid");
-                element.width = "100px";
-                element.height = "100px";
                 return element;
             case "StackPanel":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]("StackPanel");
-                element.width = "100px";
-                element.height = "100px";
                 element.isHighlighted = true;
                 return element;
             default:
                 element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Button"].CreateSimpleButton("Button", "Click Me");
                 break;
         }
-        element.width = "150px";
-        element.height = "40px";
+        element.width = "15%";
+        element.height = "5%";
         element.color = "#FFFFFFFF";
         element.isPointerBlocker = true;
         return element;
