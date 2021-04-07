@@ -190,7 +190,7 @@ export class SheenBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString: string = super._dumpPropertiesCode();
+        let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.albedoScaling = ${this.albedoScaling};\r\n`;
         codeString += `${this._codeVariableName}.linkSheenWithAlbedo = ${this.linkSheenWithAlbedo};\r\n`;
