@@ -59,6 +59,7 @@
 - Added support for clip planes to the `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added support for local cube map to refraction cube texture ([Popov72](https://github.com/Popov72))
 - Added the `cullBackFaces` property to `Material` ([Popov72](https://github.com/Popov72))
+- Added the `stencil` object property to `Material` ([Popov72](https://github.com/Popov72))
 
 ### Meshes
 
@@ -70,6 +71,7 @@
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
+- Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
 
 ### NME
 
