@@ -439,7 +439,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     hoverAtOrigin = hoverInfo.pickedPoint.x == 0 && hoverInfo.pickedPoint.y == 0 && hoverInfo.pickedPoint.z == 0;
                 }
                 if(nearHover && !hoverAtOrigin) {                  
-                    console.log("hover success");
                     controllerData.nearHover = true;
                     pick = hoverInfo;
                 }
@@ -455,8 +454,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     pickAtOrigin = pickInfo.pickedPoint.x == 0 && pickInfo.pickedPoint.y == 0 && pickInfo.pickedPoint.z == 0;
                 }
                 if(nearPick && !pickAtOrigin) {
-                    console.log("pick success");
-                    console.log("picked point", pickInfo?.pickedPoint);
                     controllerData.nearPick = true;
                     pick = pickInfo;
                 }
@@ -688,46 +685,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             const squeezeStartListener = (event: XRInputSourceEvent) => {
                 if(event.inputSource.hand)
                 {
-                    /*let hand = event.inputSource.hand;
-                    let thumbTipPos = new Vector3 (0,0,0);
-                    const xrThumbTip = hand.get("thumb-tip");
-                    if(xrThumbTip) {
-                        let thumbTipPose = event.frame.getJointPose!(xrThumbTip, this._xrSessionManager.referenceSpace);
-                        if(thumbTipPose && thumbTipPose.transform) {
-                            const pos = thumbTipPose.transform.position;
-                            thumbTipPos.set(pos.x, pos.y, pos.z);
-                        }
-                        
-                    }
-                    let indexTipPos = new Vector3 (0,0,0);
-                    const xrIndexTip = hand.get("index-finger-tip");
-                    if(xrIndexTip) {
-                        let indexTipPose = event.frame.getJointPose!(xrIndexTip, this._xrSessionManager.referenceSpace);
-                        if (indexTipPose && indexTipPose.transform) {
-                            const pos = indexTipPose.transform.position;
-                            indexTipPos.set(pos.x, pos.y, pos.z);
-                        }
-                    }
-
-                    let midPosX = (thumbTipPos.x + indexTipPos.x)/2;
-                    let midPosY = (thumbTipPos.y + indexTipPos.y)/2;
-                    let midPosZ = (thumbTipPos.z + indexTipPos.z)/2;
-                    let midPos = new Vector3(midPosX, midPosY, midPosZ);
-                    console.log("midPos", midPos);
-                    let pinchInfo = this._pickWithPoint(midPos);
-                    if(pinchInfo && pinchInfo.pickedPoint && pinchInfo.hit)
-                    {
-                        console.log("Grab successful");
-                        controllerData.pick = pinchInfo;
-                        controllerData.nearGrab = true;
-                    }*/
-
                     if(controllerData.pickIndexMesh)
                     {
                         let pinchInfo = this._pickWithMesh(controllerData.pickIndexMesh, false, false);
                         if(pinchInfo && pinchInfo.pickedPoint && pinchInfo.hit)
                         {
-                            console.log("Grab successful");
                             controllerData.pick = pinchInfo;
                             controllerData.nearGrab = true;
                         }
@@ -947,31 +909,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
         return pickingInfo;
     }
-
-    /*private _pickWithPoint(point: Vector3, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
-        var pickingInfo = new PickingInfo();
-        for (let meshIndex = 0; meshIndex < this._scene.meshes.length; meshIndex++) {
-            let mesh = this._scene.meshes[meshIndex];
-            if (predicate) {
-                if (!predicate(mesh)) {
-                    continue;
-                }
-            } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable || !mesh.isNearGrabbable) {
-                continue;
-            }
-            console.log("mesh cleared for pickwithpoint", mesh.name);
-            let result = mesh.intersectsPoint(point);
-            if(result) {
-                console.log("intersection successful for ", mesh.name);
-                pickingInfo.hit = result;
-                pickingInfo.pickedMesh = mesh;
-                pickingInfo.pickedPoint = point;
-                pickingInfo.distance = 0;
-                pickingInfo.subMeshId = 0;
-            }
-        }
-        return pickingInfo;
-    }*/
 }
 
 //register the plugin
