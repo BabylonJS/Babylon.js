@@ -696,7 +696,7 @@ declare module INSPECTOR {
         private _svgHost;
         private _keyPointSVG;
         private _controlMode;
-        private _storedLengthin;
+        private _storedLengthIn;
         private _storedLengthOut;
         private _inVec;
         private _outVec;

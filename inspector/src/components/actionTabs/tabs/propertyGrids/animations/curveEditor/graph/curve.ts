@@ -155,56 +155,65 @@ export class Curve {
         this.onDataUpdatedObservable.notifyObservers();
     }
 
+
     public updateKeyFrame(keyId: number, frame: number) {
         const currentFrame = this.keys[keyId].frame;
+        const originalKey = this.animation.getKeys()[keyId];
+        originalKey.frame = frame;
 
         if (keyId > 0) {
             const oldWidth = currentFrame - this.keys[keyId - 1].frame;
             const newWidth = frame - this.keys[keyId - 1].frame;
+            const previousOriginalKey = this.animation.getKeys()[keyId - 1];
 
             if (this.keys[keyId].inTangent) {
-                this.keys[keyId].inTangent = (this.keys[keyId].inTangent! / oldWidth) * newWidth;
+                const newInTangent = (this.keys[keyId].inTangent! / oldWidth) * newWidth;
+                this.keys[keyId].inTangent = newInTangent;
+                if (this.property) {
+                    originalKey.inTangent[this.property] = newInTangent;
+                } else {
+                    originalKey.inTangent = newInTangent;
+                }
             }
 
             if (this.keys[keyId - 1].outTangent) {
-                this.keys[keyId - 1].outTangent = (this.keys[keyId - 1].outTangent! / oldWidth) * newWidth;
+                const newOutTangent = (this.keys[keyId - 1].outTangent! / oldWidth) * newWidth;
+                this.keys[keyId - 1].outTangent = newOutTangent;
+                if (this.property) {
+                    previousOriginalKey.outTangent[this.property] = newOutTangent;
+                } else {
+                    previousOriginalKey.outTangent = newOutTangent;
+                }
             }
         }
 
         if (keyId < this.keys.length - 1) {
             const oldWidth = this.keys[keyId + 1].frame - currentFrame;
-            const newWidth = this.keys[keyId + 1].frame - frame;
+            const newWidth = this.keys[keyId + 1].frame - frame;            
+            const nextOriginalKey = this.animation.getKeys()[keyId + 1];
 
             if (this.keys[keyId].outTangent) {
-                this.keys[keyId].outTangent = (this.keys[keyId].outTangent! / oldWidth) * newWidth;
+                const newOutTangent = (this.keys[keyId].outTangent! / oldWidth) * newWidth;
+                this.keys[keyId].outTangent = newOutTangent;
+                if (this.property) {
+                    originalKey.outTangent[this.property] = newOutTangent;
+                } else {
+                    originalKey.outTangent = newOutTangent;
+                }
             }
 
             if (this.keys[keyId + 1].inTangent) {
-                this.keys[keyId + 1].inTangent = (this.keys[keyId + 1].inTangent! / oldWidth) * newWidth;
+                const newInTangent = (this.keys[keyId + 1].inTangent! / oldWidth) * newWidth;
+                this.keys[keyId + 1].inTangent = newInTangent;
+                if (this.property) {
+                    nextOriginalKey.inTangent[this.property] = newInTangent;
+                } else {
+                    nextOriginalKey.inTangent = newInTangent;
+                }
             }
         }
 
         this.keys[keyId].frame = frame;
-
-        // Update animation key
-        const originalKey = this.animation.getKeys()[keyId];
-        originalKey.frame = frame;
-
-        if (originalKey.outTangent) {
-            if (this.property) {
-                originalKey.outTangent[this.property] = this.keys[keyId].outTangent;
-            } else {
-                originalKey.outTangent = this.keys[keyId].outTangent;
-            }
-        }
-
-        if (originalKey.inTangent) {
-            if (this.property) {
-                originalKey.inTangent[this.property] = this.keys[keyId].inTangent;
-            } else {
-                originalKey.inTangent = this.keys[keyId].inTangent;
-            }
-        }
 
         this.onDataUpdatedObservable.notifyObservers();
     }
