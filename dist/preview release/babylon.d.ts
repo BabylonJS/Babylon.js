@@ -28837,6 +28837,7 @@ declare module BABYLON {
     export class InstancedMesh extends AbstractMesh {
         private _sourceMesh;
         private _currentLOD;
+        private _billboardWorldMatrix;
         /** @hidden */
         _indexInSourceMeshInstanceArray: number;
         /** @hidden */
