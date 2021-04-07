@@ -41,7 +41,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-    SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
+    SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -252,7 +252,7 @@ export class PBRSubSurfaceConfiguration {
     public useMaskFromThicknessTexture: boolean = false;
 
     private _scene: Scene;
-    private _useMaskFromThicknessTextureGltf = false;
+    private _useGltfStyleThicknessTexture = false;
     /**
      * Stores the intensity of the different subsurface effects in the thickness texture. This variation
      * matches the channel-packing that is used by glTF.
@@ -261,7 +261,7 @@ export class PBRSubSurfaceConfiguration {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useMaskFromThicknessTextureGltf: boolean = false;
+    public useGltfStyleThicknessTexture: boolean = false;
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
@@ -329,7 +329,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_SCATTERING = this._isScatteringEnabled;
             defines.SS_THICKNESSANDMASK_TEXTURE = false;
             defines.SS_MASK_FROM_THICKNESS_TEXTURE = false;
-            defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
+            defines.SS_USE_GLTF_THICKNESS_TEXTURE = false;
             defines.SS_REFRACTION = false;
             defines.SS_REFRACTIONMAP_3D = false;
             defines.SS_GAMMAREFRACTION = false;
@@ -354,7 +354,7 @@ export class PBRSubSurfaceConfiguration {
                 }
 
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture;
-                defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = this._useMaskFromThicknessTextureGltf;
+                defines.SS_USE_GLTF_THICKNESS_TEXTURE = this._useGltfStyleThicknessTexture;
             }
 
             if (this._isRefractionEnabled) {
