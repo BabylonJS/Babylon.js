@@ -4,12 +4,21 @@ import { IStencilState } from "../States/IStencilState";
 
 declare type Scene = import("../scene").Scene;
 
-export class MaterialStencilStates implements IStencilState {
+/**
+ * Class that holds the different stencil states of a material
+ */
+export class MaterialStencilState implements IStencilState {
 
+    /**
+     * Creates a material stencil state instance
+     */
     public constructor() {
         this.reset();
     }
 
+    /**
+     * Resets all the stencil states to default values
+     */
     public reset() {
         this.enabled = false;
         this.mask = 0xFF;
@@ -24,6 +33,9 @@ export class MaterialStencilStates implements IStencilState {
     }
 
     private _func: number;
+    /**
+     * Gets or sets the stencil function
+     */
     @serialize()
     public get func(): number {
         return this._func;
@@ -34,6 +46,9 @@ export class MaterialStencilStates implements IStencilState {
     }
 
     private _funcRef: number;
+    /**
+     * Gets or sets the stencil function reference
+     */
     @serialize()
     public get funcRef(): number {
         return this._funcRef;
@@ -44,6 +59,9 @@ export class MaterialStencilStates implements IStencilState {
     }
 
     private _funcMask: number;
+    /**
+     * Gets or sets the stencil function mask
+     */
     @serialize()
     public get funcMask(): number {
         return this._funcMask;
@@ -54,6 +72,9 @@ export class MaterialStencilStates implements IStencilState {
     }
 
     private _opStencilFail: number;
+    /**
+     * Gets or sets the operation when the stencil test fails
+     */
     @serialize()
     public get opStencilFail(): number {
         return this._opStencilFail;
@@ -64,6 +85,9 @@ export class MaterialStencilStates implements IStencilState {
     }
 
     private _opDepthFail: number;
+    /**
+     * Gets or sets the operation when the depth test fails
+     */
     @serialize()
     public get opDepthFail(): number {
         return this._opDepthFail;
@@ -74,6 +98,9 @@ export class MaterialStencilStates implements IStencilState {
     }
 
     private _opStencilDepthPass: number;
+    /**
+     * Gets or sets the operation when the stencil+depth test succeeds
+     */
     @serialize()
     public get opStencilDepthPass(): number {
         return this._opStencilDepthPass;
@@ -84,6 +111,9 @@ export class MaterialStencilStates implements IStencilState {
     }
 
     private _mask: number;
+    /**
+     * Gets or sets the stencil mask
+     */
     @serialize()
     public get mask(): number {
         return this._mask;
@@ -94,6 +124,9 @@ export class MaterialStencilStates implements IStencilState {
     }
 
     private _enabled: boolean;
+    /**
+     * Enables or disables the stencil test
+     */
     @serialize()
     public get enabled(): boolean {
         return this._enabled;
@@ -105,22 +138,22 @@ export class MaterialStencilStates implements IStencilState {
 
     /**
     * Get the current class name, useful for serialization or dynamic coding.
-    * @returns "MaterialStencilStates"
+    * @returns "MaterialStencilState"
     */
      public getClassName(): string {
-        return "MaterialStencilStates";
+        return "MaterialStencilState";
     }
 
     /**
      * Makes a duplicate of the current configuration into another one.
-     * @param clearCoatConfiguration define the config where to copy the info
+     * @param stencilState defines stencil state where to copy the info
      */
-     public copyTo(stencilStates: MaterialStencilStates): void {
-        SerializationHelper.Clone(() => stencilStates, this);
+     public copyTo(stencilState: MaterialStencilState): void {
+        SerializationHelper.Clone(() => stencilState, this);
     }
 
     /**
-     * Serializes this clear coat configuration.
+     * Serializes this stencil configuration.
      * @returns - An object with the serialized config.
      */
     public serialize(): any {
@@ -128,7 +161,7 @@ export class MaterialStencilStates implements IStencilState {
     }
 
     /**
-     * Parses a anisotropy Configuration from a serialized object.
+     * Parses a stencil state configuration from a serialized object.
      * @param source - Serialized object.
      * @param scene Defines the scene we are parsing for
      * @param rootUrl Defines the rootUrl to load from

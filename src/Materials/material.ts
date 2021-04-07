@@ -22,7 +22,7 @@ import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
 import { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
-import { MaterialStencilStates } from "./materialStencilStates";
+import { MaterialStencilState } from "./materialStencilState";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -640,7 +640,7 @@ export class Material implements IAnimatable {
         this.markAsDirty(Material.MiscDirtyFlag);
     }
 
-    public readonly stencil = new MaterialStencilStates();
+    public readonly stencil = new MaterialStencilState();
 
     /**
      * @hidden
@@ -1492,7 +1492,11 @@ export class Material implements IAnimatable {
      * @returns the serialized material object
      */
     public serialize(): any {
-        return SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
+
+        serializationObject.stencil = this.stencil.serialize();
+
+        return serializationObject;
     }
 
     /**
