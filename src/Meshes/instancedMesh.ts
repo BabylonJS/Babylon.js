@@ -34,7 +34,7 @@ Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
 export class InstancedMesh extends AbstractMesh {
     private _sourceMesh: Mesh;
     private _currentLOD: Mesh;
-    private _billboardWorldMatrix = new Matrix();
+    private _billboardWorldMatrix: Matrix;
 
     /** @hidden */
     public _indexInSourceMeshInstanceArray = -1;
@@ -355,6 +355,9 @@ export class InstancedMesh extends AbstractMesh {
 
     public getWorldMatrix(): Matrix {
         if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE && this._currentLOD._masterMesh !== this) {
+            if (!this._billboardWorldMatrix) {
+                this._billboardWorldMatrix = new Matrix();
+            }
             let tempMaster = this._currentLOD._masterMesh;
             this._currentLOD._masterMesh = this;
             TmpVectors.Vector3[7].copyFrom(this._currentLOD.position);
