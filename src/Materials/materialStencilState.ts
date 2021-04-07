@@ -6,6 +6,7 @@ declare type Scene = import("../scene").Scene;
 
 /**
  * Class that holds the different stencil states of a material
+ * Usage example: https://playground.babylonjs.com/#CW5PRI#10
  */
 export class MaterialStencilState implements IStencilState {
 

@@ -640,6 +640,9 @@ export class Material implements IAnimatable {
         this.markAsDirty(Material.MiscDirtyFlag);
     }
 
+    /**
+     * Gives access to the stencil properties of the material
+     */
     public readonly stencil = new MaterialStencilState();
 
     /**
