@@ -219,6 +219,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public static readonly BOTTOM = 4;
 
     /**
+     * Indicates that the instanced meshes should be sorted from back to front before rendering if their material is transparent
+     */
+     public static INSTANCEDMESH_SORT_TRANSPARENT = false;
+
+    /**
      * Gets the default side orientation.
      * @param orientation the orientation to value to attempt to get
      * @returns the default orientation
@@ -1718,6 +1723,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             if (visibleInstances) {
+                if (Mesh.INSTANCEDMESH_SORT_TRANSPARENT && this._scene.activeCamera && subMesh.getMaterial()?.needAlphaBlendingForMesh(subMesh.getRenderingMesh())) {
+                    const cameraPosition = this._scene.activeCamera.globalPosition;
+                    for (let instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
+                        const instanceMesh = visibleInstances[instanceIndex];
+                        instanceMesh._distanceToCamera = Vector3.Distance(instanceMesh.getBoundingInfo().boundingSphere.centerWorld, cameraPosition);
+                    }
+                    visibleInstances.sort((m1, m2) => {
+                        return m1._distanceToCamera > m2._distanceToCamera ? -1 : m1._distanceToCamera < m2._distanceToCamera ? 1 : 0;
+                    });
+                }
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
                     instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
@@ -2033,9 +2048,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
-            engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse, this._effectiveMaterial.stencil);
+            engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse, this._effectiveMaterial.cullBackFaces, this._effectiveMaterial.stencil);
             this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
-            engine.setState(true, this._effectiveMaterial.zOffset, false, reverse, this._effectiveMaterial.stencil);
+            engine.setState(true, this._effectiveMaterial.zOffset, false, reverse, this._effectiveMaterial.cullBackFaces, this._effectiveMaterial.stencil);
 
             if (this._internalMeshDataInfo._onBetweenPassObservable) {
                 this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(subMesh);

@@ -41,12 +41,29 @@ export class Curve {
             const currentFrame = keys[keyIndex].frame;
             const prevValue = keys[keyIndex - 1].value;
             const currentValue = keys[keyIndex].value;
+            const frameDist = currentFrame - prevFrame;
 
-            const controlPoint0Frame = outTangent ? prevFrame + (currentFrame - prevFrame) / 2 : prevFrame;
-            const controlPoint1Frame = inTangent ? prevFrame + (currentFrame - prevFrame) / 2 : currentFrame;
+            let controlPoint0Frame = prevFrame + frameDist / 2;
+            let controlPoint1Frame = prevFrame + frameDist / 2;
 
-            const controlPoint0Value = prevValue + outTangent / 3;
-            const controlPoint1Value = currentValue - inTangent / 3;
+            let controlPoint0Value: number;
+            let controlPoint1Value: number;
+
+            if (outTangent) {
+                controlPoint0Frame = prevFrame + frameDist / 3;
+                controlPoint0Value = prevValue + outTangent / 3;
+            } else {
+                const animEval = this.animation.evaluate(controlPoint0Frame);
+                controlPoint0Value = this.property ? animEval[this.property] : animEval;
+            }
+
+            if (inTangent) {
+                controlPoint1Frame = currentFrame - frameDist / 3;
+                controlPoint1Value = currentValue - inTangent / 3;
+            } else {
+                const animEval = this.animation.evaluate(controlPoint1Frame);
+                controlPoint1Value = this.property ? animEval[this.property] : animEval;
+            }
 
             pathData += ` C${convertX(controlPoint0Frame)} ${convertY(controlPoint0Value)}, ${convertX(controlPoint1Frame)} ${convertY(controlPoint1Value)}, ${convertX(currentFrame)} ${convertY(currentValue)}`;
         }
@@ -54,73 +71,59 @@ export class Curve {
         return pathData;
     }
 
-    public getInControlPoint(keyIndex: number) {
+    public getInControlPoint(keyIndex: number, length: number) {
         if (keyIndex === 0) {
-            return null;
+            return 0;
         }
 
         const keys = this.keys;
-        const inTangent = keys[keyIndex].inTangent;
+        let inTangent = keys[keyIndex].inTangent;
 
-        if (inTangent) {
-            const prevFrame = keys[keyIndex - 1].frame;
-            const currentFrame = keys[keyIndex].frame;
-            const currentValue = keys[keyIndex].value;
-
-            const value = currentValue - inTangent / 3;
-            const frame = prevFrame + (currentFrame - prevFrame) / 2;
-
-            return {
-                frame: frame,
-                value: value
-            }
-        } else {
+        if (!inTangent) {
             const prevFrame = keys[keyIndex - 1].frame;                
-            const prevValue = keys[keyIndex - 1].value;
             const currentFrame = keys[keyIndex].frame;
-            const currentValue = keys[keyIndex].value;
+            const midFrame = prevFrame + (currentFrame - prevFrame) / 2;
 
-            return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
+            const evaluatedValueEntry = this.animation.evaluate(midFrame);
+            let evaluatedValue = 0;
+
+            if (this.property) {
+                evaluatedValue = evaluatedValueEntry[this.property];
             }
+
+            inTangent = (keys[keyIndex].value - evaluatedValue) / (currentFrame - midFrame);
         }
+
+        return length * inTangent;
     }
 
-    public getOutControlPoint(keyIndex: number) {
+    public getOutControlPoint(keyIndex: number, length: number) {
         const keys = this.keys;        
         if (keyIndex === keys.length - 1) {
-            return null;
+            return 0;
         }
-        const outTangent = keys[keyIndex].outTangent;
 
-        if (outTangent) {
-            const prevFrame = keys[keyIndex].frame;        
-            const prevValue = keys[keyIndex].value;
-            const currentFrame = keys[keyIndex + 1].frame;
+        let outTangent = keys[keyIndex].outTangent;
 
-            const frame = prevFrame + (currentFrame - prevFrame) / 2;
-            const value = prevValue + outTangent / 3;
-
-            return {
-                frame: frame,
-                value: value
-            }
-        } else {
+        if (!outTangent) {
             const prevFrame = keys[keyIndex].frame;                
-            const prevValue = keys[keyIndex].value;
             const currentFrame = keys[keyIndex + 1].frame;
-            const currentValue = keys[keyIndex + 1].value;
+            const midFrame = prevFrame + (currentFrame - prevFrame) / 2;
 
-            return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
+            const evaluatedValueEntry = this.animation.evaluate(midFrame);
+            let evaluatedValue = 0;
+
+            if (this.property) {
+                evaluatedValue = evaluatedValueEntry[this.property];
             }
+
+            outTangent = (evaluatedValue - keys[keyIndex].value) / (currentFrame - midFrame);
         }
+
+        return length * outTangent;
     }
 
-    public updateInTangentFromControlPoint(keyId: number, value: number) {
-        const slope = (this.keys[keyId].value - value);
+    public updateInTangentFromControlPoint(keyId: number, slope: number) {
         this.keys[keyId].inTangent = slope;
 
         if (this.property) {
@@ -136,8 +139,7 @@ export class Curve {
         this.onDataUpdatedObservable.notifyObservers();
     }
 
-    public updateOutTangentFromControlPoint(keyId: number, value: number) {
-        const slope = (value - this.keys[keyId].value);
+    public updateOutTangentFromControlPoint(keyId: number, slope: number) {
         this.keys[keyId].outTangent = slope;
 
         if (this.property) {
@@ -153,10 +155,65 @@ export class Curve {
         this.onDataUpdatedObservable.notifyObservers();
     }
 
-    public updateKeyFrame(keyId: number, frame: number) {
-        this.keys[keyId].frame = frame;
 
-        this.animation.getKeys()[keyId].frame = frame;
+    public updateKeyFrame(keyId: number, frame: number) {
+        const currentFrame = this.keys[keyId].frame;
+        const originalKey = this.animation.getKeys()[keyId];
+        originalKey.frame = frame;
+
+        if (keyId > 0) {
+            const oldWidth = currentFrame - this.keys[keyId - 1].frame;
+            const newWidth = frame - this.keys[keyId - 1].frame;
+            const previousOriginalKey = this.animation.getKeys()[keyId - 1];
+
+            if (this.keys[keyId].inTangent) {
+                const newInTangent = (this.keys[keyId].inTangent! / oldWidth) * newWidth;
+                this.keys[keyId].inTangent = newInTangent;
+                if (this.property) {
+                    originalKey.inTangent[this.property] = newInTangent;
+                } else {
+                    originalKey.inTangent = newInTangent;
+                }
+            }
+
+            if (this.keys[keyId - 1].outTangent) {
+                const newOutTangent = (this.keys[keyId - 1].outTangent! / oldWidth) * newWidth;
+                this.keys[keyId - 1].outTangent = newOutTangent;
+                if (this.property) {
+                    previousOriginalKey.outTangent[this.property] = newOutTangent;
+                } else {
+                    previousOriginalKey.outTangent = newOutTangent;
+                }
+            }
+        }
+
+        if (keyId < this.keys.length - 1) {
+            const oldWidth = this.keys[keyId + 1].frame - currentFrame;
+            const newWidth = this.keys[keyId + 1].frame - frame;            
+            const nextOriginalKey = this.animation.getKeys()[keyId + 1];
+
+            if (this.keys[keyId].outTangent) {
+                const newOutTangent = (this.keys[keyId].outTangent! / oldWidth) * newWidth;
+                this.keys[keyId].outTangent = newOutTangent;
+                if (this.property) {
+                    originalKey.outTangent[this.property] = newOutTangent;
+                } else {
+                    originalKey.outTangent = newOutTangent;
+                }
+            }
+
+            if (this.keys[keyId + 1].inTangent) {
+                const newInTangent = (this.keys[keyId + 1].inTangent! / oldWidth) * newWidth;
+                this.keys[keyId + 1].inTangent = newInTangent;
+                if (this.property) {
+                    nextOriginalKey.inTangent[this.property] = newInTangent;
+                } else {
+                    nextOriginalKey.inTangent = newInTangent;
+                }
+            }
+        }
+
+        this.keys[keyId].frame = frame;
 
         this.onDataUpdatedObservable.notifyObservers();
     }
