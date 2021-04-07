@@ -155,11 +155,23 @@ IGraphComponentState
             }
 
             const value = this._currentAnimation.evaluate(currentFrame);
+          //  const prevValue = this._currentAnimation.evaluate(currentFrame - 0.01);
+            //const nextValue = this._currentAnimation.evaluate(currentFrame + 0.01);
 
-            keys.splice(indexToAdd + 1, 0, {
+            let newKey: IAnimationKey = {
                 frame: currentFrame,
                 value: value
-            });
+            }
+
+            // if (keys[indexToAdd].outTangent) {
+            //     newKey.inTangent = value.subtract ? value.subtract(prevValue).scaleInPlace(2 / 3) : (value - prevValue) * 1 / 3;
+            // }
+
+            // if (keys[indexToAdd + 1].inTangent) {
+            //     newKey.outTangent = nextValue.subtract ? nextValue.subtract(value).scaleInPlace(1/ 3) : (nextValue - value) * 2 / 3;
+            // }
+
+            keys.splice(indexToAdd + 1, 0, newKey);
 
             this._currentAnimation.setKeys(keys);
             this._evaluateKeys();
