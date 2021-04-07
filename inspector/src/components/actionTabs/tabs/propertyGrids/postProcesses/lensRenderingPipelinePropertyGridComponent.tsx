@@ -39,7 +39,7 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                 </LineContainerComponent>
                 <LineContainerComponent title="DEPTH OF FIELD" selection={this.props.globalState}>
                     <SliderLineComponent label="Aperture" minimum={0} maximum={10} step={0.1} target={renderPipeline} propertyName="dofAperture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Distortion" minimum={0} maximum={10} step={0.1} target={renderPipeline} propertyName="dofDistortion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Distortion" minimum={0} maximum={1000} step={0.1} target={renderPipeline} propertyName="dofDistortion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Pentagon bokeh" target={renderPipeline} propertyName="pentagonBokeh" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Highlight gain" minimum={0} maximum={5} step={0.1} target={renderPipeline} propertyName="highlightsGain" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Highlight threshold" minimum={0} maximum={5} step={0.1} target={renderPipeline} propertyName="highlightsThreshold" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

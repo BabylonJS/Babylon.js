@@ -183,7 +183,7 @@ export class MirrorTexture extends RenderTargetTexture {
 
         this.onAfterRenderObservable.add(() => {
             scene.updateTransformMatrix();
-            scene.getEngine().cullBackFaces = true;
+            scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
 
             scene.clipPlane = saveClipPlane;
