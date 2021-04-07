@@ -28,6 +28,7 @@ export interface IMaterialSubSurfaceDefines {
 
     SS_THICKNESSANDMASK_TEXTURE: boolean;
     SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+    SS_HAS_THICKNESS: boolean;
 
     SS_REFRACTIONMAP_3D: boolean;
     SS_REFRACTIONMAP_OPPOSITEZ: boolean;
@@ -328,6 +329,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_TRANSLUCENCY = this._isTranslucencyEnabled;
             defines.SS_SCATTERING = this._isScatteringEnabled;
             defines.SS_THICKNESSANDMASK_TEXTURE = false;
+            defines.SS_HAS_THICKNESS = false;
             defines.SS_MASK_FROM_THICKNESS_TEXTURE = false;
             defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
             defines.SS_REFRACTION = false;
@@ -353,6 +355,7 @@ export class PBRSubSurfaceConfiguration {
                     }
                 }
 
+                defines.SS_HAS_THICKNESS = this.minimumThickness !== 0.0 && this.maximumThickness !== 0.0;
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture;
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = this._useMaskFromThicknessTextureGltf;
             }
