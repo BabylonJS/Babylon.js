@@ -37,13 +37,14 @@ import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarg
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
-import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
+import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
+import { IStencilState } from "../States/IStencilState";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -505,7 +506,8 @@ export class WebGPUEngine extends Engine {
                 this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
                 this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
-                this._stencilState = new WebGPUStencilState(this._cacheRenderPipeline);
+                this._stencilStateComposer = new WebGPUStencilStateComposer(this._cacheRenderPipeline);
+                this._stencilStateComposer.stencilGlobal = this._stencilState;
 
                 this._depthCullingState.depthTest = true;
                 this._depthCullingState.depthFunc = Constants.LEQUAL;
@@ -757,6 +759,11 @@ export class WebGPUEngine extends Engine {
     //                          Static Pipeline WebGPU States
     //------------------------------------------------------------------------------
 
+    /** @hidden */
+    public applyStates() {
+        this._stencilStateComposer.apply();
+    }
+
     /**
      * Force the entire cache to be cleared
      * You should not have to use this function unless your engine needs to share the WebGPU context with another engine
@@ -778,7 +785,7 @@ export class WebGPUEngine extends Engine {
         if (bruteForce) {
             this._currentProgram = null;
 
-            this._stencilState.reset();
+            this._stencilStateComposer.reset();
 
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = Constants.LEQUAL;
@@ -941,7 +948,7 @@ export class WebGPUEngine extends Engine {
     public _applyStencilRef(renderPass: GPURenderPassEncoder, force = false): void {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
 
-        const stencilRef = this._stencilState.stencilFuncRef;
+        const stencilRef = this._stencilStateComposer.funcRef;
 
         if (stencilRef !== this._stencilRefsCurrent[index] || force) {
             this._stencilRefsCurrent[index] = stencilRef;
@@ -1487,6 +1494,8 @@ export class WebGPUEngine extends Engine {
                 throw `Invalid call to enableEffect: the materialContext property is empty!`;
             }
         }
+
+        this._stencilStateComposer.stencilMaterial = undefined;
 
         this._forceEnableEffect = isNewEffect || this._forceEnableEffect ? false : this._forceEnableEffect;
 
@@ -3440,8 +3449,9 @@ export class WebGPUEngine extends Engine {
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
      * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     * @param stencil stencil states to set
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, stencil?: IStencilState): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
@@ -3463,6 +3473,8 @@ export class WebGPUEngine extends Engine {
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }
+
+        this._stencilStateComposer.stencilMaterial = stencil;
     }
 
     /**
@@ -3611,6 +3623,8 @@ export class WebGPUEngine extends Engine {
     private _setRenderPipeline(fillMode: number): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
+        this.applyStates();
+
         let pipeline = !this.compatibilityMode ? this._currentDrawContext?.fastRenderPipeline : null;
         if (!pipeline) {
             pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
@@ -3629,7 +3643,7 @@ export class WebGPUEngine extends Engine {
         if (renderPass !== this._bundleEncoder) {
             this._applyViewport(renderPass as GPURenderPassEncoder);
             this._applyScissor(renderPass as GPURenderPassEncoder);
-            if (this._stencilState.stencilTest) {
+            if (this._stencilStateComposer.enabled) {
                 this._applyStencilRef(renderPass as GPURenderPassEncoder);
             }
             if (this._alphaState.alphaBlend) {
@@ -3859,9 +3873,6 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _releaseFramebufferObjects(texture: InternalTexture): void { }
-
-    /** @hidden */
-    public applyStates() { }
 
     /**
      * Gets a boolean indicating if all created effects are ready

@@ -567,7 +567,7 @@ export class NullEngine extends Engine {
         if (bruteForce) {
             this._currentProgram = null;
 
-            this.stencilState.reset();
+            this._stencilStateComposer.reset();
             this.depthCullingState.reset();
             this.alphaState.reset();
         }

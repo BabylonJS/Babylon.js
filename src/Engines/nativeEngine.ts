@@ -27,6 +27,7 @@ import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarg
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
+import { IStencilState } from "../States/IStencilState";
 
 interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
@@ -1193,7 +1194,7 @@ export class NativeEngine extends Engine {
         this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, stencil?: IStencilState): void {
         this._native.setState(culling, zOffset, this.cullBackFaces, reverseSide);
     }
 
@@ -1540,7 +1541,7 @@ export class NativeEngine extends Engine {
         if (bruteForce) {
             this._currentProgram = null;
 
-            this._stencilState.reset();
+            this._stencilStateComposer.reset();
             this._depthCullingState.reset();
             this._alphaState.reset();
         }

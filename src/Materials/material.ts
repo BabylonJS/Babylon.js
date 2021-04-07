@@ -22,6 +22,7 @@ import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
 import { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
+import { MaterialStencilStates } from "./materialStencilStates";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -615,6 +616,8 @@ export class Material implements IAnimatable {
         this.markAsDirty(Material.MiscDirtyFlag);
     }
 
+    public readonly stencil = new MaterialStencilStates();
+
     /**
      * @hidden
      * Stores the effects for the material
@@ -916,7 +919,7 @@ export class Material implements IAnimatable {
         var reverse = orientation === Material.ClockWiseSideOrientation;
 
         engine.enableEffect(effect ? effect : this._getDrawWrapper());
-        engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
+        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.stencil);
 
         return reverse;
     }
