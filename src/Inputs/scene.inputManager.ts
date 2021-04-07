@@ -890,11 +890,6 @@ export class InputManager {
                         this._onPointerMove((currentEvent as IPointerEvent));
                     }
                     else if (inputIndex === PointerInput.MouseWheelX || inputIndex === PointerInput.MouseWheelY || inputIndex === PointerInput.MouseWheelZ) {
-                        /*
-                         * Since wheel inputs stay until they are read, we'll read everything at once.  We'll then fire off
-                         * a move event if any of them are not zero.  This will allow us to only fire off events with a proper
-                         * delta.
-                         */
                         const deltaX = this._deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MouseWheelX);
                         const deltaY = this._deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MouseWheelY);
                         const deltaZ = this._deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MouseWheelZ);
