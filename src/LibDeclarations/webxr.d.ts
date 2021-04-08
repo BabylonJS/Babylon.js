@@ -123,6 +123,8 @@ interface XRInputSource {
 interface XRPose {
     readonly transform: XRRigidTransform;
     readonly emulatedPosition: boolean;
+    readonly linearVelocity?: DOMPointReadOnly;
+    readonly angularVelocity?: DOMPointReadOnly;
 }
 
 interface XRWorldInformation {

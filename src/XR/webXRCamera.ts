@@ -42,6 +42,11 @@ export class WebXRCamera extends FreeCamera {
     public compensateOnFirstFrame: boolean = true;
 
     /**
+     * The last XRViewerPose from the current XRFrame
+     */
+    public lastXRViewerPose?: XRViewerPose;
+
+    /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
      * @param name the name of the camera
      * @param scene the scene to add the camera to
@@ -148,11 +153,16 @@ export class WebXRCamera extends FreeCamera {
         return "WebXRCamera";
     }
 
+    public dispose() {
+        super.dispose();
+        this.lastXRViewerPose = undefined;
+    }
+
     private _rotate180 = new Quaternion(0, 1, 0, 0);
 
     private _updateFromXRSession() {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
-
+        this.lastXRViewerPose = pose || undefined;
         if (!pose) {
             this._setTrackingState(WebXRTrackingState.NOT_TRACKING);
             return;
@@ -282,16 +292,19 @@ export class WebXRCamera extends FreeCamera {
             }
 
             transformMat.decompose(undefined, this._referenceQuaternion, this._referencedPosition);
-            const transform = new XRRigidTransform({
-                x: this._referencedPosition.x,
-                y: this._referencedPosition.y,
-                z: this._referencedPosition.z
-            }, {
-                x: this._referenceQuaternion.x,
-                y: this._referenceQuaternion.y,
-                z: this._referenceQuaternion.z,
-                w: this._referenceQuaternion.w
-            });
+            const transform = new XRRigidTransform(
+                {
+                    x: this._referencedPosition.x,
+                    y: this._referencedPosition.y,
+                    z: this._referencedPosition.z,
+                },
+                {
+                    x: this._referenceQuaternion.x,
+                    y: this._referenceQuaternion.y,
+                    z: this._referenceQuaternion.z,
+                    w: this._referenceQuaternion.w,
+                }
+            );
             this._xrSessionManager.referenceSpace = this._xrSessionManager.referenceSpace.getOffsetReferenceSpace(transform);
         }
     }
