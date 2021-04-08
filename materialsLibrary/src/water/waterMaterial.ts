@@ -529,7 +529,7 @@ export class WaterMaterial extends PushMaterial {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
 
-            MaterialHelper.BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
 
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
@@ -668,7 +668,7 @@ export class WaterMaterial extends PushMaterial {
 
             // Transform
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = true;
+            scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
         };
     }

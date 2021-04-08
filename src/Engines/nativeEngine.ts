@@ -827,6 +827,7 @@ export class NativeEngine extends Engine {
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: false,
             trackUbosInFrame: false,
+            checkUbosContentBeforeUpload: false,
             supportCSM: false,
             basisNeedsPOT: false,
             support3DTextures: false,
@@ -1193,8 +1194,8 @@ export class NativeEngine extends Engine {
         this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-        this._native.setState(culling, zOffset, this.cullBackFaces, reverseSide);
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean): void {
+        this._native.setState(culling, zOffset, this.cullBackFaces ?? cullBackFaces ?? true, reverseSide);
     }
 
     /**

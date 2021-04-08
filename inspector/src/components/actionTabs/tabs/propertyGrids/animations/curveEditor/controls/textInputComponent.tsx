@@ -54,6 +54,9 @@ ITextInputComponentState
             let valueAsNumber = parseFloat(this.state.value);
 
             if (!isNaN(valueAsNumber)) {
+                if (this.props.onValueAsNumberChanged) {
+                    this.props.onValueAsNumberChanged(valueAsNumber);
+                }
                 this.setState({value: valueAsNumber.toString(), isFocused: false});
             } else {
                 this.setState({value: this._lastKnownGoodValue, isFocused: false});

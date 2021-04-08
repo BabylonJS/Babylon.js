@@ -65,7 +65,7 @@ export class ClampBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = `${this._codeVariableName}.minimum = ${this.minimum};\r\n`;
+        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.minimum = ${this.minimum};\r\n`;
 
         codeString += `${this._codeVariableName}.maximum = ${this.maximum};\r\n`;
 

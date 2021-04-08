@@ -315,7 +315,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             var engine = scene.getEngine();
 
             // Culling
-            engine.setState(material.backFaceCulling);
+            engine.setState(material.backFaceCulling, undefined, undefined, undefined, material.cullBackFaces);
 
             // Managing instances
             var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());

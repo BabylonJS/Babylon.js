@@ -446,7 +446,7 @@ declare class GPURenderPipeline implements GPUObjectBase, GPUPipelineBase {
     getBindGroupLayout(index: number): GPUBindGroupLayout;
 }
 
-interface GPURenderPipelineDescriptor2 extends GPUPipelineDescriptorBase {
+interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase {
     vertex: GPUVertexState;
     primitive?: GPUPrimitiveState;
     depthStencil?: GPUDepthStencilState;
@@ -597,9 +597,8 @@ type GPUVertexFormat =
 
 type GPUInputStepMode = "vertex" | "instance";
 
-interface GPUVertexState { // TODO WEBGPU to be replaced by: interface GPUVertexState extends GPUProgrammableStage {
-    indexFormat?: GPUIndexFormat; // TODO WEBGPU to be removed
-    vertexBuffers?: GPUVertexBufferLayout[]; // TODO WEBGPU to be renamed to buffers
+interface GPUVertexState extends GPUProgrammableStage {
+    buffers?: GPUVertexBufferLayout[];
 }
 
 interface GPUVertexBufferLayout {
@@ -665,7 +664,7 @@ declare class GPUCommandEncoder implements GPUObjectBase {
         firstQuery: GPUSize32,
         queryCount: GPUSize32,
         destination: GPUBuffer,
-        destinationOffse: GPUSize64
+        destinationOffset: GPUSize64
     ): void;
 
     finish(descriptor?: GPUCommandBufferDescriptor): GPUCommandBuffer;
@@ -853,7 +852,7 @@ interface GPURenderPassColorAttachment {
     resolveTarget?: GPUTextureView;
 
     loadValue: GPULoadOp | GPUColor;
-    storeOp?: GPUStoreOp; /* default="store" */
+    storeOp: GPUStoreOp;
 }
 
 interface GPURenderPassDepthStencilAttachment {
@@ -1068,56 +1067,3 @@ interface GPUExtent3DDict {
     depthOrArrayLayers?: GPUIntegerCoordinate; /* default=1 */
 }
 type GPUExtent3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUExtent3DDict;
-
-// TODO WEBGPU: below to be removed when GPURenderPipelineDescriptor2 implemented by Chrome
-
-interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase {
-    vertexStage: GPUProgrammableStage;
-    fragmentStage?: GPUProgrammableStage;
-
-    primitiveTopology: GPUPrimitiveTopology;
-    rasterizationState?: GPURasterizationStateDescriptor;
-    colorStates: GPUColorStateDescriptor[];
-    depthStencilState?: GPUDepthStencilStateDescriptor;
-    vertexState?: GPUVertexState;
-
-    sampleCount?: number;
-    sampleMask?: number;
-    alphaToCoverageEnabled?: boolean;
-}
-
-interface GPUBlendDescriptor {
-    dstFactor?: GPUBlendFactor;
-    operation?: GPUBlendOperation;
-    srcFactor?: GPUBlendFactor;
-}
-
-interface GPUColorStateDescriptor {
-    format: GPUTextureFormat;
-
-    alphaBlend?: GPUBlendDescriptor;
-    colorBlend?: GPUBlendDescriptor;
-    writeMask?: GPUColorWriteFlags;
-}
-
-interface GPUDepthStencilStateDescriptor {
-    format: GPUTextureFormat;
-
-    depthWriteEnabled?: boolean;
-    depthCompare?: GPUCompareFunction;
-
-    stencilFront?: GPUStencilStateFace;
-    stencilBack?: GPUStencilStateFace;
-
-    stencilReadMask?: number;
-    stencilWriteMask?: number;
-}
-
-interface GPURasterizationStateDescriptor {
-    frontFace?: GPUFrontFace;
-    cullMode?: GPUCullMode;
-    clampDepth?: boolean;
-    depthBias?: number;
-    depthBiasSlopeScale?: number;
-    depthBiasClamp?: number;
-}
