@@ -244,6 +244,7 @@ export class RenderTargetTexture extends Texture {
     protected _textureMatrix: Matrix;
     protected _samples = 1;
     protected _renderTargetOptions: RenderTargetCreationOptions;
+    private _canRescale = true;
     /**
      * Gets render target creation options that were used.
      */
@@ -572,10 +573,17 @@ export class RenderTargetTexture extends Texture {
     }
 
     /**
+     * Don't allow this render target texture to rescale. Mainly used to prevent rescaling by the scene optimizer.
+     */
+    public disableRescaling() {
+        this._canRescale = false;
+    }
+
+    /**
      * Get if the texture can be rescaled or not.
      */
     public get canRescale(): boolean {
-        return true;
+        return this._canRescale;
     }
 
     /**
