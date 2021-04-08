@@ -594,4 +594,10 @@ export class Constants {
      * Constant used as key code for Shift key
      */
     public static readonly INPUT_SHIFT_KEY = 16;
+
+    /** Standard snapshot rendering. In this mode, some form of dynamic behavior is possible (for eg, uniform buffers are still updated) */
+    public static readonly SNAPSHOTRENDERING_STANDARD = 0;
+
+    /** Fast snapshot rendering. In this mode, everything is static and only some limited form of dynamic behaviour is possible */
+    public static readonly SNAPSHOTRENDERING_FAST = 1;
 }

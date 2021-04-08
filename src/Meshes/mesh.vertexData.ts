@@ -1308,7 +1308,7 @@ export class VertexData {
     }
 
     /** @hidden */
-    public static _ComputeSides(sideOrientation: number, positions: FloatArray, indices: FloatArray, normals: FloatArray, uvs: FloatArray, frontUVs?: Vector4, backUVs?: Vector4) {
+    public static _ComputeSides(sideOrientation: number, positions: FloatArray, indices: FloatArray | IndicesArray, normals: FloatArray, uvs: FloatArray, frontUVs?: Vector4, backUVs?: Vector4) {
         var li: number = indices.length;
         var ln: number = normals.length;
         var i: number;

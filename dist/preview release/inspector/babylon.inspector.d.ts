@@ -634,6 +634,7 @@ declare module INSPECTOR {
         outTangent?: number;
     }
     export class Curve {
+        static readonly SampleRate: number;
         keys: KeyEntry[];
         animation: BABYLON.Animation;
         color: string;
@@ -643,16 +644,10 @@ declare module INSPECTOR {
         static readonly TangentLength: number;
         constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
-        getInControlPoint(keyIndex: number): {
-            frame: number;
-            value: any;
-        } | null;
-        getOutControlPoint(keyIndex: number): {
-            frame: number;
-            value: any;
-        } | null;
-        updateInTangentFromControlPoint(keyId: number, value: number): void;
-        updateOutTangentFromControlPoint(keyId: number, value: number): void;
+        getInControlPoint(keyIndex: number, length: number): number;
+        getOutControlPoint(keyIndex: number, length: number): number;
+        updateInTangentFromControlPoint(keyId: number, slope: number): void;
+        updateOutTangentFromControlPoint(keyId: number, slope: number): void;
         updateKeyFrame(keyId: number, frame: number): void;
         updateKeyValue(keyId: number, value: number): void;
     }
@@ -702,10 +697,10 @@ declare module INSPECTOR {
         private _svgHost;
         private _keyPointSVG;
         private _controlMode;
-        private _currentLeftControlPoint;
-        private _currentRightControlPoint;
-        private _tangentReferenceX;
-        private _tangentReferenceY;
+        private _storedLengthIn;
+        private _storedLengthOut;
+        private _inVec;
+        private _outVec;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
@@ -838,6 +833,7 @@ declare module INSPECTOR {
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
         constructor(props: IBottomBarComponentProps);
+        private _renderMaxFrame;
         render(): JSX.Element;
     }
 }

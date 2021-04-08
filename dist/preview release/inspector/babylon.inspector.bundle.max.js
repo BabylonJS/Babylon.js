@@ -11160,7 +11160,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 6; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px;\n      min-width: 70px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
+exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar #bottom-bar-total {\n    grid-row: 1;\n    grid-column: 6;\n    color: white;\n    background: #222222;\n    height: 25px;\n    align-self: center;\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    font-family: 'acumin-pro-condensed';\n    font-size: 12pt; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 6; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px;\n      min-width: 70px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11178,7 +11178,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: black;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
+exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: #111111;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -46979,12 +46979,24 @@ var BottomBarComponent = /** @class */ (function (_super) {
     function BottomBarComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
+        _this.props.context.onAnimationsLoaded.add(function () {
+            _this.forceUpdate();
+        });
+        _this.props.context.onActiveAnimationChanged.add(function () {
+            _this.forceUpdate();
+        });
         return _this;
     }
+    BottomBarComponent.prototype._renderMaxFrame = function () {
+        var keys = this.props.context.activeAnimation.getKeys();
+        return Math.round(keys[keys.length - 1].frame);
+    };
     BottomBarComponent.prototype.render = function () {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_mediaPlayerComponent__WEBPACK_IMPORTED_MODULE_2__["MediaPlayerComponent"], { globalState: this.props.globalState, context: this.props.context }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_3__["RangeSelectorComponent"], { globalState: this.props.globalState, context: this.props.context })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_3__["RangeSelectorComponent"], { globalState: this.props.globalState, context: this.props.context }),
+            this.props.context.activeAnimation &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar-total" }, this._renderMaxFrame())));
     };
     return BottomBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47587,96 +47599,70 @@ var Curve = /** @class */ (function () {
         for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
             var outTangent = keys[keyIndex - 1].outTangent || 0;
             var inTangent = keys[keyIndex].inTangent || 0;
-            var prevFrame = keys[keyIndex - 1].frame;
             var currentFrame = keys[keyIndex].frame;
-            var prevValue = keys[keyIndex - 1].value;
             var currentValue = keys[keyIndex].value;
-            var controlPoint0Frame = prevFrame + (currentFrame - prevFrame) / 2;
-            var controlPoint1Frame = prevFrame + (currentFrame - prevFrame) / 2;
-            var controlPoint0Value = void 0;
-            var controlPoint1Value = void 0;
-            if (outTangent) {
-                controlPoint0Frame = 2 * prevFrame / 3 + currentFrame / 3;
-                controlPoint0Value = prevValue + outTangent / 3;
+            var prevFrame = keys[keyIndex - 1].frame;
+            var frameDist = currentFrame - prevFrame;
+            if (!outTangent && !inTangent) { // Draw a straight line
+                pathData += " L" + convertX(currentFrame) + " " + convertY(currentValue);
+                continue;
             }
-            else {
-                var animEval = this.animation.evaluate(controlPoint0Frame);
-                controlPoint0Value = this.property ? animEval[this.property] : animEval;
+            // Let's sample the curve else
+            for (var frame = prevFrame; frame < currentFrame; frame += frameDist / Curve.SampleRate) {
+                var keyValue = this.animation.evaluate(frame);
+                var value = this.property ? keyValue[this.property] : keyValue;
+                pathData += " L" + convertX(frame) + " " + convertY(value);
             }
-            if (inTangent) {
-                controlPoint1Frame = prevFrame / 3 + 2 * currentFrame / 3;
-                controlPoint1Value = currentValue - inTangent / 3;
-            }
-            else {
-                var animEval = this.animation.evaluate(controlPoint1Frame);
-                controlPoint1Value = this.property ? animEval[this.property] : animEval;
-            }
-            pathData += " C" + convertX(controlPoint0Frame) + " " + convertY(controlPoint0Value) + ", " + convertX(controlPoint1Frame) + " " + convertY(controlPoint1Value) + ", " + convertX(currentFrame) + " " + convertY(currentValue);
+            pathData += " L" + convertX(currentFrame) + " " + convertY(currentValue);
         }
         return pathData;
     };
-    Curve.prototype.getInControlPoint = function (keyIndex) {
+    Curve.prototype.getInControlPoint = function (keyIndex, length) {
         if (keyIndex === 0) {
-            return null;
+            return 0;
         }
         var keys = this.keys;
         var inTangent = keys[keyIndex].inTangent;
-        if (inTangent) {
-            var prevFrame = keys[keyIndex - 1].frame;
-            var currentFrame = keys[keyIndex].frame;
-            var currentValue = keys[keyIndex].value;
-            var value = currentValue - inTangent / 3;
-            var frame = prevFrame / 3 + 2 * currentFrame / 3;
-            return {
-                frame: frame,
-                value: value
-            };
-        }
-        else {
+        if (!inTangent) {
             var prevFrame = keys[keyIndex - 1].frame;
             var currentFrame = keys[keyIndex].frame;
             var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
-            var evaluatedValue = this.animation.evaluate(midFrame);
-            return {
-                frame: midFrame,
-                value: this.property ? evaluatedValue[this.property] : evaluatedValue
-            };
+            var evaluatedValueEntry = this.animation.evaluate(midFrame);
+            var evaluatedValue = 0;
+            if (this.property) {
+                evaluatedValue = evaluatedValueEntry[this.property];
+            }
+            inTangent = (keys[keyIndex].value - evaluatedValue) / (currentFrame - midFrame);
         }
+        return length * inTangent;
     };
-    Curve.prototype.getOutControlPoint = function (keyIndex) {
+    Curve.prototype.getOutControlPoint = function (keyIndex, length) {
         var keys = this.keys;
         if (keyIndex === keys.length - 1) {
-            return null;
+            return 0;
         }
         var outTangent = keys[keyIndex].outTangent;
-        if (outTangent) {
-            var prevFrame = keys[keyIndex].frame;
-            var prevValue = keys[keyIndex].value;
-            var currentFrame = keys[keyIndex + 1].frame;
-            var frame = 2 * prevFrame / 3 + currentFrame / 3;
-            var value = prevValue + outTangent / 3;
-            return {
-                frame: frame,
-                value: value
-            };
-        }
-        else {
+        if (!outTangent) {
             var prevFrame = keys[keyIndex].frame;
             var currentFrame = keys[keyIndex + 1].frame;
             var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
-            var evaluatedValue = this.animation.evaluate(midFrame);
-            return {
-                frame: midFrame,
-                value: this.property ? evaluatedValue[this.property] : evaluatedValue
-            };
+            var evaluatedValueEntry = this.animation.evaluate(midFrame);
+            var evaluatedValue = 0;
+            if (this.property) {
+                evaluatedValue = evaluatedValueEntry[this.property];
+            }
+            outTangent = (evaluatedValue - keys[keyIndex].value) / (currentFrame - midFrame);
         }
+        return length * outTangent;
     };
-    Curve.prototype.updateInTangentFromControlPoint = function (keyId, value) {
-        var slope = (this.keys[keyId].value - value);
-        this.keys[keyId].inTangent = slope * (this.keys[keyId].inTangent ? 2 / 3 : 1 / 2);
+    Curve.prototype.updateInTangentFromControlPoint = function (keyId, slope) {
+        this.keys[keyId].inTangent = slope;
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
                 this.animation.getKeys()[keyId].inTangent = this.tangentBuilder();
+            }
+            if (!this.animation.getKeys()[keyId - 1].outTangent) {
+                this.animation.getKeys()[keyId - 1].outTangent = this.tangentBuilder();
             }
             this.animation.getKeys()[keyId].inTangent[this.property] = this.keys[keyId].inTangent;
         }
@@ -47685,10 +47671,12 @@ var Curve = /** @class */ (function () {
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
-    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, value) {
-        var slope = (value - this.keys[keyId].value);
-        this.keys[keyId].outTangent = slope * (this.keys[keyId].outTangent ? 2 / 3 : 1 / 2);
+    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, slope) {
+        this.keys[keyId].outTangent = slope;
         if (this.property) {
+            if (!this.animation.getKeys()[keyId + 1].inTangent) {
+                this.animation.getKeys()[keyId + 1].inTangent = this.tangentBuilder();
+            }
             if (!this.animation.getKeys()[keyId].outTangent) {
                 this.animation.getKeys()[keyId].outTangent = this.tangentBuilder();
             }
@@ -47700,8 +47688,60 @@ var Curve = /** @class */ (function () {
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyFrame = function (keyId, frame) {
+        var currentFrame = this.keys[keyId].frame;
+        var originalKey = this.animation.getKeys()[keyId];
+        originalKey.frame = frame;
+        if (keyId > 0) {
+            var oldWidth = currentFrame - this.keys[keyId - 1].frame;
+            var newWidth = frame - this.keys[keyId - 1].frame;
+            var previousOriginalKey = this.animation.getKeys()[keyId - 1];
+            if (this.keys[keyId].inTangent) {
+                var newInTangent = (this.keys[keyId].inTangent / oldWidth) * newWidth;
+                this.keys[keyId].inTangent = newInTangent;
+                if (this.property) {
+                    originalKey.inTangent[this.property] = newInTangent;
+                }
+                else {
+                    originalKey.inTangent = newInTangent;
+                }
+            }
+            if (this.keys[keyId - 1].outTangent) {
+                var newOutTangent = (this.keys[keyId - 1].outTangent / oldWidth) * newWidth;
+                this.keys[keyId - 1].outTangent = newOutTangent;
+                if (this.property) {
+                    previousOriginalKey.outTangent[this.property] = newOutTangent;
+                }
+                else {
+                    previousOriginalKey.outTangent = newOutTangent;
+                }
+            }
+        }
+        if (keyId < this.keys.length - 1) {
+            var oldWidth = this.keys[keyId + 1].frame - currentFrame;
+            var newWidth = this.keys[keyId + 1].frame - frame;
+            var nextOriginalKey = this.animation.getKeys()[keyId + 1];
+            if (this.keys[keyId].outTangent) {
+                var newOutTangent = (this.keys[keyId].outTangent / oldWidth) * newWidth;
+                this.keys[keyId].outTangent = newOutTangent;
+                if (this.property) {
+                    originalKey.outTangent[this.property] = newOutTangent;
+                }
+                else {
+                    originalKey.outTangent = newOutTangent;
+                }
+            }
+            if (this.keys[keyId + 1].inTangent) {
+                var newInTangent = (this.keys[keyId + 1].inTangent / oldWidth) * newWidth;
+                this.keys[keyId + 1].inTangent = newInTangent;
+                if (this.property) {
+                    nextOriginalKey.inTangent[this.property] = newInTangent;
+                }
+                else {
+                    nextOriginalKey.inTangent = newInTangent;
+                }
+            }
+        }
         this.keys[keyId].frame = frame;
-        this.animation.getKeys()[keyId].frame = frame;
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyValue = function (keyId, value) {
@@ -47715,6 +47755,7 @@ var Curve = /** @class */ (function () {
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
+    Curve.SampleRate = 50;
     Curve.TangentLength = 50;
     return Curve;
 }());
@@ -48689,9 +48730,6 @@ var KeyPointComponent = /** @class */ (function (_super) {
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-        var bbox = evt.nativeEvent.target.getBoundingClientRect();
-        this._tangentReferenceX = bbox.left + bbox.width / 2;
-        this._tangentReferenceY = bbox.top + bbox.width / 2;
         var target = evt.nativeEvent.target;
         if (target.tagName === "image") {
             this._controlMode = ControlMode.Key;
@@ -48704,16 +48742,22 @@ var KeyPointComponent = /** @class */ (function (_super) {
         }
         evt.stopPropagation();
     };
-    KeyPointComponent.prototype._processTangentMove = function (evt, cp) {
-        var key = this.props.curve.keys[this.props.keyId];
-        var expectedFrame = cp.frame;
-        this._tangentReferenceX += evt.nativeEvent.offsetX - this._sourcePointerX;
-        this._tangentReferenceY += evt.nativeEvent.offsetY - this._sourcePointerY;
-        var bbox = this._keyPointSVG.current.getBoundingClientRect();
-        var keyCenterX = bbox.left + bbox.width / 2;
-        var keyCenterY = bbox.top + bbox.width / 2;
-        var slope = -(keyCenterY - this._tangentReferenceY) / (keyCenterX - this._tangentReferenceX);
-        return key.value - (key.frame - expectedFrame) * slope;
+    KeyPointComponent.prototype._processTangentMove = function (evt, vec, storedLength, isIn) {
+        vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+        vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+        if (isIn && vec.x >= 0) {
+            vec.x = -0.01;
+        }
+        else if (!isIn && vec.x <= 0) {
+            vec.x = 0.01;
+        }
+        var currentPosition = vec.clone();
+        currentPosition.normalize();
+        currentPosition.scaleInPlace(storedLength);
+        var keys = this.props.curve.keys;
+        var value = isIn ? keys[this.props.keyId].value - this.props.invertY(currentPosition.y + this.state.y) : this.props.invertY(currentPosition.y + this.state.y) - keys[this.props.keyId].value;
+        var frame = isIn ? keys[this.props.keyId].frame - this.props.invertX(currentPosition.x + this.state.x) : this.props.invertX(currentPosition.x + this.state.x) - keys[this.props.keyId].frame;
+        return value / frame;
     };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
         var _this = this;
@@ -48721,11 +48765,11 @@ var KeyPointComponent = /** @class */ (function (_super) {
             return;
         }
         if (this._controlMode === ControlMode.TangentLeft) {
-            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentLeftControlPoint));
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
             this.forceUpdate();
         }
         else if (this._controlMode === ControlMode.TangentRight) {
-            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentRightControlPoint));
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
             this.forceUpdate();
         }
         else if (this._controlMode === ControlMode.Key) {
@@ -48775,34 +48819,45 @@ var KeyPointComponent = /** @class */ (function (_super) {
     KeyPointComponent.prototype.render = function () {
         var _this = this;
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
-        this._currentLeftControlPoint = this.props.curve.getInControlPoint(this.props.keyId);
-        this._currentRightControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);
-        var inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
-        var outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
-        inVec.normalize();
-        inVec.scaleInPlace(100 * this.props.scale);
-        outVec.normalize();
-        outVec.scaleInPlace(100 * this.props.scale);
+        var keys = this.props.curve.keys;
+        var prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
+        var currentFrame = keys[this.props.keyId].frame;
+        var nextFrame = this.props.keyId < keys.length - 1 ? keys[this.props.keyId + 1].frame : 0;
+        var inFrameLength = (currentFrame - prevFrame) / 3;
+        var outFrameLength = (nextFrame - currentFrame) / 3;
+        var convertedX = this.props.invertX(this.state.x);
+        var convertedY = this.props.invertY(this.state.y);
+        var inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId, inFrameLength);
+        var outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId, outFrameLength);
+        // We want to store the delta in the key local space
+        this._outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX + outFrameLength) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
+        this._inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX - inFrameLength) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        this._storedLengthIn = this._inVec.length();
+        this._storedLengthOut = this._outVec.length();
+        this._inVec.normalize();
+        this._inVec.scaleInPlace(100 * this.props.scale);
+        this._outVec.normalize();
+        this._outVec.scaleInPlace(100 * this.props.scale);
         return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("svg", { ref: this._svgHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, ref: this._keyPointSVG, href: svgImageIcon }),
             this.state.selectedState === SelectionState.Selected &&
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("g", null,
-                    this._currentLeftControlPoint !== null &&
+                    this.props.keyId !== 0 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: inVec.x + "px", y2: inVec.y + "px", style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._inVec.x + "px", y2: this._inVec.y + "px", style: {
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: inVec.x + "px", cy: inVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: this._inVec.x + "px", cy: this._inVec.y + "px", r: "" + 4 * this.props.scale, style: {
                                     fill: "#F9BF00",
                                 } })),
-                    this._currentRightControlPoint !== null &&
+                    this.props.keyId !== keys.length - 1 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: outVec.x + "px", y2: outVec.y + "px", style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._outVec.x + "px", y2: this._outVec.y + "px", style: {
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: outVec.x + "px", cy: outVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: this._outVec.x + "px", cy: this._outVec.y + "px", r: "" + 4 * this.props.scale, style: {
                                     fill: "#F9BF00",
                                 } })))));
     };
@@ -56251,7 +56306,7 @@ var LensRenderingPipelinePropertyGridComponent = /** @class */ (function (_super
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Blur noise", target: renderPipeline, propertyName: "blurNoise", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "DEPTH OF FIELD", selection: this.props.globalState },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Aperture", minimum: 0, maximum: 10, step: 0.1, target: renderPipeline, propertyName: "dofAperture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distortion", minimum: 0, maximum: 10, step: 0.1, target: renderPipeline, propertyName: "dofDistortion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distortion", minimum: 0, maximum: 1000, step: 0.1, target: renderPipeline, propertyName: "dofDistortion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Pentagon bokeh", target: renderPipeline, propertyName: "pentagonBokeh", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Highlight gain", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "highlightsGain", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Highlight threshold", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "highlightsThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));

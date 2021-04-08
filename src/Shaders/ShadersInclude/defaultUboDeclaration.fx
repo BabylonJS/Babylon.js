@@ -31,6 +31,7 @@ uniform Material
 	mat4 bumpMatrix; 
 	vec2 vTangentSpaceParams;
 	float pointSize;
+    float alphaCutOff;
 	mat4 refractionMatrix;
 	vec4 vRefractionInfos;
 	vec3 vRefractionPosition;
@@ -38,6 +39,7 @@ uniform Material
 	vec4 vSpecularColor;
 	vec3 vEmissiveColor;
 	vec4 vDiffuseColor;
+	vec3 vAmbientColor;
 
 	vec4 vDetailInfos;
 	mat4 detailMatrix;

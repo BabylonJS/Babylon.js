@@ -1253,7 +1253,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString: string = "";
+        let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.lightFalloff = ${this.lightFalloff};\r\n`;
         codeString += `${this._codeVariableName}.useAlphaTest = ${this.useAlphaTest};\r\n`;

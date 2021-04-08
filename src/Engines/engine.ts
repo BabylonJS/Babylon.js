@@ -27,6 +27,7 @@ import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
 import { CanvasGenerator } from '../Misc/canvasGenerator';
 
+declare type DeviceInputSystem = import("../DeviceInput/deviceInputSystem").DeviceInputSystem;
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -385,6 +386,11 @@ export class Engine extends ThinEngine {
      * Gets a boolean indicating if the pointer is currently locked
      */
     public isPointerLock = false;
+
+    /**
+     * Stores instance of DeviceInputSystem
+     */
+    public deviceInputSystem: DeviceInputSystem;
 
     // Observables
 
@@ -1101,8 +1107,8 @@ export class Engine extends ThinEngine {
         gl.disable(gl.SCISSOR_TEST);
     }
 
-    protected _reportDrawCall() {
-        this._drawCalls.addCount(1, false);
+    protected _reportDrawCall(numDrawCalls = 1) {
+        this._drawCalls.addCount(numDrawCalls, false);
     }
 
     /**
@@ -1829,6 +1835,11 @@ export class Engine extends ThinEngine {
 
         //WebVR
         this.disableVR();
+
+        // DeviceInputSystem
+        if (this.deviceInputSystem) {
+            this.deviceInputSystem.dispose();
+        }
 
         // Events
         if (DomManagement.IsWindowObjectExist()) {
