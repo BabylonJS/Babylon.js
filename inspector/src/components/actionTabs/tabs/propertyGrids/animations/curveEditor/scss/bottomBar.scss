@@ -3,6 +3,19 @@
     grid-template-rows: 100%;
     grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px;
 
+    #bottom-bar-total {        
+        grid-row: 1;
+        grid-column: 6;
+        color:white;
+        background: #222222;
+        height: 25px;
+        align-self: center;
+        display: grid;
+        align-content: center;
+        justify-content: center;font-family: 'acumin-pro-condensed';
+        font-size: 12pt;
+    }
+
     .control-button {
 
         .control-button-image {
