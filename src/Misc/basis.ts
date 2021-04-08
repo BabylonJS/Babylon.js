@@ -387,9 +387,9 @@ function workerFunc(): void {
         return info;
     }
 
-    function TranscodeLevel(loadedFile: any, imageIndex: number, levelIndex: number, format: number, convertToRgb565: boolean): Nullable<Uint16Array> {
+    function TranscodeLevel(loadedFile: any, imageIndex: number, levelIndex: number, format: number, convertToRgb565: boolean): Nullable<Uint8Array | Uint16Array> {
         var dstSize = loadedFile.getImageTranscodedSizeInBytes(imageIndex, levelIndex, format);
-        var dst = new Uint8Array(dstSize);
+        var dst: Uint8Array | Uint16Array = new Uint8Array(dstSize);
         if (!loadedFile.transcodeImage(dst, imageIndex, levelIndex, format, 1, 0)) {
             return null;
         }

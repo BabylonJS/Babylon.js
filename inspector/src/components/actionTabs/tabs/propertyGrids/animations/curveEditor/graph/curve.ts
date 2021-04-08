@@ -9,6 +9,7 @@ export interface KeyEntry {
 }
 
 export class Curve {
+    public static readonly SampleRate = 50;
     public keys = new Array<KeyEntry>(); 
     public animation: Animation;   
     public color: string;
@@ -36,37 +37,24 @@ export class Curve {
         for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
             const outTangent = keys[keyIndex - 1].outTangent || 0;
             const inTangent = keys[keyIndex].inTangent || 0;
-
-            const prevFrame = keys[keyIndex - 1].frame;
             const currentFrame = keys[keyIndex].frame;
-            const prevValue = keys[keyIndex - 1].value;
             const currentValue = keys[keyIndex].value;
+            const prevFrame = keys[keyIndex - 1].frame;
             const frameDist = currentFrame - prevFrame;
 
-            let controlPoint0Frame = prevFrame + frameDist / 2;
-            let controlPoint1Frame = prevFrame + frameDist / 2;
-
-            let controlPoint0Value: number;
-            let controlPoint1Value: number;
-
-            if (outTangent) {
-                controlPoint0Frame = prevFrame + frameDist / 3;
-                controlPoint0Value = prevValue + outTangent / 3;
-            } else {
-                const animEval = this.animation.evaluate(controlPoint0Frame);
-                controlPoint0Value = this.property ? animEval[this.property] : animEval;
+            if (!outTangent && !inTangent) { // Draw a straight line
+                pathData += ` L${convertX(currentFrame)} ${convertY(currentValue)}`;
+                continue;
             }
 
-            if (inTangent) {
-                controlPoint1Frame = currentFrame - frameDist / 3;
-                controlPoint1Value = currentValue - inTangent / 3;
-            } else {
-                const animEval = this.animation.evaluate(controlPoint1Frame);
-                controlPoint1Value = this.property ? animEval[this.property] : animEval;
+            // Let's sample the curve else
+            for (var frame = prevFrame; frame < currentFrame; frame += frameDist / Curve.SampleRate) {
+                const keyValue = this.animation.evaluate(frame);
+                const value = this.property ? keyValue[this.property] : keyValue;
+                pathData += ` L${convertX(frame)} ${convertY(value)}`;
             }
-
-            pathData += ` C${convertX(controlPoint0Frame)} ${convertY(controlPoint0Value)}, ${convertX(controlPoint1Frame)} ${convertY(controlPoint1Value)}, ${convertX(currentFrame)} ${convertY(currentValue)}`;
-        }
+            pathData += ` L${convertX(currentFrame)} ${convertY(currentValue)}`;
+       }
 
         return pathData;
     }
@@ -130,6 +118,9 @@ export class Curve {
             if (!this.animation.getKeys()[keyId].inTangent) {
                 this.animation.getKeys()[keyId].inTangent = this.tangentBuilder!();
             }
+            if (!this.animation.getKeys()[keyId - 1].outTangent) {
+                this.animation.getKeys()[keyId - 1].outTangent = this.tangentBuilder!();
+            }
 
             this.animation.getKeys()[keyId].inTangent[this.property] = this.keys[keyId].inTangent;
         } else {
@@ -143,6 +134,9 @@ export class Curve {
         this.keys[keyId].outTangent = slope;
 
         if (this.property) {
+            if (!this.animation.getKeys()[keyId + 1].inTangent) {
+                this.animation.getKeys()[keyId + 1].inTangent = this.tangentBuilder!();
+            }
             if (!this.animation.getKeys()[keyId].outTangent) {
                 this.animation.getKeys()[keyId].outTangent = this.tangentBuilder!();
             }

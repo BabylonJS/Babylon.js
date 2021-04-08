@@ -387,6 +387,7 @@ export class WebXRSessionManager implements IDisposable {
         // Create render target texture from the internal texture
         const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
         renderTargetTexture._texture = internalTexture;
+        renderTargetTexture.disableRescaling();
 
         // Store the render target texture for cleanup when the session ends.
         this._renderTargetTextures.push(renderTargetTexture);
