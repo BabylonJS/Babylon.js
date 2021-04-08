@@ -137,6 +137,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private static _NumPipelineCreationCurrentFrame = 0;
 
     protected _states: number[];
+    protected _statesLength: number;
     protected _stateDirtyLowestIndex: number;
     public lastStateDirtyLowestIndex: number; // for stats only
 
@@ -156,7 +157,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private _depthBiasClamp: number;
     private _depthBiasSlopeScale: number;
     private _colorFormat: number;
-    private _webgpuColorFormat: GPUTextureFormat;
+    private _webgpuColorFormat: GPUTextureFormat[];
     private _mrtAttachments1: number;
     private _mrtAttachments2: number;
     private _mrtFormats: GPUTextureFormat[];
@@ -184,23 +185,26 @@ export abstract class WebGPUCacheRenderPipeline {
 
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         this._device = device;
-        this._states = [];
-        this._states.length = StatePosition.NumStates;
+        this._states = new Array(30); // pre-allocate enough room so that no new allocation will take place afterwards
+        this._statesLength = 0;
         this._stateDirtyLowestIndex = 0;
         this._emptyVertexBuffer = emptyVertexBuffer;
         this._mrtFormats = [];
         this._parameter = { token: undefined, pipeline: null };
         this.disabled = false;
+        this.vertexBuffers = [];
         this.reset();
     }
 
     public reset(): void {
         this._isDirty = true;
+        this.vertexBuffers.length = 0;
         this.setAlphaToCoverage(false);
         this.resetDepthCullingState();
         this.setClampDepth(false);
         //this.setDepthBias(0);
         //this.setDepthBiasClamp(0);
+        this._webgpuColorFormat = [WebGPUConstants.TextureFormat.BGRA8Unorm];
         this.setColorFormat(WebGPUConstants.TextureFormat.BGRA8Unorm);
         this.setMRTAttachments([], []);
         this.setAlphaBlendEnabled(false);
@@ -215,9 +219,17 @@ export abstract class WebGPUCacheRenderPipeline {
     protected abstract _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
     protected abstract _setRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
 
+    public vertexBuffers: VertexBuffer[];
+
+    public get colorFormats(): GPUTextureFormat[] {
+        return this._mrtAttachments1 > 0 ? this._mrtFormats : this._webgpuColorFormat;
+    }
+
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline {
         if (this.disabled) {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
+
+            this._setVertexState(effect); // to fill this.vertexBuffers with correct data
 
             this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
 
@@ -236,7 +248,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this.lastStateDirtyLowestIndex = this._stateDirtyLowestIndex;
 
         if (!this._isDirty && this._parameter.pipeline) {
-            this._stateDirtyLowestIndex = this._states.length;
+            this._stateDirtyLowestIndex = this._statesLength;
             WebGPUCacheRenderPipeline.NumCacheHitWithoutHash++;
             return this._parameter.pipeline;
         }
@@ -244,7 +256,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._getRenderPipeline(this._parameter);
 
         this._isDirty = false;
-        this._stateDirtyLowestIndex = this._states.length;
+        this._stateDirtyLowestIndex = this._statesLength;
 
         if (this._parameter.pipeline) {
             WebGPUCacheRenderPipeline.NumCacheHitWithHash++;
@@ -327,7 +339,7 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     public setColorFormat(format: GPUTextureFormat): void {
-        this._webgpuColorFormat = format;
+        this._webgpuColorFormat[0] = format;
         this._colorFormat = textureFormatToIndex[format];
     }
 
@@ -349,7 +361,7 @@ export abstract class WebGPUCacheRenderPipeline {
             const texture = textureArray[index - 1];
             const gpuWrapper = texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-            this._mrtFormats[numRT] = gpuWrapper?.format ?? this._webgpuColorFormat;
+            this._mrtFormats[numRT] = gpuWrapper?.format ?? this._webgpuColorFormat[0];
 
             bits[indexBits] += textureFormatToIndex[this._mrtFormats[numRT]] << mask;
             mask += 6;
@@ -675,7 +687,7 @@ export abstract class WebGPUCacheRenderPipeline {
         throw new Error(`Invalid Format '${vertexBuffer.getKind()}' - type=${type}, normalized=${normalized}, size=${size}`);
     }
 
-    private _getAphaBlendState(): GPUBlendDescriptor {
+    private _getAphaBlendState(): GPUBlendComponent {
         if (!this._alphaBlendEnabled) {
             return { };
         }
@@ -687,7 +699,7 @@ export abstract class WebGPUCacheRenderPipeline {
         };
     }
 
-    private _getColorBlendState(): GPUBlendDescriptor {
+    private _getColorBlendState(): GPUBlendComponent {
         if (!this._alphaBlendEnabled) {
             return { };
         }
@@ -771,12 +783,14 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     private _setVertexState(effect: Effect): void {
-        const currStateLen = this._states.length;
+        const currStateLen = this._statesLength;
         let newNumStates = StatePosition.VertexState;
 
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
         const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
+
+        this.vertexBuffers.length = attributes.length;
         for (var index = 0; index < attributes.length; index++) {
             const location = locations[index];
             let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
@@ -786,13 +800,15 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
+            this.vertexBuffers[index] = vertexBuffer;
+
             const vid = vertexBuffer.hashCode + (location << 7);
 
             this._isDirty = this._isDirty || this._states[newNumStates] !== vid;
             this._states[newNumStates++] = vid;
         }
 
-        this._states.length = newNumStates;
+        this._statesLength = newNumStates;
         this._isDirty = this._isDirty || newNumStates !== currStateLen;
         if (this._isDirty) {
             this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.VertexState);
@@ -864,7 +880,7 @@ export abstract class WebGPUCacheRenderPipeline {
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
 
-    private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexState {
+    private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexBufferLayout[] {
         const descriptors: GPUVertexBufferLayout[] = [];
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
@@ -894,15 +910,7 @@ export abstract class WebGPUCacheRenderPipeline {
             descriptors.push(vertexBufferDescriptor);
         }
 
-        const inputStateDescriptor: GPUVertexState = {
-            vertexBuffers: descriptors
-        };
-
-        if (topology === WebGPUConstants.PrimitiveTopology.LineStrip || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip) {
-            inputStateDescriptor.indexFormat = !this._indexBuffer || this._indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
-        }
-
-        return inputStateDescriptor;
+        return descriptors;
     }
 
     private _createRenderPipeline(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number, createLayout = true): GPURenderPipeline {
@@ -910,7 +918,7 @@ export abstract class WebGPUCacheRenderPipeline {
         const inputStateDescriptor = this._getVertexInputDescriptor(effect, topology);
         const pipelineLayout = createLayout ? this._createPipelineLayout(webgpuPipelineContext) : undefined;
 
-        const colorStates: Array<GPUColorStateDescriptor> = [];
+        const colorStates: Array<GPUColorTargetState> = [];
         const alphaBlend = this._getAphaBlendState();
         const colorBlend = this._getColorBlendState();
 
@@ -918,16 +926,20 @@ export abstract class WebGPUCacheRenderPipeline {
             for (let i = 0; i < this._mrtFormats.length; ++i) {
                 colorStates.push({
                     format: this._mrtFormats[i],
-                    alphaBlend,
-                    colorBlend,
+                    blend: {
+                        alpha: alphaBlend,
+                        color: colorBlend,
+                    },
                     writeMask: this._writeMask,
                 });
             }
         } else {
             colorStates.push({
-                format: this._webgpuColorFormat,
-                alphaBlend,
-                colorBlend,
+                format: this._webgpuColorFormat[0],
+                blend: {
+                    alpha: alphaBlend,
+                    color: colorBlend,
+                },
                 writeMask: this._writeMask,
             });
         }
@@ -939,21 +951,36 @@ export abstract class WebGPUCacheRenderPipeline {
             passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontPassOp)
         };
 
+        let stripIndexFormat: GPUIndexFormat | undefined = undefined;
+        if (topology === WebGPUConstants.PrimitiveTopology.LineStrip || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip) {
+            stripIndexFormat = !this._indexBuffer || this._indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
+        }
+
         return this._device.createRenderPipeline({
             layout: pipelineLayout,
-            ...webgpuPipelineContext.stages!,
-            primitiveTopology: topology,
-            rasterizationState: {
+            vertex: {
+                module: webgpuPipelineContext.stages!.vertexStage.module,
+                entryPoint: webgpuPipelineContext.stages!.vertexStage.entryPoint,
+                buffers: inputStateDescriptor,
+            },
+            primitive: {
+                topology,
+                stripIndexFormat,
                 frontFace: this._frontFace === 1 ? WebGPUConstants.FrontFace.CCW : WebGPUConstants.FrontFace.CW,
                 cullMode: !this._cullEnabled ? WebGPUConstants.CullMode.None : this._cullFace === 2 ? WebGPUConstants.CullMode.Front : WebGPUConstants.CullMode.Back,
-                depthBias: this._depthBias,
-                depthBiasClamp: this._depthBiasClamp,
-                depthBiasSlopeScale: this._depthBiasSlopeScale,
             },
-            colorStates,
+            fragment: !webgpuPipelineContext.stages!.fragmentStage ? undefined : {
+                module: webgpuPipelineContext.stages!.fragmentStage.module,
+                entryPoint: webgpuPipelineContext.stages!.fragmentStage.entryPoint,
+                targets: colorStates,
+            },
 
-            sampleCount,
-            depthStencilState: this._webgpuDepthStencilFormat === undefined ? undefined : {
+            multisample: {
+                count: sampleCount,
+                /*mask,
+                alphaToCoverageEnabled,*/
+            },
+            depthStencil: this._webgpuDepthStencilFormat === undefined ? undefined : {
                 depthWriteEnabled: this._depthWriteEnabled,
                 depthCompare: this._depthTestEnabled ? WebGPUCacheRenderPipeline._GetCompareFunction(this._depthCompare) : WebGPUConstants.CompareFunction.Always,
                 format: this._webgpuDepthStencilFormat,
@@ -961,9 +988,11 @@ export abstract class WebGPUCacheRenderPipeline {
                 stencilBack: stencilFrontBack,
                 stencilReadMask: this._stencilReadMask,
                 stencilWriteMask: this._stencilWriteMask,
+                depthBias: this._depthBias,
+                depthBiasClamp: this._depthBiasClamp,
+                depthBiasSlopeScale: this._depthBiasSlopeScale,
+                /*clampDepth*/
             },
-
-            vertexState: inputStateDescriptor,
         });
     }
 

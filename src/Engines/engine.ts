@@ -1107,8 +1107,8 @@ export class Engine extends ThinEngine {
         gl.disable(gl.SCISSOR_TEST);
     }
 
-    protected _reportDrawCall() {
-        this._drawCalls.addCount(1, false);
+    protected _reportDrawCall(numDrawCalls = 1) {
+        this._drawCalls.addCount(numDrawCalls, false);
     }
 
     /**
@@ -1837,7 +1837,9 @@ export class Engine extends ThinEngine {
         this.disableVR();
 
         // DeviceInputSystem
-        this.deviceInputSystem.dispose();
+        if (this.deviceInputSystem) {
+            this.deviceInputSystem.dispose();
+        }
 
         // Events
         if (DomManagement.IsWindowObjectExist()) {
