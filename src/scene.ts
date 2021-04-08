@@ -2156,6 +2156,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
+        this._inputManager._invalidateMesh(toRemove);
+
         this.onMeshRemovedObservable.notifyObservers(toRemove);
         if (recursive) {
             toRemove.getChildMeshes().forEach((m) => {

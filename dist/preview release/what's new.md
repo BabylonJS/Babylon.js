@@ -186,6 +186,7 @@
 - Fix computation of min/max values in glTF loader when using normalized integers ([#10112](https://github.com/BabylonJS/Babylon.js/issues/10112)) ([Popov72](https://github.com/Popov72))
 - Fix instance picking when in billboard mode ([Popov72](https://github.com/Popov72))
 - Fix NME generation code missing `target` and `visibleInInspector` properties ([Popov72](https://github.com/Popov72))
+- Fix `Scene.getPointerOverMesh` returning disposed mesh ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
