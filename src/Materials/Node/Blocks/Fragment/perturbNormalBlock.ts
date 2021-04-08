@@ -202,7 +202,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = `${this._codeVariableName}.invertX = ${this.invertX};\r\n`;
+        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.invertX = ${this.invertX};\r\n`;
 
         codeString += `${this._codeVariableName}.invertY = ${this.invertY};\r\n`;
 

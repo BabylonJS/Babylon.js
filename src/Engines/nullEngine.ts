@@ -154,6 +154,7 @@ export class NullEngine extends Engine {
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: false,
             trackUbosInFrame: false,
+            checkUbosContentBeforeUpload: false,
             supportCSM: false,
             basisNeedsPOT: false,
             support3DTextures: false,

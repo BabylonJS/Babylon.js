@@ -724,7 +724,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
             }
             this._activeEffect.setFloat("alpha", this.alpha);
             this._activeEffect.setColor3("shadowColor", this.shadowColor);
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         // Lights
         if (scene.lightsEnabled) {
