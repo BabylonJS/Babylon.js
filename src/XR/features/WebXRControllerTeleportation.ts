@@ -1,5 +1,5 @@
 import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import { Observer } from "../../Misc/observable";
+import { Observable, Observer } from "../../Misc/observable";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { Nullable } from "../../types";
 import { WebXRInput } from "../webXRInput";
@@ -124,7 +124,7 @@ export interface IWebXRTeleportationOptions {
     /**
      * If provided, this function will be used to generate the ray mesh instead of the lines mesh being used per default
      */
-    generateRayPathMesh?: (points: Vector3[]) => AbstractMesh;
+    generateRayPathMesh?: (points: Vector3[], pickingInfo: PickingInfo) => AbstractMesh;
 }
 
 /**
@@ -200,6 +200,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
      * How much rotation should be applied when rotating right and left
      */
     public rotationAngle: number = Math.PI / 8;
+
+    /**
+     * This observable will notify when the target mesh position was updated.
+     * The picking info it provides contains the point to which the target mesh will move ()
+     */
+    public onTargetMeshPositionUpdatedObservable: Observable<PickingInfo> = new Observable();
 
     private _rotationEnabled: boolean = true;
 
@@ -419,7 +425,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         return;
                     } else if (pick && pick.pickedPoint) {
                         hitPossible = true;
-                        this._setTargetMeshPosition(pick.pickedPoint);
+                        this._setTargetMeshPosition(pick);
                         this._setTargetMeshVisibility(true);
                         this._showParabolicPath(pick);
                     }
@@ -448,7 +454,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         return;
                     } else if (pick && pick.pickedPoint) {
                         hitPossible = true;
-                        this._setTargetMeshPosition(pick.pickedPoint);
+                        this._setTargetMeshPosition(pick);
                         this._setTargetMeshVisibility(true);
                         this._showParabolicPath(pick);
                     }
@@ -760,8 +766,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         return closestPoint;
     }
 
-    private _setTargetMeshPosition(newPosition: Vector3) {
-        if (!this._options.teleportationTargetMesh) {
+    private _setTargetMeshPosition(pickInfo: PickingInfo) {
+        const newPosition = pickInfo.pickedPoint;
+        if (!this._options.teleportationTargetMesh || !newPosition) {
             return;
         }
         const snapPosition = this._findClosestSnapPointWithRadius(newPosition);
@@ -773,6 +780,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
         this._options.teleportationTargetMesh.position.copyFrom(snapPosition || newPosition);
         this._options.teleportationTargetMesh.position.y += 0.01;
+        this.onTargetMeshPositionUpdatedObservable.notifyObservers(pickInfo);
     }
 
     private _setTargetMeshVisibility(visible: boolean) {
@@ -815,7 +823,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         if (!this._options.generateRayPathMesh) {
             this._quadraticBezierCurve = LinesBuilder.CreateLines("teleportation path line", { points: quadraticBezierVectors.getPoints(), instance: this._quadraticBezierCurve as LinesMesh, updatable: true }, sceneToRenderTo);
         } else {
-            this._quadraticBezierCurve = this._options.generateRayPathMesh(quadraticBezierVectors.getPoints());
+            this._quadraticBezierCurve = this._options.generateRayPathMesh(quadraticBezierVectors.getPoints(), pickInfo);
         }
         this._quadraticBezierCurve.isPickable = false;
     }
