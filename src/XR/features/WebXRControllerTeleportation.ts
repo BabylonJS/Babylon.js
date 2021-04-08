@@ -160,6 +160,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private _tmpQuaternion = new Quaternion();
 
     /**
+     * Skip the next teleportation. This can be controlled by the user to prevent the user from teleportation
+     * to sections that are not yet "unlocked", but should still show the teleportation mesh.
+     */
+    public skipNextTeleportation = false;
+
+    /**
      * The module's name
      */
     public static readonly Name = WebXRFeatureName.TELEPORTATION;
@@ -836,6 +842,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         controllerData.teleportationState.forward = false;
         this._currentTeleportationControllerId = "";
         if (this.snapPointsOnly && !this._snappedToPoint) {
+            return;
+        }
+
+        if (this.skipNextTeleportation) {
+            this.skipNextTeleportation = false;
             return;
         }
         // do the movement forward here
