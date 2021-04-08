@@ -15,8 +15,6 @@
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 
-uniform vec3 vAmbientColor;
-
 // Input
 varying vec3 vPositionW;
 
@@ -120,10 +118,6 @@ uniform sampler2D refraction2DSampler;
 		varying vec2 vSpecularUV;
 	#endif
 	uniform sampler2D specularSampler;
-#endif
-
-#ifdef ALPHATEST
-	uniform float alphaCutOff;
 #endif
 
 // Fresnel
