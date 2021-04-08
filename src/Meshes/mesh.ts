@@ -71,6 +71,7 @@ class _InstanceDataStorage {
     public batchCache = new _InstancesBatch();
     public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
     public instancesBuffer: Nullable<Buffer>;
+    public instancesPreviousBuffer: Nullable<Buffer>;
     public instancesData: Float32Array;
     public overridenInstanceCount: number;
     public isFrozen: boolean;
@@ -79,6 +80,7 @@ class _InstanceDataStorage {
     public sideOrientation: number;
     public manualUpdate: boolean;
     public previousRenderId: number;
+    public needsPreviousMatrices: boolean;
 }
 
 /**
@@ -456,6 +458,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public set manualUpdateOfWorldMatrixInstancedBuffer(value: boolean) {
         this._instanceDataStorage.manualUpdate = value;
+    }
+
+    /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
+    public get instancesMotionBlurSupport() {
+        return this._instanceDataStorage.needsPreviousMatrices;
+    }
+
+    public set instancesMotionBlurSupport(value: boolean) {
+        this._instanceDataStorage.needsPreviousMatrices = value;
     }
 
     /**
@@ -1696,6 +1707,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let instanceStorage = this._instanceDataStorage;
         var currentInstancesBufferSize = instanceStorage.instancesBufferSize;
         var instancesBuffer = instanceStorage.instancesBuffer;
+        var instancesPreviousBuffer = instanceStorage.instancesPreviousBuffer;
         var matricesCount = visibleInstances.length + 1;
         var bufferSize = matricesCount * 16 * 4;
 
@@ -1749,6 +1761,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 instancesBuffer.dispose();
             }
 
+            if (instancesPreviousBuffer) {
+                instancesPreviousBuffer.dispose();
+            }
+
             instancesBuffer = new Buffer(engine, instanceStorage.instancesData, true, 16, false, true);
             instanceStorage.instancesBuffer = instancesBuffer;
             if (!this._userInstancedBuffersStorage) {
@@ -1766,6 +1782,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._userInstancedBuffersStorage.vertexBuffers["world2"] = instancesBuffer.createVertexBuffer("world2", 8, 4);
             this._userInstancedBuffersStorage.vertexBuffers["world3"] = instancesBuffer.createVertexBuffer("world3", 12, 4);
 
+            if (instanceStorage.needsPreviousMatrices) {
+                instancesPreviousBuffer = new Buffer(engine, instanceStorage.instancesData, true, 16, false, true);
+                instanceStorage.instancesPreviousBuffer = instancesPreviousBuffer;
+
+                this._userInstancedBuffersStorage.vertexBuffers["previousWorld0"] = instancesPreviousBuffer.createVertexBuffer("previousWorld0", 0, 4);
+                this._userInstancedBuffersStorage.vertexBuffers["previousWorld1"] = instancesPreviousBuffer.createVertexBuffer("previousWorld1", 4, 4);
+                this._userInstancedBuffersStorage.vertexBuffers["previousWorld2"] = instancesPreviousBuffer.createVertexBuffer("previousWorld2", 8, 4);
+                this._userInstancedBuffersStorage.vertexBuffers["previousWorld3"] = instancesPreviousBuffer.createVertexBuffer("previousWorld3", 12, 4);
+            }
+
             this._invalidateInstanceVertexArrayObject();
         } else {
             if (!this._instanceDataStorage.isFrozen) {
@@ -1782,7 +1808,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
+        
         engine.unbindInstanceAttributes();
+        // Write matrices as previous matrices for next render
+        if (!needUpdateBuffer && instanceStorage.needsPreviousMatrices && !this._instanceDataStorage.isFrozen) {
+            instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+        }
         return this;
     }
 
