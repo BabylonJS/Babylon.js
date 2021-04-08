@@ -1837,7 +1837,9 @@ export class Engine extends ThinEngine {
         this.disableVR();
 
         // DeviceInputSystem
-        this.deviceInputSystem.dispose();
+        if (this.deviceInputSystem) {
+            this.deviceInputSystem.dispose();
+        }
 
         // Events
         if (DomManagement.IsWindowObjectExist()) {
