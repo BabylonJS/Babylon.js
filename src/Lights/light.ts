@@ -382,8 +382,9 @@ export abstract class Light extends Node {
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+     * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
+    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false, receiveShadows = true): void {
         let iAsString = lightIndex.toString();
         let needUpdate = false;
 
@@ -413,7 +414,7 @@ export abstract class Light extends Node {
         this.transferTexturesToEffect(effect, iAsString);
 
         // Shadows
-        if (scene.shadowsEnabled && this.shadowEnabled) {
+        if (scene.shadowsEnabled && this.shadowEnabled && receiveShadows) {
             var shadowGenerator = this.getShadowGenerator();
             if (shadowGenerator) {
                 shadowGenerator.bindShadowLight(iAsString, effect);

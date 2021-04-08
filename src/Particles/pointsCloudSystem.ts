@@ -501,7 +501,7 @@ export class PointsCloudSystem implements IDisposable {
     }
 
     // calculates the point density per facet of a mesh for surface points
-    private _calculateDensity(nbPoints: number, positions: FloatArray, indices: FloatArray): number[] {
+    private _calculateDensity(nbPoints: number, positions: FloatArray, indices: IndicesArray): number[] {
         var density: number[] = new Array<number>();
         var index: number;
         var id0: number;
