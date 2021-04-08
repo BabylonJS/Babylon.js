@@ -34,9 +34,12 @@ Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
 export class InstancedMesh extends AbstractMesh {
     private _sourceMesh: Mesh;
     private _currentLOD: Mesh;
+    private _billboardWorldMatrix: Matrix;
 
     /** @hidden */
     public _indexInSourceMeshInstanceArray = -1;
+    /** @hidden */
+    public _distanceToCamera: number = 0;
 
     constructor(name: string, source: Mesh) {
         super(name, source.getScene());
@@ -354,14 +357,17 @@ export class InstancedMesh extends AbstractMesh {
 
     public getWorldMatrix(): Matrix {
         if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE && this._currentLOD._masterMesh !== this) {
+            if (!this._billboardWorldMatrix) {
+                this._billboardWorldMatrix = new Matrix();
+            }
             let tempMaster = this._currentLOD._masterMesh;
             this._currentLOD._masterMesh = this;
             TmpVectors.Vector3[7].copyFrom(this._currentLOD.position);
             this._currentLOD.position.set(0, 0, 0);
-            TmpVectors.Matrix[0].copyFrom(this._currentLOD.computeWorldMatrix(true));
+            this._billboardWorldMatrix.copyFrom(this._currentLOD.computeWorldMatrix(true));
             this._currentLOD.position.copyFrom(TmpVectors.Vector3[7]);
             this._currentLOD._masterMesh = tempMaster;
-            return TmpVectors.Matrix[0];
+            return this._billboardWorldMatrix;
         }
 
         return super.getWorldMatrix();
