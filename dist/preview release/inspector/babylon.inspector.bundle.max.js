@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -47478,6 +47478,9 @@ var TextInputComponent = /** @class */ (function (_super) {
         if (this.props.isNumber) {
             var valueAsNumber = parseFloat(this.state.value);
             if (!isNaN(valueAsNumber)) {
+                if (this.props.onValueAsNumberChanged) {
+                    this.props.onValueAsNumberChanged(valueAsNumber);
+                }
                 this.setState({ value: valueAsNumber.toString(), isFocused: false });
             }
             else {
@@ -47588,72 +47591,70 @@ var Curve = /** @class */ (function () {
             var currentFrame = keys[keyIndex].frame;
             var prevValue = keys[keyIndex - 1].value;
             var currentValue = keys[keyIndex].value;
-            var controlPoint0Frame = outTangent ? prevFrame + (currentFrame - prevFrame) / 2 : prevFrame;
-            var controlPoint1Frame = inTangent ? prevFrame + (currentFrame - prevFrame) / 2 : currentFrame;
-            var controlPoint0Value = prevValue + outTangent / 3;
-            var controlPoint1Value = currentValue - inTangent / 3;
+            var frameDist = currentFrame - prevFrame;
+            var controlPoint0Frame = prevFrame + frameDist / 2;
+            var controlPoint1Frame = prevFrame + frameDist / 2;
+            var controlPoint0Value = void 0;
+            var controlPoint1Value = void 0;
+            if (outTangent) {
+                controlPoint0Frame = prevFrame + frameDist / 3;
+                controlPoint0Value = prevValue + outTangent / 3;
+            }
+            else {
+                var animEval = this.animation.evaluate(controlPoint0Frame);
+                controlPoint0Value = this.property ? animEval[this.property] : animEval;
+            }
+            if (inTangent) {
+                controlPoint1Frame = currentFrame - frameDist / 3;
+                controlPoint1Value = currentValue - inTangent / 3;
+            }
+            else {
+                var animEval = this.animation.evaluate(controlPoint1Frame);
+                controlPoint1Value = this.property ? animEval[this.property] : animEval;
+            }
             pathData += " C" + convertX(controlPoint0Frame) + " " + convertY(controlPoint0Value) + ", " + convertX(controlPoint1Frame) + " " + convertY(controlPoint1Value) + ", " + convertX(currentFrame) + " " + convertY(currentValue);
         }
         return pathData;
     };
-    Curve.prototype.getInControlPoint = function (keyIndex) {
+    Curve.prototype.getInControlPoint = function (keyIndex, length) {
         if (keyIndex === 0) {
-            return null;
+            return 0;
         }
         var keys = this.keys;
         var inTangent = keys[keyIndex].inTangent;
-        if (inTangent) {
+        if (!inTangent) {
             var prevFrame = keys[keyIndex - 1].frame;
             var currentFrame = keys[keyIndex].frame;
-            var currentValue = keys[keyIndex].value;
-            var value = currentValue - inTangent / 3;
-            var frame = prevFrame + (currentFrame - prevFrame) / 2;
-            return {
-                frame: frame,
-                value: value
-            };
+            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
+            var evaluatedValueEntry = this.animation.evaluate(midFrame);
+            var evaluatedValue = 0;
+            if (this.property) {
+                evaluatedValue = evaluatedValueEntry[this.property];
+            }
+            inTangent = (keys[keyIndex].value - evaluatedValue) / (currentFrame - midFrame);
         }
-        else {
-            var prevFrame = keys[keyIndex - 1].frame;
-            var prevValue = keys[keyIndex - 1].value;
-            var currentFrame = keys[keyIndex].frame;
-            var currentValue = keys[keyIndex].value;
-            return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
-            };
-        }
+        return length * inTangent;
     };
-    Curve.prototype.getOutControlPoint = function (keyIndex) {
+    Curve.prototype.getOutControlPoint = function (keyIndex, length) {
         var keys = this.keys;
         if (keyIndex === keys.length - 1) {
-            return null;
+            return 0;
         }
         var outTangent = keys[keyIndex].outTangent;
-        if (outTangent) {
+        if (!outTangent) {
             var prevFrame = keys[keyIndex].frame;
-            var prevValue = keys[keyIndex].value;
             var currentFrame = keys[keyIndex + 1].frame;
-            var frame = prevFrame + (currentFrame - prevFrame) / 2;
-            var value = prevValue + outTangent / 3;
-            return {
-                frame: frame,
-                value: value
-            };
+            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
+            var evaluatedValueEntry = this.animation.evaluate(midFrame);
+            var evaluatedValue = 0;
+            if (this.property) {
+                evaluatedValue = evaluatedValueEntry[this.property];
+            }
+            outTangent = (evaluatedValue - keys[keyIndex].value) / (currentFrame - midFrame);
         }
-        else {
-            var prevFrame = keys[keyIndex].frame;
-            var prevValue = keys[keyIndex].value;
-            var currentFrame = keys[keyIndex + 1].frame;
-            var currentValue = keys[keyIndex + 1].value;
-            return {
-                frame: prevFrame + (currentFrame - prevFrame) / 2,
-                value: prevValue + (currentValue - prevValue) / 2
-            };
-        }
+        return length * outTangent;
     };
-    Curve.prototype.updateInTangentFromControlPoint = function (keyId, value) {
-        var slope = (this.keys[keyId].value - value);
+    Curve.prototype.updateInTangentFromControlPoint = function (keyId, slope) {
         this.keys[keyId].inTangent = slope;
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
@@ -47666,8 +47667,7 @@ var Curve = /** @class */ (function () {
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
-    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, value) {
-        var slope = (value - this.keys[keyId].value);
+    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, slope) {
         this.keys[keyId].outTangent = slope;
         if (this.property) {
             if (!this.animation.getKeys()[keyId].outTangent) {
@@ -47681,8 +47681,60 @@ var Curve = /** @class */ (function () {
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyFrame = function (keyId, frame) {
+        var currentFrame = this.keys[keyId].frame;
+        var originalKey = this.animation.getKeys()[keyId];
+        originalKey.frame = frame;
+        if (keyId > 0) {
+            var oldWidth = currentFrame - this.keys[keyId - 1].frame;
+            var newWidth = frame - this.keys[keyId - 1].frame;
+            var previousOriginalKey = this.animation.getKeys()[keyId - 1];
+            if (this.keys[keyId].inTangent) {
+                var newInTangent = (this.keys[keyId].inTangent / oldWidth) * newWidth;
+                this.keys[keyId].inTangent = newInTangent;
+                if (this.property) {
+                    originalKey.inTangent[this.property] = newInTangent;
+                }
+                else {
+                    originalKey.inTangent = newInTangent;
+                }
+            }
+            if (this.keys[keyId - 1].outTangent) {
+                var newOutTangent = (this.keys[keyId - 1].outTangent / oldWidth) * newWidth;
+                this.keys[keyId - 1].outTangent = newOutTangent;
+                if (this.property) {
+                    previousOriginalKey.outTangent[this.property] = newOutTangent;
+                }
+                else {
+                    previousOriginalKey.outTangent = newOutTangent;
+                }
+            }
+        }
+        if (keyId < this.keys.length - 1) {
+            var oldWidth = this.keys[keyId + 1].frame - currentFrame;
+            var newWidth = this.keys[keyId + 1].frame - frame;
+            var nextOriginalKey = this.animation.getKeys()[keyId + 1];
+            if (this.keys[keyId].outTangent) {
+                var newOutTangent = (this.keys[keyId].outTangent / oldWidth) * newWidth;
+                this.keys[keyId].outTangent = newOutTangent;
+                if (this.property) {
+                    originalKey.outTangent[this.property] = newOutTangent;
+                }
+                else {
+                    originalKey.outTangent = newOutTangent;
+                }
+            }
+            if (this.keys[keyId + 1].inTangent) {
+                var newInTangent = (this.keys[keyId + 1].inTangent / oldWidth) * newWidth;
+                this.keys[keyId + 1].inTangent = newInTangent;
+                if (this.property) {
+                    nextOriginalKey.inTangent[this.property] = newInTangent;
+                }
+                else {
+                    nextOriginalKey.inTangent = newInTangent;
+                }
+            }
+        }
         this.keys[keyId].frame = frame;
-        this.animation.getKeys()[keyId].frame = frame;
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyValue = function (keyId, value) {
@@ -47980,10 +48032,19 @@ var GraphComponent = /** @class */ (function (_super) {
                 }
             }
             var value = _this._currentAnimation.evaluate(currentFrame);
-            keys.splice(indexToAdd + 1, 0, {
+            //  const prevValue = this._currentAnimation.evaluate(currentFrame - 0.01);
+            //const nextValue = this._currentAnimation.evaluate(currentFrame + 0.01);
+            var newKey = {
                 frame: currentFrame,
                 value: value
-            });
+            };
+            // if (keys[indexToAdd].outTangent) {
+            //     newKey.inTangent = value.subtract ? value.subtract(prevValue).scaleInPlace(2 / 3) : (value - prevValue) * 1 / 3;
+            // }
+            // if (keys[indexToAdd + 1].inTangent) {
+            //     newKey.outTangent = nextValue.subtract ? nextValue.subtract(value).scaleInPlace(1/ 3) : (nextValue - value) * 2 / 3;
+            // }
+            keys.splice(indexToAdd + 1, 0, newKey);
             _this._currentAnimation.setKeys(keys);
             _this._evaluateKeys();
             _this.props.context.activeKeyPoints = [];
@@ -48661,9 +48722,6 @@ var KeyPointComponent = /** @class */ (function (_super) {
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-        var bbox = evt.nativeEvent.target.getBoundingClientRect();
-        this._tangentReferenceX = bbox.left;
-        this._tangentReferenceY = bbox.top;
         var target = evt.nativeEvent.target;
         if (target.tagName === "image") {
             this._controlMode = ControlMode.Key;
@@ -48676,16 +48734,22 @@ var KeyPointComponent = /** @class */ (function (_super) {
         }
         evt.stopPropagation();
     };
-    KeyPointComponent.prototype._processTangentMove = function (evt, cp) {
-        var key = this.props.curve.keys[this.props.keyId];
-        var expectedFrame = cp.frame;
-        this._tangentReferenceX += evt.nativeEvent.offsetX - this._sourcePointerX;
-        this._tangentReferenceY += evt.nativeEvent.offsetY - this._sourcePointerY;
-        var bbox = this._keyPointSVG.current.getBoundingClientRect();
-        var keyCenterX = bbox.left + bbox.width / 2;
-        var keyCenterY = bbox.top + bbox.height / 4;
-        var slope = -(keyCenterY - this._tangentReferenceY) / (keyCenterX - this._tangentReferenceX);
-        return key.value - (key.frame - expectedFrame) * slope;
+    KeyPointComponent.prototype._processTangentMove = function (evt, vec, storedLength, isIn) {
+        vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+        vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+        if (isIn && vec.x >= 0) {
+            vec.x = -0.01;
+        }
+        else if (!isIn && vec.x <= 0) {
+            vec.x = 0.01;
+        }
+        var currentPosition = vec.clone();
+        currentPosition.normalize();
+        currentPosition.scaleInPlace(storedLength);
+        var keys = this.props.curve.keys;
+        var value = isIn ? keys[this.props.keyId].value - this.props.invertY(currentPosition.y + this.state.y) : this.props.invertY(currentPosition.y + this.state.y) - keys[this.props.keyId].value;
+        var frame = isIn ? keys[this.props.keyId].frame - this.props.invertX(currentPosition.x + this.state.x) : this.props.invertX(currentPosition.x + this.state.x) - keys[this.props.keyId].frame;
+        return value / frame;
     };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
         var _this = this;
@@ -48693,11 +48757,11 @@ var KeyPointComponent = /** @class */ (function (_super) {
             return;
         }
         if (this._controlMode === ControlMode.TangentLeft) {
-            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentLeftControlPoint));
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
             this.forceUpdate();
         }
         else if (this._controlMode === ControlMode.TangentRight) {
-            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentRightControlPoint));
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
             this.forceUpdate();
         }
         else if (this._controlMode === ControlMode.Key) {
@@ -48747,34 +48811,45 @@ var KeyPointComponent = /** @class */ (function (_super) {
     KeyPointComponent.prototype.render = function () {
         var _this = this;
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
-        this._currentLeftControlPoint = this.props.curve.getInControlPoint(this.props.keyId);
-        this._currentRightControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);
-        var inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
-        var outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
-        inVec.normalize();
-        inVec.scaleInPlace(100 * this.props.scale);
-        outVec.normalize();
-        outVec.scaleInPlace(100 * this.props.scale);
+        var keys = this.props.curve.keys;
+        var prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
+        var currentFrame = keys[this.props.keyId].frame;
+        var nextFrame = this.props.keyId < keys.length - 1 ? keys[this.props.keyId + 1].frame : 0;
+        var inFrameLength = (currentFrame - prevFrame) / 3;
+        var outFrameLength = (nextFrame - currentFrame) / 3;
+        var convertedX = this.props.invertX(this.state.x);
+        var convertedY = this.props.invertY(this.state.y);
+        var inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId, inFrameLength);
+        var outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId, outFrameLength);
+        // We want to store the delta in the key local space
+        this._outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX + outFrameLength) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
+        this._inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX - inFrameLength) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        this._storedLengthIn = this._inVec.length();
+        this._storedLengthOut = this._outVec.length();
+        this._inVec.normalize();
+        this._inVec.scaleInPlace(100 * this.props.scale);
+        this._outVec.normalize();
+        this._outVec.scaleInPlace(100 * this.props.scale);
         return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("svg", { ref: this._svgHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, ref: this._keyPointSVG, href: svgImageIcon }),
             this.state.selectedState === SelectionState.Selected &&
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("g", null,
-                    this._currentLeftControlPoint !== null &&
+                    this.props.keyId !== 0 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: inVec.x + "px", y2: inVec.y + "px", style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._inVec.x + "px", y2: this._inVec.y + "px", style: {
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: inVec.x + "px", cy: inVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: this._inVec.x + "px", cy: this._inVec.y + "px", r: "" + 4 * this.props.scale, style: {
                                     fill: "#F9BF00",
                                 } })),
-                    this._currentRightControlPoint !== null &&
+                    this.props.keyId !== keys.length - 1 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: outVec.x + "px", y2: outVec.y + "px", style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._outVec.x + "px", y2: this._outVec.y + "px", style: {
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: outVec.x + "px", cy: outVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: this._outVec.x + "px", cy: this._outVec.y + "px", r: "" + 4 * this.props.scale, style: {
                                     fill: "#F9BF00",
                                 } })))));
     };
@@ -51994,7 +52069,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -56223,7 +56298,7 @@ var LensRenderingPipelinePropertyGridComponent = /** @class */ (function (_super
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Blur noise", target: renderPipeline, propertyName: "blurNoise", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "DEPTH OF FIELD", selection: this.props.globalState },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Aperture", minimum: 0, maximum: 10, step: 0.1, target: renderPipeline, propertyName: "dofAperture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distortion", minimum: 0, maximum: 10, step: 0.1, target: renderPipeline, propertyName: "dofDistortion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distortion", minimum: 0, maximum: 1000, step: 0.1, target: renderPipeline, propertyName: "dofDistortion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Pentagon bokeh", target: renderPipeline, propertyName: "pentagonBokeh", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Highlight gain", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "highlightsGain", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Highlight threshold", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "highlightsThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
@@ -63785,7 +63860,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -64092,7 +64167,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -64509,7 +64584,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -64848,14 +64923,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/image":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 
