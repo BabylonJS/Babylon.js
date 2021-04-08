@@ -184,6 +184,7 @@
 - Fix computation of min/max values in glTF loader when using normalized integers ([#10112](https://github.com/BabylonJS/Babylon.js/issues/10112)) ([Popov72](https://github.com/Popov72))
 - Fix instance picking when in billboard mode ([Popov72](https://github.com/Popov72))
 - Fix NME generation code missing `target` and `visibleInInspector` properties ([Popov72](https://github.com/Popov72))
+- Fix transmission mask being accidently used in glTF volume materials ([MiiBond](https://github.com/MiiBond/))
 
 ## Breaking changes
 
