@@ -193,21 +193,21 @@ export class WebGPUTextureHelper {
             }
 
             pipeline = this._pipelines[format][index] = this._device.createRenderPipeline({
-                vertexStage: {
+                vertex: {
                     module: modules[0],
-                    entryPoint: 'main'
+                    entryPoint: 'main',
                 },
-                fragmentStage: {
+                fragment: {
                     module: modules[1],
-                    entryPoint: 'main'
+                    entryPoint: 'main',
+                    targets: [{
+                        format,
+                    }],
                 },
-                primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
-                vertexState: {
-                    indexFormat: WebGPUConstants.IndexFormat.Uint16
+                primitive: {
+                    topology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
+                    stripIndexFormat: WebGPUConstants.IndexFormat.Uint16,
                 },
-                colorStates: [{
-                    format,
-                }]
             });
         }
 
@@ -647,6 +647,7 @@ export class WebGPUTextureHelper {
                     baseArrayLayer: 0,
                 }),
                 loadValue: WebGPUConstants.LoadOp.Load,
+                storeOp: WebGPUConstants.StoreOp.Store,
             }],
         });
 
@@ -852,6 +853,7 @@ export class WebGPUTextureHelper {
                         baseArrayLayer: faceIndex,
                     }),
                     loadValue: WebGPUConstants.LoadOp.Load,
+                    storeOp: WebGPUConstants.StoreOp.Store,
                 }],
             });
 
