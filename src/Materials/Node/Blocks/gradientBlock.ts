@@ -181,7 +181,7 @@ export class GradientBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = "";
+        var codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.colorSteps = [];\r\n`;
 

@@ -5,6 +5,7 @@ uniform vec4 vDiffuseColor;
 uniform vec4 vSpecularColor;
 #endif
 uniform vec3 vEmissiveColor;
+uniform vec3 vAmbientColor;
 
 uniform float visibility;
 
@@ -32,6 +33,10 @@ uniform vec2 vLightmapInfos;
 #ifdef BUMP
 uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
+#endif
+
+#ifdef ALPHATEST
+uniform float alphaCutOff;
 #endif
 
 #if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)

@@ -248,7 +248,7 @@ export class GradientMaterial extends PushMaterial {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
 
-            MaterialHelper.BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
 
         if (scene.lightsEnabled && !this.disableLighting) {

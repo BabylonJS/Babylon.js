@@ -465,17 +465,17 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        if (!this.texture) {
-            return "";
-        }
+        let codeString = super._dumpPropertiesCode();
 
-        let codeString: string;
+        if (!this.texture) {
+            return codeString;
+        }
 
         if (this.texture.isCube) {
             const forcedExtension = (this.texture as CubeTexture).forcedExtension;
-            codeString = `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}", undefined, undefined, ${this.texture.noMipmap}, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? "\"" + forcedExtension + "\"" : "null"});\r\n`;
+            codeString += `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}", undefined, undefined, ${this.texture.noMipmap}, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? "\"" + forcedExtension + "\"" : "null"});\r\n`;
         } else {
-            codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\r\n`;
+            codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\r\n`;
         }
         codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
 
