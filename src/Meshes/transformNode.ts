@@ -443,11 +443,21 @@ export class TransformNode extends Node {
     /**
      * Prevents the World matrix to be computed any longer
      * @param newWorldMatrix defines an optional matrix to use as world matrix
+     * @param decompose defines whether to decompose the given newWorldMatrix or directly assign
      * @returns the TransformNode.
      */
-    public freezeWorldMatrix(newWorldMatrix: Nullable<Matrix> = null): TransformNode {
+    public freezeWorldMatrix(newWorldMatrix: Nullable<Matrix> = null, decompose = false): TransformNode {
         if (newWorldMatrix) {
-            this._worldMatrix = newWorldMatrix;
+            if (decompose) {
+                this._rotation.setAll(0);
+                this._rotationQuaternion = this._rotationQuaternion || Quaternion.Identity();
+                newWorldMatrix.decompose(this._scaling, this._rotationQuaternion, this._position);
+                this.computeWorldMatrix(true);
+            } else {
+                this._worldMatrix = newWorldMatrix;
+                this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
+                this._afterComputeWorldMatrix();
+            }
         } else {
             this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
             this.computeWorldMatrix(true);

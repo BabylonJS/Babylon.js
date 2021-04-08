@@ -235,7 +235,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
      * Exposes the properties to the UI?
      */
     protected _dumpPropertiesCode() {
-        var codeString = `${this._codeVariableName}.manhattanDistance = ${this.manhattanDistance};\r\n`;
+        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.manhattanDistance = ${this.manhattanDistance};\r\n`;
 
         return codeString;
     }

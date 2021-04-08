@@ -21,6 +21,9 @@ export interface EngineFeatures {
     /** Indicates to track the usage of ubos and to create new ones as necessary during a frame duration */
     trackUbosInFrame: boolean;
 
+    /** Indicates that the current content of a ubo should be compared to the content of the corresponding GPU buffer and the GPU buffer updated only if different. Requires trackUbosInFrame to be true */
+    checkUbosContentBeforeUpload: boolean;
+
     /** Indicates that the Cascaded Shadow Map technic is supported */
     supportCSM: boolean;
 

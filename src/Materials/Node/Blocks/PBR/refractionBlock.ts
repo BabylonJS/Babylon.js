@@ -323,7 +323,7 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString: string = super._dumpPropertiesCode();
+        let codeString = super._dumpPropertiesCode();
 
         if (this.texture) {
             if (this.texture.isCube) {
