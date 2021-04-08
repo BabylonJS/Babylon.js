@@ -1,7 +1,10 @@
 import { Nullable } from "../../types";
 import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 
-/** @hidden */
+/**
+ * Class not used, WebGPUCacheRenderPipelineTree is faster
+ * @hidden
+ */
 export class WebGPUCacheRenderPipelineString extends WebGPUCacheRenderPipeline {
 
     private static _Cache: { [hash: string]: GPURenderPipeline } = {};
