@@ -244,7 +244,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             this._activeEffect.setFloat("alpha", this.alpha);
             this._activeEffect.setColor3("shadowColor", this.shadowColor);
 
-            MaterialHelper.BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
 
         // Lights
