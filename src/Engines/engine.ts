@@ -27,6 +27,7 @@ import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
 import { CanvasGenerator } from '../Misc/canvasGenerator';
 
+declare type DeviceInputSystem = import("../DeviceInput/deviceInputSystem").DeviceInputSystem;
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -386,6 +387,11 @@ export class Engine extends ThinEngine {
      */
     public isPointerLock = false;
 
+    /**
+     * Stores instance of DeviceInputSystem
+     */
+    public deviceInputSystem: DeviceInputSystem;
+
     // Observables
 
     /**
@@ -740,19 +746,20 @@ export class Engine extends ThinEngine {
 
     /**
      * Set various states to the webGL context
-     * @param culling defines backface culling state
+     * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
      * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
         }
 
         // Cull face
-        var cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+        var cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? this._gl.BACK : this._gl.FRONT;
         if (this._depthCullingState.cullFace !== cullFace || force) {
             this._depthCullingState.cullFace = cullFace;
         }
@@ -1100,8 +1107,8 @@ export class Engine extends ThinEngine {
         gl.disable(gl.SCISSOR_TEST);
     }
 
-    protected _reportDrawCall() {
-        this._drawCalls.addCount(1, false);
+    protected _reportDrawCall(numDrawCalls = 1) {
+        this._drawCalls.addCount(numDrawCalls, false);
     }
 
     /**
@@ -1828,6 +1835,11 @@ export class Engine extends ThinEngine {
 
         //WebVR
         this.disableVR();
+
+        // DeviceInputSystem
+        if (this.deviceInputSystem) {
+            this.deviceInputSystem.dispose();
+        }
 
         // Events
         if (DomManagement.IsWindowObjectExist()) {

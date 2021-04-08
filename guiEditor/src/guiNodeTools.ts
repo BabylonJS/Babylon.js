@@ -15,8 +15,7 @@ import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
 
 export class GUINodeTools {
-    public static CreateControlFromString (data: string) {
-        //TODO: Add more elements and create default values for certain types.
+    public static CreateControlFromString(data: string) {
         let element;
         switch (data) {
             case "Slider":
@@ -24,7 +23,11 @@ export class GUINodeTools {
                 break;
             case "Checkbox":
                 element = new Checkbox("Checkbox");
-                break;
+                element.width = "5%";
+                element.height = "5%";
+                element.color = "#FFFFFFFF";
+                element.isPointerBlocker = true;
+                return element;
             case "ColorPicker":
                 element = new ColorPicker("ColorPicker");
                 break;
@@ -36,26 +39,30 @@ export class GUINodeTools {
                 break;
             case "Line":
                 element = new Line();
-                element.x1 = 10;
-                element.y1 = 10;
-                element.x2 = 100;
+                element.x1 = 0;
+                element.y1 = 0;
                 element.y2 = 100;
+                element.x2 = 100;
                 element.lineWidth = 5;
                 element.dash = [50, 10];
+                element.isPointerBlocker = true;
                 return element;
             case "Text":
                 element = new TextBlock("Textblock");
                 element.text = "My Text";
+                element.color = "#FFFFFFFF";
+                element.fontSize = 20;
                 element.resizeToFit = true;
+                element.isPointerBlocker = true;
                 return element;
             case "ImageButton":
                 element = Button.CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
                 break;
             case "VirtualKeyboard":
                 element = new VirtualKeyboard();
-                element.addKeysRow(["1","2", "3","\u2190"]);
+                element.addKeysRow(["1", "2", "3", "\u2190"]);
                 break;
-            case "Image": 
+            case "Image":
                 element = new Image("Image", "https://playground.babylonjs.com/textures/grass.png");
                 element.autoScale = true;
                 element.isPointerBlocker = true;
@@ -63,38 +70,37 @@ export class GUINodeTools {
             case "InputText":
                 element = new InputText("InputText");
                 element.maxWidth = 0.6;
-                element.text = "Click Me";
+                element.text = "Input Text";
                 break;
             case "InputPassword":
                 element = new InputPassword("InputPassword");
+                element.maxWidth = 0.6;
+                element.text = "Input Text";
                 break;
             case "Grid":
                 element = new Grid("Grid");
-                element.addColumnDefinition(100, true);
+                element.addColumnDefinition(50, false);
                 element.addColumnDefinition(0.5);
                 element.addColumnDefinition(0.5);
-                element.addColumnDefinition(100, true);
+                element.addColumnDefinition(50, false);
                 element.addRowDefinition(0.5);
                 element.addRowDefinition(0.5);
                 element.isHighlighted = true;
+                element.isPointerBlocker = true;
                 return element;
             case "DisplayGrid":
                 element = new DisplayGrid("DisplayGrid");
-                element.width = "100px";
-                element.height = "100px";
                 return element;
             case "StackPanel":
                 element = new StackPanel("StackPanel");
-                element.width = "100px";
-                element.height = "100px";
                 element.isHighlighted = true;
                 return element;
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");
                 break;
         }
-        element.width = "150px";
-        element.height = "40px";
+        element.width = "15%";
+        element.height = "5%";
         element.color = "#FFFFFFFF";
         element.isPointerBlocker = true;
         return element;

@@ -525,25 +525,7 @@ export class SceneLoader {
             });
         }
 
-        const manifestChecked = () => {
-            if (pluginDisposed) {
-                return;
-            }
-
-            const successCallback = (data: string | ArrayBuffer, request?: WebRequest) => {
-                dataCallback(data, request ? request.responseURL : undefined);
-            };
-
-            const errorCallback = (error: RequestFileError) => {
-                onError(error.message, error);
-            };
-
-            request = plugin.requestFile
-                ? plugin.requestFile(scene, fileInfo.url, successCallback, onProgress, useArrayBuffer, errorCallback)
-                : scene._requestFile(fileInfo.url, successCallback, onProgress, true, useArrayBuffer, errorCallback);
-        };
-
-        if (StringTools.StartsWith(fileInfo.url, "file:") && fileInfo.file) {
+        if (fileInfo.file) {
             // Loading file from disk via input file or drag'n'drop
             const errorCallback = (error: ReadFileError) => {
                 onError(error.message, error);
@@ -553,6 +535,24 @@ export class SceneLoader {
                 ? plugin.readFile(scene, fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback)
                 : scene._readFile(fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback);
         } else {
+            const manifestChecked = () => {
+                if (pluginDisposed) {
+                    return;
+                }
+
+                const successCallback = (data: string | ArrayBuffer, request?: WebRequest) => {
+                    dataCallback(data, request ? request.responseURL : undefined);
+                };
+
+                const errorCallback = (error: RequestFileError) => {
+                    onError(error.message, error);
+                };
+
+                request = plugin.requestFile
+                    ? plugin.requestFile(scene, fileInfo.url, successCallback, onProgress, useArrayBuffer, errorCallback)
+                    : scene._requestFile(fileInfo.url, successCallback, onProgress, true, useArrayBuffer, errorCallback);
+            };
+
             const engine = scene.getEngine();
             let canUseOfflineSupport = engine.enableOfflineSupport;
             if (canUseOfflineSupport) {
@@ -592,7 +592,7 @@ export class SceneLoader {
         }
         else if ((sceneFilename as File).name) {
             const sceneFile = sceneFilename as File;
-            url = rootUrl + sceneFile.name;
+            url = `file:${sceneFile.name}`;
             name = sceneFile.name;
             file = sceneFile;
         }

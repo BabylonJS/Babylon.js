@@ -170,14 +170,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.15";
+        return "babylonjs@5.0.0-alpha.16";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.15";
+        return "5.0.0-alpha.16";
     }
 
     /**
@@ -240,9 +240,10 @@ export class ThinEngine {
     public isFullscreen = false;
 
     /**
-     * Gets or sets a boolean indicating if back faces must be culled (true by default)
+     * Gets or sets a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
+     * If non null, this takes precedence over the value from the material
      */
-    public cullBackFaces = true;
+    public cullBackFaces: Nullable<boolean> = null;
 
     /**
      * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foregroun
@@ -562,6 +563,32 @@ export class ThinEngine {
      */
     public get shaderPlatformName(): string {
         return this._shaderPlatformName;
+    }
+
+    protected _snapshotRenderingEnabled = false;
+    /**
+     * Enables or disables the snapshot rendering mode
+     * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
+     */
+    public get snapshotRendering(): boolean {
+        return this._snapshotRenderingEnabled;
+    }
+
+    public set snapshotRendering(activate) {
+        // WebGL engine does not support snapshot rendering
+        this._snapshotRenderingEnabled = false;
+    }
+
+    protected _snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD;
+    /**
+     * Gets or sets the snapshot rendering mode
+     */
+    public get snapshotRenderingMode(): number {
+        return this._snapshotRenderingMode;
+    }
+
+    public set snapshotRenderingMode(mode: number) {
+        this._snapshotRenderingMode = mode;
     }
 
     /**
@@ -1086,6 +1113,7 @@ export class ThinEngine {
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: this._webGLVersion !== 1,
             trackUbosInFrame: false,
+            checkUbosContentBeforeUpload: false,
             supportCSM: this._webGLVersion !== 1,
             basisNeedsPOT: this._webGLVersion === 1,
             support3DTextures: this._webGLVersion !== 1,
