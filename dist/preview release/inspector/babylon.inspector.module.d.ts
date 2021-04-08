@@ -709,6 +709,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         outTangent?: number;
     }
     export class Curve {
+        static readonly SampleRate: number;
         keys: KeyEntry[];
         animation: Animation;
         color: string;
@@ -929,6 +930,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
         constructor(props: IBottomBarComponentProps);
+        private _renderMaxFrame;
         render(): JSX.Element;
     }
 }
@@ -4995,6 +4997,7 @@ declare module INSPECTOR {
         outTangent?: number;
     }
     export class Curve {
+        static readonly SampleRate: number;
         keys: KeyEntry[];
         animation: BABYLON.Animation;
         color: string;
@@ -5193,6 +5196,7 @@ declare module INSPECTOR {
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
         constructor(props: IBottomBarComponentProps);
+        private _renderMaxFrame;
         render(): JSX.Element;
     }
 }
