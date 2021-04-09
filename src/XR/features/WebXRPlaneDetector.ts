@@ -152,7 +152,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         }
         // const timestamp = this.xrSessionManager.currentTimestamp;
 
-        const detectedPlanes = frame.worldInformation!.detectedPlanes;
+        const detectedPlanes = frame.detectedPlanes || frame.worldInformation?.detectedPlanes;
         if (detectedPlanes) {
             const toRemove = this._detectedPlanes
                 .filter((plane) => !detectedPlanes.has(plane.xrPlane))
@@ -199,19 +199,12 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         };
 
         // Only supported by BabylonNative
-        if (!!this._xrSessionManager.isNative &&
-            !!this._options.preferredDetectorOptions &&
-            !!this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions) {
+        if (!!this._xrSessionManager.isNative && !!this._options.preferredDetectorOptions && !!this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions) {
             this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions(this._options.preferredDetectorOptions);
         }
 
         if (!this._xrSessionManager.session.updateWorldTrackingState) {
-            // check if this was enabled by a flag
-            const alreadyEnabled = (this._xrSessionManager.session as any).worldTrackingState?.planeDetectionState?.enabled;
-            if (alreadyEnabled) {
-                internalInit();
-            }
-            // fail silently
+            internalInit();
             return;
         }
         this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
