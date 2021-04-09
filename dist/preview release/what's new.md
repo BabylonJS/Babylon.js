@@ -187,6 +187,7 @@
 - Fix instance picking when in billboard mode ([Popov72](https://github.com/Popov72))
 - Fix NME generation code missing `target` and `visibleInInspector` properties ([Popov72](https://github.com/Popov72))
 - Fix `Scene.getPointerOverMesh` returning disposed mesh ([Popov72](https://github.com/Popov72))
+- Fix for GUI slider step values greater than one ([msDestiny14](https://github.com/msDestiny14))
 
 ## Breaking changes
 

@@ -301,7 +301,7 @@ export class BaseSlider extends Control {
             value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
 
-        const mult = (1 / this._step) | 0;
+        const mult = (1.0 / this._step);
         this.value = this._step ? ((value * mult) | 0) / mult : value;
     }
 
