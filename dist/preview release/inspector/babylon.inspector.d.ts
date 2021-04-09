@@ -679,6 +679,7 @@ declare module INSPECTOR {
     }
     interface IKeyPointComponentState {
         selectedState: SelectionState;
+        tangentSelectedIndex: number;
         x: number;
         y: number;
     }
@@ -695,6 +696,8 @@ declare module INSPECTOR {
         private _onMainKeyPointSetObserver;
         private _onMainKeyPointMovedObserver;
         private _onSelectionRectangleMovedObserver;
+        private _onFlattenTangentRequiredObserver;
+        private _onLinearTangentRequiredObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -710,6 +713,8 @@ declare module INSPECTOR {
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
+        private _flattenTangent;
+        private _linearTangent;
         private _select;
         private _onPointerDown;
         private _processTangentMove;
@@ -748,6 +753,8 @@ declare module INSPECTOR {
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
         onNewKeyPointRequired: BABYLON.Observable<void>;
+        onFlattenTangentRequired: BABYLON.Observable<void>;
+        onLinearTangentRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
