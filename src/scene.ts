@@ -1461,6 +1461,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (!fullOptions.virtual) {
             EngineStore._LastCreatedScene = this;
             this._engine.scenes.push(this);
+        } else {
+            this._engine._virtualScenes.push(this);
         }
 
         this._uid = null;
@@ -4453,6 +4455,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         if (index > -1) {
             this._engine.scenes.splice(index, 1);
+        }
+
+        index = this._engine._virtualScenes.indexOf(this);
+
+        if (index > -1) {
+            this._engine._virtualScenes.splice(index, 1);
         }
 
         this._engine.wipeCaches(true);
