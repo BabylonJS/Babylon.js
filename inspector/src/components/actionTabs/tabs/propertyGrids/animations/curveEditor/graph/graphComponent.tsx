@@ -10,6 +10,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import { IAnimationKey } from "babylonjs/Animations/animationKey";
 import { Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
+//import { Scalar } from "babylonjs/Maths/math.scalar";
 
 interface IGraphComponentProps {
     globalState: GlobalState;
@@ -51,7 +52,6 @@ IGraphComponentState
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
     private _sourcePointerY: number;
-
     
     private _selectionStartX: number;
     private _selectionStartY: number;
@@ -155,21 +155,85 @@ IGraphComponentState
             }
 
             const value = this._currentAnimation.evaluate(currentFrame);
-          //  const prevValue = this._currentAnimation.evaluate(currentFrame - 0.01);
-            //const nextValue = this._currentAnimation.evaluate(currentFrame + 0.01);
+            const leftKey = keys[indexToAdd];
+            const rightKey = keys[indexToAdd + 1];
+            // const previousWidth = rightKey.frame - leftKey.frame;
+            // const leftWidth = currentFrame - leftKey.frame;            
+            // const rightWidth = rightKey.frame - currentFrame;
+          //  const leftScaleFactor = leftWidth / previousWidth;
+           // const rightScaleFactor = rightWidth / previousWidth;
+           // const cutTime = leftWidth / previousWidth;
 
             let newKey: IAnimationKey = {
                 frame: currentFrame,
                 value: value
             }
 
-            // if (keys[indexToAdd].outTangent) {
-            //     newKey.inTangent = value.subtract ? value.subtract(prevValue).scaleInPlace(2 / 3) : (value - prevValue) * 1 / 3;
-            // }
+            if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                switch (this._currentAnimation.dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT: {
+                        // Derivative
+                        //const derivative = Scalar.Hermite1stDerivative(leftKey.value, leftKey.outTangent * previousWidth, rightKey.value, rightKey.inTangent * previousWidth, cutTime);                  
+                        const derivative = (this._currentAnimation.evaluate(currentFrame + 0.0001) - value) /  0.0001;
 
-            // if (keys[indexToAdd + 1].inTangent) {
-            //     newKey.outTangent = nextValue.subtract ? nextValue.subtract(value).scaleInPlace(1/ 3) : (nextValue - value) * 2 / 3;
-            // }
+                        // Left
+                        leftKey.outTangent = leftKey.outTangent;// * leftScaleFactor;
+                        newKey.inTangent = derivative;// * leftScaleFactor;
+
+                        // Right
+                        rightKey.inTangent = rightKey.inTangent;// * rightScaleFactor;
+                        newKey.outTangent = derivative;// * rightScaleFactor;
+
+                        break;
+                    }
+                    case Animation.ANIMATIONTYPE_VECTOR2: {
+                        // Derivative
+                        //const derivative = Vector2.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
+                        const derivative = (this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
+
+                        // Left
+                        leftKey.outTangent = leftKey.outTangent;//.scale(leftScaleFactor);
+                        newKey.inTangent = derivative;//.scale(leftScaleFactor);
+
+                        // Right
+                        rightKey.inTangent = rightKey.inTangent;//.scale(rightScaleFactor);
+                        newKey.outTangent = derivative;//.scale(rightScaleFactor);
+                        break;
+                    }
+                    case Animation.ANIMATIONTYPE_VECTOR3: {
+                        // Derivative
+                        //const derivative = Vector3.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
+                        const derivative = (this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
+
+                        // Left
+                        leftKey.outTangent = leftKey.outTangent;//.scale(leftScaleFactor);
+                        newKey.inTangent = derivative;//.scale(leftScaleFactor);
+
+                        // Right
+                        rightKey.inTangent = rightKey.inTangent;//.scale(rightScaleFactor);
+                        newKey.outTangent = derivative;//.scale(rightScaleFactor);
+                        break;
+                    }
+                    case Animation.ANIMATIONTYPE_QUATERNION:{
+                        // Derivative
+                        //const derivative = Quaternion.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
+                        const derivative = (this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
+
+                        // Left
+                        leftKey.outTangent = leftKey.outTangent;//.scale(leftScaleFactor);
+                        newKey.inTangent = derivative;//.scale(leftScaleFactor);
+
+                        // Right
+                        rightKey.inTangent = rightKey.inTangent;//.scale(rightScaleFactor);
+                        newKey.outTangent = derivative;//.scale(rightScaleFactor);
+                        break;
+                    }
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        break;
+                    case Animation.ANIMATIONTYPE_COLOR4:
+                        break;
+                }
+            }
 
             keys.splice(indexToAdd + 1, 0, newKey);
 
@@ -200,6 +264,18 @@ IGraphComponentState
         this.forceUpdate();
     }
 
+    private _setDefaultInTangent(keyId: number) {
+        for (var curve of this._curves) {
+            curve.storeDefaultInTangent(keyId);
+        }
+    }
+
+    private _setDefaultOutTangent(keyId: number) {
+        for (var curve of this._curves) {
+            curve.storeDefaultOutTangent!(keyId);
+        }
+    }
+
     private _evaluateKeys() {
         if (!this.props.context.activeAnimation) {
             this._curves = [];
@@ -214,31 +290,32 @@ IGraphComponentState
         switch (animation.dataType) {
             case Animation.ANIMATIONTYPE_FLOAT:
                 this._curves.push(new Curve("#DB3E3E", animation)); 
-            break;
+                break;
             case Animation.ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new Curve("#DB3E3E", animation, "x", () => Vector2.Zero())); 
-                this._curves.push(new Curve("#51E22D", animation, "y", () => Vector2.Zero())); 
+                this._curves.push(new Curve("#DB3E3E", animation, "x", () => Vector2.Zero(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#51E22D", animation, "y", () => Vector2.Zero(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId)));
+                break; 
             case Animation.ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new Curve("#DB3E3E", animation, "x", () => Vector3.Zero())); 
-                this._curves.push(new Curve("#51E22D", animation, "y", () => Vector3.Zero())); 
-                this._curves.push(new Curve("#00A3FF", animation, "z", () => Vector3.Zero())); 
+                this._curves.push(new Curve("#DB3E3E", animation, "x", () => Vector3.Zero(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#51E22D", animation, "y", () => Vector3.Zero(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#00A3FF", animation, "z", () => Vector3.Zero(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
                 break;
             case Animation.ANIMATIONTYPE_COLOR3:
-                this._curves.push(new Curve("#DB3E3E", animation, "r", () => Color3.Black())); 
-                this._curves.push(new Curve("#51E22D", animation, "g", () => Color3.Black())); 
-                this._curves.push(new Curve("#00A3FF", animation, "b", () => Color3.Black())); 
+                this._curves.push(new Curve("#DB3E3E", animation, "r", () => Color3.Black(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#51E22D", animation, "g", () => Color3.Black(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#00A3FF", animation, "b", () => Color3.Black(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
                 break;
             case Animation.ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new Curve("#DB3E3E", animation, "x", () => Quaternion.Zero())); 
-                this._curves.push(new Curve("#51E22D", animation, "y", () => Quaternion.Zero())); 
-                this._curves.push(new Curve("#00A3FF", animation, "z", () => Quaternion.Zero())); 
-                this._curves.push(new Curve("#8700FF", animation, "w", () => Quaternion.Zero())); 
+                this._curves.push(new Curve("#DB3E3E", animation, "x", () => Quaternion.Zero(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#51E22D", animation, "y", () => Quaternion.Zero(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#00A3FF", animation, "z", () => Quaternion.Zero(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#8700FF", animation, "w", () => Quaternion.Zero(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
                 break;
             case Animation.ANIMATIONTYPE_COLOR4:
-                this._curves.push(new Curve("#DB3E3E", animation, "r", () => new Color4())); 
-                this._curves.push(new Curve("#51E22D", animation, "g", () => new Color4())); 
-                this._curves.push(new Curve("#00A3FF", animation, "b", () => new Color4())); 
-                this._curves.push(new Curve("#8700FF", animation, "a", () => new Color4())); 
+                this._curves.push(new Curve("#DB3E3E", animation, "r", () => new Color4(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#51E22D", animation, "g", () => new Color4(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#00A3FF", animation, "b", () => new Color4(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
+                this._curves.push(new Curve("#8700FF", animation, "a", () => new Color4(), keyId => this._setDefaultInTangent(keyId), keyId => this._setDefaultOutTangent(keyId))); 
                 break;
         }
 
