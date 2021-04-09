@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -11214,7 +11214,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
+exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #edit-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #111111; }\n    #sideBar #edit-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #edit-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #edit-animation-pane #edit-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      display: grid;\n      grid-template-columns: 50% 50%;\n      grid-template-rows: 100%; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-ok {\n        grid-row: 1;\n        grid-column: 1; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-cancel {\n        grid-row: 1;\n        grid-column: 2; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -47317,6 +47317,8 @@ var Context = /** @class */ (function () {
         this.onDeleteKeyActiveKeyPoints = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionRectangleMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onAnimationsLoaded = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onEditAnimationRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onEditAnimationUIClosed = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     Context.prototype.prepare = function () {
         this.isPlaying = false;
@@ -47582,13 +47584,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 
 var Curve = /** @class */ (function () {
-    function Curve(color, animation, property, tangentBuilder) {
+    function Curve(color, animation, property, tangentBuilder, setDefaultInTangent, setDefaultOutTangent) {
         this.keys = new Array();
         this.onDataUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.color = color;
         this.animation = animation;
         this.property = property;
         this.tangentBuilder = tangentBuilder;
+        this.setDefaultInTangent = setDefaultInTangent;
+        this.setDefaultOutTangent = setDefaultOutTangent;
     }
     Curve.prototype.gePathData = function (convertX, convertY) {
         var keys = this.keys;
@@ -47597,13 +47601,13 @@ var Curve = /** @class */ (function () {
         }
         var pathData = "M" + convertX(keys[0].frame) + " " + convertY(keys[0].value);
         for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
-            var outTangent = keys[keyIndex - 1].outTangent || 0;
-            var inTangent = keys[keyIndex].inTangent || 0;
+            var outTangent = keys[keyIndex - 1].outTangent;
+            var inTangent = keys[keyIndex].inTangent;
             var currentFrame = keys[keyIndex].frame;
             var currentValue = keys[keyIndex].value;
             var prevFrame = keys[keyIndex - 1].frame;
             var frameDist = currentFrame - prevFrame;
-            if (!outTangent && !inTangent) { // Draw a straight line
+            if (outTangent === undefined && inTangent === undefined) { // Draw a straight line
                 pathData += " L" + convertX(currentFrame) + " " + convertY(currentValue);
                 continue;
             }
@@ -47623,16 +47627,8 @@ var Curve = /** @class */ (function () {
         }
         var keys = this.keys;
         var inTangent = keys[keyIndex].inTangent;
-        if (!inTangent) {
-            var prevFrame = keys[keyIndex - 1].frame;
-            var currentFrame = keys[keyIndex].frame;
-            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
-            var evaluatedValueEntry = this.animation.evaluate(midFrame);
-            var evaluatedValue = 0;
-            if (this.property) {
-                evaluatedValue = evaluatedValueEntry[this.property];
-            }
-            inTangent = (keys[keyIndex].value - evaluatedValue) / (currentFrame - midFrame);
+        if (inTangent === undefined) {
+            inTangent = this.evaluateInTangent(keyIndex);
         }
         return length * inTangent;
     };
@@ -47642,48 +47638,86 @@ var Curve = /** @class */ (function () {
             return 0;
         }
         var outTangent = keys[keyIndex].outTangent;
-        if (!outTangent) {
-            var prevFrame = keys[keyIndex].frame;
-            var currentFrame = keys[keyIndex + 1].frame;
-            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
-            var evaluatedValueEntry = this.animation.evaluate(midFrame);
-            var evaluatedValue = 0;
-            if (this.property) {
-                evaluatedValue = evaluatedValueEntry[this.property];
-            }
-            outTangent = (evaluatedValue - keys[keyIndex].value) / (currentFrame - midFrame);
+        if (outTangent === undefined) {
+            outTangent = this.evaluateOutTangent(keyIndex);
         }
         return length * outTangent;
     };
+    Curve.prototype.evaluateOutTangent = function (keyIndex) {
+        var keys = this.keys;
+        var prevFrame = keys[keyIndex].frame;
+        var currentFrame = keys[keyIndex + 1].frame;
+        return (keys[keyIndex + 1].value - keys[keyIndex].value) / (currentFrame - prevFrame);
+    };
+    Curve.prototype.evaluateInTangent = function (keyIndex) {
+        var keys = this.keys;
+        var prevFrame = keys[keyIndex - 1].frame;
+        var currentFrame = keys[keyIndex].frame;
+        return (keys[keyIndex].value - keys[keyIndex - 1].value) / (currentFrame - prevFrame);
+    };
+    Curve.prototype.storeDefaultInTangent = function (keyIndex) {
+        var keys = this.keys;
+        var animationKeys = this.animation.getKeys();
+        keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
+        if (this.property) {
+            animationKeys[keyIndex].inTangent[this.property] = keys[keyIndex].inTangent;
+        }
+        else {
+            animationKeys[keyIndex].inTangent = keys[keyIndex].inTangent;
+        }
+    };
+    Curve.prototype.storeDefaultOutTangent = function (keyIndex) {
+        var keys = this.keys;
+        var animationKeys = this.animation.getKeys();
+        keys[keyIndex].outTangent = this.evaluateOutTangent(keyIndex);
+        if (this.property) {
+            animationKeys[keyIndex].outTangent[this.property] = keys[keyIndex].outTangent;
+        }
+        else {
+            animationKeys[keyIndex].outTangent = keys[keyIndex].outTangent;
+        }
+    };
     Curve.prototype.updateInTangentFromControlPoint = function (keyId, slope) {
-        this.keys[keyId].inTangent = slope;
+        var keys = this.keys;
+        keys[keyId].inTangent = slope;
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
                 this.animation.getKeys()[keyId].inTangent = this.tangentBuilder();
+                this.setDefaultInTangent(keyId);
             }
             if (!this.animation.getKeys()[keyId - 1].outTangent) {
                 this.animation.getKeys()[keyId - 1].outTangent = this.tangentBuilder();
+                this.setDefaultOutTangent(keyId - 1);
             }
-            this.animation.getKeys()[keyId].inTangent[this.property] = this.keys[keyId].inTangent;
+            this.animation.getKeys()[keyId].inTangent[this.property] = keys[keyId].inTangent;
         }
         else {
-            this.animation.getKeys()[keyId].inTangent = this.keys[keyId].inTangent;
+            this.animation.getKeys()[keyId].inTangent = keys[keyId].inTangent;
+            if (this.animation.getKeys()[keyId - 1].outTangent === undefined) {
+                this.storeDefaultOutTangent(keyId - 1);
+            }
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateOutTangentFromControlPoint = function (keyId, slope) {
-        this.keys[keyId].outTangent = slope;
+        var keys = this.keys;
+        keys[keyId].outTangent = slope;
         if (this.property) {
             if (!this.animation.getKeys()[keyId + 1].inTangent) {
                 this.animation.getKeys()[keyId + 1].inTangent = this.tangentBuilder();
+                this.setDefaultInTangent(keyId + 1);
             }
             if (!this.animation.getKeys()[keyId].outTangent) {
                 this.animation.getKeys()[keyId].outTangent = this.tangentBuilder();
+                this.setDefaultOutTangent(keyId);
             }
-            this.animation.getKeys()[keyId].outTangent[this.property] = this.keys[keyId].outTangent;
+            this.animation.getKeys()[keyId].outTangent[this.property] = keys[keyId].outTangent;
         }
         else {
-            this.animation.getKeys()[keyId].outTangent = this.keys[keyId].outTangent;
+            this.animation.getKeys()[keyId].outTangent = keys[keyId].outTangent;
+            if (this.animation.getKeys()[keyId + 1].inTangent === undefined) {
+                this.storeDefaultInTangent(keyId + 1);
+            }
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
@@ -48040,18 +48074,74 @@ var GraphComponent = /** @class */ (function (_super) {
                 }
             }
             var value = _this._currentAnimation.evaluate(currentFrame);
-            //  const prevValue = this._currentAnimation.evaluate(currentFrame - 0.01);
-            //const nextValue = this._currentAnimation.evaluate(currentFrame + 0.01);
+            var leftKey = keys[indexToAdd];
+            var rightKey = keys[indexToAdd + 1];
+            // const previousWidth = rightKey.frame - leftKey.frame;
+            // const leftWidth = currentFrame - leftKey.frame;            
+            // const rightWidth = rightKey.frame - currentFrame;
+            //  const leftScaleFactor = leftWidth / previousWidth;
+            // const rightScaleFactor = rightWidth / previousWidth;
+            // const cutTime = leftWidth / previousWidth;
             var newKey = {
                 frame: currentFrame,
                 value: value
             };
-            // if (keys[indexToAdd].outTangent) {
-            //     newKey.inTangent = value.subtract ? value.subtract(prevValue).scaleInPlace(2 / 3) : (value - prevValue) * 1 / 3;
-            // }
-            // if (keys[indexToAdd + 1].inTangent) {
-            //     newKey.outTangent = nextValue.subtract ? nextValue.subtract(value).scaleInPlace(1/ 3) : (nextValue - value) * 2 / 3;
-            // }
+            if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                switch (_this._currentAnimation.dataType) {
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
+                        // Derivative
+                        //const derivative = Scalar.Hermite1stDerivative(leftKey.value, leftKey.outTangent * previousWidth, rightKey.value, rightKey.inTangent * previousWidth, cutTime);                  
+                        var derivative = (_this._currentAnimation.evaluate(currentFrame + 0.0001) - value) / 0.0001;
+                        // Left
+                        leftKey.outTangent = leftKey.outTangent; // * leftScaleFactor;
+                        newKey.inTangent = derivative; // * leftScaleFactor;
+                        // Right
+                        rightKey.inTangent = rightKey.inTangent; // * rightScaleFactor;
+                        newKey.outTangent = derivative; // * rightScaleFactor;
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
+                        // Derivative
+                        //const derivative = Vector2.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
+                        var derivative = (_this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
+                        // Left
+                        leftKey.outTangent = leftKey.outTangent; //.scale(leftScaleFactor);
+                        newKey.inTangent = derivative; //.scale(leftScaleFactor);
+                        // Right
+                        rightKey.inTangent = rightKey.inTangent; //.scale(rightScaleFactor);
+                        newKey.outTangent = derivative; //.scale(rightScaleFactor);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
+                        // Derivative
+                        //const derivative = Vector3.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
+                        var derivative = (_this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
+                        // Left
+                        leftKey.outTangent = leftKey.outTangent; //.scale(leftScaleFactor);
+                        newKey.inTangent = derivative; //.scale(leftScaleFactor);
+                        // Right
+                        rightKey.inTangent = rightKey.inTangent; //.scale(rightScaleFactor);
+                        newKey.outTangent = derivative; //.scale(rightScaleFactor);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
+                        // Derivative
+                        //const derivative = Quaternion.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
+                        var derivative = (_this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
+                        // Left
+                        leftKey.outTangent = leftKey.outTangent; //.scale(leftScaleFactor);
+                        newKey.inTangent = derivative; //.scale(leftScaleFactor);
+                        // Right
+                        rightKey.inTangent = rightKey.inTangent; //.scale(rightScaleFactor);
+                        newKey.outTangent = derivative; //.scale(rightScaleFactor);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                        break;
+                }
+            }
             keys.splice(indexToAdd + 1, 0, newKey);
             _this._currentAnimation.setKeys(keys);
             _this._evaluateKeys();
@@ -48076,7 +48166,20 @@ var GraphComponent = /** @class */ (function (_super) {
         this._viewHeight = this._svgHost.current.clientHeight;
         this.forceUpdate();
     };
+    GraphComponent.prototype._setDefaultInTangent = function (keyId) {
+        for (var _i = 0, _a = this._curves; _i < _a.length; _i++) {
+            var curve = _a[_i];
+            curve.storeDefaultInTangent(keyId);
+        }
+    };
+    GraphComponent.prototype._setDefaultOutTangent = function (keyId) {
+        for (var _i = 0, _a = this._curves; _i < _a.length; _i++) {
+            var curve = _a[_i];
+            curve.storeDefaultOutTangent(keyId);
+        }
+    };
     GraphComponent.prototype._evaluateKeys = function () {
+        var _this = this;
         if (!this.props.context.activeAnimation) {
             this._curves = [];
             return;
@@ -48089,29 +48192,30 @@ var GraphComponent = /** @class */ (function (_super) {
                 this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
         }
         var values = this._extractValuesFromKeys(keys, animation.dataType, true);
@@ -49459,6 +49563,9 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
         return _this;
     }
     AnimationEntryComponent.prototype._onGear = function () {
+        var _this = this;
+        this.props.context.onEditAnimationUIClosed.addOnce(function () { return _this.forceUpdate(); });
+        this.props.context.onEditAnimationRequired.notifyObservers(this.props.animation);
     };
     AnimationEntryComponent.prototype._onDelete = function () {
         this.props.context.onDeleteAnimation.notifyObservers(this.props.animation);
@@ -49543,12 +49650,33 @@ var AnimationListComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationListComponent, _super);
     function AnimationListComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = {};
+        _this.state = { isVisible: true };
+        _this._onEditAnimationRequiredObserver = _this.props.context.onEditAnimationRequired.add(function (animation) {
+            _this.setState({
+                isVisible: false
+            });
+        });
+        _this._onEditAnimationUIClosedObserver = _this.props.context.onEditAnimationUIClosed.add(function () {
+            _this.setState({
+                isVisible: true
+            });
+        });
         return _this;
     }
+    AnimationListComponent.prototype.componentWillUnmount = function () {
+        if (this._onEditAnimationRequiredObserver) {
+            this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
+        }
+        if (this._onEditAnimationUIClosedObserver) {
+            this.props.context.onEditAnimationUIClosed.remove(this._onEditAnimationUIClosedObserver);
+        }
+    };
     AnimationListComponent.prototype.render = function () {
         var _this = this;
         var _a;
+        if (!this.state.isVisible) {
+            return null;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "animation-list" }, (_a = this.props.context.animations) === null || _a === void 0 ? void 0 : _a.map(function (a, i) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationEntryComponent__WEBPACK_IMPORTED_MODULE_2__["AnimationEntryComponent"], { key: i, globalState: _this.props.globalState, context: _this.props.context, animation: a }));
         })));
@@ -49639,6 +49767,113 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
                     }, onClick: function () { return _this._activate(); } }, this.props.subName))));
     };
     return AnimationSubEntryComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx":
+/*!************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx ***!
+  \************************************************************************************************************/
+/*! exports provided: EditAnimationComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EditAnimationComponent", function() { return EditAnimationComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Animations/animation */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+var EditAnimationComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(EditAnimationComponent, _super);
+    function EditAnimationComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { isVisible: false, animation: null };
+        _this._root = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._displayName = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._property = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._loopModeElement = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._onEditAnimationRequiredObserver = _this.props.context.onEditAnimationRequired.add(function (animation) {
+            _this.setState({
+                isVisible: true,
+                animation: animation
+            });
+        });
+        return _this;
+    }
+    EditAnimationComponent.prototype.componentWillUnmount = function () {
+        if (this._onEditAnimationRequiredObserver) {
+            this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
+        }
+    };
+    EditAnimationComponent.prototype.close = function () {
+        this.setState({ isVisible: false });
+        this.props.context.onEditAnimationUIClosed.notifyObservers();
+    };
+    EditAnimationComponent.prototype.validate = function () {
+        var context = this.props.context;
+        var document = this._displayName.current.ownerDocument;
+        var displayName = this._displayName.current.value;
+        var property = this._property.current.value;
+        var loopModeValue = this._loopModeElement.current.value;
+        if (!displayName) {
+            document.defaultView.alert("Please define a display name");
+            return;
+        }
+        if (!property) {
+            document.defaultView.alert("Please define a property");
+            return;
+        }
+        var animation = this.state.animation;
+        animation.name = displayName;
+        if (animation.targetProperty !== property) {
+            animation.targetProperty = property;
+            animation.targetPropertyPath = property.split(".");
+            context.stop();
+        }
+        switch (loopModeValue) {
+            case "Cycle": {
+                animation.loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_CYCLE;
+                break;
+            }
+            case "Relative": {
+                animation.loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_RELATIVE;
+                break;
+            }
+            case "Constant": {
+                animation.loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_CONSTANT;
+                break;
+            }
+        }
+        this.close();
+    };
+    EditAnimationComponent.prototype.render = function () {
+        var _this = this;
+        if (!this.state.isVisible) {
+            return null;
+        }
+        var loopModes = ["Relative", "Cycle", "Constant"];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-pane", ref: this._root },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-display-name-label" }, "Display Name"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-property-label" }, "Property"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-loop-mode-label" }, "Loop Mode"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "edit-animation-name", ref: this._displayName, className: "input-text", defaultValue: this.state.animation.name || "" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "edit-animation-property", ref: this._property, className: "input-text", defaultValue: this.state.animation.targetPropertyPath }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "edit-animation-loop-mode", className: "option", ref: this._loopModeElement }, loopModes.map(function (loopMode, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { selected: _this.state.animation.loopMode === i, key: loopMode + i, value: loopMode, title: loopMode }, loopMode));
+            })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "edit-animation-ok", type: "button", onClick: function () { return _this.validate(); } }, "OK"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "edit-animation-cancel", type: "button", onClick: function () { return _this.close(); } }, "Cancel"))));
+    };
+    return EditAnimationComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -49838,7 +50073,7 @@ var SaveAnimationComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-pane", ref: this._root },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-list" }, (_a = this.props.context.animations) === null || _a === void 0 ? void 0 : _a.map(function (a, i) {
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "save-animation-list-entry", key: i },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", value: a.name, checked: true, onClick: function (evt) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", value: a.name, defaultChecked: true, onClick: function (evt) {
                             if (evt.currentTarget.checked) {
                                 _this._selectedAnimations.push(a);
                             }
@@ -49889,6 +50124,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./saveAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/saveAnimationComponent.tsx");
 /* harmony import */ var _loadAnimationComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./loadAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/loadAnimationComponent.tsx");
 /* harmony import */ var _addAnimationComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./addAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/addAnimationComponent.tsx");
+/* harmony import */ var _editAnimationComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./editAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx");
+
 
 
 
@@ -49963,7 +50200,9 @@ var SideBarComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Edit animations", isActive: this.state.mode === Mode.Edit, id: "edit-animation", globalState: this.props.globalState, context: this.props.context, icon: editIcon, onClick: function () { return _this._onEditAnimation(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputComponent"], { value: this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond.toString() : "60", complement: " fps", isNumber: true, onValueAsNumberChanged: function (value) { var _a; return (_a = _this.props.context.animations) === null || _a === void 0 ? void 0 : _a.forEach(function (anim) { return anim.framePerSecond = value; }); }, tooltip: "Framerate", id: "framerate-animation", globalState: this.props.globalState, context: this.props.context })),
             this.state.mode === Mode.Edit &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListComponent__WEBPACK_IMPORTED_MODULE_3__["AnimationListComponent"], { globalState: this.props.globalState, context: this.props.context }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListComponent__WEBPACK_IMPORTED_MODULE_3__["AnimationListComponent"], { globalState: this.props.globalState, context: this.props.context }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_editAnimationComponent__WEBPACK_IMPORTED_MODULE_8__["EditAnimationComponent"], { globalState: this.props.globalState, context: this.props.context })),
             this.state.mode === Mode.Save &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__["SaveAnimationComponent"], { globalState: this.props.globalState, context: this.props.context }),
             this.state.mode === Mode.Load &&
@@ -52077,7 +52316,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -63868,7 +64107,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -64175,7 +64414,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -64592,7 +64831,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -64931,14 +65170,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/image":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 

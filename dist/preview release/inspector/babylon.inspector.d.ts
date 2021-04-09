@@ -641,11 +641,17 @@ declare module INSPECTOR {
         onDataUpdatedObservable: BABYLON.Observable<void>;
         property?: string;
         tangentBuilder?: () => any;
+        setDefaultInTangent?: (keyId: number) => any;
+        setDefaultOutTangent?: (keyId: number) => any;
         static readonly TangentLength: number;
-        constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any);
+        constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         getInControlPoint(keyIndex: number, length: number): number;
         getOutControlPoint(keyIndex: number, length: number): number;
+        evaluateOutTangent(keyIndex: number): number;
+        evaluateInTangent(keyIndex: number): number;
+        storeDefaultInTangent(keyIndex: number): void;
+        storeDefaultOutTangent(keyIndex: number): void;
         updateInTangentFromControlPoint(keyId: number, slope: number): void;
         updateOutTangentFromControlPoint(keyId: number, slope: number): void;
         updateKeyFrame(keyId: number, frame: number): void;
@@ -750,6 +756,8 @@ declare module INSPECTOR {
         onDeleteKeyActiveKeyPoints: BABYLON.Observable<void>;
         onSelectionRectangleMoved: BABYLON.Observable<DOMRect>;
         onAnimationsLoaded: BABYLON.Observable<void>;
+        onEditAnimationRequired: BABYLON.Observable<BABYLON.Animation>;
+        onEditAnimationUIClosed: BABYLON.Observable<void>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
@@ -979,6 +987,8 @@ declare module INSPECTOR {
         constructor(props: IGraphComponentProps);
         componentWillUnmount(): void;
         private _computeSizes;
+        private _setDefaultInTangent;
+        private _setDefaultOutTangent;
         private _evaluateKeys;
         private _extractValuesFromKeys;
         private _convertX;
@@ -1105,10 +1115,14 @@ declare module INSPECTOR {
         context: Context;
     }
     interface IAnimationListComponentState {
+        isVisible: boolean;
     }
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
+        private _onEditAnimationRequiredObserver;
+        private _onEditAnimationUIClosedObserver;
         constructor(props: IAnimationListComponentProps);
-        render(): JSX.Element;
+        componentWillUnmount(): void;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -1171,6 +1185,28 @@ declare module INSPECTOR {
         constructor(props: IAddAnimationComponentProps);
         createNew(): void;
         render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IEditAnimationComponentProps {
+        globalState: GlobalState;
+        context: Context;
+    }
+    interface IEditAnimationComponentState {
+        isVisible: boolean;
+        animation: BABYLON.Nullable<BABYLON.Animation>;
+    }
+    export class EditAnimationComponent extends React.Component<IEditAnimationComponentProps, IEditAnimationComponentState> {
+        private _root;
+        private _displayName;
+        private _property;
+        private _loopModeElement;
+        private _onEditAnimationRequiredObserver;
+        constructor(props: IEditAnimationComponentProps);
+        componentWillUnmount(): void;
+        close(): void;
+        validate(): void;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
