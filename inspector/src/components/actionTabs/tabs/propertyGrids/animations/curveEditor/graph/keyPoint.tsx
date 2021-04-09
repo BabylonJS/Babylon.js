@@ -29,7 +29,8 @@ interface IKeyPointComponentProps {
 }
 
 interface IKeyPointComponentState {
-    selectedState: SelectionState;    
+    selectedState: SelectionState;  
+    tangentSelectedIndex: number;  
     x: number;
     y: number;
 }
@@ -58,6 +59,8 @@ IKeyPointComponentState
     private _onMainKeyPointSetObserver: Nullable<Observer<void>>;
     private _onMainKeyPointMovedObserver: Nullable<Observer<void>>;
     private _onSelectionRectangleMovedObserver: Nullable<Observer<DOMRect>>;
+    private _onFlattenTangentRequiredObserver: Nullable<Observer<void>>;
+    private _onLinearTangentRequiredObserver: Nullable<Observer<void>>;
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
@@ -80,13 +83,36 @@ IKeyPointComponentState
     constructor(props: IKeyPointComponentProps) {
         super(props);
 
-        this.state = { selectedState: SelectionState.None, x: this.props.x, y: this.props.y };
+        this.state = { selectedState: SelectionState.None, x: this.props.x, y: this.props.y, tangentSelectedIndex: -1 };
         
         this._svgHost = React.createRef();
         this._keyPointSVG = React.createRef();
 
+        this._onFlattenTangentRequiredObserver = this.props.context.onFlattenTangentRequired.add(() => {
+            const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+
+            if (!isSelected) {
+                return;
+            }
+
+            this._flattenTangent();
+        });
+
+        this._onLinearTangentRequiredObserver = this.props.context.onLinearTangentRequired.add(() => {
+            const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+
+            if (!isSelected) {
+                return;
+            }
+
+            this._linearTangent();
+        });
+
         this._onSelectionRectangleMovedObserver = this.props.context.onSelectionRectangleMoved.add(rect1 => {
-            const rect2 = this._svgHost.current!.getBoundingClientRect();
+            if (!this._svgHost.current) {
+                return;
+            }
+            const rect2 = this._svgHost.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left || 
                 rect1.left > rect2.right || 
                 rect1.bottom < rect2.top || 
@@ -153,10 +179,10 @@ IKeyPointComponentState
                     }
                 }
 
-                this.setState({selectedState: state});
+                this.setState({selectedState: state, tangentSelectedIndex: -1});
 
             } else {
-                this.setState({selectedState: SelectionState.Selected});
+                this.setState({selectedState: SelectionState.Selected, tangentSelectedIndex: -1});
             }
 
             if (isSelected) {
@@ -211,6 +237,14 @@ IKeyPointComponentState
 
     componentWillUnmount() {
 
+        if (this._onFlattenTangentRequiredObserver) {
+            this.props.context.onFlattenTangentRequired.remove(this._onFlattenTangentRequiredObserver);
+        }
+
+        if (this._onLinearTangentRequiredObserver) {
+            this.props.context.onLinearTangentRequired.remove(this._onLinearTangentRequiredObserver);
+        }
+
         if (this._onSelectionRectangleMovedObserver) {
             this.props.context.onSelectionRectangleMoved.remove(this._onSelectionRectangleMovedObserver);
         }
@@ -247,6 +281,39 @@ IKeyPointComponentState
         }
 
         return true;
+    }
+
+    private _flattenTangent() {
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
+            if (this.props.keyId !== 0) {
+                this.props.curve.updateInTangentFromControlPoint(this.props.keyId, 0);
+            }
+        }
+
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 1) {
+            if (this.props.keyId !== this.props.curve.keys.length - 1) {
+                this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, 0);
+            }
+        }
+
+        this.forceUpdate();
+    }
+
+    private _linearTangent() {
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
+            if (this.props.keyId !== 0) {
+                this.props.curve.storeDefaultInTangent(this.props.keyId);
+            }
+        }
+
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 1) {
+            if (this.props.keyId !== this.props.curve.keys.length - 1) {
+                this.props.curve.storeDefaultOutTangent(this.props.keyId);
+            }
+        }
+
+        this.props.curve.onDataUpdatedObservable.notifyObservers();
+        this.forceUpdate();
     }
 
     private _select(allowMultipleSelection: boolean) {
@@ -299,10 +366,13 @@ IKeyPointComponentState
         const target = evt.nativeEvent.target as HTMLElement;
         if (target.tagName === "image") {
             this._controlMode = ControlMode.Key;
+            this.setState({tangentSelectedIndex: -1});
         } else if (target.classList.contains("left-tangent")) {
             this._controlMode = ControlMode.TangentLeft;
+            this.setState({tangentSelectedIndex: 0});
         } else if (target.classList.contains("right-tangent")) {
             this._controlMode = ControlMode.TangentRight;
+            this.setState({tangentSelectedIndex: 1});
         }
 
         evt.stopPropagation();
@@ -349,14 +419,15 @@ IKeyPointComponentState
             let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
             let previousX = this.props.getPreviousX();
             let nextX = this.props.getNextX();
+            const epsilon = 0.01;
 
 
             if (previousX !== null) {
-                newX = Math.max(previousX, newX);
+                newX = Math.max(previousX + epsilon, newX);
             }
 
             if (nextX !== null) {
-                newX = Math.min(nextX, newX);
+                newX = Math.min(nextX - epsilon, newX);
             }
 
             if (this.props.keyId !== 0) {
@@ -401,6 +472,10 @@ IKeyPointComponentState
     }
 
     public render() {
+        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+            return null;
+        }
+
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         const keys = this.props.curve.keys;
 
@@ -458,6 +533,7 @@ IKeyPointComponentState
                                 x2={`${this._inVec.x}px`}
                                 y2={`${this._inVec.y}px`}
                                 style={{
+                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
                                     stroke: "#F9BF00",
                                     strokeWidth: `${1 * this.props.scale}`
                                 }}>
@@ -468,6 +544,7 @@ IKeyPointComponentState
                                 cy={`${this._inVec.y}px`}
                                 r={`${4 * this.props.scale}`}
                                 style={{
+                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
                                     fill: "#F9BF00",
                                 }}>
                             </circle>
@@ -482,6 +559,7 @@ IKeyPointComponentState
                                 x2={`${this._outVec.x}px`}
                                 y2={`${this._outVec.y}px`}
                                 style={{
+                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
                                     stroke: "#F9BF00",
                                     strokeWidth: `${1 * this.props.scale}`
                                 }}>
@@ -492,6 +570,7 @@ IKeyPointComponentState
                                 cy={`${this._outVec.y}px`}
                                 r={`${4 * this.props.scale}`}
                                 style={{
+                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
                                     fill: "#F9BF00",
                                 }}>
                             </circle>

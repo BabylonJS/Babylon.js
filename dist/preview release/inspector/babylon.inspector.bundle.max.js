@@ -11178,7 +11178,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: #111111;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
+exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: #111111;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%;\n      pointer-events: none; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11232,7 +11232,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n", ""]);
+exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -46866,6 +46866,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg":
+/*!****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg ***!
+  \****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' style='fill:none'/%3E%3Cpath d='M27.5,18.85a1.18,1.18,0,0,0-1,.62h-8.3a1.65,1.65,0,0,0-.3-.46l-2.1-2.09a1.4,1.4,0,0,0-2,0L11.7,19a1.41,1.41,0,0,0,0,2l2.09,2.09a1.39,1.39,0,0,0,2,0L17.86,21a1.67,1.67,0,0,0,.21-.33h8.4a1.2,1.2,0,1,0,1-1.81ZM17,20.14l-2.1,2.09a.2.2,0,0,1-.27,0l-2.09-2.09a.19.19,0,0,1,0-.28l2.09-2.09a.2.2,0,0,1,.14-.06.16.16,0,0,1,.13.06L17,19.86A.21.21,0,0,1,17,20.14Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg":
 /*!**********************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg ***!
@@ -46907,6 +46918,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' style='fill:none'/%3E%3Crect x='2.17' y='2.17' width='5.66' height='5.66' rx='1' transform='translate(-2.07 5) rotate(-45)' style='fill:%23ffc017'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg":
+/*!******************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg ***!
+  \******************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.51,13.53a1.2,1.2,0,0,0-2,1.18l-6.23,6.23-.68-.68a1.4,1.4,0,0,0-2,0l-2.09,2.1a1.4,1.4,0,0,0,0,2l2.09,2.09a1.39,1.39,0,0,0,2,0l2.1-2.09a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.2,1.2,0,0,0,1.15-2Zm-7.66,10-2.1,2.09a.18.18,0,0,1-.27,0l-2.09-2.09a.19.19,0,0,1,0-.28l2.09-2.09a.19.19,0,0,1,.14-.05.15.15,0,0,1,.13.05l2.1,2.09A.21.21,0,0,1,18.85,23.48Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -46979,10 +47001,10 @@ var BottomBarComponent = /** @class */ (function (_super) {
     function BottomBarComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
-        _this.props.context.onAnimationsLoaded.add(function () {
+        _this._onAnimationsLoadedObserver = _this.props.context.onAnimationsLoaded.add(function () {
             _this.forceUpdate();
         });
-        _this.props.context.onActiveAnimationChanged.add(function () {
+        _this._onActiveAnimationChangedObserver = _this.props.context.onActiveAnimationChanged.add(function () {
             _this.forceUpdate();
         });
         return _this;
@@ -46990,6 +47012,14 @@ var BottomBarComponent = /** @class */ (function (_super) {
     BottomBarComponent.prototype._renderMaxFrame = function () {
         var keys = this.props.context.activeAnimation.getKeys();
         return Math.round(keys[keys.length - 1].frame);
+    };
+    BottomBarComponent.prototype.componentWillUnmount = function () {
+        if (this._onAnimationsLoadedObserver) {
+            this.props.context.onAnimationsLoaded.remove(this._onAnimationsLoadedObserver);
+        }
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
     };
     BottomBarComponent.prototype.render = function () {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar" },
@@ -47293,6 +47323,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var Context = /** @class */ (function () {
     function Context() {
+        this.activeColor = null;
         this.forwardAnimation = true;
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = 100;
@@ -47308,6 +47339,8 @@ var Context = /** @class */ (function () {
         this.onValueManuallyEntered = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onNewKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onFlattenTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onLinearTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDeleteAnimation = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphScaled = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47819,24 +47852,34 @@ var CurveComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this.state = { isSelected: false };
         _this._onDataUpdatedObserver = _this.props.curve.onDataUpdatedObservable.add(function () { return _this.forceUpdate(); });
+        _this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(function () {
+            if (_this._onDataUpdatedObserver) {
+                _this.props.curve.onDataUpdatedObservable.remove(_this._onDataUpdatedObserver);
+            }
+            _this._onDataUpdatedObserver = null;
+            _this.forceUpdate();
+        });
         return _this;
     }
     CurveComponent.prototype.componentWillUnmount = function () {
         if (this._onDataUpdatedObserver) {
             this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
         }
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
     };
-    CurveComponent.prototype.shouldComponentUpdate = function (newProps) {
+    CurveComponent.prototype.componentDidUpdate = function () {
         var _this = this;
-        if (newProps.curve !== this.props.curve) {
-            if (this._onDataUpdatedObserver) {
-                this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
-            }
-            this._onDataUpdatedObserver = newProps.curve.onDataUpdatedObservable.add(function () { return _this.forceUpdate(); });
+        if (!this._onDataUpdatedObserver) {
+            this._onDataUpdatedObserver = this.props.curve.onDataUpdatedObservable.add(function () { return _this.forceUpdate(); });
         }
         return true;
     };
     CurveComponent.prototype.render = function () {
+        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+            return null;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { style: { cursor: "pointer", overflow: "auto" } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { d: this.props.curve.gePathData(this.props.convertX, this.props.convertY), style: {
                     stroke: this.props.curve.color,
@@ -48086,65 +48129,27 @@ var GraphComponent = /** @class */ (function (_super) {
                 frame: currentFrame,
                 value: value
             };
+            var offsetValue = _this._currentAnimation.evaluate(currentFrame + 0.0001);
             if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                var derivative = void 0;
                 switch (_this._currentAnimation.dataType) {
                     case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
-                        // Derivative
-                        //const derivative = Scalar.Hermite1stDerivative(leftKey.value, leftKey.outTangent * previousWidth, rightKey.value, rightKey.inTangent * previousWidth, cutTime);                  
-                        var derivative = (_this._currentAnimation.evaluate(currentFrame + 0.0001) - value) / 0.0001;
-                        // Left
-                        leftKey.outTangent = leftKey.outTangent; // * leftScaleFactor;
-                        newKey.inTangent = derivative; // * leftScaleFactor;
-                        // Right
-                        rightKey.inTangent = rightKey.inTangent; // * rightScaleFactor;
-                        newKey.outTangent = derivative; // * rightScaleFactor;
+                        derivative = (offsetValue - value) / 0.0001;
                         break;
                     }
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
-                        // Derivative
-                        //const derivative = Vector2.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
-                        var derivative = (_this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
-                        // Left
-                        leftKey.outTangent = leftKey.outTangent; //.scale(leftScaleFactor);
-                        newKey.inTangent = derivative; //.scale(leftScaleFactor);
-                        // Right
-                        rightKey.inTangent = rightKey.inTangent; //.scale(rightScaleFactor);
-                        newKey.outTangent = derivative; //.scale(rightScaleFactor);
+                    default: {
+                        derivative = (offsetValue.subtract(value)).scale(1 / 0.0001);
                         break;
                     }
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
-                        // Derivative
-                        //const derivative = Vector3.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
-                        var derivative = (_this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
-                        // Left
-                        leftKey.outTangent = leftKey.outTangent; //.scale(leftScaleFactor);
-                        newKey.inTangent = derivative; //.scale(leftScaleFactor);
-                        // Right
-                        rightKey.inTangent = rightKey.inTangent; //.scale(rightScaleFactor);
-                        newKey.outTangent = derivative; //.scale(rightScaleFactor);
-                        break;
-                    }
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
-                        // Derivative
-                        //const derivative = Quaternion.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
-                        var derivative = (_this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
-                        // Left
-                        leftKey.outTangent = leftKey.outTangent; //.scale(leftScaleFactor);
-                        newKey.inTangent = derivative; //.scale(leftScaleFactor);
-                        // Right
-                        rightKey.inTangent = rightKey.inTangent; //.scale(rightScaleFactor);
-                        newKey.outTangent = derivative; //.scale(rightScaleFactor);
-                        break;
-                    }
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                        break;
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                        break;
                 }
+                // Left
+                newKey.inTangent = derivative;
+                // Right
+                newKey.outTangent = derivative;
             }
             keys.splice(indexToAdd + 1, 0, newKey);
             _this._currentAnimation.setKeys(keys);
-            _this._evaluateKeys();
+            _this._evaluateKeys(false);
             _this.props.context.activeKeyPoints = [];
             _this.props.context.onActiveKeyPointChanged.notifyObservers();
             _this.props.context.onActiveAnimationChanged.notifyObservers();
@@ -48178,8 +48183,9 @@ var GraphComponent = /** @class */ (function (_super) {
             curve.storeDefaultOutTangent(keyId);
         }
     };
-    GraphComponent.prototype._evaluateKeys = function () {
+    GraphComponent.prototype._evaluateKeys = function (frame) {
         var _this = this;
+        if (frame === void 0) { frame = true; }
         if (!this.props.context.activeAnimation) {
             this._curves = [];
             return;
@@ -48223,9 +48229,11 @@ var GraphComponent = /** @class */ (function (_super) {
         this._maxValue = values.max;
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
-        this._frame();
+        if (frame) {
+            this._frame();
+        }
     };
-    GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, pushToCurves) {
+    GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, pushToCurves, propertyFilter) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
         var minValue = Number.MAX_VALUE;
         var maxValue = -Number.MAX_VALUE;
@@ -48245,10 +48253,14 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48265,12 +48277,18 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    minValue = Math.min(minValue, key.value.z);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.z);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
+                    if (!propertyFilter || propertyFilter === "z") {
+                        minValue = Math.min(minValue, key.value.z);
+                        maxValue = Math.max(maxValue, key.value.z);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48293,12 +48311,18 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                    minValue = Math.min(minValue, key.value.r);
-                    minValue = Math.min(minValue, key.value.g);
-                    minValue = Math.min(minValue, key.value.b);
-                    maxValue = Math.max(maxValue, key.value.r);
-                    maxValue = Math.max(maxValue, key.value.g);
-                    maxValue = Math.max(maxValue, key.value.b);
+                    if (!propertyFilter || propertyFilter === "r") {
+                        minValue = Math.min(minValue, key.value.r);
+                        maxValue = Math.max(maxValue, key.value.r);
+                    }
+                    if (!propertyFilter || propertyFilter === "g") {
+                        minValue = Math.min(minValue, key.value.g);
+                        maxValue = Math.max(maxValue, key.value.g);
+                    }
+                    if (!propertyFilter || propertyFilter === "b") {
+                        minValue = Math.min(minValue, key.value.b);
+                        maxValue = Math.max(maxValue, key.value.b);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48321,14 +48345,22 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    minValue = Math.min(minValue, key.value.z);
-                    minValue = Math.min(minValue, key.value.w);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.z);
-                    maxValue = Math.max(maxValue, key.value.w);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
+                    if (!propertyFilter || propertyFilter === "z") {
+                        minValue = Math.min(minValue, key.value.z);
+                        maxValue = Math.max(maxValue, key.value.z);
+                    }
+                    if (!propertyFilter || propertyFilter === "w") {
+                        minValue = Math.min(minValue, key.value.w);
+                        maxValue = Math.max(maxValue, key.value.w);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48357,14 +48389,22 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                    minValue = Math.min(minValue, key.value.r);
-                    minValue = Math.min(minValue, key.value.g);
-                    minValue = Math.min(minValue, key.value.b);
-                    minValue = Math.min(minValue, key.value.a);
-                    maxValue = Math.max(maxValue, key.value.r);
-                    maxValue = Math.max(maxValue, key.value.g);
-                    maxValue = Math.max(maxValue, key.value.b);
-                    maxValue = Math.max(maxValue, key.value.a);
+                    if (!propertyFilter || propertyFilter === "r") {
+                        minValue = Math.min(minValue, key.value.r);
+                        maxValue = Math.max(maxValue, key.value.r);
+                    }
+                    if (!propertyFilter || propertyFilter === "g") {
+                        minValue = Math.min(minValue, key.value.g);
+                        maxValue = Math.max(maxValue, key.value.g);
+                    }
+                    if (!propertyFilter || propertyFilter === "b") {
+                        minValue = Math.min(minValue, key.value.b);
+                        maxValue = Math.max(maxValue, key.value.b);
+                    }
+                    if (!propertyFilter || propertyFilter === "a") {
+                        minValue = Math.min(minValue, key.value.a);
+                        maxValue = Math.max(maxValue, key.value.a);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48459,6 +48499,7 @@ var GraphComponent = /** @class */ (function (_super) {
         }));
     };
     GraphComponent.prototype._frame = function () {
+        var _this = this;
         if (!this._currentAnimation) {
             return;
         }
@@ -48476,7 +48517,12 @@ var GraphComponent = /** @class */ (function (_super) {
         }
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
-        var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false);
+        var propertyFilter = undefined;
+        if (this.props.context.activeColor) {
+            var activeCurve = this._curves.filter(function (c) { return c.color === _this.props.context.activeColor; })[0];
+            propertyFilter = activeCurve.property;
+        }
+        var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false, propertyFilter);
         this._minValue = values.min;
         this._maxValue = values.max;
         this.props.context.referenceMinFrame = this._minFrame;
@@ -48651,10 +48697,29 @@ var KeyPointComponent = /** @class */ (function (_super) {
     function KeyPointComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._controlMode = ControlMode.None;
-        _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y };
+        _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y, tangentSelectedIndex: -1 };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._keyPointSVG = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        _this._onFlattenTangentRequiredObserver = _this.props.context.onFlattenTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._flattenTangent();
+        });
+        _this._onLinearTangentRequiredObserver = _this.props.context.onLinearTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._linearTangent();
+        });
         _this._onSelectionRectangleMovedObserver = _this.props.context.onSelectionRectangleMoved.add(function (rect1) {
+            if (!_this._svgHost.current) {
+                return;
+            }
             var rect2 = _this._svgHost.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left ||
                 rect1.left > rect2.right ||
@@ -48714,10 +48779,10 @@ var KeyPointComponent = /** @class */ (function (_super) {
                         break;
                     }
                 }
-                _this.setState({ selectedState: state });
+                _this.setState({ selectedState: state, tangentSelectedIndex: -1 });
             }
             else {
-                _this.setState({ selectedState: SelectionState.Selected });
+                _this.setState({ selectedState: SelectionState.Selected, tangentSelectedIndex: -1 });
             }
             if (isSelected) {
                 _this.props.context.onFrameSet.notifyObservers(_this.props.invertX(_this.state.x));
@@ -48761,6 +48826,12 @@ var KeyPointComponent = /** @class */ (function (_super) {
         return _this;
     }
     KeyPointComponent.prototype.componentWillUnmount = function () {
+        if (this._onFlattenTangentRequiredObserver) {
+            this.props.context.onFlattenTangentRequired.remove(this._onFlattenTangentRequiredObserver);
+        }
+        if (this._onLinearTangentRequiredObserver) {
+            this.props.context.onLinearTangentRequired.remove(this._onLinearTangentRequiredObserver);
+        }
         if (this._onSelectionRectangleMovedObserver) {
             this.props.context.onSelectionRectangleMoved.remove(this._onSelectionRectangleMovedObserver);
         }
@@ -48789,6 +48860,33 @@ var KeyPointComponent = /** @class */ (function (_super) {
             newState.y = newProps.y;
         }
         return true;
+    };
+    KeyPointComponent.prototype._flattenTangent = function () {
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
+            if (this.props.keyId !== 0) {
+                this.props.curve.updateInTangentFromControlPoint(this.props.keyId, 0);
+            }
+        }
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 1) {
+            if (this.props.keyId !== this.props.curve.keys.length - 1) {
+                this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, 0);
+            }
+        }
+        this.forceUpdate();
+    };
+    KeyPointComponent.prototype._linearTangent = function () {
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
+            if (this.props.keyId !== 0) {
+                this.props.curve.storeDefaultInTangent(this.props.keyId);
+            }
+        }
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 1) {
+            if (this.props.keyId !== this.props.curve.keys.length - 1) {
+                this.props.curve.storeDefaultOutTangent(this.props.keyId);
+            }
+        }
+        this.props.curve.onDataUpdatedObservable.notifyObservers();
+        this.forceUpdate();
     };
     KeyPointComponent.prototype._select = function (allowMultipleSelection) {
         if (!this.props.context.activeKeyPoints) {
@@ -48837,12 +48935,15 @@ var KeyPointComponent = /** @class */ (function (_super) {
         var target = evt.nativeEvent.target;
         if (target.tagName === "image") {
             this._controlMode = ControlMode.Key;
+            this.setState({ tangentSelectedIndex: -1 });
         }
         else if (target.classList.contains("left-tangent")) {
             this._controlMode = ControlMode.TangentLeft;
+            this.setState({ tangentSelectedIndex: 0 });
         }
         else if (target.classList.contains("right-tangent")) {
             this._controlMode = ControlMode.TangentRight;
+            this.setState({ tangentSelectedIndex: 1 });
         }
         evt.stopPropagation();
     };
@@ -48881,11 +48982,12 @@ var KeyPointComponent = /** @class */ (function (_super) {
             var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
             var previousX = this.props.getPreviousX();
             var nextX = this.props.getNextX();
+            var epsilon = 0.01;
             if (previousX !== null) {
-                newX = Math.max(previousX, newX);
+                newX = Math.max(previousX + epsilon, newX);
             }
             if (nextX !== null) {
-                newX = Math.min(nextX, newX);
+                newX = Math.min(nextX - epsilon, newX);
             }
             if (this.props.keyId !== 0) {
                 var frame = this.props.invertX(newX);
@@ -48922,6 +49024,9 @@ var KeyPointComponent = /** @class */ (function (_super) {
     };
     KeyPointComponent.prototype.render = function () {
         var _this = this;
+        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+            return null;
+        }
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         var keys = this.props.curve.keys;
         var prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
@@ -48949,19 +49054,23 @@ var KeyPointComponent = /** @class */ (function (_super) {
                     this.props.keyId !== 0 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._inVec.x + "px", y2: this._inVec.y + "px", style: {
+                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: this._inVec.x + "px", cy: this._inVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
                                     fill: "#F9BF00",
                                 } })),
                     this.props.keyId !== keys.length - 1 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._outVec.x + "px", y2: this._outVec.y + "px", style: {
+                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: this._outVec.x + "px", cy: this._outVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
                                     fill: "#F9BF00",
                                 } })))));
     };
@@ -49550,8 +49659,12 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationEntryComponent, _super);
     function AnimationEntryComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._unmount = false;
         _this.state = { isExpanded: false, isSelected: false };
         _this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(function () {
+            if (_this._unmount) {
+                return;
+            }
             if (_this.props.animation !== _this.props.context.activeAnimation) {
                 _this.setState({ isSelected: false });
             }
@@ -49564,13 +49677,16 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
     }
     AnimationEntryComponent.prototype._onGear = function () {
         var _this = this;
-        this.props.context.onEditAnimationUIClosed.addOnce(function () { return _this.forceUpdate(); });
+        this.props.context.onEditAnimationUIClosed.addOnce(function () { if (!_this._unmount) {
+            _this.forceUpdate();
+        } });
         this.props.context.onEditAnimationRequired.notifyObservers(this.props.animation);
     };
     AnimationEntryComponent.prototype._onDelete = function () {
         this.props.context.onDeleteAnimation.notifyObservers(this.props.animation);
     };
     AnimationEntryComponent.prototype.componentWillUnmount = function () {
+        this._unmount = true;
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
@@ -49579,12 +49695,13 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
         }
     };
     AnimationEntryComponent.prototype._activate = function () {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === null) {
             return;
         }
         this.props.context.activeKeyPoints = [];
         this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = null;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationEntryComponent.prototype._expandOrCollapse = function () {
@@ -49747,16 +49864,18 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
         }
     };
     AnimationSubEntryComponent.prototype._activate = function () {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === this.props.color) {
             return;
         }
+        this.props.context.activeKeyPoints = [];
         this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = this.props.color;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationSubEntryComponent.prototype.render = function () {
         var _this = this;
-        var isActive = this.props.animation === this.props.context.activeAnimation;
+        var isActive = this.props.animation === this.props.context.activeAnimation && (this.props.context.activeColor === null || this.props.context.activeColor === this.props.color);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-entry" + (isActive ? " isActive" : "") },
                 this.state.isSelected &&
@@ -49856,6 +49975,7 @@ var EditAnimationComponent = /** @class */ (function (_super) {
     };
     EditAnimationComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         if (!this.state.isVisible) {
             return null;
         }
@@ -49865,9 +49985,9 @@ var EditAnimationComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-property-label" }, "Property"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-loop-mode-label" }, "Loop Mode"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "edit-animation-name", ref: this._displayName, className: "input-text", defaultValue: this.state.animation.name || "" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "edit-animation-property", ref: this._property, className: "input-text", defaultValue: this.state.animation.targetPropertyPath }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "edit-animation-loop-mode", className: "option", ref: this._loopModeElement }, loopModes.map(function (loopMode, i) {
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { selected: _this.state.animation.loopMode === i, key: loopMode + i, value: loopMode, title: loopMode }, loopMode));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "edit-animation-property", ref: this._property, className: "input-text", defaultValue: this.state.animation.targetProperty }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "edit-animation-loop-mode", className: "option", ref: this._loopModeElement, defaultValue: loopModes[(_a = this.state.animation.loopMode) !== null && _a !== void 0 ? _a : 1] }, loopModes.map(function (loopMode, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: loopMode + i, value: loopMode, title: loopMode }, loopMode));
             })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "edit-animation-ok", type: "button", onClick: function () { return _this.validate(); } }, "OK"),
@@ -50240,6 +50360,8 @@ __webpack_require__(/*! ./scss/topBar.scss */ "./components/actionTabs/tabs/prop
 var logoIcon = __webpack_require__(/*! ./assets/babylonLogo.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/babylonLogo.svg");
 var frameIcon = __webpack_require__(/*! ./assets/frameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg");
 var newKeyIcon = __webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/newKeyIcon.svg");
+var flatTangentIcon = __webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg");
+var linearTangentIcon = __webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg");
 var TopBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TopBarComponent, _super);
     function TopBarComponent(props) {
@@ -50285,7 +50407,11 @@ var TopBarComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context })),
             this.props.context.activeAnimation &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } }),
+            this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }))));
     };
     return TopBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
