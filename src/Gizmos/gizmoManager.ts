@@ -344,8 +344,12 @@ export class GizmoManager implements IDisposable {
                 gizmo.dispose();
             }
         }
-        this._defaultKeepDepthUtilityLayer.dispose();
-        this._defaultUtilityLayer.dispose();
+        if (this._defaultKeepDepthUtilityLayer !== UtilityLayerRenderer.DefaultKeepDepthUtilityLayer) {
+            this._defaultKeepDepthUtilityLayer.dispose();
+        }
+        if (this._defaultUtilityLayer !== UtilityLayerRenderer.DefaultUtilityLayer) {
+            this._defaultUtilityLayer.dispose();
+        }
         this.boundingBoxDragBehavior.detach();
         this.onAttachedToMeshObservable.clear();
     }
