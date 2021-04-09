@@ -50,7 +50,8 @@ IAnimationEntryComponentState
     }
 
     private _onGear() {
-
+        this.props.context.onEditAnimationUIClosed.addOnce(() => this.forceUpdate());
+        this.props.context.onEditAnimationRequired.notifyObservers(this.props.animation);
     }
 
     private _onDelete() {
