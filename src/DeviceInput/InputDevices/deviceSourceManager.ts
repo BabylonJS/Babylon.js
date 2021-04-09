@@ -3,7 +3,7 @@ import { Engine } from '../../Engines/engine';
 import { IDisposable } from '../../scene';
 import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
-import { Observable } from '../../Misc/observable';
+import { Observer, Observable } from '../../Misc/observable';
 import { DeviceInput } from './deviceTypes';
 
 /**
@@ -69,6 +69,8 @@ export class DeviceSourceManager implements IDisposable {
     private readonly _firstDevice: Array<number>;
     private readonly _deviceInputSystem: DeviceInputSystem;
 
+    private _onInputChangedObserver: Nullable<Observer<{ deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any}>>;
+
     /**
      * Default Constructor
      * @param engine engine to pull input element from
@@ -89,11 +91,9 @@ export class DeviceSourceManager implements IDisposable {
             this.onDeviceDisconnectedObservable.notifyObservers(device);
         };
 
-        if (!this._deviceInputSystem.onInputChanged) {
-            this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
-                this.getDeviceSource(deviceType, deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
-            };
-        }
+        this._onInputChangedObserver = this._deviceInputSystem.onInputChanged.add( (cbData) => {
+            this.getDeviceSource(cbData.deviceType, cbData.deviceSlot)?.onInputChangedObservable.notifyObservers({inputIndex:cbData.inputIndex, previousState:cbData.previousState, currentState:cbData.currentState });
+        });
     }
 
     // Public Functions
@@ -147,7 +147,7 @@ export class DeviceSourceManager implements IDisposable {
     public dispose() {
         this.onDeviceConnectedObservable.clear();
         this.onDeviceDisconnectedObservable.clear();
-        this._deviceInputSystem.dispose();
+        this._deviceInputSystem.onInputChanged.remove(this._onInputChangedObserver);
     }
 
     // Private Functions
