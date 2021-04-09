@@ -135,6 +135,8 @@ ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, opt
 
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
+    this._internalTexturesCache.push(internalTexture);
+
     return internalTexture;
 };
 

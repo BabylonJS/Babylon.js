@@ -372,6 +372,9 @@ export class Engine extends ThinEngine {
      */
     public scenes = new Array<Scene>();
 
+    /** @hidden */
+    public _virtualScenes = new Array<Scene>();
+
     /**
      * Event raised when a new scene is created
      */
@@ -1258,6 +1261,12 @@ export class Engine extends ThinEngine {
             scene._rebuildTextures();
         }
 
+        for (var scene of this._virtualScenes) {
+            scene.resetCachedMaterial();
+            scene._rebuildGeometries();
+            scene._rebuildTextures();
+        }
+
         super._rebuildBuffers();
     }
 
@@ -1825,6 +1834,10 @@ export class Engine extends ThinEngine {
         // Release scenes
         while (this.scenes.length) {
             this.scenes[0].dispose();
+        }
+
+        while (this._virtualScenes.length) {
+            this._virtualScenes[0].dispose();
         }
 
         // Release audio engine
