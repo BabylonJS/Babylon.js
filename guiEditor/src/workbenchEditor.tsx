@@ -10,6 +10,7 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { Control } from "babylonjs-gui/2D/controls/control";
+import { HeaderComponent } from "./components/headerComponent";
 
 require("./main.scss");
 
@@ -272,7 +273,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         }
                         this.props.globalState.blockKeyboardEvents = false;
                     }}
-                >
+                >   <HeaderComponent globalState={this.props.globalState}></HeaderComponent>
                     {/* Node creation menu */}
                     <GuiListComponent globalState={this.props.globalState} />
 
