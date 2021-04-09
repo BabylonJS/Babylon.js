@@ -59,6 +59,9 @@ export class Context {
 
     onAnimationsLoaded = new Observable<void>();
 
+    onEditAnimationRequired = new Observable<Animation>();
+    onEditAnimationUIClosed = new Observable<void>();
+
     public prepare() {        
         this.isPlaying = false;
         if (!this.animations || !this.animations.length) {

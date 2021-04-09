@@ -7,6 +7,7 @@ import { TextInputComponent } from "../controls/textInputComponent";
 import { SaveAnimationComponent } from "./saveAnimationComponent";
 import { LoadAnimationComponent } from "./loadAnimationComponent";
 import { AddAnimationComponent } from "./addAnimationComponent";
+import { EditAnimationComponent } from "./editAnimationComponent";
 
 require("../scss/sideBar.scss");
 
@@ -126,7 +127,10 @@ ISideBarComponentState
                 </div>
                 {
                     this.state.mode === Mode.Edit &&
-                    <AnimationListComponent globalState={this.props.globalState} context={this.props.context} />
+                    <>                        
+                        <AnimationListComponent globalState={this.props.globalState} context={this.props.context} />
+                        <EditAnimationComponent globalState={this.props.globalState} context={this.props.context} />
+                    </>
                 }
                 {
                     this.state.mode === Mode.Save &&
