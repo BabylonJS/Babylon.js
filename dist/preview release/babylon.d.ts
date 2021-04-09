@@ -2498,14 +2498,24 @@ declare module BABYLON {
         /**
          * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
          * @see http://mathworld.wolfram.com/HermitePolynomial.html
-         * @param value1 spline value
-         * @param tangent1 spline value
-         * @param value2 spline value
-         * @param tangent2 spline value
-         * @param amount input value
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param amount defines the amount on the interpolation spline (between 0 and 1)
          * @returns hermite result
          */
         static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number;
+        /**
+         * Returns a new scalar which is the 1st derivative of the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number;
         /**
         * Returns a random float number between and min and max values
         * @param min min value of random
@@ -3044,7 +3054,7 @@ declare module BABYLON {
          */
         static Clamp(value: DeepImmutable<Vector2>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>): Vector2;
         /**
-         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2"
+         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2"
          * @param value1 defines the 1st control point
          * @param tangent1 defines the outgoing tangent
          * @param value2 defines the 2nd control point
@@ -3053,6 +3063,16 @@ declare module BABYLON {
          * @returns a new Vector2
          */
         static Hermite(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, amount: number): Vector2;
+        /**
+         * Returns a new Vector2 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2;
         /**
          * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
          * @param start defines the start vector
@@ -3755,6 +3775,16 @@ declare module BABYLON {
          * @returns the new Vector3
          */
         static Hermite(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, amount: number): Vector3;
+        /**
+         * Returns a new Vector3 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number): Vector3;
         /**
          * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
          * @param start defines the start value
@@ -4814,6 +4844,16 @@ declare module BABYLON {
          * @returns the new interpolated quaternion
          */
         static Hermite(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, amount: number): Quaternion;
+        /**
+         * Returns a new Quaternion which is the 1st derivative of the Hermite spline defined by the quaternions "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number): Quaternion;
     }
     /**
      * Class used to store matrix data (4x4)
@@ -20549,7 +20589,7 @@ declare module BABYLON {
          */
         get currentValue(): any;
         /**
-         * Gets the target path of the runtime animation
+         * Gets or sets the target path of the runtime animation
          */
         get targetPath(): string;
         /**

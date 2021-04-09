@@ -271,11 +271,11 @@ export class Scalar {
     /**
      * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
      * @see http://mathworld.wolfram.com/HermitePolynomial.html
-     * @param value1 spline value
-     * @param tangent1 spline value
-     * @param value2 spline value
-     * @param tangent2 spline value
-     * @param amount input value
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param amount defines the amount on the interpolation spline (between 0 and 1)
      * @returns hermite result
      */
     public static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number {
@@ -287,6 +287,25 @@ export class Scalar {
         var part4 = cubed - squared;
 
         return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
+    }
+
+    /**
+     * Returns a new scalar which is the 1st derivative of the Hermite spline defined by the scalars "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @returns 1st derivative
+     */
+     public static Hermite1stDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number {
+        const t2 = time * time;
+        return (
+            (t2 - time) * 6 * value1 +
+            (3 * t2 - 4 * time + 1) * tangent1 +
+            (-t2 + time) * 6 * value2 +
+            (3 * t2 - 2 * time) * tangent2
+        );
     }
 
     /**
