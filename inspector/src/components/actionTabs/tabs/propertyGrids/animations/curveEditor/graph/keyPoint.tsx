@@ -86,7 +86,10 @@ IKeyPointComponentState
         this._keyPointSVG = React.createRef();
 
         this._onSelectionRectangleMovedObserver = this.props.context.onSelectionRectangleMoved.add(rect1 => {
-            const rect2 = this._svgHost.current!.getBoundingClientRect();
+            if (!this._svgHost.current) {
+                return;
+            }
+            const rect2 = this._svgHost.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left || 
                 rect1.left > rect2.right || 
                 rect1.bottom < rect2.top || 
@@ -349,14 +352,15 @@ IKeyPointComponentState
             let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
             let previousX = this.props.getPreviousX();
             let nextX = this.props.getNextX();
+            const epsilon = 0.01;
 
 
             if (previousX !== null) {
-                newX = Math.max(previousX, newX);
+                newX = Math.max(previousX + epsilon, newX);
             }
 
             if (nextX !== null) {
-                newX = Math.min(nextX, newX);
+                newX = Math.min(nextX - epsilon, newX);
             }
 
             if (this.props.keyId !== 0) {
@@ -401,6 +405,10 @@ IKeyPointComponentState
     }
 
     public render() {
+        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+            return null;
+        }
+
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         const keys = this.props.curve.keys;
 

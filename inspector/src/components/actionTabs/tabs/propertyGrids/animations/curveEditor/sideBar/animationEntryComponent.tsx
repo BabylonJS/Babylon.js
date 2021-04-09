@@ -31,6 +31,7 @@ IAnimationEntryComponentState
 > {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
     private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
+    private _unmount = false;
 
     constructor(props: IAnimationEntryComponentProps) {
         super(props);
@@ -38,6 +39,9 @@ IAnimationEntryComponentState
         this.state = { isExpanded: false, isSelected: false };
 
         this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(() => {
+            if (this._unmount) {
+                return;
+            }
             if (this.props.animation !== this.props.context.activeAnimation) {
                 this.setState({isSelected: false});
             }
@@ -50,7 +54,7 @@ IAnimationEntryComponentState
     }
 
     private _onGear() {
-        this.props.context.onEditAnimationUIClosed.addOnce(() => this.forceUpdate());
+        this.props.context.onEditAnimationUIClosed.addOnce(() => {if (!this._unmount) { this.forceUpdate()}});
         this.props.context.onEditAnimationRequired.notifyObservers(this.props.animation);
     }
 
@@ -59,6 +63,7 @@ IAnimationEntryComponentState
     }
 
     componentWillUnmount() {
+        this._unmount = true;
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
@@ -69,13 +74,14 @@ IAnimationEntryComponentState
     }
 
     private _activate() {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === null) {
             return;
         }
         
         this.props.context.activeKeyPoints = [];
         this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = null;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 

@@ -11,6 +11,7 @@ export class Context {
     scene: Scene;
     target: IAnimatable;
     activeAnimation: Nullable<Animation>;
+    activeColor: Nullable<string> = null;
     activeKeyPoints: Nullable<KeyPointComponent[]>;
     mainKeyPoint: Nullable<KeyPointComponent>;
     snippetId: string;

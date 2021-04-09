@@ -118,11 +118,11 @@ IEditAnimationComponentState
                     Loop Mode
                 </div>
                 <input type="text" id="edit-animation-name" ref={this._displayName} className="input-text" defaultValue={this.state.animation!.name || ""}/>
-                <input type="text" id="edit-animation-property" ref={this._property} className="input-text" defaultValue={this.state.animation!.targetPropertyPath}/>
-                <select id="edit-animation-loop-mode" className="option" ref={this._loopModeElement}>
+                <input type="text" id="edit-animation-property" ref={this._property} className="input-text" defaultValue={this.state.animation!.targetProperty}/>
+                <select id="edit-animation-loop-mode" className="option" ref={this._loopModeElement} defaultValue={loopModes[this.state.animation!.loopMode ?? 1]}>
                     {loopModes.map((loopMode, i) => {
                         return (
-                            <option selected={this.state.animation!.loopMode === i} key={loopMode + i} value={loopMode} title={loopMode}>
+                            <option key={loopMode + i} value={loopMode} title={loopMode}>
                                 {loopMode}
                             </option>
                         );
