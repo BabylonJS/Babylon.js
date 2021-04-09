@@ -36,7 +36,7 @@
             margin-left: 40px;
             width: calc(100% - 40px);
             height: 100%;
-            background: black;
+            background: #111111;
             opacity: 0.2;
             pointer-events: none;
             position: absolute;
@@ -165,7 +165,8 @@
             justify-self: center;
             width: 1.5px;
             background: #ffffff;
-            height: 100%;        
+            height: 100%;   
+            pointer-events: none;     
         }
 
         #play-head-circle {
