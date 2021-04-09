@@ -794,7 +794,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
-        render(): JSX.Element;
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/context" {
@@ -810,6 +810,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         scene: Scene;
         target: IAnimatable;
         activeAnimation: Nullable<Animation>;
+        activeColor: Nullable<string>;
         activeKeyPoints: Nullable<KeyPointComponent[]>;
         mainKeyPoint: Nullable<KeyPointComponent>;
         snippetId: string;
@@ -937,8 +938,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     interface IBottomBarComponentState {
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
+        private _onAnimationsLoadedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: IBottomBarComponentProps);
         private _renderMaxFrame;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -1055,10 +1059,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
     export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
         private _onDataUpdatedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICurveComponentProps);
         componentWillUnmount(): void;
-        shouldComponentUpdate(newProps: ICurveComponentProps): boolean;
-        render(): JSX.Element;
+        componentDidUpdate(): boolean;
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/graphComponent" {
@@ -1232,6 +1237,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     export class AnimationEntryComponent extends React.Component<IAnimationEntryComponentProps, IAnimationEntryComponentState> {
         private _onActiveAnimationChangedObserver;
         private _onActiveKeyPointChangedObserver;
+        private _unmount;
         constructor(props: IAnimationEntryComponentProps);
         private _onGear;
         private _onDelete;
@@ -5119,7 +5125,7 @@ declare module INSPECTOR {
         private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
-        render(): JSX.Element;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -5129,6 +5135,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         target: BABYLON.IAnimatable;
         activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
+        activeColor: BABYLON.Nullable<string>;
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
         mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
         snippetId: string;
@@ -5244,8 +5251,11 @@ declare module INSPECTOR {
     interface IBottomBarComponentState {
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
+        private _onAnimationsLoadedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: IBottomBarComponentProps);
         private _renderMaxFrame;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -5347,10 +5357,11 @@ declare module INSPECTOR {
     }
     export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
         private _onDataUpdatedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICurveComponentProps);
         componentWillUnmount(): void;
-        shouldComponentUpdate(newProps: ICurveComponentProps): boolean;
-        render(): JSX.Element;
+        componentDidUpdate(): boolean;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -5504,6 +5515,7 @@ declare module INSPECTOR {
     export class AnimationEntryComponent extends React.Component<IAnimationEntryComponentProps, IAnimationEntryComponentState> {
         private _onActiveAnimationChangedObserver;
         private _onActiveKeyPointChangedObserver;
+        private _unmount;
         constructor(props: IAnimationEntryComponentProps);
         private _onGear;
         private _onDelete;
