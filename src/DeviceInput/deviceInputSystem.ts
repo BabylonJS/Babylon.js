@@ -107,11 +107,11 @@ export class DeviceInputSystem implements IDisposable {
      */
     public static Create(engine: Engine): DeviceInputSystem {
         // If running in Babylon Native, then defer to the native input system, which has the same public contract
-        if (!engine.deviceInputSystem) {
-            engine.deviceInputSystem = (typeof _native !== 'undefined' && _native.DeviceInputSystem) ? new _native.DeviceInputSystem(engine) : new DeviceInputSystem(engine);
+        if (typeof _native !== 'undefined' && _native.DeviceInputSystem) {
+            return new _native.DeviceInputSystem(engine);
         }
 
-        return engine.deviceInputSystem;
+        return new DeviceInputSystem(engine);
     }
 
     // Public functions
