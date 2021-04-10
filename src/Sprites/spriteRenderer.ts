@@ -373,6 +373,40 @@ export class SpriteRenderer {
     }
 
     /**
+     * Rebuilds the renderer (after a context lost, for eg)
+     */
+     public rebuild(): void {
+        if (this._indexBuffer) {
+            const indices = [];
+            let index = 0;
+            for (let count = 0; count < this._capacity; count++) {
+                indices.push(index);
+                indices.push(index + 1);
+                indices.push(index + 2);
+                indices.push(index);
+                indices.push(index + 2);
+                indices.push(index + 3);
+                index += 4;
+            }
+
+            this._indexBuffer = this._engine.createIndexBuffer(indices);
+        }
+
+        if (this._useVAO) {
+            this._vertexArrayObject = undefined as any;
+        }
+
+        this._buffer._rebuild();
+
+        for (const key in this._vertexBuffers) {
+            let vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
+            vertexBuffer._rebuild();
+        }
+
+        this._spriteBuffer?._rebuild();
+    }
+
+    /**
      * Release associated resources
      */
     public dispose(): void {
