@@ -339,6 +339,7 @@ export class InternalTexture {
         this._cachedCoordinatesMode = null;
         this._cachedWrapU = null;
         this._cachedWrapV = null;
+        this._cachedWrapR = null;
         this._cachedAnisotropicFilteringLevel = null;
 
         switch (this.source) {
@@ -407,8 +408,49 @@ export class InternalTexture {
 
                 this.isReady = true;
                 return;
+
             case InternalTextureSource.MultiRenderTarget:
+                if (this._textureArray && this === this._textureArray[0]) {
+                    let generateDepthTexture = false;
+                    let textureCount = this._textureArray.length;
+
+                    if (this._textureArray[this._textureArray.length - 1]._textureArray === null) {
+                        generateDepthTexture = true;
+                        textureCount--;
+                    }
+
+                    const samplingModes: number[] = [];
+                    const types: number[] = [];
+
+                    for (let i = 0; i < textureCount; ++i) {
+                        const texture = this._textureArray[i];
+
+                        samplingModes.push(texture.samplingMode);
+                        types.push(texture.type);
+                    }
+
+                    const optionsMRT = {
+                        samplingModes,
+                        generateMipMaps: this.generateMipMaps,
+                        generateDepthBuffer: this._generateDepthBuffer,
+                        generateStencilBuffer: this._generateStencilBuffer,
+                        generateDepthTexture,
+                        types,
+                        textureCount,
+                    };
+                    const size = {
+                        width: this.width,
+                        height: this.height,
+                    };
+                    const textures = (this._engine as Engine).createMultipleRenderTarget(size, optionsMRT);
+                    for (let i = 0; i < this._textureArray.length; ++i) {
+                        textures[i]._swapAndDie(this._textureArray[i], false);
+                    }
+
+                }
+                this.isReady = true;
                 return;
+
             case InternalTextureSource.Depth:
                 let depthTextureOptions = {
                     bilinearFiltering: (this.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE) || (this.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE) || (this.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST),
@@ -460,6 +502,7 @@ export class InternalTexture {
                 }, null, this.format, this._extension);
                 proxy._sphericalPolynomial = this._sphericalPolynomial;
                 return;
+
             case InternalTextureSource.Unknown:
                 if (this._colorTextureArray && this._depthStencilTextureArray && this.isMultiview) {
                     proxy = (this._engine as Engine).createMultiviewRenderTargetTexture(this.width, this.height);
