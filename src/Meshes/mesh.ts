@@ -1856,10 +1856,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _rebuild(): void {
+    public _rebuild(dispose = false): void {
         if (this._instanceDataStorage.instancesBuffer) {
             // Dispose instance buffer to be recreated in _renderWithInstances when rendered
-            this._instanceDataStorage.instancesBuffer.dispose();
+            if (dispose) {
+                this._instanceDataStorage.instancesBuffer.dispose();
+            }
             this._instanceDataStorage.instancesBuffer = null;
         }
         if (this._userInstancedBuffersStorage) {
@@ -1867,7 +1869,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 var buffer = this._userInstancedBuffersStorage.vertexBuffers[kind];
                 if (buffer) {
                     // Dispose instance buffer to be recreated in _renderWithInstances when rendered
-                    buffer.dispose();
+                    if (dispose) {
+                        buffer.dispose();
+                    }
                     this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
                 }
             }
@@ -1875,7 +1879,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this._userInstancedBuffersStorage.vertexArrayObjects = {};
             }
         }
-        super._rebuild();
+        super._rebuild(dispose);
     }
 
     /** @hidden */
