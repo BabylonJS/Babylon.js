@@ -881,6 +881,7 @@ export class ThinEngine {
             let effect = <Effect>this._compiledEffects[key];
 
             effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
+            effect._wasPreviouslyReady = false;
             effect._prepareEffect();
         }
 

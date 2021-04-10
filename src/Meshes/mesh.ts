@@ -1879,6 +1879,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this._userInstancedBuffersStorage.vertexArrayObjects = {};
             }
         }
+        this._effectiveMaterial = null;
         super._rebuild(dispose);
     }
 
@@ -1980,6 +1981,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             this._effectiveMaterial = material;
+        } else if ((material._storeEffectOnSubMeshes && !subMesh.effect?._wasPreviouslyReady) || (!material._storeEffectOnSubMeshes && !material.getEffect()?._wasPreviouslyReady)) {
+            if (oldCamera) {
+                oldCamera.maxZ = oldCameraMaxZ;
+                scene.updateTransformMatrix(true);
+            }
+            return this;
         }
 
         // Alpha mode
