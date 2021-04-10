@@ -708,6 +708,7 @@ export class ThinEngine {
                 this._onContextRestored = () => {
                     // Adding a timeout to avoid race condition at browser level
                     setTimeout(() => {
+                        this._dummyFramebuffer = null;
                         // Rebuild gl context
                         this._initGLContext();
                         // Rebuild effects
