@@ -354,7 +354,7 @@ export class InternalTexture {
 
             case InternalTextureSource.Raw:
                 proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps,
-                    this.invertY, this.samplingMode, this._compression);
+                    this.invertY, this.samplingMode, this._compression, this.type);
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
@@ -362,7 +362,7 @@ export class InternalTexture {
 
             case InternalTextureSource.Raw3D:
                 proxy = this._engine.createRawTexture3D(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps,
-                    this.invertY, this.samplingMode, this._compression);
+                    this.invertY, this.samplingMode, this._compression, this.type);
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
@@ -370,7 +370,7 @@ export class InternalTexture {
 
             case InternalTextureSource.Raw2DArray:
                 proxy = this._engine.createRawTexture2DArray(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps,
-                    this.invertY, this.samplingMode, this._compression);
+                    this.invertY, this.samplingMode, this._compression, this.type);
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;

@@ -68,6 +68,26 @@ export class AssetContainer extends AbstractScene {
                 this.dispose();
             }
         });
+
+        scene.getEngine().onContextRestoredObservable.add(() => {
+            if (!this._wasAddedToScene) {
+                for (const geometry of this.geometries) {
+                    geometry._rebuild();
+                }
+        
+                for (const mesh of this.meshes) {
+                    mesh._rebuild();
+                }
+        
+                for (const system of this.particleSystems) {
+                    system.rebuild();
+                }
+        
+                for (const texture of this.textures) {
+                    texture._rebuild();
+                }
+            }
+        });
     }
 
     /**
