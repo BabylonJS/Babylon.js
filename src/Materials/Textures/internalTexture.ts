@@ -342,13 +342,25 @@ export class InternalTexture {
         this._cachedWrapR = null;
         this._cachedAnisotropicFilteringLevel = null;
 
+        const rebuildSamples = () => {
+            const samples = this.samples;
+    
+            if (samples > 1) {
+                this.samples = 1; // make sure we don't return early inside updateRenderTargetTextureSampleCount
+                this._MSAAFramebuffer = null; // make sure updateRenderTargetTextureSampleCount won't try to delete this object (which is invalid because of the context lost)
+                this._MSAARenderBuffer = null; // same than above
+                (this._engine as Engine).updateRenderTargetTextureSampleCount(this, samples);
+            }
+        };
+
         switch (this.source) {
             case InternalTextureSource.Temp:
-                return;
+                break;
 
             case InternalTextureSource.Url:
                 proxy = this._engine.createTexture(this._originalUrl ?? this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, () => {
                     proxy._swapAndDie(this, false);
+                    rebuildSamples();
                     this.isReady = true;
                 }, null, this._buffer, undefined, this.format);
                 return;
@@ -359,7 +371,7 @@ export class InternalTexture {
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
-                return;
+                break;
 
             case InternalTextureSource.Raw3D:
                 proxy = this._engine.createRawTexture3D(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps,
@@ -367,7 +379,7 @@ export class InternalTexture {
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
-                return;
+                break;
 
             case InternalTextureSource.Raw2DArray:
                 proxy = this._engine.createRawTexture2DArray(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps,
@@ -375,7 +387,7 @@ export class InternalTexture {
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
-                return;
+                break;
 
             case InternalTextureSource.Dynamic:
                 proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode);
@@ -383,7 +395,7 @@ export class InternalTexture {
                 this._engine.updateDynamicTexture(this, this._engine.getRenderingCanvas()!, this.invertY, undefined, undefined, true);
 
                 // The engine will make sure to update content so no need to flag it as isReady = true
-                return;
+                break;
 
             case InternalTextureSource.RenderTarget:
                 let options = new RenderTargetCreationOptions();
@@ -407,7 +419,7 @@ export class InternalTexture {
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
-                return;
+                break;
 
             case InternalTextureSource.MultiRenderTarget:
                 if (this._textureArray && this === this._textureArray[0]) {
@@ -449,7 +461,7 @@ export class InternalTexture {
 
                 }
                 this.isReady = true;
-                return;
+                break;
 
             case InternalTextureSource.Depth:
                 let depthTextureOptions = {
@@ -469,11 +481,12 @@ export class InternalTexture {
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
-                return;
+                break;
 
             case InternalTextureSource.Cube:
                 proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, () => {
                     proxy._swapAndDie(this, false);
+                    rebuildSamples();
                     this.isReady = true;
                 }, null, this.format, this._extension);
                 return;
@@ -482,12 +495,13 @@ export class InternalTexture {
                 proxy = this._engine.createRawCubeTexture(this._bufferViewArray!, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
                 proxy._swapAndDie(this, false);
                 this.isReady = true;
-                return;
+                break;
 
             case InternalTextureSource.CubeRawRGBD:
                 proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
                 InternalTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset).then(() => {
                     proxy._swapAndDie(this, false);
+                    rebuildSamples();
                     this.isReady = true;
                 });
                 return;
@@ -498,6 +512,7 @@ export class InternalTexture {
                         proxy._swapAndDie(this, false);
                     }
 
+                    rebuildSamples();
                     this.isReady = true;
                 }, null, this.format, this._extension);
                 proxy._sphericalPolynomial = this._sphericalPolynomial;
@@ -522,8 +537,10 @@ export class InternalTexture {
 
                     this.isReady = true;
                  }
-                return;
+                 break;
         }
+
+        rebuildSamples();
     }
 
     /** @hidden */
