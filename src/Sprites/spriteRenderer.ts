@@ -391,7 +391,7 @@ export class SpriteRenderer {
         this._buffer._rebuild();
 
         for (const key in this._vertexBuffers) {
-            let vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
+            const vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
             vertexBuffer._rebuild();
         }
 
