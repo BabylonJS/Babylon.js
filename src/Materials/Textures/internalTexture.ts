@@ -544,13 +544,15 @@ export class InternalTexture {
     }
 
     /** @hidden */
-    public _swapAndDie(target: InternalTexture, swapAllInternalTextures = true): void {
+    public _swapAndDie(target: InternalTexture, swapAll = true): void {
         // TODO what about refcount on target?
 
         this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.isCube, this.width, this.height);
 
         target._hardwareTexture = this._hardwareTexture;
-        target._isRGBD = this._isRGBD;
+        if (swapAll) {
+            target._isRGBD = this._isRGBD;
+        }
 
         if (this._framebuffer) {
             target._framebuffer = this._framebuffer;
@@ -560,7 +562,7 @@ export class InternalTexture {
             target._depthStencilBuffer = this._depthStencilBuffer;
         }
 
-        if (swapAllInternalTextures) {
+        if (swapAll) {
             target._depthStencilTexture = this._depthStencilTexture;
         }
 
