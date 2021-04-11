@@ -58,6 +58,15 @@ export class EffectRenderer {
             [VertexBuffer.PositionKind]: new VertexBuffer(engine, options.positions!, VertexBuffer.PositionKind, false, false, 2),
         };
         this._indexBuffer = engine.createIndexBuffer(options.indices!);
+
+        engine.onContextRestoredObservable.add(() => {
+            this._indexBuffer = engine.createIndexBuffer(options.indices!);
+
+            for (const key in this._vertexBuffers) {
+                const vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
+                vertexBuffer._rebuild();
+            }
+        });
     }
 
     /**
@@ -285,6 +294,12 @@ export class EffectWrapper {
                 undefined,
                 creationOptions.onCompiled,
             );
+
+            creationOptions.engine.onContextRestoredObservable.add(() => {
+                this.effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
+                this.effect._wasPreviouslyReady = false;
+                this.effect._prepareEffect();
+            });
         }
     }
 
