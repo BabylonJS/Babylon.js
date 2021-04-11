@@ -48028,6 +48028,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var GraphComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphComponent, _super);
     function GraphComponent(props) {
@@ -48119,33 +48120,42 @@ var GraphComponent = /** @class */ (function (_super) {
             var value = _this._currentAnimation.evaluate(currentFrame);
             var leftKey = keys[indexToAdd];
             var rightKey = keys[indexToAdd + 1];
-            // const previousWidth = rightKey.frame - leftKey.frame;
-            // const leftWidth = currentFrame - leftKey.frame;            
-            // const rightWidth = rightKey.frame - currentFrame;
-            //  const leftScaleFactor = leftWidth / previousWidth;
-            // const rightScaleFactor = rightWidth / previousWidth;
-            // const cutTime = leftWidth / previousWidth;
             var newKey = {
                 frame: currentFrame,
                 value: value
             };
-            var offsetValue = _this._currentAnimation.evaluate(currentFrame + 0.0001);
             if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
-                var derivative = void 0;
+                var derivative = null;
+                var invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                var cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
                 switch (_this._currentAnimation.dataType) {
                     case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
-                        derivative = (offsetValue - value) / 0.0001;
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Scalar"].Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
                         break;
                     }
-                    default: {
-                        derivative = (offsetValue.subtract(value)).scale(1 / 0.0001);
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
                         break;
                     }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
                 }
-                // Left
-                newKey.inTangent = derivative;
-                // Right
-                newKey.outTangent = derivative;
+                if (derivative !== null) {
+                    newKey.inTangent = derivative;
+                    newKey.outTangent = derivative;
+                }
             }
             keys.splice(indexToAdd + 1, 0, newKey);
             _this._currentAnimation.setKeys(keys);
