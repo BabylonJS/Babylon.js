@@ -344,7 +344,7 @@ export class InternalTexture {
 
         const rebuildSamples = () => {
             const samples = this.samples;
-    
+
             if (samples > 1) {
                 this.samples = 1; // make sure we don't return early inside updateRenderTargetTextureSampleCount
                 this._MSAAFramebuffer = null; // make sure updateRenderTargetTextureSampleCount won't try to delete this object (which is invalid because of the context lost)

@@ -76,15 +76,15 @@ export class AssetContainer extends AbstractScene {
             for (const geometry of this.geometries) {
                 geometry._rebuild();
             }
-    
+
             for (const mesh of this.meshes) {
                 mesh._rebuild();
             }
-    
+
             for (const system of this.particleSystems) {
                 system.rebuild();
             }
-    
+
             for (const texture of this.textures) {
                 texture._rebuild();
             }
