@@ -714,7 +714,7 @@ export class ThinEngine {
                         const depthFunc = this._depthCullingState.depthFunc;
                         const depthMask = this._depthCullingState.depthMask;
                         const stencilTest = this._stencilState.stencilTest;
-                
+
                         // Rebuild gl context
                         this._initGLContext();
                         // Rebuild effects
