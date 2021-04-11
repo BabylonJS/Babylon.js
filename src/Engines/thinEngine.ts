@@ -919,6 +919,7 @@ export class ThinEngine {
     protected _rebuildBuffers(): void {
         // Uniforms
         for (var uniformBuffer of this._uniformBuffers) {
+            uniformBuffer._alreadyBound = false;
             uniformBuffer._rebuild();
         }
     }
