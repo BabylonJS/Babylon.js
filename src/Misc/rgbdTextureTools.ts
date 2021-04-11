@@ -27,6 +27,7 @@ export class RGBDTextureTools {
         // Gets everything ready.
         const engine = internalTexture.getEngine() as Engine;
         const caps = engine.getCaps();
+        const isReady = internalTexture.isReady;
         let expandTexture = false;
 
         // If half float available we can uncompress the texture
@@ -47,7 +48,7 @@ export class RGBDTextureTools {
             internalTexture.invertY = false;
         }
 
-        texture.onLoadObservable.addOnce(() => {
+        const expandRGBDTexture = () => {
             // Expand the texture if possible
             if (expandTexture) {
                 // Simply run through the decode PP.
@@ -86,7 +87,13 @@ export class RGBDTextureTools {
                     internalTexture.isReady = true;
                 });
             }
-        });
+        };
+
+        if (isReady) {
+            expandRGBDTexture();
+        } else {
+            texture.onLoadObservable.addOnce(expandRGBDTexture);
+        }
     }
 
     /**
