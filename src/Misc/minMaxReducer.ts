@@ -37,6 +37,10 @@ export class MinMaxReducer {
     constructor(camera: Camera) {
         this._camera = camera;
         this._postProcessManager = new PostProcessManager(camera.getScene());
+
+        camera.getEngine().onContextRestoredObservable.add(() => {
+            this._postProcessManager._rebuild();
+        });
     }
 
     /**
