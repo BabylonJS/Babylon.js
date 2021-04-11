@@ -533,12 +533,27 @@ export class Vector2 {
      * @returns 1st derivative
      */
      public static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2 {
+        let result = Vector2.Zero();
+
+        this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
+
+        return result;
+    }
+
+    /**
+     * Returns a new Vector2 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @param result define where the derivative will be stored
+     */
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number, result: Vector2) {
         const t2 = time * time;
 
-        var x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
-        var y = (t2 - time) * 6 * value1.y + (3 * t2 - 4 * time + 1) * tangent1.y + (-t2 + time) * 6 * value2.y + (3 * t2 - 2 * time) * tangent2.y;
-
-        return new Vector2(x, y);
+        result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
+        result.y = (t2 - time) * 6 * value1.y + (3 * t2 - 4 * time + 1) * tangent1.y + (-t2 + time) * 6 * value2.y + (3 * t2 - 2 * time) * tangent2.y;
     }
 
     /**
@@ -1785,13 +1800,28 @@ export class Vector3 {
      * @returns 1st derivative
      */
     public static Hermite1stDerivative(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number): Vector3 {
+        let result = Vector3.Zero();
+
+        this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
+
+        return result;
+    }
+
+    /**
+     * Update a Vector3 with the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @param result define where to store the derivative
+     */
+     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3) {
         const t2 = time * time;
 
-        var x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
-        var y = (t2 - time) * 6 * value1.y + (3 * t2 - 4 * time + 1) * tangent1.y + (-t2 + time) * 6 * value2.y + (3 * t2 - 2 * time) * tangent2.y;
-        var z = (t2 - time) * 6 * value1.z + (3 * t2 - 4 * time + 1) * tangent1.z + (-t2 + time) * 6 * value2.z + (3 * t2 - 2 * time) * tangent2.z;
-
-        return new Vector3(x, y, z);
+        result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
+        result.y = (t2 - time) * 6 * value1.y + (3 * t2 - 4 * time + 1) * tangent1.y + (-t2 + time) * 6 * value2.y + (3 * t2 - 2 * time) * tangent2.y;
+        result.z = (t2 - time) * 6 * value1.z + (3 * t2 - 4 * time + 1) * tangent1.z + (-t2 + time) * 6 * value2.z + (3 * t2 - 2 * time) * tangent2.z;
     }
 
     /**
@@ -3754,14 +3784,29 @@ export class Quaternion {
      * @returns 1st derivative
      */
     public static Hermite1stDerivative(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number): Quaternion {
+        let result = Quaternion.Zero();
+
+        this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
+
+        return result;
+    }
+
+    /**
+     * Update a Quaternion with the 1st derivative of the Hermite spline defined by the quaternions "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @param result define where to store the derivative
+     */
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion)  {
         const t2 = time * time;
 
-        var x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
-        var y = (t2 - time) * 6 * value1.y + (3 * t2 - 4 * time + 1) * tangent1.y + (-t2 + time) * 6 * value2.y + (3 * t2 - 2 * time) * tangent2.y;
-        var z = (t2 - time) * 6 * value1.z + (3 * t2 - 4 * time + 1) * tangent1.z + (-t2 + time) * 6 * value2.z + (3 * t2 - 2 * time) * tangent2.z;
-        var w = (t2 - time) * 6 * value1.w + (3 * t2 - 4 * time + 1) * tangent1.w + (-t2 + time) * 6 * value2.w + (3 * t2 - 2 * time) * tangent2.w;
-
-        return new Quaternion(x, y, z, w);
+        result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
+        result.y = (t2 - time) * 6 * value1.y + (3 * t2 - 4 * time + 1) * tangent1.y + (-t2 + time) * 6 * value2.y + (3 * t2 - 2 * time) * tangent2.y;
+        result.z = (t2 - time) * 6 * value1.z + (3 * t2 - 4 * time + 1) * tangent1.z + (-t2 + time) * 6 * value2.z + (3 * t2 - 2 * time) * tangent2.z;
+        result.w = (t2 - time) * 6 * value1.w + (3 * t2 - 4 * time + 1) * tangent1.w + (-t2 + time) * 6 * value2.w + (3 * t2 - 2 * time) * tangent2.w;
     }
 }
 
