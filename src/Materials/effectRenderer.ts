@@ -5,7 +5,7 @@ import { ThinEngine } from '../Engines/thinEngine';
 import { VertexBuffer } from '../Meshes/buffer';
 import { Viewport } from '../Maths/math.viewport';
 import { Constants } from '../Engines/constants';
-import { Observable } from '../Misc/observable';
+import { Observable, Observer } from '../Misc/observable';
 import { Effect } from './effect';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { DrawWrapper } from "./drawWrapper";
@@ -233,6 +233,8 @@ export class EffectWrapper {
     /** @hidden */
     public _drawWrapper: DrawWrapper;
 
+    private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
+
     /**
      * Creates an effect to be renderer
      * @param creationOptions options to create the effect
@@ -295,7 +297,7 @@ export class EffectWrapper {
                 creationOptions.onCompiled,
             );
 
-            creationOptions.engine.onContextRestoredObservable.add(() => {
+            this._onContextRestoredObserver = creationOptions.engine.onContextRestoredObservable.add(() => {
                 this.effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
                 this.effect._wasPreviouslyReady = false;
                 this.effect._prepareEffect();
@@ -307,6 +309,10 @@ export class EffectWrapper {
     * Disposes of the effect wrapper
     */
     public dispose() {
+        if (this._onContextRestoredObserver) {
+            this.effect.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
+            this._onContextRestoredObserver = null;
+        }
         this.effect.dispose();
     }
 }
