@@ -841,8 +841,6 @@ export class WebGPUEngine extends Engine {
         this._cacheRenderPipeline.setBuffers(null, null, null);
 
         if (bruteForce) {
-            this._currentProgram = null;
-
             this._stencilState.reset();
 
             this._depthCullingState.reset();
