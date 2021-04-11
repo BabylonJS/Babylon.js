@@ -128,7 +128,7 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
      * context lost for instance.
      */
     public rebuild(): void {
-        for (var index = 0; index < this.scene.lensFlareSystems.length; index++) {
+        for (let index = 0; index < this.scene.lensFlareSystems.length; index++) {
             this.scene.lensFlareSystems[index].rebuild();
         }
     }

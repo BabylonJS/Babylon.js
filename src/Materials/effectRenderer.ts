@@ -42,6 +42,7 @@ export class EffectRenderer {
     private _indexBuffer: DataBuffer;
 
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
+    private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
 
     /**
      * Creates an effect renderer
@@ -59,7 +60,7 @@ export class EffectRenderer {
         };
         this._indexBuffer = engine.createIndexBuffer(options.indices!);
 
-        engine.onContextRestoredObservable.add(() => {
+        this._onContextRestoredObserver = engine.onContextRestoredObservable.add(() => {
             this._indexBuffer = engine.createIndexBuffer(options.indices!);
 
             for (const key in this._vertexBuffers) {
@@ -161,6 +162,11 @@ export class EffectRenderer {
 
         if (this._indexBuffer) {
             this.engine._releaseBuffer(this._indexBuffer);
+        }
+
+        if (this._onContextRestoredObserver) {
+            this.engine.onContextRestoredObservable.remove(this._onContextRestoredObserver);
+            this._onContextRestoredObserver = null;
         }
     }
 }
