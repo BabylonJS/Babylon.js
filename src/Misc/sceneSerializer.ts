@@ -102,6 +102,7 @@ var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
  * Class used to serialize a scene into a string
  */
 export class SceneSerializer {
+
     /**
      * Clear cache used by a previous serialization
      */

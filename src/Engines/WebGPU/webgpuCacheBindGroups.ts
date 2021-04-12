@@ -43,6 +43,14 @@ export class WebGPUCacheBindGroups {
         WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame = 0;
     }
 
+    /**
+     * Cache is currently based on the uniform buffers and textures used by the binding groups.
+     * In Babylon we don't have a separate standalone sampler object, the sampler properties (wrapU, wrapV, samplingMode, ...) are held by the (internal) texture itself.
+     * When one of these properties change for a texture (which normally does not happen often), we remove the corresponding entries from the cache (that is, all the entries
+     * that reference this texture, hence the need for _CacheTextures - see WebGPUCacheBindGroups.clearTextureEntries and WebGPUMaterialContext.setTexture)
+     * Note also that all uniform buffers have an offset of 0 in Babylon and we don't have a use case where we would have the same buffer used with different capacity values:
+     * that means we don't need to factor in the offset/size of the buffer in the cache, only the id
+     */
     public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, materialContext: WebGPUMaterialContext, uniformsBuffers: { [name: string]: WebGPUDataBuffer }): GPUBindGroup[] {
         let bindGroups: GPUBindGroup[] | undefined = undefined;
         let node = WebGPUCacheBindGroups._Cache;

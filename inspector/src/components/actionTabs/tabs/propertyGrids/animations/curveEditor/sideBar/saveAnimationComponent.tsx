@@ -110,7 +110,7 @@ ISaveAnimationComponentState
                             <div className="save-animation-list-entry" key={i} >
                                 <input 
                                     type="checkbox" value={a.name}
-                                    checked={true}
+                                    defaultChecked={true}
                                     onClick={evt => {
                                         if (evt.currentTarget.checked) {
                                             this._selectedAnimations.push(a);

@@ -337,7 +337,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString: string = "";
+        let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.remapF0OnInterfaceChange = ${this.remapF0OnInterfaceChange};\r\n`;
 

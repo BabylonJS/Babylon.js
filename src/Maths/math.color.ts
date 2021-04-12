@@ -518,6 +518,40 @@ export class Color3 {
     }
 
     /**
+     * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @returns 1st derivative
+     */
+     public static Hermite1stDerivative(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number): Color3 {
+        let result = Color3.Black();
+
+        this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
+
+        return result;
+    }
+
+    /**
+     * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @param result define where to store the derivative
+     */
+     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number, result: Color3) {
+        const t2 = time * time;
+
+        result.r = (t2 - time) * 6 * value1.r + (3 * t2 - 4 * time + 1) * tangent1.r + (-t2 + time) * 6 * value2.r + (3 * t2 - 2 * time) * tangent2.r;
+        result.g = (t2 - time) * 6 * value1.g + (3 * t2 - 4 * time + 1) * tangent1.g + (-t2 + time) * 6 * value2.g + (3 * t2 - 2 * time) * tangent2.g;
+        result.b = (t2 - time) * 6 * value1.b + (3 * t2 - 4 * time + 1) * tangent1.b + (-t2 + time) * 6 * value2.b + (3 * t2 - 2 * time) * tangent2.b;
+    }
+
+    /**
      * Returns a Color3 value containing a red color
      * @returns a new Color3 object
      */
@@ -964,6 +998,41 @@ export class Color4 {
         result.g = left.g + (right.g - left.g) * amount;
         result.b = left.b + (right.b - left.b) * amount;
         result.a = left.a + (right.a - left.a) * amount;
+    }
+
+    /**
+     * Returns a new Color4 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @returns 1st derivative
+     */
+     public static Hermite1stDerivative(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number): Color4 {
+        let result = new Color4();
+
+        this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
+
+        return result;
+    }
+
+    /**
+     * Update a Color4 with the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @param result define where to store the derivative
+     */
+     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number, result: Color4)  {
+        const t2 = time * time;
+
+        result.r = (t2 - time) * 6 * value1.r + (3 * t2 - 4 * time + 1) * tangent1.r + (-t2 + time) * 6 * value2.r + (3 * t2 - 2 * time) * tangent2.r;
+        result.g = (t2 - time) * 6 * value1.g + (3 * t2 - 4 * time + 1) * tangent1.g + (-t2 + time) * 6 * value2.g + (3 * t2 - 2 * time) * tangent2.g;
+        result.b = (t2 - time) * 6 * value1.b + (3 * t2 - 4 * time + 1) * tangent1.b + (-t2 + time) * 6 * value2.b + (3 * t2 - 2 * time) * tangent2.b;
+        result.a = (t2 - time) * 6 * value1.a + (3 * t2 - 4 * time + 1) * tangent1.a + (-t2 + time) * 6 * value2.a + (3 * t2 - 2 * time) * tangent2.a;
     }
 
     /**

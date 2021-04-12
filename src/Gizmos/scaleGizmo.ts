@@ -161,7 +161,8 @@ export class ScaleGizmo extends Gizmo {
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
-            active: false
+            active: false,
+            dragBehavior: uniformScaleGizmo.dragBehavior
         };
 
         this.addToAxisCache(uniformScaleGizmo._rootMesh, cache);

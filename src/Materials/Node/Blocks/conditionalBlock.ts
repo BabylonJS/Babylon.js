@@ -166,7 +166,7 @@ export class ConditionalBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = `${this._codeVariableName}.operation = BABYLON.ConditionalBlockConditions.${ConditionalBlockConditions[this.condition]};\r\n`;
+        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.ConditionalBlockConditions.${ConditionalBlockConditions[this.condition]};\r\n`;
         return codeString;
     }
 }
