@@ -294,13 +294,13 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         if (this._headsetMesh && this._headsetImpostor) {
             this._headsetMesh.position.copyFrom(this._options.xrInput.xrCamera.position);
             this._headsetMesh.rotationQuaternion!.copyFrom(this._options.xrInput.xrCamera.rotationQuaternion!);
-            if (this._options.xrInput.xrCamera.lastXRViewerPose?.linearVelocity) {
-                const lv = this._options.xrInput.xrCamera.lastXRViewerPose.linearVelocity;
+            if (this._options.xrInput.xrCamera._lastXRViewerPose?.linearVelocity) {
+                const lv = this._options.xrInput.xrCamera._lastXRViewerPose.linearVelocity;
                 this._tmpVector.set(lv.x, lv.y, lv.z);
                 this._headsetImpostor.setLinearVelocity(this._tmpVector);
             }
-            if (this._options.xrInput.xrCamera.lastXRViewerPose?.angularVelocity) {
-                const av = this._options.xrInput.xrCamera.lastXRViewerPose.angularVelocity;
+            if (this._options.xrInput.xrCamera._lastXRViewerPose?.angularVelocity) {
+                const av = this._options.xrInput.xrCamera._lastXRViewerPose.angularVelocity;
                 this._tmpVector.set(av.x, av.y, av.z);
                 this._headsetImpostor.setAngularVelocity(this._tmpVector);
             }
@@ -309,8 +309,8 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             const controllerData = this._controllers[controllerId];
             const controllerMesh = controllerData.xrController.grip || controllerData.xrController.pointer;
             const comparedPosition = controllerData.oldPos || controllerData.impostorMesh!.position;
-            if (controllerData.xrController.lastXRPose?.linearVelocity) {
-                const lv = controllerData.xrController.lastXRPose.linearVelocity;
+            if (controllerData.xrController._lastXRPose?.linearVelocity) {
+                const lv = controllerData.xrController._lastXRPose.linearVelocity;
                 this._tmpVector.set(lv.x, lv.y, lv.z);
                 controllerData.impostor.setLinearVelocity(this._tmpVector);
             } else {
@@ -324,8 +324,8 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             }
 
             const comparedQuaternion = controllerData.oldRotation || controllerData.impostorMesh!.rotationQuaternion!;
-            if (controllerData.xrController.lastXRPose?.angularVelocity) {
-                const av = controllerData.xrController.lastXRPose.angularVelocity;
+            if (controllerData.xrController._lastXRPose?.angularVelocity) {
+                const av = controllerData.xrController._lastXRPose.angularVelocity;
                 this._tmpVector.set(av.x, av.y, av.z);
                 controllerData.impostor.setAngularVelocity(this._tmpVector);
             } else {
