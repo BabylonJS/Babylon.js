@@ -159,7 +159,7 @@ export class RuntimeAnimation {
     }
 
     /**
-     * Gets the target path of the runtime animation
+     * Gets or sets the target path of the runtime animation
      */
     public get targetPath(): string {
         return this._targetPath;

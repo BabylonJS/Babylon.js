@@ -142,8 +142,9 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // World geometries
+    // World geometries. DEPRECATED
     worldInformation?: XRWorldInformation;
+    detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
     // Image tracking

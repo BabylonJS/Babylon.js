@@ -11,6 +11,8 @@ require("./scss/topBar.scss");
 const logoIcon = require("./assets/babylonLogo.svg");
 const frameIcon = require("./assets/frameIcon.svg");
 const newKeyIcon = require("./assets/newKeyIcon.svg");
+const flatTangentIcon = require("./assets/flatTangentIcon.svg");
+const linearTangentIcon = require("./assets/linearTangentIcon.svg");
 
 interface ITopBarComponentProps {
     globalState: GlobalState;
@@ -106,6 +108,19 @@ ITopBarComponentState
                     tooltip="Frame canvas"
                     id="frame-canvas" globalState={this.props.globalState} context={this.props.context} 
                     icon={frameIcon} onClick={() => this.props.context.onFrameRequired.notifyObservers()}/>
+                {
+                    this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 &&
+                    <>
+                        <ActionButtonComponent 
+                            tooltip="Flatten tangent"
+                            id="flatten-tangent" globalState={this.props.globalState} context={this.props.context} 
+                            icon={flatTangentIcon} onClick={() => this.props.context.onFlattenTangentRequired.notifyObservers()}/>
+                        <ActionButtonComponent 
+                            tooltip="Linear tangent"
+                            id="linear-tangent" globalState={this.props.globalState} context={this.props.context} 
+                            icon={linearTangentIcon} onClick={() => this.props.context.onLinearTangentRequired.notifyObservers()}/>
+                    </>
+                }
             </div>
         );
     }

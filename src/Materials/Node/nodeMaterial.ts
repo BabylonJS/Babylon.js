@@ -187,11 +187,13 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
      */
+     @serialize()
     public ignoreAlpha = false;
 
     /**
     * Defines the maximum number of lights that can be used in the material
     */
+     @serialize()
     public maxSimultaneousLights = 4;
 
     /**
