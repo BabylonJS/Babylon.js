@@ -43,8 +43,9 @@ export class WebXRCamera extends FreeCamera {
 
     /**
      * The last XRViewerPose from the current XRFrame
+     * @hidden
      */
-    public lastXRViewerPose?: XRViewerPose;
+    public _lastXRViewerPose?: XRViewerPose;
 
     /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
@@ -155,14 +156,14 @@ export class WebXRCamera extends FreeCamera {
 
     public dispose() {
         super.dispose();
-        this.lastXRViewerPose = undefined;
+        this._lastXRViewerPose = undefined;
     }
 
     private _rotate180 = new Quaternion(0, 1, 0, 0);
 
     private _updateFromXRSession() {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
-        this.lastXRViewerPose = pose || undefined;
+        this._lastXRViewerPose = pose || undefined;
         if (!pose) {
             this._setTrackingState(WebXRTrackingState.NOT_TRACKING);
             return;
