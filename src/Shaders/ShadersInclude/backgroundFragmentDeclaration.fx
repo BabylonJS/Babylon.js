@@ -1,3 +1,5 @@
+    uniform vec4 vEyePosition;
+
     uniform vec4 vPrimaryColor;
 #ifdef USEHIGHLIGHTANDSHADOWCOLORS
     uniform vec4 vPrimaryColorShadow;

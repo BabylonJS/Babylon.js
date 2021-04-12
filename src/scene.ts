@@ -6,7 +6,7 @@ import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Vector2, Vector3, Matrix } from "./Maths/math.vector";
+import { Vector2, Vector3, Matrix, TmpVectors, Vector4 } from "./Maths/math.vector";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -21,7 +21,6 @@ import { AbstractScene } from "./abstractScene";
 import { BaseTexture } from "./Materials/Textures/baseTexture";
 import { Texture } from "./Materials/Textures/texture";
 import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
-import { Material } from "./Materials/material";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { Effect } from "./Materials/effect";
 import { UniformBuffer } from "./Materials/uniformBuffer";
@@ -56,6 +55,7 @@ import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
+import { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -64,8 +64,8 @@ declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Collider = import("./Collisions/collider").Collider;
-declare type WebGPUEngine = import("./Engines/webgpuEngine").WebGPUEngine;
 declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
+declare type Material = import("./Materials/material").Material;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -763,6 +763,54 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         InputManager.ExclusiveDoubleClickMode = value;
     }
 
+    /**
+     * Bind the current view position to an effect.
+     * @param effect The effect to be bound
+     * @param scene The scene the eyes position is used from
+     * @param variableName name of the shader variable that will hold the eye position
+     * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
+     * @return the computed eye position
+     */
+     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
+        const eyePosition =
+            this._forcedViewPosition ? this._forcedViewPosition :
+            this._mirroredCameraPosition ? this._mirroredCameraPosition :
+            this.activeCamera!.globalPosition ?? (this.activeCamera as WebVRFreeCamera).devicePosition;
+
+        const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
+
+        TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+
+        if (effect) {
+            if (isVector3) {
+                effect.setFloat3(variableName, TmpVectors.Vector4[0].x, TmpVectors.Vector4[0].y, TmpVectors.Vector4[0].z);
+            } else {
+                effect.setVector4(variableName, TmpVectors.Vector4[0]);
+            }
+        }
+
+        return TmpVectors.Vector4[0];
+    }
+
+    /**
+     * Update the scene ubo before it can be used in rendering processing
+     * @param scene the scene to retrieve the ubo from
+     * @returns the scene UniformBuffer
+     */
+    public finalizeSceneUbo(): UniformBuffer {
+        const ubo = this.getSceneUniformBuffer();
+        const eyePosition = this.bindEyePosition(null);
+        ubo.updateFloat4("vEyePosition",
+            eyePosition.x,
+            eyePosition.y,
+            eyePosition.z,
+            eyePosition.w);
+
+        ubo.update();
+
+        return ubo;
+    }
+
     // Mirror
     /** @hidden */
     public _mirroredCameraPosition: Nullable<Vector3>;
@@ -1392,8 +1440,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * an optional map from Geometry Id to Geometry index in the 'geometries' array
      */
     private geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
-
-    private _renderBundles: Nullable<GPURenderBundle[]> = null;
 
     /**
      * Creates a new Scene
@@ -2109,6 +2155,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 toRemove._removeFromSceneRootNodes();
             }
         }
+
+        this._inputManager._invalidateMesh(toRemove);
 
         this.onMeshRemovedObservable.notifyObservers(toRemove);
         if (recursive) {
@@ -3523,6 +3571,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _evaluateActiveMeshes(): void {
+        if (this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            if (this._activeMeshes.length > 0) {
+                this.activeCamera?._activeMeshes.reset();
+                this._activeMeshes.reset();
+                this._renderingManager.reset();
+                this._processedMaterials.reset();
+                this._activeParticleSystems.reset();
+                this._activeSkeletons.reset();
+                this._softwareSkinnedMeshes.reset();
+            }
+            return;
+        }
+
         if (this._activeMeshesFrozen && this._activeMeshes.length) {
 
             if (!this._skipEvaluateActiveMeshesCompletely) {
@@ -3817,6 +3878,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
+        if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            this.finalizeSceneUbo();
+        }
         this._renderingManager.render(null, null, true, true);
         this.onAfterDrawPhaseObservable.notifyObservers(this);
 
@@ -4056,38 +4120,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onBeforeRenderObservable.notifyObservers(this);
 
         var engine = this.getEngine();
-        if (engine.isWebGPU) {
-            const webgpuEngine = (engine as WebGPUEngine);
-            if (this._activeMeshesFrozen) {
-                if (this.activeCameras?.length) {
-                    for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                        const camera = this.activeCameras[cameraIndex];
-                        this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
-                    }
-                }
-                else {
-                    const camera = this.activeCamera!;
-                    this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
-                }
-
-                if (this._renderBundles) {
-                    webgpuEngine.executeBundles(this._renderBundles);
-                    return;
-                }
-
-                webgpuEngine.startRecordBundle();
-                webgpuEngine.onEndFrameObservable.addOnce(() => {
-                    this._renderBundles = [ webgpuEngine.stopRecordBundle() ];
-                    // TODO. WEBGPU. Frame lost.
-                    // webgpuEngine.executeBundles(this._renderBundles);
-                });
-            }
-            else {
-                if (this._renderBundles) {
-                    this._renderBundles = null;
-                }
-            }
-        }
 
         // Customs render targets
         this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
@@ -4226,8 +4258,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Releases all held ressources
      */
     public dispose(): void {
-        this._renderBundles = null;
-
         this.beforeRender = null;
         this.afterRender = null;
 
