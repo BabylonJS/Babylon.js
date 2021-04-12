@@ -708,6 +708,13 @@ export class ThinEngine {
                 this._onContextRestored = () => {
                     // Adding a timeout to avoid race condition at browser level
                     setTimeout(() => {
+                        this._dummyFramebuffer = null;
+
+                        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to _initGLContext / wipeCaches will reset them
+                        const depthFunc = this._depthCullingState.depthFunc;
+                        const depthMask = this._depthCullingState.depthMask;
+                        const stencilTest = this._stencilState.stencilTest;
+
                         // Rebuild gl context
                         this._initGLContext();
                         // Rebuild effects
@@ -718,6 +725,12 @@ export class ThinEngine {
                         this._rebuildBuffers();
                         // Cache
                         this.wipeCaches(true);
+
+                        this._depthCullingState.depthTest = depthTest;
+                        this._depthCullingState.depthFunc = depthFunc;
+                        this._depthCullingState.depthMask = depthMask;
+                        this._stencilState.stencilTest = stencilTest;
+
                         Logger.Warn("WebGL context successfully restored.");
                         this.onContextRestoredObservable.notifyObservers(this);
                         this._contextWasLost = false;
@@ -879,6 +892,8 @@ export class ThinEngine {
         for (var key in this._compiledEffects) {
             let effect = <Effect>this._compiledEffects[key];
 
+            effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
+            effect._wasPreviouslyReady = false;
             effect._prepareEffect();
         }
 
@@ -904,6 +919,7 @@ export class ThinEngine {
     protected _rebuildBuffers(): void {
         // Uniforms
         for (var uniformBuffer of this._uniformBuffers) {
+            uniformBuffer._alreadyBound = false;
             uniformBuffer._rebuild();
         }
     }
