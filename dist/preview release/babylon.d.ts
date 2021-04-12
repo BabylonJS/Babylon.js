@@ -15084,6 +15084,11 @@ declare module BABYLON {
          */
         render(sprites: ThinSprite[], deltaTime: number, viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike, customSpriteUpdate?: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>): void;
         private _appendSpriteVertex;
+        private _buildIndexBuffer;
+        /**
+         * Rebuilds the renderer (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -15150,6 +15155,10 @@ declare module BABYLON {
          * Renders the list of sprites on screen.
          */
         render(): void;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
     }
     /**
      * Class used to manage multiple sprites on the same spritesheet
@@ -15275,6 +15284,10 @@ declare module BABYLON {
          */
         render(): void;
         private _customUpdate;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -25603,6 +25616,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -26622,6 +26636,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -34544,7 +34559,7 @@ declare module BABYLON {
         /** @hidden */
         _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material, effectiveMesh?: AbstractMesh) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _freeze(): void;
         /** @hidden */
@@ -37241,7 +37256,7 @@ declare module BABYLON {
         /** @hidden */
         _getActionManagerForTrigger(trigger?: number, initialCall?: boolean): Nullable<AbstractActionManager>;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _resyncLightSources(): void;
         /** @hidden */
@@ -42426,7 +42441,7 @@ declare module BABYLON {
         /** @hidden */
         _rebuild(): void;
         /** @hidden */
-        _swapAndDie(target: InternalTexture): void;
+        _swapAndDie(target: InternalTexture, swapAll?: boolean): void;
         /**
          * Dispose the current allocated resources
          */
@@ -43165,6 +43180,8 @@ declare module BABYLON {
          * Gets the list of created scenes
          */
         scenes: Scene[];
+        /** @hidden */
+        _virtualScenes: Scene[];
         /**
          * Event raised when a new scene is created
          */
@@ -47292,6 +47309,7 @@ declare module BABYLON {
      */
     export class AssetContainer extends AbstractScene {
         private _wasAddedToScene;
+        private _onContextRestoredObserver;
         /**
          * The scene the AssetContainer belongs to.
          */
@@ -53331,6 +53349,11 @@ declare module BABYLON {
          */
         compensateOnFirstFrame: boolean;
         /**
+         * The last XRViewerPose from the current XRFrame
+         * @hidden
+         */
+        _lastXRViewerPose?: XRViewerPose;
+        /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
@@ -53360,6 +53383,7 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
+        dispose(): void;
         private _rotate180;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
@@ -54872,6 +54896,11 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        /**
+         * The last XRPose the was calculated on the current XRFrame
+         * @hidden
+         */
+        _lastXRPose?: XRPose;
         /**
          * Creates the input source object
          * @see https://doc.babylonjs.com/how_to/webxr_controllers_support
@@ -65618,6 +65647,7 @@ declare module BABYLON {
          * Define the name of the lens flare system
          */
         name: string, emitter: any, scene: Scene);
+        private _createIndexBuffer;
         /**
          * Define if the lens flare system is enabled.
          */
@@ -65656,6 +65686,10 @@ declare module BABYLON {
          * @hidden
          */
         render(): boolean;
+        /**
+         * Rebuilds the lens flare system
+         */
+        rebuild(): void;
         /**
          * Dispose and release the lens flare with its associated resources.
          */
@@ -65916,6 +65950,7 @@ declare module BABYLON {
         protected _postProcessManager: PostProcessManager;
         protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
         protected _forceFullscreenViewport: boolean;
+        protected _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
         /**
          * Creates a min/max reducer
          * @param camera The camera to use for the post processes
@@ -66511,6 +66546,7 @@ declare module BABYLON {
         private _vertexBuffers;
         private _indexBuffer;
         private _fullscreenViewport;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect renderer
          * @param engine the engine to use for rendering
@@ -66614,6 +66650,7 @@ declare module BABYLON {
         set effect(effect: Effect);
         /** @hidden */
         _drawWrapper: DrawWrapper;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect to be renderer
          * @param creationOptions options to create the effect
@@ -84109,6 +84146,8 @@ interface XRInputSource {
 interface XRPose {
     readonly transform: XRRigidTransform;
     readonly emulatedPosition: boolean;
+    readonly linearVelocity?: DOMPointReadOnly;
+    readonly angularVelocity?: DOMPointReadOnly;
 }
 
 interface XRWorldInformation {
@@ -84126,8 +84165,9 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // World geometries
+    // World geometries. DEPRECATED
     worldInformation?: XRWorldInformation;
+    detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
     // Image tracking
