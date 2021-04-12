@@ -3074,6 +3074,16 @@ declare module BABYLON {
          */
         static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2;
         /**
+         * Returns a new Vector2 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where the derivative will be stored
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number, result: Vector2): void;
+        /**
          * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
          * @param start defines the start vector
          * @param end defines the end vector
@@ -3785,6 +3795,16 @@ declare module BABYLON {
          * @returns 1st derivative
          */
         static Hermite1stDerivative(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number): Vector3;
+        /**
+         * Update a Vector3 with the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3): void;
         /**
          * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
          * @param start defines the start value
@@ -4854,6 +4874,16 @@ declare module BABYLON {
          * @returns 1st derivative
          */
         static Hermite1stDerivative(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number): Quaternion;
+        /**
+         * Update a Quaternion with the 1st derivative of the Hermite spline defined by the quaternions "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion): void;
     }
     /**
      * Class used to store matrix data (4x4)
@@ -6600,6 +6630,26 @@ declare module BABYLON {
          */
         static LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: number, result: Color3): void;
         /**
+         * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number): Color3;
+        /**
+         * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number, result: Color3): void;
+        /**
          * Returns a Color3 value containing a red color
          * @returns a new Color3 object
          */
@@ -6888,6 +6938,26 @@ declare module BABYLON {
          * @param result defines the Color4 object where to store data
          */
         static LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number, result: Color4): void;
+        /**
+         * Returns a new Color4 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number): Color4;
+        /**
+         * Update a Color4 with the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number, result: Color4): void;
         /**
          * Creates a new Color4 from a Color3 and an alpha value
          * @param color3 defines the source Color3 to read from
@@ -15014,6 +15084,11 @@ declare module BABYLON {
          */
         render(sprites: ThinSprite[], deltaTime: number, viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike, customSpriteUpdate?: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>): void;
         private _appendSpriteVertex;
+        private _buildIndexBuffer;
+        /**
+         * Rebuilds the renderer (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -15080,6 +15155,10 @@ declare module BABYLON {
          * Renders the list of sprites on screen.
          */
         render(): void;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
     }
     /**
      * Class used to manage multiple sprites on the same spritesheet
@@ -15205,6 +15284,10 @@ declare module BABYLON {
          */
         render(): void;
         private _customUpdate;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -25533,6 +25616,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -26552,6 +26636,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -34474,7 +34559,7 @@ declare module BABYLON {
         /** @hidden */
         _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material, effectiveMesh?: AbstractMesh) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _freeze(): void;
         /** @hidden */
@@ -37171,7 +37256,7 @@ declare module BABYLON {
         /** @hidden */
         _getActionManagerForTrigger(trigger?: number, initialCall?: boolean): Nullable<AbstractActionManager>;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _resyncLightSources(): void;
         /** @hidden */
@@ -42356,7 +42441,7 @@ declare module BABYLON {
         /** @hidden */
         _rebuild(): void;
         /** @hidden */
-        _swapAndDie(target: InternalTexture): void;
+        _swapAndDie(target: InternalTexture, swapAll?: boolean): void;
         /**
          * Dispose the current allocated resources
          */
@@ -43095,6 +43180,8 @@ declare module BABYLON {
          * Gets the list of created scenes
          */
         scenes: Scene[];
+        /** @hidden */
+        _virtualScenes: Scene[];
         /**
          * Event raised when a new scene is created
          */
@@ -47222,6 +47309,7 @@ declare module BABYLON {
      */
     export class AssetContainer extends AbstractScene {
         private _wasAddedToScene;
+        private _onContextRestoredObserver;
         /**
          * The scene the AssetContainer belongs to.
          */
@@ -53261,6 +53349,11 @@ declare module BABYLON {
          */
         compensateOnFirstFrame: boolean;
         /**
+         * The last XRViewerPose from the current XRFrame
+         * @hidden
+         */
+        _lastXRViewerPose?: XRViewerPose;
+        /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
@@ -53290,6 +53383,7 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
+        dispose(): void;
         private _rotate180;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
@@ -54802,6 +54896,11 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        /**
+         * The last XRPose the was calculated on the current XRFrame
+         * @hidden
+         */
+        _lastXRPose?: XRPose;
         /**
          * Creates the input source object
          * @see https://doc.babylonjs.com/how_to/webxr_controllers_support
@@ -65548,6 +65647,7 @@ declare module BABYLON {
          * Define the name of the lens flare system
          */
         name: string, emitter: any, scene: Scene);
+        private _createIndexBuffer;
         /**
          * Define if the lens flare system is enabled.
          */
@@ -65586,6 +65686,10 @@ declare module BABYLON {
          * @hidden
          */
         render(): boolean;
+        /**
+         * Rebuilds the lens flare system
+         */
+        rebuild(): void;
         /**
          * Dispose and release the lens flare with its associated resources.
          */
@@ -65846,6 +65950,7 @@ declare module BABYLON {
         protected _postProcessManager: PostProcessManager;
         protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
         protected _forceFullscreenViewport: boolean;
+        protected _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
         /**
          * Creates a min/max reducer
          * @param camera The camera to use for the post processes
@@ -66441,6 +66546,7 @@ declare module BABYLON {
         private _vertexBuffers;
         private _indexBuffer;
         private _fullscreenViewport;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect renderer
          * @param engine the engine to use for rendering
@@ -66544,6 +66650,7 @@ declare module BABYLON {
         set effect(effect: Effect);
         /** @hidden */
         _drawWrapper: DrawWrapper;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect to be renderer
          * @param creationOptions options to create the effect
@@ -84039,6 +84146,8 @@ interface XRInputSource {
 interface XRPose {
     readonly transform: XRRigidTransform;
     readonly emulatedPosition: boolean;
+    readonly linearVelocity?: DOMPointReadOnly;
+    readonly angularVelocity?: DOMPointReadOnly;
 }
 
 interface XRWorldInformation {
@@ -84056,8 +84165,9 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // World geometries
+    // World geometries. DEPRECATED
     worldInformation?: XRWorldInformation;
+    detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
     // Image tracking

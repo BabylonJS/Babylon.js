@@ -90,6 +90,11 @@ export interface ISpriteManager extends IDisposable {
      * Renders the list of sprites on screen.
      */
     render(): void;
+
+    /**
+     * Rebuilds the manager (after a context lost, for eg)
+     */
+     rebuild(): void;
 }
 
 /**
@@ -563,6 +568,13 @@ export class SpriteManager implements ISpriteManager {
         sprite._xSize = this._cellData[sprite.cellRef].frame.w;
         sprite._ySize = this._cellData[sprite.cellRef].frame.h;
     };
+
+    /**
+     * Rebuilds the manager (after a context lost, for eg)
+     */
+    public rebuild(): void {
+        this._spriteRenderer?.rebuild();
+    }
 
     /**
      * Release associated resources
