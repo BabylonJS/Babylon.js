@@ -73,6 +73,7 @@ class _InstanceDataStorage {
     public instancesBuffer: Nullable<Buffer>;
     public instancesPreviousBuffer: Nullable<Buffer>;
     public instancesData: Float32Array;
+    public instancesPreviousData: Float32Array;
     public overridenInstanceCount: number;
     public isFrozen: boolean;
     public previousBatch: Nullable<_InstancesBatch>;
@@ -1717,6 +1718,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
             instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+            if (instanceStorage.needsPreviousMatrices) {
+                instanceStorage.instancesPreviousData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+            }
         }
 
         var offset = 0;
@@ -1747,7 +1751,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
+                    var matrix = instance.getWorldMatrix();
+                    matrix.copyToArray(instanceStorage.instancesData, offset);
+
+                    if (instanceStorage.needsPreviousMatrices) {
+                        if (!instance._previousWorldMatrix) {
+                            instance._previousWorldMatrix = matrix.clone();
+                            instance._previousWorldMatrix.copyToArray(instanceStorage.instancesPreviousData, offset);
+                        } else {
+                            instance._previousWorldMatrix.copyToArray(instanceStorage.instancesPreviousData, offset);
+                            instance._previousWorldMatrix.copyFrom(matrix);
+                        }
+                    }
+
                     offset += 16;
                     instancesCount++;
                 }
@@ -1783,7 +1799,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._userInstancedBuffersStorage.vertexBuffers["world3"] = instancesBuffer.createVertexBuffer("world3", 12, 4);
 
             if (instanceStorage.needsPreviousMatrices) {
-                instancesPreviousBuffer = new Buffer(engine, instanceStorage.instancesData, true, 16, false, true);
+                instancesPreviousBuffer = new Buffer(engine, instanceStorage.instancesPreviousData, true, 16, false, true);
                 instanceStorage.instancesPreviousBuffer = instancesPreviousBuffer;
 
                 this._userInstancedBuffersStorage.vertexBuffers["previousWorld0"] = instancesPreviousBuffer.createVertexBuffer("previousWorld0", 0, 4);
@@ -1796,6 +1812,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         } else {
             if (!this._instanceDataStorage.isFrozen) {
                 instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+                if (instanceStorage.needsPreviousMatrices && !this._instanceDataStorage.manualUpdate) {
+                    instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesPreviousData, 0, instancesCount);
+                }
             }
         }
 
@@ -1807,13 +1826,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Draw
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
-
         
-        engine.unbindInstanceAttributes();
-        // Write matrices as previous matrices for next render
-        if (!needUpdateBuffer && instanceStorage.needsPreviousMatrices && !this._instanceDataStorage.isFrozen) {
+        // Write current matrices as previous matrices in case of manual update
+        // To offload the user from the burden of updating them
+        if (!needUpdateBuffer && this._instanceDataStorage.manualUpdate && !this._instanceDataStorage.isFrozen) {
             instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
+        
+        engine.unbindInstanceAttributes();
         return this;
     }
 
