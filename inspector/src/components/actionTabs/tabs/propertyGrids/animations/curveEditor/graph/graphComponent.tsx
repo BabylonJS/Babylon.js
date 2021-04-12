@@ -10,7 +10,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import { IAnimationKey } from "babylonjs/Animations/animationKey";
 import { Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
-//import { Scalar } from "babylonjs/Maths/math.scalar";
+import { Scalar } from "babylonjs/Maths/math.scalar";
 
 interface IGraphComponentProps {
     globalState: GlobalState;
@@ -157,39 +157,46 @@ IGraphComponentState
             const value = this._currentAnimation.evaluate(currentFrame);
             const leftKey = keys[indexToAdd];
             const rightKey = keys[indexToAdd + 1];
-            // const previousWidth = rightKey.frame - leftKey.frame;
-            // const leftWidth = currentFrame - leftKey.frame;            
-            // const rightWidth = rightKey.frame - currentFrame;
-          //  const leftScaleFactor = leftWidth / previousWidth;
-           // const rightScaleFactor = rightWidth / previousWidth;
-           // const cutTime = leftWidth / previousWidth;
-
+            
             let newKey: IAnimationKey = {
                 frame: currentFrame,
                 value: value
             }
 
-            const offsetValue = this._currentAnimation.evaluate(currentFrame + 0.0001);
-
             if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
-                let derivative: any;
+                let derivative: Nullable<any> = null;
+                const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                const cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
 
                 switch (this._currentAnimation.dataType) {
                     case Animation.ANIMATIONTYPE_FLOAT: {
-                        derivative = (offsetValue - value) /  0.0001;
+                        derivative = Scalar.Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
                         break;
                     }
-                    default: {
-                        derivative = (offsetValue.subtract(value)).scale(1 / 0.0001);
+                    case Animation.ANIMATIONTYPE_VECTOR2: {
+                        derivative = Vector2.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
                         break;
                     }
-                }           
-                
-                // Left
-                newKey.inTangent = derivative;
+                    case Animation.ANIMATIONTYPE_VECTOR3: {
+                        derivative = Vector3.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case Animation.ANIMATIONTYPE_QUATERNION:{
+                        derivative = Quaternion.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        derivative = Color3.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    case Animation.ANIMATIONTYPE_COLOR4:
+                        derivative = Color4.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                }
 
-                // Right
-                newKey.outTangent = derivative;
+                if (derivative !== null) {
+                    newKey.inTangent = derivative;
+                    newKey.outTangent = derivative;
+                }
             }
 
             

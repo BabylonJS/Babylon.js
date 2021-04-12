@@ -120,9 +120,9 @@ export class WebXREnterExitUI implements IDisposable {
         // if served over HTTP, warn people.
         // Hopefully the browsers will catch up
         if (typeof window !== "undefined") {
-            if (window.location && window.location.protocol === "http:") {
+            if (window.location && window.location.protocol === "http:" && window.location.hostname !== "localhost") {
                 Tools.Warn("WebXR can only be served over HTTPS");
-                return;
+                throw new Error("WebXR can only be served over HTTPS");
             }
         }
 

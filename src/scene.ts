@@ -1461,6 +1461,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (!fullOptions.virtual) {
             EngineStore._LastCreatedScene = this;
             this._engine.scenes.push(this);
+        } else {
+            this._engine._virtualScenes.push(this);
         }
 
         this._uid = null;
@@ -4455,6 +4457,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._engine.scenes.splice(index, 1);
         }
 
+        index = this._engine._virtualScenes.indexOf(this);
+
+        if (index > -1) {
+            this._engine._virtualScenes.splice(index, 1);
+        }
+
         this._engine.wipeCaches(true);
         this._isDisposed = true;
     }
@@ -4678,11 +4686,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Misc.
     /** @hidden */
     public _rebuildGeometries(): void {
-        for (var geometry of this.geometries) {
+        for (const geometry of this.geometries) {
             geometry._rebuild();
         }
 
-        for (var mesh of this.meshes) {
+        for (const mesh of this.meshes) {
             mesh._rebuild();
         }
 
@@ -4690,12 +4698,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.postProcessManager._rebuild();
         }
 
-        for (let component of this._components) {
+        for (const component of this._components) {
             component.rebuild();
         }
 
-        for (var system of this.particleSystems) {
+        for (const system of this.particleSystems) {
             system.rebuild();
+        }
+
+        if (this.spriteManagers) {
+            for (const spriteMgr of this.spriteManagers) {
+                spriteMgr.rebuild();
+            }
         }
     }
 
