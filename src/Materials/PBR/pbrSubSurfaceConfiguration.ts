@@ -28,6 +28,7 @@ export interface IMaterialSubSurfaceDefines {
 
     SS_THICKNESSANDMASK_TEXTURE: boolean;
     SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+    SS_HAS_THICKNESS: boolean;
 
     SS_REFRACTIONMAP_3D: boolean;
     SS_REFRACTIONMAP_OPPOSITEZ: boolean;
@@ -328,6 +329,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_TRANSLUCENCY = this._isTranslucencyEnabled;
             defines.SS_SCATTERING = this._isScatteringEnabled;
             defines.SS_THICKNESSANDMASK_TEXTURE = false;
+            defines.SS_HAS_THICKNESS = false;
             defines.SS_MASK_FROM_THICKNESS_TEXTURE = false;
             defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
             defines.SS_REFRACTION = false;
@@ -353,6 +355,7 @@ export class PBRSubSurfaceConfiguration {
                     }
                 }
 
+                defines.SS_HAS_THICKNESS = (this.maximumThickness - this.minimumThickness) !== 0.0;
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture;
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = this._useMaskFromThicknessTextureGltf;
             }
@@ -414,10 +417,11 @@ export class PBRSubSurfaceConfiguration {
                 var width = refractionTexture.getSize().width;
                 var refractionIor = this.volumeIndexOfRefraction;
                 uniformBuffer.updateFloat4("vRefractionInfos", refractionTexture.level, 1 / refractionIor, depth, this._invertRefractionY ? -1 : 1);
-                uniformBuffer.updateFloat3("vRefractionMicrosurfaceInfos",
+                uniformBuffer.updateFloat4("vRefractionMicrosurfaceInfos",
                     width,
                     refractionTexture.lodGenerationScale,
-                    refractionTexture.lodGenerationOffset);
+                    refractionTexture.lodGenerationOffset,
+                    1.0 / this.indexOfRefraction);
 
                 if (realTimeFiltering) {
                     uniformBuffer.updateFloat2("vRefractionFilteringInfo", width, Scalar.Log2(width));
@@ -637,7 +641,7 @@ export class PBRSubSurfaceConfiguration {
      * @param uniformBuffer defines the current uniform buffer.
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
+        uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 4);
         uniformBuffer.addUniform("vRefractionFilteringInfo", 2);
         uniformBuffer.addUniform("vRefractionInfos", 4);
         uniformBuffer.addUniform("refractionMatrix", 16);

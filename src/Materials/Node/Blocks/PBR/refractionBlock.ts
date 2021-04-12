@@ -233,7 +233,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         effect.setFloat4(this._vRefractionInfosName, refractionTexture.level, 1 / indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
 
-        effect.setFloat3(this._vRefractionMicrosurfaceInfosName, refractionTexture.getSize().width, refractionTexture.lodGenerationScale, refractionTexture.lodGenerationOffset);
+        effect.setFloat4(this._vRefractionMicrosurfaceInfosName, refractionTexture.getSize().width, refractionTexture.lodGenerationScale, refractionTexture.lodGenerationOffset, 1 / indexOfRefraction);
 
         const width = refractionTexture.getSize().width;
 
@@ -300,7 +300,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this._vRefractionMicrosurfaceInfosName = state._getFreeVariableName("vRefractionMicrosurfaceInfos");
 
-        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, "vec3");
+        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, "vec4");
 
         this._vRefractionInfosName = state._getFreeVariableName("vRefractionInfos");
 
