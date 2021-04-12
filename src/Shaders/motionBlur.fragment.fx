@@ -20,11 +20,14 @@ void main(void)
     #ifdef GEOMETRY_SUPPORTED
         #ifdef OBJECT_BASED
             vec2 texelSize = 1.0 / screenSize;
-            vec2 velocityColor = texture2D(velocitySampler, vUV).rg * 2.0 - 1.0;
+            vec2 velocityColor = texture2D(velocitySampler, vUV).rg;
             
             vec2 velocity = vec2(pow(velocityColor.r, 3.0), pow(velocityColor.g, 3.0));
             velocity *= motionScale * motionStrength;
-
+            if (vUV.x < 0.5) {
+                gl_FragColor = vec4(velocity, 0.0, 1.0);
+                return;
+            }
             float speed = length(velocity / texelSize);
             int samplesCount = int(clamp(speed, 1.0, SAMPLES));
 
