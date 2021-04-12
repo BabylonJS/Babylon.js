@@ -262,6 +262,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     render() {
         return (
             <Portal globalState={this.props.globalState}>
+                 <HeaderComponent globalState={this.props.globalState}></HeaderComponent>
                 <div
                     id="gui-editor-workbench-root"
                     style={{
@@ -272,8 +273,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                             return;
                         }
                         this.props.globalState.blockKeyboardEvents = false;
-                    }}
-                >   <HeaderComponent globalState={this.props.globalState}></HeaderComponent>
+                    }}>  
                     {/* Node creation menu */}
                     <GuiListComponent globalState={this.props.globalState} />
 

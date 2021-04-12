@@ -33,7 +33,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps> {
             <div id="pg-header">   
                 <div className="logo-area">
                     
-                    <div className="version"><div className="version-text">Playground&nbsp;</div><span className="version-number" ref={this._refVersionNumber}></span></div>
+                    <div className="version"><div className="version-text">Gui Editor&nbsp;</div><span className="version-number" ref={this._refVersionNumber}></span></div>
                 </div>
                 <div className="command-bar">                   
                     <CommandBarComponent globalState={this.props.globalState} />
