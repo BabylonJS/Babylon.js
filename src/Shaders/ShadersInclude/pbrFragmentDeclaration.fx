@@ -141,7 +141,7 @@ uniform mat4 view;
 // SubSurface
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION
-        uniform vec3 vRefractionMicrosurfaceInfos;
+        uniform vec4 vRefractionMicrosurfaceInfos;
         uniform vec4 vRefractionInfos;
         uniform mat4 refractionMatrix;
         #ifdef REALTIME_FILTERING
