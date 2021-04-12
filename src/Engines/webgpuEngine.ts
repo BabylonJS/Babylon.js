@@ -841,8 +841,6 @@ export class WebGPUEngine extends Engine {
         this._cacheRenderPipeline.setBuffers(null, null, null);
 
         if (bruteForce) {
-            this._currentProgram = null;
-
             this._stencilState.reset();
 
             this._depthCullingState.reset();
@@ -2887,6 +2885,8 @@ export class WebGPUEngine extends Engine {
 
         this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
 
+        this._internalTexturesCache.push(internalTexture);
+
         return internalTexture;
     }
 
@@ -2910,6 +2910,8 @@ export class WebGPUEngine extends Engine {
         this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
         this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
+
+        this._internalTexturesCache.push(internalTexture);
 
         return internalTexture;
     }

@@ -1878,11 +1878,15 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * Rebuilds the particle system.
      */
     public rebuild(): void {
+        if (this._engine.getCaps().vertexArrayObject) {
+            this._vertexArrayObject = null;
+        }
+
         this._createIndexBuffer();
 
-        if (this._vertexBuffer) {
-            this._vertexBuffer._rebuild();
-        }
+        this._spriteBuffer?._rebuild();
+
+        this._vertexBuffer?._rebuild();
 
         for (var key in this._vertexBuffers) {
             this._vertexBuffers[key]._rebuild();
