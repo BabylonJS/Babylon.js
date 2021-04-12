@@ -75,8 +75,9 @@ export class WebXRInputSource {
 
     /**
      * The last XRPose the was calculated on the current XRFrame
+     * @hidden
      */
-    public lastXRPose?: XRPose;
+    public _lastXRPose?: XRPose;
 
     /**
      * Creates the input source object
@@ -181,7 +182,7 @@ export class WebXRInputSource {
      */
     public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
         const pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
-        this.lastXRPose = pose;
+        this._lastXRPose = pose;
 
         // Update the pointer mesh
         if (pose) {
