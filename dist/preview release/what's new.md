@@ -187,7 +187,7 @@
 - Fix instance picking when in billboard mode ([Popov72](https://github.com/Popov72))
 - Fix NME generation code missing `target` and `visibleInInspector` properties ([Popov72](https://github.com/Popov72))
 - Fix `Scene.getPointerOverMesh` returning disposed mesh ([Popov72](https://github.com/Popov72))
-- Fix context lost handling ([Popov72](https://github.com/Popov72))
+- Fix context lost handling ([#10163](https://github.com/BabylonJS/Babylon.js/issues/10163)) ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
