@@ -3074,6 +3074,16 @@ declare module BABYLON {
          */
         static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2;
         /**
+         * Returns a new Vector2 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where the derivative will be stored
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number, result: Vector2): void;
+        /**
          * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
          * @param start defines the start vector
          * @param end defines the end vector
@@ -3785,6 +3795,16 @@ declare module BABYLON {
          * @returns 1st derivative
          */
         static Hermite1stDerivative(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number): Vector3;
+        /**
+         * Update a Vector3 with the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3): void;
         /**
          * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
          * @param start defines the start value
@@ -4854,6 +4874,16 @@ declare module BABYLON {
          * @returns 1st derivative
          */
         static Hermite1stDerivative(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number): Quaternion;
+        /**
+         * Update a Quaternion with the 1st derivative of the Hermite spline defined by the quaternions "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion): void;
     }
     /**
      * Class used to store matrix data (4x4)
@@ -6600,6 +6630,26 @@ declare module BABYLON {
          */
         static LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: number, result: Color3): void;
         /**
+         * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number): Color3;
+        /**
+         * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number, result: Color3): void;
+        /**
          * Returns a Color3 value containing a red color
          * @returns a new Color3 object
          */
@@ -6888,6 +6938,26 @@ declare module BABYLON {
          * @param result defines the Color4 object where to store data
          */
         static LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number, result: Color4): void;
+        /**
+         * Returns a new Color4 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number): Color4;
+        /**
+         * Update a Color4 with the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number, result: Color4): void;
         /**
          * Creates a new Color4 from a Color3 and an alpha value
          * @param color3 defines the source Color3 to read from
