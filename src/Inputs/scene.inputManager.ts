@@ -70,7 +70,12 @@ export class InputManager {
     private _onPointerDown: (evt: IPointerEvent) => void;
     private _onPointerUp: (evt: IPointerEvent) => void;
 
-    private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: IPointerEvent, cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
+    private _initClickEvent: (
+        obs1: Observable<PointerInfoPre>,
+        obs2: Observable<PointerInfo>,
+        evt: IPointerEvent,
+        cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void
+    ) => void;
     private _initActionManager: (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo) => Nullable<AbstractActionManager>;
     private _delayedSimpleClick: (btn: number, clickInfo: _ClickInfo, cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
     private _delayedSimpleClickTimeout: number;
@@ -304,7 +309,15 @@ export class InputManager {
                         var pickResult = scene.pick(
                             this._unTranslatedPointerX,
                             this._unTranslatedPointerY,
-                            (mesh: AbstractMesh): boolean => <boolean>(mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger) && mesh === this._pickedDownMesh),
+                            (mesh: AbstractMesh): boolean =>
+                                <boolean>(
+                                    (mesh.isPickable &&
+                                        mesh.isVisible &&
+                                        mesh.isReady() &&
+                                        mesh.actionManager &&
+                                        mesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger) &&
+                                        mesh === this._pickedDownMesh)
+                                ),
                             false,
                             scene.cameraToUseForPointers
                         );
@@ -341,7 +354,10 @@ export class InputManager {
 
     /** @hidden */
     public _isPointerSwiping(): boolean {
-        return Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold || Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
+        return (
+            Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
+            Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold
+        );
     }
 
     /**
@@ -497,7 +513,12 @@ export class InputManager {
             }
         };
 
-        this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: IPointerEvent, cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void): void => {
+        this._initClickEvent = (
+            obs1: Observable<PointerInfoPre>,
+            obs2: Observable<PointerInfo>,
+            evt: IPointerEvent,
+            cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void
+        ): void => {
             let clickInfo = new _ClickInfo();
             this._currentPickResult = null;
             let act: Nullable<AbstractActionManager> = null;
@@ -619,7 +640,13 @@ export class InputManager {
             this._updatePointerPosition(evt as IPointerEvent);
 
             // PreObservable support
-            if (this._checkPrePointerObservable(null, evt as IPointerEvent, evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)) {
+            if (
+                this._checkPrePointerObservable(
+                    null,
+                    evt as IPointerEvent,
+                    evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE
+                )
+            ) {
                 return;
             }
 
@@ -677,7 +704,13 @@ export class InputManager {
 
             if (!scene.pointerDownPredicate) {
                 scene.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
-                    return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
+                    return (
+                        mesh.isPickable &&
+                        mesh.isVisible &&
+                        mesh.isReady() &&
+                        mesh.isEnabled() &&
+                        (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0)
+                    );
                 };
             }
 
@@ -743,7 +776,13 @@ export class InputManager {
 
                 if (!scene.pointerUpPredicate) {
                     scene.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
+                        return (
+                            mesh.isPickable &&
+                            mesh.isVisible &&
+                            mesh.isReady() &&
+                            mesh.isEnabled() &&
+                            (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0)
+                        );
                     };
                 }
 
@@ -808,7 +847,9 @@ export class InputManager {
             const ctrlKey = isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_CTRL_KEY) === 1;
             const metaKey =
                 isKeyboardActive &&
-                (this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY1) === 1 || this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY2) === 1 || this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY3) === 1);
+                (this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY1) === 1 ||
+                    this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY2) === 1 ||
+                    this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY3) === 1);
             const shiftKey = isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_SHIFT_KEY) === 1;
 
             const evt: { [k: string]: any } = {};
@@ -878,7 +919,13 @@ export class InputManager {
                 }
 
                 if (attachMove) {
-                    if (inputIndex === PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical || inputIndex === PointerInput.FakeMove) {
+                    if (
+                        inputIndex === PointerInput.Horizontal ||
+                        inputIndex === PointerInput.Vertical ||
+                        inputIndex === PointerInput.DeltaHorizontal ||
+                        inputIndex === PointerInput.DeltaVertical ||
+                        inputIndex === PointerInput.FakeMove
+                    ) {
                         evt.type = "pointermove";
                         let currentEvent = eventData || evt;
 
