@@ -237,7 +237,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Mask From Thickness" target={material.subSurface} propertyName="useMaskFromThicknessTexture"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Mask From Thickness (glTF-style)" target={material.subSurface} propertyName="useMaskFromThicknessTextureGltf"
+                    <CheckBoxLineComponent label="glTF-Style Thickness Texture" target={material.subSurface} propertyName="useGltfStyleThicknessTexture"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Tint Color" target={material.subSurface} propertyName="tintColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
