@@ -76,7 +76,6 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         babylonMaterial.subSurface.tintColorAtDistance = attenuationDistance;
         if (extension.attenuationColor !== undefined && extension.attenuationColor.length == 3) {
             babylonMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2]);
-            babylonMaterial.subSurface.tintColor = babylonMaterial.subSurface.tintColor.toLinearSpace();
         }
 
         babylonMaterial.subSurface.minimumThickness = 0.0;
@@ -85,8 +84,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             return this._loader.loadTextureInfoAsync(`${context}/thicknessTexture`, extension.thicknessTexture)
                 .then((texture: BaseTexture) => {
                     babylonMaterial.subSurface.thicknessTexture = texture;
-                    babylonMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
-                    babylonMaterial.subSurface.useMaskFromThicknessTexture = false;
+                    babylonMaterial.subSurface.useGltfStyleThicknessTexture = true;
                 });
         } else {
             return Promise.resolve();

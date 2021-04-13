@@ -284,7 +284,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
-    public SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
+    public SS_USE_GLTF_THICKNESS_TEXTURE = false;
 
     public UNLIT = false;
 
