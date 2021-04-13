@@ -2498,14 +2498,24 @@ declare module BABYLON {
         /**
          * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
          * @see http://mathworld.wolfram.com/HermitePolynomial.html
-         * @param value1 spline value
-         * @param tangent1 spline value
-         * @param value2 spline value
-         * @param tangent2 spline value
-         * @param amount input value
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param amount defines the amount on the interpolation spline (between 0 and 1)
          * @returns hermite result
          */
         static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number;
+        /**
+         * Returns a new scalar which is the 1st derivative of the Hermite spline defined by the scalars "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number;
         /**
         * Returns a random float number between and min and max values
         * @param min min value of random
@@ -3044,7 +3054,7 @@ declare module BABYLON {
          */
         static Clamp(value: DeepImmutable<Vector2>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>): Vector2;
         /**
-         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2"
+         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2"
          * @param value1 defines the 1st control point
          * @param tangent1 defines the outgoing tangent
          * @param value2 defines the 2nd control point
@@ -3053,6 +3063,26 @@ declare module BABYLON {
          * @returns a new Vector2
          */
         static Hermite(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, amount: number): Vector2;
+        /**
+         * Returns a new Vector2 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2;
+        /**
+         * Returns a new Vector2 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where the derivative will be stored
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number, result: Vector2): void;
         /**
          * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
          * @param start defines the start vector
@@ -3755,6 +3785,26 @@ declare module BABYLON {
          * @returns the new Vector3
          */
         static Hermite(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, amount: number): Vector3;
+        /**
+         * Returns a new Vector3 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number): Vector3;
+        /**
+         * Update a Vector3 with the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3): void;
         /**
          * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
          * @param start defines the start value
@@ -4814,6 +4864,26 @@ declare module BABYLON {
          * @returns the new interpolated quaternion
          */
         static Hermite(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, amount: number): Quaternion;
+        /**
+         * Returns a new Quaternion which is the 1st derivative of the Hermite spline defined by the quaternions "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number): Quaternion;
+        /**
+         * Update a Quaternion with the 1st derivative of the Hermite spline defined by the quaternions "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion): void;
     }
     /**
      * Class used to store matrix data (4x4)
@@ -6560,6 +6630,26 @@ declare module BABYLON {
          */
         static LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: number, result: Color3): void;
         /**
+         * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number): Color3;
+        /**
+         * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number, result: Color3): void;
+        /**
          * Returns a Color3 value containing a red color
          * @returns a new Color3 object
          */
@@ -6848,6 +6938,26 @@ declare module BABYLON {
          * @param result defines the Color4 object where to store data
          */
         static LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number, result: Color4): void;
+        /**
+         * Returns a new Color4 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number): Color4;
+        /**
+         * Update a Color4 with the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number, result: Color4): void;
         /**
          * Creates a new Color4 from a Color3 and an alpha value
          * @param color3 defines the source Color3 to read from
@@ -14974,6 +15084,11 @@ declare module BABYLON {
          */
         render(sprites: ThinSprite[], deltaTime: number, viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike, customSpriteUpdate?: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>): void;
         private _appendSpriteVertex;
+        private _buildIndexBuffer;
+        /**
+         * Rebuilds the renderer (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -15040,6 +15155,10 @@ declare module BABYLON {
          * Renders the list of sprites on screen.
          */
         render(): void;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
     }
     /**
      * Class used to manage multiple sprites on the same spritesheet
@@ -15165,6 +15284,10 @@ declare module BABYLON {
          */
         render(): void;
         private _customUpdate;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -20549,7 +20672,7 @@ declare module BABYLON {
          */
         get currentValue(): any;
         /**
-         * Gets the target path of the runtime animation
+         * Gets or sets the target path of the runtime animation
          */
         get targetPath(): string;
         /**
@@ -25493,6 +25616,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -26512,6 +26636,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -34432,9 +34557,9 @@ declare module BABYLON {
         /** @hidden */
         _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */
-        _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
+        _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material, effectiveMesh?: AbstractMesh) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _freeze(): void;
         /** @hidden */
@@ -37131,7 +37256,7 @@ declare module BABYLON {
         /** @hidden */
         _getActionManagerForTrigger(trigger?: number, initialCall?: boolean): Nullable<AbstractActionManager>;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _resyncLightSources(): void;
         /** @hidden */
@@ -42316,7 +42441,7 @@ declare module BABYLON {
         /** @hidden */
         _rebuild(): void;
         /** @hidden */
-        _swapAndDie(target: InternalTexture): void;
+        _swapAndDie(target: InternalTexture, swapAll?: boolean): void;
         /**
          * Dispose the current allocated resources
          */
@@ -42784,334 +42909,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Enum for Device Types
-     */
-    export enum DeviceType {
-        /** Generic */
-        Generic = 0,
-        /** Keyboard */
-        Keyboard = 1,
-        /** Mouse */
-        Mouse = 2,
-        /** Touch Pointers */
-        Touch = 3,
-        /** PS4 Dual Shock */
-        DualShock = 4,
-        /** Xbox */
-        Xbox = 5,
-        /** Switch Controller */
-        Switch = 6
-    }
-    /**
-     * Enum for All Pointers (Touch/Mouse)
-     */
-    export enum PointerInput {
-        /** Horizontal Axis */
-        Horizontal = 0,
-        /** Vertical Axis */
-        Vertical = 1,
-        /** Left Click or Touch */
-        LeftClick = 2,
-        /** Middle Click */
-        MiddleClick = 3,
-        /** Right Click */
-        RightClick = 4,
-        /** Browser Back */
-        BrowserBack = 5,
-        /** Browser Forward */
-        BrowserForward = 6,
-        /** Mouse Wheel X */
-        MouseWheelX = 7,
-        /** Mouse Wheel Y */
-        MouseWheelY = 8,
-        /** Mouse Wheel Z */
-        MouseWheelZ = 9,
-        /** Delta X */
-        DeltaHorizontal = 10,
-        /** Delta Y */
-        DeltaVertical = 11,
-        /** MoveBeing Hijack for simultaneous buttons pressed for instance */
-        FakeMove = 12
-    }
-    /**
-     * Enum for Dual Shock Gamepad
-     */
-    export enum DualShockInput {
-        /** Cross */
-        Cross = 0,
-        /** Circle */
-        Circle = 1,
-        /** Square */
-        Square = 2,
-        /** Triangle */
-        Triangle = 3,
-        /** L1 */
-        L1 = 4,
-        /** R1 */
-        R1 = 5,
-        /** L2 */
-        L2 = 6,
-        /** R2 */
-        R2 = 7,
-        /** Share */
-        Share = 8,
-        /** Options */
-        Options = 9,
-        /** L3 */
-        L3 = 10,
-        /** R3 */
-        R3 = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** TouchPad */
-        TouchPad = 17,
-        /** LStickXAxis */
-        LStickXAxis = 18,
-        /** LStickYAxis */
-        LStickYAxis = 19,
-        /** RStickXAxis */
-        RStickXAxis = 20,
-        /** RStickYAxis */
-        RStickYAxis = 21
-    }
-    /**
-     * Enum for Xbox Gamepad
-     */
-    export enum XboxInput {
-        /** A */
-        A = 0,
-        /** B */
-        B = 1,
-        /** X */
-        X = 2,
-        /** Y */
-        Y = 3,
-        /** LB */
-        LB = 4,
-        /** RB */
-        RB = 5,
-        /** LT */
-        LT = 6,
-        /** RT */
-        RT = 7,
-        /** Back */
-        Back = 8,
-        /** Start */
-        Start = 9,
-        /** LS */
-        LS = 10,
-        /** RS */
-        RS = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** LStickXAxis */
-        LStickXAxis = 17,
-        /** LStickYAxis */
-        LStickYAxis = 18,
-        /** RStickXAxis */
-        RStickXAxis = 19,
-        /** RStickYAxis */
-        RStickYAxis = 20
-    }
-    /**
-     * Enum for Switch (Pro/JoyCon L+R) Gamepad
-     */
-    export enum SwitchInput {
-        /** B */
-        B = 0,
-        /** A */
-        A = 1,
-        /** Y */
-        Y = 2,
-        /** X */
-        X = 3,
-        /** L */
-        L = 4,
-        /** R */
-        R = 5,
-        /** ZL */
-        ZL = 6,
-        /** ZR */
-        ZR = 7,
-        /** Minus */
-        Minus = 8,
-        /** Plus */
-        Plus = 9,
-        /** LS */
-        LS = 10,
-        /** RS */
-        RS = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** Capture */
-        Capture = 17,
-        /** LStickXAxis */
-        LStickXAxis = 18,
-        /** LStickYAxis */
-        LStickYAxis = 19,
-        /** RStickXAxis */
-        RStickXAxis = 20,
-        /** RStickYAxis */
-        RStickYAxis = 21
-    }
-}
-declare module BABYLON {
-    /**
-     * This class will take all inputs from Keyboard, Pointer, and
-     * any Gamepads and provide a polling system that all devices
-     * will use.  This class assumes that there will only be one
-     * pointer device and one keyboard.
-     */
-    export class DeviceInputSystem implements IDisposable {
-        /**
-         * Returns onDeviceConnected callback property
-         * @returns Callback with function to execute when a device is connected
-         */
-        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Sets callback function when a device is connected and executes against all connected devices
-         * @param callback Function to execute when a device is connected
-         */
-        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
-        /**
-         * Callback to be triggered when a device is disconnected
-         */
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Callback to be triggered when event driven input is updated
-         */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
-        private _inputs;
-        private _gamepads;
-        private _keyboardActive;
-        private _pointerActive;
-        private _elementToAttachTo;
-        private _engine;
-        private _keyboardDownEvent;
-        private _keyboardUpEvent;
-        private _keyboardBlurEvent;
-        private _pointerMoveEvent;
-        private _pointerDownEvent;
-        private _pointerUpEvent;
-        private _pointerWheelEvent;
-        private _pointerBlurEvent;
-        private _wheelEventName;
-        private _pointerWheelClearObserver;
-        private _gamepadConnectedEvent;
-        private _gamepadDisconnectedEvent;
-        private _onDeviceConnected;
-        private static _MAX_KEYCODES;
-        private static _MAX_POINTER_INPUTS;
-        private _eventPrefix;
-        private constructor();
-        /**
-         * Creates a new DeviceInputSystem instance
-         * @param engine Engine to pull input element from
-         * @returns The new instance
-         */
-        static Create(engine: Engine): DeviceInputSystem;
-        /**
-         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check for a specific device in the DeviceInputSystem
-         * @param deviceType Type of device to check for
-         * @returns bool with status of device's existence
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-        /**
-         * Dispose of all the eventlisteners
-         */
-        dispose(): void;
-        /**
-         * Checks for existing connections to devices and register them, if necessary
-         * Currently handles gamepads and mouse
-         */
-        private _checkForConnectedDevices;
-        /**
-         * Add a gamepad to the DeviceInputSystem
-         * @param gamepad A single DOM Gamepad object
-         */
-        private _addGamePad;
-        /**
-         * Add pointer device to DeviceInputSystem
-         * @param deviceType Type of Pointer to add
-         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
-         * @param currentX Current X at point of adding
-         * @param currentY Current Y at point of adding
-         */
-        private _addPointerDevice;
-        /**
-         * Add device and inputs to device array
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param numberOfInputs Number of input entries to create for given device
-         */
-        private _registerDevice;
-        /**
-         * Given a specific device name, remove that device from the device map
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _unregisterDevice;
-        /**
-         * Handle all actions that come from keyboard interaction
-         */
-        private _handleKeyActions;
-        /**
-         * Handle all actions that come from pointer interaction
-         */
-        private _handlePointerActions;
-        /**
-         * Handle all actions that come from gamepad interaction
-         */
-        private _handleGamepadActions;
-        /**
-         * Update all non-event based devices with each frame
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         */
-        private _updateDevice;
-        /**
-         * Gets DeviceType from the device name
-         * @param deviceName Name of Device from DeviceInputSystem
-         * @returns DeviceType enum value
-         */
-        private _getGamepadDeviceType;
-    }
-}
-declare module BABYLON {
-    /**
      * Defines the interface used by display changed events
      */
     export interface IDisplayChangedEventArgs {
@@ -43383,6 +43180,8 @@ declare module BABYLON {
          * Gets the list of created scenes
          */
         scenes: Scene[];
+        /** @hidden */
+        _virtualScenes: Scene[];
         /**
          * Event raised when a new scene is created
          */
@@ -43395,10 +43194,6 @@ declare module BABYLON {
          * Gets a boolean indicating if the pointer is currently locked
          */
         isPointerLock: boolean;
-        /**
-         * Stores instance of DeviceInputSystem
-         */
-        deviceInputSystem: DeviceInputSystem;
         /**
          * Observable event triggered each time the rendering canvas is resized
          */
@@ -44805,6 +44600,334 @@ declare module BABYLON {
         createCollider(): Collider;
         init(scene: Scene): void;
         private _collideWithWorld;
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum for Device Types
+     */
+    export enum DeviceType {
+        /** Generic */
+        Generic = 0,
+        /** Keyboard */
+        Keyboard = 1,
+        /** Mouse */
+        Mouse = 2,
+        /** Touch Pointers */
+        Touch = 3,
+        /** PS4 Dual Shock */
+        DualShock = 4,
+        /** Xbox */
+        Xbox = 5,
+        /** Switch Controller */
+        Switch = 6
+    }
+    /**
+     * Enum for All Pointers (Touch/Mouse)
+     */
+    export enum PointerInput {
+        /** Horizontal Axis */
+        Horizontal = 0,
+        /** Vertical Axis */
+        Vertical = 1,
+        /** Left Click or Touch */
+        LeftClick = 2,
+        /** Middle Click */
+        MiddleClick = 3,
+        /** Right Click */
+        RightClick = 4,
+        /** Browser Back */
+        BrowserBack = 5,
+        /** Browser Forward */
+        BrowserForward = 6,
+        /** Mouse Wheel X */
+        MouseWheelX = 7,
+        /** Mouse Wheel Y */
+        MouseWheelY = 8,
+        /** Mouse Wheel Z */
+        MouseWheelZ = 9,
+        /** Delta X */
+        DeltaHorizontal = 10,
+        /** Delta Y */
+        DeltaVertical = 11,
+        /** MoveBeing Hijack for simultaneous buttons pressed for instance */
+        FakeMove = 12
+    }
+    /**
+     * Enum for Dual Shock Gamepad
+     */
+    export enum DualShockInput {
+        /** Cross */
+        Cross = 0,
+        /** Circle */
+        Circle = 1,
+        /** Square */
+        Square = 2,
+        /** Triangle */
+        Triangle = 3,
+        /** L1 */
+        L1 = 4,
+        /** R1 */
+        R1 = 5,
+        /** L2 */
+        L2 = 6,
+        /** R2 */
+        R2 = 7,
+        /** Share */
+        Share = 8,
+        /** Options */
+        Options = 9,
+        /** L3 */
+        L3 = 10,
+        /** R3 */
+        R3 = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** TouchPad */
+        TouchPad = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+    /**
+     * Enum for Xbox Gamepad
+     */
+    export enum XboxInput {
+        /** A */
+        A = 0,
+        /** B */
+        B = 1,
+        /** X */
+        X = 2,
+        /** Y */
+        Y = 3,
+        /** LB */
+        LB = 4,
+        /** RB */
+        RB = 5,
+        /** LT */
+        LT = 6,
+        /** RT */
+        RT = 7,
+        /** Back */
+        Back = 8,
+        /** Start */
+        Start = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** LStickXAxis */
+        LStickXAxis = 17,
+        /** LStickYAxis */
+        LStickYAxis = 18,
+        /** RStickXAxis */
+        RStickXAxis = 19,
+        /** RStickYAxis */
+        RStickYAxis = 20
+    }
+    /**
+     * Enum for Switch (Pro/JoyCon L+R) Gamepad
+     */
+    export enum SwitchInput {
+        /** B */
+        B = 0,
+        /** A */
+        A = 1,
+        /** Y */
+        Y = 2,
+        /** X */
+        X = 3,
+        /** L */
+        L = 4,
+        /** R */
+        R = 5,
+        /** ZL */
+        ZL = 6,
+        /** ZR */
+        ZR = 7,
+        /** Minus */
+        Minus = 8,
+        /** Plus */
+        Plus = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** Capture */
+        Capture = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+}
+declare module BABYLON {
+    /**
+     * This class will take all inputs from Keyboard, Pointer, and
+     * any Gamepads and provide a polling system that all devices
+     * will use.  This class assumes that there will only be one
+     * pointer device and one keyboard.
+     */
+    export class DeviceInputSystem implements IDisposable {
+        /**
+         * Returns onDeviceConnected callback property
+         * @returns Callback with function to execute when a device is connected
+         */
+        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Sets callback function when a device is connected and executes against all connected devices
+         * @param callback Function to execute when a device is connected
+         */
+        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
+        /**
+         * Callback to be triggered when a device is disconnected
+         */
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Callback to be triggered when event driven input is updated
+         */
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
+        private _inputs;
+        private _gamepads;
+        private _keyboardActive;
+        private _pointerActive;
+        private _elementToAttachTo;
+        private _engine;
+        private _keyboardDownEvent;
+        private _keyboardUpEvent;
+        private _keyboardBlurEvent;
+        private _pointerMoveEvent;
+        private _pointerDownEvent;
+        private _pointerUpEvent;
+        private _pointerWheelEvent;
+        private _pointerBlurEvent;
+        private _wheelEventName;
+        private _pointerWheelClearObserver;
+        private _gamepadConnectedEvent;
+        private _gamepadDisconnectedEvent;
+        private _onDeviceConnected;
+        private static _MAX_KEYCODES;
+        private static _MAX_POINTER_INPUTS;
+        private _eventPrefix;
+        private constructor();
+        /**
+         * Creates a new DeviceInputSystem instance
+         * @param engine Engine to pull input element from
+         * @returns The new instance
+         */
+        static Create(engine: Engine): DeviceInputSystem;
+        /**
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+        /**
+         * Dispose of all the eventlisteners
+         */
+        dispose(): void;
+        /**
+         * Checks for existing connections to devices and register them, if necessary
+         * Currently handles gamepads and mouse
+         */
+        private _checkForConnectedDevices;
+        /**
+         * Add a gamepad to the DeviceInputSystem
+         * @param gamepad A single DOM Gamepad object
+         */
+        private _addGamePad;
+        /**
+         * Add pointer device to DeviceInputSystem
+         * @param deviceType Type of Pointer to add
+         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
+         * @param currentX Current X at point of adding
+         * @param currentY Current Y at point of adding
+         */
+        private _addPointerDevice;
+        /**
+         * Add device and inputs to device array
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param numberOfInputs Number of input entries to create for given device
+         */
+        private _registerDevice;
+        /**
+         * Given a specific device name, remove that device from the device map
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _unregisterDevice;
+        /**
+         * Handle all actions that come from keyboard interaction
+         */
+        private _handleKeyActions;
+        /**
+         * Handle all actions that come from pointer interaction
+         */
+        private _handlePointerActions;
+        /**
+         * Handle all actions that come from gamepad interaction
+         */
+        private _handleGamepadActions;
+        /**
+         * Update all non-event based devices with each frame
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         */
+        private _updateDevice;
+        /**
+         * Gets DeviceType from the device name
+         * @param deviceName Name of Device from DeviceInputSystem
+         * @returns DeviceType enum value
+         */
+        private _getGamepadDeviceType;
     }
 }
 declare module BABYLON {
@@ -47186,6 +47309,7 @@ declare module BABYLON {
      */
     export class AssetContainer extends AbstractScene {
         private _wasAddedToScene;
+        private _onContextRestoredObserver;
         /**
          * The scene the AssetContainer belongs to.
          */
@@ -53225,6 +53349,11 @@ declare module BABYLON {
          */
         compensateOnFirstFrame: boolean;
         /**
+         * The last XRViewerPose from the current XRFrame
+         * @hidden
+         */
+        _lastXRViewerPose?: XRViewerPose;
+        /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
@@ -53254,6 +53383,7 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
+        dispose(): void;
         private _rotate180;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
@@ -54766,6 +54896,11 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        /**
+         * The last XRPose the was calculated on the current XRFrame
+         * @hidden
+         */
+        _lastXRPose?: XRPose;
         /**
          * Creates the input source object
          * @see https://doc.babylonjs.com/how_to/webxr_controllers_support
@@ -65512,6 +65647,7 @@ declare module BABYLON {
          * Define the name of the lens flare system
          */
         name: string, emitter: any, scene: Scene);
+        private _createIndexBuffer;
         /**
          * Define if the lens flare system is enabled.
          */
@@ -65550,6 +65686,10 @@ declare module BABYLON {
          * @hidden
          */
         render(): boolean;
+        /**
+         * Rebuilds the lens flare system
+         */
+        rebuild(): void;
         /**
          * Dispose and release the lens flare with its associated resources.
          */
@@ -65810,6 +65950,7 @@ declare module BABYLON {
         protected _postProcessManager: PostProcessManager;
         protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
         protected _forceFullscreenViewport: boolean;
+        protected _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
         /**
          * Creates a min/max reducer
          * @param camera The camera to use for the post processes
@@ -66405,6 +66546,7 @@ declare module BABYLON {
         private _vertexBuffers;
         private _indexBuffer;
         private _fullscreenViewport;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect renderer
          * @param engine the engine to use for rendering
@@ -66508,6 +66650,7 @@ declare module BABYLON {
         set effect(effect: Effect);
         /** @hidden */
         _drawWrapper: DrawWrapper;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect to be renderer
          * @param creationOptions options to create the effect
@@ -84003,6 +84146,8 @@ interface XRInputSource {
 interface XRPose {
     readonly transform: XRRigidTransform;
     readonly emulatedPosition: boolean;
+    readonly linearVelocity?: DOMPointReadOnly;
+    readonly angularVelocity?: DOMPointReadOnly;
 }
 
 interface XRWorldInformation {
@@ -84020,8 +84165,9 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // World geometries
+    // World geometries. DEPRECATED
     worldInformation?: XRWorldInformation;
+    detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
     // Image tracking

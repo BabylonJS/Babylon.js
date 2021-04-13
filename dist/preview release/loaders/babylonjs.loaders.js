@@ -5569,6 +5569,8 @@ var KHR_materials_transmission = /** @class */ (function () {
             pbrMaterial.subSurface.isRefractionEnabled = false;
             return Promise.resolve();
         }
+        pbrMaterial.subSurface.minimumThickness = 0.0;
+        pbrMaterial.subSurface.maximumThickness = 0.0;
         if (extension.transmissionTexture) {
             extension.transmissionTexture.nonColorData = true;
             return this._loader.loadTextureInfoAsync(context + "/transmissionTexture", extension.transmissionTexture, undefined)

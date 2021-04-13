@@ -110,6 +110,16 @@ export class LensFlareSystem {
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
         // Indices
+        this._createIndexBuffer();
+
+        // Effects
+        this._drawWrapper.effect = engine.createEffect("lensFlare",
+            [VertexBuffer.PositionKind],
+            ["color", "viewportMatrix"],
+            ["textureSampler"], "");
+    }
+
+    private _createIndexBuffer(): void {
         var indices = [];
         indices.push(0);
         indices.push(1);
@@ -119,13 +129,7 @@ export class LensFlareSystem {
         indices.push(2);
         indices.push(3);
 
-        this._indexBuffer = engine.createIndexBuffer(indices);
-
-        // Effects
-        this._drawWrapper.effect = engine.createEffect("lensFlare",
-            [VertexBuffer.PositionKind],
-            ["color", "viewportMatrix"],
-            ["textureSampler"], "");
+        this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
     }
 
     /**
@@ -351,6 +355,17 @@ export class LensFlareSystem {
         engine.setDepthBuffer(true);
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
         return true;
+    }
+
+    /**
+     * Rebuilds the lens flare system
+     */
+     public rebuild(): void {
+        this._createIndexBuffer();
+
+        for (const key in this._vertexBuffers) {
+            this._vertexBuffers[key]?._rebuild();
+        }
     }
 
     /**

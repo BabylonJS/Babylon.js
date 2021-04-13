@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_control__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -11160,7 +11160,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 6; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px;\n      min-width: 70px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
+exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar #bottom-bar-total {\n    grid-row: 1;\n    grid-column: 6;\n    color: white;\n    background: #222222;\n    height: 25px;\n    align-self: center;\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    font-family: 'acumin-pro-condensed';\n    font-size: 12pt; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 6; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px;\n      min-width: 70px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11178,7 +11178,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: black;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
+exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: #111111;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%;\n      pointer-events: none; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11214,7 +11214,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
+exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #edit-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #111111; }\n    #sideBar #edit-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #edit-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #edit-animation-pane #edit-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      display: grid;\n      grid-template-columns: 50% 50%;\n      grid-template-rows: 100%; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-ok {\n        grid-row: 1;\n        grid-column: 1; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-cancel {\n        grid-row: 1;\n        grid-column: 2; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11232,7 +11232,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n", ""]);
+exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -46866,6 +46866,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg":
+/*!****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg ***!
+  \****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' style='fill:none'/%3E%3Cpath d='M27.5,18.85a1.18,1.18,0,0,0-1,.62h-8.3a1.65,1.65,0,0,0-.3-.46l-2.1-2.09a1.4,1.4,0,0,0-2,0L11.7,19a1.41,1.41,0,0,0,0,2l2.09,2.09a1.39,1.39,0,0,0,2,0L17.86,21a1.67,1.67,0,0,0,.21-.33h8.4a1.2,1.2,0,1,0,1-1.81ZM17,20.14l-2.1,2.09a.2.2,0,0,1-.27,0l-2.09-2.09a.19.19,0,0,1,0-.28l2.09-2.09a.2.2,0,0,1,.14-.06.16.16,0,0,1,.13.06L17,19.86A.21.21,0,0,1,17,20.14Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg":
 /*!**********************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg ***!
@@ -46907,6 +46918,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' style='fill:none'/%3E%3Crect x='2.17' y='2.17' width='5.66' height='5.66' rx='1' transform='translate(-2.07 5) rotate(-45)' style='fill:%23ffc017'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg":
+/*!******************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg ***!
+  \******************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.51,13.53a1.2,1.2,0,0,0-2,1.18l-6.23,6.23-.68-.68a1.4,1.4,0,0,0-2,0l-2.09,2.1a1.4,1.4,0,0,0,0,2l2.09,2.09a1.39,1.39,0,0,0,2,0l2.1-2.09a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.2,1.2,0,0,0,1.15-2Zm-7.66,10-2.1,2.09a.18.18,0,0,1-.27,0l-2.09-2.09a.19.19,0,0,1,0-.28l2.09-2.09a.19.19,0,0,1,.14-.05.15.15,0,0,1,.13.05l2.1,2.09A.21.21,0,0,1,18.85,23.48Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -46979,12 +47001,32 @@ var BottomBarComponent = /** @class */ (function (_super) {
     function BottomBarComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
+        _this._onAnimationsLoadedObserver = _this.props.context.onAnimationsLoaded.add(function () {
+            _this.forceUpdate();
+        });
+        _this._onActiveAnimationChangedObserver = _this.props.context.onActiveAnimationChanged.add(function () {
+            _this.forceUpdate();
+        });
         return _this;
     }
+    BottomBarComponent.prototype._renderMaxFrame = function () {
+        var keys = this.props.context.activeAnimation.getKeys();
+        return Math.round(keys[keys.length - 1].frame);
+    };
+    BottomBarComponent.prototype.componentWillUnmount = function () {
+        if (this._onAnimationsLoadedObserver) {
+            this.props.context.onAnimationsLoaded.remove(this._onAnimationsLoadedObserver);
+        }
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
+    };
     BottomBarComponent.prototype.render = function () {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_mediaPlayerComponent__WEBPACK_IMPORTED_MODULE_2__["MediaPlayerComponent"], { globalState: this.props.globalState, context: this.props.context }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_3__["RangeSelectorComponent"], { globalState: this.props.globalState, context: this.props.context })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_3__["RangeSelectorComponent"], { globalState: this.props.globalState, context: this.props.context }),
+            this.props.context.activeAnimation &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar-total" }, this._renderMaxFrame())));
     };
     return BottomBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47281,6 +47323,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var Context = /** @class */ (function () {
     function Context() {
+        this.activeColor = null;
         this.forwardAnimation = true;
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = 100;
@@ -47296,6 +47339,8 @@ var Context = /** @class */ (function () {
         this.onValueManuallyEntered = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onNewKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onFlattenTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onLinearTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDeleteAnimation = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphScaled = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47305,6 +47350,8 @@ var Context = /** @class */ (function () {
         this.onDeleteKeyActiveKeyPoints = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionRectangleMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onAnimationsLoaded = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onEditAnimationRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onEditAnimationUIClosed = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     Context.prototype.prepare = function () {
         this.isPlaying = false;
@@ -47570,13 +47617,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 
 var Curve = /** @class */ (function () {
-    function Curve(color, animation, property, tangentBuilder) {
+    function Curve(color, animation, property, tangentBuilder, setDefaultInTangent, setDefaultOutTangent) {
         this.keys = new Array();
         this.onDataUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.color = color;
         this.animation = animation;
         this.property = property;
         this.tangentBuilder = tangentBuilder;
+        this.setDefaultInTangent = setDefaultInTangent;
+        this.setDefaultOutTangent = setDefaultOutTangent;
     }
     Curve.prototype.gePathData = function (convertX, convertY) {
         var keys = this.keys;
@@ -47585,34 +47634,23 @@ var Curve = /** @class */ (function () {
         }
         var pathData = "M" + convertX(keys[0].frame) + " " + convertY(keys[0].value);
         for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
-            var outTangent = keys[keyIndex - 1].outTangent || 0;
-            var inTangent = keys[keyIndex].inTangent || 0;
-            var prevFrame = keys[keyIndex - 1].frame;
+            var outTangent = keys[keyIndex - 1].outTangent;
+            var inTangent = keys[keyIndex].inTangent;
             var currentFrame = keys[keyIndex].frame;
-            var prevValue = keys[keyIndex - 1].value;
             var currentValue = keys[keyIndex].value;
+            var prevFrame = keys[keyIndex - 1].frame;
             var frameDist = currentFrame - prevFrame;
-            var controlPoint0Frame = prevFrame + frameDist / 2;
-            var controlPoint1Frame = prevFrame + frameDist / 2;
-            var controlPoint0Value = void 0;
-            var controlPoint1Value = void 0;
-            if (outTangent) {
-                controlPoint0Frame = prevFrame + frameDist / 3;
-                controlPoint0Value = prevValue + outTangent / 3;
+            if (outTangent === undefined && inTangent === undefined) { // Draw a straight line
+                pathData += " L" + convertX(currentFrame) + " " + convertY(currentValue);
+                continue;
             }
-            else {
-                var animEval = this.animation.evaluate(controlPoint0Frame);
-                controlPoint0Value = this.property ? animEval[this.property] : animEval;
+            // Let's sample the curve else
+            for (var frame = prevFrame; frame < currentFrame; frame += frameDist / Curve.SampleRate) {
+                var keyValue = this.animation.evaluate(frame);
+                var value = this.property ? keyValue[this.property] : keyValue;
+                pathData += " L" + convertX(frame) + " " + convertY(value);
             }
-            if (inTangent) {
-                controlPoint1Frame = currentFrame - frameDist / 3;
-                controlPoint1Value = currentValue - inTangent / 3;
-            }
-            else {
-                var animEval = this.animation.evaluate(controlPoint1Frame);
-                controlPoint1Value = this.property ? animEval[this.property] : animEval;
-            }
-            pathData += " C" + convertX(controlPoint0Frame) + " " + convertY(controlPoint0Value) + ", " + convertX(controlPoint1Frame) + " " + convertY(controlPoint1Value) + ", " + convertX(currentFrame) + " " + convertY(currentValue);
+            pathData += " L" + convertX(currentFrame) + " " + convertY(currentValue);
         }
         return pathData;
     };
@@ -47622,16 +47660,8 @@ var Curve = /** @class */ (function () {
         }
         var keys = this.keys;
         var inTangent = keys[keyIndex].inTangent;
-        if (!inTangent) {
-            var prevFrame = keys[keyIndex - 1].frame;
-            var currentFrame = keys[keyIndex].frame;
-            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
-            var evaluatedValueEntry = this.animation.evaluate(midFrame);
-            var evaluatedValue = 0;
-            if (this.property) {
-                evaluatedValue = evaluatedValueEntry[this.property];
-            }
-            inTangent = (keys[keyIndex].value - evaluatedValue) / (currentFrame - midFrame);
+        if (inTangent === undefined) {
+            inTangent = this.evaluateInTangent(keyIndex);
         }
         return length * inTangent;
     };
@@ -47641,42 +47671,86 @@ var Curve = /** @class */ (function () {
             return 0;
         }
         var outTangent = keys[keyIndex].outTangent;
-        if (!outTangent) {
-            var prevFrame = keys[keyIndex].frame;
-            var currentFrame = keys[keyIndex + 1].frame;
-            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
-            var evaluatedValueEntry = this.animation.evaluate(midFrame);
-            var evaluatedValue = 0;
-            if (this.property) {
-                evaluatedValue = evaluatedValueEntry[this.property];
-            }
-            outTangent = (evaluatedValue - keys[keyIndex].value) / (currentFrame - midFrame);
+        if (outTangent === undefined) {
+            outTangent = this.evaluateOutTangent(keyIndex);
         }
         return length * outTangent;
     };
+    Curve.prototype.evaluateOutTangent = function (keyIndex) {
+        var keys = this.keys;
+        var prevFrame = keys[keyIndex].frame;
+        var currentFrame = keys[keyIndex + 1].frame;
+        return (keys[keyIndex + 1].value - keys[keyIndex].value) / (currentFrame - prevFrame);
+    };
+    Curve.prototype.evaluateInTangent = function (keyIndex) {
+        var keys = this.keys;
+        var prevFrame = keys[keyIndex - 1].frame;
+        var currentFrame = keys[keyIndex].frame;
+        return (keys[keyIndex].value - keys[keyIndex - 1].value) / (currentFrame - prevFrame);
+    };
+    Curve.prototype.storeDefaultInTangent = function (keyIndex) {
+        var keys = this.keys;
+        var animationKeys = this.animation.getKeys();
+        keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
+        if (this.property) {
+            animationKeys[keyIndex].inTangent[this.property] = keys[keyIndex].inTangent;
+        }
+        else {
+            animationKeys[keyIndex].inTangent = keys[keyIndex].inTangent;
+        }
+    };
+    Curve.prototype.storeDefaultOutTangent = function (keyIndex) {
+        var keys = this.keys;
+        var animationKeys = this.animation.getKeys();
+        keys[keyIndex].outTangent = this.evaluateOutTangent(keyIndex);
+        if (this.property) {
+            animationKeys[keyIndex].outTangent[this.property] = keys[keyIndex].outTangent;
+        }
+        else {
+            animationKeys[keyIndex].outTangent = keys[keyIndex].outTangent;
+        }
+    };
     Curve.prototype.updateInTangentFromControlPoint = function (keyId, slope) {
-        this.keys[keyId].inTangent = slope;
+        var keys = this.keys;
+        keys[keyId].inTangent = slope;
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
                 this.animation.getKeys()[keyId].inTangent = this.tangentBuilder();
+                this.setDefaultInTangent(keyId);
             }
-            this.animation.getKeys()[keyId].inTangent[this.property] = this.keys[keyId].inTangent;
+            if (!this.animation.getKeys()[keyId - 1].outTangent) {
+                this.animation.getKeys()[keyId - 1].outTangent = this.tangentBuilder();
+                this.setDefaultOutTangent(keyId - 1);
+            }
+            this.animation.getKeys()[keyId].inTangent[this.property] = keys[keyId].inTangent;
         }
         else {
-            this.animation.getKeys()[keyId].inTangent = this.keys[keyId].inTangent;
+            this.animation.getKeys()[keyId].inTangent = keys[keyId].inTangent;
+            if (this.animation.getKeys()[keyId - 1].outTangent === undefined) {
+                this.storeDefaultOutTangent(keyId - 1);
+            }
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateOutTangentFromControlPoint = function (keyId, slope) {
-        this.keys[keyId].outTangent = slope;
+        var keys = this.keys;
+        keys[keyId].outTangent = slope;
         if (this.property) {
+            if (!this.animation.getKeys()[keyId + 1].inTangent) {
+                this.animation.getKeys()[keyId + 1].inTangent = this.tangentBuilder();
+                this.setDefaultInTangent(keyId + 1);
+            }
             if (!this.animation.getKeys()[keyId].outTangent) {
                 this.animation.getKeys()[keyId].outTangent = this.tangentBuilder();
+                this.setDefaultOutTangent(keyId);
             }
-            this.animation.getKeys()[keyId].outTangent[this.property] = this.keys[keyId].outTangent;
+            this.animation.getKeys()[keyId].outTangent[this.property] = keys[keyId].outTangent;
         }
         else {
-            this.animation.getKeys()[keyId].outTangent = this.keys[keyId].outTangent;
+            this.animation.getKeys()[keyId].outTangent = keys[keyId].outTangent;
+            if (this.animation.getKeys()[keyId + 1].inTangent === undefined) {
+                this.storeDefaultInTangent(keyId + 1);
+            }
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
@@ -47748,6 +47822,7 @@ var Curve = /** @class */ (function () {
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
+    Curve.SampleRate = 50;
     Curve.TangentLength = 50;
     return Curve;
 }());
@@ -47777,24 +47852,34 @@ var CurveComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this.state = { isSelected: false };
         _this._onDataUpdatedObserver = _this.props.curve.onDataUpdatedObservable.add(function () { return _this.forceUpdate(); });
+        _this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(function () {
+            if (_this._onDataUpdatedObserver) {
+                _this.props.curve.onDataUpdatedObservable.remove(_this._onDataUpdatedObserver);
+            }
+            _this._onDataUpdatedObserver = null;
+            _this.forceUpdate();
+        });
         return _this;
     }
     CurveComponent.prototype.componentWillUnmount = function () {
         if (this._onDataUpdatedObserver) {
             this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
         }
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
     };
-    CurveComponent.prototype.shouldComponentUpdate = function (newProps) {
+    CurveComponent.prototype.componentDidUpdate = function () {
         var _this = this;
-        if (newProps.curve !== this.props.curve) {
-            if (this._onDataUpdatedObserver) {
-                this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
-            }
-            this._onDataUpdatedObserver = newProps.curve.onDataUpdatedObservable.add(function () { return _this.forceUpdate(); });
+        if (!this._onDataUpdatedObserver) {
+            this._onDataUpdatedObserver = this.props.curve.onDataUpdatedObservable.add(function () { return _this.forceUpdate(); });
         }
         return true;
     };
     CurveComponent.prototype.render = function () {
+        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+            return null;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { style: { cursor: "pointer", overflow: "auto" } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { d: this.props.curve.gePathData(this.props.convertX, this.props.convertY), style: {
                     stroke: this.props.curve.color,
@@ -47943,6 +48028,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var GraphComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphComponent, _super);
     function GraphComponent(props) {
@@ -48032,21 +48118,48 @@ var GraphComponent = /** @class */ (function (_super) {
                 }
             }
             var value = _this._currentAnimation.evaluate(currentFrame);
-            //  const prevValue = this._currentAnimation.evaluate(currentFrame - 0.01);
-            //const nextValue = this._currentAnimation.evaluate(currentFrame + 0.01);
+            var leftKey = keys[indexToAdd];
+            var rightKey = keys[indexToAdd + 1];
             var newKey = {
                 frame: currentFrame,
                 value: value
             };
-            // if (keys[indexToAdd].outTangent) {
-            //     newKey.inTangent = value.subtract ? value.subtract(prevValue).scaleInPlace(2 / 3) : (value - prevValue) * 1 / 3;
-            // }
-            // if (keys[indexToAdd + 1].inTangent) {
-            //     newKey.outTangent = nextValue.subtract ? nextValue.subtract(value).scaleInPlace(1/ 3) : (nextValue - value) * 2 / 3;
-            // }
+            if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                var derivative = null;
+                var invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                var cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
+                switch (_this._currentAnimation.dataType) {
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Scalar"].Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                }
+                if (derivative !== null) {
+                    newKey.inTangent = derivative;
+                    newKey.outTangent = derivative;
+                }
+            }
             keys.splice(indexToAdd + 1, 0, newKey);
             _this._currentAnimation.setKeys(keys);
-            _this._evaluateKeys();
+            _this._evaluateKeys(false);
             _this.props.context.activeKeyPoints = [];
             _this.props.context.onActiveKeyPointChanged.notifyObservers();
             _this.props.context.onActiveAnimationChanged.notifyObservers();
@@ -48068,7 +48181,21 @@ var GraphComponent = /** @class */ (function (_super) {
         this._viewHeight = this._svgHost.current.clientHeight;
         this.forceUpdate();
     };
-    GraphComponent.prototype._evaluateKeys = function () {
+    GraphComponent.prototype._setDefaultInTangent = function (keyId) {
+        for (var _i = 0, _a = this._curves; _i < _a.length; _i++) {
+            var curve = _a[_i];
+            curve.storeDefaultInTangent(keyId);
+        }
+    };
+    GraphComponent.prototype._setDefaultOutTangent = function (keyId) {
+        for (var _i = 0, _a = this._curves; _i < _a.length; _i++) {
+            var curve = _a[_i];
+            curve.storeDefaultOutTangent(keyId);
+        }
+    };
+    GraphComponent.prototype._evaluateKeys = function (frame) {
+        var _this = this;
+        if (frame === void 0) { frame = true; }
         if (!this.props.context.activeAnimation) {
             this._curves = [];
             return;
@@ -48081,29 +48208,30 @@ var GraphComponent = /** @class */ (function (_super) {
                 this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
         }
         var values = this._extractValuesFromKeys(keys, animation.dataType, true);
@@ -48111,9 +48239,11 @@ var GraphComponent = /** @class */ (function (_super) {
         this._maxValue = values.max;
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
-        this._frame();
+        if (frame) {
+            this._frame();
+        }
     };
-    GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, pushToCurves) {
+    GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, pushToCurves, propertyFilter) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
         var minValue = Number.MAX_VALUE;
         var maxValue = -Number.MAX_VALUE;
@@ -48133,10 +48263,14 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48153,12 +48287,18 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    minValue = Math.min(minValue, key.value.z);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.z);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
+                    if (!propertyFilter || propertyFilter === "z") {
+                        minValue = Math.min(minValue, key.value.z);
+                        maxValue = Math.max(maxValue, key.value.z);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48181,12 +48321,18 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                    minValue = Math.min(minValue, key.value.r);
-                    minValue = Math.min(minValue, key.value.g);
-                    minValue = Math.min(minValue, key.value.b);
-                    maxValue = Math.max(maxValue, key.value.r);
-                    maxValue = Math.max(maxValue, key.value.g);
-                    maxValue = Math.max(maxValue, key.value.b);
+                    if (!propertyFilter || propertyFilter === "r") {
+                        minValue = Math.min(minValue, key.value.r);
+                        maxValue = Math.max(maxValue, key.value.r);
+                    }
+                    if (!propertyFilter || propertyFilter === "g") {
+                        minValue = Math.min(minValue, key.value.g);
+                        maxValue = Math.max(maxValue, key.value.g);
+                    }
+                    if (!propertyFilter || propertyFilter === "b") {
+                        minValue = Math.min(minValue, key.value.b);
+                        maxValue = Math.max(maxValue, key.value.b);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48209,14 +48355,22 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    minValue = Math.min(minValue, key.value.z);
-                    minValue = Math.min(minValue, key.value.w);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.z);
-                    maxValue = Math.max(maxValue, key.value.w);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
+                    if (!propertyFilter || propertyFilter === "z") {
+                        minValue = Math.min(minValue, key.value.z);
+                        maxValue = Math.max(maxValue, key.value.z);
+                    }
+                    if (!propertyFilter || propertyFilter === "w") {
+                        minValue = Math.min(minValue, key.value.w);
+                        maxValue = Math.max(maxValue, key.value.w);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48245,14 +48399,22 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                    minValue = Math.min(minValue, key.value.r);
-                    minValue = Math.min(minValue, key.value.g);
-                    minValue = Math.min(minValue, key.value.b);
-                    minValue = Math.min(minValue, key.value.a);
-                    maxValue = Math.max(maxValue, key.value.r);
-                    maxValue = Math.max(maxValue, key.value.g);
-                    maxValue = Math.max(maxValue, key.value.b);
-                    maxValue = Math.max(maxValue, key.value.a);
+                    if (!propertyFilter || propertyFilter === "r") {
+                        minValue = Math.min(minValue, key.value.r);
+                        maxValue = Math.max(maxValue, key.value.r);
+                    }
+                    if (!propertyFilter || propertyFilter === "g") {
+                        minValue = Math.min(minValue, key.value.g);
+                        maxValue = Math.max(maxValue, key.value.g);
+                    }
+                    if (!propertyFilter || propertyFilter === "b") {
+                        minValue = Math.min(minValue, key.value.b);
+                        maxValue = Math.max(maxValue, key.value.b);
+                    }
+                    if (!propertyFilter || propertyFilter === "a") {
+                        minValue = Math.min(minValue, key.value.a);
+                        maxValue = Math.max(maxValue, key.value.a);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48347,6 +48509,7 @@ var GraphComponent = /** @class */ (function (_super) {
         }));
     };
     GraphComponent.prototype._frame = function () {
+        var _this = this;
         if (!this._currentAnimation) {
             return;
         }
@@ -48364,7 +48527,12 @@ var GraphComponent = /** @class */ (function (_super) {
         }
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
-        var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false);
+        var propertyFilter = undefined;
+        if (this.props.context.activeColor) {
+            var activeCurve = this._curves.filter(function (c) { return c.color === _this.props.context.activeColor; })[0];
+            propertyFilter = activeCurve.property;
+        }
+        var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false, propertyFilter);
         this._minValue = values.min;
         this._maxValue = values.max;
         this.props.context.referenceMinFrame = this._minFrame;
@@ -48539,10 +48707,29 @@ var KeyPointComponent = /** @class */ (function (_super) {
     function KeyPointComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._controlMode = ControlMode.None;
-        _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y };
+        _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y, tangentSelectedIndex: -1 };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._keyPointSVG = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        _this._onFlattenTangentRequiredObserver = _this.props.context.onFlattenTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._flattenTangent();
+        });
+        _this._onLinearTangentRequiredObserver = _this.props.context.onLinearTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._linearTangent();
+        });
         _this._onSelectionRectangleMovedObserver = _this.props.context.onSelectionRectangleMoved.add(function (rect1) {
+            if (!_this._svgHost.current) {
+                return;
+            }
             var rect2 = _this._svgHost.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left ||
                 rect1.left > rect2.right ||
@@ -48602,10 +48789,10 @@ var KeyPointComponent = /** @class */ (function (_super) {
                         break;
                     }
                 }
-                _this.setState({ selectedState: state });
+                _this.setState({ selectedState: state, tangentSelectedIndex: -1 });
             }
             else {
-                _this.setState({ selectedState: SelectionState.Selected });
+                _this.setState({ selectedState: SelectionState.Selected, tangentSelectedIndex: -1 });
             }
             if (isSelected) {
                 _this.props.context.onFrameSet.notifyObservers(_this.props.invertX(_this.state.x));
@@ -48649,6 +48836,12 @@ var KeyPointComponent = /** @class */ (function (_super) {
         return _this;
     }
     KeyPointComponent.prototype.componentWillUnmount = function () {
+        if (this._onFlattenTangentRequiredObserver) {
+            this.props.context.onFlattenTangentRequired.remove(this._onFlattenTangentRequiredObserver);
+        }
+        if (this._onLinearTangentRequiredObserver) {
+            this.props.context.onLinearTangentRequired.remove(this._onLinearTangentRequiredObserver);
+        }
         if (this._onSelectionRectangleMovedObserver) {
             this.props.context.onSelectionRectangleMoved.remove(this._onSelectionRectangleMovedObserver);
         }
@@ -48677,6 +48870,33 @@ var KeyPointComponent = /** @class */ (function (_super) {
             newState.y = newProps.y;
         }
         return true;
+    };
+    KeyPointComponent.prototype._flattenTangent = function () {
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
+            if (this.props.keyId !== 0) {
+                this.props.curve.updateInTangentFromControlPoint(this.props.keyId, 0);
+            }
+        }
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 1) {
+            if (this.props.keyId !== this.props.curve.keys.length - 1) {
+                this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, 0);
+            }
+        }
+        this.forceUpdate();
+    };
+    KeyPointComponent.prototype._linearTangent = function () {
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
+            if (this.props.keyId !== 0) {
+                this.props.curve.storeDefaultInTangent(this.props.keyId);
+            }
+        }
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 1) {
+            if (this.props.keyId !== this.props.curve.keys.length - 1) {
+                this.props.curve.storeDefaultOutTangent(this.props.keyId);
+            }
+        }
+        this.props.curve.onDataUpdatedObservable.notifyObservers();
+        this.forceUpdate();
     };
     KeyPointComponent.prototype._select = function (allowMultipleSelection) {
         if (!this.props.context.activeKeyPoints) {
@@ -48725,12 +48945,15 @@ var KeyPointComponent = /** @class */ (function (_super) {
         var target = evt.nativeEvent.target;
         if (target.tagName === "image") {
             this._controlMode = ControlMode.Key;
+            this.setState({ tangentSelectedIndex: -1 });
         }
         else if (target.classList.contains("left-tangent")) {
             this._controlMode = ControlMode.TangentLeft;
+            this.setState({ tangentSelectedIndex: 0 });
         }
         else if (target.classList.contains("right-tangent")) {
             this._controlMode = ControlMode.TangentRight;
+            this.setState({ tangentSelectedIndex: 1 });
         }
         evt.stopPropagation();
     };
@@ -48769,11 +48992,12 @@ var KeyPointComponent = /** @class */ (function (_super) {
             var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
             var previousX = this.props.getPreviousX();
             var nextX = this.props.getNextX();
+            var epsilon = 0.01;
             if (previousX !== null) {
-                newX = Math.max(previousX, newX);
+                newX = Math.max(previousX + epsilon, newX);
             }
             if (nextX !== null) {
-                newX = Math.min(nextX, newX);
+                newX = Math.min(nextX - epsilon, newX);
             }
             if (this.props.keyId !== 0) {
                 var frame = this.props.invertX(newX);
@@ -48810,6 +49034,9 @@ var KeyPointComponent = /** @class */ (function (_super) {
     };
     KeyPointComponent.prototype.render = function () {
         var _this = this;
+        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+            return null;
+        }
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         var keys = this.props.curve.keys;
         var prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
@@ -48837,19 +49064,23 @@ var KeyPointComponent = /** @class */ (function (_super) {
                     this.props.keyId !== 0 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._inVec.x + "px", y2: this._inVec.y + "px", style: {
+                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: this._inVec.x + "px", cy: this._inVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
                                     fill: "#F9BF00",
                                 } })),
                     this.props.keyId !== keys.length - 1 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._outVec.x + "px", y2: this._outVec.y + "px", style: {
+                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: this._outVec.x + "px", cy: this._outVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
                                     fill: "#F9BF00",
                                 } })))));
     };
@@ -49438,8 +49669,12 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationEntryComponent, _super);
     function AnimationEntryComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._unmount = false;
         _this.state = { isExpanded: false, isSelected: false };
         _this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(function () {
+            if (_this._unmount) {
+                return;
+            }
             if (_this.props.animation !== _this.props.context.activeAnimation) {
                 _this.setState({ isSelected: false });
             }
@@ -49451,11 +49686,17 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
         return _this;
     }
     AnimationEntryComponent.prototype._onGear = function () {
+        var _this = this;
+        this.props.context.onEditAnimationUIClosed.addOnce(function () { if (!_this._unmount) {
+            _this.forceUpdate();
+        } });
+        this.props.context.onEditAnimationRequired.notifyObservers(this.props.animation);
     };
     AnimationEntryComponent.prototype._onDelete = function () {
         this.props.context.onDeleteAnimation.notifyObservers(this.props.animation);
     };
     AnimationEntryComponent.prototype.componentWillUnmount = function () {
+        this._unmount = true;
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
@@ -49464,12 +49705,13 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
         }
     };
     AnimationEntryComponent.prototype._activate = function () {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === null) {
             return;
         }
         this.props.context.activeKeyPoints = [];
         this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = null;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationEntryComponent.prototype._expandOrCollapse = function () {
@@ -49535,12 +49777,33 @@ var AnimationListComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationListComponent, _super);
     function AnimationListComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = {};
+        _this.state = { isVisible: true };
+        _this._onEditAnimationRequiredObserver = _this.props.context.onEditAnimationRequired.add(function (animation) {
+            _this.setState({
+                isVisible: false
+            });
+        });
+        _this._onEditAnimationUIClosedObserver = _this.props.context.onEditAnimationUIClosed.add(function () {
+            _this.setState({
+                isVisible: true
+            });
+        });
         return _this;
     }
+    AnimationListComponent.prototype.componentWillUnmount = function () {
+        if (this._onEditAnimationRequiredObserver) {
+            this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
+        }
+        if (this._onEditAnimationUIClosedObserver) {
+            this.props.context.onEditAnimationUIClosed.remove(this._onEditAnimationUIClosedObserver);
+        }
+    };
     AnimationListComponent.prototype.render = function () {
         var _this = this;
         var _a;
+        if (!this.state.isVisible) {
+            return null;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "animation-list" }, (_a = this.props.context.animations) === null || _a === void 0 ? void 0 : _a.map(function (a, i) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationEntryComponent__WEBPACK_IMPORTED_MODULE_2__["AnimationEntryComponent"], { key: i, globalState: _this.props.globalState, context: _this.props.context, animation: a }));
         })));
@@ -49611,16 +49874,18 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
         }
     };
     AnimationSubEntryComponent.prototype._activate = function () {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === this.props.color) {
             return;
         }
+        this.props.context.activeKeyPoints = [];
         this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = this.props.color;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationSubEntryComponent.prototype.render = function () {
         var _this = this;
-        var isActive = this.props.animation === this.props.context.activeAnimation;
+        var isActive = this.props.animation === this.props.context.activeAnimation && (this.props.context.activeColor === null || this.props.context.activeColor === this.props.color);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-entry" + (isActive ? " isActive" : "") },
                 this.state.isSelected &&
@@ -49631,6 +49896,114 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
                     }, onClick: function () { return _this._activate(); } }, this.props.subName))));
     };
     return AnimationSubEntryComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx":
+/*!************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx ***!
+  \************************************************************************************************************/
+/*! exports provided: EditAnimationComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EditAnimationComponent", function() { return EditAnimationComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Animations/animation */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+var EditAnimationComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(EditAnimationComponent, _super);
+    function EditAnimationComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { isVisible: false, animation: null };
+        _this._root = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._displayName = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._property = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._loopModeElement = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._onEditAnimationRequiredObserver = _this.props.context.onEditAnimationRequired.add(function (animation) {
+            _this.setState({
+                isVisible: true,
+                animation: animation
+            });
+        });
+        return _this;
+    }
+    EditAnimationComponent.prototype.componentWillUnmount = function () {
+        if (this._onEditAnimationRequiredObserver) {
+            this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
+        }
+    };
+    EditAnimationComponent.prototype.close = function () {
+        this.setState({ isVisible: false });
+        this.props.context.onEditAnimationUIClosed.notifyObservers();
+    };
+    EditAnimationComponent.prototype.validate = function () {
+        var context = this.props.context;
+        var document = this._displayName.current.ownerDocument;
+        var displayName = this._displayName.current.value;
+        var property = this._property.current.value;
+        var loopModeValue = this._loopModeElement.current.value;
+        if (!displayName) {
+            document.defaultView.alert("Please define a display name");
+            return;
+        }
+        if (!property) {
+            document.defaultView.alert("Please define a property");
+            return;
+        }
+        var animation = this.state.animation;
+        animation.name = displayName;
+        if (animation.targetProperty !== property) {
+            animation.targetProperty = property;
+            animation.targetPropertyPath = property.split(".");
+            context.stop();
+        }
+        switch (loopModeValue) {
+            case "Cycle": {
+                animation.loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_CYCLE;
+                break;
+            }
+            case "Relative": {
+                animation.loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_RELATIVE;
+                break;
+            }
+            case "Constant": {
+                animation.loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_CONSTANT;
+                break;
+            }
+        }
+        this.close();
+    };
+    EditAnimationComponent.prototype.render = function () {
+        var _this = this;
+        var _a;
+        if (!this.state.isVisible) {
+            return null;
+        }
+        var loopModes = ["Relative", "Cycle", "Constant"];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-pane", ref: this._root },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-display-name-label" }, "Display Name"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-property-label" }, "Property"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-loop-mode-label" }, "Loop Mode"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "edit-animation-name", ref: this._displayName, className: "input-text", defaultValue: this.state.animation.name || "" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "edit-animation-property", ref: this._property, className: "input-text", defaultValue: this.state.animation.targetProperty }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "edit-animation-loop-mode", className: "option", ref: this._loopModeElement, defaultValue: loopModes[(_a = this.state.animation.loopMode) !== null && _a !== void 0 ? _a : 1] }, loopModes.map(function (loopMode, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: loopMode + i, value: loopMode, title: loopMode }, loopMode));
+            })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "edit-animation-ok", type: "button", onClick: function () { return _this.validate(); } }, "OK"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "edit-animation-cancel", type: "button", onClick: function () { return _this.close(); } }, "Cancel"))));
+    };
+    return EditAnimationComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -49830,7 +50203,7 @@ var SaveAnimationComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-pane", ref: this._root },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-list" }, (_a = this.props.context.animations) === null || _a === void 0 ? void 0 : _a.map(function (a, i) {
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "save-animation-list-entry", key: i },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", value: a.name, checked: true, onClick: function (evt) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", value: a.name, defaultChecked: true, onClick: function (evt) {
                             if (evt.currentTarget.checked) {
                                 _this._selectedAnimations.push(a);
                             }
@@ -49881,6 +50254,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./saveAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/saveAnimationComponent.tsx");
 /* harmony import */ var _loadAnimationComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./loadAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/loadAnimationComponent.tsx");
 /* harmony import */ var _addAnimationComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./addAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/addAnimationComponent.tsx");
+/* harmony import */ var _editAnimationComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./editAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx");
+
 
 
 
@@ -49955,7 +50330,9 @@ var SideBarComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Edit animations", isActive: this.state.mode === Mode.Edit, id: "edit-animation", globalState: this.props.globalState, context: this.props.context, icon: editIcon, onClick: function () { return _this._onEditAnimation(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputComponent"], { value: this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond.toString() : "60", complement: " fps", isNumber: true, onValueAsNumberChanged: function (value) { var _a; return (_a = _this.props.context.animations) === null || _a === void 0 ? void 0 : _a.forEach(function (anim) { return anim.framePerSecond = value; }); }, tooltip: "Framerate", id: "framerate-animation", globalState: this.props.globalState, context: this.props.context })),
             this.state.mode === Mode.Edit &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListComponent__WEBPACK_IMPORTED_MODULE_3__["AnimationListComponent"], { globalState: this.props.globalState, context: this.props.context }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListComponent__WEBPACK_IMPORTED_MODULE_3__["AnimationListComponent"], { globalState: this.props.globalState, context: this.props.context }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_editAnimationComponent__WEBPACK_IMPORTED_MODULE_8__["EditAnimationComponent"], { globalState: this.props.globalState, context: this.props.context })),
             this.state.mode === Mode.Save &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__["SaveAnimationComponent"], { globalState: this.props.globalState, context: this.props.context }),
             this.state.mode === Mode.Load &&
@@ -49993,6 +50370,8 @@ __webpack_require__(/*! ./scss/topBar.scss */ "./components/actionTabs/tabs/prop
 var logoIcon = __webpack_require__(/*! ./assets/babylonLogo.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/babylonLogo.svg");
 var frameIcon = __webpack_require__(/*! ./assets/frameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg");
 var newKeyIcon = __webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/newKeyIcon.svg");
+var flatTangentIcon = __webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg");
+var linearTangentIcon = __webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg");
 var TopBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TopBarComponent, _super);
     function TopBarComponent(props) {
@@ -50038,7 +50417,11 @@ var TopBarComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context })),
             this.props.context.activeAnimation &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } }),
+            this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }))));
     };
     return TopBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -52069,7 +52452,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/control");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -63860,7 +64243,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/control");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -64167,7 +64550,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/control");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -64584,7 +64967,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/control");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -64923,14 +65306,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/image":
+/***/ "babylonjs-gui/2D/controls/control":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_control__;
 
 /***/ }),
 
