@@ -247,6 +247,7 @@ export class TextureBlock extends NodeMaterialBlock {
         if (this._isMixed) {
             if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines.setValue(this._defineName, true);
+                defines.setValue(this._mainUVDefineName, false);
             } else {
                 defines.setValue(this._defineName, false);
                 defines.setValue(this._mainUVDefineName, true);
