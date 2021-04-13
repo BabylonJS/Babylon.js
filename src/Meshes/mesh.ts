@@ -1806,7 +1806,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
+    public _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material, effectiveMesh?: AbstractMesh) => void, effectiveMaterial?: Material): Mesh {
         var scene = this.getScene();
         var engine = scene.getEngine();
 
@@ -1822,7 +1822,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
-                    onBeforeDraw(false, renderingMesh._effectiveMesh.getWorldMatrix(), effectiveMaterial);
+                    onBeforeDraw(false, renderingMesh._effectiveMesh.getWorldMatrix(), effectiveMaterial, renderingMesh._effectiveMesh);
                 }
                 instanceCount++;
 
@@ -1856,10 +1856,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _rebuild(): void {
+    public _rebuild(dispose = false): void {
         if (this._instanceDataStorage.instancesBuffer) {
             // Dispose instance buffer to be recreated in _renderWithInstances when rendered
-            this._instanceDataStorage.instancesBuffer.dispose();
+            if (dispose) {
+                this._instanceDataStorage.instancesBuffer.dispose();
+            }
             this._instanceDataStorage.instancesBuffer = null;
         }
         if (this._userInstancedBuffersStorage) {
@@ -1867,7 +1869,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 var buffer = this._userInstancedBuffersStorage.vertexBuffers[kind];
                 if (buffer) {
                     // Dispose instance buffer to be recreated in _renderWithInstances when rendered
-                    buffer.dispose();
+                    if (dispose) {
+                        buffer.dispose();
+                    }
                     this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
                 }
             }
@@ -1875,7 +1879,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this._userInstancedBuffersStorage.vertexArrayObjects = {};
             }
         }
-        super._rebuild();
+        this._effectiveMaterial = null;
+        super._rebuild(dispose);
     }
 
     /** @hidden */
@@ -1976,6 +1981,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             this._effectiveMaterial = material;
+        } else if ((material._storeEffectOnSubMeshes && !subMesh.effect?._wasPreviouslyReady) || (!material._storeEffectOnSubMeshes && !material.getEffect()?._wasPreviouslyReady)) {
+            if (oldCamera) {
+                oldCamera.maxZ = oldCameraMaxZ;
+                scene.updateTransformMatrix(true);
+            }
+            return this;
         }
 
         // Alpha mode
