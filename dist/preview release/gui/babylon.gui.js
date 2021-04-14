@@ -12092,8 +12092,7 @@ var BaseSlider = /** @class */ (function (_super) {
         else {
             value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
-        var mult = (1 / this._step) | 0;
-        this.value = this._step ? ((value * mult) | 0) / mult : value;
+        this.value = this._step ? ((value / this._step) | 0) * this._step : value;
     };
     BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {

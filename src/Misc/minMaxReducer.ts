@@ -7,6 +7,7 @@ import { Effect } from "../Materials/effect";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { PostProcessManager } from "../PostProcesses/postProcessManager";
 import { Observable } from "./observable";
+import { ThinEngine } from "../Engines/thinEngine";
 
 import "../Shaders/minmaxRedux.fragment";
 
@@ -29,6 +30,7 @@ export class MinMaxReducer {
     protected _postProcessManager: PostProcessManager;
     protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
     protected _forceFullscreenViewport = true;
+    protected _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
 
     /**
      * Creates a min/max reducer
@@ -37,6 +39,10 @@ export class MinMaxReducer {
     constructor(camera: Camera) {
         this._camera = camera;
         this._postProcessManager = new PostProcessManager(camera.getScene());
+
+        this._onContextRestoredObserver = camera.getEngine().onContextRestoredObservable.add(() => {
+            this._postProcessManager._rebuild();
+        });
     }
 
     /**
@@ -226,6 +232,11 @@ export class MinMaxReducer {
     public dispose(disposeAll = true): void {
         if (disposeAll) {
             this.onAfterReductionPerformed.clear();
+
+            if (this._onContextRestoredObserver) {
+                this._camera.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
+                this._onContextRestoredObserver = null;
+            }
         }
 
         this.deactivate();

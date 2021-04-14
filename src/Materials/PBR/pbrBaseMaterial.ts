@@ -270,6 +270,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
+    public SS_HAS_THICKNESS = false;
 
     public SS_REFRACTIONMAP_3D = false;
     public SS_REFRACTIONMAP_OPPOSITEZ = false;
@@ -283,7 +284,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
-    public SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
+    public SS_USE_GLTF_THICKNESS_TEXTURE = false;
 
     public UNLIT = false;
 
