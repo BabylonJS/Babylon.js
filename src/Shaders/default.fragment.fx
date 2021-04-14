@@ -495,9 +495,9 @@ color.rgb = max(color.rgb, 0.);
     vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
 
     vec2 velocity = abs(a - b);
-    velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b);
+    velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
-    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, 0.0);
+    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
     #endif
 
     #ifdef PREPASS_IRRADIANCE

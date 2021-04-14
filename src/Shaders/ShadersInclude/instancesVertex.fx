@@ -5,6 +5,9 @@
 	#endif
     #ifdef THIN_INSTANCES
 	    finalWorld = world * finalWorld;
+		#ifdef PREPASS_VELOCITY
+			previousWorld = world * previousWorld;
+		#endif
     #endif
 #else
 	mat4 finalWorld = world;

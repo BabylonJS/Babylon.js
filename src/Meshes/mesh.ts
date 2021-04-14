@@ -100,10 +100,13 @@ export class _InstancesBatch {
 class _ThinInstanceDataStorage {
     public instancesCount: number = 0;
     public matrixBuffer: Nullable<Buffer> = null;
+    public previousMatrixBuffer: Nullable<Buffer> = null;
     public matrixBufferSize = 32 * 16; // let's start with a maximum of 32 thin instances
     public matrixData: Nullable<Float32Array>;
+    public previousMatrixData: Nullable<Float32Array>;
     public boundingVectors: Array<Vector3> = [];
     public worldMatrices: Nullable<Matrix[]> = null;
+    public needsPreviousMatrices: boolean = false;
 }
 
 /**
@@ -468,6 +471,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public set instancesMotionBlurSupport(value: boolean) {
         this._instanceDataStorage.needsPreviousMatrices = value;
+        this._thinInstanceDataStorage.needsPreviousMatrices = value;
     }
 
     /**
@@ -1728,7 +1732,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let renderSelf = batch.renderSelf[subMesh._id];
 
-        const needUpdateBuffer = !instancesBuffer || currentInstancesBufferSize !== instanceStorage.instancesBufferSize;
+        const needUpdateBuffer = !instancesBuffer || 
+            currentInstancesBufferSize !== instanceStorage.instancesBufferSize || 
+            (instanceStorage.needsPreviousMatrices && !instanceStorage.instancesPreviousBuffer);
 
         if (!this._instanceDataStorage.manualUpdate && (!instanceStorage.isFrozen || needUpdateBuffer)) {
             var world = this._effectiveMesh.getWorldMatrix();
@@ -1828,7 +1834,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._draw(subMesh, fillMode, instancesCount);
         
         // Write current matrices as previous matrices in case of manual update
-        // To offload the user from the burden of updating them
+        // Default behaviour when previous matrices are not specified explicitly
+        // Will break if instances number/order changes
         if (!needUpdateBuffer && this._instanceDataStorage.manualUpdate && !this._instanceDataStorage.isFrozen) {
             instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
@@ -1847,6 +1854,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Draw
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
+
+        // Write current matrices as previous matrices
+        // Default behaviour when previous matrices are not specified explicitly
+        // Will break if instances number/order changes
+        if (this._thinInstanceDataStorage.needsPreviousMatrices && 
+            !this._thinInstanceDataStorage.previousMatrixData && 
+            this._thinInstanceDataStorage.matrixData) {
+            if (!this._thinInstanceDataStorage.previousMatrixBuffer) {   
+                this._thinInstanceDataStorage.previousMatrixBuffer = this._createMatrixBuffer("previousWorld", this._thinInstanceDataStorage.matrixData, false);
+            } else {
+                this._thinInstanceDataStorage.previousMatrixBuffer!.updateDirectly(this._thinInstanceDataStorage.matrixData, 0, instancesCount);
+            }
+        }
 
         engine.unbindInstanceAttributes();
     }
