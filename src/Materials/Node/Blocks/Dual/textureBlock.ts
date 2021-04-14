@@ -74,6 +74,11 @@ export class TextureBlock extends NodeMaterialBlock {
     public convertToLinearSpace = false;
 
     /**
+     * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
+     */
+    public disableLevelMultiplication = false;
+
+    /**
      * Create a new TextureBlock
      * @param name defines the block name
      */
@@ -90,6 +95,8 @@ export class TextureBlock extends NodeMaterialBlock {
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
         this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+
+        this.registerOutput("level", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -152,6 +159,13 @@ export class TextureBlock extends NodeMaterialBlock {
      */
     public get a(): NodeMaterialConnectionPoint {
         return this._outputs[5];
+    }
+
+    /**
+     * Gets the level output component
+     */
+    public get level(): NodeMaterialConnectionPoint {
+        return this._outputs[6];
     }
 
     public get target() {
@@ -291,6 +305,8 @@ export class TextureBlock extends NodeMaterialBlock {
         this._textureTransformName = state._getFreeVariableName("textureTransform");
         this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
+        this.level.associatedVariableName = this._textureInfoName;
+
         state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
         state._emitVaryingFromString(this._mainUVName, "vec2", this._mainUVDefineName);
 
@@ -309,7 +325,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this._writeTextureRead(state, true);
 
         for (var output of this._outputs) {
-            if (output.hasEndpoints) {
+            if (output.hasEndpoints  && output.name !== "level") {
                 this._writeOutput(state, output, output.name, true);
             }
         }
@@ -371,8 +387,11 @@ export class TextureBlock extends NodeMaterialBlock {
             this._generateConversionCode(state, output, swizzle);
             return;
         }
+        let complement = "";
 
-        const complement = ` * ${this._textureInfoName}`;
+        if (!this.disableLevelMultiplication) {
+            complement = ` * ${this._textureInfoName}`;
+        }
 
         state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
         this._generateConversionCode(state, output, swizzle);
@@ -425,7 +444,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this._writeTextureRead(state);
 
         for (var output of this._outputs) {
-            if (output.hasEndpoints) {
+            if (output.hasEndpoints && output.name !== "level") {
                 this._writeOutput(state, output, output.name);
             }
         }
@@ -438,6 +457,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
         codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
+        codeString += `${this._codeVariableName}.disableLevelMultiplication = ${this.disableLevelMultiplication};\r\n`;
 
         if (!this.texture) {
             return codeString;
@@ -464,6 +484,7 @@ export class TextureBlock extends NodeMaterialBlock {
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
         serializationObject.fragmentOnly = this._fragmentOnly;
+        serializationObject.disableLevelMultiplication = this.disableLevelMultiplication;
         if (this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
             serializationObject.texture = this.texture.serialize();
         }
@@ -477,6 +498,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
         this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
         this._fragmentOnly = !!serializationObject.fragmentOnly;
+        this.disableLevelMultiplication = !!serializationObject.disableLevelMultiplication;
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
