@@ -1,7 +1,7 @@
 
 .commands {
     grid-row: 1;
-    grid-column: 3;
+    grid-column: 1;
     user-select: none;
 
     .commands-left {
@@ -21,7 +21,7 @@
             }
 
             .command-dropdown-active {
-                color: #F78951;
+                color: #333333;
             }
 
             &:hover, &.activated {
@@ -39,7 +39,7 @@
             }
 
             .command-dropdown-active {
-                color: #9B86FF;
+                color: #333333;
             }
 
             &:hover, &.activated {
@@ -135,7 +135,7 @@
         .command-dropdown-content {
             .command-dropdown-label {
                 &:hover {
-                    background-color: #bfabff;
+                    background-color: #333333;
                 }
             }
         }
@@ -145,7 +145,7 @@
         .command-dropdown-content {
             .command-dropdown-label {
                 &:hover {
-                    background-color: #ff7656;
+                    background-color: #333333;
                 }
             }
         }
@@ -218,17 +218,17 @@
                     background: #bfabff;
                     .sub-item {                      
                         &:hover {
-                            background-color: #9379e6;
+                            background-color: #333333;
                             color: white;
                         }
                     }
                 }   
 
                 &.background-ts {
-                    background: #ff7656;
+                    background: #333333;
                     .sub-item {                      
                         &:hover {
-                            background-color: #e0684b;
+                            background-color: #333333;
                             color: white;
                         }
                     }
