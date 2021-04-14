@@ -181,5 +181,7 @@ ThinEngine.prototype._createDepthStencilTexture = function(size: RenderTargetTex
 
     this._bindTextureDirectly(target, null);
 
+    this._internalTexturesCache.push(internalTexture);
+
     return internalTexture;
 };
