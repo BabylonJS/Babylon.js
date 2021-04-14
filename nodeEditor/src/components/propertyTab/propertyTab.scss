@@ -485,6 +485,10 @@
         justify-items: stretch;
         padding-bottom: 5px;
 
+        &.disabled {
+            opacity: 0.3;
+        }
+
         input[type="file"] {
             display: none;
         }
