@@ -7,13 +7,13 @@
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-rows: 100%;
-    background: #201936;
+    background: #333333;
 
     .logo-area {
         grid-column: 1;
         grid-row: 1;
         display: grid;
-        width: 430px;
+        width: 125px;
         grid-template-columns: 1fr auto;
         grid-template-rows: 100%;
         user-select: none;

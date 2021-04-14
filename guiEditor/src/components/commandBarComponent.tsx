@@ -19,34 +19,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
     }    
 
-    onPlay() {
-
-    }
-
-    onNew() {
-
-    }
-
-    onClear() {        
-
-    }
-
-    onSave() {
-
-    }
-
-    onDownload() {
-
-    }
-
-    onInspector() {
-
-    }
-
-    onExamples() {
-
-    }
-
     public render() {
         //let activeVersion = Utilities.ReadStringFromStore("version", "Latest");
         //let activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
@@ -99,45 +71,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         return (
             <div className={"commands "}>
                 <div className="commands-left">
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Run" icon="play" shortcut="Alt+Enter" isActive={true} onClick={()=> this.onPlay()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Save" icon="save" shortcut="Ctrl+S" isActive={false} onClick={()=> this.onSave()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={()=> this.onInspector()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Download" icon="download" shortcut="Shift+Ctrl+S"isActive={false} onClick={()=> this.onDownload()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Create new" icon="new" isActive={false} onClick={()=> this.onNew()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Clear code" icon="clear" isActive={false} onClick={()=> this.onClear()}/>
-                <CommandDropdownComponent globalState={this.props.globalState} icon="options" tooltip="Options" items={[
-                    {
-                        label: "Theme",
-                        storeKey: "theme",
-                        defaultValue: "Light",
-                        subItems: [
-                            "Light",
-                            "Dark"
-                        ],
-                        onClick: () => {
-
-                        }
-                    },  
-                    {
-                        label: "Font size",
-                        storeKey: "font-size",
-                        defaultValue: "14",
-                        subItems: [
-                            "12",
-                            "14",
-                            "16",
-                            "18",
-                            "20",
-                            "22",
-                            "24",
-                            "26",
-                            "28",
-                            "30",
-                        ],
-                        onClick: () => {
-
-                        }
-                    },
+                <CommandDropdownComponent globalState={this.props.globalState} icon="Options" tooltip="Options" items={[
                     {
                         label: "Safe mode",
                         storeKey: "safe-mode",
@@ -185,11 +119,27 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         onCheck: () => {}
                     }, 
                 ]}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon="play" shortcut="Alt+Enter" isActive={true} onClick={()=> this.onSelect()}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon="save" shortcut="Ctrl+S" isActive={false} onClick={()=> this.onPan()}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" icon="inspector" isActive={false} onClick={()=> this.onZoom()}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Create" icon="download" shortcut="Shift+Ctrl+S"isActive={false} onClick={()=> this.onCreate()}/>
                 </div>
                 <div className="commands-right">
                     
                 </div>
             </div>
         );
+    }
+    onCreate(): void {
+        throw new Error("Method not implemented.");
+    }
+    onZoom(): void {
+        throw new Error("Method not implemented.");
+    }
+    onPan(): void {
+        throw new Error("Method not implemented.");
+    }
+    onSelect(): void {
+        throw new Error("Method not implemented.");
     }
 }
