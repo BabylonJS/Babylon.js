@@ -203,7 +203,21 @@ export class SpotLight extends ShadowLight {
     private _projectionTextureDirty = true;
     private _projectionTextureViewTargetVector = Vector3.Zero();
     private _projectionTextureViewLightMatrix = Matrix.Zero();
+
     private _projectionTextureProjectionLightMatrix = Matrix.Zero();
+    /**
+    * Gets or sets the light projection matrix as used by the projection texture
+    */
+    public get projectionTextureProjectionLightMatrix(): Matrix {
+        return this._projectionTextureProjectionLightMatrix;
+    }
+
+    public set projectionTextureProjectionLightMatrix(projection: Matrix) {
+        this._projectionTextureProjectionLightMatrix = projection;
+        this._projectionTextureProjectionLightDirty = false;
+        this._projectionTextureDirty = true;
+    }
+
     private _projectionTextureScalingMatrix = Matrix.FromValues(0.5, 0.0, 0.0, 0.0,
         0.0, 0.5, 0.0, 0.0,
         0.0, 0.0, 0.5, 0.0,
