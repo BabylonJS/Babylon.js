@@ -3,6 +3,12 @@
 	attribute vec4 world1;
 	attribute vec4 world2;
 	attribute vec4 world3;
+	#if defined(VELOCITY)
+		attribute vec4 previousWorld0;
+		attribute vec4 previousWorld1;
+		attribute vec4 previousWorld2;
+		attribute vec4 previousWorld3;
+	#endif
     #ifdef THIN_INSTANCES
         uniform mat4 world;
     #endif

@@ -439,7 +439,7 @@ export class GeometryBufferRenderer {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs);
+            MaterialHelper.PushAttributesForInstances(attribs, this._enableVelocity);
             if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
             }
@@ -551,7 +551,7 @@ export class GeometryBufferRenderer {
 
         // set default depth value to 1.0 (far away)
         this._multiRenderTarget.onClearObservable.add((engine) => {
-            engine.clear(new Color4(0.0, 0.0, 0.0, 1.0), true, true, true);
+            engine.clear(new Color4(0.0, 0.0, 0.0, 0.0), true, true, true);
         });
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
@@ -601,7 +601,9 @@ export class GeometryBufferRenderer {
                 const effect = this._drawWrapper.effect!;
 
                 engine.enableEffect(this._drawWrapper);
-                renderingMesh._bind(subMesh, effect, material.fillMode);
+                if (!hardwareInstancedRendering) {
+                    renderingMesh._bind(subMesh, effect, material.fillMode);
+                }
 
                 if (!this._useUbo) {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
@@ -678,11 +680,19 @@ export class GeometryBufferRenderer {
                 if (this._enableVelocity) {
                     effect.setMatrix("previousWorld", this._previousTransformationMatrices[effectiveMesh.uniqueId].world);
                     effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection);
+                    if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {
+                        effect.setMatrix("world", world);
+                    }
                 }
 
                 // Draw
                 renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
-                    (isInstance, w) => effect.setMatrix("world", w));
+                    (isInstance, w) => {
+                        if (!isInstance) { 
+                            effect.setMatrix("world", w) 
+                        }
+                    }
+                );
             }
 
             // Velocity
