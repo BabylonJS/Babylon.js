@@ -11682,6 +11682,7 @@ declare module BABYLON {
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private get _isMixed();
         private _injectVertexCode;
+        private _generateTextureLookup;
         private _writeTextureRead;
         private _generateConversionCode;
         private _writeOutput;
@@ -15637,7 +15638,7 @@ declare module BABYLON {
     /**
      * Strong typing of a pointer move action.
      */
-    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement) => Nullable<PickingInfo>;
+    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: Nullable<HTMLElement>) => Nullable<PickingInfo>;
     /**
      * Strong typing of a pointer up/down action.
      */
@@ -25628,7 +25629,7 @@ declare module BABYLON {
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
+        SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -25756,14 +25757,14 @@ declare module BABYLON {
          */
         useMaskFromThicknessTexture: boolean;
         private _scene;
-        private _useMaskFromThicknessTextureGltf;
+        private _useGltfStyleThicknessTexture;
         /**
          * Stores the intensity of the different subsurface effects in the thickness texture. This variation
          * matches the channel-packing that is used by glTF.
          * * the red channel is the transmission/translucency intensity.
          * * the green channel is the thickness.
          */
-        useMaskFromThicknessTextureGltf: boolean;
+        useGltfStyleThicknessTexture: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         private _internalMarkScenePrePassDirty;
@@ -25799,8 +25800,9 @@ declare module BABYLON {
          * @param isFrozen defines whether the material is frozen or not.
          * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
          * @param realTimeFiltering defines whether the textures should be filtered on the fly.
-         */
-        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean): void;
+         * @param subMesh the submesh to bind data for
+        */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void;
         /**
          * Unbinds the material from the mesh.
          * @param activeEffect defines the effect that should be unbound from.
@@ -26648,7 +26650,7 @@ declare module BABYLON {
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
+        SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -62760,6 +62762,11 @@ declare module BABYLON {
         private _projectionTextureViewTargetVector;
         private _projectionTextureViewLightMatrix;
         private _projectionTextureProjectionLightMatrix;
+        /**
+        * Gets or sets the light projection matrix as used by the projection texture
+        */
+        get projectionTextureProjectionLightMatrix(): Matrix;
+        set projectionTextureProjectionLightMatrix(projection: Matrix);
         private _projectionTextureScalingMatrix;
         /**
          * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.

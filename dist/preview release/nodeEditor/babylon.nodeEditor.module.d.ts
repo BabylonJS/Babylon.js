@@ -1239,6 +1239,7 @@ declare module "babylonjs-node-editor/sharedComponents/buttonLineComponent" {
     export interface IButtonLineComponentProps {
         label: string;
         onClick: () => void;
+        isDisabled?: boolean;
     }
     export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
         constructor(props: IButtonLineComponentProps);
@@ -1803,6 +1804,7 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
         currentFrame: Nullable<GraphFrame>;
         currentFrameNodePort: Nullable<FrameNodePort>;
         currentNodePort: Nullable<NodePort>;
+        uploadInProgress: boolean;
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
@@ -3973,6 +3975,7 @@ declare module NODEEDITOR {
     export interface IButtonLineComponentProps {
         label: string;
         onClick: () => void;
+        isDisabled?: boolean;
     }
     export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
         constructor(props: IButtonLineComponentProps);
@@ -4443,6 +4446,7 @@ declare module NODEEDITOR {
         currentFrame: BABYLON.Nullable<GraphFrame>;
         currentFrameNodePort: BABYLON.Nullable<FrameNodePort>;
         currentNodePort: BABYLON.Nullable<NodePort>;
+        uploadInProgress: boolean;
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
