@@ -12,6 +12,8 @@ import { MaterialHelper } from "../../Materials/materialHelper";
 import { EffectFallbacks } from '../effectFallbacks';
 import { Scalar } from "../../Maths/math.scalar";
 import { CubeTexture } from "../Textures/cubeTexture";
+import { TmpVectors } from "../../Maths/math.vector";
+import { SubMesh } from "../../Meshes/subMesh";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
@@ -392,8 +394,9 @@ export class PBRSubSurfaceConfiguration {
      * @param isFrozen defines whether the material is frozen or not.
      * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
      * @param realTimeFiltering defines whether the textures should be filtered on the fly.
-     */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean): void {
+     * @param subMesh the submesh to bind data for
+    */
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void {
         var refractionTexture = this._getRefractionTexture(scene);
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
@@ -402,7 +405,11 @@ export class PBRSubSurfaceConfiguration {
                 MaterialHelper.BindTextureMatrix(this._thicknessTexture, uniformBuffer, "thickness");
             }
 
-            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness, this.maximumThickness - this.minimumThickness);
+            subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
+
+            const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
+
+            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                 uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
