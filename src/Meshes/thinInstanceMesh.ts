@@ -96,6 +96,9 @@ declare module "./mesh" {
         _thinInstanceUpdateBufferSize(kind: string, numInstances?: number): void;
 
         /** @hidden */
+        _createMatrixBuffer(kind: string, buffer: Nullable<Float32Array>, staticBuffer: boolean): Buffer;
+
+        /** @hidden */
         _userThinInstanceBuffersStorage: {
             data: {[key: string]: Float32Array},
             sizes: {[key: string]: number},
@@ -193,6 +196,16 @@ Object.defineProperty(Mesh.prototype, "thinInstanceCount", {
     configurable: true
 });
 
+Mesh.prototype._createMatrixBuffer = function(kind: string, buffer: Float32Array, staticBuffer: boolean = false): Buffer {
+    const matrixBuffer = new Buffer(this.getEngine(), buffer, !staticBuffer, 16, false, true);
+
+    for (let i = 0; i < 4; i++) {
+        this.setVerticesBuffer(matrixBuffer.createVertexBuffer(kind + i, i * 4, 4));
+    }
+
+    return matrixBuffer;
+}
+
 Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<Float32Array>, stride: number = 0, staticBuffer: boolean = false): void {
     stride = stride || 16;
 
@@ -205,15 +218,7 @@ Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<F
 
         if (buffer !== null) {
             this._thinInstanceDataStorage.instancesCount = buffer.length / stride;
-
-            const matrixBuffer = new Buffer(this.getEngine(), buffer, !staticBuffer, stride, false, true);
-
-            this._thinInstanceDataStorage.matrixBuffer = matrixBuffer;
-
-            this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world0", 0, 4));
-            this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world1", 4, 4));
-            this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world2", 8, 4));
-            this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world3", 12, 4));
+            this._thinInstanceDataStorage.matrixBuffer = this._createMatrixBuffer("world", buffer, !staticBuffer);
 
             if (!this.doNotSyncBoundingInfo) {
                 this.thinInstanceRefreshBoundingInfo(false);
@@ -224,6 +229,13 @@ Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<F
                 // mesh has no more thin instances, so need to recompute the bounding box because it's the regular mesh that will now be displayed
                 this.refreshBoundingInfo(true);
             }
+        }
+    } else if (kind === "previousMatrix") {
+        this._thinInstanceDataStorage.previousMatrixBuffer?.dispose();
+        this._thinInstanceDataStorage.previousMatrixBuffer = null;
+        this._thinInstanceDataStorage.previousMatrixData = buffer;
+        if (buffer !== null) {
+            this._thinInstanceDataStorage.previousMatrixBuffer = this._createMatrixBuffer("previousWorld", buffer, !staticBuffer);
         }
     } else {
         if (buffer === null) {
@@ -353,17 +365,13 @@ Mesh.prototype._thinInstanceUpdateBufferSize = function(kind: string, numInstanc
 
         if (kindIsMatrix) {
             this._thinInstanceDataStorage.matrixBuffer?.dispose();
-
-            const matrixBuffer = new Buffer(this.getEngine(), data, true, stride, false, true);
-
-            this._thinInstanceDataStorage.matrixBuffer = matrixBuffer;
+            this._thinInstanceDataStorage.matrixBuffer = this._createMatrixBuffer("world", data, false);
             this._thinInstanceDataStorage.matrixData = data;
             this._thinInstanceDataStorage.matrixBufferSize = newSize;
-
-            this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world0", 0, 4));
-            this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world1", 4, 4));
-            this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world2", 8, 4));
-            this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world3", 12, 4));
+            if (this._thinInstanceDataStorage.needsPreviousMatrices && !this._thinInstanceDataStorage.previousMatrixData) {
+                this._thinInstanceDataStorage.previousMatrixBuffer?.dispose();
+                this._thinInstanceDataStorage.previousMatrixBuffer = this._createMatrixBuffer("previousWorld", data, false);
+            }
         } else {
             this._userThinInstanceBuffersStorage.vertexBuffers[kind]?.dispose();
 
