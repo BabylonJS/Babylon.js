@@ -1861,7 +1861,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this._thinInstanceDataStorage.needsPreviousMatrices && 
             !this._thinInstanceDataStorage.previousMatrixData && 
             this._thinInstanceDataStorage.matrixData) {
-            if (!this._thinInstanceDataStorage.previousMatrixBuffer) {   
+                if (!this._thinInstanceDataStorage.previousMatrixBuffer) {   
                 this._thinInstanceDataStorage.previousMatrixBuffer = this._createMatrixBuffer("previousWorld", this._thinInstanceDataStorage.matrixData, false);
             } else {
                 this._thinInstanceDataStorage.previousMatrixBuffer!.updateDirectly(this._thinInstanceDataStorage.matrixData, 0, instancesCount);

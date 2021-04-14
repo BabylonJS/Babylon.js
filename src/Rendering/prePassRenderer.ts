@@ -86,7 +86,7 @@ export class PrePassRenderer {
         },
         {
             type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTURETYPE_UNSIGNED_INT,
         },
         {
             type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
