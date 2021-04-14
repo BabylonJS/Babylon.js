@@ -315,6 +315,14 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    private _generateTextureLookup(state: NodeMaterialBuildState): void {
+        state.compilationString += `#ifdef ${this._defineName}\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._transformedUVName});\r\n`;
+        state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._mainUVName ? this._mainUVName : this.uv.associatedVariableName});\r\n`;
+        state.compilationString += `#endif\r\n`;
+    }
+
     private _writeTextureRead(state: NodeMaterialBuildState, vertexMode = false) {
         let uvInput = this.uv;
 
@@ -323,7 +331,7 @@ export class TextureBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName});\r\n`;
+            this._generateTextureLookup(state);
             return;
         }
 
@@ -332,11 +340,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._transformedUVName});\r\n`;
-        state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._mainUVName});\r\n`;
-        state.compilationString += `#endif\r\n`;
+        this._generateTextureLookup(state);
     }
 
     private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
