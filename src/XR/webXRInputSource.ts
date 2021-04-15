@@ -74,6 +74,12 @@ export class WebXRInputSource {
     public pointer: AbstractMesh;
 
     /**
+     * The last XRPose the was calculated on the current XRFrame
+     * @hidden
+     */
+    public _lastXRPose?: XRPose;
+
+    /**
      * Creates the input source object
      * @see https://doc.babylonjs.com/how_to/webxr_controllers_support
      * @param _scene the scene which the controller should be associated to
@@ -175,7 +181,8 @@ export class WebXRInputSource {
      * @param referenceSpace reference space to use
      */
     public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
-        let pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
+        const pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
+        this._lastXRPose = pose;
 
         // Update the pointer mesh
         if (pose) {

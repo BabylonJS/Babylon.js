@@ -12,6 +12,8 @@ import { Logger } from './Misc/logger';
 import { EngineStore } from './Engines/engineStore';
 import { Nullable } from './types';
 import { Node } from './node';
+import { Observer } from "./Misc/observable";
+import { ThinEngine } from "./Engines/thinEngine";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -43,6 +45,7 @@ export class InstantiatedEntries {
  */
 export class AssetContainer extends AbstractScene {
     private _wasAddedToScene = false;
+    private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
 
     /**
      * The scene the AssetContainer belongs to.
@@ -66,6 +69,24 @@ export class AssetContainer extends AbstractScene {
         scene.onDisposeObservable.add(() => {
             if (!this._wasAddedToScene) {
                 this.dispose();
+            }
+        });
+
+        this._onContextRestoredObserver = scene.getEngine().onContextRestoredObservable.add(() => {
+            for (const geometry of this.geometries) {
+                geometry._rebuild();
+            }
+
+            for (const mesh of this.meshes) {
+                mesh._rebuild();
+            }
+
+            for (const system of this.particleSystems) {
+                system.rebuild();
+            }
+
+            for (const texture of this.textures) {
+                texture._rebuild();
             }
         });
     }
@@ -288,6 +309,9 @@ export class AssetContainer extends AbstractScene {
         for (let component of this.scene._serializableComponents) {
             component.addFromContainer(this);
         }
+
+        this.scene.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
+        this._onContextRestoredObserver = null;
     }
 
     /**
@@ -419,6 +443,11 @@ export class AssetContainer extends AbstractScene {
 
         for (let component of this.scene._serializableComponents) {
             component.removeFromContainer(this, true);
+        }
+
+        if (this._onContextRestoredObserver) {
+            this.scene.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
+            this._onContextRestoredObserver = null;
         }
     }
 

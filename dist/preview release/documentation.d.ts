@@ -11682,6 +11682,7 @@ declare module BABYLON {
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private get _isMixed();
         private _injectVertexCode;
+        private _generateTextureLookup;
         private _writeTextureRead;
         private _generateConversionCode;
         private _writeOutput;
@@ -15084,6 +15085,11 @@ declare module BABYLON {
          */
         render(sprites: ThinSprite[], deltaTime: number, viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike, customSpriteUpdate?: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>): void;
         private _appendSpriteVertex;
+        private _buildIndexBuffer;
+        /**
+         * Rebuilds the renderer (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -15150,6 +15156,10 @@ declare module BABYLON {
          * Renders the list of sprites on screen.
          */
         render(): void;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
     }
     /**
      * Class used to manage multiple sprites on the same spritesheet
@@ -15275,6 +15285,10 @@ declare module BABYLON {
          */
         render(): void;
         private _customUpdate;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -15624,7 +15638,7 @@ declare module BABYLON {
     /**
      * Strong typing of a pointer move action.
      */
-    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement) => Nullable<PickingInfo>;
+    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: Nullable<HTMLElement>) => Nullable<PickingInfo>;
     /**
      * Strong typing of a pointer up/down action.
      */
@@ -25603,6 +25617,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -25614,7 +25629,7 @@ declare module BABYLON {
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
+        SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -25742,14 +25757,14 @@ declare module BABYLON {
          */
         useMaskFromThicknessTexture: boolean;
         private _scene;
-        private _useMaskFromThicknessTextureGltf;
+        private _useGltfStyleThicknessTexture;
         /**
          * Stores the intensity of the different subsurface effects in the thickness texture. This variation
          * matches the channel-packing that is used by glTF.
          * * the red channel is the transmission/translucency intensity.
          * * the green channel is the thickness.
          */
-        useMaskFromThicknessTextureGltf: boolean;
+        useGltfStyleThicknessTexture: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         private _internalMarkScenePrePassDirty;
@@ -25785,8 +25800,9 @@ declare module BABYLON {
          * @param isFrozen defines whether the material is frozen or not.
          * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
          * @param realTimeFiltering defines whether the textures should be filtered on the fly.
-         */
-        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean): void;
+         * @param subMesh the submesh to bind data for
+        */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void;
         /**
          * Unbinds the material from the mesh.
          * @param activeEffect defines the effect that should be unbound from.
@@ -26622,6 +26638,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -26633,7 +26650,7 @@ declare module BABYLON {
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
+        SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -34544,7 +34561,7 @@ declare module BABYLON {
         /** @hidden */
         _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material, effectiveMesh?: AbstractMesh) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _freeze(): void;
         /** @hidden */
@@ -37241,7 +37258,7 @@ declare module BABYLON {
         /** @hidden */
         _getActionManagerForTrigger(trigger?: number, initialCall?: boolean): Nullable<AbstractActionManager>;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _resyncLightSources(): void;
         /** @hidden */
@@ -42426,7 +42443,7 @@ declare module BABYLON {
         /** @hidden */
         _rebuild(): void;
         /** @hidden */
-        _swapAndDie(target: InternalTexture): void;
+        _swapAndDie(target: InternalTexture, swapAll?: boolean): void;
         /**
          * Dispose the current allocated resources
          */
@@ -43165,6 +43182,8 @@ declare module BABYLON {
          * Gets the list of created scenes
          */
         scenes: Scene[];
+        /** @hidden */
+        _virtualScenes: Scene[];
         /**
          * Event raised when a new scene is created
          */
@@ -47292,6 +47311,7 @@ declare module BABYLON {
      */
     export class AssetContainer extends AbstractScene {
         private _wasAddedToScene;
+        private _onContextRestoredObserver;
         /**
          * The scene the AssetContainer belongs to.
          */
@@ -53331,6 +53351,11 @@ declare module BABYLON {
          */
         compensateOnFirstFrame: boolean;
         /**
+         * The last XRViewerPose from the current XRFrame
+         * @hidden
+         */
+        _lastXRViewerPose?: XRViewerPose;
+        /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
@@ -53360,6 +53385,7 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
+        dispose(): void;
         private _rotate180;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
@@ -54872,6 +54898,11 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        /**
+         * The last XRPose the was calculated on the current XRFrame
+         * @hidden
+         */
+        _lastXRPose?: XRPose;
         /**
          * Creates the input source object
          * @see https://doc.babylonjs.com/how_to/webxr_controllers_support
@@ -62731,6 +62762,11 @@ declare module BABYLON {
         private _projectionTextureViewTargetVector;
         private _projectionTextureViewLightMatrix;
         private _projectionTextureProjectionLightMatrix;
+        /**
+        * Gets or sets the light projection matrix as used by the projection texture
+        */
+        get projectionTextureProjectionLightMatrix(): Matrix;
+        set projectionTextureProjectionLightMatrix(projection: Matrix);
         private _projectionTextureScalingMatrix;
         /**
          * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
@@ -65618,6 +65654,7 @@ declare module BABYLON {
          * Define the name of the lens flare system
          */
         name: string, emitter: any, scene: Scene);
+        private _createIndexBuffer;
         /**
          * Define if the lens flare system is enabled.
          */
@@ -65656,6 +65693,10 @@ declare module BABYLON {
          * @hidden
          */
         render(): boolean;
+        /**
+         * Rebuilds the lens flare system
+         */
+        rebuild(): void;
         /**
          * Dispose and release the lens flare with its associated resources.
          */
@@ -65916,6 +65957,7 @@ declare module BABYLON {
         protected _postProcessManager: PostProcessManager;
         protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
         protected _forceFullscreenViewport: boolean;
+        protected _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
         /**
          * Creates a min/max reducer
          * @param camera The camera to use for the post processes
@@ -66511,6 +66553,7 @@ declare module BABYLON {
         private _vertexBuffers;
         private _indexBuffer;
         private _fullscreenViewport;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect renderer
          * @param engine the engine to use for rendering
@@ -66614,6 +66657,7 @@ declare module BABYLON {
         set effect(effect: Effect);
         /** @hidden */
         _drawWrapper: DrawWrapper;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect to be renderer
          * @param creationOptions options to create the effect
@@ -84109,6 +84153,8 @@ interface XRInputSource {
 interface XRPose {
     readonly transform: XRRigidTransform;
     readonly emulatedPosition: boolean;
+    readonly linearVelocity?: DOMPointReadOnly;
+    readonly angularVelocity?: DOMPointReadOnly;
 }
 
 interface XRWorldInformation {
@@ -84126,8 +84172,9 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // World geometries
+    // World geometries. DEPRECATED
     worldInformation?: XRWorldInformation;
+    detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
     // Image tracking
