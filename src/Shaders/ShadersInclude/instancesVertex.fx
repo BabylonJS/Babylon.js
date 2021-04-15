@@ -11,5 +11,7 @@
     #endif
 #else
 	mat4 finalWorld = world;
-    mat4 finalPreviousWorld = previousWorld;
+	#if defined(PREPASS_VELOCITY) || defined(VELOCITY)
+        mat4 finalPreviousWorld = previousWorld;
+    #endif
 #endif

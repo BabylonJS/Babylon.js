@@ -8,9 +8,9 @@
             "referenceImage": "Sprites.png"
         },
         {
-            "title": "Procedural texture with NME",       
+            "title": "Procedural texture with NME",
             "renderCount": 2,
-            "playgroundId": "#8S19ZC#3",            
+            "playgroundId": "#8S19ZC#3",
             "referenceImage": "procedural_nme.png"
         },
         {
@@ -39,7 +39,7 @@
             "playgroundId": "#ARLADE#23",
             "referenceImage": "sprite-maps.png",
             "excludeFromAutomaticTesting": true
-        },              
+        },
         {
             "title": "Point light shadows",
             "playgroundId": "#U2F7P9#4",
@@ -1218,6 +1218,54 @@
             "renderCount": 1,
             "playgroundId": "#RJN64I#5",
             "referenceImage": "refraction-local-pbr.png"
+        },
+        {
+            "title": "Instances + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#402",
+            "referenceImage": "instances-mb.png"
+        },
+        {
+            "title": "Instances + GBR + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#403",
+            "referenceImage": "instances-gbr-mb.png"
+        },
+        {
+            "title": "Instances manual update + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#HJGC2G#50",
+            "referenceImage": "instances-mb-manual.png"
+        },
+        {
+            "title": "Thin instances + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#HJGC2G#51",
+            "referenceImage": "thin-instances-mb.png"
+        },
+        {
+            "title": "Thin instances + motion blur + manual",
+            "renderCount": 10,
+            "playgroundId": "#HJGC2G#52",
+            "referenceImage": "thin-instances-mb.png"
+        },
+        {
+            "title": "Thin instances + dynamic buffer resize",
+            "renderCount": 10,
+            "playgroundId": "#217750#33",
+            "referenceImage": "thin-instances-buffer-resize.png"
+        },
+        {
+            "title": "Instances + render self motion blur",
+            "renderCount": 10,
+            "playgroundId": "#217750#34",
+            "referenceImage": "instances-renderself-mb.png"
+        },
+        {
+            "title": "Thin instances + render self motion blur",
+            "renderCount": 10,
+            "playgroundId": "#217750#35",
+            "referenceImage": "thin-instances-renderself-mb.png"
         }
     ]
 }
