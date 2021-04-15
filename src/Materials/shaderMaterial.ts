@@ -1031,6 +1031,9 @@ export class ShaderMaterial extends Material {
             }
         });
 
+        // Stencil
+        this.stencil.copyTo(result.stencil);
+
         // Texture
         for (var key in this._textures) {
             result.setTexture(key, this._textures[key]);
@@ -1128,6 +1131,9 @@ export class ShaderMaterial extends Material {
         serializationObject.shaderPath = this._shaderPath;
 
         var name: string;
+
+        // Stencil
+        serializationObject.stencil = this.stencil.serialize();
 
         // Texture
         serializationObject.textures = {};
@@ -1255,6 +1261,11 @@ export class ShaderMaterial extends Material {
         var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options), source, scene, rootUrl);
 
         var name: string;
+
+        // Stencil
+        if (source.stencil) {
+            material.stencil.parse(source.stencil, scene, rootUrl);
+        }
 
         // Texture
         for (name in source.textures) {

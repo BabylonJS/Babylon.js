@@ -710,7 +710,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     protected _getTargetPosition(): Vector3 {
         if (this._targetHost && this._targetHost.getAbsolutePosition) {
-            var pos: Vector3 = this._targetHost.absolutePosition;
+            var pos: Vector3 = this._targetHost.getAbsolutePosition();
             if (this._targetBoundingCenter) {
                 pos.addToRef(this._targetBoundingCenter, this._target);
             } else {

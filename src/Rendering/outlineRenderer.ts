@@ -332,6 +332,7 @@ export class OutlineRenderer implements ISceneComponent {
                 this._engine.setStencilFunction(Constants.ALWAYS);
                 this._engine.setStencilMask(OutlineRenderer._StencilReference);
                 this._engine.setStencilFunctionReference(OutlineRenderer._StencilReference);
+                this._engine.stencilStateComposer.useStencilGlobalOnly = true;
                 this.render(subMesh, batch, /* This sets offset to 0 */ true);
 
                 this._engine.setColorWrite(true);
@@ -344,6 +345,7 @@ export class OutlineRenderer implements ISceneComponent {
             this._engine.setDepthWrite(this._savedDepthWrite);
 
             if (material && material.needAlphaBlendingForMesh(mesh)) {
+                this._engine.stencilStateComposer.useStencilGlobalOnly = false;
                 this._engine.restoreStencilState();
             }
         }

@@ -37,13 +37,14 @@ import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarg
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
-import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
+import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
+import { IStencilState } from "../States/IStencilState";
 import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 
@@ -502,21 +503,17 @@ export class WebGPUEngine extends Engine {
             })
             .then((adapter: GPUAdapter | null) => {
                 this._adapter = adapter!;
-                this._adapterSupportedExtensions = this._adapter.features.slice(0);
+                this._adapterSupportedExtensions = [];
+                this._adapter.features.forEach((feature) => this._adapterSupportedExtensions.push(feature));
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
                 if (deviceDescriptor?.nonGuaranteedFeatures) {
                     const requestedExtensions = deviceDescriptor.nonGuaranteedFeatures;
-                    const validExtensions = [];
+                    const validExtensions: GPUFeatureName[] = [];
 
-                    const iterator = requestedExtensions[Symbol.iterator]();
-                    while (true) {
-                        const { done, value : extension } = iterator.next();
-                        if (done) {
-                            break;
-                        }
-                        if (this._adapterSupportedExtensions.indexOf(extension) >= 0) {
+                    for (let extension of requestedExtensions) {
+                        if (this._adapter.features.has(extension)) {
                             validExtensions.push(extension);
                         }
                     }
@@ -528,7 +525,8 @@ export class WebGPUEngine extends Engine {
             })
             .then((device: GPUDevice | null) => {
                 this._device = device!;
-                this._deviceEnabledExtensions = this._device.features.slice(0);
+                this._deviceEnabledExtensions = [];
+                this._device.features.forEach((feature) => this._deviceEnabledExtensions.push(feature));
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
@@ -554,7 +552,8 @@ export class WebGPUEngine extends Engine {
                 this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
                 this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
-                this._stencilState = new WebGPUStencilState(this._cacheRenderPipeline);
+                this._stencilStateComposer = new WebGPUStencilStateComposer(this._cacheRenderPipeline);
+                this._stencilStateComposer.stencilGlobal = this._stencilState;
 
                 this._depthCullingState.depthTest = true;
                 this._depthCullingState.depthFunc = Constants.LEQUAL;
@@ -823,6 +822,11 @@ export class WebGPUEngine extends Engine {
     //                          Static Pipeline WebGPU States
     //------------------------------------------------------------------------------
 
+    /** @hidden */
+    public applyStates() {
+        this._stencilStateComposer.apply();
+    }
+
     /**
      * Force the entire cache to be cleared
      * You should not have to use this function unless your engine needs to share the WebGPU context with another engine
@@ -841,7 +845,7 @@ export class WebGPUEngine extends Engine {
         this._cacheRenderPipeline.setBuffers(null, null, null);
 
         if (bruteForce) {
-            this._stencilState.reset();
+            this._stencilStateComposer.reset();
 
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = Constants.LEQUAL;
@@ -1014,7 +1018,7 @@ export class WebGPUEngine extends Engine {
 
     private _mustUpdateStencilRef(renderPass: GPURenderPassEncoder): boolean {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
-        const update = this._stencilState.stencilFuncRef !== this._stencilRefsCurrent[index];
+        const update = this._stencilStateComposer.funcRef !== this._stencilRefsCurrent[index];
         if (update) {
             this._stencilRefsCurrent[index] = this._stencilState.stencilFuncRef;
         }
@@ -1573,6 +1577,8 @@ export class WebGPUEngine extends Engine {
                 throw `Invalid call to enableEffect: the materialContext property is empty!`;
             }
         }
+
+        this._stencilStateComposer.stencilMaterial = undefined;
 
         this._forceEnableEffect = isNewEffect || this._forceEnableEffect ? false : this._forceEnableEffect;
 
@@ -3584,8 +3590,9 @@ export class WebGPUEngine extends Engine {
      * @param force defines if states must be applied even if cache is up to date
      * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
      * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+     * @param stencil stencil states to set
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
@@ -3606,6 +3613,8 @@ export class WebGPUEngine extends Engine {
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }
+
+        this._stencilStateComposer.stencilMaterial = stencil;
     }
 
     /**
@@ -3711,6 +3720,8 @@ export class WebGPUEngine extends Engine {
             this._reportDrawCall();
             return;
         }
+
+        this.applyStates();
 
         const useFastPath = !this.compatibilityMode && this._currentDrawContext?.fastBundle;
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
@@ -3978,9 +3989,6 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _releaseFramebufferObjects(texture: InternalTexture): void { }
-
-    /** @hidden */
-    public applyStates() { }
 
     /**
      * Gets a boolean indicating if all created effects are ready
