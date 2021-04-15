@@ -81,7 +81,6 @@ class _InstanceDataStorage {
     public sideOrientation: number;
     public manualUpdate: boolean;
     public previousRenderId: number;
-    public needsPreviousMatrices: boolean;
     public masterMeshPreviousWorldMatrix: Nullable<Matrix>;
 }
 
@@ -108,7 +107,6 @@ class _ThinInstanceDataStorage {
     public boundingVectors: Array<Vector3> = [];
     public worldMatrices: Nullable<Matrix[]> = null;
     public masterMeshPreviousWorldMatrix: Nullable<Matrix>;
-    public needsPreviousMatrices: boolean = false;
 }
 
 /**
@@ -466,15 +464,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._instanceDataStorage.manualUpdate = value;
     }
 
-    /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
-    public get instancesMotionBlurSupport() {
-        return this._instanceDataStorage.needsPreviousMatrices;
-    }
-
-    public set instancesMotionBlurSupport(value: boolean) {
-        this._instanceDataStorage.needsPreviousMatrices = value;
-        this._thinInstanceDataStorage.needsPreviousMatrices = value;
-    }
+    /** Boolean indicating that we need to store previous world matrices for instances to render some effects like motion blur */
+    public static NeedsPreviousWorldMatrices = false;
 
     /**
      * @constructor
@@ -1724,7 +1715,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
             instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
-            if (instanceStorage.needsPreviousMatrices) {
+            if (this._scene.needsPreviousWorldMatrices) {
                 instanceStorage.instancesPreviousData = new Float32Array(instanceStorage.instancesBufferSize / 4);
             }
         }
@@ -1734,12 +1725,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let renderSelf = batch.renderSelf[subMesh._id];
 
-        const needUpdateBuffer = !instancesBuffer || currentInstancesBufferSize !== instanceStorage.instancesBufferSize || (instanceStorage.needsPreviousMatrices && !instanceStorage.instancesPreviousBuffer);
+        const needUpdateBuffer = !instancesBuffer || currentInstancesBufferSize !== instanceStorage.instancesBufferSize || (this._scene.needsPreviousWorldMatrices && !instanceStorage.instancesPreviousBuffer);
 
         if (!this._instanceDataStorage.manualUpdate && (!instanceStorage.isFrozen || needUpdateBuffer)) {
             var world = this._effectiveMesh.getWorldMatrix();
             if (renderSelf) {
-                if (instanceStorage.needsPreviousMatrices) {
+                if (this._scene.needsPreviousWorldMatrices) {
                     if (!instanceStorage.masterMeshPreviousWorldMatrix) {
                         instanceStorage.masterMeshPreviousWorldMatrix = world.clone();
                         instanceStorage.masterMeshPreviousWorldMatrix.copyToArray(instanceStorage.instancesPreviousData, offset);
@@ -1769,7 +1760,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     var matrix = instance.getWorldMatrix();
                     matrix.copyToArray(instanceStorage.instancesData, offset);
 
-                    if (instanceStorage.needsPreviousMatrices) {
+                    if (this._scene.needsPreviousWorldMatrices) {
                         if (!instance._previousWorldMatrix) {
                             instance._previousWorldMatrix = matrix.clone();
                             instance._previousWorldMatrix.copyToArray(instanceStorage.instancesPreviousData, offset);
@@ -1813,7 +1804,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._userInstancedBuffersStorage.vertexBuffers["world2"] = instancesBuffer.createVertexBuffer("world2", 8, 4);
             this._userInstancedBuffersStorage.vertexBuffers["world3"] = instancesBuffer.createVertexBuffer("world3", 12, 4);
 
-            if (instanceStorage.needsPreviousMatrices) {
+            if (this._scene.needsPreviousWorldMatrices) {
                 instancesPreviousBuffer = new Buffer(engine, instanceStorage.instancesPreviousData, true, 16, false, true);
                 instanceStorage.instancesPreviousBuffer = instancesPreviousBuffer;
 
@@ -1827,7 +1818,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         } else {
             if (!this._instanceDataStorage.isFrozen) {
                 instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
-                if (instanceStorage.needsPreviousMatrices && !this._instanceDataStorage.manualUpdate) {
+                if (this._scene.needsPreviousWorldMatrices && !this._instanceDataStorage.manualUpdate) {
                     instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesPreviousData, 0, instancesCount);
                 }
             }
@@ -1867,7 +1858,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Write current matrices as previous matrices
         // Default behaviour when previous matrices are not specified explicitly
         // Will break if instances number/order changes
-        if (this._thinInstanceDataStorage.needsPreviousMatrices && !this._thinInstanceDataStorage.previousMatrixData && this._thinInstanceDataStorage.matrixData) {
+        if (this._scene.needsPreviousWorldMatrices && !this._thinInstanceDataStorage.previousMatrixData && this._thinInstanceDataStorage.matrixData) {
             if (!this._thinInstanceDataStorage.previousMatrixBuffer) {
                 this._thinInstanceDataStorage.previousMatrixBuffer = this._createMatrixBuffer("previousWorld", this._thinInstanceDataStorage.matrixData, false);
             } else {
