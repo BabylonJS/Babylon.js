@@ -113,7 +113,7 @@ export class WebXREnterExitUI implements IDisposable {
         this.overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
 
         // prepare for session granted event
-        if (!options.ignoreSessionGrantedEvent) {
+        if (!options.ignoreSessionGrantedEvent && (navigator as any).xr) {
             (navigator as any).xr.addEventListener("sessiongranted", this._onSessionGranted);
         }
 
