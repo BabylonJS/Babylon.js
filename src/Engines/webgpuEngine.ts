@@ -506,7 +506,6 @@ export class WebGPUEngine extends Engine {
                 this._adapterSupportedExtensions = [];
                 this._adapter.features.forEach((feature) => this._adapterSupportedExtensions.push(feature));
 
-
                 const deviceDescriptor = this._options.deviceDescriptor;
 
                 if (deviceDescriptor?.nonGuaranteedFeatures) {
