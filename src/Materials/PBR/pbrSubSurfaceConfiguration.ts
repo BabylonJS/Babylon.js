@@ -12,6 +12,8 @@ import { MaterialHelper } from "../../Materials/materialHelper";
 import { EffectFallbacks } from '../effectFallbacks';
 import { Scalar } from "../../Maths/math.scalar";
 import { CubeTexture } from "../Textures/cubeTexture";
+import { TmpVectors } from "../../Maths/math.vector";
+import { SubMesh } from "../../Meshes/subMesh";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
@@ -28,6 +30,7 @@ export interface IMaterialSubSurfaceDefines {
 
     SS_THICKNESSANDMASK_TEXTURE: boolean;
     SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+    SS_HAS_THICKNESS: boolean;
 
     SS_REFRACTIONMAP_3D: boolean;
     SS_REFRACTIONMAP_OPPOSITEZ: boolean;
@@ -41,7 +44,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-    SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
+    SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -252,7 +255,7 @@ export class PBRSubSurfaceConfiguration {
     public useMaskFromThicknessTexture: boolean = false;
 
     private _scene: Scene;
-    private _useMaskFromThicknessTextureGltf = false;
+    private _useGltfStyleThicknessTexture = false;
     /**
      * Stores the intensity of the different subsurface effects in the thickness texture. This variation
      * matches the channel-packing that is used by glTF.
@@ -261,7 +264,7 @@ export class PBRSubSurfaceConfiguration {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useMaskFromThicknessTextureGltf: boolean = false;
+    public useGltfStyleThicknessTexture: boolean = false;
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
@@ -328,8 +331,9 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_TRANSLUCENCY = this._isTranslucencyEnabled;
             defines.SS_SCATTERING = this._isScatteringEnabled;
             defines.SS_THICKNESSANDMASK_TEXTURE = false;
+            defines.SS_HAS_THICKNESS = false;
             defines.SS_MASK_FROM_THICKNESS_TEXTURE = false;
-            defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
+            defines.SS_USE_GLTF_THICKNESS_TEXTURE = false;
             defines.SS_REFRACTION = false;
             defines.SS_REFRACTIONMAP_3D = false;
             defines.SS_GAMMAREFRACTION = false;
@@ -353,8 +357,9 @@ export class PBRSubSurfaceConfiguration {
                     }
                 }
 
+                defines.SS_HAS_THICKNESS = (this.maximumThickness - this.minimumThickness) !== 0.0;
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture;
-                defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = this._useMaskFromThicknessTextureGltf;
+                defines.SS_USE_GLTF_THICKNESS_TEXTURE = this._useGltfStyleThicknessTexture;
             }
 
             if (this._isRefractionEnabled) {
@@ -389,8 +394,9 @@ export class PBRSubSurfaceConfiguration {
      * @param isFrozen defines whether the material is frozen or not.
      * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
      * @param realTimeFiltering defines whether the textures should be filtered on the fly.
-     */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean): void {
+     * @param subMesh the submesh to bind data for
+    */
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void {
         var refractionTexture = this._getRefractionTexture(scene);
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
@@ -399,7 +405,11 @@ export class PBRSubSurfaceConfiguration {
                 MaterialHelper.BindTextureMatrix(this._thicknessTexture, uniformBuffer, "thickness");
             }
 
-            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness, this.maximumThickness - this.minimumThickness);
+            subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
+
+            const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
+
+            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                 uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
@@ -414,10 +424,11 @@ export class PBRSubSurfaceConfiguration {
                 var width = refractionTexture.getSize().width;
                 var refractionIor = this.volumeIndexOfRefraction;
                 uniformBuffer.updateFloat4("vRefractionInfos", refractionTexture.level, 1 / refractionIor, depth, this._invertRefractionY ? -1 : 1);
-                uniformBuffer.updateFloat3("vRefractionMicrosurfaceInfos",
+                uniformBuffer.updateFloat4("vRefractionMicrosurfaceInfos",
                     width,
                     refractionTexture.lodGenerationScale,
-                    refractionTexture.lodGenerationOffset);
+                    refractionTexture.lodGenerationOffset,
+                    1.0 / this.indexOfRefraction);
 
                 if (realTimeFiltering) {
                     uniformBuffer.updateFloat2("vRefractionFilteringInfo", width, Scalar.Log2(width));
@@ -637,7 +648,7 @@ export class PBRSubSurfaceConfiguration {
      * @param uniformBuffer defines the current uniform buffer.
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
+        uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 4);
         uniformBuffer.addUniform("vRefractionFilteringInfo", 2);
         uniformBuffer.addUniform("vRefractionInfos", 4);
         uniformBuffer.addUniform("refractionMatrix", 16);
