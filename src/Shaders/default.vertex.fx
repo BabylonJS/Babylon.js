@@ -25,13 +25,7 @@ attribute vec4 color;
 #include<bonesDeclaration>
 
 // Uniforms
-// #include<instancesDeclaration>
-#ifdef INSTANCES
-	attribute vec4 world0;
-	attribute vec4 world1;
-	attribute vec4 world2;
-	attribute vec4 world3;
-#endif
+#include<instancesDeclaration>
 #include<prePassVertexDeclaration>
 
 #ifdef MAINUV1

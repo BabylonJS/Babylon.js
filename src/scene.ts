@@ -902,6 +902,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return !!this.prePassRenderer && this.prePassRenderer.defaultRT.enabled;
     }
 
+    /**
+    * Flag indicating if we need to store previous matrices when rendering
+    */
+    public needsPreviousWorldMatrices = false;
+
     // Lights
     private _shadowsEnabled = true;
     /**

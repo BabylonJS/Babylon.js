@@ -6,16 +6,5 @@
     uniform mat4 previousViewProjection;
     varying vec4 vCurrentPosition;
     varying vec4 vPreviousPosition;
-    #ifdef INSTANCES
-        attribute vec4 previousWorld0;
-        attribute vec4 previousWorld1;
-        attribute vec4 previousWorld2;
-        attribute vec4 previousWorld3;
-        #ifdef THIN_INSTANCES
-            uniform mat4 previousWorld;
-        #endif
-    #else
-        uniform mat4 previousWorld;
-    #endif
 #endif
 #endif
