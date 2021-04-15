@@ -945,10 +945,10 @@ export abstract class WebGPUCacheRenderPipeline {
         }
 
         const stencilFrontBack: GPUStencilStateFace = {
-            compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilFrontCompare),
-            depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontDepthFailOp),
-            failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontFailOp),
-            passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontPassOp)
+            compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilEnabled ? this._stencilFrontCompare : 7 /* ALWAYS */),
+            depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontDepthFailOp : 1 /* KEEP */),
+            failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontFailOp : 1 /* KEEP */),
+            passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontPassOp : 1 /* KEEP */)
         };
 
         let stripIndexFormat: GPUIndexFormat | undefined = undefined;
