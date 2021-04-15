@@ -10,7 +10,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import { IAnimationKey } from "babylonjs/Animations/animationKey";
 import { Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
-//import { Scalar } from "babylonjs/Maths/math.scalar";
+import { Scalar } from "babylonjs/Maths/math.scalar";
 
 interface IGraphComponentProps {
     globalState: GlobalState;
@@ -157,88 +157,53 @@ IGraphComponentState
             const value = this._currentAnimation.evaluate(currentFrame);
             const leftKey = keys[indexToAdd];
             const rightKey = keys[indexToAdd + 1];
-            // const previousWidth = rightKey.frame - leftKey.frame;
-            // const leftWidth = currentFrame - leftKey.frame;            
-            // const rightWidth = rightKey.frame - currentFrame;
-          //  const leftScaleFactor = leftWidth / previousWidth;
-           // const rightScaleFactor = rightWidth / previousWidth;
-           // const cutTime = leftWidth / previousWidth;
-
+            
             let newKey: IAnimationKey = {
                 frame: currentFrame,
                 value: value
             }
 
             if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                let derivative: Nullable<any> = null;
+                const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                const cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
+
                 switch (this._currentAnimation.dataType) {
                     case Animation.ANIMATIONTYPE_FLOAT: {
-                        // Derivative
-                        //const derivative = Scalar.Hermite1stDerivative(leftKey.value, leftKey.outTangent * previousWidth, rightKey.value, rightKey.inTangent * previousWidth, cutTime);                  
-                        const derivative = (this._currentAnimation.evaluate(currentFrame + 0.0001) - value) /  0.0001;
-
-                        // Left
-                        leftKey.outTangent = leftKey.outTangent;// * leftScaleFactor;
-                        newKey.inTangent = derivative;// * leftScaleFactor;
-
-                        // Right
-                        rightKey.inTangent = rightKey.inTangent;// * rightScaleFactor;
-                        newKey.outTangent = derivative;// * rightScaleFactor;
-
+                        derivative = Scalar.Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
                         break;
                     }
                     case Animation.ANIMATIONTYPE_VECTOR2: {
-                        // Derivative
-                        //const derivative = Vector2.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
-                        const derivative = (this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
-
-                        // Left
-                        leftKey.outTangent = leftKey.outTangent;//.scale(leftScaleFactor);
-                        newKey.inTangent = derivative;//.scale(leftScaleFactor);
-
-                        // Right
-                        rightKey.inTangent = rightKey.inTangent;//.scale(rightScaleFactor);
-                        newKey.outTangent = derivative;//.scale(rightScaleFactor);
+                        derivative = Vector2.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
                         break;
                     }
                     case Animation.ANIMATIONTYPE_VECTOR3: {
-                        // Derivative
-                        //const derivative = Vector3.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
-                        const derivative = (this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
-
-                        // Left
-                        leftKey.outTangent = leftKey.outTangent;//.scale(leftScaleFactor);
-                        newKey.inTangent = derivative;//.scale(leftScaleFactor);
-
-                        // Right
-                        rightKey.inTangent = rightKey.inTangent;//.scale(rightScaleFactor);
-                        newKey.outTangent = derivative;//.scale(rightScaleFactor);
+                        derivative = Vector3.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
                         break;
                     }
                     case Animation.ANIMATIONTYPE_QUATERNION:{
-                        // Derivative
-                        //const derivative = Quaternion.Hermite1stDerivative(leftKey.value, leftKey.outTangent, rightKey.value, rightKey.inTangent, cutTime);                  
-                        const derivative = (this._currentAnimation.evaluate(currentFrame + 0.0001).subtract(value)).scale(1 / 0.0001);
-
-                        // Left
-                        leftKey.outTangent = leftKey.outTangent;//.scale(leftScaleFactor);
-                        newKey.inTangent = derivative;//.scale(leftScaleFactor);
-
-                        // Right
-                        rightKey.inTangent = rightKey.inTangent;//.scale(rightScaleFactor);
-                        newKey.outTangent = derivative;//.scale(rightScaleFactor);
+                        derivative = Quaternion.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
                         break;
                     }
                     case Animation.ANIMATIONTYPE_COLOR3:
+                        derivative = Color3.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
                         break;
                     case Animation.ANIMATIONTYPE_COLOR4:
+                        derivative = Color4.Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
                         break;
+                }
+
+                if (derivative !== null) {
+                    newKey.inTangent = derivative;
+                    newKey.outTangent = derivative;
                 }
             }
 
+            
             keys.splice(indexToAdd + 1, 0, newKey);
 
             this._currentAnimation.setKeys(keys);
-            this._evaluateKeys();
+            this._evaluateKeys(false);
 
             this.props.context.activeKeyPoints = [];            
             this.props.context.onActiveKeyPointChanged.notifyObservers();
@@ -276,7 +241,7 @@ IGraphComponentState
         }
     }
 
-    private _evaluateKeys() {
+    private _evaluateKeys(frame = true) {
         if (!this.props.context.activeAnimation) {
             this._curves = [];
             return;
@@ -327,10 +292,12 @@ IGraphComponentState
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
 
-        this._frame();
+        if (frame) {
+            this._frame();
+        }
     }
 
-    private _extractValuesFromKeys(keys: IAnimationKey[], dataType: number, pushToCurves: boolean) {
+    private _extractValuesFromKeys(keys: IAnimationKey[], dataType: number, pushToCurves: boolean, propertyFilter?: string) {
         let minValue = Number.MAX_VALUE;
         let maxValue = -Number.MAX_VALUE;
 
@@ -350,10 +317,14 @@ IGraphComponentState
                     }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR2:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
 
                     if (pushToCurves) {
                         this._curves[0].keys.push({
@@ -371,12 +342,20 @@ IGraphComponentState
                     }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    minValue = Math.min(minValue, key.value.z);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.z);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
+    
+                    if (!propertyFilter || propertyFilter === "z") {
+                        minValue = Math.min(minValue, key.value.z);
+                        maxValue = Math.max(maxValue, key.value.z);
+                    }
                     
                     if (pushToCurves) {
                         this._curves[0].keys.push({
@@ -400,12 +379,20 @@ IGraphComponentState
                     }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
-                    minValue = Math.min(minValue, key.value.r);
-                    minValue = Math.min(minValue, key.value.g);
-                    minValue = Math.min(minValue, key.value.b);
-                    maxValue = Math.max(maxValue, key.value.r);
-                    maxValue = Math.max(maxValue, key.value.g);
-                    maxValue = Math.max(maxValue, key.value.b);
+                    if (!propertyFilter || propertyFilter === "r") {
+                        minValue = Math.min(minValue, key.value.r);
+                        maxValue = Math.max(maxValue, key.value.r);
+                    }
+
+                    if (!propertyFilter || propertyFilter === "g") {
+                        minValue = Math.min(minValue, key.value.g);
+                        maxValue = Math.max(maxValue, key.value.g);
+                    }
+
+                    if (!propertyFilter || propertyFilter === "b") {
+                        minValue = Math.min(minValue, key.value.b);
+                        maxValue = Math.max(maxValue, key.value.b);
+                    }
 
                     if (pushToCurves) {
                         this._curves[0].keys.push({
@@ -429,14 +416,25 @@ IGraphComponentState
                     }
                     break;                    
                 case Animation.ANIMATIONTYPE_QUATERNION:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    minValue = Math.min(minValue, key.value.z);
-                    minValue = Math.min(minValue, key.value.w);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.z);
-                    maxValue = Math.max(maxValue, key.value.w);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
+    
+                    if (!propertyFilter || propertyFilter === "z") {
+                        minValue = Math.min(minValue, key.value.z);
+                        maxValue = Math.max(maxValue, key.value.z);
+                    }
+
+                    if (!propertyFilter || propertyFilter === "w") {
+                        minValue = Math.min(minValue, key.value.w);
+                        maxValue = Math.max(maxValue, key.value.w);
+                    }                    
                     
                     if (pushToCurves) {
                         this._curves[0].keys.push({
@@ -466,14 +464,25 @@ IGraphComponentState
                     }                   
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
-                    minValue = Math.min(minValue, key.value.r);
-                    minValue = Math.min(minValue, key.value.g);
-                    minValue = Math.min(minValue, key.value.b);
-                    minValue = Math.min(minValue, key.value.a);
-                    maxValue = Math.max(maxValue, key.value.r);
-                    maxValue = Math.max(maxValue, key.value.g);
-                    maxValue = Math.max(maxValue, key.value.b);
-                    maxValue = Math.max(maxValue, key.value.a);
+                    if (!propertyFilter || propertyFilter === "r") {
+                        minValue = Math.min(minValue, key.value.r);
+                        maxValue = Math.max(maxValue, key.value.r);
+                    }
+
+                    if (!propertyFilter || propertyFilter === "g") {
+                        minValue = Math.min(minValue, key.value.g);
+                        maxValue = Math.max(maxValue, key.value.g);
+                    }
+
+                    if (!propertyFilter || propertyFilter === "b") {
+                        minValue = Math.min(minValue, key.value.b);
+                        maxValue = Math.max(maxValue, key.value.b);
+                    }
+
+                    if (!propertyFilter || propertyFilter === "a") {
+                        minValue = Math.min(minValue, key.value.a);
+                        maxValue = Math.max(maxValue, key.value.a);
+                    }                    
                     
                     if (pushToCurves) {
                         this._curves[0].keys.push({
@@ -634,8 +643,15 @@ IGraphComponentState
 
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
+        let propertyFilter: string | undefined = undefined;
 
-        let values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false);
+        if (this.props.context.activeColor) {
+            const activeCurve = this._curves.filter(c => c.color === this.props.context.activeColor)[0];
+
+            propertyFilter = activeCurve.property;
+        }
+
+        let values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false, propertyFilter);
         this._minValue = values.min;
         this._maxValue = values.max;
 

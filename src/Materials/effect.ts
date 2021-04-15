@@ -647,6 +647,8 @@ export class Effect implements IDisposable {
 
         var previousPipelineContext = this._pipelineContext;
 
+        this._isReady = false;
+
         try {
             let engine = this._engine;
 

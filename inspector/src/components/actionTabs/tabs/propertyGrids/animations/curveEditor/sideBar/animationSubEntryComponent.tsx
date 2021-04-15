@@ -73,17 +73,19 @@ IAnimationSubEntryComponentState
     }
 
     private _activate() {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === this.props.color) {
             return;
         }
 
+        this.props.context.activeKeyPoints = [];
         this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = this.props.color;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 
     public render() {
-        let isActive = this.props.animation === this.props.context.activeAnimation;
+        let isActive = this.props.animation === this.props.context.activeAnimation && (this.props.context.activeColor === null || this.props.context.activeColor === this.props.color);
         return (
             <>
                 <div className={"animation-entry" + (isActive ? " isActive" : "")}>

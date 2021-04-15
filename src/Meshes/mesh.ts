@@ -1856,10 +1856,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _rebuild(): void {
+    public _rebuild(dispose = false): void {
         if (this._instanceDataStorage.instancesBuffer) {
             // Dispose instance buffer to be recreated in _renderWithInstances when rendered
-            this._instanceDataStorage.instancesBuffer.dispose();
+            if (dispose) {
+                this._instanceDataStorage.instancesBuffer.dispose();
+            }
             this._instanceDataStorage.instancesBuffer = null;
         }
         if (this._userInstancedBuffersStorage) {
@@ -1867,7 +1869,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 var buffer = this._userInstancedBuffersStorage.vertexBuffers[kind];
                 if (buffer) {
                     // Dispose instance buffer to be recreated in _renderWithInstances when rendered
-                    buffer.dispose();
+                    if (dispose) {
+                        buffer.dispose();
+                    }
                     this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
                 }
             }
@@ -1875,7 +1879,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this._userInstancedBuffersStorage.vertexArrayObjects = {};
             }
         }
-        super._rebuild();
+        this._effectiveMaterial = null;
+        super._rebuild(dispose);
     }
 
     /** @hidden */
@@ -1976,6 +1981,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             this._effectiveMaterial = material;
+        } else if ((material._storeEffectOnSubMeshes && !subMesh.effect?._wasPreviouslyReady) || (!material._storeEffectOnSubMeshes && !material.getEffect()?._wasPreviouslyReady)) {
+            if (oldCamera) {
+                oldCamera.maxZ = oldCameraMaxZ;
+                scene.updateTransformMatrix(true);
+            }
+            return this;
         }
 
         // Alpha mode
@@ -2048,9 +2059,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
-            engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse, this._effectiveMaterial.cullBackFaces);
+            engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse, this._effectiveMaterial.cullBackFaces, this._effectiveMaterial.stencil);
             this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
-            engine.setState(true, this._effectiveMaterial.zOffset, false, reverse, this._effectiveMaterial.cullBackFaces);
+            engine.setState(true, this._effectiveMaterial.zOffset, false, reverse, this._effectiveMaterial.cullBackFaces, this._effectiveMaterial.stencil);
 
             if (this._internalMeshDataInfo._onBetweenPassObservable) {
                 this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(subMesh);

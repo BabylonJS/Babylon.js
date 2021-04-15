@@ -2,6 +2,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { Scene } from "../scene";
 import { RGBDTextureTools } from "./rgbdTextureTools";
+import { Tools } from "./tools";
 
 /**
  * Class used to host texture specific utilities
@@ -42,6 +43,18 @@ export class BRDFTextureTools {
             scene.useDelayedTextureLoading = useDelayedTextureLoading;
 
             RGBDTextureTools.ExpandRGBDTexture(texture);
+
+            scene.getEngine().onContextRestoredObservable.add(() => {
+                texture.isRGBD = true;
+                const checkReady = () => {
+                    if (texture.isReady()) {
+                        RGBDTextureTools.ExpandRGBDTexture(texture);
+                    } else {
+                        Tools.SetImmediate(checkReady);
+                    }
+                };
+                checkReady();
+            });
         }
 
         return scene.environmentBRDFTexture;

@@ -37,6 +37,7 @@ import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
+import { StencilStateComposer } from "../States/stencilStateComposer";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -170,14 +171,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.16";
+        return "babylonjs@5.0.0-alpha.17";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.16";
+        return "5.0.0-alpha.17";
     }
 
     /**
@@ -390,6 +391,8 @@ export class ThinEngine {
     protected _colorWriteChanged = true;
     /** @hidden */
     protected _depthCullingState = new DepthCullingState();
+    /** @hidden */
+    protected _stencilStateComposer = new StencilStateComposer();
     /** @hidden */
     protected _stencilState = new StencilState();
     /** @hidden */
@@ -604,6 +607,8 @@ export class ThinEngine {
 
         options = options || {};
 
+        this._stencilStateComposer.stencilGlobal = this._stencilState;
+
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
         if (!canvasOrContext) {
@@ -708,6 +713,13 @@ export class ThinEngine {
                 this._onContextRestored = () => {
                     // Adding a timeout to avoid race condition at browser level
                     setTimeout(() => {
+                        this._dummyFramebuffer = null;
+
+                        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to _initGLContext / wipeCaches will reset them
+                        const depthFunc = this._depthCullingState.depthFunc;
+                        const depthMask = this._depthCullingState.depthMask;
+                        const stencilTest = this._stencilState.stencilTest;
+
                         // Rebuild gl context
                         this._initGLContext();
                         // Rebuild effects
@@ -718,6 +730,12 @@ export class ThinEngine {
                         this._rebuildBuffers();
                         // Cache
                         this.wipeCaches(true);
+
+                        this._depthCullingState.depthTest = depthTest;
+                        this._depthCullingState.depthFunc = depthFunc;
+                        this._depthCullingState.depthMask = depthMask;
+                        this._stencilState.stencilTest = stencilTest;
+
                         Logger.Warn("WebGL context successfully restored.");
                         this.onContextRestoredObservable.notifyObservers(this);
                         this._contextWasLost = false;
@@ -879,6 +897,8 @@ export class ThinEngine {
         for (var key in this._compiledEffects) {
             let effect = <Effect>this._compiledEffects[key];
 
+            effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
+            effect._wasPreviouslyReady = false;
             effect._prepareEffect();
         }
 
@@ -904,6 +924,7 @@ export class ThinEngine {
     protected _rebuildBuffers(): void {
         // Uniforms
         for (var uniformBuffer of this._uniformBuffers) {
+            uniformBuffer._alreadyBound = false;
             uniformBuffer._rebuild();
         }
     }
@@ -2567,6 +2588,8 @@ export class ThinEngine {
             return;
         }
 
+        this._stencilStateComposer.stencilMaterial = undefined;
+
         effect = effect as Effect;
 
         // Use program
@@ -2898,7 +2921,7 @@ export class ThinEngine {
      */
     public applyStates() {
         this._depthCullingState.apply(this._gl);
-        this._stencilState.apply(this._gl);
+        this._stencilStateComposer.apply(this._gl);
         this._alphaState.apply(this._gl);
 
         if (this._colorWriteChanged) {
@@ -2948,6 +2971,13 @@ export class ThinEngine {
         return this._stencilState;
     }
 
+    /**
+     * Gets the stencil state composer
+     */
+     public get stencilStateComposer(): StencilStateComposer {
+        return this._stencilStateComposer;
+    }
+
     // Textures
 
     /**
@@ -2980,7 +3010,7 @@ export class ThinEngine {
             this._currentProgram = null;
             this.resetTextureCache();
 
-            this._stencilState.reset();
+            this._stencilStateComposer.reset();
 
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
