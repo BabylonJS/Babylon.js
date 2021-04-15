@@ -503,21 +503,18 @@ export class WebGPUEngine extends Engine {
             })
             .then((adapter: GPUAdapter | null) => {
                 this._adapter = adapter!;
-                this._adapterSupportedExtensions = this._adapter.features.slice(0);
+                this._adapterSupportedExtensions = [];
+                this._adapter.features.forEach((feature) => this._adapterSupportedExtensions.push(feature));
+
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
                 if (deviceDescriptor?.nonGuaranteedFeatures) {
                     const requestedExtensions = deviceDescriptor.nonGuaranteedFeatures;
-                    const validExtensions = [];
+                    const validExtensions: GPUFeatureName[] = [];
 
-                    const iterator = requestedExtensions[Symbol.iterator]();
-                    while (true) {
-                        const { done, value : extension } = iterator.next();
-                        if (done) {
-                            break;
-                        }
-                        if (this._adapterSupportedExtensions.indexOf(extension) >= 0) {
+                    for (let extension of requestedExtensions) {
+                        if (this._adapter.features.has(extension)) {
                             validExtensions.push(extension);
                         }
                     }
@@ -529,7 +526,8 @@ export class WebGPUEngine extends Engine {
             })
             .then((device: GPUDevice | null) => {
                 this._device = device!;
-                this._deviceEnabledExtensions = this._device.features.slice(0);
+                this._deviceEnabledExtensions = [];
+                this._device.features.forEach((feature) => this._deviceEnabledExtensions.push(feature));
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
