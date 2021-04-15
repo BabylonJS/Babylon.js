@@ -1,8 +1,8 @@
 import * as React from "react";
 import { GlobalState } from '../globalState';
+import { GUINodeTools } from "../guiNodeTools";
 import { CommandButtonComponent } from './commandButtonComponent';
 import { CommandDropdownComponent } from './commandDropdownComponent';
-//import { Utilities } from '../tools/utilities';
 
 require("../scss/commandBar.scss");
 
@@ -20,109 +20,101 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }    
 
     public render() {
-        //let activeVersion = Utilities.ReadStringFromStore("version", "Latest");
-        //let activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
-
-        /*if (location.href.indexOf("webgpu") !== -1 && !!navigator.gpu) {
-;
-        }
-
-        var versionOptions = Object.keys(Versions).map(key => {
-            return {
-                label: key,
-                storeKey: "version",
-                isActive: true,
-                onClick: () => {
-                    window.location.reload();
-                }
-            }
-        });
-
-        var engineOptions = [
-            {
-                label: "WebGL2",
-                storeKey: "engineVersion",
-                isActive: true,
-                onClick: () => {
-                    window.location.reload();
-                }
-            },
-            {
-                label: "WebGL",
-                storeKey: "engineVersion",
-                isActive: true,
-                onClick: () => {
-                    window.location.reload();
-                }
-            }
-        ];
-
-        if (!!navigator.gpu) {
-            engineOptions.splice(0,0, {
-                label: "WebGPU",
-                storeKey: "engineVersion",
-                isActive: true,
-                onClick: () => {
-                    window.location.reload();
-                }
-            });
-        }*/
 
         return (
             <div className={"commands "}>
                 <div className="commands-left">
-                <CommandDropdownComponent globalState={this.props.globalState} icon="Options" tooltip="Options" items={[
-                    {
-                        label: "Safe mode",
-                        storeKey: "safe-mode",
-                        defaultValue: false,
-                        onCheck: () => {}
-                    },                     
-                    {
-                        label: "CTRL+S to save",
-                        storeKey: "ctrl-s-to-save",
-                        defaultValue: true,
-                        onCheck: () => {}
-                    }, 
-                    {
-                        label: "editor",
-                        storeKey: "editor",
-                        defaultValue: true,
-                        onCheck: (value) => {}
-                    }, {
-                        label: "minimap",
-                        storeKey: "minimap",
-                        defaultValue: true,
-                        onCheck: (value) => {}
-                    }, {
-                        label: "fullscreen",
+                <img src={"../imgs/babylonLogo.svg"} color="white" className={"active"}/>
+                <CommandDropdownComponent globalState={this.props.globalState} icon="hamburgerIcon" tooltip="Options" items={[                   
+                   {
+                        label: "Save",
                         onClick: () => {}
                     },                     {
-                        label: "fullscreen editor",
+                        label: "Load",
                         onClick: () => {}
                     },                   {
-                        label: "format code",
+                        label: "Save to snippet",
                         onClick: () => {}
                     },
                     {
-                        label: "metadata",
+                        label: "Load from snippet",
                         onClick: () => {}
                     },
-                    {
-                        label: "QR code",
-                        onClick: () => {}
-                    },                 
-                    {
-                        label: "Load Unity Toolkit",
-                        storeKey: "unity-toolkit",
-                        defaultValue: false,
-                        onCheck: () => {}
-                    }, 
                 ]}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon="play" shortcut="Alt+Enter" isActive={true} onClick={()=> this.onSelect()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon="save" shortcut="Ctrl+S" isActive={false} onClick={()=> this.onPan()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" icon="inspector" isActive={false} onClick={()=> this.onZoom()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Create" icon="download" shortcut="Shift+Ctrl+S"isActive={false} onClick={()=> this.onCreate()}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon="pointerIcon" shortcut="Ctrl+S" isActive={false} onClick={()=> this.onPan()}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon="handIcon" shortcut="Ctrl" isActive={false} onClick={()=> this.onPan()}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" icon="zoomIcon" isActive={false} onClick={()=> this.onZoom()}/>
+                <CommandDropdownComponent globalState={this.props.globalState} icon="guidesIcon" tooltip="Create" items={[                   
+                   {
+                        label: "Image",
+                        icon: "zoomIcon",
+                        onClick: () => {this.onCreate("Image")}
+                    },                     {
+                        label: "TextButton",
+                        onClick: () => {this.onCreate("TextButton")}
+                    },                   
+                    {
+                        label: "Slider",
+                        onClick: () => {this.onCreate("Slider")}
+                    },
+                    {
+                        label: "ColorPicker",
+                        onClick: () => {this.onCreate("ColorPicker")}
+                    },                   
+                    {
+                        label: "ImageButton",
+                        onClick: () => {this.onCreate("ImageButton")}
+                    },                   
+                    {
+                        label: "Checkbox",
+                        onClick: () => {this.onCreate("Checkbox")}
+                    },                   
+                    {
+                        label: "VirtualKeyboard",
+                        onClick: () => {this.onCreate("VirtualKeyboard")}
+                    },                   
+                    {
+                        label: "Slider",
+                        onClick: () => {this.onCreate("Slider")}
+                    },                   
+                    {
+                        label: "DisplayGrid",
+                        onClick: () => {this.onCreate("DisplayGrid")}
+                    },                   
+                    {
+                        label: "Grid",
+                        onClick: () => {this.onCreate("Grid")}
+                    },                   
+                    {
+                        label: "StackPanel",
+                        onClick: () => {this.onCreate("StackPanel")}
+                    },                   
+                    {
+                        label: "Ellipse",
+                        onClick: () => {this.onCreate("Ellipse")}
+                    },                   
+                    {
+                        label: "Line",
+                        onClick: () => {this.onCreate("Line")}
+                    },                   
+                    {
+                        label: "Rectangle",
+                        onClick: () => {this.onCreate("Rectangle")}
+                    },                   
+                    {
+                        label: "Text",
+                        onClick: () => {this.onCreate("Text")}
+                    },
+                    {
+                        label: "InputText",
+                        onClick: () => {this.onCreate("InputText")}
+                    },
+                    {
+                        label: "InputPassword",
+                        onClick: () => {this.onCreate("InputPassword")}
+                    }
+                    
+                ]}/>
                 </div>
                 <div className="commands-right">
                     
@@ -130,16 +122,26 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             </div>
         );
     }
-    onCreate(): void {
-        throw new Error("Method not implemented.");
+    onCreate(value: string): void {
+        let guiElement = GUINodeTools.CreateControlFromString(value);
+
+        let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
+
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+
+        this.forceUpdate();
     }
+
     onZoom(): void {
-        throw new Error("Method not implemented.");
+
     }
+
     onPan(): void {
-        throw new Error("Method not implemented.");
+
     }
+
     onSelect(): void {
-        throw new Error("Method not implemented.");
+
     }
 }

@@ -1,6 +1,5 @@
 import * as React from "react";
 import { GlobalState } from "./globalState";
-import { GuiListComponent } from "./components/guiList/guiListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
@@ -275,19 +274,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         this.props.globalState.blockKeyboardEvents = false;
                     }}>  
                     {/* Node creation menu */}
-                    <GuiListComponent globalState={this.props.globalState} />
 
                     <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
 
                     {/* The gui workbench diagram */}
                     <div
                         className="diagram-container"
-                        onDrop={(event) => {
-                            this.emitNewBlock(event);
-                        }}
-                        onDragOver={(event) => {
-                            event.preventDefault();
-                        }}
                     >
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                     </div>
