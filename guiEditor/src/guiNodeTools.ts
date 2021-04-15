@@ -25,7 +25,7 @@ export class GUINodeTools {
                 element = new Checkbox("Checkbox");
                 element.width = "5%";
                 element.height = "5%";
-                element.color = "#FFFFFFFF";
+                element.color = "#cccccc";
                 element.isPointerBlocker = true;
                 return element;
             case "ColorPicker":
@@ -33,9 +33,11 @@ export class GUINodeTools {
                 break;
             case "Ellipse":
                 element = new Ellipse("Ellipse");
+                element.color = "#cccccc";
                 break;
             case "Rectangle":
                 element = new Rectangle("Rectangle");
+                element.color = "#cccccc";
                 break;
             case "Line":
                 element = new Line();
@@ -46,11 +48,12 @@ export class GUINodeTools {
                 element.lineWidth = 5;
                 element.dash = [50, 10];
                 element.isPointerBlocker = true;
+                element.color = "#0";
                 return element;
             case "Text":
                 element = new TextBlock("Textblock");
                 element.text = "My Text";
-                element.color = "#FFFFFFFF";
+                element.color = "#0";
                 element.fontSize = 20;
                 element.resizeToFit = true;
                 element.isPointerBlocker = true;
@@ -71,11 +74,15 @@ export class GUINodeTools {
                 element = new InputText("InputText");
                 element.maxWidth = 0.6;
                 element.text = "Input Text";
+                element.background = "#333333";
+                element.color = "#ffffff";
                 break;
             case "InputPassword":
                 element = new InputPassword("InputPassword");
                 element.maxWidth = 0.6;
                 element.text = "Input Text";
+                element.background = "#333333";
+                element.color = "#ffffff";
                 break;
             case "Grid":
                 element = new Grid("Grid");
@@ -97,11 +104,12 @@ export class GUINodeTools {
                 return element;
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");
+                element.background = "#333333";
+                element.color = "#ffffff";
                 break;
         }
         element.width = "15%";
         element.height = "5%";
-        element.color = "#FFFFFFFF";
         element.isPointerBlocker = true;
         return element;
     }

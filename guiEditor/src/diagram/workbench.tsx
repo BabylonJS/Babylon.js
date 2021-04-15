@@ -17,6 +17,7 @@ import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Button } from "babylonjs-gui/2D/controls/button";
+import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -272,7 +273,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         // Create our first scene.
         this._scene = new Scene(engine);
-        this._scene.clearColor = new Color4(0.2, 0.2, 0.3, 1.0);
+        const clearColor = 204/255.0;
+        this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
         let camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, 1024, Vector3.Zero(), this._scene);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
@@ -283,6 +285,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize);
         this._textureMesh.showBoundingBox = true;
+
+        var background =  new Rectangle("Rectangle");
+        background.width = "100%"
+        background.height = "100%";
+        background.background = "white";
+
+        this.globalState.guiTexture.addControl(background);
         this.addControls(this._scene, camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();

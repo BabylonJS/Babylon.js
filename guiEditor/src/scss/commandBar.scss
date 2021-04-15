@@ -62,12 +62,13 @@
             height: 100%;
             width: 100%;
             display: grid;
+            color: white;
             align-content: center;
             justify-content: center;
         }
 
         &:hover {
-            background-color: white;
+            background-color: #666666;
         } 
         
         &:active {
@@ -111,7 +112,7 @@
         }
 
         &:hover, &.activated {
-            background-color: white;
+            background-color:#666666;
             color: black;
         } 
         
@@ -133,9 +134,10 @@
 
     &.background-js {
         .command-dropdown-content {
+            background: #333333;
             .command-dropdown-label {
                 &:hover {
-                    background-color: #333333;
+                    background: #333333;
                 }
             }
         }
@@ -145,13 +147,14 @@
         .command-dropdown-content {
             .command-dropdown-label {
                 &:hover {
-                    background-color: #333333;
+                    background: #333333;
                 }
             }
         }
     }
 
     .command-dropdown-content {
+        background: #333333;
         position: absolute;
         top: 55px;
         width: 200px;
@@ -183,12 +186,15 @@
             }
 
             &:hover {
+                background: #666666;
                 .sub-items {
                     display: block;
                 }
             } 
 
             .command-dropdown-label-text {
+                font-family: Arial;
+                font-size: 12px;
                 grid-column: 1;
                 grid-row: 1;
             }

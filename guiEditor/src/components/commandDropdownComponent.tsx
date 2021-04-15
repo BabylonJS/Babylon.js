@@ -8,7 +8,8 @@ interface ICommandDropdownComponentProps {
     tooltip: string;
     defaultValue?: string;
     items: {
-        label: string, 
+        label: string,
+        icon?: string,
         onClick?: () => void, 
         onCheck?: (value: boolean) => void, 
         storeKey?: string, 
@@ -25,14 +26,6 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
         super(props);
 
         this.state = {isExpanded: false, activeState: ""};
-
-        /*this.props.globalState.OnNewDropdownButtonClicked.add((source) => {
-            if (source === this) {
-                return;
-            }
-
-            this.setState({isExpanded: false});
-        });*/
     }    
 
     public render() {
@@ -63,7 +56,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                         {
                             this.props.icon &&
                             <div className="command-dropdown-icon">
-                                <img src={"imgs/" + this.props.icon + ".svg"}/>
+                                <img src={"../imgs/" + this.props.icon + ".svg"}/>
                             </div>
                         }
                         {

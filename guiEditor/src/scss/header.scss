@@ -9,41 +9,8 @@
     grid-template-rows: 100%;
     background: #333333;
 
-    .logo-area {
-        grid-column: 1;
-        grid-row: 1;
-        display: grid;
-        width: 125px;
-        grid-template-columns: 1fr auto;
-        grid-template-rows: 100%;
-        user-select: none;
-            
-        svg {
-            height: 100%;
-            grid-column: 1;
-            grid-row: 1;
-        }
-
-        .version {
-            display: flex;
-            justify-items: right;
-            align-items: center;
-            grid-column: 2;
-            grid-row: 1;
-            vertical-align: top;
-            height: 100%;
-            margin-right: 12px;
-            font-size: 20px;
-            color: #d5d2ca;
-
-            .version-number {
-                font-weight: bold;
-                color:white;
-            }
-        }
-    }
-
-    .command-bar {         
+    .command-bar {
+        padding-left: 15px;   
         grid-row: 1;
         grid-column: 2;
         display: grid;
