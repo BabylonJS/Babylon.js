@@ -1,7 +1,10 @@
+import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { AnimationEntryComponent } from "./animationEntryComponent";
+import { Animation } from "babylonjs/Animations/animation";
 
 interface IAnimationListComponentProps {
     globalState: GlobalState;
@@ -9,20 +12,49 @@ interface IAnimationListComponentProps {
 }
 
 interface IAnimationListComponentState {
+    isVisible: boolean
 }
 
 export class AnimationListComponent extends React.Component<
 IAnimationListComponentProps,
 IAnimationListComponentState
 > {
+    private _onEditAnimationRequiredObserver: Nullable<Observer<Animation>>;
+    private _onEditAnimationUIClosedObserver: Nullable<Observer<void>>;
 
     constructor(props: IAnimationListComponentProps) {
         super(props);
 
-        this.state = { };
+        this.state = {isVisible: true };
+
+        this._onEditAnimationRequiredObserver = this.props.context.onEditAnimationRequired.add((animation) => {
+            this.setState({
+                isVisible: false
+            })
+        });
+
+        this._onEditAnimationUIClosedObserver = this.props.context.onEditAnimationUIClosed.add(() => {
+            this.setState({
+                isVisible: true
+            })
+        });
     }
 
+    componentWillUnmount() {
+        if (this._onEditAnimationRequiredObserver) {
+            this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
+        }
+
+        if (this._onEditAnimationUIClosedObserver) {
+            this.props.context.onEditAnimationUIClosed.remove(this._onEditAnimationUIClosedObserver);
+        }
+    }    
+
     public render() {
+        if (!this.state.isVisible) {
+            return null;
+        }
+
         return (
             <div id="animation-list">
                 {

@@ -86,8 +86,8 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
             return this._loader.loadTextureInfoAsync(`${context}/translucencyTexture`, extension.translucencyTexture)
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
-                    pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
-                    pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
+                    pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
+                    pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
                 });
         } else {
             return Promise.resolve();

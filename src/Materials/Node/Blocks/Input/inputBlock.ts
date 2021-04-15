@@ -13,7 +13,6 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { Color3, Color4, TmpColors } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 import { Observable } from '../../../../Misc/observable';
-import { MaterialHelper } from '../../../../Materials/materialHelper';
 
 const remapAttributeName: { [name: string]: string }  = {
     "position2d": "position",
@@ -583,7 +582,7 @@ export class InputBlock extends NodeMaterialBlock {
                     effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
                 case NodeMaterialSystemValues.CameraPosition:
-                    MaterialHelper.BindEyePosition(effect, scene, variableName, true);
+                    scene.bindEyePosition(effect, variableName, true);
                     break;
                 case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);
@@ -656,10 +655,10 @@ export class InputBlock extends NodeMaterialBlock {
         let variableName = this._codeVariableName;
 
         if (this.isAttribute) {
-            return `${variableName}.setAsAttribute("${this.name}");\r\n`;
+            return super._dumpPropertiesCode() + `${variableName}.setAsAttribute("${this.name}");\r\n`;
         }
         if (this.isSystemValue) {
-            return `${variableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
+            return super._dumpPropertiesCode() + `${variableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
         }
         if (this.isUniform) {
             const codes: string[] = [];
@@ -723,9 +722,9 @@ export class InputBlock extends NodeMaterialBlock {
 
             codes.push('');
 
-            return codes.join(';\r\n');
+            return super._dumpPropertiesCode() + codes.join(';\r\n');
         }
-        return "";
+        return super._dumpPropertiesCode();
     }
 
     public dispose() {

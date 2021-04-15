@@ -709,25 +709,26 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         outTangent?: number;
     }
     export class Curve {
+        static readonly SampleRate: number;
         keys: KeyEntry[];
         animation: Animation;
         color: string;
         onDataUpdatedObservable: Observable<void>;
         property?: string;
         tangentBuilder?: () => any;
+        setDefaultInTangent?: (keyId: number) => any;
+        setDefaultOutTangent?: (keyId: number) => any;
         static readonly TangentLength: number;
-        constructor(color: string, animation: Animation, property?: string, tangentBuilder?: () => any);
+        constructor(color: string, animation: Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
-        getInControlPoint(keyIndex: number): {
-            frame: number;
-            value: any;
-        } | null;
-        getOutControlPoint(keyIndex: number): {
-            frame: number;
-            value: any;
-        } | null;
-        updateInTangentFromControlPoint(keyId: number, value: number): void;
-        updateOutTangentFromControlPoint(keyId: number, value: number): void;
+        getInControlPoint(keyIndex: number, length: number): number;
+        getOutControlPoint(keyIndex: number, length: number): number;
+        evaluateOutTangent(keyIndex: number): number;
+        evaluateInTangent(keyIndex: number): number;
+        storeDefaultInTangent(keyIndex: number): void;
+        storeDefaultOutTangent(keyIndex: number): void;
+        updateInTangentFromControlPoint(keyId: number, slope: number): void;
+        updateOutTangentFromControlPoint(keyId: number, slope: number): void;
         updateKeyFrame(keyId: number, frame: number): void;
         updateKeyValue(keyId: number, value: number): void;
     }
@@ -757,6 +758,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
     interface IKeyPointComponentState {
         selectedState: SelectionState;
+        tangentSelectedIndex: number;
         x: number;
         y: number;
     }
@@ -773,6 +775,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _onMainKeyPointSetObserver;
         private _onMainKeyPointMovedObserver;
         private _onSelectionRectangleMovedObserver;
+        private _onFlattenTangentRequiredObserver;
+        private _onLinearTangentRequiredObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -781,19 +785,21 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _svgHost;
         private _keyPointSVG;
         private _controlMode;
-        private _currentLeftControlPoint;
-        private _currentRightControlPoint;
-        private _tangentReferenceX;
-        private _tangentReferenceY;
+        private _storedLengthIn;
+        private _storedLengthOut;
+        private _inVec;
+        private _outVec;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
+        private _flattenTangent;
+        private _linearTangent;
         private _select;
         private _onPointerDown;
         private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
-        render(): JSX.Element;
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/context" {
@@ -809,6 +815,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         scene: Scene;
         target: IAnimatable;
         activeAnimation: Nullable<Animation>;
+        activeColor: Nullable<string>;
         activeKeyPoints: Nullable<KeyPointComponent[]>;
         mainKeyPoint: Nullable<KeyPointComponent>;
         snippetId: string;
@@ -831,6 +838,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onValueManuallyEntered: Observable<number>;
         onFrameRequired: Observable<void>;
         onNewKeyPointRequired: Observable<void>;
+        onFlattenTangentRequired: Observable<void>;
+        onLinearTangentRequired: Observable<void>;
         onDeleteAnimation: Observable<Animation>;
         onGraphMoved: Observable<number>;
         onGraphScaled: Observable<number>;
@@ -840,6 +849,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onDeleteKeyActiveKeyPoints: Observable<void>;
         onSelectionRectangleMoved: Observable<DOMRect>;
         onAnimationsLoaded: Observable<void>;
+        onEditAnimationRequired: Observable<Animation>;
+        onEditAnimationUIClosed: Observable<void>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
@@ -934,7 +945,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     interface IBottomBarComponentState {
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
+        private _onAnimationsLoadedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: IBottomBarComponentProps);
+        private _renderMaxFrame;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -1051,10 +1066,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
     export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
         private _onDataUpdatedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICurveComponentProps);
         componentWillUnmount(): void;
-        shouldComponentUpdate(newProps: ICurveComponentProps): boolean;
-        render(): JSX.Element;
+        componentDidUpdate(): boolean;
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/graphComponent" {
@@ -1098,6 +1114,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         constructor(props: IGraphComponentProps);
         componentWillUnmount(): void;
         private _computeSizes;
+        private _setDefaultInTangent;
+        private _setDefaultOutTangent;
         private _evaluateKeys;
         private _extractValuesFromKeys;
         private _convertX;
@@ -1226,6 +1244,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     export class AnimationEntryComponent extends React.Component<IAnimationEntryComponentProps, IAnimationEntryComponentState> {
         private _onActiveAnimationChangedObserver;
         private _onActiveKeyPointChangedObserver;
+        private _unmount;
         constructor(props: IAnimationEntryComponentProps);
         private _onGear;
         private _onDelete;
@@ -1244,10 +1263,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         context: Context;
     }
     interface IAnimationListComponentState {
+        isVisible: boolean;
     }
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
+        private _onEditAnimationRequiredObserver;
+        private _onEditAnimationUIClosedObserver;
         constructor(props: IAnimationListComponentProps);
-        render(): JSX.Element;
+        componentWillUnmount(): void;
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-inspector/sharedUiComponents/stringTools" {
@@ -1319,6 +1342,33 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         constructor(props: IAddAnimationComponentProps);
         createNew(): void;
         render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Context } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/context";
+    import { Animation } from "babylonjs/Animations/animation";
+    import { Nullable } from "babylonjs/types";
+    interface IEditAnimationComponentProps {
+        globalState: GlobalState;
+        context: Context;
+    }
+    interface IEditAnimationComponentState {
+        isVisible: boolean;
+        animation: Nullable<Animation>;
+    }
+    export class EditAnimationComponent extends React.Component<IEditAnimationComponentProps, IEditAnimationComponentState> {
+        private _root;
+        private _displayName;
+        private _property;
+        private _loopModeElement;
+        private _onEditAnimationRequiredObserver;
+        constructor(props: IEditAnimationComponentProps);
+        componentWillUnmount(): void;
+        close(): void;
+        validate(): void;
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/sideBarComponent" {
@@ -1398,6 +1448,45 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/sharedUiComponents/lines/hexLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
+    interface IHexLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        lockObject?: LockObject;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
+        min?: number;
+    }
+    export class HexLineComponent extends React.Component<IHexLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        private _propertyChange;
+        constructor(props: IHexLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: IHexLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        convertToHexString(valueString: string): string;
+        updateValue(valueString: string, raisePropertyChanged: boolean): void;
+        lock(): void;
+        unlock(): void;
         render(): JSX.Element;
     }
 }
@@ -2179,45 +2268,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lig
     }
     export class PointLightPropertyGridComponent extends React.Component<IPointLightPropertyGridComponentProps> {
         constructor(props: IPointLightPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/sharedUiComponents/lines/hexLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-inspector/sharedUiComponents/propertyChangedEvent";
-    import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    interface IHexLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        lockObject?: LockObject;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        replaySourceReplacement?: string;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-        useEuler?: boolean;
-        min?: number;
-    }
-    export class HexLineComponent extends React.Component<IHexLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        private _propertyChange;
-        constructor(props: IHexLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: IHexLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        convertToHexString(valueString: string): string;
-        updateValue(valueString: string, raisePropertyChanged: boolean): void;
-        lock(): void;
-        unlock(): void;
         render(): JSX.Element;
     }
 }
@@ -5001,25 +5051,26 @@ declare module INSPECTOR {
         outTangent?: number;
     }
     export class Curve {
+        static readonly SampleRate: number;
         keys: KeyEntry[];
         animation: BABYLON.Animation;
         color: string;
         onDataUpdatedObservable: BABYLON.Observable<void>;
         property?: string;
         tangentBuilder?: () => any;
+        setDefaultInTangent?: (keyId: number) => any;
+        setDefaultOutTangent?: (keyId: number) => any;
         static readonly TangentLength: number;
-        constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any);
+        constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
-        getInControlPoint(keyIndex: number): {
-            frame: number;
-            value: any;
-        } | null;
-        getOutControlPoint(keyIndex: number): {
-            frame: number;
-            value: any;
-        } | null;
-        updateInTangentFromControlPoint(keyId: number, value: number): void;
-        updateOutTangentFromControlPoint(keyId: number, value: number): void;
+        getInControlPoint(keyIndex: number, length: number): number;
+        getOutControlPoint(keyIndex: number, length: number): number;
+        evaluateOutTangent(keyIndex: number): number;
+        evaluateInTangent(keyIndex: number): number;
+        storeDefaultInTangent(keyIndex: number): void;
+        storeDefaultOutTangent(keyIndex: number): void;
+        updateInTangentFromControlPoint(keyId: number, slope: number): void;
+        updateOutTangentFromControlPoint(keyId: number, slope: number): void;
         updateKeyFrame(keyId: number, frame: number): void;
         updateKeyValue(keyId: number, value: number): void;
     }
@@ -5045,6 +5096,7 @@ declare module INSPECTOR {
     }
     interface IKeyPointComponentState {
         selectedState: SelectionState;
+        tangentSelectedIndex: number;
         x: number;
         y: number;
     }
@@ -5061,6 +5113,8 @@ declare module INSPECTOR {
         private _onMainKeyPointSetObserver;
         private _onMainKeyPointMovedObserver;
         private _onSelectionRectangleMovedObserver;
+        private _onFlattenTangentRequiredObserver;
+        private _onLinearTangentRequiredObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -5069,19 +5123,21 @@ declare module INSPECTOR {
         private _svgHost;
         private _keyPointSVG;
         private _controlMode;
-        private _currentLeftControlPoint;
-        private _currentRightControlPoint;
-        private _tangentReferenceX;
-        private _tangentReferenceY;
+        private _storedLengthIn;
+        private _storedLengthOut;
+        private _inVec;
+        private _outVec;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
+        private _flattenTangent;
+        private _linearTangent;
         private _select;
         private _onPointerDown;
         private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
-        render(): JSX.Element;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -5091,6 +5147,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         target: BABYLON.IAnimatable;
         activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
+        activeColor: BABYLON.Nullable<string>;
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
         mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
         snippetId: string;
@@ -5113,6 +5170,8 @@ declare module INSPECTOR {
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
         onNewKeyPointRequired: BABYLON.Observable<void>;
+        onFlattenTangentRequired: BABYLON.Observable<void>;
+        onLinearTangentRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
@@ -5122,6 +5181,8 @@ declare module INSPECTOR {
         onDeleteKeyActiveKeyPoints: BABYLON.Observable<void>;
         onSelectionRectangleMoved: BABYLON.Observable<DOMRect>;
         onAnimationsLoaded: BABYLON.Observable<void>;
+        onEditAnimationRequired: BABYLON.Observable<BABYLON.Animation>;
+        onEditAnimationUIClosed: BABYLON.Observable<void>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
@@ -5204,7 +5265,11 @@ declare module INSPECTOR {
     interface IBottomBarComponentState {
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
+        private _onAnimationsLoadedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: IBottomBarComponentProps);
+        private _renderMaxFrame;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -5306,10 +5371,11 @@ declare module INSPECTOR {
     }
     export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
         private _onDataUpdatedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICurveComponentProps);
         componentWillUnmount(): void;
-        shouldComponentUpdate(newProps: ICurveComponentProps): boolean;
-        render(): JSX.Element;
+        componentDidUpdate(): boolean;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -5350,6 +5416,8 @@ declare module INSPECTOR {
         constructor(props: IGraphComponentProps);
         componentWillUnmount(): void;
         private _computeSizes;
+        private _setDefaultInTangent;
+        private _setDefaultOutTangent;
         private _evaluateKeys;
         private _extractValuesFromKeys;
         private _convertX;
@@ -5461,6 +5529,7 @@ declare module INSPECTOR {
     export class AnimationEntryComponent extends React.Component<IAnimationEntryComponentProps, IAnimationEntryComponentState> {
         private _onActiveAnimationChangedObserver;
         private _onActiveKeyPointChangedObserver;
+        private _unmount;
         constructor(props: IAnimationEntryComponentProps);
         private _onGear;
         private _onDelete;
@@ -5476,10 +5545,14 @@ declare module INSPECTOR {
         context: Context;
     }
     interface IAnimationListComponentState {
+        isVisible: boolean;
     }
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
+        private _onEditAnimationRequiredObserver;
+        private _onEditAnimationUIClosedObserver;
         constructor(props: IAnimationListComponentProps);
-        render(): JSX.Element;
+        componentWillUnmount(): void;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -5542,6 +5615,28 @@ declare module INSPECTOR {
         constructor(props: IAddAnimationComponentProps);
         createNew(): void;
         render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IEditAnimationComponentProps {
+        globalState: GlobalState;
+        context: Context;
+    }
+    interface IEditAnimationComponentState {
+        isVisible: boolean;
+        animation: BABYLON.Nullable<BABYLON.Animation>;
+    }
+    export class EditAnimationComponent extends React.Component<IEditAnimationComponentProps, IEditAnimationComponentState> {
+        private _root;
+        private _displayName;
+        private _property;
+        private _loopModeElement;
+        private _onEditAnimationRequiredObserver;
+        constructor(props: IEditAnimationComponentProps);
+        componentWillUnmount(): void;
+        close(): void;
+        validate(): void;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -5608,6 +5703,41 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IHexLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        lockObject?: LockObject;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
+        min?: number;
+    }
+    export class HexLineComponent extends React.Component<IHexLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        private _propertyChange;
+        constructor(props: IHexLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: IHexLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        convertToHexString(valueString: string): string;
+        updateValue(valueString: string, raisePropertyChanged: boolean): void;
+        lock(): void;
+        unlock(): void;
         render(): JSX.Element;
     }
 }
@@ -6263,41 +6393,6 @@ declare module INSPECTOR {
     }
     export class PointLightPropertyGridComponent extends React.Component<IPointLightPropertyGridComponentProps> {
         constructor(props: IPointLightPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IHexLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        lockObject?: LockObject;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        replaySourceReplacement?: string;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-        useEuler?: boolean;
-        min?: number;
-    }
-    export class HexLineComponent extends React.Component<IHexLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        private _propertyChange;
-        constructor(props: IHexLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: IHexLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        convertToHexString(valueString: string): string;
-        updateValue(valueString: string, raisePropertyChanged: boolean): void;
-        lock(): void;
-        unlock(): void;
         render(): JSX.Element;
     }
 }

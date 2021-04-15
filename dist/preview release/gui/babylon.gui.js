@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12092,8 +12092,7 @@ var BaseSlider = /** @class */ (function (_super) {
         else {
             value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
-        var mult = (1 / this._step) | 0;
-        this.value = this._step ? ((value * mult) | 0) / mult : value;
+        this.value = this._step ? ((value / this._step) | 0) * this._step : value;
     };
     BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {

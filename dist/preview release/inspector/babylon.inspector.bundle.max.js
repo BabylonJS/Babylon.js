@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \**************************************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \********************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js":
-/*!****************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
-  \****************************************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
+  \**********************************************************************************************/
 /*! exports provided: far, prefix, faAddressBook, faAddressCard, faAngry, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faBell, faBellSlash, faBookmark, faBuilding, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faChartBar, faCheckCircle, faCheckSquare, faCircle, faClipboard, faClock, faClone, faClosedCaptioning, faComment, faCommentAlt, faCommentDots, faComments, faCompass, faCopy, faCopyright, faCreditCard, faDizzy, faDotCircle, faEdit, faEnvelope, faEnvelopeOpen, faEye, faEyeSlash, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileExcel, faFileImage, faFilePdf, faFilePowerpoint, faFileVideo, faFileWord, faFlag, faFlushed, faFolder, faFolderOpen, faFontAwesomeLogoFull, faFrown, faFrownOpen, faFutbol, faGem, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHandshake, faHdd, faHeart, faHospital, faHourglass, faIdBadge, faIdCard, faImage, faImages, faKeyboard, faKiss, faKissBeam, faKissWinkHeart, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLemon, faLifeRing, faLightbulb, faListAlt, faMap, faMeh, faMehBlank, faMehRollingEyes, faMinusSquare, faMoneyBillAlt, faMoon, faNewspaper, faObjectGroup, faObjectUngroup, faPaperPlane, faPauseCircle, faPlayCircle, faPlusSquare, faQuestionCircle, faRegistered, faSadCry, faSadTear, faSave, faShareSquare, faSmile, faSmileBeam, faSmileWink, faSnowflake, faSquare, faStar, faStarHalf, faStickyNote, faStopCircle, faSun, faSurprise, faThumbsDown, faThumbsUp, faTimesCircle, faTired, faTrashAlt, faUser, faUserCircle, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3641,9 +3641,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \**************************************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \********************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10661,9 +10661,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!***********************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \*****************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11064,9 +11064,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/classnames/index.js ***!
-  \************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/classnames/index.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11132,9 +11132,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss":
-/*!****************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
-  \****************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
+  \****************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11150,9 +11150,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss":
-/*!**************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
-  \**************************************************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
+  \**************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11160,7 +11160,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 6; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px;\n      min-width: 70px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
+exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar #bottom-bar-total {\n    grid-row: 1;\n    grid-column: 6;\n    color: white;\n    background: #222222;\n    height: 25px;\n    align-self: center;\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    font-family: 'acumin-pro-condensed';\n    font-size: 12pt; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 6; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px;\n      min-width: 70px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11168,9 +11168,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss":
-/*!***********************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
-  \***********************************************************************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
+  \***********************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11178,7 +11178,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: black;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
+exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: #111111;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%;\n      pointer-events: none; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11186,9 +11186,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss":
-/*!****************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
-  \****************************************************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
+  \****************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11204,9 +11204,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss":
-/*!************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
-  \************************************************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
+  \************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11214,7 +11214,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
+exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #edit-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #111111; }\n    #sideBar #edit-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #edit-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #edit-animation-pane #edit-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      display: grid;\n      grid-template-columns: 50% 50%;\n      grid-template-rows: 100%; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-ok {\n        grid-row: 1;\n        grid-column: 1; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-cancel {\n        grid-row: 1;\n        grid-column: 2; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11222,9 +11222,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss":
-/*!***********************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
-  \***********************************************************************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
+  \***********************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11232,7 +11232,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n", ""]);
+exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11240,9 +11240,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss":
-/*!*********************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
-  \*********************************************************************************************************************************************************************************************************/
+/*!*********************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
+  \*********************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11258,9 +11258,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss":
-/*!**************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
-  \**************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
+  \**************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11276,9 +11276,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**********************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**********************************************************************************************************************************************************************/
+/*!**********************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \**********************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11294,9 +11294,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \**************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11312,9 +11312,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11417,9 +11417,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/gif.js.optimized/dist/gif.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11429,9 +11429,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
-  \***************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11531,9 +11531,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/process/browser.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11726,9 +11726,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11840,9 +11840,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \******************************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12443,9 +12443,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
-  \************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12469,9 +12469,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12493,9 +12493,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/re-resizable/lib/index.es5.js":
-/*!**********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
-  \**********************************************************************/
+/*!****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13242,9 +13242,9 @@ module.exports = Resizable;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \******************************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13468,9 +13468,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \***********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13785,9 +13785,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \************************************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \******************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13985,9 +13985,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!**************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \**************************************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14125,9 +14125,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \*******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14465,9 +14465,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \*******************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14525,9 +14525,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \***********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14623,9 +14623,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \*******************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14685,9 +14685,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \*******************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14734,9 +14734,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \*****************************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14772,9 +14772,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39796,9 +39796,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39841,9 +39841,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40034,9 +40034,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
-  \**********************************************************/
+/*!****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/index.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40051,9 +40051,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41975,9 +41975,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
-  \*******************************************************/
+/*!*************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41992,9 +41992,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!***************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \***************************************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42353,9 +42353,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43223,9 +43223,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43240,9 +43240,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43257,9 +43257,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43455,9 +43455,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/split.js/dist/split.es.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/split.js/dist/split.es.js ***!
-  \******************************************************************/
+/*!************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/split.js/dist/split.es.js ***!
+  \************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -44227,9 +44227,9 @@ var Split = function (idsOption, options) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \**********************************************************************************************/
+/*!****************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44507,9 +44507,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \******************************************************************/
+/*!************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44582,9 +44582,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -46866,6 +46866,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg":
+/*!****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg ***!
+  \****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' style='fill:none'/%3E%3Cpath d='M27.5,18.85a1.18,1.18,0,0,0-1,.62h-8.3a1.65,1.65,0,0,0-.3-.46l-2.1-2.09a1.4,1.4,0,0,0-2,0L11.7,19a1.41,1.41,0,0,0,0,2l2.09,2.09a1.39,1.39,0,0,0,2,0L17.86,21a1.67,1.67,0,0,0,.21-.33h8.4a1.2,1.2,0,1,0,1-1.81ZM17,20.14l-2.1,2.09a.2.2,0,0,1-.27,0l-2.09-2.09a.19.19,0,0,1,0-.28l2.09-2.09a.2.2,0,0,1,.14-.06.16.16,0,0,1,.13.06L17,19.86A.21.21,0,0,1,17,20.14Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg":
 /*!**********************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg ***!
@@ -46907,6 +46918,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' style='fill:none'/%3E%3Crect x='2.17' y='2.17' width='5.66' height='5.66' rx='1' transform='translate(-2.07 5) rotate(-45)' style='fill:%23ffc017'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg":
+/*!******************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg ***!
+  \******************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.51,13.53a1.2,1.2,0,0,0-2,1.18l-6.23,6.23-.68-.68a1.4,1.4,0,0,0-2,0l-2.09,2.1a1.4,1.4,0,0,0,0,2l2.09,2.09a1.39,1.39,0,0,0,2,0l2.1-2.09a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.2,1.2,0,0,0,1.15-2Zm-7.66,10-2.1,2.09a.18.18,0,0,1-.27,0l-2.09-2.09a.19.19,0,0,1,0-.28l2.09-2.09a.19.19,0,0,1,.14-.05.15.15,0,0,1,.13.05l2.1,2.09A.21.21,0,0,1,18.85,23.48Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -46979,12 +47001,32 @@ var BottomBarComponent = /** @class */ (function (_super) {
     function BottomBarComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
+        _this._onAnimationsLoadedObserver = _this.props.context.onAnimationsLoaded.add(function () {
+            _this.forceUpdate();
+        });
+        _this._onActiveAnimationChangedObserver = _this.props.context.onActiveAnimationChanged.add(function () {
+            _this.forceUpdate();
+        });
         return _this;
     }
+    BottomBarComponent.prototype._renderMaxFrame = function () {
+        var keys = this.props.context.activeAnimation.getKeys();
+        return Math.round(keys[keys.length - 1].frame);
+    };
+    BottomBarComponent.prototype.componentWillUnmount = function () {
+        if (this._onAnimationsLoadedObserver) {
+            this.props.context.onAnimationsLoaded.remove(this._onAnimationsLoadedObserver);
+        }
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
+    };
     BottomBarComponent.prototype.render = function () {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_mediaPlayerComponent__WEBPACK_IMPORTED_MODULE_2__["MediaPlayerComponent"], { globalState: this.props.globalState, context: this.props.context }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_3__["RangeSelectorComponent"], { globalState: this.props.globalState, context: this.props.context })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_3__["RangeSelectorComponent"], { globalState: this.props.globalState, context: this.props.context }),
+            this.props.context.activeAnimation &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar-total" }, this._renderMaxFrame())));
     };
     return BottomBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47281,6 +47323,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var Context = /** @class */ (function () {
     function Context() {
+        this.activeColor = null;
         this.forwardAnimation = true;
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = 100;
@@ -47296,6 +47339,8 @@ var Context = /** @class */ (function () {
         this.onValueManuallyEntered = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onNewKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onFlattenTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onLinearTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDeleteAnimation = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphScaled = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47305,6 +47350,8 @@ var Context = /** @class */ (function () {
         this.onDeleteKeyActiveKeyPoints = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionRectangleMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onAnimationsLoaded = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onEditAnimationRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onEditAnimationUIClosed = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     Context.prototype.prepare = function () {
         this.isPlaying = false;
@@ -47570,13 +47617,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 
 var Curve = /** @class */ (function () {
-    function Curve(color, animation, property, tangentBuilder) {
+    function Curve(color, animation, property, tangentBuilder, setDefaultInTangent, setDefaultOutTangent) {
         this.keys = new Array();
         this.onDataUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.color = color;
         this.animation = animation;
         this.property = property;
         this.tangentBuilder = tangentBuilder;
+        this.setDefaultInTangent = setDefaultInTangent;
+        this.setDefaultOutTangent = setDefaultOutTangent;
     }
     Curve.prototype.gePathData = function (convertX, convertY) {
         var keys = this.keys;
@@ -47585,123 +47634,181 @@ var Curve = /** @class */ (function () {
         }
         var pathData = "M" + convertX(keys[0].frame) + " " + convertY(keys[0].value);
         for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
-            var outTangent = keys[keyIndex - 1].outTangent || 0;
-            var inTangent = keys[keyIndex].inTangent || 0;
-            var prevFrame = keys[keyIndex - 1].frame;
+            var outTangent = keys[keyIndex - 1].outTangent;
+            var inTangent = keys[keyIndex].inTangent;
             var currentFrame = keys[keyIndex].frame;
-            var prevValue = keys[keyIndex - 1].value;
             var currentValue = keys[keyIndex].value;
-            var controlPoint0Frame = prevFrame + (currentFrame - prevFrame) / 2;
-            var controlPoint1Frame = prevFrame + (currentFrame - prevFrame) / 2;
-            var controlPoint0Value = void 0;
-            var controlPoint1Value = void 0;
-            if (outTangent) {
-                controlPoint0Frame = 2 * prevFrame / 3 + currentFrame / 3;
-                controlPoint0Value = prevValue + outTangent / 3;
+            var prevFrame = keys[keyIndex - 1].frame;
+            var frameDist = currentFrame - prevFrame;
+            if (outTangent === undefined && inTangent === undefined) { // Draw a straight line
+                pathData += " L" + convertX(currentFrame) + " " + convertY(currentValue);
+                continue;
             }
-            else {
-                var animEval = this.animation.evaluate(controlPoint0Frame);
-                controlPoint0Value = this.property ? animEval[this.property] : animEval;
+            // Let's sample the curve else
+            for (var frame = prevFrame; frame < currentFrame; frame += frameDist / Curve.SampleRate) {
+                var keyValue = this.animation.evaluate(frame);
+                var value = this.property ? keyValue[this.property] : keyValue;
+                pathData += " L" + convertX(frame) + " " + convertY(value);
             }
-            if (inTangent) {
-                controlPoint1Frame = prevFrame / 3 + 2 * currentFrame / 3;
-                controlPoint1Value = currentValue - inTangent / 3;
-            }
-            else {
-                var animEval = this.animation.evaluate(controlPoint1Frame);
-                controlPoint1Value = this.property ? animEval[this.property] : animEval;
-            }
-            pathData += " C" + convertX(controlPoint0Frame) + " " + convertY(controlPoint0Value) + ", " + convertX(controlPoint1Frame) + " " + convertY(controlPoint1Value) + ", " + convertX(currentFrame) + " " + convertY(currentValue);
+            pathData += " L" + convertX(currentFrame) + " " + convertY(currentValue);
         }
         return pathData;
     };
-    Curve.prototype.getInControlPoint = function (keyIndex) {
+    Curve.prototype.getInControlPoint = function (keyIndex, length) {
         if (keyIndex === 0) {
-            return null;
+            return 0;
         }
         var keys = this.keys;
         var inTangent = keys[keyIndex].inTangent;
-        if (inTangent) {
-            var prevFrame = keys[keyIndex - 1].frame;
-            var currentFrame = keys[keyIndex].frame;
-            var currentValue = keys[keyIndex].value;
-            var value = currentValue - inTangent / 3;
-            var frame = prevFrame / 3 + 2 * currentFrame / 3;
-            return {
-                frame: frame,
-                value: value
-            };
+        if (inTangent === undefined) {
+            inTangent = this.evaluateInTangent(keyIndex);
         }
-        else {
-            var prevFrame = keys[keyIndex - 1].frame;
-            var currentFrame = keys[keyIndex].frame;
-            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
-            var evaluatedValue = this.animation.evaluate(midFrame);
-            return {
-                frame: midFrame,
-                value: this.property ? evaluatedValue[this.property] : evaluatedValue
-            };
-        }
+        return length * inTangent;
     };
-    Curve.prototype.getOutControlPoint = function (keyIndex) {
+    Curve.prototype.getOutControlPoint = function (keyIndex, length) {
         var keys = this.keys;
         if (keyIndex === keys.length - 1) {
-            return null;
+            return 0;
         }
         var outTangent = keys[keyIndex].outTangent;
-        if (outTangent) {
-            var prevFrame = keys[keyIndex].frame;
-            var prevValue = keys[keyIndex].value;
-            var currentFrame = keys[keyIndex + 1].frame;
-            var frame = 2 * prevFrame / 3 + currentFrame / 3;
-            var value = prevValue + outTangent / 3;
-            return {
-                frame: frame,
-                value: value
-            };
+        if (outTangent === undefined) {
+            outTangent = this.evaluateOutTangent(keyIndex);
+        }
+        return length * outTangent;
+    };
+    Curve.prototype.evaluateOutTangent = function (keyIndex) {
+        var keys = this.keys;
+        var prevFrame = keys[keyIndex].frame;
+        var currentFrame = keys[keyIndex + 1].frame;
+        return (keys[keyIndex + 1].value - keys[keyIndex].value) / (currentFrame - prevFrame);
+    };
+    Curve.prototype.evaluateInTangent = function (keyIndex) {
+        var keys = this.keys;
+        var prevFrame = keys[keyIndex - 1].frame;
+        var currentFrame = keys[keyIndex].frame;
+        return (keys[keyIndex].value - keys[keyIndex - 1].value) / (currentFrame - prevFrame);
+    };
+    Curve.prototype.storeDefaultInTangent = function (keyIndex) {
+        var keys = this.keys;
+        var animationKeys = this.animation.getKeys();
+        keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
+        if (this.property) {
+            animationKeys[keyIndex].inTangent[this.property] = keys[keyIndex].inTangent;
         }
         else {
-            var prevFrame = keys[keyIndex].frame;
-            var currentFrame = keys[keyIndex + 1].frame;
-            var midFrame = prevFrame + (currentFrame - prevFrame) / 2;
-            var evaluatedValue = this.animation.evaluate(midFrame);
-            return {
-                frame: midFrame,
-                value: this.property ? evaluatedValue[this.property] : evaluatedValue
-            };
+            animationKeys[keyIndex].inTangent = keys[keyIndex].inTangent;
         }
     };
-    Curve.prototype.updateInTangentFromControlPoint = function (keyId, value) {
-        var slope = (this.keys[keyId].value - value);
-        this.keys[keyId].inTangent = slope * (this.keys[keyId].inTangent ? 2 / 3 : 1 / 2);
+    Curve.prototype.storeDefaultOutTangent = function (keyIndex) {
+        var keys = this.keys;
+        var animationKeys = this.animation.getKeys();
+        keys[keyIndex].outTangent = this.evaluateOutTangent(keyIndex);
+        if (this.property) {
+            animationKeys[keyIndex].outTangent[this.property] = keys[keyIndex].outTangent;
+        }
+        else {
+            animationKeys[keyIndex].outTangent = keys[keyIndex].outTangent;
+        }
+    };
+    Curve.prototype.updateInTangentFromControlPoint = function (keyId, slope) {
+        var keys = this.keys;
+        keys[keyId].inTangent = slope;
         if (this.property) {
             if (!this.animation.getKeys()[keyId].inTangent) {
                 this.animation.getKeys()[keyId].inTangent = this.tangentBuilder();
+                this.setDefaultInTangent(keyId);
             }
-            this.animation.getKeys()[keyId].inTangent[this.property] = this.keys[keyId].inTangent;
+            if (!this.animation.getKeys()[keyId - 1].outTangent) {
+                this.animation.getKeys()[keyId - 1].outTangent = this.tangentBuilder();
+                this.setDefaultOutTangent(keyId - 1);
+            }
+            this.animation.getKeys()[keyId].inTangent[this.property] = keys[keyId].inTangent;
         }
         else {
-            this.animation.getKeys()[keyId].inTangent = this.keys[keyId].inTangent;
+            this.animation.getKeys()[keyId].inTangent = keys[keyId].inTangent;
+            if (this.animation.getKeys()[keyId - 1].outTangent === undefined) {
+                this.storeDefaultOutTangent(keyId - 1);
+            }
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
-    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, value) {
-        var slope = (value - this.keys[keyId].value);
-        this.keys[keyId].outTangent = slope * (this.keys[keyId].outTangent ? 2 / 3 : 1 / 2);
+    Curve.prototype.updateOutTangentFromControlPoint = function (keyId, slope) {
+        var keys = this.keys;
+        keys[keyId].outTangent = slope;
         if (this.property) {
+            if (!this.animation.getKeys()[keyId + 1].inTangent) {
+                this.animation.getKeys()[keyId + 1].inTangent = this.tangentBuilder();
+                this.setDefaultInTangent(keyId + 1);
+            }
             if (!this.animation.getKeys()[keyId].outTangent) {
                 this.animation.getKeys()[keyId].outTangent = this.tangentBuilder();
+                this.setDefaultOutTangent(keyId);
             }
-            this.animation.getKeys()[keyId].outTangent[this.property] = this.keys[keyId].outTangent;
+            this.animation.getKeys()[keyId].outTangent[this.property] = keys[keyId].outTangent;
         }
         else {
-            this.animation.getKeys()[keyId].outTangent = this.keys[keyId].outTangent;
+            this.animation.getKeys()[keyId].outTangent = keys[keyId].outTangent;
+            if (this.animation.getKeys()[keyId + 1].inTangent === undefined) {
+                this.storeDefaultInTangent(keyId + 1);
+            }
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyFrame = function (keyId, frame) {
+        var currentFrame = this.keys[keyId].frame;
+        var originalKey = this.animation.getKeys()[keyId];
+        originalKey.frame = frame;
+        if (keyId > 0) {
+            var oldWidth = currentFrame - this.keys[keyId - 1].frame;
+            var newWidth = frame - this.keys[keyId - 1].frame;
+            var previousOriginalKey = this.animation.getKeys()[keyId - 1];
+            if (this.keys[keyId].inTangent) {
+                var newInTangent = (this.keys[keyId].inTangent / oldWidth) * newWidth;
+                this.keys[keyId].inTangent = newInTangent;
+                if (this.property) {
+                    originalKey.inTangent[this.property] = newInTangent;
+                }
+                else {
+                    originalKey.inTangent = newInTangent;
+                }
+            }
+            if (this.keys[keyId - 1].outTangent) {
+                var newOutTangent = (this.keys[keyId - 1].outTangent / oldWidth) * newWidth;
+                this.keys[keyId - 1].outTangent = newOutTangent;
+                if (this.property) {
+                    previousOriginalKey.outTangent[this.property] = newOutTangent;
+                }
+                else {
+                    previousOriginalKey.outTangent = newOutTangent;
+                }
+            }
+        }
+        if (keyId < this.keys.length - 1) {
+            var oldWidth = this.keys[keyId + 1].frame - currentFrame;
+            var newWidth = this.keys[keyId + 1].frame - frame;
+            var nextOriginalKey = this.animation.getKeys()[keyId + 1];
+            if (this.keys[keyId].outTangent) {
+                var newOutTangent = (this.keys[keyId].outTangent / oldWidth) * newWidth;
+                this.keys[keyId].outTangent = newOutTangent;
+                if (this.property) {
+                    originalKey.outTangent[this.property] = newOutTangent;
+                }
+                else {
+                    originalKey.outTangent = newOutTangent;
+                }
+            }
+            if (this.keys[keyId + 1].inTangent) {
+                var newInTangent = (this.keys[keyId + 1].inTangent / oldWidth) * newWidth;
+                this.keys[keyId + 1].inTangent = newInTangent;
+                if (this.property) {
+                    nextOriginalKey.inTangent[this.property] = newInTangent;
+                }
+                else {
+                    nextOriginalKey.inTangent = newInTangent;
+                }
+            }
+        }
         this.keys[keyId].frame = frame;
-        this.animation.getKeys()[keyId].frame = frame;
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyValue = function (keyId, value) {
@@ -47715,6 +47822,7 @@ var Curve = /** @class */ (function () {
         }
         this.onDataUpdatedObservable.notifyObservers();
     };
+    Curve.SampleRate = 50;
     Curve.TangentLength = 50;
     return Curve;
 }());
@@ -47744,24 +47852,34 @@ var CurveComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this.state = { isSelected: false };
         _this._onDataUpdatedObserver = _this.props.curve.onDataUpdatedObservable.add(function () { return _this.forceUpdate(); });
+        _this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(function () {
+            if (_this._onDataUpdatedObserver) {
+                _this.props.curve.onDataUpdatedObservable.remove(_this._onDataUpdatedObserver);
+            }
+            _this._onDataUpdatedObserver = null;
+            _this.forceUpdate();
+        });
         return _this;
     }
     CurveComponent.prototype.componentWillUnmount = function () {
         if (this._onDataUpdatedObserver) {
             this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
         }
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
     };
-    CurveComponent.prototype.shouldComponentUpdate = function (newProps) {
+    CurveComponent.prototype.componentDidUpdate = function () {
         var _this = this;
-        if (newProps.curve !== this.props.curve) {
-            if (this._onDataUpdatedObserver) {
-                this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
-            }
-            this._onDataUpdatedObserver = newProps.curve.onDataUpdatedObservable.add(function () { return _this.forceUpdate(); });
+        if (!this._onDataUpdatedObserver) {
+            this._onDataUpdatedObserver = this.props.curve.onDataUpdatedObservable.add(function () { return _this.forceUpdate(); });
         }
         return true;
     };
     CurveComponent.prototype.render = function () {
+        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+            return null;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { style: { cursor: "pointer", overflow: "auto" } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { d: this.props.curve.gePathData(this.props.convertX, this.props.convertY), style: {
                     stroke: this.props.curve.color,
@@ -47910,6 +48028,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var GraphComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphComponent, _super);
     function GraphComponent(props) {
@@ -47999,21 +48118,48 @@ var GraphComponent = /** @class */ (function (_super) {
                 }
             }
             var value = _this._currentAnimation.evaluate(currentFrame);
-            //  const prevValue = this._currentAnimation.evaluate(currentFrame - 0.01);
-            //const nextValue = this._currentAnimation.evaluate(currentFrame + 0.01);
+            var leftKey = keys[indexToAdd];
+            var rightKey = keys[indexToAdd + 1];
             var newKey = {
                 frame: currentFrame,
                 value: value
             };
-            // if (keys[indexToAdd].outTangent) {
-            //     newKey.inTangent = value.subtract ? value.subtract(prevValue).scaleInPlace(2 / 3) : (value - prevValue) * 1 / 3;
-            // }
-            // if (keys[indexToAdd + 1].inTangent) {
-            //     newKey.outTangent = nextValue.subtract ? nextValue.subtract(value).scaleInPlace(1/ 3) : (nextValue - value) * 2 / 3;
-            // }
+            if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                var derivative = null;
+                var invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                var cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
+                switch (_this._currentAnimation.dataType) {
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Scalar"].Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    }
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                        break;
+                }
+                if (derivative !== null) {
+                    newKey.inTangent = derivative;
+                    newKey.outTangent = derivative;
+                }
+            }
             keys.splice(indexToAdd + 1, 0, newKey);
             _this._currentAnimation.setKeys(keys);
-            _this._evaluateKeys();
+            _this._evaluateKeys(false);
             _this.props.context.activeKeyPoints = [];
             _this.props.context.onActiveKeyPointChanged.notifyObservers();
             _this.props.context.onActiveAnimationChanged.notifyObservers();
@@ -48035,7 +48181,21 @@ var GraphComponent = /** @class */ (function (_super) {
         this._viewHeight = this._svgHost.current.clientHeight;
         this.forceUpdate();
     };
-    GraphComponent.prototype._evaluateKeys = function () {
+    GraphComponent.prototype._setDefaultInTangent = function (keyId) {
+        for (var _i = 0, _a = this._curves; _i < _a.length; _i++) {
+            var curve = _a[_i];
+            curve.storeDefaultInTangent(keyId);
+        }
+    };
+    GraphComponent.prototype._setDefaultOutTangent = function (keyId) {
+        for (var _i = 0, _a = this._curves; _i < _a.length; _i++) {
+            var curve = _a[_i];
+            curve.storeDefaultOutTangent(keyId);
+        }
+    };
+    GraphComponent.prototype._evaluateKeys = function (frame) {
+        var _this = this;
+        if (frame === void 0) { frame = true; }
         if (!this.props.context.activeAnimation) {
             this._curves = [];
             return;
@@ -48048,29 +48208,30 @@ var GraphComponent = /** @class */ (function (_super) {
                 this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
             case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
                 break;
         }
         var values = this._extractValuesFromKeys(keys, animation.dataType, true);
@@ -48078,9 +48239,11 @@ var GraphComponent = /** @class */ (function (_super) {
         this._maxValue = values.max;
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
-        this._frame();
+        if (frame) {
+            this._frame();
+        }
     };
-    GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, pushToCurves) {
+    GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, pushToCurves, propertyFilter) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
         var minValue = Number.MAX_VALUE;
         var maxValue = -Number.MAX_VALUE;
@@ -48100,10 +48263,14 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48120,12 +48287,18 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    minValue = Math.min(minValue, key.value.z);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.z);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
+                    if (!propertyFilter || propertyFilter === "z") {
+                        minValue = Math.min(minValue, key.value.z);
+                        maxValue = Math.max(maxValue, key.value.z);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48148,12 +48321,18 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                    minValue = Math.min(minValue, key.value.r);
-                    minValue = Math.min(minValue, key.value.g);
-                    minValue = Math.min(minValue, key.value.b);
-                    maxValue = Math.max(maxValue, key.value.r);
-                    maxValue = Math.max(maxValue, key.value.g);
-                    maxValue = Math.max(maxValue, key.value.b);
+                    if (!propertyFilter || propertyFilter === "r") {
+                        minValue = Math.min(minValue, key.value.r);
+                        maxValue = Math.max(maxValue, key.value.r);
+                    }
+                    if (!propertyFilter || propertyFilter === "g") {
+                        minValue = Math.min(minValue, key.value.g);
+                        maxValue = Math.max(maxValue, key.value.g);
+                    }
+                    if (!propertyFilter || propertyFilter === "b") {
+                        minValue = Math.min(minValue, key.value.b);
+                        maxValue = Math.max(maxValue, key.value.b);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48176,14 +48355,22 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                    minValue = Math.min(minValue, key.value.x);
-                    minValue = Math.min(minValue, key.value.y);
-                    minValue = Math.min(minValue, key.value.z);
-                    minValue = Math.min(minValue, key.value.w);
-                    maxValue = Math.max(maxValue, key.value.x);
-                    maxValue = Math.max(maxValue, key.value.y);
-                    maxValue = Math.max(maxValue, key.value.z);
-                    maxValue = Math.max(maxValue, key.value.w);
+                    if (!propertyFilter || propertyFilter === "x") {
+                        minValue = Math.min(minValue, key.value.x);
+                        maxValue = Math.max(maxValue, key.value.x);
+                    }
+                    if (!propertyFilter || propertyFilter === "y") {
+                        minValue = Math.min(minValue, key.value.y);
+                        maxValue = Math.max(maxValue, key.value.y);
+                    }
+                    if (!propertyFilter || propertyFilter === "z") {
+                        minValue = Math.min(minValue, key.value.z);
+                        maxValue = Math.max(maxValue, key.value.z);
+                    }
+                    if (!propertyFilter || propertyFilter === "w") {
+                        minValue = Math.min(minValue, key.value.w);
+                        maxValue = Math.max(maxValue, key.value.w);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48212,14 +48399,22 @@ var GraphComponent = /** @class */ (function (_super) {
                     }
                     break;
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                    minValue = Math.min(minValue, key.value.r);
-                    minValue = Math.min(minValue, key.value.g);
-                    minValue = Math.min(minValue, key.value.b);
-                    minValue = Math.min(minValue, key.value.a);
-                    maxValue = Math.max(maxValue, key.value.r);
-                    maxValue = Math.max(maxValue, key.value.g);
-                    maxValue = Math.max(maxValue, key.value.b);
-                    maxValue = Math.max(maxValue, key.value.a);
+                    if (!propertyFilter || propertyFilter === "r") {
+                        minValue = Math.min(minValue, key.value.r);
+                        maxValue = Math.max(maxValue, key.value.r);
+                    }
+                    if (!propertyFilter || propertyFilter === "g") {
+                        minValue = Math.min(minValue, key.value.g);
+                        maxValue = Math.max(maxValue, key.value.g);
+                    }
+                    if (!propertyFilter || propertyFilter === "b") {
+                        minValue = Math.min(minValue, key.value.b);
+                        maxValue = Math.max(maxValue, key.value.b);
+                    }
+                    if (!propertyFilter || propertyFilter === "a") {
+                        minValue = Math.min(minValue, key.value.a);
+                        maxValue = Math.max(maxValue, key.value.a);
+                    }
                     if (pushToCurves) {
                         this._curves[0].keys.push({
                             frame: key.frame,
@@ -48314,6 +48509,7 @@ var GraphComponent = /** @class */ (function (_super) {
         }));
     };
     GraphComponent.prototype._frame = function () {
+        var _this = this;
         if (!this._currentAnimation) {
             return;
         }
@@ -48331,7 +48527,12 @@ var GraphComponent = /** @class */ (function (_super) {
         }
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
-        var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false);
+        var propertyFilter = undefined;
+        if (this.props.context.activeColor) {
+            var activeCurve = this._curves.filter(function (c) { return c.color === _this.props.context.activeColor; })[0];
+            propertyFilter = activeCurve.property;
+        }
+        var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false, propertyFilter);
         this._minValue = values.min;
         this._maxValue = values.max;
         this.props.context.referenceMinFrame = this._minFrame;
@@ -48506,10 +48707,29 @@ var KeyPointComponent = /** @class */ (function (_super) {
     function KeyPointComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._controlMode = ControlMode.None;
-        _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y };
+        _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y, tangentSelectedIndex: -1 };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._keyPointSVG = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        _this._onFlattenTangentRequiredObserver = _this.props.context.onFlattenTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._flattenTangent();
+        });
+        _this._onLinearTangentRequiredObserver = _this.props.context.onLinearTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._linearTangent();
+        });
         _this._onSelectionRectangleMovedObserver = _this.props.context.onSelectionRectangleMoved.add(function (rect1) {
+            if (!_this._svgHost.current) {
+                return;
+            }
             var rect2 = _this._svgHost.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left ||
                 rect1.left > rect2.right ||
@@ -48569,10 +48789,10 @@ var KeyPointComponent = /** @class */ (function (_super) {
                         break;
                     }
                 }
-                _this.setState({ selectedState: state });
+                _this.setState({ selectedState: state, tangentSelectedIndex: -1 });
             }
             else {
-                _this.setState({ selectedState: SelectionState.Selected });
+                _this.setState({ selectedState: SelectionState.Selected, tangentSelectedIndex: -1 });
             }
             if (isSelected) {
                 _this.props.context.onFrameSet.notifyObservers(_this.props.invertX(_this.state.x));
@@ -48616,6 +48836,12 @@ var KeyPointComponent = /** @class */ (function (_super) {
         return _this;
     }
     KeyPointComponent.prototype.componentWillUnmount = function () {
+        if (this._onFlattenTangentRequiredObserver) {
+            this.props.context.onFlattenTangentRequired.remove(this._onFlattenTangentRequiredObserver);
+        }
+        if (this._onLinearTangentRequiredObserver) {
+            this.props.context.onLinearTangentRequired.remove(this._onLinearTangentRequiredObserver);
+        }
         if (this._onSelectionRectangleMovedObserver) {
             this.props.context.onSelectionRectangleMoved.remove(this._onSelectionRectangleMovedObserver);
         }
@@ -48644,6 +48870,33 @@ var KeyPointComponent = /** @class */ (function (_super) {
             newState.y = newProps.y;
         }
         return true;
+    };
+    KeyPointComponent.prototype._flattenTangent = function () {
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
+            if (this.props.keyId !== 0) {
+                this.props.curve.updateInTangentFromControlPoint(this.props.keyId, 0);
+            }
+        }
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 1) {
+            if (this.props.keyId !== this.props.curve.keys.length - 1) {
+                this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, 0);
+            }
+        }
+        this.forceUpdate();
+    };
+    KeyPointComponent.prototype._linearTangent = function () {
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
+            if (this.props.keyId !== 0) {
+                this.props.curve.storeDefaultInTangent(this.props.keyId);
+            }
+        }
+        if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 1) {
+            if (this.props.keyId !== this.props.curve.keys.length - 1) {
+                this.props.curve.storeDefaultOutTangent(this.props.keyId);
+            }
+        }
+        this.props.curve.onDataUpdatedObservable.notifyObservers();
+        this.forceUpdate();
     };
     KeyPointComponent.prototype._select = function (allowMultipleSelection) {
         if (!this.props.context.activeKeyPoints) {
@@ -48689,31 +48942,37 @@ var KeyPointComponent = /** @class */ (function (_super) {
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-        var bbox = evt.nativeEvent.target.getBoundingClientRect();
-        this._tangentReferenceX = bbox.left + bbox.width / 2;
-        this._tangentReferenceY = bbox.top + bbox.width / 2;
         var target = evt.nativeEvent.target;
         if (target.tagName === "image") {
             this._controlMode = ControlMode.Key;
+            this.setState({ tangentSelectedIndex: -1 });
         }
         else if (target.classList.contains("left-tangent")) {
             this._controlMode = ControlMode.TangentLeft;
+            this.setState({ tangentSelectedIndex: 0 });
         }
         else if (target.classList.contains("right-tangent")) {
             this._controlMode = ControlMode.TangentRight;
+            this.setState({ tangentSelectedIndex: 1 });
         }
         evt.stopPropagation();
     };
-    KeyPointComponent.prototype._processTangentMove = function (evt, cp) {
-        var key = this.props.curve.keys[this.props.keyId];
-        var expectedFrame = cp.frame;
-        this._tangentReferenceX += evt.nativeEvent.offsetX - this._sourcePointerX;
-        this._tangentReferenceY += evt.nativeEvent.offsetY - this._sourcePointerY;
-        var bbox = this._keyPointSVG.current.getBoundingClientRect();
-        var keyCenterX = bbox.left + bbox.width / 2;
-        var keyCenterY = bbox.top + bbox.width / 2;
-        var slope = -(keyCenterY - this._tangentReferenceY) / (keyCenterX - this._tangentReferenceX);
-        return key.value - (key.frame - expectedFrame) * slope;
+    KeyPointComponent.prototype._processTangentMove = function (evt, vec, storedLength, isIn) {
+        vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+        vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+        if (isIn && vec.x >= 0) {
+            vec.x = -0.01;
+        }
+        else if (!isIn && vec.x <= 0) {
+            vec.x = 0.01;
+        }
+        var currentPosition = vec.clone();
+        currentPosition.normalize();
+        currentPosition.scaleInPlace(storedLength);
+        var keys = this.props.curve.keys;
+        var value = isIn ? keys[this.props.keyId].value - this.props.invertY(currentPosition.y + this.state.y) : this.props.invertY(currentPosition.y + this.state.y) - keys[this.props.keyId].value;
+        var frame = isIn ? keys[this.props.keyId].frame - this.props.invertX(currentPosition.x + this.state.x) : this.props.invertX(currentPosition.x + this.state.x) - keys[this.props.keyId].frame;
+        return value / frame;
     };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
         var _this = this;
@@ -48721,11 +48980,11 @@ var KeyPointComponent = /** @class */ (function (_super) {
             return;
         }
         if (this._controlMode === ControlMode.TangentLeft) {
-            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentLeftControlPoint));
+            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
             this.forceUpdate();
         }
         else if (this._controlMode === ControlMode.TangentRight) {
-            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._currentRightControlPoint));
+            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
             this.forceUpdate();
         }
         else if (this._controlMode === ControlMode.Key) {
@@ -48733,11 +48992,12 @@ var KeyPointComponent = /** @class */ (function (_super) {
             var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
             var previousX = this.props.getPreviousX();
             var nextX = this.props.getNextX();
+            var epsilon = 0.01;
             if (previousX !== null) {
-                newX = Math.max(previousX, newX);
+                newX = Math.max(previousX + epsilon, newX);
             }
             if (nextX !== null) {
-                newX = Math.min(nextX, newX);
+                newX = Math.min(nextX - epsilon, newX);
             }
             if (this.props.keyId !== 0) {
                 var frame = this.props.invertX(newX);
@@ -48774,35 +49034,53 @@ var KeyPointComponent = /** @class */ (function (_super) {
     };
     KeyPointComponent.prototype.render = function () {
         var _this = this;
+        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+            return null;
+        }
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
-        this._currentLeftControlPoint = this.props.curve.getInControlPoint(this.props.keyId);
-        this._currentRightControlPoint = this.props.curve.getOutControlPoint(this.props.keyId);
-        var inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentLeftControlPoint ? (this.props.convertX(this._currentLeftControlPoint.frame) - this.state.x) : 0, this._currentLeftControlPoint ? (this.props.convertY(this._currentLeftControlPoint.value) - this.state.y) : 0);
-        var outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this._currentRightControlPoint ? (this.props.convertX(this._currentRightControlPoint.frame) - this.state.x) : 0, this._currentRightControlPoint ? (this.props.convertY(this._currentRightControlPoint.value) - this.state.y) : 0);
-        inVec.normalize();
-        inVec.scaleInPlace(100 * this.props.scale);
-        outVec.normalize();
-        outVec.scaleInPlace(100 * this.props.scale);
+        var keys = this.props.curve.keys;
+        var prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
+        var currentFrame = keys[this.props.keyId].frame;
+        var nextFrame = this.props.keyId < keys.length - 1 ? keys[this.props.keyId + 1].frame : 0;
+        var inFrameLength = (currentFrame - prevFrame) / 3;
+        var outFrameLength = (nextFrame - currentFrame) / 3;
+        var convertedX = this.props.invertX(this.state.x);
+        var convertedY = this.props.invertY(this.state.y);
+        var inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId, inFrameLength);
+        var outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId, outFrameLength);
+        // We want to store the delta in the key local space
+        this._outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX + outFrameLength) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
+        this._inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX - inFrameLength) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        this._storedLengthIn = this._inVec.length();
+        this._storedLengthOut = this._outVec.length();
+        this._inVec.normalize();
+        this._inVec.scaleInPlace(100 * this.props.scale);
+        this._outVec.normalize();
+        this._outVec.scaleInPlace(100 * this.props.scale);
         return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("svg", { ref: this._svgHost, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); }, x: this.state.x, y: this.state.y, style: { cursor: "pointer", overflow: "auto" } },
             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, ref: this._keyPointSVG, href: svgImageIcon }),
             this.state.selectedState === SelectionState.Selected &&
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("g", null,
-                    this._currentLeftControlPoint !== null &&
+                    this.props.keyId !== 0 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: inVec.x + "px", y2: inVec.y + "px", style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._inVec.x + "px", y2: this._inVec.y + "px", style: {
+                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: inVec.x + "px", cy: inVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: this._inVec.x + "px", cy: this._inVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
                                     fill: "#F9BF00",
                                 } })),
-                    this._currentRightControlPoint !== null &&
+                    this.props.keyId !== keys.length - 1 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: outVec.x + "px", y2: outVec.y + "px", style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._outVec.x + "px", y2: this._outVec.y + "px", style: {
+                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
                                     stroke: "#F9BF00",
                                     strokeWidth: "" + 1 * this.props.scale
                                 } }),
-                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: outVec.x + "px", cy: outVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: this._outVec.x + "px", cy: this._outVec.y + "px", r: "" + 4 * this.props.scale, style: {
+                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
                                     fill: "#F9BF00",
                                 } })))));
     };
@@ -49391,8 +49669,12 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationEntryComponent, _super);
     function AnimationEntryComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._unmount = false;
         _this.state = { isExpanded: false, isSelected: false };
         _this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(function () {
+            if (_this._unmount) {
+                return;
+            }
             if (_this.props.animation !== _this.props.context.activeAnimation) {
                 _this.setState({ isSelected: false });
             }
@@ -49404,11 +49686,17 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
         return _this;
     }
     AnimationEntryComponent.prototype._onGear = function () {
+        var _this = this;
+        this.props.context.onEditAnimationUIClosed.addOnce(function () { if (!_this._unmount) {
+            _this.forceUpdate();
+        } });
+        this.props.context.onEditAnimationRequired.notifyObservers(this.props.animation);
     };
     AnimationEntryComponent.prototype._onDelete = function () {
         this.props.context.onDeleteAnimation.notifyObservers(this.props.animation);
     };
     AnimationEntryComponent.prototype.componentWillUnmount = function () {
+        this._unmount = true;
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
@@ -49417,12 +49705,13 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
         }
     };
     AnimationEntryComponent.prototype._activate = function () {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === null) {
             return;
         }
         this.props.context.activeKeyPoints = [];
         this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = null;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationEntryComponent.prototype._expandOrCollapse = function () {
@@ -49488,12 +49777,33 @@ var AnimationListComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationListComponent, _super);
     function AnimationListComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = {};
+        _this.state = { isVisible: true };
+        _this._onEditAnimationRequiredObserver = _this.props.context.onEditAnimationRequired.add(function (animation) {
+            _this.setState({
+                isVisible: false
+            });
+        });
+        _this._onEditAnimationUIClosedObserver = _this.props.context.onEditAnimationUIClosed.add(function () {
+            _this.setState({
+                isVisible: true
+            });
+        });
         return _this;
     }
+    AnimationListComponent.prototype.componentWillUnmount = function () {
+        if (this._onEditAnimationRequiredObserver) {
+            this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
+        }
+        if (this._onEditAnimationUIClosedObserver) {
+            this.props.context.onEditAnimationUIClosed.remove(this._onEditAnimationUIClosedObserver);
+        }
+    };
     AnimationListComponent.prototype.render = function () {
         var _this = this;
         var _a;
+        if (!this.state.isVisible) {
+            return null;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "animation-list" }, (_a = this.props.context.animations) === null || _a === void 0 ? void 0 : _a.map(function (a, i) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationEntryComponent__WEBPACK_IMPORTED_MODULE_2__["AnimationEntryComponent"], { key: i, globalState: _this.props.globalState, context: _this.props.context, animation: a }));
         })));
@@ -49564,16 +49874,18 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
         }
     };
     AnimationSubEntryComponent.prototype._activate = function () {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === this.props.color) {
             return;
         }
+        this.props.context.activeKeyPoints = [];
         this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = this.props.color;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationSubEntryComponent.prototype.render = function () {
         var _this = this;
-        var isActive = this.props.animation === this.props.context.activeAnimation;
+        var isActive = this.props.animation === this.props.context.activeAnimation && (this.props.context.activeColor === null || this.props.context.activeColor === this.props.color);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-entry" + (isActive ? " isActive" : "") },
                 this.state.isSelected &&
@@ -49584,6 +49896,114 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
                     }, onClick: function () { return _this._activate(); } }, this.props.subName))));
     };
     return AnimationSubEntryComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx":
+/*!************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx ***!
+  \************************************************************************************************************/
+/*! exports provided: EditAnimationComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EditAnimationComponent", function() { return EditAnimationComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Animations/animation */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+var EditAnimationComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(EditAnimationComponent, _super);
+    function EditAnimationComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { isVisible: false, animation: null };
+        _this._root = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._displayName = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._property = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._loopModeElement = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._onEditAnimationRequiredObserver = _this.props.context.onEditAnimationRequired.add(function (animation) {
+            _this.setState({
+                isVisible: true,
+                animation: animation
+            });
+        });
+        return _this;
+    }
+    EditAnimationComponent.prototype.componentWillUnmount = function () {
+        if (this._onEditAnimationRequiredObserver) {
+            this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
+        }
+    };
+    EditAnimationComponent.prototype.close = function () {
+        this.setState({ isVisible: false });
+        this.props.context.onEditAnimationUIClosed.notifyObservers();
+    };
+    EditAnimationComponent.prototype.validate = function () {
+        var context = this.props.context;
+        var document = this._displayName.current.ownerDocument;
+        var displayName = this._displayName.current.value;
+        var property = this._property.current.value;
+        var loopModeValue = this._loopModeElement.current.value;
+        if (!displayName) {
+            document.defaultView.alert("Please define a display name");
+            return;
+        }
+        if (!property) {
+            document.defaultView.alert("Please define a property");
+            return;
+        }
+        var animation = this.state.animation;
+        animation.name = displayName;
+        if (animation.targetProperty !== property) {
+            animation.targetProperty = property;
+            animation.targetPropertyPath = property.split(".");
+            context.stop();
+        }
+        switch (loopModeValue) {
+            case "Cycle": {
+                animation.loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_CYCLE;
+                break;
+            }
+            case "Relative": {
+                animation.loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_RELATIVE;
+                break;
+            }
+            case "Constant": {
+                animation.loopMode = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONLOOPMODE_CONSTANT;
+                break;
+            }
+        }
+        this.close();
+    };
+    EditAnimationComponent.prototype.render = function () {
+        var _this = this;
+        var _a;
+        if (!this.state.isVisible) {
+            return null;
+        }
+        var loopModes = ["Relative", "Cycle", "Constant"];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-pane", ref: this._root },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-display-name-label" }, "Display Name"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-property-label" }, "Property"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation-loop-mode-label" }, "Loop Mode"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "edit-animation-name", ref: this._displayName, className: "input-text", defaultValue: this.state.animation.name || "" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "edit-animation-property", ref: this._property, className: "input-text", defaultValue: this.state.animation.targetProperty }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "edit-animation-loop-mode", className: "option", ref: this._loopModeElement, defaultValue: loopModes[(_a = this.state.animation.loopMode) !== null && _a !== void 0 ? _a : 1] }, loopModes.map(function (loopMode, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: loopMode + i, value: loopMode, title: loopMode }, loopMode));
+            })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "edit-animation" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "edit-animation-ok", type: "button", onClick: function () { return _this.validate(); } }, "OK"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "edit-animation-cancel", type: "button", onClick: function () { return _this.close(); } }, "Cancel"))));
+    };
+    return EditAnimationComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -49783,7 +50203,7 @@ var SaveAnimationComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-pane", ref: this._root },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-list" }, (_a = this.props.context.animations) === null || _a === void 0 ? void 0 : _a.map(function (a, i) {
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "save-animation-list-entry", key: i },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", value: a.name, checked: true, onClick: function (evt) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", value: a.name, defaultChecked: true, onClick: function (evt) {
                             if (evt.currentTarget.checked) {
                                 _this._selectedAnimations.push(a);
                             }
@@ -49834,6 +50254,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./saveAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/saveAnimationComponent.tsx");
 /* harmony import */ var _loadAnimationComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./loadAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/loadAnimationComponent.tsx");
 /* harmony import */ var _addAnimationComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./addAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/addAnimationComponent.tsx");
+/* harmony import */ var _editAnimationComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./editAnimationComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx");
+
 
 
 
@@ -49908,7 +50330,9 @@ var SideBarComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Edit animations", isActive: this.state.mode === Mode.Edit, id: "edit-animation", globalState: this.props.globalState, context: this.props.context, icon: editIcon, onClick: function () { return _this._onEditAnimation(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputComponent"], { value: this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond.toString() : "60", complement: " fps", isNumber: true, onValueAsNumberChanged: function (value) { var _a; return (_a = _this.props.context.animations) === null || _a === void 0 ? void 0 : _a.forEach(function (anim) { return anim.framePerSecond = value; }); }, tooltip: "Framerate", id: "framerate-animation", globalState: this.props.globalState, context: this.props.context })),
             this.state.mode === Mode.Edit &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListComponent__WEBPACK_IMPORTED_MODULE_3__["AnimationListComponent"], { globalState: this.props.globalState, context: this.props.context }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListComponent__WEBPACK_IMPORTED_MODULE_3__["AnimationListComponent"], { globalState: this.props.globalState, context: this.props.context }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_editAnimationComponent__WEBPACK_IMPORTED_MODULE_8__["EditAnimationComponent"], { globalState: this.props.globalState, context: this.props.context })),
             this.state.mode === Mode.Save &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_saveAnimationComponent__WEBPACK_IMPORTED_MODULE_5__["SaveAnimationComponent"], { globalState: this.props.globalState, context: this.props.context }),
             this.state.mode === Mode.Load &&
@@ -49946,6 +50370,8 @@ __webpack_require__(/*! ./scss/topBar.scss */ "./components/actionTabs/tabs/prop
 var logoIcon = __webpack_require__(/*! ./assets/babylonLogo.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/babylonLogo.svg");
 var frameIcon = __webpack_require__(/*! ./assets/frameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/frameIcon.svg");
 var newKeyIcon = __webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/newKeyIcon.svg");
+var flatTangentIcon = __webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg");
+var linearTangentIcon = __webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg");
 var TopBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TopBarComponent, _super);
     function TopBarComponent(props) {
@@ -49991,7 +50417,11 @@ var TopBarComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context })),
             this.props.context.activeAnimation &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } }),
+            this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }))));
     };
     return TopBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -51135,6 +51565,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/hexLineComponent */ "./sharedUiComponents/lines/hexLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+
+
 
 
 
@@ -51191,6 +51625,26 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Greater or equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].GEQUAL },
             { label: "Not equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].NOTEQUAL },
         ];
+        var stencilFunctionOptions = [
+            { label: "Never", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].NEVER },
+            { label: "Always", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALWAYS },
+            { label: "Equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].EQUAL },
+            { label: "Less", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].LESS },
+            { label: "Less or equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].LEQUAL },
+            { label: "Greater", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].GREATER },
+            { label: "Greater or equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].GEQUAL },
+            { label: "Not equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].NOTEQUAL },
+        ];
+        var stencilOperationOptions = [
+            { label: "Keep", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].KEEP },
+            { label: "Zero", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ZERO },
+            { label: "Replace", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].REPLACE },
+            { label: "Incr", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].INCR },
+            { label: "Decr", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].DECR },
+            { label: "Invert", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].INVERT },
+            { label: "Incr wrap", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].INCR_WRAP },
+            { label: "Decr wrap", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].DECR_WRAP },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: material, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "GENERAL", selection: this.props.globalState },
@@ -51227,6 +51681,16 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 material.useAlphaFromAlbedoTexture !== undefined &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use alpha from albedo texture", target: material, propertyName: "useAlphaFromAlbedoTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Separate culling pass", target: material, propertyName: "separateCullingPass", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            material.stencil && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "STENCIL", selection: this.props.globalState },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Enabled", target: material.stencil, propertyName: "enabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_12__["HexLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Mask", target: material.stencil, propertyName: "mask", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Function", options: stencilFunctionOptions, target: material.stencil, propertyName: "func", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ stencilFunction: value }); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_13__["FloatLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Function reference", target: material.stencil, propertyName: "funcRef", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_12__["HexLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Function mask", target: material.stencil, propertyName: "funcMask", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Op stencil fail", options: stencilOperationOptions, target: material.stencil, propertyName: "opStencilFail", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ opStencilFail: value }); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Op depth fail", options: stencilOperationOptions, target: material.stencil, propertyName: "opDepthFail", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ opDepthFail: value }); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Op stencil+depth pass", options: stencilOperationOptions, target: material.stencil, propertyName: "opStencilDepthPass", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ opStencilDepthPass: value }); } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: material, scene: material.getScene(), lockObject: this.props.lockObject })));
     };
     return CommonMaterialPropertyGridComponent;
@@ -51680,7 +52144,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Min Thickness", target: material.subSurface, propertyName: "minimumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Max Thickness", target: material.subSurface, propertyName: "maximumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Mask From Thickness", target: material.subSurface, propertyName: "useMaskFromThicknessTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Mask From Thickness (glTF-style)", target: material.subSurface, propertyName: "useMaskFromThicknessTextureGltf", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "glTF-Style Thickness Texture", target: material.subSurface, propertyName: "useGltfStyleThicknessTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.subSurface, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Scattering Enabled", target: material.subSurface, propertyName: "isScatteringEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.subSurface.isScatteringEnabled && material.getScene().prePassRenderer && material.getScene().subSurfaceConfiguration &&
@@ -56251,7 +56715,7 @@ var LensRenderingPipelinePropertyGridComponent = /** @class */ (function (_super
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Blur noise", target: renderPipeline, propertyName: "blurNoise", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "DEPTH OF FIELD", selection: this.props.globalState },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Aperture", minimum: 0, maximum: 10, step: 0.1, target: renderPipeline, propertyName: "dofAperture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distortion", minimum: 0, maximum: 10, step: 0.1, target: renderPipeline, propertyName: "dofDistortion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distortion", minimum: 0, maximum: 1000, step: 0.1, target: renderPipeline, propertyName: "dofDistortion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Pentagon bokeh", target: renderPipeline, propertyName: "pentagonBokeh", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Highlight gain", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "highlightsGain", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Highlight threshold", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "highlightsThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));

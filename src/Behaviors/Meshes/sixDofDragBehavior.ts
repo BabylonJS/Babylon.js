@@ -27,7 +27,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
     /**
      * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
      */
-    private zDragFactor = 3;
+    public zDragFactor = 3;
     /**
      * If the object should rotate to face the drag origin
      */
@@ -100,7 +100,6 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
         if (!SixDofDragBehavior._virtualScene) {
             SixDofDragBehavior._virtualScene = new Scene(this._scene.getEngine(), {virtual: true});
             SixDofDragBehavior._virtualScene.detachControl();
-            this._scene.getEngine().scenes.pop();
         }
 
         var pickedMesh: Nullable<AbstractMesh> = null;

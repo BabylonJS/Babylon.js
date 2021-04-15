@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -683,7 +683,7 @@ var CellMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         // Lights
@@ -1562,7 +1562,7 @@ var FireMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
         // View
@@ -2059,7 +2059,7 @@ var FurMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         if (scene.lightsEnabled && !this.disableLighting) {
@@ -2563,7 +2563,7 @@ var GradientMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         if (scene.lightsEnabled && !this.disableLighting) {
             babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);
@@ -3428,7 +3428,7 @@ var LavaMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
         if (scene.lightsEnabled && !this.disableLighting) {
@@ -3995,7 +3995,7 @@ var MixMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         if (defines.SPECULARTERM) {
@@ -4542,7 +4542,7 @@ var NormalMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         // Lights
@@ -4925,7 +4925,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
             }
             this._activeEffect.setFloat("alpha", this.alpha);
             this._activeEffect.setColor3("shadowColor", this.shadowColor);
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         // Lights
         if (scene.lightsEnabled) {
@@ -5265,7 +5265,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         // Lights
@@ -5766,7 +5766,7 @@ var SkyMaterial = /** @class */ (function (_super) {
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], SkyMaterial.prototype, "useSunPosition", void 0);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsVector3"])()
     ], SkyMaterial.prototype, "cameraOffset", void 0);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsVector3"])()
@@ -6122,7 +6122,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         if (defines.SPECULARTERM) {
@@ -6553,7 +6553,7 @@ var TriPlanarMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         if (defines.SPECULARTERM) {
@@ -7303,7 +7303,7 @@ var WaterMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         if (defines.SPECULARTERM) {

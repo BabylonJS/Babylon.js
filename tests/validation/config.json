@@ -455,23 +455,20 @@
             "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 0",
-            "referenceImage": "gltfAnimationSkin0.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "gltfAnimationSkin0.png"
         },
         {
             "title": "GLTF Animation Skin (1)",
             "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 1",
-            "referenceImage": "gltfAnimationSkin1.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "gltfAnimationSkin1.png"
         },
         {
             "title": "GLTF Animation Skin Type",
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_SkinType, __page__, 0",
-            "referenceImage": "gltfAnimationSkinType.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "gltfAnimationSkinType.png"
         },
         {
             "title": "GLTF Buffer Interleaved",

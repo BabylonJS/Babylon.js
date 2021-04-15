@@ -218,6 +218,7 @@ class TransmissionHelper {
      */
     private _setupRenderTargets(): void {
         this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
+        this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
         this._opaqueRenderTarget.gammaSpace = true;
@@ -321,13 +322,15 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             return Promise.resolve();
         }
 
+        pbrMaterial.subSurface.minimumThickness = 0.0;
+        pbrMaterial.subSurface.maximumThickness = 0.0;
         if (extension.transmissionTexture) {
             (extension.transmissionTexture as ITextureInfo).nonColorData = true;
             return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined)
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
-                    pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
-                    pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
+                    pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
+                    pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
                 });
         } else {
             return Promise.resolve();

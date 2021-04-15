@@ -247,6 +247,7 @@ export class TextureBlock extends NodeMaterialBlock {
         if (this._isMixed) {
             if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines.setValue(this._defineName, true);
+                defines.setValue(this._mainUVDefineName, false);
             } else {
                 defines.setValue(this._defineName, false);
                 defines.setValue(this._mainUVDefineName, true);
@@ -314,6 +315,14 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    private _generateTextureLookup(state: NodeMaterialBuildState): void {
+        state.compilationString += `#ifdef ${this._defineName}\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._transformedUVName});\r\n`;
+        state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._mainUVName ? this._mainUVName : this.uv.associatedVariableName});\r\n`;
+        state.compilationString += `#endif\r\n`;
+    }
+
     private _writeTextureRead(state: NodeMaterialBuildState, vertexMode = false) {
         let uvInput = this.uv;
 
@@ -322,7 +331,7 @@ export class TextureBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName});\r\n`;
+            this._generateTextureLookup(state);
             return;
         }
 
@@ -331,11 +340,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._transformedUVName});\r\n`;
-        state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._mainUVName});\r\n`;
-        state.compilationString += `#endif\r\n`;
+        this._generateTextureLookup(state);
     }
 
     private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
@@ -429,7 +434,7 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString = "";
+        let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
         codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;

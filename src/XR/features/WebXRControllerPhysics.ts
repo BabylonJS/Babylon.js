@@ -291,43 +291,63 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     protected _onXRFrame(_xrFrame: any): void {
         this._delta = this._xrSessionManager.currentTimestamp - this._lastTimestamp;
         this._lastTimestamp = this._xrSessionManager.currentTimestamp;
-        if (this._headsetMesh) {
+        if (this._headsetMesh && this._headsetImpostor) {
             this._headsetMesh.position.copyFrom(this._options.xrInput.xrCamera.position);
             this._headsetMesh.rotationQuaternion!.copyFrom(this._options.xrInput.xrCamera.rotationQuaternion!);
+            if (this._options.xrInput.xrCamera._lastXRViewerPose?.linearVelocity) {
+                const lv = this._options.xrInput.xrCamera._lastXRViewerPose.linearVelocity;
+                this._tmpVector.set(lv.x, lv.y, lv.z);
+                this._headsetImpostor.setLinearVelocity(this._tmpVector);
+            }
+            if (this._options.xrInput.xrCamera._lastXRViewerPose?.angularVelocity) {
+                const av = this._options.xrInput.xrCamera._lastXRViewerPose.angularVelocity;
+                this._tmpVector.set(av.x, av.y, av.z);
+                this._headsetImpostor.setAngularVelocity(this._tmpVector);
+            }
         }
         Object.keys(this._controllers).forEach((controllerId) => {
             const controllerData = this._controllers[controllerId];
             const controllerMesh = controllerData.xrController.grip || controllerData.xrController.pointer;
-
             const comparedPosition = controllerData.oldPos || controllerData.impostorMesh!.position;
-            const comparedQuaternion = controllerData.oldRotation || controllerData.impostorMesh!.rotationQuaternion!;
-
-            controllerMesh.position.subtractToRef(comparedPosition, this._tmpVector);
-            this._tmpVector.scaleInPlace(1000 / this._delta);
-            controllerData.impostor.setLinearVelocity(this._tmpVector);
+            if (controllerData.xrController._lastXRPose?.linearVelocity) {
+                const lv = controllerData.xrController._lastXRPose.linearVelocity;
+                this._tmpVector.set(lv.x, lv.y, lv.z);
+                controllerData.impostor.setLinearVelocity(this._tmpVector);
+            } else {
+                controllerMesh.position.subtractToRef(comparedPosition, this._tmpVector);
+                this._tmpVector.scaleInPlace(1000 / this._delta);
+                controllerData.impostor.setLinearVelocity(this._tmpVector);
+            }
+            comparedPosition.copyFrom(controllerMesh.position);
             if (this._debugMode) {
                 console.log(this._tmpVector, "linear");
             }
 
-            if (!comparedQuaternion.equalsWithEpsilon(controllerMesh.rotationQuaternion!)) {
-                // roughly based on this - https://www.gamedev.net/forums/topic/347752-quaternion-and-angular-velocity/
-                comparedQuaternion.conjugateInPlace().multiplyToRef(controllerMesh.rotationQuaternion!, this._tmpQuaternion);
-                const len = Math.sqrt(this._tmpQuaternion.x * this._tmpQuaternion.x + this._tmpQuaternion.y * this._tmpQuaternion.y + this._tmpQuaternion.z * this._tmpQuaternion.z);
-                this._tmpVector.set(this._tmpQuaternion.x, this._tmpQuaternion.y, this._tmpQuaternion.z);
-                // define a better epsilon
-                if (len < 0.001) {
-                    this._tmpVector.scaleInPlace(2);
-                } else {
-                    const angle = 2 * Math.atan2(len, this._tmpQuaternion.w);
-                    this._tmpVector.scaleInPlace(angle / (len * (this._delta / 1000)));
-                }
+            const comparedQuaternion = controllerData.oldRotation || controllerData.impostorMesh!.rotationQuaternion!;
+            if (controllerData.xrController._lastXRPose?.angularVelocity) {
+                const av = controllerData.xrController._lastXRPose.angularVelocity;
+                this._tmpVector.set(av.x, av.y, av.z);
                 controllerData.impostor.setAngularVelocity(this._tmpVector);
-                if (this._debugMode) {
-                    console.log(this._tmpVector, this._tmpQuaternion, "angular");
+            } else {
+                if (!comparedQuaternion.equalsWithEpsilon(controllerMesh.rotationQuaternion!)) {
+                    // roughly based on this - https://www.gamedev.net/forums/topic/347752-quaternion-and-angular-velocity/
+                    comparedQuaternion.conjugateInPlace().multiplyToRef(controllerMesh.rotationQuaternion!, this._tmpQuaternion);
+                    const len = Math.sqrt(this._tmpQuaternion.x * this._tmpQuaternion.x + this._tmpQuaternion.y * this._tmpQuaternion.y + this._tmpQuaternion.z * this._tmpQuaternion.z);
+                    this._tmpVector.set(this._tmpQuaternion.x, this._tmpQuaternion.y, this._tmpQuaternion.z);
+                    // define a better epsilon
+                    if (len < 0.001) {
+                        this._tmpVector.scaleInPlace(2);
+                    } else {
+                        const angle = 2 * Math.atan2(len, this._tmpQuaternion.w);
+                        this._tmpVector.scaleInPlace(angle / (len * (this._delta / 1000)));
+                    }
+                    controllerData.impostor.setAngularVelocity(this._tmpVector);
                 }
             }
-            comparedPosition.copyFrom(controllerMesh.position);
             comparedQuaternion.copyFrom(controllerMesh.rotationQuaternion!);
+            if (this._debugMode) {
+                console.log(this._tmpVector, this._tmpQuaternion, "angular");
+            }
         });
     }
 

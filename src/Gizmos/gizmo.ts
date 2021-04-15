@@ -14,6 +14,7 @@ import { TransformNode } from '../Meshes/transformNode';
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
 import { LinesMesh } from '../Meshes/linesMesh';
+import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 
 /**
  * Cache built by each axis. Used for managing state between all elements of gizmo for enhanced UI
@@ -31,6 +32,8 @@ export interface GizmoAxisCache {
     disableMaterial: StandardMaterial;
     /** Used to indicate Active state of the Gizmo */
     active: boolean;
+    /** DragBehavior */
+    dragBehavior: PointerDragBehavior;
 }
 /**
  * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
@@ -336,7 +339,7 @@ export class Gizmo implements IDisposable {
                     gizmoAxisCache.forEach((cache) => {
                         if (cache.colliderMeshes && cache.gizmoMeshes) {
                             const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
-                            const material = isHovered || cache.active ? cache.hoverMaterial : cache.material;
+                            const material = cache.dragBehavior.enabled ? (isHovered || cache.active ? cache.hoverMaterial : cache.material) : cache.disableMaterial;
                             cache.gizmoMeshes.forEach((m: Mesh) => {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {
@@ -356,7 +359,7 @@ export class Gizmo implements IDisposable {
                         statusMap!.active = true;
                         gizmoAxisCache.forEach((cache) => {
                             const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
-                            const material = isHovered || cache.active ? cache.hoverMaterial : cache.disableMaterial;
+                            const material = ((isHovered || cache.active) && cache.dragBehavior.enabled) ? cache.hoverMaterial : cache.disableMaterial;
                             cache.gizmoMeshes.forEach((m: Mesh) => {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {
@@ -373,7 +376,7 @@ export class Gizmo implements IDisposable {
                         cache.active = false;
                         dragging = false;
                         cache.gizmoMeshes.forEach((m: Mesh) => {
-                            m.material = cache.material;
+                            m.material = cache.dragBehavior.enabled ? cache.material : cache.disableMaterial;
                             if ((m as LinesMesh).color) {
                                 (m as LinesMesh).color = cache.material.diffuseColor;
                             }
