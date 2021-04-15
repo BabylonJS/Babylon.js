@@ -36,10 +36,6 @@ interface GPUAdapterLimits {
     readonly maxVertexBufferArrayStride: GPUSize32;
 }
 
-interface GPUAdapterFeatures {
-    readonly GPUFeatureName: { [name: string]: void };
-}
-
 interface Navigator {
     readonly gpu: GPU | undefined;
 }
@@ -59,13 +55,11 @@ interface GPURequestAdapterOptions {
 
 type GPUPowerPreference = "low-power" | "high-performance";
 
-// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features as GPUAdapterFeatures but as GPUFeatureName[]
 declare class GPUAdapter {
     // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
     private __brand: void;
     readonly name: string;
-    readonly features: GPUFeatureName[];
-    //readonly features: GPUAdapterFeatures;
+    readonly features: ReadonlySet<GPUFeatureName>;
     readonly limits: Required<GPUAdapterLimits>;
 
     requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice | null>;
@@ -89,7 +83,7 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     label: string | undefined;
 
     readonly adapter: GPUAdapter;
-    readonly features: GPUFeatureName[];
+    readonly features: ReadonlySet<GPUFeatureName>;
     readonly limits: Required<GPUAdapterLimits>;
 
     readonly queue: GPUQueue;

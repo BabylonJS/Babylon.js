@@ -679,6 +679,7 @@ declare module INSPECTOR {
     }
     interface IKeyPointComponentState {
         selectedState: SelectionState;
+        tangentSelectedIndex: number;
         x: number;
         y: number;
     }
@@ -695,6 +696,8 @@ declare module INSPECTOR {
         private _onMainKeyPointSetObserver;
         private _onMainKeyPointMovedObserver;
         private _onSelectionRectangleMovedObserver;
+        private _onFlattenTangentRequiredObserver;
+        private _onLinearTangentRequiredObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -710,12 +713,14 @@ declare module INSPECTOR {
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
+        private _flattenTangent;
+        private _linearTangent;
         private _select;
         private _onPointerDown;
         private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
-        render(): JSX.Element;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -725,6 +730,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         target: BABYLON.IAnimatable;
         activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
+        activeColor: BABYLON.Nullable<string>;
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
         mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
         snippetId: string;
@@ -747,6 +753,8 @@ declare module INSPECTOR {
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
         onNewKeyPointRequired: BABYLON.Observable<void>;
+        onFlattenTangentRequired: BABYLON.Observable<void>;
+        onLinearTangentRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
@@ -840,8 +848,11 @@ declare module INSPECTOR {
     interface IBottomBarComponentState {
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
+        private _onAnimationsLoadedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: IBottomBarComponentProps);
         private _renderMaxFrame;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -943,10 +954,11 @@ declare module INSPECTOR {
     }
     export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
         private _onDataUpdatedObserver;
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICurveComponentProps);
         componentWillUnmount(): void;
-        shouldComponentUpdate(newProps: ICurveComponentProps): boolean;
-        render(): JSX.Element;
+        componentDidUpdate(): boolean;
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -1100,6 +1112,7 @@ declare module INSPECTOR {
     export class AnimationEntryComponent extends React.Component<IAnimationEntryComponentProps, IAnimationEntryComponentState> {
         private _onActiveAnimationChangedObserver;
         private _onActiveKeyPointChangedObserver;
+        private _unmount;
         constructor(props: IAnimationEntryComponentProps);
         private _onGear;
         private _onDelete;
@@ -1273,6 +1286,41 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IHexLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        lockObject?: LockObject;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
+        min?: number;
+    }
+    export class HexLineComponent extends React.Component<IHexLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        private _propertyChange;
+        constructor(props: IHexLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: IHexLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        convertToHexString(valueString: string): string;
+        updateValue(valueString: string, raisePropertyChanged: boolean): void;
+        lock(): void;
+        unlock(): void;
         render(): JSX.Element;
     }
 }
@@ -1928,41 +1976,6 @@ declare module INSPECTOR {
     }
     export class PointLightPropertyGridComponent extends React.Component<IPointLightPropertyGridComponentProps> {
         constructor(props: IPointLightPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IHexLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        lockObject?: LockObject;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        replaySourceReplacement?: string;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-        useEuler?: boolean;
-        min?: number;
-    }
-    export class HexLineComponent extends React.Component<IHexLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        private _propertyChange;
-        constructor(props: IHexLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: IHexLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        convertToHexString(valueString: string): string;
-        updateValue(valueString: string, raisePropertyChanged: boolean): void;
-        lock(): void;
-        unlock(): void;
         render(): JSX.Element;
     }
 }

@@ -59,6 +59,7 @@
 - Added support for clip planes to the `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added support for local cube map to refraction cube texture ([Popov72](https://github.com/Popov72))
 - Added the `cullBackFaces` property to `Material` ([Popov72](https://github.com/Popov72))
+- Added the `stencil` object property to `Material` ([Popov72](https://github.com/Popov72))
 
 ### Meshes
 
@@ -71,6 +72,7 @@
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
+- Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
 
 ### NME
 
@@ -116,6 +118,8 @@
 - Fixed an issue with resources disposal when exiting XR ([#10012](https://github.com/BabylonJS/Babylon.js/issues/10012)) ([RaananW](https://github.com/RaananW))
 - Added observable to target mesh position update for teleportation ([#9402](https://github.com/BabylonJS/Babylon.js/issues/9402)) ([RaananW](https://github.com/RaananW))
 - Prevent the XR render target texture from rescaling when using the scene optimizer ([#10135](https://github.com/BabylonJS/Babylon.js/issues/10135)) ([RaananW](https://github.com/RaananW))
+- Force https when using WebXR except for when hostname is localhost ([#10154](https://github.com/BabylonJS/Babylon.js/issues/10154)) ([RaananW](https://github.com/RaananW))
+- Use the newly-introduced physics velocities of controllers/headset where available ([#10118](https://github.com/BabylonJS/Babylon.js/issues/10118)) ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 
@@ -186,7 +190,11 @@
 - Fix computation of min/max values in glTF loader when using normalized integers ([#10112](https://github.com/BabylonJS/Babylon.js/issues/10112)) ([Popov72](https://github.com/Popov72))
 - Fix instance picking when in billboard mode ([Popov72](https://github.com/Popov72))
 - Fix NME generation code missing `target` and `visibleInInspector` properties ([Popov72](https://github.com/Popov72))
+- Fix transmission mask being accidently used in glTF volume materials ([MiiBond](https://github.com/MiiBond/))
 - Fix `Scene.getPointerOverMesh` returning disposed mesh ([Popov72](https://github.com/Popov72))
+- Fix NME `TextureBlock` to use correct transformed UV coordinates when reading from the texture ([#10176](https://github.com/BabylonJS/Babylon.js/issues/10176)) ([Popov72](https://github.com/Popov72))
+- Fix context lost handling ([#10163](https://github.com/BabylonJS/Babylon.js/issues/10163)) ([Popov72](https://github.com/Popov72))
+- Fix for GUI slider step values greater than one ([msDestiny14](https://github.com/msDestiny14))
 
 ## Breaking changes
 

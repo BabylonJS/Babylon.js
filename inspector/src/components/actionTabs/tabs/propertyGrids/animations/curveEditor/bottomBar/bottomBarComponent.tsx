@@ -1,3 +1,5 @@
+import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
@@ -18,17 +20,19 @@ export class BottomBarComponent extends React.Component<
 IBottomBarComponentProps,
 IBottomBarComponentState
 > {
+    private _onAnimationsLoadedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
 
     constructor(props: IBottomBarComponentProps) {
         super(props);
 
         this.state = { };
 
-        this.props.context.onAnimationsLoaded.add(() => {
+        this._onAnimationsLoadedObserver = this.props.context.onAnimationsLoaded.add(() => {
             this.forceUpdate();
         });
 
-        this.props.context.onActiveAnimationChanged.add(() => {
+        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
             this.forceUpdate();
         });
     }
@@ -36,6 +40,16 @@ IBottomBarComponentState
     private _renderMaxFrame() {
         const keys = this.props.context.activeAnimation!.getKeys();
         return Math.round(keys[keys.length - 1].frame);
+    }
+
+    componentWillUnmount() {
+        if (this._onAnimationsLoadedObserver) {
+            this.props.context.onAnimationsLoaded.remove(this._onAnimationsLoadedObserver)
+        }
+
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver)
+        }
     }
 
     public render() {

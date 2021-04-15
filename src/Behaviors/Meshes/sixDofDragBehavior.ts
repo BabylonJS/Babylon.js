@@ -100,7 +100,6 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
         if (!SixDofDragBehavior._virtualScene) {
             SixDofDragBehavior._virtualScene = new Scene(this._scene.getEngine(), {virtual: true});
             SixDofDragBehavior._virtualScene.detachControl();
-            this._scene.getEngine().scenes.pop();
         }
 
         var pickedMesh: Nullable<AbstractMesh> = null;

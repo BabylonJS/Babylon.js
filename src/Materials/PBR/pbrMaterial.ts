@@ -754,6 +754,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         clone.id = name;
         clone.name = name;
 
+        this.stencil.copyTo(clone.stencil);
         this.clearCoat.copyTo(clone.clearCoat);
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
@@ -771,6 +772,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         var serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.PBRMaterial";
 
+        serializationObject.stencil = this.stencil.serialize();
         serializationObject.clearCoat = this.clearCoat.serialize();
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();
@@ -790,6 +792,9 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
         const material = SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
+        if (source.stencil) {
+            material.stencil.parse(source.stencil, scene, rootUrl);
+        }
         if (source.clearCoat) {
             material.clearCoat.parse(source.clearCoat, scene, rootUrl);
         }

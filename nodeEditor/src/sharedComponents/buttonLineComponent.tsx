@@ -3,6 +3,7 @@ import * as React from "react";
 export interface IButtonLineComponentProps {
     label: string;
     onClick: () => void;
+    isDisabled?: boolean;
 }
 
 export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
@@ -13,8 +14,13 @@ export class ButtonLineComponent extends React.Component<IButtonLineComponentPro
     render() {
 
         return (
-            <div className="buttonLine">
-                <button onClick={() => this.props.onClick()}>{this.props.label}</button>
+            <div className={"buttonLine" + (this.props.isDisabled ? " disabled" : "")}>
+                <button onClick={() => {
+                    if (this.props.isDisabled) {
+                        return;
+                    }
+                    this.props.onClick();
+                }}>{this.props.label}</button>
             </div>
         );
     }

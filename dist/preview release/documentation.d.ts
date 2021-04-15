@@ -3074,6 +3074,16 @@ declare module BABYLON {
          */
         static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2;
         /**
+         * Returns a new Vector2 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where the derivative will be stored
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number, result: Vector2): void;
+        /**
          * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
          * @param start defines the start vector
          * @param end defines the end vector
@@ -3785,6 +3795,16 @@ declare module BABYLON {
          * @returns 1st derivative
          */
         static Hermite1stDerivative(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number): Vector3;
+        /**
+         * Update a Vector3 with the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3): void;
         /**
          * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
          * @param start defines the start value
@@ -4854,6 +4874,16 @@ declare module BABYLON {
          * @returns 1st derivative
          */
         static Hermite1stDerivative(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number): Quaternion;
+        /**
+         * Update a Quaternion with the 1st derivative of the Hermite spline defined by the quaternions "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion): void;
     }
     /**
      * Class used to store matrix data (4x4)
@@ -6600,6 +6630,26 @@ declare module BABYLON {
          */
         static LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: number, result: Color3): void;
         /**
+         * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number): Color3;
+        /**
+         * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number, result: Color3): void;
+        /**
          * Returns a Color3 value containing a red color
          * @returns a new Color3 object
          */
@@ -6888,6 +6938,26 @@ declare module BABYLON {
          * @param result defines the Color4 object where to store data
          */
         static LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number, result: Color4): void;
+        /**
+         * Returns a new Color4 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @returns 1st derivative
+         */
+        static Hermite1stDerivative(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number): Color4;
+        /**
+         * Update a Color4 with the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent
+         * @param time define where the derivative must be done
+         * @param result define where to store the derivative
+         */
+        static Hermite1stDerivativeToRef(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number, result: Color4): void;
         /**
          * Creates a new Color4 from a Color3 and an alpha value
          * @param color3 defines the source Color3 to read from
@@ -11612,6 +11682,7 @@ declare module BABYLON {
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private get _isMixed();
         private _injectVertexCode;
+        private _generateTextureLookup;
         private _writeTextureRead;
         private _generateConversionCode;
         private _writeOutput;
@@ -15014,6 +15085,11 @@ declare module BABYLON {
          */
         render(sprites: ThinSprite[], deltaTime: number, viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike, customSpriteUpdate?: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>): void;
         private _appendSpriteVertex;
+        private _buildIndexBuffer;
+        /**
+         * Rebuilds the renderer (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -15080,6 +15156,10 @@ declare module BABYLON {
          * Renders the list of sprites on screen.
          */
         render(): void;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
     }
     /**
      * Class used to manage multiple sprites on the same spritesheet
@@ -15205,6 +15285,10 @@ declare module BABYLON {
          */
         render(): void;
         private _customUpdate;
+        /**
+         * Rebuilds the manager (after a context lost, for eg)
+         */
+        rebuild(): void;
         /**
          * Release associated resources
          */
@@ -15554,7 +15638,7 @@ declare module BABYLON {
     /**
      * Strong typing of a pointer move action.
      */
-    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement) => Nullable<PickingInfo>;
+    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: Nullable<HTMLElement>) => Nullable<PickingInfo>;
     /**
      * Strong typing of a pointer up/down action.
      */
@@ -25533,6 +25617,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -25544,7 +25629,7 @@ declare module BABYLON {
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
+        SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -25672,14 +25757,14 @@ declare module BABYLON {
          */
         useMaskFromThicknessTexture: boolean;
         private _scene;
-        private _useMaskFromThicknessTextureGltf;
+        private _useGltfStyleThicknessTexture;
         /**
          * Stores the intensity of the different subsurface effects in the thickness texture. This variation
          * matches the channel-packing that is used by glTF.
          * * the red channel is the transmission/translucency intensity.
          * * the green channel is the thickness.
          */
-        useMaskFromThicknessTextureGltf: boolean;
+        useGltfStyleThicknessTexture: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         private _internalMarkScenePrePassDirty;
@@ -25715,8 +25800,9 @@ declare module BABYLON {
          * @param isFrozen defines whether the material is frozen or not.
          * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
          * @param realTimeFiltering defines whether the textures should be filtered on the fly.
-         */
-        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean): void;
+         * @param subMesh the submesh to bind data for
+        */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void;
         /**
          * Unbinds the material from the mesh.
          * @param activeEffect defines the effect that should be unbound from.
@@ -26552,6 +26638,7 @@ declare module BABYLON {
         SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_HAS_THICKNESS: boolean;
         SS_REFRACTIONMAP_3D: boolean;
         SS_REFRACTIONMAP_OPPOSITEZ: boolean;
         SS_LODINREFRACTIONALPHA: boolean;
@@ -26563,7 +26650,7 @@ declare module BABYLON {
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
+        SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -30810,6 +30897,106 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export interface IStencilState {
+        enabled: boolean;
+        mask: number;
+        func: number;
+        funcRef: number;
+        funcMask: number;
+        opStencilDepthPass: number;
+        opStencilFail: number;
+        opDepthFail: number;
+        reset(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class that holds the different stencil states of a material
+     * Usage example: https://playground.babylonjs.com/#CW5PRI#10
+     */
+    export class MaterialStencilState implements IStencilState {
+        /**
+         * Creates a material stencil state instance
+         */
+        constructor();
+        /**
+         * Resets all the stencil states to default values
+         */
+        reset(): void;
+        private _func;
+        /**
+         * Gets or sets the stencil function
+         */
+        get func(): number;
+        set func(value: number);
+        private _funcRef;
+        /**
+         * Gets or sets the stencil function reference
+         */
+        get funcRef(): number;
+        set funcRef(value: number);
+        private _funcMask;
+        /**
+         * Gets or sets the stencil function mask
+         */
+        get funcMask(): number;
+        set funcMask(value: number);
+        private _opStencilFail;
+        /**
+         * Gets or sets the operation when the stencil test fails
+         */
+        get opStencilFail(): number;
+        set opStencilFail(value: number);
+        private _opDepthFail;
+        /**
+         * Gets or sets the operation when the depth test fails
+         */
+        get opDepthFail(): number;
+        set opDepthFail(value: number);
+        private _opStencilDepthPass;
+        /**
+         * Gets or sets the operation when the stencil+depth test succeeds
+         */
+        get opStencilDepthPass(): number;
+        set opStencilDepthPass(value: number);
+        private _mask;
+        /**
+         * Gets or sets the stencil mask
+         */
+        get mask(): number;
+        set mask(value: number);
+        private _enabled;
+        /**
+         * Enables or disables the stencil test
+         */
+        get enabled(): boolean;
+        set enabled(value: boolean);
+        /**
+        * Get the current class name, useful for serialization or dynamic coding.
+        * @returns "MaterialStencilState"
+        */
+        getClassName(): string;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param stencilState defines stencil state where to copy the info
+         */
+        copyTo(stencilState: MaterialStencilState): void;
+        /**
+         * Serializes this stencil configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a stencil state configuration from a serialized object.
+         * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
+         */
+        parse(source: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
     /**
      * Options for compiling materials.
      */
@@ -31203,6 +31390,10 @@ declare module BABYLON {
          * Sets the material fill mode
          */
         set fillMode(value: number);
+        /**
+         * Gives access to the stencil properties of the material
+         */
+        readonly stencil: MaterialStencilState;
         /**
          * @hidden
          * Stores the effects for the material
@@ -34474,7 +34665,7 @@ declare module BABYLON {
         /** @hidden */
         _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material, effectiveMesh?: AbstractMesh) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _freeze(): void;
         /** @hidden */
@@ -37171,7 +37362,7 @@ declare module BABYLON {
         /** @hidden */
         _getActionManagerForTrigger(trigger?: number, initialCall?: boolean): Nullable<AbstractActionManager>;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(dispose?: boolean): void;
         /** @hidden */
         _resyncLightSources(): void;
         /** @hidden */
@@ -40422,45 +40613,39 @@ declare module BABYLON {
     /**
      * @hidden
      **/
-    export class StencilState {
+    export class StencilState implements IStencilState {
         /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
         static readonly ALWAYS: number;
         /** Passed to stencilOperation to specify that stencil value must be kept */
         static readonly KEEP: number;
         /** Passed to stencilOperation to specify that stencil value must be replaced */
         static readonly REPLACE: number;
-        protected _isStencilTestDirty: boolean;
-        protected _isStencilMaskDirty: boolean;
-        protected _isStencilFuncDirty: boolean;
-        protected _isStencilOpDirty: boolean;
-        protected _stencilTest: boolean;
-        protected _stencilMask: number;
-        protected _stencilFunc: number;
-        protected _stencilFuncRef: number;
-        protected _stencilFuncMask: number;
-        protected _stencilOpStencilFail: number;
-        protected _stencilOpDepthFail: number;
-        protected _stencilOpStencilDepthPass: number;
-        get isDirty(): boolean;
+        constructor();
+        reset(): void;
+        func: number;
         get stencilFunc(): number;
         set stencilFunc(value: number);
+        funcRef: number;
         get stencilFuncRef(): number;
         set stencilFuncRef(value: number);
+        funcMask: number;
         get stencilFuncMask(): number;
         set stencilFuncMask(value: number);
+        opStencilFail: number;
         get stencilOpStencilFail(): number;
         set stencilOpStencilFail(value: number);
+        opDepthFail: number;
         get stencilOpDepthFail(): number;
         set stencilOpDepthFail(value: number);
+        opStencilDepthPass: number;
         get stencilOpStencilDepthPass(): number;
         set stencilOpStencilDepthPass(value: number);
+        mask: number;
         get stencilMask(): number;
         set stencilMask(value: number);
+        enabled: boolean;
         get stencilTest(): boolean;
         set stencilTest(value: boolean);
-        constructor(reset?: boolean);
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
     }
 }
 declare module BABYLON {
@@ -40599,6 +40784,48 @@ declare module BABYLON {
         set(hardwareTexture: WebGLTexture): void;
         reset(): void;
         release(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class StencilStateComposer {
+        protected _isStencilTestDirty: boolean;
+        protected _isStencilMaskDirty: boolean;
+        protected _isStencilFuncDirty: boolean;
+        protected _isStencilOpDirty: boolean;
+        protected _enabled: boolean;
+        protected _mask: number;
+        protected _func: number;
+        protected _funcRef: number;
+        protected _funcMask: number;
+        protected _opStencilFail: number;
+        protected _opDepthFail: number;
+        protected _opStencilDepthPass: number;
+        stencilGlobal: IStencilState;
+        stencilMaterial: IStencilState | undefined;
+        useStencilGlobalOnly: boolean;
+        get isDirty(): boolean;
+        get func(): number;
+        set func(value: number);
+        get funcRef(): number;
+        set funcRef(value: number);
+        get funcMask(): number;
+        set funcMask(value: number);
+        get opStencilFail(): number;
+        set opStencilFail(value: number);
+        get opDepthFail(): number;
+        set opDepthFail(value: number);
+        get opStencilDepthPass(): number;
+        set opStencilDepthPass(value: number);
+        get mask(): number;
+        set mask(value: number);
+        get enabled(): boolean;
+        set enabled(value: boolean);
+        constructor(reset?: boolean);
+        reset(): void;
+        apply(gl?: WebGLRenderingContext): void;
     }
 }
 declare module BABYLON {
@@ -41022,6 +41249,8 @@ declare module BABYLON {
         protected _colorWriteChanged: boolean;
         /** @hidden */
         protected _depthCullingState: DepthCullingState;
+        /** @hidden */
+        protected _stencilStateComposer: StencilStateComposer;
         /** @hidden */
         protected _stencilState: StencilState;
         /** @hidden */
@@ -41788,6 +42017,10 @@ declare module BABYLON {
          */
         get stencilState(): StencilState;
         /**
+         * Gets the stencil state composer
+         */
+        get stencilStateComposer(): StencilStateComposer;
+        /**
          * Clears the list of texture accessible through engine.
          * This can help preventing texture load conflict due to name collision.
          */
@@ -42356,7 +42589,7 @@ declare module BABYLON {
         /** @hidden */
         _rebuild(): void;
         /** @hidden */
-        _swapAndDie(target: InternalTexture): void;
+        _swapAndDie(target: InternalTexture, swapAll?: boolean): void;
         /**
          * Dispose the current allocated resources
          */
@@ -43095,6 +43328,8 @@ declare module BABYLON {
          * Gets the list of created scenes
          */
         scenes: Scene[];
+        /** @hidden */
+        _virtualScenes: Scene[];
         /**
          * Event raised when a new scene is created
          */
@@ -43262,8 +43497,9 @@ declare module BABYLON {
          * @param force defines if states must be applied even if cache is up to date
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+         * @param stencil stencil states to set
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
         /**
          * Set the z offset to apply to current rendering
          * @param value defines the offset to apply
@@ -47222,6 +47458,7 @@ declare module BABYLON {
      */
     export class AssetContainer extends AbstractScene {
         private _wasAddedToScene;
+        private _onContextRestoredObserver;
         /**
          * The scene the AssetContainer belongs to.
          */
@@ -53261,6 +53498,11 @@ declare module BABYLON {
          */
         compensateOnFirstFrame: boolean;
         /**
+         * The last XRViewerPose from the current XRFrame
+         * @hidden
+         */
+        _lastXRViewerPose?: XRViewerPose;
+        /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
@@ -53290,6 +53532,7 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
+        dispose(): void;
         private _rotate180;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
@@ -54803,6 +55046,11 @@ declare module BABYLON {
          */
         pointer: AbstractMesh;
         /**
+         * The last XRPose the was calculated on the current XRFrame
+         * @hidden
+         */
+        _lastXRPose?: XRPose;
+        /**
          * Creates the input source object
          * @see https://doc.babylonjs.com/how_to/webxr_controllers_support
          * @param _scene the scene which the controller should be associated to
@@ -55820,6 +56068,11 @@ declare module BABYLON {
          */
         addFloorMesh(mesh: AbstractMesh): void;
         /**
+         * Add a mesh to the list of meshes blocking the teleportation ray
+         * @param mesh The mesh to add to the teleportation-blocking meshes
+         */
+        addBlockerMesh(mesh: AbstractMesh): void;
+        /**
          * Add a new snap-to point to fix teleportation to this position
          * @param newSnapPoint The new Snap-To point
          */
@@ -55832,6 +56085,11 @@ declare module BABYLON {
          * @param mesh the mesh to remove
          */
         removeFloorMesh(mesh: AbstractMesh): void;
+        /**
+         * Remove a mesh from the blocker meshes array
+         * @param mesh the mesh to remove
+         */
+        removeBlockerMesh(mesh: AbstractMesh): void;
         /**
          * Remove a mesh from the floor meshes array using its name
          * @param name the mesh name to remove
@@ -60448,27 +60706,25 @@ declare module BABYLON {
     /**
      * @hidden
      **/
-    export class WebGPUStencilState extends StencilState {
+    export class WebGPUStencilStateComposer extends StencilStateComposer {
         private _cache;
         constructor(cache: WebGPUCacheRenderPipeline);
-        get stencilFunc(): number;
-        set stencilFunc(value: number);
-        get stencilFuncRef(): number;
-        set stencilFuncRef(value: number);
-        get stencilFuncMask(): number;
-        set stencilFuncMask(value: number);
-        get stencilOpStencilFail(): number;
-        set stencilOpStencilFail(value: number);
-        get stencilOpDepthFail(): number;
-        set stencilOpDepthFail(value: number);
-        get stencilOpStencilDepthPass(): number;
-        set stencilOpStencilDepthPass(value: number);
-        get stencilMask(): number;
-        set stencilMask(value: number);
-        get stencilTest(): boolean;
-        set stencilTest(value: boolean);
+        get func(): number;
+        set func(value: number);
+        get funcMask(): number;
+        set funcMask(value: number);
+        get opStencilFail(): number;
+        set opStencilFail(value: number);
+        get opDepthFail(): number;
+        set opDepthFail(value: number);
+        get opStencilDepthPass(): number;
+        set opStencilDepthPass(value: number);
+        get mask(): number;
+        set mask(value: number);
+        get enabled(): boolean;
+        set enabled(value: boolean);
         reset(): void;
-        apply(gl: WebGLRenderingContext): void;
+        apply(gl?: WebGLRenderingContext): void;
     }
 }
 declare module BABYLON {
@@ -60901,6 +61157,8 @@ declare module BABYLON {
          * @param value True to enable, fale to disable
          */
         captureGPUFrameTime(value: boolean): void;
+        /** @hidden */
+        applyStates(): void;
         /**
          * Force the entire cache to be cleared
          * You should not have to use this function unless your engine needs to share the WebGPU context with another engine
@@ -61480,8 +61738,9 @@ declare module BABYLON {
          * @param force defines if states must be applied even if cache is up to date
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+         * @param stencil stencil states to set
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
@@ -61550,8 +61809,6 @@ declare module BABYLON {
         _bindTextureDirectly(target: number, texture: InternalTexture, forTextureDataUpdate?: boolean, force?: boolean): boolean;
         /** @hidden */
         _releaseFramebufferObjects(texture: InternalTexture): void;
-        /** @hidden */
-        applyStates(): void;
         /**
          * Gets a boolean indicating if all created effects are ready
          * @returns always true - No parallel shader compilation
@@ -61839,7 +62096,7 @@ declare module BABYLON {
         getRenderWidth(useScreen?: boolean): number;
         getRenderHeight(useScreen?: boolean): number;
         setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
         /**
          * Gets the client rect of native canvas.  Needed for InputManager.
          * @returns a client rectangle
@@ -62661,6 +62918,11 @@ declare module BABYLON {
         private _projectionTextureViewTargetVector;
         private _projectionTextureViewLightMatrix;
         private _projectionTextureProjectionLightMatrix;
+        /**
+        * Gets or sets the light projection matrix as used by the projection texture
+        */
+        get projectionTextureProjectionLightMatrix(): Matrix;
+        set projectionTextureProjectionLightMatrix(projection: Matrix);
         private _projectionTextureScalingMatrix;
         /**
          * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
@@ -65548,6 +65810,7 @@ declare module BABYLON {
          * Define the name of the lens flare system
          */
         name: string, emitter: any, scene: Scene);
+        private _createIndexBuffer;
         /**
          * Define if the lens flare system is enabled.
          */
@@ -65586,6 +65849,10 @@ declare module BABYLON {
          * @hidden
          */
         render(): boolean;
+        /**
+         * Rebuilds the lens flare system
+         */
+        rebuild(): void;
         /**
          * Dispose and release the lens flare with its associated resources.
          */
@@ -65846,6 +66113,7 @@ declare module BABYLON {
         protected _postProcessManager: PostProcessManager;
         protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
         protected _forceFullscreenViewport: boolean;
+        protected _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
         /**
          * Creates a min/max reducer
          * @param camera The camera to use for the post processes
@@ -66441,6 +66709,7 @@ declare module BABYLON {
         private _vertexBuffers;
         private _indexBuffer;
         private _fullscreenViewport;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect renderer
          * @param engine the engine to use for rendering
@@ -66544,6 +66813,7 @@ declare module BABYLON {
         set effect(effect: Effect);
         /** @hidden */
         _drawWrapper: DrawWrapper;
+        private _onContextRestoredObserver;
         /**
          * Creates an effect to be renderer
          * @param creationOptions options to create the effect
@@ -82670,10 +82940,6 @@ interface GPUAdapterLimits {
     readonly maxVertexBufferArrayStride: GPUSize32;
 }
 
-interface GPUAdapterFeatures {
-    readonly GPUFeatureName: { [name: string]: void };
-}
-
 interface Navigator {
     readonly gpu: GPU | undefined;
 }
@@ -82693,13 +82959,11 @@ interface GPURequestAdapterOptions {
 
 type GPUPowerPreference = "low-power" | "high-performance";
 
-// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features as GPUAdapterFeatures but as GPUFeatureName[]
 declare class GPUAdapter {
     // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
     private __brand: void;
     readonly name: string;
-    readonly features: GPUFeatureName[];
-    //readonly features: GPUAdapterFeatures;
+    readonly features: ReadonlySet<GPUFeatureName>;
     readonly limits: Required<GPUAdapterLimits>;
 
     requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice | null>;
@@ -82723,7 +82987,7 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     label: string | undefined;
 
     readonly adapter: GPUAdapter;
-    readonly features: GPUFeatureName[];
+    readonly features: ReadonlySet<GPUFeatureName>;
     readonly limits: Required<GPUAdapterLimits>;
 
     readonly queue: GPUQueue;
@@ -84039,6 +84303,8 @@ interface XRInputSource {
 interface XRPose {
     readonly transform: XRRigidTransform;
     readonly emulatedPosition: boolean;
+    readonly linearVelocity?: DOMPointReadOnly;
+    readonly angularVelocity?: DOMPointReadOnly;
 }
 
 interface XRWorldInformation {
@@ -84056,8 +84322,9 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // World geometries
+    // World geometries. DEPRECATED
     worldInformation?: XRWorldInformation;
+    detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
     // Image tracking
