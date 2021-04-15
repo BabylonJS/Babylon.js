@@ -337,7 +337,7 @@ export class DDSTools {
         return new Float32Array(arrayBuffer, dataOffset, dataLength);
     }
 
-    private static _GetFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
+    private static _GetFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint8Array {
         var destArray = new Uint8Array(dataLength);
         var srcData = new Float32Array(arrayBuffer, dataOffset);
         var index = 0;
@@ -359,7 +359,7 @@ export class DDSTools {
         return destArray;
     }
 
-    private static _GetHalfFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
+    private static _GetHalfFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint8Array {
         var destArray = new Uint8Array(dataLength);
         var srcData = new Uint16Array(arrayBuffer, dataOffset);
         var index = 0;

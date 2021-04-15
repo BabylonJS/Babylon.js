@@ -90,7 +90,5 @@ export class WebGPUClearQuad {
             renderPass.setBindGroup(i, bindGroups[i]);
         }
         renderPass.draw(4, 1, 0, 0);
-
-        this._engine._applyStencilRef(renderPass, true);
     }
 }

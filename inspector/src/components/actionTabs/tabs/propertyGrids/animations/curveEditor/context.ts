@@ -11,6 +11,7 @@ export class Context {
     scene: Scene;
     target: IAnimatable;
     activeAnimation: Nullable<Animation>;
+    activeColor: Nullable<string> = null;
     activeKeyPoints: Nullable<KeyPointComponent[]>;
     mainKeyPoint: Nullable<KeyPointComponent>;
     snippetId: string;
@@ -41,6 +42,8 @@ export class Context {
 
     onFrameRequired = new Observable<void>();
     onNewKeyPointRequired = new Observable<void>();
+    onFlattenTangentRequired = new Observable<void>();
+    onLinearTangentRequired = new Observable<void>();
 
     onDeleteAnimation = new Observable<Animation>();
 
@@ -58,6 +61,9 @@ export class Context {
     onSelectionRectangleMoved = new Observable<DOMRect>();
 
     onAnimationsLoaded = new Observable<void>();
+
+    onEditAnimationRequired = new Observable<Animation>();
+    onEditAnimationUIClosed = new Observable<void>();
 
     public prepare() {        
         this.isPlaying = false;

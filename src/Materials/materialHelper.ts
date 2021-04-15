@@ -14,12 +14,10 @@ import { PrePassConfiguration } from "../Materials/prePassConfiguration";
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
 import { Color3 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 import { ThinMaterialHelper } from './thinMaterialHelper';
-import { TmpVectors, Vector4 } from '../Maths/math.vector';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
@@ -29,54 +27,6 @@ import { TmpVectors, Vector4 } from '../Maths/math.vector';
  * This works by convention in BabylonJS but is meant to be use only with shader following the in place naming rules and conventions.
  */
 export class MaterialHelper {
-
-    /**
-     * Bind the current view position to an effect.
-     * @param effect The effect to be bound
-     * @param scene The scene the eyes position is used from
-     * @param variableName name of the shader variable that will hold the eye position
-     * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
-     * @return the computed eye position
-     */
-    public static BindEyePosition(effect: Nullable<Effect>, scene: Scene, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition =
-            scene._forcedViewPosition ? scene._forcedViewPosition :
-            scene._mirroredCameraPosition ? scene._mirroredCameraPosition :
-            scene.activeCamera!.globalPosition ?? (scene.activeCamera as WebVRFreeCamera).devicePosition;
-
-        const invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
-
-        TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
-
-        if (effect) {
-            if (isVector3) {
-                effect.setFloat3(variableName, TmpVectors.Vector4[0].x, TmpVectors.Vector4[0].y, TmpVectors.Vector4[0].z);
-            } else {
-                effect.setVector4(variableName, TmpVectors.Vector4[0]);
-            }
-        }
-
-        return TmpVectors.Vector4[0];
-    }
-
-    /**
-     * Update the scene ubo before it can be used in rendering processing
-     * @param scene the scene to retrieve the ubo from
-     * @returns the scene UniformBuffer
-     */
-    public static FinalizeSceneUbo(scene: Scene): UniformBuffer {
-        const ubo = scene.getSceneUniformBuffer();
-        const eyePosition = MaterialHelper.BindEyePosition(null, scene);
-        ubo.updateFloat4("vEyePosition",
-            eyePosition.x,
-            eyePosition.y,
-            eyePosition.z,
-            eyePosition.w);
-
-        ubo.update();
-
-        return ubo;
-    }
 
     /**
      * Binds the scene's uniform buffer to the effect.
@@ -851,9 +801,10 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+     * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
-        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel);
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false, receiveShadows = true): void {
+        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel, receiveShadows);
     }
 
     /**
@@ -871,7 +822,7 @@ export class MaterialHelper {
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel, mesh.receiveShadows);
         }
     }
 

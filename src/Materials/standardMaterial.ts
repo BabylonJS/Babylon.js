@@ -1344,6 +1344,7 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("bumpMatrix", 16);
         ubo.addUniform("vTangentSpaceParams", 2);
         ubo.addUniform("pointSize", 1);
+        ubo.addUniform("alphaCutOff", 1);
         ubo.addUniform("refractionMatrix", 16);
         ubo.addUniform("vRefractionInfos", 4);
         ubo.addUniform("vRefractionPosition", 3);
@@ -1351,6 +1352,7 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vSpecularColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
         ubo.addUniform("vDiffuseColor", 4);
+        ubo.addUniform("vAmbientColor", 3);
 
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
 
@@ -1471,7 +1473,7 @@ export class StandardMaterial extends PushMaterial {
                     }
 
                     if (this._hasAlphaChannel()) {
-                        effect.setFloat("alphaCutOff", this.alphaCutOff);
+                        ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
@@ -1540,10 +1542,12 @@ export class StandardMaterial extends PushMaterial {
                 if (defines.SPECULARTERM) {
                     ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                 }
-                ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
 
-                // Diffuse
+                ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
+
+                scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
+                ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
             }
 
             // Textures
@@ -1600,11 +1604,7 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.BindClipPlane(effect, scene);
 
             // Colors
-            scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-
             this.bindEyePosition(effect);
-
-            effect.setColor3("vAmbientColor", this._globalAmbientColor);
         }
 
         if (mustRebind || !this.isFrozen) {
@@ -1824,6 +1824,8 @@ export class StandardMaterial extends PushMaterial {
         result.name = name;
         result.id = name;
 
+        this.stencil.copyTo(result.stencil);
+
         return result;
     }
 
@@ -1832,7 +1834,11 @@ export class StandardMaterial extends PushMaterial {
      * @returns the serialized material object
      */
     public serialize(): any {
-        return SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
+
+        serializationObject.stencil = this.stencil.serialize();
+
+        return serializationObject;
     }
 
     /**
@@ -1843,7 +1849,13 @@ export class StandardMaterial extends PushMaterial {
      * @returns a new standard material
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
-        return SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
+
+        if (source.stencil) {
+            material.stencil.parse(source.stencil, scene, rootUrl);
+        }
+
+        return material;
     }
 
     // Flags used to enable or disable a type of texture for all Standard Materials
