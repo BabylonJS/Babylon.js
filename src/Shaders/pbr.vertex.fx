@@ -22,8 +22,8 @@ attribute vec2 uv2;
 varying vec2 vMainUV1;
 #endif
 #ifdef MAINUV2
-varying vec2 vMainUV2; 
-#endif 
+varying vec2 vMainUV2;
+#endif
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
@@ -82,41 +82,41 @@ varying vec2 vBumpUV;
 #endif
 
 #ifdef CLEARCOAT
-    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0
         varying vec2 vClearCoatUV;
     #endif
 
-    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 0 
+    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 0
         varying vec2 vClearCoatRoughnessUV;
     #endif
 
-    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
+    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0
         varying vec2 vClearCoatBumpUV;
     #endif
 
-    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0 
+    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0
         varying vec2 vClearCoatTintUV;
     #endif
 #endif
 
 #ifdef SHEEN
-    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0 
+    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0
         varying vec2 vSheenUV;
     #endif
 
-    #if defined(SHEEN_TEXTURE_ROUGHNESS) && SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 0 
+    #if defined(SHEEN_TEXTURE_ROUGHNESS) && SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 0
         varying vec2 vSheenRoughnessUV;
     #endif
 #endif
 
 #ifdef ANISOTROPIC
-    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0 
+    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0
         varying vec2 vAnisotropyUV;
     #endif
 #endif
 
 #ifdef SUBSURFACE
-    #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0 
+    #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0
         varying vec2 vThicknessUV;
     #endif
 #endif
@@ -130,7 +130,7 @@ varying vec3 vPositionW;
     varying vec3 vNormalW;
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
         varying vec3 vEnvironmentIrradiance;
-        
+
         #include<harmonicsFunctions>
     #endif
 #endif
@@ -171,14 +171,14 @@ void main(void) {
 #endif
 #ifdef UV1
     vec2 uvUpdated = uv;
-#endif  
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #ifdef REFLECTIONMAP_SKYBOX
     vPositionUVW = positionUpdated;
-#endif 
+#endif
 
 #define CUSTOM_VERTEX_UPDATE_POSITION
 
@@ -189,7 +189,7 @@ void main(void) {
 #if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
     vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
-    vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
+    vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
 #endif
 
 #include<bonesVertex>
@@ -252,13 +252,13 @@ void main(void) {
 
 #ifdef MAINUV1
     vMainUV1 = uvUpdated;
-#endif 
+#endif
 
 #ifdef MAINUV2
     vMainUV2 = uv2;
-#endif 
+#endif
 
-#if defined(ALBEDO) && ALBEDODIRECTUV == 0 
+#if defined(ALBEDO) && ALBEDODIRECTUV == 0
     if (vAlbedoInfos.x == 0.)
     {
         vAlbedoUV = vec2(albedoMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -280,7 +280,7 @@ void main(void) {
 	}
 #endif
 
-#if defined(AMBIENT) && AMBIENTDIRECTUV == 0 
+#if defined(AMBIENT) && AMBIENTDIRECTUV == 0
     if (vAmbientInfos.x == 0.)
     {
         vAmbientUV = vec2(ambientMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -291,7 +291,7 @@ void main(void) {
     }
 #endif
 
-#if defined(OPACITY) && OPACITYDIRECTUV == 0 
+#if defined(OPACITY) && OPACITYDIRECTUV == 0
     if (vOpacityInfos.x == 0.)
     {
         vOpacityUV = vec2(opacityMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -302,7 +302,7 @@ void main(void) {
     }
 #endif
 
-#if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0 
+#if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0
     if (vEmissiveInfos.x == 0.)
     {
         vEmissiveUV = vec2(emissiveMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -313,7 +313,7 @@ void main(void) {
     }
 #endif
 
-#if defined(LIGHTMAP) && LIGHTMAPDIRECTUV == 0 
+#if defined(LIGHTMAP) && LIGHTMAPDIRECTUV == 0
     if (vLightmapInfos.x == 0.)
     {
         vLightmapUV = vec2(lightmapMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -324,7 +324,7 @@ void main(void) {
     }
 #endif
 
-#if defined(REFLECTIVITY) && REFLECTIVITYDIRECTUV == 0 
+#if defined(REFLECTIVITY) && REFLECTIVITYDIRECTUV == 0
     if (vReflectivityInfos.x == 0.)
     {
         vReflectivityUV = vec2(reflectivityMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -335,7 +335,7 @@ void main(void) {
     }
 #endif
 
-#if defined(MICROSURFACEMAP) && MICROSURFACEMAPDIRECTUV == 0 
+#if defined(MICROSURFACEMAP) && MICROSURFACEMAPDIRECTUV == 0
     if (vMicroSurfaceSamplerInfos.x == 0.)
     {
         vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -346,7 +346,7 @@ void main(void) {
     }
 #endif
 
-#if defined(METALLIC_REFLECTANCE) && METALLIC_REFLECTANCEDIRECTUV == 0 
+#if defined(METALLIC_REFLECTANCE) && METALLIC_REFLECTANCEDIRECTUV == 0
     if (vMetallicReflectanceInfos.x == 0.)
     {
         vMetallicReflectanceUV = vec2(metallicReflectanceMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -357,7 +357,7 @@ void main(void) {
     }
 #endif
 
-#if defined(BUMP) && BUMPDIRECTUV == 0 
+#if defined(BUMP) && BUMPDIRECTUV == 0
     if (vBumpInfos.x == 0.)
     {
         vBumpUV = vec2(bumpMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -369,7 +369,7 @@ void main(void) {
 #endif
 
 #ifdef CLEARCOAT
-    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0
         if (vClearCoatInfos.x == 0.)
         {
             vClearCoatUV = vec2(clearCoatMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -380,7 +380,7 @@ void main(void) {
         }
     #endif
 
-    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 0 
+    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 0
         if (vClearCoatInfos.z == 0.)
         {
             vClearCoatRoughnessUV = vec2(clearCoatRoughnessMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -391,7 +391,7 @@ void main(void) {
         }
     #endif
 
-    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
+    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0
         if (vClearCoatBumpInfos.x == 0.)
         {
             vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -402,7 +402,7 @@ void main(void) {
         }
     #endif
 
-    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0 
+    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0
         if (vClearCoatTintInfos.x == 0.)
         {
             vClearCoatTintUV = vec2(clearCoatTintMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -415,7 +415,7 @@ void main(void) {
 #endif
 
 #ifdef SHEEN
-    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0 
+    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0
         if (vSheenInfos.x == 0.)
         {
             vSheenUV = vec2(sheenMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -426,7 +426,7 @@ void main(void) {
         }
     #endif
 
-    #if defined(SHEEN_TEXTURE_ROUGHNESS) && SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 0 
+    #if defined(SHEEN_TEXTURE_ROUGHNESS) && SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 0
         if (vSheenInfos.z == 0.)
         {
             vSheenRoughnessUV = vec2(sheenRoughnessMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -439,7 +439,7 @@ void main(void) {
 #endif
 
 #ifdef ANISOTROPIC
-    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0 
+    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0
         if (vAnisotropyInfos.x == 0.)
         {
             vAnisotropyUV = vec2(anisotropyMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -452,7 +452,7 @@ void main(void) {
 #endif
 
 #ifdef SUBSURFACE
-    #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0 
+    #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0
         if (vThicknessInfos.x == 0.)
         {
             vThicknessUV = vec2(thicknessMatrix * vec4(uvUpdated, 1.0, 0.0));

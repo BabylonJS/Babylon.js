@@ -82,6 +82,7 @@ class _InstanceDataStorage {
     public manualUpdate: boolean;
     public previousRenderId: number;
     public needsPreviousMatrices: boolean;
+    public masterMeshPreviousWorldMatrix: Nullable<Matrix>;
 }
 
 /**
@@ -106,6 +107,7 @@ class _ThinInstanceDataStorage {
     public previousMatrixData: Nullable<Float32Array>;
     public boundingVectors: Array<Vector3> = [];
     public worldMatrices: Nullable<Matrix[]> = null;
+    public masterMeshPreviousWorldMatrix: Nullable<Matrix>;
     public needsPreviousMatrices: boolean = false;
 }
 
@@ -227,7 +229,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Indicates that the instanced meshes should be sorted from back to front before rendering if their material is transparent
      */
-     public static INSTANCEDMESH_SORT_TRANSPARENT = false;
+    public static INSTANCEDMESH_SORT_TRANSPARENT = false;
 
     /**
      * Gets the default side orientation.
@@ -1732,13 +1734,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let renderSelf = batch.renderSelf[subMesh._id];
 
-        const needUpdateBuffer = !instancesBuffer || 
-            currentInstancesBufferSize !== instanceStorage.instancesBufferSize || 
-            (instanceStorage.needsPreviousMatrices && !instanceStorage.instancesPreviousBuffer);
+        const needUpdateBuffer = !instancesBuffer || currentInstancesBufferSize !== instanceStorage.instancesBufferSize || (instanceStorage.needsPreviousMatrices && !instanceStorage.instancesPreviousBuffer);
 
         if (!this._instanceDataStorage.manualUpdate && (!instanceStorage.isFrozen || needUpdateBuffer)) {
             var world = this._effectiveMesh.getWorldMatrix();
             if (renderSelf) {
+                if (instanceStorage.needsPreviousMatrices) {
+                    if (!instanceStorage.masterMeshPreviousWorldMatrix) {
+                        instanceStorage.masterMeshPreviousWorldMatrix = world.clone();
+                        instanceStorage.masterMeshPreviousWorldMatrix.copyToArray(instanceStorage.instancesPreviousData, offset);
+                    } else {
+                        instanceStorage.masterMeshPreviousWorldMatrix.copyToArray(instanceStorage.instancesPreviousData, offset);
+                        instanceStorage.masterMeshPreviousWorldMatrix.copyFrom(world);
+                    }
+                }
                 world.copyToArray(instanceStorage.instancesData, offset);
                 offset += 16;
                 instancesCount++;
@@ -1832,14 +1841,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Draw
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
-        
+
         // Write current matrices as previous matrices in case of manual update
         // Default behaviour when previous matrices are not specified explicitly
         // Will break if instances number/order changes
         if (!needUpdateBuffer && this._instanceDataStorage.manualUpdate && !this._instanceDataStorage.isFrozen) {
             instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
-        
+
         engine.unbindInstanceAttributes();
         return this;
     }
@@ -1858,10 +1867,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Write current matrices as previous matrices
         // Default behaviour when previous matrices are not specified explicitly
         // Will break if instances number/order changes
-        if (this._thinInstanceDataStorage.needsPreviousMatrices && 
-            !this._thinInstanceDataStorage.previousMatrixData && 
-            this._thinInstanceDataStorage.matrixData) {
-                if (!this._thinInstanceDataStorage.previousMatrixBuffer) {   
+        if (this._thinInstanceDataStorage.needsPreviousMatrices && !this._thinInstanceDataStorage.previousMatrixData && this._thinInstanceDataStorage.matrixData) {
+            if (!this._thinInstanceDataStorage.previousMatrixBuffer) {
                 this._thinInstanceDataStorage.previousMatrixBuffer = this._createMatrixBuffer("previousWorld", this._thinInstanceDataStorage.matrixData, false);
             } else {
                 this._thinInstanceDataStorage.previousMatrixBuffer!.updateDirectly(this._thinInstanceDataStorage.matrixData, 0, instancesCount);

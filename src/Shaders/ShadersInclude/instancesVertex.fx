@@ -1,14 +1,15 @@
 ﻿#ifdef INSTANCES
 	mat4 finalWorld = mat4(world0, world1, world2, world3);
 	#if defined(PREPASS_VELOCITY) || defined(VELOCITY)
-		mat4 previousWorld = mat4(previousWorld0, previousWorld1, previousWorld2, previousWorld3);
+		mat4 finalPreviousWorld = mat4(previousWorld0, previousWorld1, previousWorld2, previousWorld3);
 	#endif
     #ifdef THIN_INSTANCES
 	    finalWorld = world * finalWorld;
 		#if defined(PREPASS_VELOCITY) || defined(VELOCITY)
-			previousWorld = world * previousWorld;
+			finalPreviousWorld = previousWorld * finalPreviousWorld;
 		#endif
     #endif
 #else
 	mat4 finalWorld = world;
+    mat4 finalPreviousWorld = previousWorld;
 #endif
