@@ -17,6 +17,7 @@ import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Button } from "babylonjs-gui/2D/controls/button";
+import { Container } from "babylonjs-gui/2D/controls/container";
 import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 require("./workbenchCanvas.scss");
 
@@ -115,11 +116,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.globalState.guiTexture.parseContent(serializationObject);
+        this.loadToEditor();
     }
 
     async loadFromSnippet(snippedID: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
+        this.loadToEditor();
+    }
+
+    loadToEditor() {
+        var children = this.globalState.guiTexture.getChildren();
+        children[0].children.forEach(guiElement => {
+            this.createNewGuiNode(guiElement);
+        });
     }
 
     changeSelectionHighlight(value: boolean)
@@ -156,6 +166,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
+    public isContainer(guiControl: Control) {
+        switch (guiControl.typeName) {
+            case "Button":
+            case "StackPanel":
+            case "Rectangle":
+            case "Ellipse":
+                return true;
+            default:
+                return false;
+        }
+    }
+
     createNewGuiNode(guiControl: Control) {
         this.enableEditorProperties(guiControl);
 
@@ -176,6 +198,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.onPointerOutObservable.add((evt) => {
             this.isOverGUINode = false;
         });
+
+        if (this.isContainer(guiControl)) {
+            (guiControl as Container).children.forEach(child => {
+                this.createNewGuiNode(child);
+            });
+        }
         return guiControl;
     }
 
@@ -202,7 +230,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public clicked: boolean;
 
     public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
-        //if (!this.clicked && !ignorClick) return false;
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
@@ -293,7 +320,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         light.intensity = 0.9;
 
         let textureSize = 1200;
-        this._textureMesh = Mesh.CreateGround("earth", 1, 1, 1, this._scene);
+        this._textureMesh = Mesh.CreateGround("GuiCanvas", 1, 1, 1, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
@@ -315,10 +342,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
-        engine.runRenderLoop(() => {
-            this._scene.render();
-        });
-    }
+        engine.runRenderLoop(() => { this._scene.render() });
+        this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
+    };
 
     //Add map-like controls to an ArcRotate camera
     addControls(scene: Scene, camera: ArcRotateCamera) {

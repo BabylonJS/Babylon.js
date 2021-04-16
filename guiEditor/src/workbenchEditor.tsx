@@ -8,6 +8,7 @@ import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
+import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { HeaderComponent } from "./components/headerComponent";
 
@@ -276,12 +277,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     {/* Node creation menu */}
 
                     <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
-
+                    <SceneExplorerComponent globalState={this.props.globalState}></SceneExplorerComponent>
                     {/* The gui workbench diagram */}
                     <div
                         className="diagram-container"
                     >
-                        <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
+                    <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                     </div>
 
                     <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>

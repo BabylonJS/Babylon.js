@@ -26,7 +26,6 @@ export class GUINodeTools {
                 element.width = "5%";
                 element.height = "5%";
                 element.color = "#cccccc";
-                element.isPointerBlocker = true;
                 return element;
             case "ColorPicker":
                 element = new ColorPicker("ColorPicker");
@@ -87,12 +86,6 @@ export class GUINodeTools {
                 break;
             case "Grid":
                 element = new Grid("Grid");
-                element.addColumnDefinition(50, false);
-                element.addColumnDefinition(0.5);
-                element.addColumnDefinition(0.5);
-                element.addColumnDefinition(50, false);
-                element.addRowDefinition(0.5);
-                element.addRowDefinition(0.5);
                 element.isHighlighted = true;
                 element.isPointerBlocker = true;
                 return element;
