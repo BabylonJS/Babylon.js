@@ -397,7 +397,13 @@ export class FileTools {
                         request.removeEventListener("readystatechange", onReadyStateChange);
 
                         if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!DomManagement.IsWindowObjectExist() || FileTools.IsFileURL()))) {
-                            onSuccess(useArrayBuffer ? request.response : request.responseText, request);
+                            try {
+                                onSuccess(useArrayBuffer ? request.response : request.responseText, request);
+                            } catch (e) {
+                                if (onError) {
+                                    onError(e);
+                                }
+                            }
                             return;
                         }
 
