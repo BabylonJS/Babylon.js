@@ -1,7 +1,6 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
-
         {
             "title": "Sprites",
             "playgroundId": "#ZX8DJ3#1",
@@ -1239,17 +1238,17 @@
         },
         {
             "title": "Thin instances + motion blur",
-            "renderCount": 10,
-            "playgroundId": "#HJGC2G#51",
+            "renderCount": 30,
+            "playgroundId": "#HJGC2G#60",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-mb.png"
         },
         {
             "title": "Thin instances + motion blur + manual",
-            "renderCount": 10,
-            "playgroundId": "#HJGC2G#52",
+            "renderCount": 30,
+            "playgroundId": "#HJGC2G#61",
             "excludedEngines": ["webgl1"],
-            "referenceImage": "thin-instances-mb.png"
+            "referenceImage": "thin-instances-mb-manual.png"
         },
         {
             "title": "Thin instances + dynamic buffer resize",
