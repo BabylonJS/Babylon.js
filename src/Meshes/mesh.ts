@@ -1871,7 +1871,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Will break if instances number/order changes
         if (this._scene.needsPreviousWorldMatrices && !this._thinInstanceDataStorage.previousMatrixData && this._thinInstanceDataStorage.matrixData) {
             if (!this._thinInstanceDataStorage.previousMatrixBuffer) {
-                this._thinInstanceDataStorage.previousMatrixBuffer = this._createMatrixBuffer("previousWorld", this._thinInstanceDataStorage.matrixData, false);
+                this._thinInstanceDataStorage.previousMatrixBuffer = this._thinInstanceCreateMatrixBuffer("previousWorld", this._thinInstanceDataStorage.matrixData, false);
             } else {
                 this._thinInstanceDataStorage.previousMatrixBuffer!.updateDirectly(this._thinInstanceDataStorage.matrixData, 0, instancesCount);
             }
