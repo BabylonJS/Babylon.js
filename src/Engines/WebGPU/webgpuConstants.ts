@@ -47,7 +47,7 @@ export enum TextureUsage {
     CopyDst = 2,
     Sampled = 4,
     Storage = 8,
-    OutputAttachment = 16
+    RenderAttachment = 16
 }
 
 /** @hidden */
