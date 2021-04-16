@@ -1,6 +1,7 @@
 import { Engine } from "babylonjs/Engines/engine";
 import * as React from "react";
 import { GlobalState } from '../globalState';
+import { FileButtonLineComponent } from "../sharedUiComponents/lines/fileButtonLineComponent";
 
 interface ICommandDropdownComponentProps {
     globalState: GlobalState;
@@ -10,6 +11,7 @@ interface ICommandDropdownComponentProps {
     items: {
         label: string,
         icon?: string,
+        fileButton?: boolean
         onClick?: () => void, 
         onCheck?: (value: boolean) => void, 
         storeKey?: string, 
@@ -73,16 +75,17 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                             <div className={"command-dropdown-content sub1" + (this.props.toRight ? " toRight" : "")}>
                                 {
                                     this.props.items.map(m => {
+                                        if(!m.fileButton)
+                                        {
                                         return (
                                             <div className={"command-dropdown-label" + (m.isActive ? " active" : "")} key={m.label} onClick={() => {
                                                 if (!m.onClick) {
-                                                   
                                                     this.forceUpdate();
                                                     return;
                                                 }
                                                 if (!m.subItems) {
                                                     m.onClick();
-                                                 
+                                                    
                                                     this.setState({isExpanded: false, activeState: m.label});
                                                 }
                                             }} title={m.label}>
@@ -128,6 +131,13 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                 }
                                             </div>
                                         )
+                                        }
+                                        else 
+                                        {
+                                            return (
+                                            <FileButtonLineComponent label="Load" onClick={(file) => m.onClick} accept=".json" />
+                                            )
+                                        }
                                     })
                                 }
                             </div>

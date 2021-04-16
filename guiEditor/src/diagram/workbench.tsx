@@ -42,11 +42,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _scene: Scene;
     private _selectedGuiNodes: Control[] = [];
     private _ctrlKeyIsPressed = false;
-
+    private _forcePanning = false;
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
     private _panning: boolean;
+    private _forceZooming: any;
 
     public get globalState() {
         return this.props.globalState;
@@ -78,6 +79,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     this.changeSelectionHighlight(true);
                 }
             }
+        });
+
+        props.globalState.onPanObservable.add( () => {
+            this._forcePanning = true;
+        });
+        
+        props.globalState.onSelectionObservable.add( () => {
+            this._forcePanning = false;
+        });
+
+        props.globalState.onZoomObservable.add( () => {
+            this._forceZooming = !this._forceZooming;
         });
 
         this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
@@ -283,7 +296,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._textureMesh = Mesh.CreateGround("earth", 1, 1, 1, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
-        this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize);
+        this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this._textureMesh.showBoundingBox = true;
 
         var background =  new Rectangle("Rectangle");
@@ -348,11 +361,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
             removeObservers();
-            if (p.event.button !== 0) {
+            if (p.event.button !== 0 || this._forcePanning) {
                 initialPos = this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
                 this._panning = true;
-            } else {
+            }
+            else if(this._forceZooming) {
+                scene.onPointerObservable.add(zoomFn, PointerEventTypes.POINTERMOVE);
+                this._panning = false;
+            }
+            else {
+
                 this._panning = false;
             }
         }, PointerEventTypes.POINTERDOWN);
