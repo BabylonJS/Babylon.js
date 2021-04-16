@@ -1,9 +1,11 @@
+import { Constants } from '../Engines/constants';
 import { Engine } from '../Engines/engine';
-import { Observer } from '../Misc/observable';
+import { IEvent, IPointerEvent } from '../Events/deviceInputEvents';
+import { Observable, Observer } from '../Misc/observable';
 import { Tools } from '../Misc/tools';
-import { IDisposable } from '../scene';
 import { Nullable } from '../types';
 import { DeviceType, PointerInput } from './InputDevices/deviceEnums';
+import { IDeviceEvent, IDeviceInputSystem } from './Interfaces/inputSystem';
 
 /** @hidden */
 declare const _native: any;
@@ -14,42 +16,19 @@ declare const _native: any;
  * will use.  This class assumes that there will only be one
  * pointer device and one keyboard.
  */
-export class DeviceInputSystem implements IDisposable {
-
+export class DeviceInputSystem implements IDeviceInputSystem {
     /**
-     * Returns onDeviceConnected callback property
-     * @returns Callback with function to execute when a device is connected
+     * Observable for devices being connected
      */
-    public get onDeviceConnected() { return this._onDeviceConnected; }
-
+    onDeviceConnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
     /**
-     * Sets callback function when a device is connected and executes against all connected devices
-     * @param callback Function to execute when a device is connected
+     * Observable for devices being disconnected
      */
-    public set onDeviceConnected(callback) {
-        this._onDeviceConnected = callback;
-
-        // Iterate through each active device and rerun new callback
-        for (let deviceType = 0; deviceType < this._inputs.length; deviceType++) {
-            if (this._inputs[deviceType]) {
-                for (let deviceSlot = 0; deviceSlot < this._inputs[deviceType].length; deviceSlot++) {
-                    if (this._inputs[deviceType][deviceSlot]) {
-                        this._onDeviceConnected(deviceType, deviceSlot);
-                    }
-                }
-            }
-        }
-    }
-
+    onDeviceDisconnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
     /**
-     * Callback to be triggered when a device is disconnected
+     * Observable for changes to device input
      */
-    public onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
-
-    /**
-     * Callback to be triggered when event driven input is updated
-     */
-    public onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
+    onInputChangedObservable: Observable<IDeviceEvent>;
 
     // Private Members
     private _inputs: Array<Array<Array<number>>> = [];
@@ -75,7 +54,7 @@ export class DeviceInputSystem implements IDisposable {
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
 
-    private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
+    //private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
 
     private static _MAX_KEYCODES: number = 255;
     private static _MAX_POINTER_INPUTS: number = Object.keys(PointerInput).length / 2;
@@ -86,6 +65,22 @@ export class DeviceInputSystem implements IDisposable {
         const inputElement = engine.getInputElement();
         this._eventPrefix = Tools.GetPointerPrefix(engine);
         this._engine = engine;
+
+        this.onDeviceConnectedObservable = new Observable((observer) => {
+            // Iterate through each active device and rerun new callback
+            for (let deviceType = 0; deviceType < this._inputs.length; deviceType++) {
+                if (this._inputs[deviceType]) {
+                    for (let deviceSlot = 0; deviceSlot < this._inputs[deviceType].length; deviceSlot++) {
+                        if (this._inputs[deviceType][deviceSlot]) {
+                            this.onDeviceConnectedObservable.notifyObserver(observer, { deviceType, deviceSlot });
+                        }
+                    }
+                }
+            }
+        });
+
+        this.onDeviceDisconnectedObservable = new Observable();
+        this.onInputChangedObservable = new Observable();
 
         if (inputElement) {
             this._elementToAttachTo = inputElement;
@@ -154,6 +149,11 @@ export class DeviceInputSystem implements IDisposable {
      * Dispose of all the eventlisteners
      */
     public dispose() {
+        // Observables
+        this.onDeviceConnectedObservable.clear();
+        this.onDeviceDisconnectedObservable.clear();
+        this.onInputChangedObservable.clear();
+
         // Blur Events
         this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
         this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
@@ -253,7 +253,7 @@ export class DeviceInputSystem implements IDisposable {
             }
 
             this._inputs[deviceType][deviceSlot] = device;
-            this.onDeviceConnected(deviceType, deviceSlot);
+            this.onDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
         }
     }
 
@@ -265,7 +265,7 @@ export class DeviceInputSystem implements IDisposable {
     private _unregisterDevice(deviceType: DeviceType, deviceSlot: number) {
         if (this._inputs[deviceType][deviceSlot]) {
             delete this._inputs[deviceType][deviceSlot];
-            this.onDeviceDisconnected(deviceType, deviceSlot);
+            this.onDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
         }
     }
 
@@ -282,9 +282,15 @@ export class DeviceInputSystem implements IDisposable {
             const kbKey = this._inputs[DeviceType.Keyboard][0];
             if (kbKey) {
                 kbKey[evt.keyCode] = 1;
-                if (this.onInputChanged) {
-                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 0, kbKey[evt.keyCode], evt);
-                }
+
+                let deviceEvent = evt as IDeviceEvent;
+                deviceEvent.deviceType = DeviceType.Keyboard;
+                deviceEvent.deviceSlot = 0;
+                deviceEvent.inputIndex = evt.keyCode;
+                deviceEvent.previousState = 0;
+                deviceEvent.currentState = kbKey[evt.keyCode];
+
+                this.onInputChangedObservable.notifyObservers(deviceEvent);
             }
         });
 
@@ -297,9 +303,15 @@ export class DeviceInputSystem implements IDisposable {
             const kbKey = this._inputs[DeviceType.Keyboard][0];
             if (kbKey) {
                 kbKey[evt.keyCode] = 0;
-                if (this.onInputChanged) {
-                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 1, kbKey[evt.keyCode], evt);
-                }
+
+                let deviceEvent = evt as IDeviceEvent;
+                deviceEvent.deviceType = DeviceType.Keyboard;
+                deviceEvent.deviceSlot = 0;
+                deviceEvent.inputIndex = evt.keyCode;
+                deviceEvent.previousState = 1;
+                deviceEvent.currentState = kbKey[evt.keyCode];
+
+                this.onInputChangedObservable.notifyObservers(deviceEvent);
             }
         });
 
@@ -349,31 +361,53 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[PointerInput.DeltaHorizontal] = evt.movementX;
                 pointer[PointerInput.DeltaVertical] = evt.movementY;
 
-                if (this.onInputChanged) {
-                    // The browser might use a move event in case
-                    // of simultaneous mouse buttons click for instance. So
-                    // in this case we stil need to propagate it.
-                    let fireFakeMove = true;
-                    if (previousHorizontal !== evt.clientX) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal], evt);
-                        fireFakeMove = false;
-                    }
-                    if (previousVertical !== evt.clientY) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical], evt);
-                        fireFakeMove = false;
-                    }
-                    if (pointer[PointerInput.DeltaHorizontal] !== 0) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaHorizontal, previousDeltaHorizontal, pointer[PointerInput.DeltaHorizontal], evt);
-                        fireFakeMove = false;
-                    }
-                    if (pointer[PointerInput.DeltaVertical] !== 0) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaVertical, previousDeltaVertical, pointer[PointerInput.DeltaVertical], evt);
-                        fireFakeMove = false;
-                    }
-                    // Lets Propagate the event for move with same position.
-                    if (fireFakeMove) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.FakeMove, 0, 0, evt);
-                    }
+                let deviceEvent = evt as IDeviceEvent;
+                deviceEvent.deviceType = deviceType;
+                deviceEvent.deviceSlot = deviceSlot;
+
+                // The browser might use a move event in case
+                // of simultaneous mouse buttons click for instance. So
+                // in this case we stil need to propagate it.
+                let fireFakeMove = true;
+                if (previousHorizontal !== evt.clientX) {
+                    deviceEvent.inputIndex = PointerInput.Horizontal;
+                    deviceEvent.previousState = previousHorizontal;
+                    deviceEvent.currentState = pointer[PointerInput.Horizontal];
+
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    fireFakeMove = false;
+                }
+                if (previousVertical !== evt.clientY) {
+                    deviceEvent.inputIndex = PointerInput.Vertical;
+                    deviceEvent.previousState = previousVertical;
+                    deviceEvent.currentState = pointer[PointerInput.Vertical];
+
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    fireFakeMove = false;
+                }
+                if (pointer[PointerInput.DeltaHorizontal] !== 0) {
+                    deviceEvent.inputIndex = PointerInput.DeltaHorizontal;
+                    deviceEvent.previousState = previousDeltaHorizontal;
+                    deviceEvent.currentState = pointer[PointerInput.DeltaHorizontal];
+
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    fireFakeMove = false;
+                }
+                if (pointer[PointerInput.DeltaVertical] !== 0) {
+                    deviceEvent.inputIndex = PointerInput.DeltaVertical;
+                    deviceEvent.previousState = previousDeltaVertical;
+                    deviceEvent.currentState = pointer[PointerInput.DeltaVertical];
+
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    fireFakeMove = false;
+                }
+                // Lets Propagate the event for move with same position.
+                if (fireFakeMove) {
+                    deviceEvent.inputIndex = PointerInput.FakeMove;
+                    deviceEvent.previousState = 0;
+                    deviceEvent.currentState = 0;
+
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
                 }
             }
         });
@@ -400,15 +434,29 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[PointerInput.Vertical] = evt.clientY;
                 pointer[evt.button + 2] = 1;
 
-                if (this.onInputChanged) {
-                    if (previousHorizontal !== evt.clientX) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal], evt);
-                    }
-                    if (previousVertical !== evt.clientY) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical], evt);
-                    }
-                    this.onInputChanged(deviceType, deviceSlot, evt.button + 2, previousButton, pointer[evt.button + 2], evt);
+                let deviceEvent = evt as IDeviceEvent;
+                deviceEvent.deviceType = deviceType;
+                deviceEvent.deviceSlot = deviceSlot;
+
+                if (previousHorizontal !== evt.clientX) {
+                    deviceEvent.inputIndex = PointerInput.Horizontal;
+                    deviceEvent.previousState = previousHorizontal;
+                    deviceEvent.currentState = pointer[PointerInput.Horizontal];
+
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
                 }
+                if (previousVertical !== evt.clientY) {
+                    deviceEvent.inputIndex = PointerInput.Vertical;
+                    deviceEvent.previousState = previousVertical;
+                    deviceEvent.currentState = pointer[PointerInput.Vertical];
+
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                }
+
+                deviceEvent.inputIndex = evt.button + 2;
+                deviceEvent.previousState = previousButton;
+                deviceEvent.currentState = pointer[evt.button + 2];
+                this.onInputChangedObservable.notifyObservers(deviceEvent);
             }
         });
 
@@ -426,15 +474,29 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[PointerInput.Vertical] = evt.clientY;
                 pointer[evt.button + 2] = 0;
 
-                if (this.onInputChanged) {
-                    if (previousHorizontal !== evt.clientX) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal], evt);
-                    }
-                    if (previousVertical !== evt.clientY) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical], evt);
-                    }
-                    this.onInputChanged(deviceType, deviceSlot, evt.button + 2, previousButton, pointer[evt.button + 2], evt);
+                let deviceEvent = evt as IDeviceEvent;
+                deviceEvent.deviceType = deviceType;
+                deviceEvent.deviceSlot = deviceSlot;
+
+                if (previousHorizontal !== evt.clientX) {
+                    deviceEvent.inputIndex = PointerInput.Horizontal;
+                    deviceEvent.previousState = previousHorizontal;
+                    deviceEvent.currentState = pointer[PointerInput.Horizontal];
+
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
                 }
+                if (previousVertical !== evt.clientY) {
+                    deviceEvent.inputIndex = PointerInput.Vertical;
+                    deviceEvent.previousState = previousVertical;
+                    deviceEvent.currentState = pointer[PointerInput.Vertical];
+
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                }
+
+                deviceEvent.inputIndex = evt.button + 2;
+                deviceEvent.previousState = previousButton;
+                deviceEvent.currentState = pointer[evt.button + 2];
+                this.onInputChangedObservable.notifyObservers(deviceEvent);
 
                 // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
                 if (evt.pointerType !== "mouse") {
@@ -479,9 +541,14 @@ export class DeviceInputSystem implements IDisposable {
                     if (pointer[i + 2] === 1) {
                         pointer[i + 2] = 0;
 
-                        if (this.onInputChanged) {
-                            this.onInputChanged(DeviceType.Mouse, 0, i + 2, 1, pointer[i + 2]);
-                        }
+                        const evt: IEvent = this._createPointerUpEvent(DeviceType.Mouse, 0, i + 2);
+                        const deviceEvent = evt as IDeviceEvent;
+                        deviceEvent.deviceType = DeviceType.Mouse;
+                        deviceEvent.deviceSlot = 0;
+                        deviceEvent.inputIndex = i + 2;
+                        deviceEvent.currentState = pointer[i + 2];
+                        deviceEvent.previousState = 1;
+                        this.onInputChangedObservable.notifyObservers(deviceEvent);
                     }
                 }
             }
@@ -494,9 +561,14 @@ export class DeviceInputSystem implements IDisposable {
                     if (pointer[i]?.[PointerInput.LeftClick] === 1) {
                         pointer[i][PointerInput.LeftClick] = 0;
 
-                        if (this.onInputChanged) {
-                            this.onInputChanged(DeviceType.Touch, i, PointerInput.LeftClick, 1, pointer[i][PointerInput.LeftClick]);
-                        }
+                        const evt: IEvent = this._createPointerUpEvent(DeviceType.Touch, i, PointerInput.LeftClick);
+                        const deviceEvent = evt as IDeviceEvent;
+                        deviceEvent.deviceType = DeviceType.Mouse;
+                        deviceEvent.deviceSlot = i;
+                        deviceEvent.inputIndex = PointerInput.LeftClick;
+                        deviceEvent.currentState = pointer[i][PointerInput.LeftClick];
+                        deviceEvent.previousState = 1;
+                        this.onInputChangedObservable.notifyObservers(deviceEvent);
 
                         this._unregisterDevice(DeviceType.Touch, i);
                     }
@@ -528,16 +600,27 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[PointerInput.MouseWheelY] = evt.deltaY || evt.wheelDelta || 0;
                 pointer[PointerInput.MouseWheelZ] = evt.deltaZ || 0;
 
-                if (this.onInputChanged) {
-                    if (pointer[PointerInput.MouseWheelX] !== 0) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelX, previousWheelScrollX, pointer[PointerInput.MouseWheelX], evt);
-                    }
-                    if (pointer[PointerInput.MouseWheelY] !== 0) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelY, previousWheelScrollY, pointer[PointerInput.MouseWheelY], evt);
-                    }
-                    if (pointer[PointerInput.MouseWheelZ] !== 0) {
-                        this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelZ, previousWheelScrollZ, pointer[PointerInput.MouseWheelZ], evt);
-                    }
+                let deviceEvent = evt as IDeviceEvent;
+                deviceEvent.deviceType = deviceType;
+                deviceEvent.deviceSlot = deviceSlot;
+
+                if (pointer[PointerInput.MouseWheelX] !== 0) {
+                    deviceEvent.inputIndex = PointerInput.MouseWheelX;
+                    deviceEvent.previousState = previousWheelScrollX;
+                    deviceEvent.currentState = pointer[PointerInput.MouseWheelX];
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                }
+                if (pointer[PointerInput.MouseWheelY] !== 0) {
+                    deviceEvent.inputIndex = PointerInput.MouseWheelY;
+                    deviceEvent.previousState = previousWheelScrollY;
+                    deviceEvent.currentState = pointer[PointerInput.MouseWheelY];
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                }
+                if (pointer[PointerInput.MouseWheelZ] !== 0) {
+                    deviceEvent.inputIndex = PointerInput.MouseWheelZ;
+                    deviceEvent.previousState = previousWheelScrollZ;
+                    deviceEvent.currentState = pointer[PointerInput.MouseWheelZ];
+                    this.onInputChangedObservable.notifyObservers(deviceEvent);
                 }
             }
         });
@@ -602,6 +685,52 @@ export class DeviceInputSystem implements IDisposable {
                 device[inputIndex] = gp.buttons[inputIndex].value;
             }
         }
+    }
+
+    /**
+     * Create an synthetic event to be consumed by pointerBlurEvent function
+     * @param deviceType Type of Device
+     * @param deviceSlot Slot (ID) of device
+     * @param inputIndex Input event is being built for
+     * @returns IPointerEvent with all needed data
+     */
+    private _createPointerUpEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: PointerInput): IPointerEvent {
+        const altKey = this._inputs[DeviceType.Keyboard]?.[0][Constants.INPUT_ALT_KEY] === 1;
+        const ctrlKey = this._inputs[DeviceType.Keyboard]?.[0][Constants.INPUT_CTRL_KEY] === 1;
+        const metaKey = this._inputs[DeviceType.Keyboard]?.[0][Constants.INPUT_META_KEY1] === 1 ||
+            this._inputs[DeviceType.Keyboard]?.[0][Constants.INPUT_META_KEY2] === 1 ||
+            this._inputs[DeviceType.Keyboard]?.[0][Constants.INPUT_META_KEY3] === 1;
+        const shiftKey = this._inputs[DeviceType.Keyboard]?.[0][Constants.INPUT_SHIFT_KEY] === 1;
+        const pointerX = this._inputs[deviceType][deviceSlot][PointerInput.Horizontal];
+        const pointerY = this._inputs[deviceType][deviceSlot][PointerInput.Vertical];
+        // If dealing with a change to the delta, grab values for event init
+        const movementX = 0;
+        const movementY = 0;
+        // Get offsets from container
+        const offsetX = inputIndex === PointerInput.DeltaHorizontal && this._elementToAttachTo ? movementX! - this._elementToAttachTo.getBoundingClientRect().x : 0;
+        const offsetY = inputIndex === PointerInput.DeltaVertical && this._elementToAttachTo ? movementY! - this._elementToAttachTo.getBoundingClientRect().y : 0;
+
+        const evt: { [k: string]: any } = {};
+
+        evt.target = this._elementToAttachTo;
+        evt.preventDefault = () => { };
+        evt.altKey = altKey;
+        evt.ctrlKey = ctrlKey;
+        evt.metaKey = metaKey;
+        evt.shiftKey = shiftKey;
+        evt.type = "pointerup";
+        evt.button = inputIndex - 2;
+        evt.pointerId = deviceType === DeviceType.Mouse ? 1 : deviceSlot;
+        evt.clientX = pointerX;
+        evt.clientY = pointerY;
+        evt.movementX = movementX;
+        evt.movementY = movementY;
+        evt.offsetX = offsetX;
+        evt.offsetY = offsetY;
+        evt.x = pointerX;
+        evt.y = pointerY;
+
+        return (evt as IPointerEvent);
     }
 
     /**

@@ -79,21 +79,23 @@ export class DeviceSourceManager implements IDisposable {
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
         this._deviceInputSystem = DeviceInputSystem.Create(engine);
 
-        this._deviceInputSystem.onDeviceConnected = (deviceType, deviceSlot) => {
-            this._addDevice(deviceType, deviceSlot);
-            this.onDeviceConnectedObservable.notifyObservers(this.getDeviceSource(deviceType, deviceSlot)!);
-        };
-        this._deviceInputSystem.onDeviceDisconnected = (deviceType, deviceSlot) => {
-            const device = this.getDeviceSource(deviceType, deviceSlot)!; // Grab local reference to use before removing from devices
-            this._removeDevice(deviceType, deviceSlot);
-            this.onDeviceDisconnectedObservable.notifyObservers(device);
-        };
+        this._deviceInputSystem.onDeviceConnectedObservable.add((eventData) => {
+            this._addDevice(eventData.deviceType, eventData.deviceSlot);
+            this.onDeviceConnectedObservable.notifyObservers(this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)!);
+        });
 
-        if (!this._deviceInputSystem.onInputChanged) {
-            this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
-                this.getDeviceSource(deviceType, deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
-            };
-        }
+        this._deviceInputSystem.onDeviceDisconnectedObservable.add((eventData) => {
+            const device = this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)!; // Grab local reference to use before removing from devices
+            this._removeDevice(eventData.deviceType, eventData.deviceSlot);
+            this.onDeviceDisconnectedObservable.notifyObservers(device);
+        });
+
+        this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
+            const inputIndex = eventData.inputIndex;
+            const previousState = eventData.previousState;
+            const currentState = eventData.currentState;
+            this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
+        });
     }
 
     // Public Functions
