@@ -96,7 +96,7 @@ declare module "./mesh" {
         _thinInstanceUpdateBufferSize(kind: string, numInstances?: number): void;
 
         /** @hidden */
-        _createMatrixBuffer(kind: string, buffer: Nullable<Float32Array>, staticBuffer: boolean): Buffer;
+        _thinInstanceCreateMatrixBuffer(kind: string, buffer: Nullable<Float32Array>, staticBuffer: boolean): Buffer;
 
         /** @hidden */
         _userThinInstanceBuffersStorage: {
@@ -115,7 +115,7 @@ Mesh.prototype.thinInstanceAdd = function (matrix: DeepImmutableObject<Matrix> |
 
     if (Array.isArray(matrix)) {
         for (let i = 0; i < matrix.length; ++i) {
-            this.thinInstanceSetMatrixAt(this._thinInstanceDataStorage.instancesCount++, matrix[i], i === matrix.length - 1 && refresh);
+            this.thinInstanceSetMatrixAt(this._thinInstanceDataStorage.instancesCount++, matrix[i], (i === matrix.length - 1) && refresh);
         }
     } else {
         this.thinInstanceSetMatrixAt(this._thinInstanceDataStorage.instancesCount++, matrix, refresh);
@@ -196,7 +196,7 @@ Object.defineProperty(Mesh.prototype, "thinInstanceCount", {
     configurable: true,
 });
 
-Mesh.prototype._createMatrixBuffer = function (kind: string, buffer: Float32Array, staticBuffer: boolean = false): Buffer {
+Mesh.prototype._thinInstanceCreateMatrixBuffer = function (kind: string, buffer: Float32Array, staticBuffer: boolean = false): Buffer {
     const matrixBuffer = new Buffer(this.getEngine(), buffer, !staticBuffer, 16, false, true);
 
     for (let i = 0; i < 4; i++) {
@@ -218,7 +218,7 @@ Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<
 
         if (buffer !== null) {
             this._thinInstanceDataStorage.instancesCount = buffer.length / stride;
-            this._thinInstanceDataStorage.matrixBuffer = this._createMatrixBuffer("world", buffer, !staticBuffer);
+            this._thinInstanceDataStorage.matrixBuffer = this._thinInstanceCreateMatrixBuffer("world", buffer, !staticBuffer);
 
             if (!this.doNotSyncBoundingInfo) {
                 this.thinInstanceRefreshBoundingInfo(false);
@@ -235,7 +235,7 @@ Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<
         this._thinInstanceDataStorage.previousMatrixBuffer = null;
         this._thinInstanceDataStorage.previousMatrixData = buffer;
         if (buffer !== null) {
-            this._thinInstanceDataStorage.previousMatrixBuffer = this._createMatrixBuffer("previousWorld", buffer, !staticBuffer);
+            this._thinInstanceDataStorage.previousMatrixBuffer = this._thinInstanceCreateMatrixBuffer("previousWorld", buffer, !staticBuffer);
         }
     } else {
         if (buffer === null) {
@@ -365,12 +365,12 @@ Mesh.prototype._thinInstanceUpdateBufferSize = function (kind: string, numInstan
 
         if (kindIsMatrix) {
             this._thinInstanceDataStorage.matrixBuffer?.dispose();
-            this._thinInstanceDataStorage.matrixBuffer = this._createMatrixBuffer("world", data, false);
+            this._thinInstanceDataStorage.matrixBuffer = this._thinInstanceCreateMatrixBuffer("world", data, false);
             this._thinInstanceDataStorage.matrixData = data;
             this._thinInstanceDataStorage.matrixBufferSize = newSize;
             if (this._scene.needsPreviousWorldMatrices && !this._thinInstanceDataStorage.previousMatrixData) {
                 this._thinInstanceDataStorage.previousMatrixBuffer?.dispose();
-                this._thinInstanceDataStorage.previousMatrixBuffer = this._createMatrixBuffer("previousWorld", data, false);
+                this._thinInstanceDataStorage.previousMatrixBuffer = this._thinInstanceCreateMatrixBuffer("previousWorld", data, false);
             }
         } else {
             this._userThinInstanceBuffersStorage.vertexBuffers[kind]?.dispose();

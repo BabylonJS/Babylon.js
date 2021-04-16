@@ -769,6 +769,7 @@ export class MaterialHelper {
     /**
      * Add the list of attributes required for instances to the attribs array.
      * @param attribs The current list of supported attribs
+     * @param needsPreviousMatrices If the shader needs previous matrices
      */
     public static PushAttributesForInstances(attribs: string[], needsPreviousMatrices: boolean = false): void {
         attribs.push("world0");
