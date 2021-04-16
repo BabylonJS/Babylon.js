@@ -1261,14 +1261,14 @@
             "title": "Instances + render self motion blur",
             "renderCount": 10,
             "playgroundId": "#217750#34",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "instances-renderself-mb.png"
         },
         {
             "title": "Thin instances + render self motion blur",
             "renderCount": 10,
             "playgroundId": "#217750#35",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "thin-instances-renderself-mb.png"
         }
     ]
