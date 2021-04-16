@@ -28,7 +28,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 <CommandDropdownComponent globalState={this.props.globalState} icon="hamburgerIcon" tooltip="Options" items={[                   
                    {
                         label: "Save",
-                        onClick: () => {}
+                        onClick: () => {this.props.globalState.onSaveObservable.notifyObservers();}
                     },                     {
                         label: "Load",
                         onClick: () => {}
@@ -41,9 +41,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         onClick: () => {}
                     },
                 ]}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon="pointerIcon" shortcut="Ctrl+S" isActive={false} onClick={()=> this.onPan()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon="handIcon" shortcut="Ctrl" isActive={false} onClick={()=> this.onPan()}/>
-                <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" icon="zoomIcon" isActive={false} onClick={()=> this.onZoom()}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon="pointerIcon" shortcut="Ctrl+S" isActive={false} onClick={()=> {}}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon="handIcon" shortcut="Ctrl" isActive={false} onClick={()=>{}}/>
+                <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" icon="zoomIcon" isActive={false} onClick={()=>{}}/>
                 <CommandDropdownComponent globalState={this.props.globalState} icon="guidesIcon" tooltip="Create" items={[                   
                    {
                         label: "Image",
@@ -131,17 +131,5 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
 
         this.forceUpdate();
-    }
-
-    onZoom(): void {
-
-    }
-
-    onPan(): void {
-
-    }
-
-    onSelect(): void {
-
     }
 }
