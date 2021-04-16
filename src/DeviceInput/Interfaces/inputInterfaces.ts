@@ -30,6 +30,18 @@ export interface IDeviceEvent extends IEvent {
     currentState: Nullable<number>;
 }
 
+export interface INativeInput extends IDisposable {
+    onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
+
+    onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+
+    onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
+
+    pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+
+    isDeviceAvailable(deviceType: DeviceType): boolean;
+}
+
 /**
  * Interface for DeviceInputSystem implementations (JS and Native)
  */

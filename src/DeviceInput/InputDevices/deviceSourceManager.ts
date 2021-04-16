@@ -5,6 +5,7 @@ import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable } from '../../Misc/observable';
 import { DeviceInput } from './deviceTypes';
+import { IDeviceInputSystem } from '../Interfaces/inputInterfaces';
 
 /**
  * Class that handles all input for a specific device
@@ -17,7 +18,7 @@ export class DeviceSource<T extends DeviceType> {
     public readonly onInputChangedObservable = new Observable<{ inputIndex: DeviceInput<T>, previousState: Nullable<number>, currentState: Nullable<number> }>();
 
     // Private Members
-    private readonly _deviceInputSystem: DeviceInputSystem;
+    private readonly _deviceInputSystem: IDeviceInputSystem;
 
     /**
      * Default Constructor
@@ -25,7 +26,7 @@ export class DeviceSource<T extends DeviceType> {
      * @param deviceType Type of device
      * @param deviceSlot "Slot" or index that device is referenced in
      */
-    constructor(deviceInputSystem: DeviceInputSystem,
+    constructor(deviceInputSystem: IDeviceInputSystem,
         /** Type of device */
         public readonly deviceType: DeviceType,
         /** "Slot" or index that device is referenced in */
@@ -67,7 +68,7 @@ export class DeviceSourceManager implements IDisposable {
     // Private Members
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
     private readonly _firstDevice: Array<number>;
-    private readonly _deviceInputSystem: DeviceInputSystem;
+    private readonly _deviceInputSystem: IDeviceInputSystem;
 
     /**
      * Default Constructor

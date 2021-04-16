@@ -5,10 +5,76 @@ import { Observable, Observer } from '../Misc/observable';
 import { Tools } from '../Misc/tools';
 import { Nullable } from '../types';
 import { DeviceType, PointerInput } from './InputDevices/deviceEnums';
-import { IDeviceEvent, IDeviceInputSystem } from './Interfaces/inputSystem';
+import { IDeviceEvent, IDeviceInputSystem, INativeInput } from './Interfaces/inputInterfaces';
 
 /** @hidden */
 declare const _native: any;
+
+/**
+ * Javascript wrapper for native implementation
+ */
+class NativeDeviceInputWrapper implements IDeviceInputSystem {
+    /**
+     * Observable for devices being connected
+     */
+    public readonly onDeviceConnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
+    /**
+     * Observable for devices being disconnected
+     */
+    public readonly onDeviceDisconnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
+    /**
+     * Observable for changes to device input
+     */
+    public readonly onInputChangedObservable: Observable<IDeviceEvent>;
+
+    private _nativeInput: INativeInput;
+
+    public constructor(nativeInput: INativeInput) {
+        this._nativeInput = nativeInput;
+
+        this._nativeInput.onDeviceConnected = (deviceType, deviceSlot) => {
+            this.onDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
+        };
+
+        this._nativeInput.onDeviceDisconnected = (deviceType, deviceSlot) => {
+            this.onDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
+        };
+
+        this._nativeInput.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState, eventData) => {
+            // TODO: Implement code from Input Manager
+        };
+    }
+
+    // Public functions
+    /**
+     * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
+     * @param inputIndex Id of input to be checked
+     * @returns Current value of input
+     */
+    public pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number {
+        return this._nativeInput.pollInput(deviceType, deviceSlot, inputIndex);
+    }
+
+    /**
+     * Check for a specific device in the DeviceInputSystem
+     * @param deviceType Type of device to check for
+     * @returns bool with status of device's existence
+     */
+     public isDeviceAvailable(deviceType: DeviceType) {
+        return this._nativeInput.isDeviceAvailable(deviceType);
+    }
+
+    /**
+     * Dispose of all the observables
+     */
+     public dispose(): void {
+        this.onDeviceConnectedObservable.clear();
+        this.onDeviceDisconnectedObservable.clear();
+        this.onInputChangedObservable.clear();
+    }
+}
 
 /**
  * This class will take all inputs from Keyboard, Pointer, and
@@ -20,15 +86,15 @@ export class DeviceInputSystem implements IDeviceInputSystem {
     /**
      * Observable for devices being connected
      */
-    onDeviceConnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
+    public readonly onDeviceConnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
     /**
      * Observable for devices being disconnected
      */
-    onDeviceDisconnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
+    public readonly onDeviceDisconnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
     /**
      * Observable for changes to device input
      */
-    onInputChangedObservable: Observable<IDeviceEvent>;
+    public readonly onInputChangedObservable: Observable<IDeviceEvent>;
 
     // Private Members
     private _inputs: Array<Array<Array<number>>> = [];
@@ -38,14 +104,14 @@ export class DeviceInputSystem implements IDeviceInputSystem {
     private _elementToAttachTo: HTMLElement;
     private _engine: Engine;
 
-    private _keyboardDownEvent = (evt: any) => { };
-    private _keyboardUpEvent = (evt: any) => { };
+    private _keyboardDownEvent = (IKeyboardEvent: any) => { };
+    private _keyboardUpEvent = (IKeyboardEvent: any) => { };
     private _keyboardBlurEvent = (evt: any) => { };
 
-    private _pointerMoveEvent = (evt: any) => { };
-    private _pointerDownEvent = (evt: any) => { };
-    private _pointerUpEvent = (evt: any) => { };
-    private _pointerWheelEvent = (evt: any) => { };
+    private _pointerMoveEvent = (IPointerEvent: any) => { };
+    private _pointerDownEvent = (IPointerEvent: any) => { };
+    private _pointerUpEvent = (IPointerEvent: any) => { };
+    private _pointerWheelEvent = (IWheelEvent: any) => { };
     private _pointerBlurEvent = (evt: any) => { };
     private _wheelEventName: string;
 
@@ -53,8 +119,6 @@ export class DeviceInputSystem implements IDeviceInputSystem {
 
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
-
-    //private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
 
     private static _MAX_KEYCODES: number = 255;
     private static _MAX_POINTER_INPUTS: number = Object.keys(PointerInput).length / 2;
@@ -100,10 +164,10 @@ export class DeviceInputSystem implements IDeviceInputSystem {
      * @param engine Engine to pull input element from
      * @returns The new instance
      */
-    public static Create(engine: Engine): DeviceInputSystem {
+    public static Create(engine: Engine): IDeviceInputSystem {
         // If running in Babylon Native, then defer to the native input system, which has the same public contract
         if (typeof _native !== 'undefined' && _native.DeviceInputSystem) {
-            return new _native.DeviceInputSystem(engine);
+            return new NativeDeviceInputWrapper(new _native.DeviceInputSystem(engine));
         }
 
         return new DeviceInputSystem(engine);
@@ -148,7 +212,7 @@ export class DeviceInputSystem implements IDeviceInputSystem {
     /**
      * Dispose of all the eventlisteners
      */
-    public dispose() {
+    public dispose(): void {
         // Observables
         this.onDeviceConnectedObservable.clear();
         this.onDeviceDisconnectedObservable.clear();
