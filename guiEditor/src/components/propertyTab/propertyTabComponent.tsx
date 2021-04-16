@@ -68,6 +68,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         super(props);
 
         this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
+
+        this.props.globalState.onSaveObservable.add(() => {
+            this.save();
+        });
+        this.props.globalState.onSnippetSaveObservable.add(() => {
+            this.saveToSnippetServer();
+        });
+
     }
 
     timerRefresh() {
