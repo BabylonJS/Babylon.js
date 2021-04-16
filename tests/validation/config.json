@@ -1220,48 +1220,56 @@
             "title": "Instances + motion blur",
             "renderCount": 10,
             "playgroundId": "#YB006J#402",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "instances-mb.png"
         },
         {
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
             "playgroundId": "#YB006J#403",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "instances-gbr-mb.png"
         },
         {
             "title": "Instances manual update + motion blur",
             "renderCount": 10,
             "playgroundId": "#HJGC2G#50",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "instances-mb-manual.png"
         },
         {
             "title": "Thin instances + motion blur",
             "renderCount": 10,
             "playgroundId": "#HJGC2G#51",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-mb.png"
         },
         {
             "title": "Thin instances + motion blur + manual",
             "renderCount": 10,
             "playgroundId": "#HJGC2G#52",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-mb.png"
         },
         {
             "title": "Thin instances + dynamic buffer resize",
             "renderCount": 10,
             "playgroundId": "#217750#33",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-buffer-resize.png"
         },
         {
             "title": "Instances + render self motion blur",
             "renderCount": 10,
             "playgroundId": "#217750#34",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "instances-renderself-mb.png"
         },
         {
             "title": "Thin instances + render self motion blur",
             "renderCount": 10,
             "playgroundId": "#217750#35",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-renderself-mb.png"
         }
     ]
