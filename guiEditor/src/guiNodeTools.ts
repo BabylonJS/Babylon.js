@@ -48,6 +48,7 @@ export class GUINodeTools {
                 element.lineWidth = 5;
                 element.dash = [50, 10];
                 element.isPointerBlocker = true;
+                element.isHitTestVisible = true;
                 element.color = "#0";
                 return element;
             case "Text":

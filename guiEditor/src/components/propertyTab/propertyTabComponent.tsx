@@ -75,6 +75,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onSnippetSaveObservable.add(() => {
             this.saveToSnippetServer();
         });
+        this.props.globalState.onSnippetLoadObservable.add(() => {
+            this.loadFromSnippet();
+        });
 
     }
 
