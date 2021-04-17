@@ -202,7 +202,9 @@ export class OutlineRenderer implements ISceneComponent {
         // Morph targets
         MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
 
-        renderingMesh._bind(subMesh, effect, material.fillMode);
+        if (!hardwareInstancedRendering) {
+            renderingMesh._bind(subMesh, effect, material.fillMode);
+        }
 
         // Alpha test
         if (material && material.needAlphaTesting()) {
