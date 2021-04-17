@@ -339,7 +339,9 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 const effect = drawWrapper.effect!;
 
                 engine.enableEffect(drawWrapper);
-                renderingMesh._bind(subMesh, effect, material.fillMode);
+                if (!hardwareInstancedRendering) {
+                    renderingMesh._bind(subMesh, effect, material.fillMode);
+                }
 
                 if (renderingMesh === this.mesh) {
                     material.bind(effectiveMesh.getWorldMatrix(), renderingMesh);

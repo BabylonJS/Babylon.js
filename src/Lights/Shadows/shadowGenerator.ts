@@ -1111,7 +1111,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
             engine.enableEffect(drawWrapper);
 
-            renderingMesh._bind(subMesh, effect, material.fillMode);
+            if (!hardwareInstancedRendering) {
+                renderingMesh._bind(subMesh, effect, material.fillMode);
+            }
 
             this.getTransformMatrix(); // make sure _cachedDirection et _cachedPosition are up to date
 
