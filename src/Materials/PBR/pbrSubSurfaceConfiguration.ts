@@ -42,6 +42,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_ALBEDOFORREFRACTIONTINT: boolean;
     SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
     SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
+    SS_USE_THICKNESS_AS_DEPTH: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
     SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
@@ -223,6 +224,12 @@ export class PBRSubSurfaceConfiguration {
     public maximumThickness: number = 1;
 
     /**
+     * Defines that the thickness should be used as a measure of the depth volume.
+     */
+     @serialize()
+     public useThicknessAsDepth = false;
+ 
+     /**
      * Defines the volume tint of the material.
      * This is used for both translucency and scattering.
      */
@@ -345,6 +352,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_ALBEDOFORREFRACTIONTINT = false;
             defines.SS_ALBEDOFORTRANSLUCENCYTINT = false;
             defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
+            defines.SS_USE_THICKNESS_AS_DEPTH = false;
 
             if (this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled) {
                 defines.SUBSURFACE = true;
@@ -376,6 +384,7 @@ export class PBRSubSurfaceConfiguration {
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
                         defines.SS_ALBEDOFORREFRACTIONTINT = this.useAlbedoToTintRefraction;
                         defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = refractionTexture.isCube && (<any>refractionTexture).boundingBoxSize;
+                        defines.SS_USE_THICKNESS_AS_DEPTH = this.useThicknessAsDepth;
                     }
                 }
             }
