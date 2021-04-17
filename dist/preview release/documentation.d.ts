@@ -11637,6 +11637,10 @@ declare module BABYLON {
          */
         convertToLinearSpace: boolean;
         /**
+         * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
+         */
+        disableLevelMultiplication: boolean;
+        /**
          * Create a new TextureBlock
          * @param name defines the block name
          */
@@ -11674,6 +11678,10 @@ declare module BABYLON {
          * Gets the a output component
          */
         get a(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the level output component
+         */
+        get level(): NodeMaterialConnectionPoint;
         get target(): NodeMaterialBlockTargets;
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
