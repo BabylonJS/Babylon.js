@@ -26,7 +26,6 @@ import { InternalTexture, InternalTextureSource } from '../../Materials/Textures
 import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
-import { IColor4Like } from '../../Maths/math.like';
 import { EngineStore } from '../engineStore';
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
@@ -640,6 +639,7 @@ export class WebGPUTextureHelper {
         const passEncoder = commandEncoder!.beginRenderPass({
             colorAttachments: [{
                 attachment: outputTexture.createView({
+                    format,
                     dimension: WebGPUConstants.TextureViewDimension.E2d,
                     baseMipLevel: 0,
                     mipLevelCount: 1,
@@ -659,6 +659,7 @@ export class WebGPUTextureHelper {
             }, {
                 binding: 1,
                 resource: gpuTexture.createView({
+                    format,
                     dimension: WebGPUConstants.TextureViewDimension.E2d,
                     baseMipLevel: 0,
                     mipLevelCount: 1,
@@ -697,35 +698,6 @@ export class WebGPUTextureHelper {
             this._device.queue.submit([commandEncoder!.finish()]);
             commandEncoder = null as any;
         }
-    }
-
-    public clear(format: GPUTextureFormat, color: IColor4Like, passEncoder: GPURenderPassEncoder): void {
-        const pipeline = this._getPipeline(format, PipelineType.Clear);
-        const bindGroupLayout = pipeline.getBindGroupLayout(0);
-
-        const buffer = this._bufferManager.createRawBuffer(4 * 4, WebGPUConstants.BufferUsage.CopySrc | WebGPUConstants.BufferUsage.Uniform, true);
-
-        /*const arrayBuffer = buffer.getMappedRange();
-
-        new Float32Array(arrayBuffer).set([color.r, color.g, color.b, color.a]);
-
-        buffer.unmap();*/
-
-        const bindGroup = this._device.createBindGroup({
-            layout: bindGroupLayout,
-            entries: [{
-                binding: 0,
-                resource: {
-                    buffer,
-                },
-            }],
-        });
-
-        passEncoder.setPipeline(pipeline);
-        passEncoder.setBindGroup(0, bindGroup);
-        passEncoder.draw(4, 1, 0, 0);
-
-        this._bufferManager.releaseBuffer(buffer);
     }
 
     //------------------------------------------------------------------------------
@@ -846,6 +818,7 @@ export class WebGPUTextureHelper {
             const passEncoder = commandEncoder!.beginRenderPass({
                 colorAttachments: [{
                     attachment: gpuTexture.createView({
+                        format,
                         dimension: WebGPUConstants.TextureViewDimension.E2d,
                         baseMipLevel: i,
                         mipLevelCount: 1,
@@ -865,6 +838,7 @@ export class WebGPUTextureHelper {
                 }, {
                     binding: 1,
                     resource: gpuTexture.createView({
+                        format,
                         dimension: WebGPUConstants.TextureViewDimension.E2d,
                         baseMipLevel: i - 1,
                         mipLevelCount: 1,
@@ -919,10 +893,12 @@ export class WebGPUTextureHelper {
 
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
+                format: gpuTextureWrapper.format,
                 dimension: WebGPUConstants.TextureViewDimension.Cube,
                 mipLevelCount: hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
+                arrayLayerCount: 6,
                 aspect: WebGPUConstants.TextureAspect.All
             });
         } else {
@@ -930,6 +906,7 @@ export class WebGPUTextureHelper {
 
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
+                format: gpuTextureWrapper.format,
                 dimension: texture.is2DArray ? WebGPUConstants.TextureViewDimension.E2dArray : texture.is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                 mipLevelCount: hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
@@ -994,7 +971,7 @@ export class WebGPUTextureHelper {
     {
         const blockInformation = WebGPUTextureHelper._GetBlockInformationFromFormat(format);
 
-        const textureCopyView: GPUTextureCopyView = {
+        const textureCopyView: GPUImageCopyTexture = {
             texture: gpuTexture,
             origin: {
                 x: offsetX,
