@@ -160,6 +160,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Defines whether to adapt to the device's viewport characteristics (default: false)
      */
     adaptToDeviceRatio?: boolean;
+
+    /**
+     * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
+     */
+    premultipliedAlpha?: boolean;
 }
 
 /**
@@ -433,7 +438,7 @@ export class WebGPUEngine extends Engine {
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
 
-        options.deviceDescriptor = options.deviceDescriptor || { };
+        options.deviceDescriptor = options.deviceDescriptor || { nonGuaranteedFeatures:[], nonGuaranteedLimits: {} };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
         options.stencil = options.stencil ?? true;
@@ -468,7 +473,7 @@ export class WebGPUEngine extends Engine {
 
         this._canvas = canvas;
         this._options = options;
-        this.premultipliedAlpha = false;
+        this.premultipliedAlpha = options.premultipliedAlpha ?? true;
 
         const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
         const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
@@ -687,6 +692,7 @@ export class WebGPUEngine extends Engine {
             device: this._device,
             format: this._options.swapChainFormat!,
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
+            compositingAlphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasCompositingAlphaMode.Premultiplied : WebGPUConstants.CanvasCompositingAlphaMode.Opaque
         });
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
@@ -1061,7 +1067,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _applyBlendColor(renderPass: GPURenderPassEncoder): void {
-        renderPass.setBlendColor(this._alphaState._blendConstants as GPUColor);
+        renderPass.setBlendConstant(this._alphaState._blendConstants as GPUColor);
     }
 
     /**
@@ -3152,7 +3158,7 @@ export class WebGPUEngine extends Engine {
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
                     const viewDescriptor = {
-                        ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor,
+                        ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
                         format: gpuMRTWrapper.format,
                     };
                     const gpuMSAATexture = gpuMRTWrapper.msaaTexture;
@@ -3419,7 +3425,7 @@ export class WebGPUEngine extends Engine {
         };
 
         this._rttRenderPassWrapper.depthAttachmentViewDescriptor = {
-            format: this._depthTextureFormat,
+            format: this._depthTextureFormat!,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
             baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
