@@ -228,7 +228,7 @@ export class PBRSubSurfaceConfiguration {
      */
      @serialize()
      public useThicknessAsDepth = false;
- 
+
      /**
      * Defines the volume tint of the material.
      * This is used for both translucency and scattering.
