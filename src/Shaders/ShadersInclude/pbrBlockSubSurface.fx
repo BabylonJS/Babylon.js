@@ -193,7 +193,11 @@ struct subSurfaceOutParams
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
         #else
-            vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+            #ifdef SS_USE_THICKNESS_AS_DEPTH
+                vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * thickness, 1.0)));
+            #else
+                vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+            #endif
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
             refractionCoords.y = 1.0 - refractionCoords.y;
         #endif

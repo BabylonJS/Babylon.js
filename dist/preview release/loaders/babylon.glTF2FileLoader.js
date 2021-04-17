@@ -2149,6 +2149,7 @@ var KHR_materials_volume = /** @class */ (function () {
         }
         babylonMaterial.subSurface.minimumThickness = 0.0;
         babylonMaterial.subSurface.maximumThickness = extension.thicknessFactor;
+        babylonMaterial.subSurface.useThicknessAsDepth = true;
         if (extension.thicknessTexture) {
             return this._loader.loadTextureInfoAsync(context + "/thicknessTexture", extension.thicknessTexture)
                 .then(function (texture) {

@@ -11637,6 +11637,10 @@ declare module BABYLON {
          */
         convertToLinearSpace: boolean;
         /**
+         * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
+         */
+        disableLevelMultiplication: boolean;
+        /**
          * Create a new TextureBlock
          * @param name defines the block name
          */
@@ -11674,6 +11678,10 @@ declare module BABYLON {
          * Gets the a output component
          */
         get a(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the level output component
+         */
+        get level(): NodeMaterialConnectionPoint;
         get target(): NodeMaterialBlockTargets;
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
@@ -11963,8 +11971,12 @@ declare module BABYLON {
          */
         invertRefractionY: boolean;
         /**
-         * Gets or sets the texture associated with the node
+         * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
          */
+        useThicknessAsDepth: boolean;
+        /**
+        * Gets or sets the texture associated with the node
+        */
         texture: Nullable<BaseTexture>;
         /**
          * Create a new RefractionBlock
@@ -11989,6 +12001,10 @@ declare module BABYLON {
          * Gets the tint at distance input component
          */
         get tintAtDistance(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the volume index of refraction input component
+         */
+        get volumeIndexOfRefraction(): NodeMaterialConnectionPoint;
         /**
          * Gets the view input component
          */
@@ -25628,6 +25644,7 @@ declare module BABYLON {
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
+        SS_USE_THICKNESS_AS_DEPTH: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         /** @hidden */
@@ -25734,9 +25751,13 @@ declare module BABYLON {
          */
         maximumThickness: number;
         /**
-         * Defines the volume tint of the material.
-         * This is used for both translucency and scattering.
+         * Defines that the thickness should be used as a measure of the depth volume.
          */
+        useThicknessAsDepth: boolean;
+        /**
+        * Defines the volume tint of the material.
+        * This is used for both translucency and scattering.
+        */
         tintColor: Color3;
         /**
          * Defines the distance at which the tint color should be found in the media.
@@ -26649,6 +26670,7 @@ declare module BABYLON {
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
+        SS_USE_THICKNESS_AS_DEPTH: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         UNLIT: boolean;
@@ -56032,6 +56054,10 @@ declare module BABYLON {
          * The picking info it provides contains the point to which the target mesh will move ()
          */
         onTargetMeshPositionUpdatedObservable: Observable<PickingInfo>;
+        /**
+         * Is teleportation enabled. Can be used to allow rotation only.
+         */
+        teleportationEnabled: boolean;
         private _rotationEnabled;
         /**
          * Is rotation enabled when moving forward?
