@@ -736,7 +736,9 @@ export abstract class EffectLayer {
             const effect = this._effectLayerMapGenerationDrawWrapper.effect!;
 
             engine.enableEffect(this._effectLayerMapGenerationDrawWrapper);
-            renderingMesh._bind(subMesh, effect, Material.TriangleFillMode);
+            if (!hardwareInstancedRendering) {
+                renderingMesh._bind(subMesh, effect, Material.TriangleFillMode);
+            }
 
             effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
