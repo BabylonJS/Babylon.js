@@ -78,7 +78,7 @@ export class RefractionBlock extends NodeMaterialBlock {
      */
      @editableInPropertyPage("Use thickness as depth", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
      public useThicknessAsDepth: boolean = false;
- 
+
      /**
      * Gets or sets the texture associated with the node
      */
