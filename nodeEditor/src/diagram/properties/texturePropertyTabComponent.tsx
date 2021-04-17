@@ -235,6 +235,17 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         }}/>
                     }
                     {
+                        texture &&
+                        <CheckBoxLineComponent
+                            label="Disable multiplying by level"
+                            propertyName="disableLevelMultiplication"
+                            target={this.props.block}
+                            onValueChanged={() => {
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            }}
+                        />
+                    }
+                    {
                         texture && texture.updateSamplingMode &&
                         <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onSelect={(value) => {
                             texture.updateSamplingMode(value as number);
