@@ -1027,14 +1027,14 @@ export class WebGPUEngine extends Engine {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
         const update = this._stencilStateComposer.funcRef !== this._stencilRefsCurrent[index];
         if (update) {
-            this._stencilRefsCurrent[index] = this._stencilState.stencilFuncRef;
+            this._stencilRefsCurrent[index] = this._stencilStateComposer.funcRef;
         }
         return update;
     }
 
     /** @hidden */
     public _applyStencilRef(renderPass: GPURenderPassEncoder): void {
-        renderPass.setStencilReference(this._stencilState.stencilFuncRef);
+        renderPass.setStencilReference(this._stencilStateComposer.funcRef);
     }
 
     private _blendColorsCurrent: Array<Array<Nullable<number>>> = [[null, null, null, null], [null, null, null, null]];
@@ -3712,9 +3712,11 @@ export class WebGPUEngine extends Engine {
     private _draw(drawType: number, fillMode: number, start: number, count: number, instancesCount: number): void {
         const renderPass = this._getCurrentRenderPass();
 
+        this.applyStates();
+
         const mustUpdateViewport = this._mustUpdateViewport(renderPass as GPURenderPassEncoder);
         const mustUpdateScissor = this._mustUpdateScissor(renderPass as GPURenderPassEncoder);
-        const mustUpdateStencilRef = !this._stencilState.stencilTest ? false : this._mustUpdateStencilRef(renderPass as GPURenderPassEncoder);
+        const mustUpdateStencilRef = !this._stencilStateComposer.enabled ? false : this._mustUpdateStencilRef(renderPass as GPURenderPassEncoder);
         const mustUpdateBlendColor = !this._alphaState.alphaBlend ? false : this._mustUpdateBlendColor(renderPass as GPURenderPassEncoder);
 
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
@@ -3728,8 +3730,6 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        this.applyStates();
-
         const useFastPath = !this.compatibilityMode && this._currentDrawContext?.fastBundle;
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
 
@@ -3741,7 +3741,7 @@ export class WebGPUEngine extends Engine {
                 this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
             }
             if (mustUpdateStencilRef) {
-                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilState.stencilFuncRef));
+                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef));
             }
             if (mustUpdateBlendColor) {
                 this._bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));
