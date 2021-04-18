@@ -213,6 +213,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
      */
     public onTargetMeshPositionUpdatedObservable: Observable<PickingInfo> = new Observable();
 
+    /**
+     * Is teleportation enabled. Can be used to allow rotation only.
+     */
+    public teleportationEnabled: boolean = true;
+
     private _rotationEnabled: boolean = true;
 
     /**
@@ -357,7 +362,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
      * Remove a mesh from the blocker meshes array
      * @param mesh the mesh to remove
      */
-     public removeBlockerMesh(mesh: AbstractMesh) {
+    public removeBlockerMesh(mesh: AbstractMesh) {
         this._options.pickBlockerMeshes = this._options.pickBlockerMeshes || [];
         const index = this._options.pickBlockerMeshes.indexOf(mesh);
         if (index !== -1) {
@@ -534,6 +539,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         }
                         controllerData.teleportationComponent = mainComponent;
                         controllerData.onButtonChangedObserver = mainComponent.onButtonStateChangedObservable.add(() => {
+                            if (!this.teleportationEnabled) {
+                                return;
+                            }
                             // did "pressed" changed?
                             if (mainComponent.changes.pressed) {
                                 if (mainComponent.changes.pressed.current) {
@@ -602,7 +610,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     }
                                 }
                             }
-                            if (axesData.y < -0.7 && !this._currentTeleportationControllerId && !controllerData.teleportationState.rotating) {
+                            if (axesData.y < -0.7 && !this._currentTeleportationControllerId && !controllerData.teleportationState.rotating && this.teleportationEnabled) {
                                 controllerData.teleportationState.forward = true;
                                 this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
                                 controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
@@ -878,7 +886,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _teleportForward(controllerId: string) {
         const controllerData = this._controllers[controllerId];
-        if (!controllerData || !controllerData.teleportationState.forward) {
+        if (!controllerData || !controllerData.teleportationState.forward || !this.teleportationEnabled) {
             return;
         }
         controllerData.teleportationState.forward = false;

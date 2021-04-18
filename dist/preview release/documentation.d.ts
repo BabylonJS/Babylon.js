@@ -11637,6 +11637,10 @@ declare module BABYLON {
          */
         convertToLinearSpace: boolean;
         /**
+         * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
+         */
+        disableLevelMultiplication: boolean;
+        /**
          * Create a new TextureBlock
          * @param name defines the block name
          */
@@ -11674,6 +11678,10 @@ declare module BABYLON {
          * Gets the a output component
          */
         get a(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the level output component
+         */
+        get level(): NodeMaterialConnectionPoint;
         get target(): NodeMaterialBlockTargets;
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
@@ -11963,8 +11971,12 @@ declare module BABYLON {
          */
         invertRefractionY: boolean;
         /**
-         * Gets or sets the texture associated with the node
+         * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
          */
+        useThicknessAsDepth: boolean;
+        /**
+        * Gets or sets the texture associated with the node
+        */
         texture: Nullable<BaseTexture>;
         /**
          * Create a new RefractionBlock
@@ -11989,6 +12001,10 @@ declare module BABYLON {
          * Gets the tint at distance input component
          */
         get tintAtDistance(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the volume index of refraction input component
+         */
+        get volumeIndexOfRefraction(): NodeMaterialConnectionPoint;
         /**
          * Gets the view input component
          */
@@ -25628,6 +25644,7 @@ declare module BABYLON {
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
+        SS_USE_THICKNESS_AS_DEPTH: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         /** @hidden */
@@ -25734,9 +25751,13 @@ declare module BABYLON {
          */
         maximumThickness: number;
         /**
-         * Defines the volume tint of the material.
-         * This is used for both translucency and scattering.
+         * Defines that the thickness should be used as a measure of the depth volume.
          */
+        useThicknessAsDepth: boolean;
+        /**
+        * Defines the volume tint of the material.
+        * This is used for both translucency and scattering.
+        */
         tintColor: Color3;
         /**
          * Defines the distance at which the tint color should be found in the media.
@@ -26649,6 +26670,7 @@ declare module BABYLON {
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
+        SS_USE_THICKNESS_AS_DEPTH: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         UNLIT: boolean;
@@ -30897,6 +30919,106 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export interface IStencilState {
+        enabled: boolean;
+        mask: number;
+        func: number;
+        funcRef: number;
+        funcMask: number;
+        opStencilDepthPass: number;
+        opStencilFail: number;
+        opDepthFail: number;
+        reset(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class that holds the different stencil states of a material
+     * Usage example: https://playground.babylonjs.com/#CW5PRI#10
+     */
+    export class MaterialStencilState implements IStencilState {
+        /**
+         * Creates a material stencil state instance
+         */
+        constructor();
+        /**
+         * Resets all the stencil states to default values
+         */
+        reset(): void;
+        private _func;
+        /**
+         * Gets or sets the stencil function
+         */
+        get func(): number;
+        set func(value: number);
+        private _funcRef;
+        /**
+         * Gets or sets the stencil function reference
+         */
+        get funcRef(): number;
+        set funcRef(value: number);
+        private _funcMask;
+        /**
+         * Gets or sets the stencil function mask
+         */
+        get funcMask(): number;
+        set funcMask(value: number);
+        private _opStencilFail;
+        /**
+         * Gets or sets the operation when the stencil test fails
+         */
+        get opStencilFail(): number;
+        set opStencilFail(value: number);
+        private _opDepthFail;
+        /**
+         * Gets or sets the operation when the depth test fails
+         */
+        get opDepthFail(): number;
+        set opDepthFail(value: number);
+        private _opStencilDepthPass;
+        /**
+         * Gets or sets the operation when the stencil+depth test succeeds
+         */
+        get opStencilDepthPass(): number;
+        set opStencilDepthPass(value: number);
+        private _mask;
+        /**
+         * Gets or sets the stencil mask
+         */
+        get mask(): number;
+        set mask(value: number);
+        private _enabled;
+        /**
+         * Enables or disables the stencil test
+         */
+        get enabled(): boolean;
+        set enabled(value: boolean);
+        /**
+        * Get the current class name, useful for serialization or dynamic coding.
+        * @returns "MaterialStencilState"
+        */
+        getClassName(): string;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param stencilState defines stencil state where to copy the info
+         */
+        copyTo(stencilState: MaterialStencilState): void;
+        /**
+         * Serializes this stencil configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a stencil state configuration from a serialized object.
+         * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
+         */
+        parse(source: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
     /**
      * Options for compiling materials.
      */
@@ -31290,6 +31412,10 @@ declare module BABYLON {
          * Sets the material fill mode
          */
         set fillMode(value: number);
+        /**
+         * Gives access to the stencil properties of the material
+         */
+        readonly stencil: MaterialStencilState;
         /**
          * @hidden
          * Stores the effects for the material
@@ -40509,45 +40635,39 @@ declare module BABYLON {
     /**
      * @hidden
      **/
-    export class StencilState {
+    export class StencilState implements IStencilState {
         /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
         static readonly ALWAYS: number;
         /** Passed to stencilOperation to specify that stencil value must be kept */
         static readonly KEEP: number;
         /** Passed to stencilOperation to specify that stencil value must be replaced */
         static readonly REPLACE: number;
-        protected _isStencilTestDirty: boolean;
-        protected _isStencilMaskDirty: boolean;
-        protected _isStencilFuncDirty: boolean;
-        protected _isStencilOpDirty: boolean;
-        protected _stencilTest: boolean;
-        protected _stencilMask: number;
-        protected _stencilFunc: number;
-        protected _stencilFuncRef: number;
-        protected _stencilFuncMask: number;
-        protected _stencilOpStencilFail: number;
-        protected _stencilOpDepthFail: number;
-        protected _stencilOpStencilDepthPass: number;
-        get isDirty(): boolean;
+        constructor();
+        reset(): void;
+        func: number;
         get stencilFunc(): number;
         set stencilFunc(value: number);
+        funcRef: number;
         get stencilFuncRef(): number;
         set stencilFuncRef(value: number);
+        funcMask: number;
         get stencilFuncMask(): number;
         set stencilFuncMask(value: number);
+        opStencilFail: number;
         get stencilOpStencilFail(): number;
         set stencilOpStencilFail(value: number);
+        opDepthFail: number;
         get stencilOpDepthFail(): number;
         set stencilOpDepthFail(value: number);
+        opStencilDepthPass: number;
         get stencilOpStencilDepthPass(): number;
         set stencilOpStencilDepthPass(value: number);
+        mask: number;
         get stencilMask(): number;
         set stencilMask(value: number);
+        enabled: boolean;
         get stencilTest(): boolean;
         set stencilTest(value: boolean);
-        constructor(reset?: boolean);
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
     }
 }
 declare module BABYLON {
@@ -40686,6 +40806,48 @@ declare module BABYLON {
         set(hardwareTexture: WebGLTexture): void;
         reset(): void;
         release(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class StencilStateComposer {
+        protected _isStencilTestDirty: boolean;
+        protected _isStencilMaskDirty: boolean;
+        protected _isStencilFuncDirty: boolean;
+        protected _isStencilOpDirty: boolean;
+        protected _enabled: boolean;
+        protected _mask: number;
+        protected _func: number;
+        protected _funcRef: number;
+        protected _funcMask: number;
+        protected _opStencilFail: number;
+        protected _opDepthFail: number;
+        protected _opStencilDepthPass: number;
+        stencilGlobal: IStencilState;
+        stencilMaterial: IStencilState | undefined;
+        useStencilGlobalOnly: boolean;
+        get isDirty(): boolean;
+        get func(): number;
+        set func(value: number);
+        get funcRef(): number;
+        set funcRef(value: number);
+        get funcMask(): number;
+        set funcMask(value: number);
+        get opStencilFail(): number;
+        set opStencilFail(value: number);
+        get opDepthFail(): number;
+        set opDepthFail(value: number);
+        get opStencilDepthPass(): number;
+        set opStencilDepthPass(value: number);
+        get mask(): number;
+        set mask(value: number);
+        get enabled(): boolean;
+        set enabled(value: boolean);
+        constructor(reset?: boolean);
+        reset(): void;
+        apply(gl?: WebGLRenderingContext): void;
     }
 }
 declare module BABYLON {
@@ -41109,6 +41271,8 @@ declare module BABYLON {
         protected _colorWriteChanged: boolean;
         /** @hidden */
         protected _depthCullingState: DepthCullingState;
+        /** @hidden */
+        protected _stencilStateComposer: StencilStateComposer;
         /** @hidden */
         protected _stencilState: StencilState;
         /** @hidden */
@@ -41874,6 +42038,10 @@ declare module BABYLON {
          * Gets the stencil state manager
          */
         get stencilState(): StencilState;
+        /**
+         * Gets the stencil state composer
+         */
+        get stencilStateComposer(): StencilStateComposer;
         /**
          * Clears the list of texture accessible through engine.
          * This can help preventing texture load conflict due to name collision.
@@ -43351,8 +43519,9 @@ declare module BABYLON {
          * @param force defines if states must be applied even if cache is up to date
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+         * @param stencil stencil states to set
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
         /**
          * Set the z offset to apply to current rendering
          * @param value defines the offset to apply
@@ -55885,6 +56054,10 @@ declare module BABYLON {
          * The picking info it provides contains the point to which the target mesh will move ()
          */
         onTargetMeshPositionUpdatedObservable: Observable<PickingInfo>;
+        /**
+         * Is teleportation enabled. Can be used to allow rotation only.
+         */
+        teleportationEnabled: boolean;
         private _rotationEnabled;
         /**
          * Is rotation enabled when moving forward?
@@ -55921,6 +56094,11 @@ declare module BABYLON {
          */
         addFloorMesh(mesh: AbstractMesh): void;
         /**
+         * Add a mesh to the list of meshes blocking the teleportation ray
+         * @param mesh The mesh to add to the teleportation-blocking meshes
+         */
+        addBlockerMesh(mesh: AbstractMesh): void;
+        /**
          * Add a new snap-to point to fix teleportation to this position
          * @param newSnapPoint The new Snap-To point
          */
@@ -55933,6 +56111,11 @@ declare module BABYLON {
          * @param mesh the mesh to remove
          */
         removeFloorMesh(mesh: AbstractMesh): void;
+        /**
+         * Remove a mesh from the blocker meshes array
+         * @param mesh the mesh to remove
+         */
+        removeBlockerMesh(mesh: AbstractMesh): void;
         /**
          * Remove a mesh from the floor meshes array using its name
          * @param name the mesh name to remove
@@ -60549,27 +60732,25 @@ declare module BABYLON {
     /**
      * @hidden
      **/
-    export class WebGPUStencilState extends StencilState {
+    export class WebGPUStencilStateComposer extends StencilStateComposer {
         private _cache;
         constructor(cache: WebGPUCacheRenderPipeline);
-        get stencilFunc(): number;
-        set stencilFunc(value: number);
-        get stencilFuncRef(): number;
-        set stencilFuncRef(value: number);
-        get stencilFuncMask(): number;
-        set stencilFuncMask(value: number);
-        get stencilOpStencilFail(): number;
-        set stencilOpStencilFail(value: number);
-        get stencilOpDepthFail(): number;
-        set stencilOpDepthFail(value: number);
-        get stencilOpStencilDepthPass(): number;
-        set stencilOpStencilDepthPass(value: number);
-        get stencilMask(): number;
-        set stencilMask(value: number);
-        get stencilTest(): boolean;
-        set stencilTest(value: boolean);
+        get func(): number;
+        set func(value: number);
+        get funcMask(): number;
+        set funcMask(value: number);
+        get opStencilFail(): number;
+        set opStencilFail(value: number);
+        get opDepthFail(): number;
+        set opDepthFail(value: number);
+        get opStencilDepthPass(): number;
+        set opStencilDepthPass(value: number);
+        get mask(): number;
+        set mask(value: number);
+        get enabled(): boolean;
+        set enabled(value: boolean);
         reset(): void;
-        apply(gl: WebGLRenderingContext): void;
+        apply(gl?: WebGLRenderingContext): void;
     }
 }
 declare module BABYLON {
@@ -61002,6 +61183,8 @@ declare module BABYLON {
          * @param value True to enable, fale to disable
          */
         captureGPUFrameTime(value: boolean): void;
+        /** @hidden */
+        applyStates(): void;
         /**
          * Force the entire cache to be cleared
          * You should not have to use this function unless your engine needs to share the WebGPU context with another engine
@@ -61581,8 +61764,9 @@ declare module BABYLON {
          * @param force defines if states must be applied even if cache is up to date
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+         * @param stencil stencil states to set
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
@@ -61651,8 +61835,6 @@ declare module BABYLON {
         _bindTextureDirectly(target: number, texture: InternalTexture, forTextureDataUpdate?: boolean, force?: boolean): boolean;
         /** @hidden */
         _releaseFramebufferObjects(texture: InternalTexture): void;
-        /** @hidden */
-        applyStates(): void;
         /**
          * Gets a boolean indicating if all created effects are ready
          * @returns always true - No parallel shader compilation
@@ -61940,7 +62122,7 @@ declare module BABYLON {
         getRenderWidth(useScreen?: boolean): number;
         getRenderHeight(useScreen?: boolean): number;
         setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
         /**
          * Gets the client rect of native canvas.  Needed for InputManager.
          * @returns a client rectangle
@@ -82784,10 +82966,6 @@ interface GPUAdapterLimits {
     readonly maxVertexBufferArrayStride: GPUSize32;
 }
 
-interface GPUAdapterFeatures {
-    readonly GPUFeatureName: { [name: string]: void };
-}
-
 interface Navigator {
     readonly gpu: GPU | undefined;
 }
@@ -82807,13 +82985,11 @@ interface GPURequestAdapterOptions {
 
 type GPUPowerPreference = "low-power" | "high-performance";
 
-// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features as GPUAdapterFeatures but as GPUFeatureName[]
 declare class GPUAdapter {
     // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
     private __brand: void;
     readonly name: string;
-    readonly features: GPUFeatureName[];
-    //readonly features: GPUAdapterFeatures;
+    readonly features: ReadonlySet<GPUFeatureName>;
     readonly limits: Required<GPUAdapterLimits>;
 
     requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice | null>;
@@ -82837,7 +83013,7 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     label: string | undefined;
 
     readonly adapter: GPUAdapter;
-    readonly features: GPUFeatureName[];
+    readonly features: ReadonlySet<GPUFeatureName>;
     readonly limits: Required<GPUAdapterLimits>;
 
     readonly queue: GPUQueue;
