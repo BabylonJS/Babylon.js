@@ -438,7 +438,7 @@ export class WebGPUEngine extends Engine {
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
 
-        options.deviceDescriptor = options.deviceDescriptor || { nonGuaranteedFeatures:[], nonGuaranteedLimits: {} };
+        options.deviceDescriptor = options.deviceDescriptor || { nonGuaranteedFeatures: [], nonGuaranteedLimits: {} };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
         options.stencil = options.stencil ?? true;
@@ -510,7 +510,6 @@ export class WebGPUEngine extends Engine {
                 this._adapter = adapter!;
                 this._adapterSupportedExtensions = [];
                 this._adapter.features.forEach((feature) => this._adapterSupportedExtensions.push(feature));
-
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
