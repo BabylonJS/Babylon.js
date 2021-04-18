@@ -14,7 +14,7 @@
 	#elif defined(BUMP)
 		// flip the uv for the backface
 		vec2 TBNUV = gl_FrontFacing ? vBumpUV : -vBumpUV;
-		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV);
+		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vTangentSpaceParams);
 	#else
 		// flip the uv for the backface
 		vec2 TBNUV = gl_FrontFacing ? vDetailUV : -vDetailUV;
@@ -52,7 +52,7 @@
 		normalW = normalize(texture2D(bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
 		normalW = normalize(mat3(normalMatrix) * normalW);	
 	#elif !defined(DETAIL)
-		normalW = perturbNormal(TBN, vBumpUV + uvOffset);
+		normalW = perturbNormal(TBN, texture2D(bumpSampler, vBumpUV + uvOffset).xyz, vBumpInfos.y);
     #else
         vec3 bumpNormal = texture2D(bumpSampler, vBumpUV + uvOffset).xyz * 2.0 - 1.0;
         // Reference for normal blending: https://blog.selfshadow.com/publications/blending-in-detail/

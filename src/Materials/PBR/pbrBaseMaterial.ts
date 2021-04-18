@@ -282,6 +282,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_ALBEDOFORREFRACTIONTINT = false;
     public SS_ALBEDOFORTRANSLUCENCYTINT = false;
     public SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
+    public SS_USE_THICKNESS_AS_DEPTH = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
     public SS_USE_GLTF_THICKNESS_TEXTURE = false;
