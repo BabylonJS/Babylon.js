@@ -20,24 +20,32 @@ export class GUINodeTools {
         switch (data) {
             case "Slider":
                 element = new Slider("Slider");
-                break;
+                element.isPointerBlocker = true;
+                element.width = "120px";
+                element.height = "30px";
+                return element;
             case "Checkbox":
                 element = new Checkbox("Checkbox");
-                element.width = "5%";
-                element.height = "5%";
+                element.width = "20px";
+                element.height = "20px";
                 element.color = "#cccccc";
                 return element;
             case "ColorPicker":
                 element = new ColorPicker("ColorPicker");
-                break;
+                element.isPointerBlocker = true;
+                element.width = "10%";
+                element.height = "10%";
+                return element;
             case "Ellipse":
                 element = new Ellipse("Ellipse");
                 element.color = "#cccccc";
-                break;
+                element.isPointerBlocker = true;
+                return element;
             case "Rectangle":
                 element = new Rectangle("Rectangle");
                 element.color = "#cccccc";
-                break;
+                element.isPointerBlocker = true;
+                return element;
             case "Line":
                 element = new Line();
                 element.x1 = 0;
@@ -60,11 +68,16 @@ export class GUINodeTools {
                 return element;
             case "ImageButton":
                 element = Button.CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
-                break;
+                element.background = "#333333";
+                element.color = "#ffffff";
+                element.isPointerBlocker = true;
+                element.width = "120px";
+                element.height = "40px";
+                return element;
             case "VirtualKeyboard":
                 element = new VirtualKeyboard();
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
-                break;
+                return element;
             case "Image":
                 element = new Image("Image", "https://playground.babylonjs.com/textures/grass.png");
                 element.autoScale = true;
@@ -76,14 +89,16 @@ export class GUINodeTools {
                 element.text = "Input Text";
                 element.background = "#333333";
                 element.color = "#ffffff";
-                break;
+                element.isPointerBlocker = true;
+                return element;
             case "InputPassword":
                 element = new InputPassword("InputPassword");
                 element.maxWidth = 0.6;
                 element.text = "Input Text";
                 element.background = "#333333";
                 element.color = "#ffffff";
-                break;
+                element.isPointerBlocker = true;
+                return element;
             case "Grid":
                 element = new Grid("Grid");
                 element.isHighlighted = true;
@@ -100,11 +115,12 @@ export class GUINodeTools {
                 element = Button.CreateSimpleButton("Button", "Click Me");
                 element.background = "#333333";
                 element.color = "#ffffff";
-                break;
+                element.isPointerBlocker = true;
+                element.width = "120px";
+                element.height = "40px";
+                return element;
         }
-        element.width = "15%";
-        element.height = "5%";
-        element.isPointerBlocker = true;
-        return element;
+
+
     }
 }
