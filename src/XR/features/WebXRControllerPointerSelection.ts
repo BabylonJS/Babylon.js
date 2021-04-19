@@ -907,7 +907,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     pickingInfo.pickedPoint = handMesh.position;
                     pickingInfo.originMesh = handMesh;
                     pickingInfo.distance = Vector3.Distance(mesh.position, handMesh.position);
-                    handMesh.updateFacetData();
+                    mesh.updateFacetData();
                     const closestFacet = mesh.getClosestFacetAtCoordinates(handMesh.position.x, handMesh.position.y, handMesh.position.z, undefined, true, true);
                     if (closestFacet)
                     {
