@@ -1381,7 +1381,12 @@ export class ThinEngine {
      * @param stencil defines if the stencil buffer must be cleared
      */
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        const useStencilGlobalOnly = this.stencilStateComposer.useStencilGlobalOnly;
+        this.stencilStateComposer.useStencilGlobalOnly = true; // make sure the stencil mask is coming from the global stencil and not from a material (effect) which would currently be in effect
+
         this.applyStates();
+
+        this.stencilStateComposer.useStencilGlobalOnly = useStencilGlobalOnly;
 
         var mode = 0;
         if (backBuffer && color) {

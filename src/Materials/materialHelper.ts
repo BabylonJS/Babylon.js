@@ -762,19 +762,26 @@ export class MaterialHelper {
      */
     public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
         if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
-            this.PushAttributesForInstances(attribs);
+            this.PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
         }
     }
 
     /**
      * Add the list of attributes required for instances to the attribs array.
      * @param attribs The current list of supported attribs
+     * @param needsPreviousMatrices If the shader needs previous matrices
      */
-    public static PushAttributesForInstances(attribs: string[]): void {
+    public static PushAttributesForInstances(attribs: string[], needsPreviousMatrices: boolean = false): void {
         attribs.push("world0");
         attribs.push("world1");
         attribs.push("world2");
         attribs.push("world3");
+        if (needsPreviousMatrices) {
+            attribs.push("previousWorld0");
+            attribs.push("previousWorld1");
+            attribs.push("previousWorld2");
+            attribs.push("previousWorld3");
+        }
     }
 
     /**
