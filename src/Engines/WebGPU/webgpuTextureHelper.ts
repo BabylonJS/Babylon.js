@@ -638,7 +638,7 @@ export class WebGPUTextureHelper {
 
         const passEncoder = commandEncoder!.beginRenderPass({
             colorAttachments: [{
-                attachment: outputTexture.createView({
+                view: outputTexture.createView({
                     format,
                     dimension: WebGPUConstants.TextureViewDimension.E2d,
                     baseMipLevel: 0,
@@ -817,7 +817,7 @@ export class WebGPUTextureHelper {
         for (let i = 1; i < mipLevelCount; ++i) {
             const passEncoder = commandEncoder!.beginRenderPass({
                 colorAttachments: [{
-                    attachment: gpuTexture.createView({
+                    view: gpuTexture.createView({
                         format,
                         dimension: WebGPUConstants.TextureViewDimension.E2d,
                         baseMipLevel: i,

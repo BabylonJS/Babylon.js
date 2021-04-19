@@ -841,7 +841,7 @@ interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
 }
 
 interface GPURenderPassColorAttachment {
-    attachment: GPUTextureView; // TODO: should be named view
+    view: GPUTextureView;
     resolveTarget?: GPUTextureView;
 
     loadValue: GPULoadOp | GPUColor;
@@ -849,7 +849,7 @@ interface GPURenderPassColorAttachment {
 }
 
 interface GPURenderPassDepthStencilAttachment {
-    attachment: GPUTextureView; // TODO: should be named view
+    view: GPUTextureView;
 
     depthLoadValue: GPULoadOp | number;
     depthStoreOp: GPUStoreOp;
