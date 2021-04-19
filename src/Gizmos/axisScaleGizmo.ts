@@ -41,7 +41,6 @@ export class AxisScaleGizmo extends Gizmo {
      * Custom sensitivity value for the drag strength
      */
     public sensitivity = 1;
-    
     /**
      * The magnitude of the drag strength (scaling factor)
      */
