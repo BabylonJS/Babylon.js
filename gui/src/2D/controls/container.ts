@@ -396,7 +396,6 @@ export class Container extends Control {
 
                 this._postMeasure();
             }
-            
             rebuildCount++;
         }
         while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
