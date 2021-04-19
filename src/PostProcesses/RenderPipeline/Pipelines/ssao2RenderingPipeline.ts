@@ -114,15 +114,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
          if (!this._forceGeometryBuffer) {
              return null;
          }
- 
          return this._scene.geometryBufferRenderer;
      }
- 
      private get _prePassRenderer(): Nullable<PrePassRenderer> {
          if (this._forceGeometryBuffer) {
              return null;
          }
- 
          return this._scene.prePassRenderer;
      }
     /**
