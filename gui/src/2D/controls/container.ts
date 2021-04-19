@@ -375,6 +375,7 @@ export class Container extends Control {
                         if (this.adaptHeightToChildren && child._height.isPixel) {
                             computedHeight = Math.max(computedHeight, child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels);
                         }
+                        this._markAsDirty();
                     }
                 }
 
@@ -395,6 +396,7 @@ export class Container extends Control {
 
                 this._postMeasure();
             }
+            
             rebuildCount++;
         }
         while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
