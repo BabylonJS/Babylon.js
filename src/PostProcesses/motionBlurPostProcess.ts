@@ -79,8 +79,21 @@ export class MotionBlurPostProcess extends PostProcess {
     private _isObjectBased: boolean = true;
 
     private _forceGeometryBuffer: boolean = false;
-    private _geometryBufferRenderer: Nullable<GeometryBufferRenderer> = null;
-    private _prePassRenderer: Nullable<PrePassRenderer> = null;
+    private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
+        if (!this._forceGeometryBuffer) {
+            return null;
+        }
+
+        return this._scene.geometryBufferRenderer;
+    }
+
+    private get _prePassRenderer(): Nullable<PrePassRenderer> {
+        if (this._forceGeometryBuffer) {
+            return null;
+        }
+
+        return this._scene.prePassRenderer;
+    }
 
     private _invViewProjection: Nullable<Matrix> = null;
     private _previousViewProjection: Nullable<Matrix> = null;
@@ -113,13 +126,13 @@ export class MotionBlurPostProcess extends PostProcess {
 
         // Set up assets
         if (this._forceGeometryBuffer) {
-            this._geometryBufferRenderer = scene.enableGeometryBufferRenderer();
+            scene.enableGeometryBufferRenderer();
 
             if (this._geometryBufferRenderer) {
                 this._geometryBufferRenderer.enableVelocity = true;
             }
         } else {
-            this._prePassRenderer = scene.enablePrePassRenderer();
+            scene.enablePrePassRenderer();
 
             if (this._prePassRenderer) {
                 this._prePassRenderer.markAsDirty();
