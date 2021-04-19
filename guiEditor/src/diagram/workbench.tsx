@@ -319,7 +319,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
-        let textureSize = 1200;
+        let textureSize = 1024;
         this._textureMesh = Mesh.CreateGround("GuiCanvas", 1, 1, 1, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
