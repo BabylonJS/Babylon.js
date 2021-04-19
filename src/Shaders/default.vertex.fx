@@ -25,13 +25,7 @@ attribute vec4 color;
 #include<bonesDeclaration>
 
 // Uniforms
-// #include<instancesDeclaration>
-#ifdef INSTANCES
-	attribute vec4 world0;
-	attribute vec4 world1;
-	attribute vec4 world2;
-	attribute vec4 world3;
-#endif
+#include<instancesDeclaration>
 #include<prePassVertexDeclaration>
 
 #ifdef MAINUV1
@@ -106,11 +100,11 @@ varying vec3 vDirectionW;
 #define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void) {
-	
+
 	#define CUSTOM_VERTEX_MAIN_BEGIN
-	
+
 	vec3 positionUpdated = position;
-#ifdef NORMAL	
+#ifdef NORMAL
 	vec3 normalUpdated = normal;
 #endif
 #ifdef TANGENT
@@ -125,7 +119,7 @@ void main(void) {
 
 #ifdef REFLECTIONMAP_SKYBOX
 	vPositionUVW = positionUpdated;
-#endif 
+#endif
 
 #define CUSTOM_VERTEX_UPDATE_POSITION
 
@@ -136,7 +130,7 @@ void main(void) {
 #if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
     vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
-    vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
+    vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
 #endif
 
 #include<bonesVertex>
@@ -168,10 +162,10 @@ void main(void) {
 	}
 #else
 	gl_Position = viewProjection * worldPos;
-#endif	
+#endif
 
 	vPositionW = vec3(worldPos);
-	
+
 #include<prePassVertex>
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
