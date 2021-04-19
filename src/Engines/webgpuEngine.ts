@@ -723,14 +723,14 @@ export class WebGPUEngine extends Engine {
             }
             this._mainTexture = this._device.createTexture(mainTextureDescriptor);
             mainColorAttachments = [{
-                attachment: this._mainTexture.createView(),
+                view: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
                 storeOp: WebGPUConstants.StoreOp.Store
             }];
         }
         else {
             mainColorAttachments = [{
-                attachment: undefined as any,
+                view: undefined as any,
                 loadValue: new Color4(0, 0, 0, 1),
                 storeOp: WebGPUConstants.StoreOp.Store
             }];
@@ -754,7 +754,7 @@ export class WebGPUEngine extends Engine {
         }
         this._depthTexture = this._device.createTexture(depthTextureDescriptor);
         const mainDepthAttachment: GPURenderPassDepthStencilAttachment = {
-            attachment: this._depthTexture.createView(),
+            view: this._depthTexture.createView(),
 
             depthLoadValue: this._clearDepthValue,
             depthStoreOp: WebGPUConstants.StoreOp.Store,
@@ -3165,7 +3165,7 @@ export class WebGPUEngine extends Engine {
                     const colorMSAATextureView = gpuMSAATexture?.createView(viewDescriptor);
 
                     colorAttachments.push({
-                        attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
+                        view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
                         loadValue: colorClearValue,
                         storeOp: WebGPUConstants.StoreOp.Store,
@@ -3180,7 +3180,7 @@ export class WebGPUEngine extends Engine {
             const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
 
             colorAttachments.push({
-                attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
+                view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                 resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
                 loadValue: colorClearValue,
                 storeOp: WebGPUConstants.StoreOp.Store,
@@ -3192,7 +3192,7 @@ export class WebGPUEngine extends Engine {
         this._rttRenderPassWrapper.renderPassDescriptor = {
             colorAttachments,
             depthStencilAttachment: depthStencilTexture && gpuDepthStencilTexture ? {
-                attachment: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
+                view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
                 depthLoadValue: depthStencilTexture._generateDepthBuffer ? depthClearValue : WebGPUConstants.LoadOp.Load,
                 depthStoreOp: WebGPUConstants.StoreOp.Store,
                 stencilLoadValue: depthStencilTexture._generateStencilBuffer ? stencilClearValue : WebGPUConstants.LoadOp.Load,
@@ -3290,7 +3290,7 @@ export class WebGPUEngine extends Engine {
             this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].resolveTarget = this._swapChainTexture.createView();
         }
         else {
-            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].attachment = this._swapChainTexture.createView();
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].view = this._swapChainTexture.createView();
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
