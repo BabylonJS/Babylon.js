@@ -12,6 +12,8 @@ import { MaterialHelper } from "../../Materials/materialHelper";
 import { EffectFallbacks } from '../effectFallbacks';
 import { Scalar } from "../../Maths/math.scalar";
 import { CubeTexture } from "../Textures/cubeTexture";
+import { TmpVectors } from "../../Maths/math.vector";
+import { SubMesh } from "../../Meshes/subMesh";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
@@ -40,6 +42,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_ALBEDOFORREFRACTIONTINT: boolean;
     SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
     SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
+    SS_USE_THICKNESS_AS_DEPTH: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
     SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
@@ -221,6 +224,12 @@ export class PBRSubSurfaceConfiguration {
     public maximumThickness: number = 1;
 
     /**
+     * Defines that the thickness should be used as a measure of the depth volume.
+     */
+     @serialize()
+     public useThicknessAsDepth = false;
+
+     /**
      * Defines the volume tint of the material.
      * This is used for both translucency and scattering.
      */
@@ -343,6 +352,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_ALBEDOFORREFRACTIONTINT = false;
             defines.SS_ALBEDOFORTRANSLUCENCYTINT = false;
             defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
+            defines.SS_USE_THICKNESS_AS_DEPTH = false;
 
             if (this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled) {
                 defines.SUBSURFACE = true;
@@ -374,6 +384,7 @@ export class PBRSubSurfaceConfiguration {
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
                         defines.SS_ALBEDOFORREFRACTIONTINT = this.useAlbedoToTintRefraction;
                         defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = refractionTexture.isCube && (<any>refractionTexture).boundingBoxSize;
+                        defines.SS_USE_THICKNESS_AS_DEPTH = this.useThicknessAsDepth;
                     }
                 }
             }
@@ -392,8 +403,9 @@ export class PBRSubSurfaceConfiguration {
      * @param isFrozen defines whether the material is frozen or not.
      * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
      * @param realTimeFiltering defines whether the textures should be filtered on the fly.
-     */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean): void {
+     * @param subMesh the submesh to bind data for
+    */
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void {
         var refractionTexture = this._getRefractionTexture(scene);
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
@@ -402,7 +414,11 @@ export class PBRSubSurfaceConfiguration {
                 MaterialHelper.BindTextureMatrix(this._thicknessTexture, uniformBuffer, "thickness");
             }
 
-            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness, this.maximumThickness - this.minimumThickness);
+            subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
+
+            const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
+
+            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                 uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());

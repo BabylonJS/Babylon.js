@@ -31,7 +31,7 @@ declare module "../scene" {
 
 Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
     get: function(this: Scene) {
-        this._geometryBufferRenderer;
+        return this._geometryBufferRenderer;
     },
     set: function(this: Scene, value: Nullable<GeometryBufferRenderer>) {
         if (value && value.isSupported) {

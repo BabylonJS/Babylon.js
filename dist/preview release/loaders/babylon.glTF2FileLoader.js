@@ -1517,8 +1517,8 @@ var KHR_materials_translucency = /** @class */ (function () {
             return this._loader.loadTextureInfoAsync(context + "/translucencyTexture", extension.translucencyTexture)
                 .then(function (texture) {
                 pbrMaterial.subSurface.thicknessTexture = texture;
-                pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
-                pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
+                pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
+                pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
             });
         }
         else {
@@ -1696,6 +1696,7 @@ var TransmissionHelper = /** @class */ (function () {
     TransmissionHelper.prototype._setupRenderTargets = function () {
         var _this = this;
         this._opaqueRenderTarget = new babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["RenderTargetTexture"]("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
+        this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
         this._opaqueRenderTarget.gammaSpace = true;
@@ -1788,8 +1789,8 @@ var KHR_materials_transmission = /** @class */ (function () {
             return this._loader.loadTextureInfoAsync(context + "/transmissionTexture", extension.transmissionTexture, undefined)
                 .then(function (texture) {
                 pbrMaterial.subSurface.thicknessTexture = texture;
-                pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
-                pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
+                pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
+                pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
             });
         }
         else {
@@ -2145,16 +2146,15 @@ var KHR_materials_volume = /** @class */ (function () {
         babylonMaterial.subSurface.tintColorAtDistance = attenuationDistance;
         if (extension.attenuationColor !== undefined && extension.attenuationColor.length == 3) {
             babylonMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2]);
-            babylonMaterial.subSurface.tintColor = babylonMaterial.subSurface.tintColor.toLinearSpace();
         }
         babylonMaterial.subSurface.minimumThickness = 0.0;
         babylonMaterial.subSurface.maximumThickness = extension.thicknessFactor;
+        babylonMaterial.subSurface.useThicknessAsDepth = true;
         if (extension.thicknessTexture) {
             return this._loader.loadTextureInfoAsync(context + "/thicknessTexture", extension.thicknessTexture)
                 .then(function (texture) {
                 babylonMaterial.subSurface.thicknessTexture = texture;
-                babylonMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
-                babylonMaterial.subSurface.useMaskFromThicknessTexture = false;
+                babylonMaterial.subSurface.useGltfStyleThicknessTexture = true;
             });
         }
         else {

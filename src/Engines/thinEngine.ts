@@ -37,6 +37,7 @@ import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
+import { StencilStateComposer } from "../States/stencilStateComposer";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -391,6 +392,8 @@ export class ThinEngine {
     /** @hidden */
     protected _depthCullingState = new DepthCullingState();
     /** @hidden */
+    protected _stencilStateComposer = new StencilStateComposer();
+    /** @hidden */
     protected _stencilState = new StencilState();
     /** @hidden */
     public _alphaState = new AlphaState();
@@ -603,6 +606,8 @@ export class ThinEngine {
         let canvas: Nullable<HTMLCanvasElement> = null;
 
         options = options || {};
+
+        this._stencilStateComposer.stencilGlobal = this._stencilState;
 
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
@@ -1376,7 +1381,12 @@ export class ThinEngine {
      * @param stencil defines if the stencil buffer must be cleared
      */
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        const useStencilGlobalOnly = this.stencilStateComposer.useStencilGlobalOnly;
+        this.stencilStateComposer.useStencilGlobalOnly = true; // make sure the stencil mask is coming from the global stencil and not from a material (effect) which would currently be in effect
+
         this.applyStates();
+
+        this.stencilStateComposer.useStencilGlobalOnly = useStencilGlobalOnly;
 
         var mode = 0;
         if (backBuffer && color) {
@@ -2583,6 +2593,8 @@ export class ThinEngine {
             return;
         }
 
+        this._stencilStateComposer.stencilMaterial = undefined;
+
         effect = effect as Effect;
 
         // Use program
@@ -2914,7 +2926,7 @@ export class ThinEngine {
      */
     public applyStates() {
         this._depthCullingState.apply(this._gl);
-        this._stencilState.apply(this._gl);
+        this._stencilStateComposer.apply(this._gl);
         this._alphaState.apply(this._gl);
 
         if (this._colorWriteChanged) {
@@ -2964,6 +2976,13 @@ export class ThinEngine {
         return this._stencilState;
     }
 
+    /**
+     * Gets the stencil state composer
+     */
+     public get stencilStateComposer(): StencilStateComposer {
+        return this._stencilStateComposer;
+    }
+
     // Textures
 
     /**
@@ -2996,7 +3015,7 @@ export class ThinEngine {
             this._currentProgram = null;
             this.resetTextureCache();
 
-            this._stencilState.reset();
+            this._stencilStateComposer.reset();
 
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
