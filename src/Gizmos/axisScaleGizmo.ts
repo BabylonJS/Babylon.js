@@ -41,6 +41,11 @@ export class AxisScaleGizmo extends Gizmo {
      * Custom sensitivity value for the drag strength
      */
     public sensitivity = 1;
+    
+    /**
+     * The magnitude of the drag strength (scaling factor)
+     */
+    public dragScale = 1;
 
     private _isEnabled: boolean = true;
     private _parent: Nullable<ScaleGizmo> = null;
@@ -53,8 +58,6 @@ export class AxisScaleGizmo extends Gizmo {
     private _tmpVector = new Vector3();
     private _tmpMatrix = new Matrix();
     private _tmpMatrix2 = new Matrix();
-        
-    public dragScale = 1;
 
     /**
      * Creates an AxisScaleGizmo
