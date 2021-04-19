@@ -526,9 +526,9 @@ export abstract class WebGPUCacheRenderPipeline {
             case 1:
                 return WebGPUConstants.BlendFactor.One;
             case 0x0300:
-                return WebGPUConstants.BlendFactor.SrcColor;
+                return WebGPUConstants.BlendFactor.Src;
             case 0x0301:
-                return WebGPUConstants.BlendFactor.OneMinusSrcColor;
+                return WebGPUConstants.BlendFactor.OneMinusSrc;
             case 0x0302:
                 return WebGPUConstants.BlendFactor.SrcAlpha;
             case 0x0303:
@@ -538,19 +538,19 @@ export abstract class WebGPUCacheRenderPipeline {
             case 0x0305:
                 return WebGPUConstants.BlendFactor.OneMinusDstAlpha;
             case 0x0306:
-                return WebGPUConstants.BlendFactor.DstColor;
+                return WebGPUConstants.BlendFactor.Dst;
             case 0x0307:
-                return WebGPUConstants.BlendFactor.OneMinusDstColor;
+                return WebGPUConstants.BlendFactor.OneMinusDst;
             case 0x0308:
                 return WebGPUConstants.BlendFactor.SrcAlphaSaturated;
             case 0x8001:
-                return WebGPUConstants.BlendFactor.BlendColor;
+                return WebGPUConstants.BlendFactor.Constant;
             case 0x8002:
-                return WebGPUConstants.BlendFactor.OneMinusBlendColor;
+                return WebGPUConstants.BlendFactor.OneMinusConstant;
             case 0x8003:
-                return WebGPUConstants.BlendFactor.BlendColor;
+                return WebGPUConstants.BlendFactor.Constant;
             case 0x8004:
-                return WebGPUConstants.BlendFactor.OneMinusBlendColor;
+                return WebGPUConstants.BlendFactor.OneMinusConstant;
             default:
                 return WebGPUConstants.BlendFactor.One;
         }
@@ -913,10 +913,10 @@ export abstract class WebGPUCacheRenderPipeline {
         return descriptors;
     }
 
-    private _createRenderPipeline(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number, createLayout = true): GPURenderPipeline {
+    private _createRenderPipeline(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number): GPURenderPipeline {
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const inputStateDescriptor = this._getVertexInputDescriptor(effect, topology);
-        const pipelineLayout = createLayout ? this._createPipelineLayout(webgpuPipelineContext) : undefined;
+        const pipelineLayout = this._createPipelineLayout(webgpuPipelineContext);
 
         const colorStates: Array<GPUColorTargetState> = [];
         const alphaBlend = this._getAphaBlendState();
