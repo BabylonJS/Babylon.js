@@ -11,6 +11,7 @@ import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/key
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
 import { DeviceInputSystem } from "../DeviceInput/deviceInputSystem";
+import { IDeviceInputSystem } from "../DeviceInput/Interfaces/inputInterfaces";
 
 declare type Scene = import("../scene").Scene;
 
@@ -109,7 +110,7 @@ export class InputManager {
     private _onKeyUp: (evt: IKeyboardEvent) => void;
 
     private _scene: Scene;
-    private _deviceInputSystem: DeviceInputSystem;
+    private _deviceInputSystem: IDeviceInputSystem;
 
     /**
      * Creates a new InputManager
@@ -840,7 +841,7 @@ export class InputManager {
             }
         };
 
-        this._deviceInputSystem.onInputChangedObservable.add((eventData) => { //onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState, eventData) => {
+        this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
             const evt: IEvent = eventData;
             // Keyboard Events
             if (eventData.deviceType === DeviceType.Keyboard) {
