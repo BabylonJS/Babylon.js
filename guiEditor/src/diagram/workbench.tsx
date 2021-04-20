@@ -338,18 +338,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         };
 
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
-            removeObservers();
+            ////removeObservers();
             if (p.event.button !== 0) {
                 initialPos = this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
                 this._panning = true;
             } else {
-                this._panning = false;
+               this._panning = false;
             }
         }, PointerEventTypes.POINTERDOWN);
 
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
-            removeObservers();
+            //removeObservers();
         }, PointerEventTypes.POINTERUP);
 
         scene.onPointerObservable.add(zoomFn, PointerEventTypes.POINTERWHEEL);
