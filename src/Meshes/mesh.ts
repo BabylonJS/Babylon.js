@@ -518,6 +518,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     "hasInstances",
                     "source",
                     "worldMatrixInstancedBuffer",
+                    "previousWorldMatrixInstancedBuffer",
                     "hasLODLevels",
                     "geometry",
                     "isBlocked",
