@@ -381,6 +381,7 @@ export class Container extends Control {
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
                     computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
+                        this.parent?._markAsDirty();
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
@@ -388,6 +389,7 @@ export class Container extends Control {
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
                     computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
+                        this.parent?._markAsDirty();
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
                     }

@@ -197,6 +197,7 @@
 - Fix context lost handling ([#10163](https://github.com/BabylonJS/Babylon.js/issues/10163)) ([Popov72](https://github.com/Popov72))
 - Fix for GUI slider step values greater than one ([msDestiny14](https://github.com/msDestiny14))
 - Fix Instances wrongly rendered with motion blur ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix for wrongly rendered GUI rectangle on resize with adaptWidthToChildren ([msDestiny14](https://github.com/msDestiny14))
 
 ## Breaking changes
 
