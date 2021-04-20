@@ -273,6 +273,9 @@ function workerFunc(): void {
     let ktx2Decoder: any;
 
     onmessage = (event) => {
+        if (!event.data) {
+            return;
+        }
         switch (event.data.action) {
             case "init":
                 const urls = event.data.urls;
