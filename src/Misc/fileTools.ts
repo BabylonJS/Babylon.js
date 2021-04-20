@@ -11,6 +11,7 @@ import { StringTools } from './stringTools';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { ThinEngine } from '../Engines/thinEngine';
 import { EngineStore } from '../Engines/engineStore';
+import { Logger } from './logger';
 
 /** @ignore */
 export class LoadFileError extends BaseError {
@@ -363,11 +364,25 @@ export class FileTools {
                 }
             };
 
+            const handleError = (error: unknown) => {
+                const message = error instanceof Error ? error.message : 'Unknown error';
+                if (onError) {
+                    onError(new RequestFileError(message, request));
+                } else {
+                    Logger.Error(message);
+                }
+            }
+
             const retryLoop = (retryIndex: number) => {
                 request.open('GET', loadUrl);
 
                 if (onOpened) {
-                    onOpened(request);
+                    try {
+                        onOpened(request);
+                    } catch (e: unknown) {
+                        handleError(e);
+                        return;
+                    }
                 }
 
                 if (useArrayBuffer) {
@@ -399,10 +414,8 @@ export class FileTools {
                         if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!DomManagement.IsWindowObjectExist() || FileTools.IsFileURL()))) {
                             try {
                                 onSuccess(useArrayBuffer ? request.response : request.responseText, request);
-                            } catch (e) {
-                                if (onError) {
-                                    onError(e);
-                                }
+                            } catch (e: unknown) {
+                                handleError(e);
                             }
                             return;
                         }
