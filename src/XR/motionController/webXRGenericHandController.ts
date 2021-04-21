@@ -1,19 +1,17 @@
 import { IMotionControllerLayoutMap, IMinimalMotionControllerObject, MotionControllerHandedness, WebXRAbstractMotionController } from "./webXRAbstractMotionController";
 import { Scene } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Mesh } from "../../Meshes/mesh";
-import { Quaternion } from "../../Maths/math.vector";
 import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
 
 /**
- * The motion controller class for the standard HTC-Vive controllers
+ * A generic hand controller class that supports select and a secondary grasp
  */
 export class WebXRGenericHandController extends WebXRAbstractMotionController {
 
     public profileId = "generic-hand-select-grasp";
 
     /**
-     * Create a new Vive motion controller object
+     * Create a new hand controller object, without loading a controller model
      * @param scene the scene to use to create this controller
      * @param gamepadObject the corresponding gamepad object
      * @param handedness the handedness of the controller
@@ -35,20 +33,11 @@ export class WebXRGenericHandController extends WebXRAbstractMotionController {
     }
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
-        // nothing to do
+        // no-op
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
-
-        meshes.forEach((mesh) => {
-            mesh.isPickable = false;
-            if (!mesh.parent) {
-                mesh.setParent(this.rootMesh);
-            }
-        });
-
-        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+        // no-op
     }
 
     protected _updateModel(): void {
