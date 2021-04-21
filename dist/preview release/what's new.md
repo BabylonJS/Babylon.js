@@ -93,6 +93,7 @@
 - Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
 - Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
 - Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
+- Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
