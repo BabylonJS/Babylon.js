@@ -49,17 +49,29 @@
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
 - PrePass can now be used in `RenderTargets` speeding up effects like SSAO2 or MotionBlur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
+- Added support for clip planes to the `ShaderMaterial` ([Popov72](https://github.com/Popov72))
+- Added support for local cube map to refraction cube texture ([Popov72](https://github.com/Popov72))
+- Added the `cullBackFaces` property to `Material` ([Popov72](https://github.com/Popov72))
+- Added the `stencil` object property to `Material` ([Popov72](https://github.com/Popov72))
+
+### Meshes
+
+- `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
+- `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
+- Add option to decompose the `newWorldMatrix` when passed into `TransformNode.freezeWorldMatrix`. ([bghgary](https://github.com/bghgary))
 
 ### Inspector
 
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
+- Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
 
 ### NME
 
 - Increased float precision to 4([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
+- NME `TextureBlock`: add an output for the texture level and a switch to disable the internal multiplication (level * texture) ([#10192](https://github.com/BabylonJS/Babylon.js/pull/10192)) ([rassie](https://github.com/rassie))
 
 ### GUIEditor
 
@@ -72,7 +84,9 @@
 - Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
 - Added parenting system ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
-- Added scene explorer ([msDestiny14](https://github.com/msDestiny14))
+- Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
+- Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
+- Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -157,6 +171,22 @@
 - Fix issue with multi-views when using a transparent scene clear color ([Popov72](https://github.com/Popov72))
 - Fix thin instances + animated bones not rendered in the depth renderer ([Popov72](https://github.com/Popov72))
 - Fix issue with WebXR teleportation logic which would cause positional headlocking on teleporation frames ([syntheticmagus](https://github.com/syntheticmagus))
+- Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))
+- Fix the strength input parameter of the NME `PerturbNormal` block that was handled as a 1/strength value ([Popov72](https://github.com/Popov72))
+- Fix an issue with audio engine not being garbage-collected when engine is disposed ([RaananW](https://github.com/RaananW))
+- Fix the NME `NormalBlend` block ([Popov72](https://github.com/Popov72))
+- Fix Compatibility with NPM 7 ([Sebavan](https://github.com/sebavan))
+- Fix for cloning meshes for 3D GUIs ([msDestiny14](https://github.com/msDestiny14))
+- Fix computation of min/max values in glTF loader when using normalized integers ([#10112](https://github.com/BabylonJS/Babylon.js/issues/10112)) ([Popov72](https://github.com/Popov72))
+- Fix instance picking when in billboard mode ([Popov72](https://github.com/Popov72))
+- Fix NME generation code missing `target` and `visibleInInspector` properties ([Popov72](https://github.com/Popov72))
+- Fix transmission mask being accidently used in glTF volume materials ([MiiBond](https://github.com/MiiBond/))
+- Fix `Scene.getPointerOverMesh` returning disposed mesh ([Popov72](https://github.com/Popov72))
+- Fix NME `TextureBlock` to use correct transformed UV coordinates when reading from the texture ([#10176](https://github.com/BabylonJS/Babylon.js/issues/10176)) ([Popov72](https://github.com/Popov72))
+- Fix context lost handling ([#10163](https://github.com/BabylonJS/Babylon.js/issues/10163)) ([Popov72](https://github.com/Popov72))
+- Fix for GUI slider step values greater than one ([msDestiny14](https://github.com/msDestiny14))
+- Fix Instances wrongly rendered with motion blur ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix for wrongly rendered GUI rectangle on resize with adaptWidthToChildren ([msDestiny14](https://github.com/msDestiny14))
 
 ## Breaking changes
 

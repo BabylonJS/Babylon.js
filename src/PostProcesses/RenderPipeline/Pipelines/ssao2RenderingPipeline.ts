@@ -14,7 +14,9 @@ import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from '../../../Engines/engineStore';
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
 import { PrePassRenderer } from "../../../Rendering/prePassRenderer";
+import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Constants } from "../../../Engines/constants";
+import { Nullable } from "../../../types";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
@@ -107,8 +109,19 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     /**
      * Force rendering the geometry through geometry buffer
      */
-    private _forceGeometryBuffer: boolean = false;
-
+     private _forceGeometryBuffer: boolean = false;
+     private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
+         if (!this._forceGeometryBuffer) {
+             return null;
+         }
+         return this._scene.geometryBufferRenderer;
+     }
+     private get _prePassRenderer(): Nullable<PrePassRenderer> {
+         if (this._forceGeometryBuffer) {
+             return null;
+         }
+         return this._scene.prePassRenderer;
+     }
     /**
      * Ratio object used for SSAO ratio and blur ratio
      */
@@ -174,8 +187,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     private _blurVPostProcess: PostProcess;
     private _ssaoCombinePostProcess: PostProcess;
 
-    private _prePassRenderer: PrePassRenderer;
-
     /**
      * Gets active scene
      */
@@ -210,7 +221,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (this._forceGeometryBuffer) {
             scene.enableGeometryBufferRenderer();
         } else {
-            this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
+            scene.enablePrePassRenderer();
         }
 
         this._createRandomTexture();
@@ -289,9 +300,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("near", this._scene.activeCamera.minZ);
             effect.setFloat("far", this._scene.activeCamera.maxZ);
             effect.setFloat("radius", this.radius);
-            if (this._forceGeometryBuffer) {
-                effect.setTexture("depthSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
-            } else {
+            if (this._geometryBufferRenderer) {
+                effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
+            } else if (this._prePassRenderer) {
                 effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
@@ -307,9 +318,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("near", this._scene.activeCamera.minZ);
             effect.setFloat("far", this._scene.activeCamera.maxZ);
             effect.setFloat("radius", this.radius);
-            if (this._forceGeometryBuffer) {
-                effect.setTexture("depthSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
-            } else {
+            if (this._geometryBufferRenderer) {
+                effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
+            } else if (this._prePassRenderer) {
                 effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
@@ -437,10 +448,10 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             }
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-            if (this._forceGeometryBuffer) {
-                effect.setTexture("depthSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
-                effect.setTexture("normalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[1]);
-            } else {
+            if (this._geometryBufferRenderer) {
+                effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
+                effect.setTexture("normalSampler", this._geometryBufferRenderer.getGBuffer().textures[1]);
+            } else if (this._prePassRenderer) {
                 effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
                 effect.setTexture("normalSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
             }

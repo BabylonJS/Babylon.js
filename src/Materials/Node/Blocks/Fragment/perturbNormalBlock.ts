@@ -177,18 +177,18 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
                 { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
-                { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /varying vec2 vBumpUV;/g, replace: ""},
-                { search: /uniform sampler2D bumpSampler;[\s\S]*?\}/g, replace: ""},
+                { search: /uniform sampler2D bumpSampler;/g, replace: ""},
             ]
         });
 
         state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
-                { search: /perturbNormal\(TBN,vBumpUV\+uvOffset\)/g, replace: `perturbNormal(TBN, ${this.normalMapColor.associatedVariableName})` },
-                { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
+                { search: /perturbNormal\(TBN,texture2D\(bumpSampler,vBumpUV\+uvOffset\).xyz,vBumpInfos.y\)/g, replace: `perturbNormal(TBN, ${this.normalMapColor.associatedVariableName}, vBumpInfos.y)` },
+                { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
+                { search: /vBumpInfos.y/g, replace: replaceForBumpInfos },
                 { search: /vBumpUV/g, replace: uv.associatedVariableName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /normalW=/g, replace: this.output.associatedVariableName + ".xyz = " },

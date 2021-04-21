@@ -111,7 +111,7 @@ export class WebXRInputSource {
                     this.motionController = motionController;
                     this.onMotionControllerInitObservable.notifyObservers(motionController);
                     // should the model be loaded?
-                    if (!this._options.doNotLoadControllerMesh) {
+                    if (!this._options.doNotLoadControllerMesh && !this.motionController._doNotLoadControllerMesh) {
                         this.motionController.loadModel().then((success) => {
                             if (success && this.motionController && this.motionController.rootMesh) {
                                 if (this._options.renderingGroupId) {

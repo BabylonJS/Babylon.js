@@ -1,16 +1,15 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
-
         {
             "title": "Sprites",
             "playgroundId": "#ZX8DJ3#1",
             "referenceImage": "Sprites.png"
         },
         {
-            "title": "Procedural texture with NME",       
+            "title": "Procedural texture with NME",
             "renderCount": 2,
-            "playgroundId": "#8S19ZC#3",            
+            "playgroundId": "#8S19ZC#3",
             "referenceImage": "procedural_nme.png"
         },
         {
@@ -39,7 +38,7 @@
             "playgroundId": "#ARLADE#23",
             "referenceImage": "sprite-maps.png",
             "excludeFromAutomaticTesting": true
-        },              
+        },
         {
             "title": "Point light shadows",
             "playgroundId": "#U2F7P9#4",
@@ -1215,6 +1214,62 @@
             "renderCount": 1,
             "playgroundId": "#RJN64I#5",
             "referenceImage": "refraction-local-pbr.png"
+        },
+        {
+            "title": "Instances + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#402",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "instances-mb.png"
+        },
+        {
+            "title": "Instances + GBR + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#403",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "instances-gbr-mb.png"
+        },
+        {
+            "title": "Instances manual update + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#HJGC2G#50",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "instances-mb-manual.png"
+        },
+        {
+            "title": "Thin instances + motion blur",
+            "renderCount": 30,
+            "playgroundId": "#HJGC2G#60",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "thin-instances-mb.png"
+        },
+        {
+            "title": "Thin instances + motion blur + manual",
+            "renderCount": 30,
+            "playgroundId": "#HJGC2G#61",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "thin-instances-mb-manual.png"
+        },
+        {
+            "title": "Thin instances + dynamic buffer resize",
+            "renderCount": 10,
+            "playgroundId": "#217750#33",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "thin-instances-buffer-resize.png"
+        },
+        {
+            "title": "Instances + render self motion blur",
+            "renderCount": 10,
+            "playgroundId": "#217750#34",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "instances-renderself-mb.png"
+        },
+        {
+            "title": "Thin instances + render self motion blur",
+            "renderCount": 10,
+            "playgroundId": "#217750#35",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "thin-instances-renderself-mb.png"
         }
     ]
 }

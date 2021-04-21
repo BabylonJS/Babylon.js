@@ -291,7 +291,10 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
          * handedness (left/right/none) of this controller
          */
         public handedness: MotionControllerHandedness,
-        _doNotLoadControllerMesh: boolean = false
+        /**
+         * @hidden
+         */
+        public _doNotLoadControllerMesh: boolean = false
     ) {
         // initialize the components
         if (layout.components) {

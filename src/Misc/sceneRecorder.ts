@@ -149,6 +149,12 @@ export class SceneRecorder {
                 diffFound = (JSON.stringify(originalValue) !== JSON.stringify(currentValue));
             } else if (!isNaN(originalValue) || Object.prototype.toString.call(originalValue) == '[object String]') {
                 diffFound = (originalValue !== currentValue);
+            } else if (typeof originalValue === "object" && typeof currentValue === "object") {
+                let newObject = {};
+                if (!this._compareObjects(originalValue, currentValue, newObject)) {
+                    deltaJSON[prop] = newObject;
+                    aDifferenceWasFound = true;
+                }
             }
 
             if (diffFound) {
@@ -268,6 +274,8 @@ export class SceneRecorder {
                 entity[prop] = source;
             } else if (property.fromArray) {
                 property.fromArray(source);
+            } else if (typeof property === "object" && property !== null) {
+                this._ApplyPropertiesToEntity(source, property);
             }
         }
     }

@@ -2856,6 +2856,9 @@ var EXT_lights_image_based = /** @class */ (function () {
                     }
                     babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Matrix"].FromQuaternionToRef(rotation, babylonTexture.getReflectionTextureMatrix());
                 }
+                if (!light.irradianceCoefficients) {
+                    throw new Error(context + ": Irradiance coefficients are missing");
+                }
                 var sphericalHarmonics = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["SphericalHarmonics"].FromArray(light.irradianceCoefficients);
                 sphericalHarmonics.scaleInPlace(light.intensity);
                 sphericalHarmonics.convertIrradianceToLambertianRadiance();
@@ -3905,7 +3908,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * A class to handle setting up the rendering of opaque objects to be shown through transmissive objects.
  */
@@ -3980,28 +3982,24 @@ var TransmissionHelper = /** @class */ (function () {
         return false;
     };
     TransmissionHelper.prototype._addMesh = function (mesh) {
-        if (mesh instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
-            this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
-            if (this.shouldRenderAsTransmission(mesh.material)) {
-                this._transparentMeshesCache.push(mesh);
-            }
-            else {
-                this._opaqueMeshesCache.push(mesh);
-            }
+        this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+        if (this.shouldRenderAsTransmission(mesh.material)) {
+            this._transparentMeshesCache.push(mesh);
+        }
+        else {
+            this._opaqueMeshesCache.push(mesh);
         }
     };
     TransmissionHelper.prototype._removeMesh = function (mesh) {
-        if (mesh instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
-            mesh.onMaterialChangedObservable.remove(this._materialObservers[mesh.uniqueId]);
-            delete this._materialObservers[mesh.uniqueId];
-            var idx = this._transparentMeshesCache.indexOf(mesh);
-            if (idx !== -1) {
-                this._transparentMeshesCache.splice(idx, 1);
-            }
-            idx = this._opaqueMeshesCache.indexOf(mesh);
-            if (idx !== -1) {
-                this._opaqueMeshesCache.splice(idx, 1);
-            }
+        mesh.onMaterialChangedObservable.remove(this._materialObservers[mesh.uniqueId]);
+        delete this._materialObservers[mesh.uniqueId];
+        var idx = this._transparentMeshesCache.indexOf(mesh);
+        if (idx !== -1) {
+            this._transparentMeshesCache.splice(idx, 1);
+        }
+        idx = this._opaqueMeshesCache.indexOf(mesh);
+        if (idx !== -1) {
+            this._opaqueMeshesCache.splice(idx, 1);
         }
     };
     TransmissionHelper.prototype._parseScene = function () {
@@ -4013,32 +4011,30 @@ var TransmissionHelper = /** @class */ (function () {
     };
     // When one of the meshes in the scene has its material changed, make sure that it's in the correct cache list.
     TransmissionHelper.prototype.onMeshMaterialChanged = function (mesh) {
-        if (mesh instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
-            var transparentIdx = this._transparentMeshesCache.indexOf(mesh);
-            var opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
-            // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
-            var useTransmission = this.shouldRenderAsTransmission(mesh.material);
-            if (useTransmission) {
-                if (mesh.material instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]) {
-                    mesh.material.subSurface.refractionTexture = this._opaqueRenderTarget;
-                }
-                if (opaqueIdx !== -1) {
-                    this._opaqueMeshesCache.splice(opaqueIdx, 1);
-                    this._transparentMeshesCache.push(mesh);
-                }
-                else if (transparentIdx === -1) {
-                    this._transparentMeshesCache.push(mesh);
-                }
-                // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
+        var transparentIdx = this._transparentMeshesCache.indexOf(mesh);
+        var opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
+        // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
+        var useTransmission = this.shouldRenderAsTransmission(mesh.material);
+        if (useTransmission) {
+            if (mesh.material instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]) {
+                mesh.material.subSurface.refractionTexture = this._opaqueRenderTarget;
             }
-            else {
-                if (transparentIdx !== -1) {
-                    this._transparentMeshesCache.splice(transparentIdx, 1);
-                    this._opaqueMeshesCache.push(mesh);
-                }
-                else if (opaqueIdx === -1) {
-                    this._opaqueMeshesCache.push(mesh);
-                }
+            if (opaqueIdx !== -1) {
+                this._opaqueMeshesCache.splice(opaqueIdx, 1);
+                this._transparentMeshesCache.push(mesh);
+            }
+            else if (transparentIdx === -1) {
+                this._transparentMeshesCache.push(mesh);
+            }
+            // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
+        }
+        else {
+            if (transparentIdx !== -1) {
+                this._transparentMeshesCache.splice(transparentIdx, 1);
+                this._opaqueMeshesCache.push(mesh);
+            }
+            else if (opaqueIdx === -1) {
+                this._opaqueMeshesCache.push(mesh);
             }
         }
     };
@@ -4501,6 +4497,7 @@ var KHR_materials_volume = /** @class */ (function () {
         }
         babylonMaterial.subSurface.minimumThickness = 0.0;
         babylonMaterial.subSurface.maximumThickness = extension.thicknessFactor;
+        babylonMaterial.subSurface.useThicknessAsDepth = true;
         if (extension.thicknessTexture) {
             return this._loader.loadTextureInfoAsync(context + "/thicknessTexture", extension.thicknessTexture)
                 .then(function (texture) {
