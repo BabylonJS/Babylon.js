@@ -21,7 +21,8 @@ export class WebXRGenericHandController extends WebXRAbstractMotionController {
      * @param handedness the handedness of the controller
      */
     constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness) {
-        super(scene, GenericHandSelectGraspProfile[handedness], gamepadObject, handedness);
+        // Don't load the controller model - for now, hands have no real model.
+        super(scene, GenericHandSelectGraspProfile[handedness], gamepadObject, handedness, true);
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string } {
@@ -58,7 +59,7 @@ export class WebXRGenericHandController extends WebXRAbstractMotionController {
 }
 
 // register the profiles
-WebXRMotionControllerManager.RegisterController("generic-hand-select", (xrInput: XRInputSource, scene: Scene) => {
+WebXRMotionControllerManager.RegisterController("generic-hand-select-grasp", (xrInput: XRInputSource, scene: Scene) => {
     return new WebXRGenericHandController(scene, <any>xrInput.gamepad, xrInput.handedness);
 });
 
