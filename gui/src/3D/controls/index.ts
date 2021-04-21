@@ -4,6 +4,7 @@ export * from "./container3D";
 export * from "./control3D";
 export * from "./cylinderPanel";
 export * from "./holographicButton";
+export * from "./holographicSlate";
 export * from "./meshButton3D";
 export * from "./planePanel";
 export * from "./scatterPanel";
