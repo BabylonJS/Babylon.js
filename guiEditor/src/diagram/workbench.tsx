@@ -32,8 +32,6 @@ export const isFramePortData = (variableToCheck: any): variableToCheck is FrameP
 };
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    private _gridCanvas: HTMLDivElement;
-    private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
@@ -131,11 +129,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return this.nodes.filter((n) => n === guiControl)[0];
     }
 
-    reset() {
-        this._gridCanvas.innerHTML = "";
-        this._svgCanvas.innerHTML = "";
-    }
-
     appendBlock(guiElement: Control) {
         var newGuiNode = this.createNewGuiNode(guiElement);
         this.globalState.guiTexture.addControl(guiElement);
@@ -199,9 +192,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     componentDidMount() {
-        this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-container") as HTMLDivElement;
-        this._gridCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas-container") as HTMLDivElement;
-        this._svgCanvas = this.props.globalState.hostDocument.getElementById("workbench-svg-container") as HTMLElement;
+        this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLDivElement;
     }
 
     onMove(evt: React.PointerEvent) {
@@ -338,7 +329,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         };
 
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
-            ////removeObservers();
+            removeObservers();
             if (p.event.button !== 0) {
                 initialPos = this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
@@ -349,7 +340,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }, PointerEventTypes.POINTERDOWN);
 
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
-            //removeObservers();
+            this._panning = false;
+            removeObservers();
         }, PointerEventTypes.POINTERUP);
 
         scene.onPointerObservable.add(zoomFn, PointerEventTypes.POINTERWHEEL);
@@ -445,12 +437,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     render() {
         return (
             <canvas id="workbench-canvas" onPointerMove={(evt) => this.onMove(evt)} onPointerDown={(evt) => this.onDown(evt)} onPointerUp={(evt) => this.onUp(evt)}>
-                <div id="workbench-container">
-                    <div id="workbench-canvas-container"></div>
-                    <div id="frame-container"></div>
-                    <svg id="workbench-svg-container"></svg>
-                    <div id="selection-container"></div>
-                </div>
             </canvas>
         );
     }
