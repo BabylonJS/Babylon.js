@@ -87,45 +87,58 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         // if no motion controller available, create impostors!
         if (this._options.physicsProperties!.useControllerMesh && xrController.inputSource.gamepad) {
             xrController.onMotionControllerInitObservable.addOnce((motionController) => {
-                motionController.onModelLoadedObservable.addOnce(() => {
-                    const impostor = new PhysicsImpostor(motionController.rootMesh!, PhysicsImpostor.MeshImpostor, {
-                        mass: 0,
-                        ...this._options.physicsProperties,
+                if (!motionController._doNotLoadControllerMesh) {
+                    motionController.onModelLoadedObservable.addOnce(() => {
+                        const impostor = new PhysicsImpostor(
+                            motionController.rootMesh!,
+                            PhysicsImpostor.MeshImpostor,
+                            {
+                                mass: 0,
+                                ...this._options.physicsProperties,
+                            });
+
+                        const controllerMesh = xrController.grip || xrController.pointer;
+                        this._controllers[xrController.uniqueId] = {
+                            xrController,
+                            impostor,
+                            oldPos: controllerMesh.position.clone(),
+                            oldRotation: controllerMesh.rotationQuaternion!.clone(),
+                        };
                     });
-                    const controllerMesh = xrController.grip || xrController.pointer;
-                    this._controllers[xrController.uniqueId] = {
-                        xrController,
-                        impostor,
-                        oldPos: controllerMesh.position.clone(),
-                        oldRotation: controllerMesh.rotationQuaternion!.clone(),
-                    };
-                });
+                } else {
+                    // This controller isn't using a model, create impostors instead
+                    this._createPhysicsImpostor(xrController);
+                }
             });
         } else {
-            const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
-            const impostorSize: number | { width: number; height: number; depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
-            const impostorMesh = SphereBuilder.CreateSphere("impostor-mesh-" + xrController.uniqueId, {
-                diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
-                diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
-                diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
-            });
-            impostorMesh.isVisible = this._debugMode;
-            impostorMesh.isPickable = false;
-            impostorMesh.rotationQuaternion = new Quaternion();
-            const controllerMesh = xrController.grip || xrController.pointer;
-            impostorMesh.position.copyFrom(controllerMesh.position);
-            impostorMesh.rotationQuaternion!.copyFrom(controllerMesh.rotationQuaternion!);
-            const impostor = new PhysicsImpostor(impostorMesh, impostorType, {
-                mass: 0,
-                ...this._options.physicsProperties,
-            });
-            this._controllers[xrController.uniqueId] = {
-                xrController,
-                impostor,
-                impostorMesh,
-            };
+            this._createPhysicsImpostor(xrController);
         }
     };
+
+    private _createPhysicsImpostor(xrController: WebXRInputSource) {
+        const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
+        const impostorSize: number | { width: number; height: number; depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
+        const impostorMesh = SphereBuilder.CreateSphere("impostor-mesh-" + xrController.uniqueId, {
+            diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
+            diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
+            diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
+        });
+        impostorMesh.isVisible = this._debugMode;
+        impostorMesh.isPickable = false;
+        impostorMesh.rotationQuaternion = new Quaternion();
+        const controllerMesh = xrController.grip || xrController.pointer;
+        impostorMesh.position.copyFrom(controllerMesh.position);
+        impostorMesh.rotationQuaternion!.copyFrom(controllerMesh.rotationQuaternion!);
+        const impostor = new PhysicsImpostor(impostorMesh, impostorType, {
+            mass: 0,
+            ...this._options.physicsProperties,
+        });
+        this._controllers[xrController.uniqueId] = {
+            xrController,
+            impostor,
+            impostorMesh,
+        };
+    }
 
     private _controllers: {
         [id: string]: {
