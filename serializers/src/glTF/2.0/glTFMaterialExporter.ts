@@ -181,7 +181,31 @@ export class _GLTFMaterialExporter {
             }
         }
 
+        // Do a naieve check for materials that contain extensions that have texture-related members.
+        if (material.extensions) {
+            for (let extension in material.extensions){
+                let extensionObject = material.extensions[extension];
+                for (let member in extensionObject){
+                    if (member.indexOf("Texture") !== -1){
+                        if (extensionObject[member]){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
         return false;
+    }
+
+    public _getTextureInfo(babylonTexture: Nullable<BaseTexture>): Nullable<ITextureInfo> {
+        if (babylonTexture){
+            const textureUid = babylonTexture.uid;
+            if (textureUid in this._textureMap){
+                return this._textureMap[textureUid];
+            }
+        }
+        return null;
     }
 
     /**
