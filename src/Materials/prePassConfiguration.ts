@@ -19,6 +19,11 @@ export class PrePassConfiguration {
      */
     public previousViewProjection: Matrix;
     /**
+     * Current view projection matrix
+     * Used for computing velocity
+     */
+    public currentViewProjection: Matrix;
+    /**
      * Previous bones of meshes carrying this material
      * Used for computing velocity
      */
@@ -56,14 +61,21 @@ export class PrePassConfiguration {
                 }
 
                 if (!this.previousViewProjection) {
-                    this.previousViewProjection = scene.getTransformMatrix();
+                    this.previousViewProjection = scene.getTransformMatrix().clone();
+                    this.currentViewProjection = scene.getTransformMatrix().clone();
+                }
+
+                if (this.currentViewProjection.updateFlag !== scene.getTransformMatrix().updateFlag) {
+                    // First update of the prepass configuration for this rendering pass
+                    this.previousViewProjection.copyFrom(this.currentViewProjection);
+                    this.currentViewProjection.copyFrom(scene.getTransformMatrix());
+                    this.currentViewProjection.updateFlag = scene.getTransformMatrix().updateFlag;
                 }
 
                 effect.setMatrix("previousWorld", this.previousWorldMatrices[mesh.uniqueId]);
                 effect.setMatrix("previousViewProjection", this.previousViewProjection);
 
                 this.previousWorldMatrices[mesh.uniqueId] = world.clone();
-                this.previousViewProjection = scene.getTransformMatrix().clone();
             }
         }
     }

@@ -7,11 +7,6 @@
 		varying vec2 vBumpUV;
 	#endif
 	uniform sampler2D bumpSampler;
-	
-	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv)
-	{
-		return perturbNormal(cotangentFrame, texture2D(bumpSampler, uv).xyz, vBumpInfos.y);
-	}
 #endif
 
 #if defined(DETAIL)
@@ -23,19 +18,6 @@
 		varying vec2 vDetailUV;
 	#endif
 	uniform sampler2D detailSampler;
-#endif
-
-#if defined(BUMP)
-	vec3 perturbNormal(mat3 cotangentFrame, vec3 color)
-	{
-		return perturbNormal(cotangentFrame, color, vBumpInfos.y);
-	}
-
-	// Thanks to http://www.thetenthplanet.de/archives/1180
-	mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)
-	{
-		return cotangent_frame(normal, p, uv, vTangentSpaceParams);
-	}
 #endif
 
 #if defined(BUMP) && defined(PARALLAX)
