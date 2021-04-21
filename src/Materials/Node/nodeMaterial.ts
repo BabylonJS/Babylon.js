@@ -267,6 +267,15 @@ export class NodeMaterial extends PushMaterial {
         this._mode = value;
     }
 
+    /** Gets or sets the unique identifier used to identified the effect associated with the material */
+    public get buildId() {
+        return this._buildId;
+    }
+
+    public set buildId(value: number) {
+        this._buildId = value;
+    }
+
     /**
      * A free comment about the material
      */

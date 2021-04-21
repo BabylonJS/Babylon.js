@@ -18931,6 +18931,9 @@ declare module BABYLON {
          */
         get mode(): NodeMaterialModes;
         set mode(value: NodeMaterialModes);
+        /** Gets or sets the unique identifier used to identified the effect associated with the material */
+        get buildId(): number;
+        set buildId(value: number);
         /**
          * A free comment about the material
          */
