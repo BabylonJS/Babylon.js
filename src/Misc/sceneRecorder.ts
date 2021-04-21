@@ -274,6 +274,8 @@ export class SceneRecorder {
                 entity[prop] = source;
             } else if (property.fromArray) {
                 property.fromArray(source);
+            } else if (typeof property === "object" && property !== null) {
+                this._ApplyPropertiesToEntity(source, property);
             }
         }
     }

@@ -3777,6 +3777,7 @@ var Container = /** @class */ (function (_super) {
     };
     /** @hidden */
     Container.prototype._layout = function (parentMeasure, context) {
+        var _a, _b;
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -3794,8 +3795,8 @@ var Container = /** @class */ (function (_super) {
             this._rebuildLayout = false;
             this._processMeasures(parentMeasure, context);
             if (!this._isClipped) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                    var child = _a[_i];
+                for (var _i = 0, _c = this._children; _i < _c.length; _i++) {
+                    var child = _c[_i];
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
                     if (child._layout(this._measureForChildren, context)) {
                         if (this.adaptWidthToChildren && child._width.isPixel) {
@@ -3809,6 +3810,7 @@ var Container = /** @class */ (function (_super) {
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
                     computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
+                        (_a = this.parent) === null || _a === void 0 ? void 0 : _a._markAsDirty();
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
@@ -3816,6 +3818,7 @@ var Container = /** @class */ (function (_super) {
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
                     computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
+                        (_b = this.parent) === null || _b === void 0 ? void 0 : _b._markAsDirty();
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
                     }
