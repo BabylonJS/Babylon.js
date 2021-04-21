@@ -24,6 +24,7 @@ import { Axis } from "../../Maths/math.axis";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Tags } from "../../Misc/tags";
 import { Bone } from "../../Bones/bone";
+import { sceneFragmentDeclaration } from "../../Shaders/ShadersInclude/sceneFragmentDeclaration";
 
 declare const XRHand: XRHand;
 
@@ -220,10 +221,34 @@ export class WebXRHand implements IDisposable {
         return {
             [HandPart.WRIST]: [XRHandJoint.wrist],
             [HandPart.THUMB]: [XRHandJoint["thumb-metacarpal"], XRHandJoint["thumb-phalanx-proximal"], XRHandJoint["thumb-phalanx-distal"], XRHandJoint["thumb-tip"]],
-            [HandPart.INDEX]: [XRHandJoint["index-finger-metacarpal"], XRHandJoint["index-finger-phalanx-proximal"], XRHandJoint["index-finger-phalanx-intermediate"], XRHandJoint["index-finger-phalanx-distal"], XRHandJoint["index-finger-tip"]],
-            [HandPart.MIDDLE]: [XRHandJoint["middle-finger-metacarpal"], XRHandJoint["middle-finger-phalanx-proximal"], XRHandJoint["middle-finger-phalanx-intermediate"], XRHandJoint["middle-finger-phalanx-distal"], XRHandJoint["middle-finger-tip"]],
-            [HandPart.RING]: [XRHandJoint["ring-finger-metacarpal"], XRHandJoint["ring-finger-phalanx-proximal"], XRHandJoint["ring-finger-phalanx-intermediate"], XRHandJoint["ring-finger-phalanx-distal"], XRHandJoint["ring-finger-tip"]],
-            [HandPart.LITTLE]: [XRHandJoint["pinky-finger-metacarpal"], XRHandJoint["pinky-finger-phalanx-proximal"], XRHandJoint["pinky-finger-phalanx-intermediate"], XRHandJoint["pinky-finger-phalanx-distal"], XRHandJoint["pinky-finger-tip"]],
+            [HandPart.INDEX]: [
+                XRHandJoint["index-finger-metacarpal"],
+                XRHandJoint["index-finger-phalanx-proximal"],
+                XRHandJoint["index-finger-phalanx-intermediate"],
+                XRHandJoint["index-finger-phalanx-distal"],
+                XRHandJoint["index-finger-tip"],
+            ],
+            [HandPart.MIDDLE]: [
+                XRHandJoint["middle-finger-metacarpal"],
+                XRHandJoint["middle-finger-phalanx-proximal"],
+                XRHandJoint["middle-finger-phalanx-intermediate"],
+                XRHandJoint["middle-finger-phalanx-distal"],
+                XRHandJoint["middle-finger-tip"],
+            ],
+            [HandPart.RING]: [
+                XRHandJoint["ring-finger-metacarpal"],
+                XRHandJoint["ring-finger-phalanx-proximal"],
+                XRHandJoint["ring-finger-phalanx-intermediate"],
+                XRHandJoint["ring-finger-phalanx-distal"],
+                XRHandJoint["ring-finger-tip"],
+            ],
+            [HandPart.LITTLE]: [
+                XRHandJoint["pinky-finger-metacarpal"],
+                XRHandJoint["pinky-finger-phalanx-proximal"],
+                XRHandJoint["pinky-finger-phalanx-intermediate"],
+                XRHandJoint["pinky-finger-phalanx-distal"],
+                XRHandJoint["pinky-finger-tip"],
+            ],
         };
     }
 
@@ -252,7 +277,7 @@ export class WebXRHand implements IDisposable {
         this._scene = trackedMeshes.get("wrist")!.getScene();
         this.onHandMeshReadyObservable.add(() => {
             // check if we should use bones or transform nodes
-            if (!this._rigMapping) {
+            if (!this._rigMapping || !this._handMesh) {
                 return;
             }
             const transformNode = this._scene.getTransformNodeByName(this._rigMapping[0]);
@@ -262,11 +287,11 @@ export class WebXRHand implements IDisposable {
                     this._useBones = true;
                 }
             }
+            this._handMesh.alwaysSelectAsActiveMesh = true;
+            this._handMesh.getChildMeshes().forEach((m) => (m.alwaysSelectAsActiveMesh = true));
         });
         if (this._handMesh && this._rigMapping) {
             this._defaultHandMesh = false;
-            this._handMesh.alwaysSelectAsActiveMesh = true;
-            this._handMesh.getChildMeshes().forEach((m) => (m.alwaysSelectAsActiveMesh = true));
             this.onHandMeshReadyObservable.notifyObservers(this);
         } else {
             if (!disableDefaultHandMesh) {
@@ -404,7 +429,7 @@ export class WebXRHand implements IDisposable {
     private async _generateDefaultHandMesh() {
         try {
             const handedness = this.xrController.inputSource.handedness === "right" ? "right" : "left";
-            const filename = `${handedness === "right" ? "r" : "l"}_hand_${this._scene.useRightHandedSystem ? "r" : "l"}hs.glb`;
+            const filename = `${handedness === "right" ? "r" : "l"}_hand_rhs.glb`;
             const loaded = await SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/HandMeshes/", filename, this._scene);
             // shader
             const handColors = {
@@ -469,11 +494,13 @@ export class WebXRHand implements IDisposable {
                 "little_tip_",
             ].map((joint) => `${joint}${handedness === "right" ? "R" : "L"}`);
             // single change for left handed systems
-            const tm = this._scene.getTransformNodeByName(this._rigMapping[0]);
-            if (!tm) {
-                throw new Error("could not find the wrist node");
-            } else {
-                tm.parent && (tm.parent as AbstractMesh).rotate(Axis.Y, Math.PI);
+            if (!this._scene.useRightHandedSystem) {
+                const tm = this._scene.getTransformNodeByName(this._rigMapping[0]);
+                if (!tm) {
+                    throw new Error("could not find the wrist node");
+                } else {
+                    tm.parent && (tm.parent as AbstractMesh).rotate(Axis.Y, Math.PI);
+                }
             }
             this.onHandMeshReadyObservable.notifyObservers(this);
         } catch (e) {
@@ -660,7 +687,15 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         const handedness = xrController.inputSource.handedness === "right" ? "right" : "left";
         const handMesh = this.options.jointMeshes?.handMeshes && this.options.jointMeshes?.handMeshes[handedness];
         const rigMapping = this.options.jointMeshes?.rigMapping && this.options.jointMeshes?.rigMapping[handedness];
-        const webxrHand = new WebXRHand(xrController, trackedMeshes, handMesh, rigMapping, this.options.jointMeshes?.disableDefaultHandMesh, touchMesh, this.options.jointMeshes?.leftHandedSystemMeshes);
+        const webxrHand = new WebXRHand(
+            xrController,
+            trackedMeshes,
+            handMesh,
+            rigMapping,
+            this.options.jointMeshes?.disableDefaultHandMesh,
+            touchMesh,
+            this.options.jointMeshes?.leftHandedSystemMeshes
+        );
 
         // get two new meshes
         this._hands[xrController.uniqueId] = {
