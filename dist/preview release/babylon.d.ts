@@ -19030,8 +19030,9 @@ declare module BABYLON {
         /**
          * Build the material and generates the inner effect
          * @param verbose defines if the build should log activity
+         * @param updateBuildId defines if the internal build Id should be updated (default is true)
          */
-        build(verbose?: boolean): void;
+        build(verbose?: boolean, updateBuildId?: boolean): void;
         /**
          * Runs an otpimization phase to try to improve the shader code
          */
@@ -19179,9 +19180,10 @@ declare module BABYLON {
         loadFromSerialization(source: any, rootUrl?: string, merge?: boolean): void;
         /**
          * Makes a duplicate of the current material.
-         * @param name - name to use for the new material.
+         * @param name defines the name to use for the new material
+         * @param shareEffect defines if the clone material should share the same effect (default is false)
          */
-        clone(name: string): NodeMaterial;
+        clone(name: string, shareEffect?: boolean): NodeMaterial;
         /**
          * Creates a node material from parsed material data
          * @param source defines the JSON representation of the material
