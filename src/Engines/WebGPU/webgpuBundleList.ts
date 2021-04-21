@@ -63,7 +63,7 @@ export class WebGPURenderItemBlendColor implements IWebGPURenderItem {
     }
 
     public run(renderPass: GPURenderPassEncoder) {
-        renderPass.setBlendColor(this.color as GPUColor);
+        renderPass.setBlendConstant(this.color as GPUColor);
     }
 
     public clone(): WebGPURenderItemBlendColor {

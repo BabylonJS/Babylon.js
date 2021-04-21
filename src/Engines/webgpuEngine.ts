@@ -160,6 +160,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Defines whether to adapt to the device's viewport characteristics (default: false)
      */
     adaptToDeviceRatio?: boolean;
+
+    /**
+     * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
+     */
+    premultipliedAlpha?: boolean;
 }
 
 /**
@@ -468,7 +473,7 @@ export class WebGPUEngine extends Engine {
 
         this._canvas = canvas;
         this._options = options;
-        this.premultipliedAlpha = false;
+        this.premultipliedAlpha = options.premultipliedAlpha ?? true;
 
         const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
         const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
@@ -685,7 +690,8 @@ export class WebGPUEngine extends Engine {
         this._swapChain = this._context.configureSwapChain({
             device: this._device,
             format: this._options.swapChainFormat!,
-            usage: WebGPUConstants.TextureUsage.OutputAttachment | WebGPUConstants.TextureUsage.CopySrc,
+            usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
+            compositingAlphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasCompositingAlphaMode.Premultiplied : WebGPUConstants.CanvasCompositingAlphaMode.Opaque
         });
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
@@ -709,7 +715,7 @@ export class WebGPUEngine extends Engine {
                 sampleCount: this._mainPassSampleCount,
                 dimension: WebGPUConstants.TextureDimension.E2d,
                 format: this._options.swapChainFormat!,
-                usage: WebGPUConstants.TextureUsage.OutputAttachment,
+                usage: WebGPUConstants.TextureUsage.RenderAttachment,
             };
 
             if (this._mainTexture) {
@@ -717,14 +723,14 @@ export class WebGPUEngine extends Engine {
             }
             this._mainTexture = this._device.createTexture(mainTextureDescriptor);
             mainColorAttachments = [{
-                attachment: this._mainTexture.createView(),
+                view: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
                 storeOp: WebGPUConstants.StoreOp.Store
             }];
         }
         else {
             mainColorAttachments = [{
-                attachment: undefined as any,
+                view: undefined as any,
                 loadValue: new Color4(0, 0, 0, 1),
                 storeOp: WebGPUConstants.StoreOp.Store
             }];
@@ -740,7 +746,7 @@ export class WebGPUEngine extends Engine {
             sampleCount: this._mainPassSampleCount,
             dimension: WebGPUConstants.TextureDimension.E2d,
             format: this._mainRenderPassWrapper.depthTextureFormat,
-            usage:  WebGPUConstants.TextureUsage.OutputAttachment
+            usage:  WebGPUConstants.TextureUsage.RenderAttachment
         };
 
         if (this._depthTexture) {
@@ -748,7 +754,7 @@ export class WebGPUEngine extends Engine {
         }
         this._depthTexture = this._device.createTexture(depthTextureDescriptor);
         const mainDepthAttachment: GPURenderPassDepthStencilAttachment = {
-            attachment: this._depthTexture.createView(),
+            view: this._depthTexture.createView(),
 
             depthLoadValue: this._clearDepthValue,
             depthStoreOp: WebGPUConstants.StoreOp.Store,
@@ -1020,14 +1026,14 @@ export class WebGPUEngine extends Engine {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
         const update = this._stencilStateComposer.funcRef !== this._stencilRefsCurrent[index];
         if (update) {
-            this._stencilRefsCurrent[index] = this._stencilState.stencilFuncRef;
+            this._stencilRefsCurrent[index] = this._stencilStateComposer.funcRef;
         }
         return update;
     }
 
     /** @hidden */
     public _applyStencilRef(renderPass: GPURenderPassEncoder): void {
-        renderPass.setStencilReference(this._stencilState.stencilFuncRef);
+        renderPass.setStencilReference(this._stencilStateComposer.funcRef);
     }
 
     private _blendColorsCurrent: Array<Array<Nullable<number>>> = [[null, null, null, null], [null, null, null, null]];
@@ -1060,7 +1066,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _applyBlendColor(renderPass: GPURenderPassEncoder): void {
-        renderPass.setBlendColor(this._alphaState._blendConstants as GPUColor);
+        renderPass.setBlendConstant(this._alphaState._blendConstants as GPUColor);
     }
 
     /**
@@ -3151,7 +3157,7 @@ export class WebGPUEngine extends Engine {
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
                     const viewDescriptor = {
-                        ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor,
+                        ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
                         format: gpuMRTWrapper.format,
                     };
                     const gpuMSAATexture = gpuMRTWrapper.msaaTexture;
@@ -3159,7 +3165,7 @@ export class WebGPUEngine extends Engine {
                     const colorMSAATextureView = gpuMSAATexture?.createView(viewDescriptor);
 
                     colorAttachments.push({
-                        attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
+                        view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
                         loadValue: colorClearValue,
                         storeOp: WebGPUConstants.StoreOp.Store,
@@ -3174,7 +3180,7 @@ export class WebGPUEngine extends Engine {
             const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
 
             colorAttachments.push({
-                attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
+                view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                 resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
                 loadValue: colorClearValue,
                 storeOp: WebGPUConstants.StoreOp.Store,
@@ -3186,7 +3192,7 @@ export class WebGPUEngine extends Engine {
         this._rttRenderPassWrapper.renderPassDescriptor = {
             colorAttachments,
             depthStencilAttachment: depthStencilTexture && gpuDepthStencilTexture ? {
-                attachment: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
+                view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
                 depthLoadValue: depthStencilTexture._generateDepthBuffer ? depthClearValue : WebGPUConstants.LoadOp.Load,
                 depthStoreOp: WebGPUConstants.StoreOp.Store,
                 stencilLoadValue: depthStencilTexture._generateStencilBuffer ? stencilClearValue : WebGPUConstants.LoadOp.Load,
@@ -3284,7 +3290,7 @@ export class WebGPUEngine extends Engine {
             this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].resolveTarget = this._swapChainTexture.createView();
         }
         else {
-            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].attachment = this._swapChainTexture.createView();
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].view = this._swapChainTexture.createView();
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -3418,7 +3424,7 @@ export class WebGPUEngine extends Engine {
         };
 
         this._rttRenderPassWrapper.depthAttachmentViewDescriptor = {
-            format: this._depthTextureFormat,
+            format: this._depthTextureFormat!,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
             baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
@@ -3705,9 +3711,11 @@ export class WebGPUEngine extends Engine {
     private _draw(drawType: number, fillMode: number, start: number, count: number, instancesCount: number): void {
         const renderPass = this._getCurrentRenderPass();
 
+        this.applyStates();
+
         const mustUpdateViewport = this._mustUpdateViewport(renderPass as GPURenderPassEncoder);
         const mustUpdateScissor = this._mustUpdateScissor(renderPass as GPURenderPassEncoder);
-        const mustUpdateStencilRef = !this._stencilState.stencilTest ? false : this._mustUpdateStencilRef(renderPass as GPURenderPassEncoder);
+        const mustUpdateStencilRef = !this._stencilStateComposer.enabled ? false : this._mustUpdateStencilRef(renderPass as GPURenderPassEncoder);
         const mustUpdateBlendColor = !this._alphaState.alphaBlend ? false : this._mustUpdateBlendColor(renderPass as GPURenderPassEncoder);
 
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
@@ -3721,8 +3729,6 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        this.applyStates();
-
         const useFastPath = !this.compatibilityMode && this._currentDrawContext?.fastBundle;
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
 
@@ -3734,7 +3740,7 @@ export class WebGPUEngine extends Engine {
                 this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
             }
             if (mustUpdateStencilRef) {
-                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilState.stencilFuncRef));
+                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef));
             }
             if (mustUpdateBlendColor) {
                 this._bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));

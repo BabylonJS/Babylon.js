@@ -78,6 +78,7 @@ export class WebGPUClearQuad {
                         binding: 0,
                         resource: {
                             buffer: buffer.underlyingResource,
+                            size: buffer.capacity
                         },
                     }],
                 })

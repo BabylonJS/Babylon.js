@@ -78,6 +78,7 @@
 
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
+- NME `TextureBlock`: add an output for the texture level and a switch to disable the internal multiplication (level * texture) ([#10192](https://github.com/BabylonJS/Babylon.js/pull/10192)) ([rassie](https://github.com/rassie))
 
 ### GUIEditor
 
@@ -195,6 +196,8 @@
 - Fix NME `TextureBlock` to use correct transformed UV coordinates when reading from the texture ([#10176](https://github.com/BabylonJS/Babylon.js/issues/10176)) ([Popov72](https://github.com/Popov72))
 - Fix context lost handling ([#10163](https://github.com/BabylonJS/Babylon.js/issues/10163)) ([Popov72](https://github.com/Popov72))
 - Fix for GUI slider step values greater than one ([msDestiny14](https://github.com/msDestiny14))
+- Fix Instances wrongly rendered with motion blur ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix for wrongly rendered GUI rectangle on resize with adaptWidthToChildren ([msDestiny14](https://github.com/msDestiny14))
 - Fix glTF loader promise stuck when runs on non-json data ([mrlika](https://github.com/mrlika))
 
 ## Breaking changes

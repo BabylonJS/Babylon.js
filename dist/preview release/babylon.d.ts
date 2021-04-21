@@ -9805,6 +9805,11 @@ declare module BABYLON {
          */
         previousViewProjection: Matrix;
         /**
+         * Current view projection matrix
+         * Used for computing velocity
+         */
+        currentViewProjection: Matrix;
+        /**
          * Previous bones of meshes carrying this material
          * Used for computing velocity
          */
@@ -10211,8 +10216,9 @@ declare module BABYLON {
         /**
          * Add the list of attributes required for instances to the attribs array.
          * @param attribs The current list of supported attribs
+         * @param needsPreviousMatrices If the shader needs previous matrices
          */
-        static PushAttributesForInstances(attribs: string[]): void;
+        static PushAttributesForInstances(attribs: string[], needsPreviousMatrices?: boolean): void;
         /**
          * Binds the light information to the effect.
          * @param light The light containing the generator
@@ -11637,6 +11643,10 @@ declare module BABYLON {
          */
         convertToLinearSpace: boolean;
         /**
+         * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
+         */
+        disableLevelMultiplication: boolean;
+        /**
          * Create a new TextureBlock
          * @param name defines the block name
          */
@@ -11674,6 +11684,10 @@ declare module BABYLON {
          * Gets the a output component
          */
         get a(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the level output component
+         */
+        get level(): NodeMaterialConnectionPoint;
         get target(): NodeMaterialBlockTargets;
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
@@ -11963,8 +11977,12 @@ declare module BABYLON {
          */
         invertRefractionY: boolean;
         /**
-         * Gets or sets the texture associated with the node
+         * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
          */
+        useThicknessAsDepth: boolean;
+        /**
+        * Gets or sets the texture associated with the node
+        */
         texture: Nullable<BaseTexture>;
         /**
          * Create a new RefractionBlock
@@ -11989,6 +12007,10 @@ declare module BABYLON {
          * Gets the tint at distance input component
          */
         get tintAtDistance(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the volume index of refraction input component
+         */
+        get volumeIndexOfRefraction(): NodeMaterialConnectionPoint;
         /**
          * Gets the view input component
          */
@@ -18909,6 +18931,9 @@ declare module BABYLON {
          */
         get mode(): NodeMaterialModes;
         set mode(value: NodeMaterialModes);
+        /** Gets or sets the unique identifier used to identified the effect associated with the material */
+        get buildId(): number;
+        set buildId(value: number);
         /**
          * A free comment about the material
          */
@@ -19005,8 +19030,9 @@ declare module BABYLON {
         /**
          * Build the material and generates the inner effect
          * @param verbose defines if the build should log activity
+         * @param updateBuildId defines if the internal build Id should be updated (default is true)
          */
-        build(verbose?: boolean): void;
+        build(verbose?: boolean, updateBuildId?: boolean): void;
         /**
          * Runs an otpimization phase to try to improve the shader code
          */
@@ -19154,9 +19180,10 @@ declare module BABYLON {
         loadFromSerialization(source: any, rootUrl?: string, merge?: boolean): void;
         /**
          * Makes a duplicate of the current material.
-         * @param name - name to use for the new material.
+         * @param name defines the name to use for the new material
+         * @param shareEffect defines if the clone material should share the same effect (default is false)
          */
-        clone(name: string): NodeMaterial;
+        clone(name: string, shareEffect?: boolean): NodeMaterial;
         /**
          * Creates a node material from parsed material data
          * @param source defines the JSON representation of the material
@@ -23920,6 +23947,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var instancesDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var prePassVertexDeclaration: {
         name: string;
         shader: string;
@@ -25628,6 +25662,7 @@ declare module BABYLON {
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
+        SS_USE_THICKNESS_AS_DEPTH: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         /** @hidden */
@@ -25734,9 +25769,13 @@ declare module BABYLON {
          */
         maximumThickness: number;
         /**
-         * Defines the volume tint of the material.
-         * This is used for both translucency and scattering.
+         * Defines that the thickness should be used as a measure of the depth volume.
          */
+        useThicknessAsDepth: boolean;
+        /**
+        * Defines the volume tint of the material.
+        * This is used for both translucency and scattering.
+        */
         tintColor: Color3;
         /**
          * Defines the distance at which the tint color should be found in the media.
@@ -26649,6 +26688,7 @@ declare module BABYLON {
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
         SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
+        SS_USE_THICKNESS_AS_DEPTH: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
         UNLIT: boolean;
@@ -27671,13 +27711,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var instancesDeclaration: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
     export var geometryVertexDeclaration: {
         name: string;
         shader: string;
@@ -27975,8 +28008,8 @@ declare module BABYLON {
         private _refreshGeometryBufferRendererLink;
         private _currentTarget;
         /**
-          * All the render targets generated by prepass
-          */
+         * All the render targets generated by prepass
+         */
         renderTargets: PrePassRenderTarget[];
         private readonly _clearColor;
         private _enabled;
@@ -28962,6 +28995,8 @@ declare module BABYLON {
         _indexInSourceMeshInstanceArray: number;
         /** @hidden */
         _distanceToCamera: number;
+        /** @hidden */
+        _previousWorldMatrix: Nullable<Matrix>;
         constructor(name: string, source: Mesh);
         /**
          * Returns the string "InstancedMesh".
@@ -34043,14 +34078,18 @@ declare module BABYLON {
         batchCache: _InstancesBatch;
         instancesBufferSize: number;
         instancesBuffer: Nullable<Buffer>;
+        instancesPreviousBuffer: Nullable<Buffer>;
         instancesData: Float32Array;
+        instancesPreviousData: Float32Array;
         overridenInstanceCount: number;
         isFrozen: boolean;
         previousBatch: Nullable<_InstancesBatch>;
         hardwareInstancedRendering: boolean;
         sideOrientation: number;
         manualUpdate: boolean;
+        previousManualUpdate: boolean;
         previousRenderId: number;
+        masterMeshPreviousWorldMatrix: Nullable<Matrix>;
     }
     /**
      * @hidden
@@ -34067,10 +34106,13 @@ declare module BABYLON {
     class _ThinInstanceDataStorage {
         instancesCount: number;
         matrixBuffer: Nullable<Buffer>;
+        previousMatrixBuffer: Nullable<Buffer>;
         matrixBufferSize: number;
         matrixData: Nullable<Float32Array>;
+        previousMatrixData: Nullable<Float32Array>;
         boundingVectors: Array<Vector3>;
         worldMatrices: Nullable<Matrix[]>;
+        masterMeshPreviousWorldMatrix: Nullable<Matrix>;
     }
     /**
      * Class used to represent renderable models
@@ -34271,9 +34313,14 @@ declare module BABYLON {
         set isUnIndexed(value: boolean);
         /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
         get worldMatrixInstancedBuffer(): Float32Array;
+        /** Gets the array buffer used to store the instanced buffer used for instances' previous world matrices */
+        get previousWorldMatrixInstancedBuffer(): Float32Array;
         /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
         get manualUpdateOfWorldMatrixInstancedBuffer(): boolean;
         set manualUpdateOfWorldMatrixInstancedBuffer(value: boolean);
+        /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
+        get manualUpdateOfPreviousWorldMatrixInstancedBuffer(): boolean;
+        set manualUpdateOfPreviousWorldMatrixInstancedBuffer(value: boolean);
         /**
          * @constructor
          * @param name The value used by scene.getMeshByName() to do a lookup.
@@ -46056,6 +46103,10 @@ declare module BABYLON {
         * Flag indicating that the frame buffer binding is handled by another component
         */
         get prePass(): boolean;
+        /**
+        * Flag indicating if we need to store previous matrices when rendering
+        */
+        needsPreviousWorldMatrices: boolean;
         private _shadowsEnabled;
         /**
         * Gets or sets a boolean indicating if shadows are enabled on this scene
@@ -56032,6 +56083,10 @@ declare module BABYLON {
          * The picking info it provides contains the point to which the target mesh will move ()
          */
         onTargetMeshPositionUpdatedObservable: Observable<PickingInfo>;
+        /**
+         * Is teleportation enabled. Can be used to allow rotation only.
+         */
+        teleportationEnabled: boolean;
         private _rotationEnabled;
         /**
          * Is rotation enabled when moving forward?
@@ -59726,7 +59781,7 @@ declare module BABYLON {
         CopyDst = 2,
         Sampled = 4,
         Storage = 8,
-        OutputAttachment = 16
+        RenderAttachment = 16
     }
     /** @hidden */
     export enum TextureViewDimension {
@@ -59893,17 +59948,17 @@ declare module BABYLON {
     export enum BlendFactor {
         Zero = "zero",
         One = "one",
-        SrcColor = "src-color",
-        OneMinusSrcColor = "one-minus-src-color",
+        Src = "src",
+        OneMinusSrc = "one-minus-src",
         SrcAlpha = "src-alpha",
         OneMinusSrcAlpha = "one-minus-src-alpha",
-        DstColor = "dst-color",
-        OneMinusDstColor = "one-minus-dst-color",
+        Dst = "dst",
+        OneMinusDst = "one-minus-dst",
         DstAlpha = "dst-alpha",
         OneMinusDstAlpha = "one-minus-dst-alpha",
         SrcAlphaSaturated = "src-alpha-saturated",
-        BlendColor = "blend-color",
-        OneMinusBlendColor = "one-minus-blend-color"
+        Constant = "constant",
+        OneMinusConstant = "one-minus-constant"
     }
     /** @hidden */
     export enum BlendOperation {
@@ -59989,6 +60044,11 @@ declare module BABYLON {
         ClipperPrimitivesOut = "clipper-primitives-out",
         FragmentShaderInvocations = "fragment-shader-invocations",
         ComputeShaderInvocations = "compute-shader-invocations"
+    }
+    /** @hidden */
+    export enum CanvasCompositingAlphaMode {
+        Opaque = "opaque",
+        Premultiplied = "premultiplied"
     }
     /** @hidden */
     export enum DeviceLostReason {
@@ -60508,7 +60568,6 @@ declare module BABYLON {
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number): GPUTextureFormat;
         invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
-        clear(format: GPUTextureFormat, color: IColor4Like, passEncoder: GPURenderPassEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
             height: number;
@@ -60963,6 +61022,10 @@ declare module BABYLON {
          * Defines whether to adapt to the device's viewport characteristics (default: false)
          */
         adaptToDeviceRatio?: boolean;
+        /**
+         * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
+         */
+        premultipliedAlpha?: boolean;
     }
     /**
      * The web GPU engine class provides support for WebGPU version of babylon.js.
@@ -73221,6 +73284,8 @@ declare module BABYLON {
             /** @hidden */
             _thinInstanceUpdateBufferSize(kind: string, numInstances?: number): void;
             /** @hidden */
+            _thinInstanceCreateMatrixBuffer(kind: string, buffer: Nullable<Float32Array>, staticBuffer: boolean): Buffer;
+            /** @hidden */
             _userThinInstanceBuffersStorage: {
                 data: {
                     [key: string]: Float32Array;
@@ -76505,8 +76570,8 @@ declare module BABYLON {
         set isObjectBased(value: boolean);
         private _isObjectBased;
         private _forceGeometryBuffer;
-        private _geometryBufferRenderer;
-        private _prePassRenderer;
+        private get _geometryBufferRenderer();
+        private get _prePassRenderer();
         private _invViewProjection;
         private _previousViewProjection;
         /**
@@ -77412,6 +77477,8 @@ declare module BABYLON {
          * Force rendering the geometry through geometry buffer
          */
         private _forceGeometryBuffer;
+        private get _geometryBufferRenderer();
+        private get _prePassRenderer();
         /**
          * Ratio object used for SSAO ratio and blur ratio
          */
@@ -77450,7 +77517,6 @@ declare module BABYLON {
         private _blurHPostProcess;
         private _blurVPostProcess;
         private _ssaoCombinePostProcess;
-        private _prePassRenderer;
         /**
          * Gets active scene
          */
@@ -77656,8 +77722,8 @@ declare module BABYLON {
          */
         roughnessFactor: number;
         private _forceGeometryBuffer;
-        private _geometryBufferRenderer;
-        private _prePassRenderer;
+        private get _geometryBufferRenderer();
+        private get _prePassRenderer();
         private _enableSmoothReflections;
         private _reflectionSamples;
         private _smoothSteps;
@@ -82970,8 +83036,8 @@ declare class GPUAdapter {
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
-    nonGuaranteedFeatures?: GPUFeatureName[];
-    nonGuaranteedLimits?: { [name: string]: GPUSize32 };
+    nonGuaranteedFeatures?: GPUFeatureName[]; /* default=[] */
+    nonGuaranteedLimits?: { [name: string]: GPUSize32 }; /* default={} */
 }
 
 type GPUFeatureName =
@@ -82986,7 +83052,6 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
 
-    readonly adapter: GPUAdapter;
     readonly features: ReadonlySet<GPUFeatureName>;
     readonly limits: Required<GPUAdapterLimits>;
 
@@ -83051,9 +83116,9 @@ declare class GPUTexture implements GPUObjectBase {
 
 interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
     size: GPUExtent3D;
-    mipLevelCount?: GPUIntegerCoordinate; // default=1
-    sampleCount?: GPUSize32; // default=1
-    dimension?: GPUTextureDimension; // default="2d"
+    mipLevelCount?: GPUIntegerCoordinate; /* default=1 */
+    sampleCount?: GPUSize32; /* default=1 */
+    dimension?: GPUTextureDimension; /* default="2d" */
     format: GPUTextureFormat;
     usage: GPUTextureUsageFlags;
 }
@@ -83068,13 +83133,13 @@ declare class GPUTextureView implements GPUObjectBase {
 }
 
 interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
-    format?: GPUTextureFormat;
-    dimension?: GPUTextureViewDimension;
-    aspect?: GPUTextureAspect; // default=all
-    baseMipLevel?: GPUIntegerCoordinate;
-    mipLevelCount?: GPUIntegerCoordinate;
-    baseArrayLayer?: GPUIntegerCoordinate;
-    arrayLayerCount?: GPUIntegerCoordinate;
+    format: GPUTextureFormat;
+    dimension: GPUTextureViewDimension;
+    aspect?: GPUTextureAspect; /* default="all" */
+    baseMipLevel?: GPUIntegerCoordinate; /* default=0 */
+    mipLevelCount: GPUIntegerCoordinate;
+    baseArrayLayer?: GPUIntegerCoordinate; /* default=0*/
+    arrayLayerCount: GPUIntegerCoordinate;
 }
 
 type GPUTextureViewDimension =
@@ -83171,16 +83236,16 @@ declare class GPUSampler implements GPUObjectBase {
 }
 
 interface GPUSamplerDescriptor extends GPUObjectDescriptorBase {
-    addressModeU?: GPUAddressMode; // default="clamp-to-edge"
-    addressModeV?: GPUAddressMode; // default="clamp-to-edge"
-    addressModeW?: GPUAddressMode; // default="clamp-to-edge"
-    magFilter?: GPUFilterMode; // default="nearest"
-    minFilter?: GPUFilterMode; // default="nearest"
-    mipmapFilter?: GPUFilterMode; // default="nearest"
-    lodMinClamp?: number; // default=0
-    lodMaxClamp?: number; // default=0xffffffff
+    addressModeU?: GPUAddressMode; /* default="clamp-to-edge" */
+    addressModeV?: GPUAddressMode; /* default="clamp-to-edge" */
+    addressModeW?: GPUAddressMode; /* default="clamp-to-edge" */
+    magFilter?: GPUFilterMode; /* default="nearest" */
+    minFilter?: GPUFilterMode; /* default="nearest" */
+    mipmapFilter?: GPUFilterMode; /* default="nearest" */
+    lodMinClamp?: number; /* default=0 */
+    lodMaxClamp?: number; /* default=0xffffffff */
     compare?: GPUCompareFunction;
-    maxAnisotropy?: number; // default=1
+    maxAnisotropy?: number; /* default=1 */
 }
 
 type GPUAddressMode = "clamp-to-edge" | "repeat" | "mirror-repeat";
@@ -83276,7 +83341,7 @@ interface GPUBindGroupEntry {
 interface GPUBufferBinding {
     buffer: GPUBuffer;
     offset?: GPUSize64; /* default=0 */
-    size?: GPUSize64;
+    size: GPUSize64;
 }
 
 declare class GPUPipelineLayout implements GPUObjectBase {
@@ -83346,9 +83411,9 @@ declare class GPURenderPipeline implements GPUObjectBase, GPUPipelineBase {
 
 interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase {
     vertex: GPUVertexState;
-    primitive?: GPUPrimitiveState;
+    primitive?: GPUPrimitiveState; /* default={} */
     depthStencil?: GPUDepthStencilState;
-    multisample?: GPUMultisampleState;
+    multisample?: GPUMultisampleState; /* default={} */
     fragment?: GPUFragmentState;
 }
 
@@ -83364,6 +83429,9 @@ interface GPUPrimitiveState {
     stripIndexFormat?: GPUIndexFormat;
     frontFace?: GPUFrontFace; /* default="ccw" */
     cullMode?: GPUCullMode; /* default="none" */
+
+    // Enable depth clamping (requires "depth-clamping" feature)
+    clampDepth?: boolean; /* default=false */
 }
 
 type GPUFrontFace = "ccw" | "cw";
@@ -83403,17 +83471,17 @@ interface GPUBlendComponent {
 type GPUBlendFactor =
     | "zero"
     | "one"
-    | "src-color"
-    | "one-minus-src-color"
+    | "src"
+    | "one-minus-src"
     | "src-alpha"
     | "one-minus-src-alpha"
-    | "dst-color"
-    | "one-minus-dst-color"
+    | "dst"
+    | "one-minus-dst"
     | "dst-alpha"
     | "one-minus-dst-alpha"
     | "src-alpha-saturated"
-    | "blend-color"
-    | "one-minus-blend-color";
+    | "constant"
+    | "one-minus-constant";
 
 type GPUBlendOperation =
     | "add"
@@ -83428,8 +83496,8 @@ interface GPUDepthStencilState {
     depthWriteEnabled?: boolean; /* default=false */
     depthCompare?: GPUCompareFunction; /* default="always" */
 
-    stencilFront?: GPUStencilStateFace;
-    stencilBack?: GPUStencilStateFace;
+    stencilFront?: GPUStencilStateFace; /* default={} */
+    stencilBack?: GPUStencilStateFace; /* default={} */
 
     stencilReadMask?: GPUStencilValue; /* default=0xFFFFFFFF */
     stencilWriteMask?: GPUStencilValue; /* default=0xFFFFFFFF */
@@ -83437,9 +83505,6 @@ interface GPUDepthStencilState {
     depthBias?: GPUDepthBias; /* default=0 */
     depthBiasSlopeScale?: number; /* default= 0 */
     depthBiasClamp?: number; /* default=0 */
-
-    // Enable depth clamping (requires "depth-clamping" feature)
-    clampDepth?: boolean; /* default=false */
 }
 
 interface GPUStencilStateFace {
@@ -83496,7 +83561,7 @@ type GPUVertexFormat =
 type GPUInputStepMode = "vertex" | "instance";
 
 interface GPUVertexState extends GPUProgrammableStage {
-    buffers?: GPUVertexBufferLayout[];
+    buffers?: GPUVertexBufferLayout[]; /* default=[] */
 }
 
 interface GPUVertexBufferLayout {
@@ -83536,18 +83601,18 @@ declare class GPUCommandEncoder implements GPUObjectBase {
         size: GPUSize64
     ): void;
     copyBufferToTexture(
-        source: GPUBufferCopyView,
-        destination: GPUTextureCopyView,
+        source: GPUImageCopyBuffer,
+        destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
     copyTextureToBuffer(
-        source: GPUTextureCopyView,
-        destination: GPUBufferCopyView,
+        source: GPUImageCopyTexture,
+        destination: GPUImageCopyBuffer,
         copySize: GPUExtent3D
     ): void;
     copyTextureToTexture(
-        source: GPUTextureCopyView,
-        destination: GPUTextureCopyView,
+        source: GPUImageCopyTexture,
+        destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
 
@@ -83572,26 +83637,26 @@ interface GPUCommandEncoderDescriptor extends GPUObjectDescriptorBase {
     measureExecutionTime?: boolean; /* default=false */
 }
 
-interface GPUTextureDataLayout {
+interface GPUImageDataLayout {
     offset?: GPUSize64; /* default=0 */
     bytesPerRow: GPUSize32;
     rowsPerImage?: GPUSize32;
 }
 
-interface GPUBufferCopyView extends GPUTextureDataLayout {
+interface GPUImageCopyBuffer extends GPUImageDataLayout {
     buffer: GPUBuffer;
 }
 
-interface GPUTextureCopyView {
+interface GPUImageCopyTexture {
     texture: GPUTexture;
     mipLevel?: GPUIntegerCoordinate; /* default=0 */
-    origin?: GPUOrigin3D;
+    origin?: GPUOrigin3D; /* default={} */
     aspect?: GPUTextureAspect; /* default="all" */
 }
 
-interface GPUImageBitmapCopyView {
+interface GPUImageCopyImageBitmap {
     imageBitmap: ImageBitmap;
-    origin?: GPUOrigin2D;
+    origin?: GPUOrigin2D; /* default={} */
 }
 
 interface GPUProgrammablePassEncoder {
@@ -83724,7 +83789,7 @@ declare class GPURenderPassEncoder implements GPUObjectBase, GPUProgrammablePass
 
     setScissorRect(x: GPUIntegerCoordinate, y: GPUIntegerCoordinate, width: GPUIntegerCoordinate, height: GPUIntegerCoordinate): void;
 
-    setBlendColor(color: GPUColor): void;
+    setBlendConstant(color: GPUColor): void;
     setStencilReference(reference: GPUStencilValue): void;
 
     beginOcclusionQuery(queryIndex: GPUSize32): void;
@@ -83746,7 +83811,7 @@ interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
 }
 
 interface GPURenderPassColorAttachment {
-    attachment: GPUTextureView; // TODO: should be named view
+    view: GPUTextureView;
     resolveTarget?: GPUTextureView;
 
     loadValue: GPULoadOp | GPUColor;
@@ -83754,7 +83819,7 @@ interface GPURenderPassColorAttachment {
 }
 
 interface GPURenderPassDepthStencilAttachment {
-    attachment: GPUTextureView; // TODO: should be named view
+    view: GPUTextureView;
 
     depthLoadValue: GPULoadOp | number;
     depthStoreOp: GPUStoreOp;
@@ -83846,15 +83911,15 @@ declare class GPUQueue implements GPUObjectBase {
     ): void;
 
     writeTexture(
-        destination: GPUTextureCopyView,
+        destination: GPUImageCopyTexture,
         data: BufferSource,
-        dataLayout: GPUTextureDataLayout,
+        dataLayout: GPUImageDataLayout,
         size: GPUExtent3D
     ): void;
 
     copyImageBitmapToTexture(
-        source: GPUImageBitmapCopyView,
-        destination: GPUTextureCopyView,
+        source: GPUImageCopyImageBitmap,
+        destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
 }
@@ -83869,7 +83934,7 @@ declare class GPUQuerySet implements GPUObjectBase {
 interface GPUQuerySetDescriptor extends GPUObjectDescriptorBase {
     type: GPUQueryType;
     count: GPUSize32;
-    pipelineStatistics?: GPUPipelineStatisticName[];
+    pipelineStatistics?: GPUPipelineStatisticName[]; /* default=[] */
 }
 
 type GPUQueryType = "occlusion" | "pipeline-statistics" | "timestamp";
@@ -83889,10 +83954,15 @@ declare class GPUCanvasContext {
     getSwapChainPreferredFormat(adapter: GPUAdapter): GPUTextureFormat;
 }
 
+type GPUCanvasCompositingAlphaMode =
+    | "opaque"
+    | "premultiplied";
+
 interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
     device: GPUDevice;
     format: GPUTextureFormat;
     usage?: GPUTextureUsageFlags; /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */
+    compositingAlphaMode?: GPUCanvasCompositingAlphaMode; /* default="opaque" */
 }
 
 declare class GPUSwapChain implements GPUObjectBase {
@@ -83960,7 +84030,7 @@ interface GPUOrigin3DDict {
 type GPUOrigin3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUOrigin3DDict;
 
 interface GPUExtent3DDict {
-    width?: GPUIntegerCoordinate; /* default=1 */
+    width: GPUIntegerCoordinate;
     height?: GPUIntegerCoordinate; /* default=1 */
     depthOrArrayLayers?: GPUIntegerCoordinate; /* default=1 */
 }
