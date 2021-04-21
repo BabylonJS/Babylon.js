@@ -8,9 +8,9 @@
             "referenceImage": "Sprites.png"
         },
         {
-            "title": "Procedural texture with NME",       
+            "title": "Procedural texture with NME",
             "renderCount": 2,
-            "playgroundId": "#8S19ZC#3",            
+            "playgroundId": "#8S19ZC#3",
             "referenceImage": "procedural_nme.png"
         },
         {
@@ -39,7 +39,7 @@
             "playgroundId": "#ARLADE#23",
             "referenceImage": "sprite-maps.png",
             "excludeFromAutomaticTesting": true
-        },              
+        },
         {
             "title": "Point light shadows",
             "playgroundId": "#U2F7P9#4",
@@ -667,6 +667,11 @@
             "title": "GLTF Serializer Morph Target Animation Group",
             "playgroundId": "#T087A8#27",
             "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
+        },
+        {
+            "title": "GLTF Serializer KHR_materials_clearcoat",
+            "playgroundId": "#9N6CLU#3",
+            "referenceImage": "gltfSerializerKHRMaterialsClearcoat.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",

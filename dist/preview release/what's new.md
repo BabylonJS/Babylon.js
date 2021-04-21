@@ -135,6 +135,9 @@
 
 - Faster scalar's WithinEpsilon with Math.abs ([nekochanoide](https://github.com/nekochanoide))
 
+### Serializers
+- glTF serializer now supports KHR_materials_clearcoat ([drigax](https://github.com/drigax))
+
 ## Bugs
 
 - Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))

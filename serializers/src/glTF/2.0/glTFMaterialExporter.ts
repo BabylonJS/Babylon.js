@@ -181,7 +181,7 @@ export class _GLTFMaterialExporter {
             }
         }
 
-        // Do a naieve check for materials that contain extensions that have texture-related members.
+        // Do a naive check for materials that contain extensions that have texture-related members.
         if (material.extensions) {
             for (let extension in material.extensions){
                 let extensionObject = material.extensions[extension];
