@@ -1,5 +1,4 @@
 // Uniforms
-uniform mat4 world;
 uniform mat4 viewProjection;
 uniform mat4 view;
 
