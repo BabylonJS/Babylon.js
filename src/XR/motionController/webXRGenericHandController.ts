@@ -10,9 +10,7 @@ import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
  */
 export class WebXRGenericHandController extends WebXRAbstractMotionController {
 
-    public static ProfileId = "generic-hand-select-grasp";
-
-    public profileId = WebXRGenericHandController.ProfileId;
+    public profileId = "generic-hand-select-grasp";
 
     /**
      * Create a new Vive motion controller object
