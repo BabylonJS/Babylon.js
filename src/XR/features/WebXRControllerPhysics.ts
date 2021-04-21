@@ -89,10 +89,14 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             xrController.onMotionControllerInitObservable.addOnce((motionController) => {
                 if (!motionController._doNotLoadControllerMesh) {
                     motionController.onModelLoadedObservable.addOnce(() => {
-                        const impostor = new PhysicsImpostor(motionController.rootMesh!, PhysicsImpostor.MeshImpostor, {
-                            mass: 0,
-                            ...this._options.physicsProperties,
-                        });
+                        const impostor = new PhysicsImpostor(
+                            motionController.rootMesh!,
+                            PhysicsImpostor.MeshImpostor,
+                            {
+                                mass: 0,
+                                ...this._options.physicsProperties,
+                            });
+
                         const controllerMesh = xrController.grip || xrController.pointer;
                         this._controllers[xrController.uniqueId] = {
                             xrController,
@@ -102,16 +106,16 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                         };
                     });
                 } else {
-                    // This controller isn't using a model, create imposters instead
-                    this._createPhysicsImposter(xrController);
+                    // This controller isn't using a model, create impostors instead
+                    this._createPhysicsImpostor(xrController);
                 }
             });
         } else {
-            this._createPhysicsImposter(xrController);
+            this._createPhysicsImpostor(xrController);
         }
     };
 
-    private _createPhysicsImposter = (xrController: WebXRInputSource) => {
+    private _createPhysicsImpostor(xrController: WebXRInputSource) {
         const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
         const impostorSize: number | { width: number; height: number; depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
         const impostorMesh = SphereBuilder.CreateSphere("impostor-mesh-" + xrController.uniqueId, {
@@ -134,7 +138,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             impostor,
             impostorMesh,
         };
-    };
+    }
 
     private _controllers: {
         [id: string]: {
