@@ -3,6 +3,7 @@ import { StringTools } from "../../../../../../../sharedUiComponents/stringTools
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 
 interface ISaveAnimationComponentProps {
     globalState: GlobalState;
@@ -27,7 +28,13 @@ ISaveAnimationComponentState
         this._root = React.createRef();
 
         if (this.props.context.animations) {
-            this._selectedAnimations = this.props.context.animations?.slice(0);
+            if (this.props.context.useTargetAnimations) {
+                for (var targetedAnimation of this.props.context.animations as TargetedAnimation[]) {
+                    this._selectedAnimations.push(targetedAnimation.animation);
+                }
+            } else {
+                this._selectedAnimations = (this.props.context.animations as Animation[]).slice(0);
+            }
         }
     }
 
@@ -105,17 +112,19 @@ ISaveAnimationComponentState
             <div id="save-animation-pane" ref={this._root}>
                 <div id="save-animation-list">
                 {
-                    this.props.context.animations?.map((a, i) => {
+                    this.props.context.animations?.map((a: Animation | TargetedAnimation, i: number) => {
+                        let animation = this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : a as Animation;
+
                         return (
                             <div className="save-animation-list-entry" key={i} >
                                 <input 
-                                    type="checkbox" value={a.name}
+                                    type="checkbox" value={animation.name}
                                     defaultChecked={true}
                                     onClick={evt => {
                                         if (evt.currentTarget.checked) {
-                                            this._selectedAnimations.push(a);
+                                            this._selectedAnimations.push(animation);
                                         } else {
-                                            let index = this._selectedAnimations.indexOf(a);
+                                            let index = this._selectedAnimations.indexOf(animation);
 
                                             if (index > -1) {
                                                 this._selectedAnimations.splice(index, 1);
@@ -123,7 +132,7 @@ ISaveAnimationComponentState
                                         }
                                     }}
                                 />
-                                {a.name}
+                                {animation.name}
                             </div>
                         );
                     })
