@@ -24,7 +24,6 @@ import { Axis } from "../../Maths/math.axis";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Tags } from "../../Misc/tags";
 import { Bone } from "../../Bones/bone";
-import { sceneFragmentDeclaration } from "../../Shaders/ShadersInclude/sceneFragmentDeclaration";
 
 declare const XRHand: XRHand;
 
