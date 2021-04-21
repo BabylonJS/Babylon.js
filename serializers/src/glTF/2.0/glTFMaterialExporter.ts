@@ -815,7 +815,7 @@ export class _GLTFMaterialExporter {
         if (hasTextureCoords) {
             const albedoTexture = (babylonPBRMaterial as PBRMaterial).albedoTexture || (babylonPBRMaterial as PBRMetallicRoughnessMaterial).baseTexture;
             if (albedoTexture) {
-                promises.push(this._exportTextureAsync((babylonPBRMaterial as any).albedoTexture, mimeType).then((glTFTexture) => {
+                promises.push(this._exportTextureAsync(albedoTexture, mimeType).then((glTFTexture) => {
                     if (glTFTexture) {
                         glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                     }
