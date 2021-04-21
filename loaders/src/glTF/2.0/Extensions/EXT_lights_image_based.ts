@@ -124,6 +124,10 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
                     Matrix.FromQuaternionToRef(rotation, babylonTexture.getReflectionTextureMatrix());
                 }
 
+                if (!light.irradianceCoefficients) {
+                    throw new Error(`${context}: Irradiance coefficients are missing`);
+                }
+
                 const sphericalHarmonics = SphericalHarmonics.FromArray(light.irradianceCoefficients);
                 sphericalHarmonics.scaleInPlace(light.intensity);
 
