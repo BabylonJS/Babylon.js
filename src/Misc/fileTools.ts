@@ -364,14 +364,14 @@ export class FileTools {
                 }
             };
 
-            const handleError = (error: unknown) => {
-                const message = error instanceof Error ? error.message : 'Unknown error';
+            const handleError = (error: any) => {
+                const message = error.message || "Unknown error";
                 if (onError) {
                     onError(new RequestFileError(message, request));
                 } else {
                     Logger.Error(message);
                 }
-            }
+            };
 
             const retryLoop = (retryIndex: number) => {
                 request.open('GET', loadUrl);
@@ -379,7 +379,7 @@ export class FileTools {
                 if (onOpened) {
                     try {
                         onOpened(request);
-                    } catch (e: unknown) {
+                    } catch (e) {
                         handleError(e);
                         return;
                     }
@@ -414,7 +414,7 @@ export class FileTools {
                         if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!DomManagement.IsWindowObjectExist() || FileTools.IsFileURL()))) {
                             try {
                                 onSuccess(useArrayBuffer ? request.response : request.responseText, request);
-                            } catch (e: unknown) {
+                            } catch (e) {
                                 handleError(e);
                             }
                             return;
