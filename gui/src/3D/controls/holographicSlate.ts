@@ -54,6 +54,25 @@ export class HolographicSlate extends ContentDisplay3D {
         this._rebuildContent();
     }
 
+    /** Gets or sets the control scaling  in world space */
+    public get scaling(): Vector3 {
+        if (!this.node) {
+            return new Vector3(1, 1, 1);
+        }
+
+        return this.node.scaling;
+    }
+
+    public set scaling(value: Vector3) {
+        if (!this.node) {
+            return;
+        }
+
+        this.node.scaling = value;
+
+        // Scale buttons and titlebar accordingly here
+    }
+
     /**
      * Creates a new slate
      * @param name defines the control name
