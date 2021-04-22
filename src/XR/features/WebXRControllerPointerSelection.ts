@@ -168,6 +168,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             webXRCamera?: WebXRCamera;
             selectionComponent?: WebXRControllerComponent;
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
+            squeezeComponent?: WebXRControllerComponent;
+            onSqueezeButtonChangedObserver?:  Nullable<Observer<WebXRControllerComponent>>;
             onFrameObserver?: Nullable<Observer<XRFrame>>;
             laserPointer: AbstractMesh;
             selectionMesh: AbstractMesh;
@@ -366,6 +368,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             let controllerGlobalPosition: Vector3;
             controllerData.nearPick = false;
             controllerData.nearHover = false;
+            controllerData.nearGrab = false;
 
             // Every frame check collisions/input
             if (controllerData.xrController) {
@@ -389,6 +392,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
                             controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, (indexTipPos.z * zAxisMultiplier));
                             controllerData.grabRay.direction.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z) * -1);
+                            controllerData.grabRay.length = 5;
                         }   
                     }
                 }
@@ -467,6 +471,19 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     pick = pickInfo;
                 }
             }
+
+            if(controllerData.grabRay)
+            {
+                let pinchInfo = this._scene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
+                if(pinchInfo && pinchInfo.pickedPoint && pinchInfo.hit)
+                {  
+                    controllerData.laserPointer.isVisible = false;
+                    controllerData.nearGrab = true;
+                    pinchInfo.ray = controllerData.grabRay;
+                    pick = pinchInfo;
+                }
+            }
+            
             
             if (!controllerData.nearHover && !controllerData.nearPick && !controllerData.nearGrab) {
                 pick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
@@ -667,6 +684,34 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         }
                     }
                 });
+
+                // squeezeComponent is a new member on the controllerData
+                controllerData.squeezeComponent = motionController.getComponent("grasp");
+
+                // onSqueezeButtonChangedObserver is also a new variable
+                controllerData.onSqueezeButtonChangedObserver = controllerData.squeezeComponent.onButtonStateChangedObservable.add((component) => {
+                    if (component.changes.pressed) {
+                        const pressed = component.changes.pressed.current;
+                        if (controllerData.pick) {
+                            // Comment this next check out to have objects only react to near grabs from the active hand
+                            if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
+                                if (pressed) {
+                                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+                                } else {
+                                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
+                                }
+                            } 
+                        } else {
+                            if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {
+                                this._attachedController = xrController.uniqueId;
+                            }
+                        }
+                    }
+                });
             };
             if (xrController.motionController) {
                 init(xrController.motionController);
@@ -724,15 +769,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
             controllerData.eventListeners = {
                 selectend: selectEndListener,
-                selectstart: selectStartListener,
-                squeezestart: squeezeStartListener,
-                squeezeend: squeezeEndListener,   
+                selectstart: selectStartListener
             };
 
             this._xrSessionManager.session.addEventListener("selectstart", selectStartListener);
             this._xrSessionManager.session.addEventListener("selectend", selectEndListener);
-            this._xrSessionManager.session.addEventListener("squeezestart", squeezeStartListener);
-            this._xrSessionManager.session.addEventListener("squeezeend", squeezeEndListener);
         }
     }
 
