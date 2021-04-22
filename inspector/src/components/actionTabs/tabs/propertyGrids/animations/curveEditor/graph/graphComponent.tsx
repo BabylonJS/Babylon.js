@@ -648,7 +648,11 @@ IGraphComponentState
         if (this.props.context.activeColor) {
             const activeCurve = this._curves.filter(c => c.color === this.props.context.activeColor)[0];
 
-            propertyFilter = activeCurve.property;
+            if (activeCurve) {
+                propertyFilter = activeCurve.property;
+            } else {
+                this.props.context.activeColor = null;
+            }
         }
 
         let values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false, propertyFilter);

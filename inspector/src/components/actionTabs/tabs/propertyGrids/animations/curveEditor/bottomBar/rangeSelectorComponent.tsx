@@ -1,6 +1,8 @@
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
+import { Animation } from "babylonjs/Animations/animation";
 
 const handleIcon = require("../assets/scrollbarHandleIcon.svg");
 
@@ -134,7 +136,7 @@ IRangeSelectorComponentState
         let maxFrame = -Number.MAX_VALUE;
 
         for (var animation of this.props.context.animations) {
-            const keys = animation.getKeys();
+            const keys = this.props.context.useTargetAnimations ? (animation as TargetedAnimation).animation.getKeys() : (animation as Animation).getKeys();
 
             minFrame = Math.min(minFrame, keys[0].frame);
             maxFrame = Math.max(maxFrame, keys[keys.length - 1].frame);
