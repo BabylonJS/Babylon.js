@@ -7,6 +7,8 @@ import { Context } from "./context";
 import { TopBarComponent } from "./topBarComponent";
 import { CanvasComponent } from "./graph/canvasComponent";
 import { SideBarComponent } from "./sideBar/sideBarComponent";
+import { Animation } from "babylonjs/Animations/animation";
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 
 require("./scss/curveEditor.scss");
 
@@ -46,7 +48,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                 this.props.context.prepare();
                 if (this.props.context.animations && this.props.context.animations.length) {
                     setTimeout(() => {
-                        this.props.context.activeAnimation = this.props.context.animations![0];
+                        this.props.context.activeAnimation = this.props.context.useTargetAnimations ? (this.props.context.animations![0] as TargetedAnimation).animation : this.props.context.animations![0] as Animation;
                         this.props.context.onActiveAnimationChanged.notifyObservers();    
                     });
                 }
@@ -71,7 +73,9 @@ export class AnimationCurveEditorComponent extends React.Component<
     public render() {
         return (
             <>
-                <ButtonLineComponent label="Edit" onClick={() => this.setState({isOpen: true})} />
+                <ButtonLineComponent label="Edit" onClick={() => {
+                    this.setState({isOpen: true});
+                }} />
                 {
                     this.state.isOpen &&
                     <PopupComponent

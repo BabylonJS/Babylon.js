@@ -4292,6 +4292,9 @@ var EXT_lights_image_based = /** @class */ (function () {
                     }
                     babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Matrix"].FromQuaternionToRef(rotation, babylonTexture.getReflectionTextureMatrix());
                 }
+                if (!light.irradianceCoefficients) {
+                    throw new Error(context + ": Irradiance coefficients are missing");
+                }
                 var sphericalHarmonics = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["SphericalHarmonics"].FromArray(light.irradianceCoefficients);
                 sphericalHarmonics.scaleInPlace(light.intensity);
                 sphericalHarmonics.convertIrradianceToLambertianRadiance();
