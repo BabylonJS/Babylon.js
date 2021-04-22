@@ -389,7 +389,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                             if(controllerData.hoverIndexMesh) {
                                 controllerData.hoverIndexMesh.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z);
                             }
-
+                            // set near interaction grab ray parameters
                             controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, (indexTipPos.z * zAxisMultiplier));
                             controllerData.grabRay.direction.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z) * -1);
                             controllerData.grabRay.length = 5;
@@ -449,7 +449,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 let nearHover = hoverInfo && hoverInfo.pickedPoint && hoverInfo.hit;
                 if (hoverInfo?.pickedPoint)
                 {
-                    hoverAtOrigin = hoverInfo.pickedPoint.x == 0 && hoverInfo.pickedPoint.y == 0 && hoverInfo.pickedPoint.z == 0;
+                    hoverAtOrigin = hoverInfo.pickedPoint.x === 0 && hoverInfo.pickedPoint.y === 0 && hoverInfo.pickedPoint.z === 0;
                 }
                 if (nearHover && !hoverAtOrigin) {   
                     controllerData.nearHover = true;
@@ -464,7 +464,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 let pickAtOrigin = false;
                 if (pickInfo?.pickedPoint)
                 {
-                    pickAtOrigin = pickInfo.pickedPoint.x == 0 && pickInfo.pickedPoint.y == 0 && pickInfo.pickedPoint.z == 0;
+                    pickAtOrigin = pickInfo.pickedPoint.x === 0 && pickInfo.pickedPoint.y === 0 && pickInfo.pickedPoint.z === 0;
                 }
                 if (nearPick && !pickAtOrigin) {
                     controllerData.nearPick = true;
