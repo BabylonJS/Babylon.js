@@ -4,7 +4,7 @@ import { Image } from "../image";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { serialize } from "babylonjs/Misc/decorators";
-import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create slider controls based on images
@@ -105,7 +105,7 @@ export class ImageBasedSlider extends BaseSlider {
         return "ImageBasedSlider";
     }
 
-    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);

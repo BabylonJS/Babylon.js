@@ -13,13 +13,13 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasElement, ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { ICanvas, ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 import { Engine } from "babylonjs/Engines/engine";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
     private static _Epsilon = 0.000001;
-    private _colorWheelCanvas: ICanvasElement;
+    private _colorWheelCanvas: ICanvas;
 
     private _value: Color3 = Color3.Red();
     private _tmpColor = new Color3();
@@ -157,7 +157,7 @@ export class ColorPicker extends Control {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
 
         if (parentMeasure.width < parentMeasure.height) {
             this._currentMeasure.height = parentMeasure.width;
@@ -178,7 +178,7 @@ export class ColorPicker extends Control {
         this._squareSize = squareSize;
     }
 
-    private _drawGradientSquare(hueValue: number, left: number, top: number, width: number, height: number, context: ICanvasRenderingContext2D) {
+    private _drawGradientSquare(hueValue: number, left: number, top: number, width: number, height: number, context: ICanvasRenderingContext) {
         var lgh = context.createLinearGradient(left, top, width + left, top);
         lgh.addColorStop(0, '#fff');
         lgh.addColorStop(1, 'hsl(' + hueValue + ', 100%, 50%)');
@@ -194,7 +194,7 @@ export class ColorPicker extends Control {
         context.fillRect(left, top, width, height);
     }
 
-    private _drawCircle(centerX: number, centerY: number, radius: number, context: ICanvasRenderingContext2D) {
+    private _drawCircle(centerX: number, centerY: number, radius: number, context: ICanvasRenderingContext) {
         context.beginPath();
         context.arc(centerX, centerY, radius + 1, 0, 2 * Math.PI, false);
         context.lineWidth = 3;
@@ -207,7 +207,7 @@ export class ColorPicker extends Control {
         context.stroke();
     }
 
-    private _createColorWheelCanvas(radius: number, thickness: number): ICanvasElement {
+    private _createColorWheelCanvas(radius: number, thickness: number): ICanvas {
         const engine = Engine.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
@@ -277,7 +277,7 @@ export class ColorPicker extends Control {
     }
 
     /** @hidden */
-    public _draw(context: ICanvasRenderingContext2D): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);

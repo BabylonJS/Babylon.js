@@ -5,7 +5,7 @@ import { Control } from "./control";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { Nullable } from "babylonjs/types";
 import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext2D } from 'babylonjs/Engines/ICanvas';
+import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
 import { Engine } from 'babylonjs/Engines/engine';
 
 /**
@@ -286,7 +286,7 @@ export class TextBlock extends Control {
         return "TextBlock";
     }
 
-    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (!this._fontOffset) {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
@@ -335,7 +335,7 @@ export class TextBlock extends Control {
         }
     }
 
-    private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext2D): void {
+    private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext): void {
         var width = this._currentMeasure.width;
         var x = 0;
         switch (this._textHorizontalAlignment) {
@@ -382,7 +382,7 @@ export class TextBlock extends Control {
     }
 
     /** @hidden */
-    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
@@ -393,7 +393,7 @@ export class TextBlock extends Control {
         context.restore();
     }
 
-    protected _applyStates(context: ICanvasRenderingContext2D): void {
+    protected _applyStates(context: ICanvasRenderingContext): void {
         super._applyStates(context);
         if (this.outlineWidth) {
             context.lineWidth = this.outlineWidth;
@@ -403,7 +403,7 @@ export class TextBlock extends Control {
         }
     }
 
-    protected _breakLines(refWidth: number, context: ICanvasRenderingContext2D): object[] {
+    protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
         var lines = [];
         var _lines = this.text.split("\n");
 
@@ -424,11 +424,11 @@ export class TextBlock extends Control {
         return lines;
     }
 
-    protected _parseLine(line: string = "", context: ICanvasRenderingContext2D): object {
+    protected _parseLine(line: string = "", context: ICanvasRenderingContext): object {
         return { text: line, width: context.measureText(line).width };
     }
 
-    protected _parseLineEllipsis(line: string = "", width: number, context: ICanvasRenderingContext2D): object {
+    protected _parseLineEllipsis(line: string = "", width: number, context: ICanvasRenderingContext): object {
         var lineWidth = context.measureText(line).width;
 
         if (lineWidth > width) {
@@ -454,7 +454,7 @@ export class TextBlock extends Control {
         return { text: line, width: lineWidth };
     }
 
-    protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext2D): object[] {
+    protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext): object[] {
         var lines = [];
         var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
         var lineWidth = 0;
@@ -477,7 +477,7 @@ export class TextBlock extends Control {
         return lines;
     }
 
-    protected _renderLines(context: ICanvasRenderingContext2D): void {
+    protected _renderLines(context: ICanvasRenderingContext): void {
         var height = this._currentMeasure.height;
         var rootY = 0;
         switch (this._textVerticalAlignment) {

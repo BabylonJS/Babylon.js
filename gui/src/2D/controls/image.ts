@@ -7,7 +7,7 @@ import { Measure } from "../measure";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { serialize } from "babylonjs/Misc/decorators";
 import { Engine } from "babylonjs/Engines/engine";
-import { ICanvas, ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { ICanvas, ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create 2D images
@@ -719,7 +719,7 @@ export class Image extends Control {
         this.height = this._domImage.height + "px";
     }
 
-    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._loaded) {
             switch (this._stretch) {
                 case Image.STRETCH_NONE:
@@ -768,7 +768,7 @@ export class Image extends Control {
         context.clearRect(0, 0, width, height);
     }
 
-    private _drawImage(context: ICanvasRenderingContext2D, sx: number, sy: number, sw: number, sh: number, tx: number, ty: number, tw: number, th: number) {
+    private _drawImage(context: ICanvasRenderingContext, sx: number, sy: number, sw: number, sh: number, tx: number, ty: number, tw: number, th: number) {
         context.drawImage(this._domImage, sx, sy, sw, sh, tx, ty, tw, th);
 
         if (!this._detectPointerOnOpaqueOnly) {
@@ -781,7 +781,7 @@ export class Image extends Control {
         context.drawImage(this._domImage, sx, sy, sw, sh, tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
     }
 
-    public _draw(context: ICanvasRenderingContext2D): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -841,7 +841,7 @@ export class Image extends Control {
         context.restore();
     }
 
-    private _renderNinePatch(context: ICanvasRenderingContext2D): void {
+    private _renderNinePatch(context: ICanvasRenderingContext): void {
         const leftWidth = this._sliceLeft;
         const topHeight = this._sliceTop;
         const bottomHeight = this._imageHeight - this._sliceBottom;

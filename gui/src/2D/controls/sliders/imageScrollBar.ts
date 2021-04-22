@@ -5,7 +5,7 @@ import { Image } from "../image";
 import { Measure } from "../../measure";
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from "babylonjs/Misc/decorators";
-import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create slider controls
@@ -184,7 +184,7 @@ export class ImageScrollBar extends BaseSlider {
         return thumbThickness;
     }
 
-    public _draw(context: ICanvasRenderingContext2D): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);

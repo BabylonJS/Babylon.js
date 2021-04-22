@@ -15,7 +15,7 @@ import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { SerializationHelper, serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext2D } from 'babylonjs/Engines/ICanvas';
+import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
 
 /**
  * Root class used for all 2D controls
@@ -1415,7 +1415,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _transform(context?: ICanvasRenderingContext2D): void {
+    protected _transform(context?: ICanvasRenderingContext): void {
         if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
             return;
         }
@@ -1449,7 +1449,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _renderHighlight(context: ICanvasRenderingContext2D): void {
+    public _renderHighlight(context: ICanvasRenderingContext): void {
         if (!this.isHighlighted) {
             return;
         }
@@ -1463,12 +1463,12 @@ export class Control {
     }
 
     /** @hidden */
-    public _renderHighlightSpecific(context: ICanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
     /** @hidden */
-    protected _applyStates(context: ICanvasRenderingContext2D): void {
+    protected _applyStates(context: ICanvasRenderingContext): void {
         if (this._isFontSizeInPercentage) {
             this._fontSet = true;
         }
@@ -1494,7 +1494,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -1537,7 +1537,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._currentMeasure.copyFrom(parentMeasure);
 
         // Let children take some pre-measurement actions
@@ -1614,7 +1614,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         var width = this._currentMeasure.width;
         var height = this._currentMeasure.height;
 
@@ -1694,23 +1694,23 @@ export class Control {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /** @hidden */
-    protected _clipForChildren(context: ICanvasRenderingContext2D): void {
+    protected _clipForChildren(context: ICanvasRenderingContext): void {
         // DO nothing
     }
 
     private static _ClipMeasure = new Measure(0, 0, 0, 0);
     private _tmpMeasureA = new Measure(0, 0, 0, 0);
-    private _clip(context: ICanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>) {
+    private _clip(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>) {
         context.beginPath();
         Control._ClipMeasure.copyFrom(this._currentMeasure);
         if (invalidatedRectangle) {
@@ -1750,7 +1750,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _render(context: ICanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
+    public _render(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
             this._isDirty = false;
             return false;
@@ -1796,7 +1796,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
     }
 
@@ -2205,7 +2205,7 @@ export class Control {
     public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }) => any = () => { };
 
     /** @hidden */
-    protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext2D): void {
+    protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
         context.translate(x, y);
         context.scale(width, height);
 

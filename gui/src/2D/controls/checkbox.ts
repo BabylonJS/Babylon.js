@@ -9,7 +9,7 @@ import { Nullable } from 'babylonjs/types';
 import { Measure } from '../measure';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext2D } from 'babylonjs/Engines/ICanvas';
+import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
 
 /**
  * Class used to represent a 2D checkbox
@@ -103,7 +103,7 @@ export class Checkbox extends Control {
     }
 
     /** @hidden */
-    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
