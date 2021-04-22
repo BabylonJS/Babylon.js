@@ -122,13 +122,11 @@ export class HolographicSlate extends ContentDisplay3D {
         const backPlate = this._backPlate;
         const contentPlate = this._contentPlate;
 
-        const aspectRatio = this.relativeWidth / this.relativeHeight;
-
         if (followButtonMesh && closeButtonMesh && backPlate) {
-            followButtonMesh.scaling.copyFromFloats(0.37 / aspectRatio, 0.37, 0.37);
-            closeButtonMesh.scaling.copyFromFloats(0.37 / aspectRatio, 0.37, 0.37);
-            followButtonMesh.position.copyFromFloats(2.25, 0, -0.05);
-            closeButtonMesh.position.copyFromFloats(2.65, 0, -0.05);
+            followButtonMesh.scaling.copyFromFloats(0.37, 0.37, 0.37);
+            closeButtonMesh.scaling.copyFromFloats(0.37, 0.37, 0.37);
+            followButtonMesh.position.copyFromFloats(2.80 * this.relativeWidth - 0.55, 0, -0.05);
+            closeButtonMesh.position.copyFromFloats(2.80 * this.relativeWidth - 0.15, 0, -0.05);
 
             backPlate.scaling.x = this.relativeWidth;
             contentPlate.scaling.x = this.relativeWidth;
@@ -140,7 +138,7 @@ export class HolographicSlate extends ContentDisplay3D {
     protected _createNode(scene: Scene): TransformNode {
         const node = new Mesh("slate" + this.name);
         this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: 5.7, height: 0.4, depth: 0.04 }, scene);
-        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: 5.7, height: 2.4, depth: 0.04 }, scene);
+        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: 5.7, height: 2.4, depth: 0.04 });
 
         this._backPlate.parent = node;
         this._contentPlate.parent = node;
