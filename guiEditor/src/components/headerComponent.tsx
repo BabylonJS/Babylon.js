@@ -1,7 +1,5 @@
 import * as React from "react";
 import { GlobalState } from '../globalState';
-
-//import LogoImage from "../imgs/logo.svg";
 import { CommandBarComponent } from './commandBarComponent';
 
 require("../scss/header.scss");
