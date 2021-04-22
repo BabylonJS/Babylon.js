@@ -1,5 +1,4 @@
 import { AbstractMesh, Scene, TransformNode } from "babylonjs/index";
-import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { Mesh } from "babylonjs/Meshes/index";
@@ -54,25 +53,26 @@ export class HolographicSlate extends ContentDisplay3D {
         this._rebuildContent();
     }
 
-    /** Gets or sets the control scaling  in world space */
-    public get scaling(): Vector3 {
-        if (!this.node) {
-            return new Vector3(1, 1, 1);
-        }
-
-        return this.node.scaling;
+    // TODO : temporary to resize the slate and verify everything follows responsively
+    private _relativeWidth: number = 1;
+    public get relativeWidth() {
+        return this._relativeWidth;
     }
 
-    public set scaling(value: Vector3) {
-        if (!this.node) {
-            return;
-        }
-
-        this.node.scaling = value;
-
-        // Scale buttons and titlebar accordingly here
+    public set relativeWidth(value: number) {
+        this._relativeWidth = value;
+        this._positionElements();
     }
 
+    private _relativeHeight: number = 1;
+    public get relativeHeight() {
+        return this._relativeHeight;
+    }
+
+    public set relativeHeight(value: number) {
+        this._relativeHeight = value;
+        this._positionElements();
+    }
     /**
      * Creates a new slate
      * @param name defines the control name
@@ -116,12 +116,34 @@ export class HolographicSlate extends ContentDisplay3D {
         return "HolographicSlate";
     }
 
+    private _positionElements() {
+        const followButtonMesh = this._followButton.mesh;
+        const closeButtonMesh = this._closeButton.mesh;
+        const backPlate = this._backPlate;
+        const contentPlate = this._contentPlate;
+
+        const aspectRatio = this.relativeWidth / this.relativeHeight;
+
+        if (followButtonMesh && closeButtonMesh && backPlate) {
+            followButtonMesh.scaling.copyFromFloats(0.37 / aspectRatio, 0.37, 0.37);
+            closeButtonMesh.scaling.copyFromFloats(0.37 / aspectRatio, 0.37, 0.37);
+            followButtonMesh.position.copyFromFloats(2.25, 0, -0.05);
+            closeButtonMesh.position.copyFromFloats(2.65, 0, -0.05);
+
+            backPlate.scaling.x = this.relativeWidth;
+            contentPlate.scaling.x = this.relativeWidth;
+            contentPlate.scaling.y = this.relativeHeight;
+        }
+    }
+
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: 5.7, height: 0.4, depth: 0.04 });
-        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: 5.7, height: 2.4, depth: 0.04 });
+        const node = new Mesh("slate" + this.name);
+        this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: 5.7, height: 0.4, depth: 0.04 }, scene);
+        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: 5.7, height: 2.4, depth: 0.04 }, scene);
 
-        this._contentPlate.parent = this._backPlate;
+        this._backPlate.parent = node;
+        this._contentPlate.parent = node;
         this._contentPlate.position.y = -1.45;
 
         this._addControl(this._followButton);
@@ -129,13 +151,10 @@ export class HolographicSlate extends ContentDisplay3D {
 
         const followButtonMesh = this._followButton.mesh!;
         const closeButtonMesh = this._closeButton.mesh!;
-        followButtonMesh.parent = this._backPlate;
-        closeButtonMesh.parent = this._backPlate;
+        followButtonMesh.parent = node;
+        closeButtonMesh.parent = node;
 
-        followButtonMesh.scaling.scaleInPlace(0.37);
-        closeButtonMesh.scaling.scaleInPlace(0.37);
-        followButtonMesh.position.copyFromFloats(2.25, 0, -0.05);
-        closeButtonMesh.position.copyFromFloats(2.65, 0, -0.05);
+        this._positionElements();
 
         this._followButton.imageUrl = "./textures/IconFollowMe.png";
         this._closeButton.imageUrl = "./textures/IconClose.png";
@@ -146,7 +165,8 @@ export class HolographicSlate extends ContentDisplay3D {
         this._followButton.backMaterial.alpha = 0;
         this._closeButton.backMaterial.alpha = 0;
 
-        return this._backPlate;
+        node.isVisible = false;
+        return node;
     }
 
     protected _affectMaterial(mesh: AbstractMesh) {
