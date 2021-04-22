@@ -518,7 +518,7 @@ export class WebGPUEngine extends Engine {
                     const validExtensions: GPUFeatureName[] = [];
 
                     for (let extension of requestedExtensions) {
-                        if (this._adapter.features.has(extension)) {
+                        if (this._adapterSupportedExtensions.indexOf(extension) !== -1) {
                             validExtensions.push(extension);
                         }
                     }
