@@ -37,7 +37,7 @@ export class _ScrollViewerWindow extends Container {
         var renderWidth = textureSize.width;
         var renderHeight = textureSize.height;
 
-        var context = <ICanvasRenderingContext>(<any>(this.host.getContext()));
+        var context = this.host.getContext();
 
         var measure = new Measure(0, 0, renderWidth, renderHeight);
 

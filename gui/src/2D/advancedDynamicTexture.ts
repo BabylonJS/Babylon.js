@@ -24,7 +24,6 @@ import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IPointerEvent, IWheelEvent } from 'babylonjs/Events/deviceInputEvents';
-import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
 
 /**
 * Class used to create texture to support 2D GUI elements
@@ -607,7 +606,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         var renderWidth = textureSize.width;
         var renderHeight = textureSize.height;
 
-        var context = <ICanvasRenderingContext>(<any>(this.getContext()));
+        var context = this.getContext();
         context.font = "18px Arial";
         context.strokeStyle = "white";
 

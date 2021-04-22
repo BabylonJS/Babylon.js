@@ -30,7 +30,6 @@ export interface ICanvasRenderingContext {
     shadowOffsetY: number;
     lineWidth: number;
     canvas: ICanvas;
-    msImageSmoothingEnabled: boolean;
 
     clearRect(x: number, y: number, width: number, height: number): void;
     save(): void;
