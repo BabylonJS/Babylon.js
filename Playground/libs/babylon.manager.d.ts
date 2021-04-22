@@ -310,18 +310,16 @@ declare module BABYLON {
         static CreatePhysicsImpostor(scene: BABYLON.Scene, entity: BABYLON.AbstractMesh, type: number, options: BABYLON.PhysicsImpostorParameters, reparent?: boolean): void;
         /** Gets the physics impostor type as a string. */
         static GetPhysicsImposterType(type: number): string;
-        /** Creates a ammo.js physics box collision shape (Note: You must manually destroy shape) */
+        /** Creates a ammo.js physics box collision shape */
         static CreatePhysicsBoxShape(halfextents: BABYLON.Vector3): any;
-        /** Creates a ammo.js physics sphere collision shape (Note: You must manually destroy shape) */
+        /** Creates a ammo.js physics sphere collision shape */
         static CreatePhysicsSphereShape(radius: number): any;
-        /** Creates a ammo.js physics capsule collision shape (Note: You must manually destroy shape) */
+        /** Creates a ammo.js physics capsule collision shape */
         static CreatePhysicsCapsuleShape(radius: number, height: number): any;
-        /** Creates a ammo.js physics compound collision shape (Note: You must manually destroy shape) */
+        /** Creates a ammo.js physics compound collision shape */
         static CreatePhysicsCompoundShape(enableDynamicAabbTree?: boolean): any;
-        /** Creates a ammo.js physics empty concave collision shape (Note: You must manually destroy shape) */
+        /** Creates a ammo.js physics empty concave collision shape */
         static CreatePhysicsEmptyShape(): any;
-        /** Reset all temp physics objects */
-        static ResetPhysicsObjects(): void;
         static MAX_AGENT_COUNT: number;
         static MAX_AGENT_RADIUS: number;
         private static NavigationMesh;
@@ -1411,7 +1409,6 @@ declare module BABYLON {
         static CreateFontFaceElement(scene: BABYLON.Scene, family: string, asset: BABYLON.IUnityFontAsset, options?: string): HTMLStyleElement;
         /** TODO */
         static PrintToScreen(text: string, color?: string): void;
-        static DestroyTempPhysicsObjects(): void;
         private static TmpHullMatrix;
         private static TmpAmmoVectorA;
         private static TmpAmmoVectorB;
