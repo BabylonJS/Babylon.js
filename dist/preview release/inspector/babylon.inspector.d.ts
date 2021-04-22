@@ -726,14 +726,15 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     export class Context {
         title: string;
-        animations: BABYLON.Nullable<BABYLON.Animation[]>;
+        animations: BABYLON.Nullable<BABYLON.Animation[] | BABYLON.TargetedAnimation[]>;
         scene: BABYLON.Scene;
-        target: BABYLON.IAnimatable;
+        target: BABYLON.Nullable<BABYLON.IAnimatable>;
         activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
         activeColor: BABYLON.Nullable<string>;
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
         mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
         snippetId: string;
+        useTargetAnimations: boolean;
         activeFrame: number;
         fromKey: number;
         toKey: number;
@@ -2190,6 +2191,7 @@ declare module INSPECTOR {
         private _onAnimationGroupPauseObserver;
         private _onBeforeRenderObserver;
         private timelineRef;
+        private _animationCurveEditorContext;
         constructor(props: IAnimationGroupGridComponentProps);
         disconnect(animationGroup: BABYLON.AnimationGroup): void;
         connect(animationGroup: BABYLON.AnimationGroup): void;
@@ -2918,6 +2920,7 @@ declare module INSPECTOR {
     }
     export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
         private _animationGroup;
+        private _animationCurveEditorContext;
         constructor(props: ITargetedAnimationGridComponentProps);
         playOrPause: () => void;
         deleteAnimation: () => void;
