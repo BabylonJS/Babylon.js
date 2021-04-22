@@ -67,9 +67,6 @@ ISaveAnimationComponentState
                     }
 
                     this.forceUpdate();
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(this.props.context.snippetId);
-                    }
 
                     let windowAsAny = window as any;
 
@@ -80,7 +77,7 @@ ISaveAnimationComponentState
                         });
                     }
 
-                    hostDocument.defaultView!.alert("Animations saved with ID: " +  this.props.context.snippetId + " (please note that the id was also saved to your clipboard)");
+                    hostDocument.defaultView!.alert("Animations saved with ID: " +  this.props.context.snippetId);
                 }
                 else {
                     hostDocument.defaultView!.alert(`Unable to save your animations. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB). Please try reducing the number of animations or the number of keys per animation and try again.`);

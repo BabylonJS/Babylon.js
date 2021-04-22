@@ -80,6 +80,7 @@ export class Context {
 
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = this.toKey;
+        this.snippetId = animation.snippetId;
     
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
