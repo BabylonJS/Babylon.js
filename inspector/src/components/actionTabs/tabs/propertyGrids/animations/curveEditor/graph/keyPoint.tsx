@@ -533,8 +533,7 @@ IKeyPointComponentState
                                 x2={`${this._inVec.x}px`}
                                 y2={`${this._inVec.y}px`}
                                 style={{
-                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
-                                    stroke: "#F9BF00",
+                                    stroke: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
                                     strokeWidth: `${1 * this.props.scale}`
                                 }}>
                             </line>
@@ -544,8 +543,7 @@ IKeyPointComponentState
                                 cy={`${this._inVec.y}px`}
                                 r={`${4 * this.props.scale}`}
                                 style={{
-                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
-                                    fill: "#F9BF00",
+                                    fill: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA"
                                 }}>
                             </circle>
                         </>
@@ -559,8 +557,7 @@ IKeyPointComponentState
                                 x2={`${this._outVec.x}px`}
                                 y2={`${this._outVec.y}px`}
                                 style={{
-                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
-                                    stroke: "#F9BF00",
+                                    stroke: this.state.tangentSelectedIndex === 1 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
                                     strokeWidth: `${1 * this.props.scale}`
                                 }}>
                             </line>                        
@@ -570,8 +567,7 @@ IKeyPointComponentState
                                 cy={`${this._outVec.y}px`}
                                 r={`${4 * this.props.scale}`}
                                 style={{
-                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
-                                    fill: "#F9BF00",
+                                    fill: this.state.tangentSelectedIndex === 1 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA"
                                 }}>
                             </circle>
                         </>
