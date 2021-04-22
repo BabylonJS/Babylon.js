@@ -4,25 +4,28 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { Mesh } from "babylonjs/Meshes/index";
 import { FluentMaterial } from "../materials";
-import { Container3D } from "./container3D";
 import { HolographicButton } from "./holographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Control3D } from "./control3D";
+import { ContentDisplay3D } from "./contentDisplay3D";
+import { AdvancedDynamicTexture, Image } from "../../2D";
 
 /**
  * Class used to create a holographic slate
  */
-export class HolographicSlate extends Container3D {
+export class HolographicSlate extends ContentDisplay3D {
     private _backPlateMaterial: FluentMaterial;
     private _contentMaterial: FluentMaterial;
+    private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
+    private _imageUrl: string;
 
     protected _backPlate: Mesh;
     protected _contentPlate: Mesh;
     protected _followButton: HolographicButton;
     protected _closeButton: HolographicButton;
-
-    private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
+    protected _contentScaleRatio = 1;
 
     /**
      * Rendering ground id of all the mesh in the button
@@ -36,6 +39,22 @@ export class HolographicSlate extends Container3D {
     }
 
     /**
+     * Gets or sets the image url for the button
+     */
+    public get imageUrl(): string {
+        return this._imageUrl;
+    }
+
+    public set imageUrl(value: string) {
+        if (this._imageUrl === value) {
+            return;
+        }
+
+        this._imageUrl = value;
+        this._rebuildContent();
+    }
+
+    /**
      * Creates a new slate
      * @param name defines the control name
      */
@@ -46,30 +65,32 @@ export class HolographicSlate extends Container3D {
         this._closeButton = new HolographicButton("closeButton" + this.name);
     }
 
+    /**
+     * Apply the facade texture (created from the content property).
+     * This function can be overloaded by child classes
+     * @param facadeTexture defines the AdvancedDynamicTexture to use
+     */
+    protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
+        this._contentMaterial.albedoTexture = facadeTexture;
+    }
+
     private _rebuildContent(): void {
-        // this._disposeFacadeTexture();
-        // let panel = new StackPanel();
-        // panel.isVertical = true;
-        // if (this._imageUrl) {
-        //     let image = new Image();
-        //     image.source = this._imageUrl;
-        //     image.paddingTop = "40px";
-        //     image.height = "180px";
-        //     image.width = "100px";
-        //     image.paddingBottom = "40px";
-        //     panel.addControl(image);
-        // }
-        // if (this._text) {
-        //     let text = new TextBlock();
-        //     text.text = this._text;
-        //     text.color = "white";
-        //     text.height = "30px";
-        //     text.fontSize = 24;
-        //     panel.addControl(text);
-        // }
-        // if (this._frontPlate) {
-        //     this.content = panel;
-        // }
+        this._disposeFacadeTexture();
+        if (this._imageUrl) {
+            let image = new Image();
+            image.source = this._imageUrl;
+
+            if (this._contentPlate) {
+                this.content = image;
+            }
+        }
+    }
+
+    private _addControl(control: Control3D): void {
+        control._host = this._host;
+        if (this._host.utilityLayer) {
+            control._prepareNode(this._host.utilityLayer.utilityLayerScene);
+        }
     }
 
     protected _getTypeName(): string {
@@ -84,8 +105,8 @@ export class HolographicSlate extends Container3D {
         this._contentPlate.parent = this._backPlate;
         this._contentPlate.position.y = -1.45;
 
-        this.addControl(this._followButton);
-        this.addControl(this._closeButton);
+        this._addControl(this._followButton);
+        this._addControl(this._closeButton);
 
         const followButtonMesh = this._followButton.mesh!;
         const closeButtonMesh = this._closeButton.mesh!;
@@ -127,9 +148,6 @@ export class HolographicSlate extends Container3D {
 
         this._contentMaterial = new FluentMaterial(this.name + "contentMaterial", mesh.getScene());
         this._contentMaterial.renderBorders = true;
-
-        // TODO dynamic texture
-        this._contentMaterial.albedoTexture = new Texture("./textures/Checker_albedo.png", mesh.getScene());
 
         this._backPlate.material = this._backPlateMaterial;
         this._contentPlate.material = this._contentMaterial;
