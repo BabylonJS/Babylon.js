@@ -47,7 +47,7 @@ export enum TextureUsage {
     CopyDst = 2,
     Sampled = 4,
     Storage = 8,
-    OutputAttachment = 16
+    RenderAttachment = 16
 }
 
 /** @hidden */
@@ -250,17 +250,17 @@ export enum ColorWrite {
 export enum BlendFactor {
     Zero = "zero",
     One = "one",
-    SrcColor = "src-color",
-    OneMinusSrcColor = "one-minus-src-color",
+    Src = "src",
+    OneMinusSrc = "one-minus-src",
     SrcAlpha = "src-alpha",
     OneMinusSrcAlpha = "one-minus-src-alpha",
-    DstColor = "dst-color",
-    OneMinusDstColor = "one-minus-dst-color",
+    Dst = "dst",
+    OneMinusDst = "one-minus-dst",
     DstAlpha = "dst-alpha",
     OneMinusDstAlpha = "one-minus-dst-alpha",
     SrcAlphaSaturated = "src-alpha-saturated",
-    BlendColor = "blend-color",
-    OneMinusBlendColor = "one-minus-blend-color"
+    Constant = "constant",
+    OneMinusConstant = "one-minus-constant"
 }
 
 /** @hidden */
@@ -355,6 +355,12 @@ export enum PipelineStatisticName {
     ClipperPrimitivesOut = "clipper-primitives-out",
     FragmentShaderInvocations = "fragment-shader-invocations",
     ComputeShaderInvocations = "compute-shader-invocations"
+}
+
+/** @hidden */
+export enum CanvasCompositingAlphaMode {
+    Opaque = "opaque",
+    Premultiplied = "premultiplied"
 }
 
 /** @hidden */

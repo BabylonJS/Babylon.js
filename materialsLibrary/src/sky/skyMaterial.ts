@@ -110,7 +110,7 @@ export class SkyMaterial extends PushMaterial {
      * Defines an offset vector used to get a horizon offset.
      * @example skyMaterial.cameraOffset.y = camera.globalPosition.y // Set horizon relative to 0 on the Y axis
      */
-    @serialize()
+    @serializeAsVector3()
     public cameraOffset: Vector3 = Vector3.Zero();
 
     /**

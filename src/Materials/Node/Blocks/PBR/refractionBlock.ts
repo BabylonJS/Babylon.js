@@ -74,6 +74,12 @@ export class RefractionBlock extends NodeMaterialBlock {
     public invertRefractionY: boolean = false;
 
     /**
+     * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
+     */
+     @editableInPropertyPage("Use thickness as depth", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+     public useThicknessAsDepth: boolean = false;
+
+     /**
      * Gets or sets the texture associated with the node
      */
     public texture: Nullable<BaseTexture>;
@@ -89,9 +95,19 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("volumeIndexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("refraction", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Output, RefractionBlock, "RefractionBlock"));
+    }
+
+    /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("vRefractionPosition");
+        state._excludeVariableName("vRefractionSize");
     }
 
     /**
@@ -114,6 +130,13 @@ export class RefractionBlock extends NodeMaterialBlock {
      */
     public get tintAtDistance(): NodeMaterialConnectionPoint {
         return this._inputs[1];
+    }
+
+    /**
+     * Gets the volume index of refraction input component
+     */
+     public get volumeIndexOfRefraction(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
     }
 
     /**
@@ -183,6 +206,8 @@ export class RefractionBlock extends NodeMaterialBlock {
         defines.setValue("SS_LINKREFRACTIONTOTRANSPARENCY", this.linkRefractionWithTransparency, true);
         defines.setValue("SS_GAMMAREFRACTION", refractionTexture!.gammaSpace, true);
         defines.setValue("SS_RGBDREFRACTION", refractionTexture!.isRGBD, true);
+        defines.setValue("SS_USE_LOCAL_REFRACTIONMAP_CUBIC", (<any>refractionTexture).boundingBoxSize ? true : false, true);
+        defines.setValue("SS_USE_THICKNESS_AS_DEPTH", this.useThicknessAsDepth, true);
     }
 
     public isReady() {
@@ -219,15 +244,21 @@ export class RefractionBlock extends NodeMaterialBlock {
             }
         }
 
-        const indexOfRefraction = this.indexOfRefractionConnectionPoint.connectInputBlock?.value ?? 1.5;
+        const indexOfRefraction = this.volumeIndexOfRefraction.connectInputBlock?.value ?? this.indexOfRefractionConnectionPoint.connectInputBlock?.value ?? 1.5;
 
         effect.setFloat4(this._vRefractionInfosName, refractionTexture.level, 1 / indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
 
-        effect.setFloat3(this._vRefractionMicrosurfaceInfosName, refractionTexture.getSize().width, refractionTexture.lodGenerationScale, refractionTexture.lodGenerationOffset);
+        effect.setFloat4(this._vRefractionMicrosurfaceInfosName, refractionTexture.getSize().width, refractionTexture.lodGenerationScale, refractionTexture.lodGenerationOffset, 1 / indexOfRefraction);
 
         const width = refractionTexture.getSize().width;
 
         effect.setFloat2(this._vRefractionFilteringInfoName, width, Scalar.Log2(width));
+
+        if ((<any>refractionTexture).boundingBoxSize) {
+            let cubeTexture = <CubeTexture>refractionTexture;
+            effect.setVector3("vRefractionPosition", cubeTexture.boundingBoxPosition);
+            effect.setVector3("vRefractionSize", cubeTexture.boundingBoxSize);
+        }
     }
 
     /**
@@ -284,7 +315,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this._vRefractionMicrosurfaceInfosName = state._getFreeVariableName("vRefractionMicrosurfaceInfos");
 
-        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, "vec3");
+        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, "vec4");
 
         this._vRefractionInfosName = state._getFreeVariableName("vRefractionInfos");
 
@@ -293,6 +324,9 @@ export class RefractionBlock extends NodeMaterialBlock {
         this._vRefractionFilteringInfoName = state._getFreeVariableName("vRefractionFilteringInfo");
 
         state._emitUniformFromString(this._vRefractionFilteringInfoName, "vec2");
+
+        state._emitUniformFromString("vRefractionPosition", "vec3");
+        state._emitUniformFromString("vRefractionSize", "vec3");
 
         return code;
     }
@@ -304,7 +338,7 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString: string = super._dumpPropertiesCode();
+        let codeString = super._dumpPropertiesCode();
 
         if (this.texture) {
             if (this.texture.isCube) {
@@ -317,6 +351,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         codeString += `${this._codeVariableName}.linkRefractionWithTransparency = ${this.linkRefractionWithTransparency};\r\n`;
         codeString += `${this._codeVariableName}.invertRefractionY = ${this.invertRefractionY};\r\n`;
+        codeString += `${this._codeVariableName}.useThicknessAsDepth = ${this.useThicknessAsDepth};\r\n`;
 
         return codeString;
     }
@@ -330,6 +365,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         serializationObject.linkRefractionWithTransparency = this.linkRefractionWithTransparency;
         serializationObject.invertRefractionY = this.invertRefractionY;
+        serializationObject.useThicknessAsDepth = this.useThicknessAsDepth;
 
         return serializationObject;
     }
@@ -348,6 +384,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this.linkRefractionWithTransparency = serializationObject.linkRefractionWithTransparency;
         this.invertRefractionY = serializationObject.invertRefractionY;
+        this.useThicknessAsDepth = !!serializationObject.useThicknessAsDepth;
     }
 }
 

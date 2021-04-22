@@ -647,6 +647,8 @@ export class Effect implements IDisposable {
 
         var previousPipelineContext = this._pipelineContext;
 
+        this._isReady = false;
+
         try {
             let engine = this._engine;
 
@@ -886,7 +888,7 @@ export class Effect implements IDisposable {
      */
     public bindUniformBuffer(buffer: DataBuffer, name: string): void {
         let bufferName = this._uniformBuffersNames[name];
-        if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
+        if (bufferName === undefined || (Effect._baseCache[bufferName] === buffer && this._engine._features.useUBOBindingCache)) {
             return;
         }
         Effect._baseCache[bufferName] = buffer;

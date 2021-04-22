@@ -819,7 +819,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _rebuild(): void {
+    public _rebuild(dispose = false): void {
         this.onRebuildObservable.notifyObservers(this);
 
         if (this._occlusionQuery) {

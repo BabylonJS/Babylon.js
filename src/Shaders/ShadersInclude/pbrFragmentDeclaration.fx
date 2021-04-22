@@ -68,6 +68,12 @@ uniform mat4 view;
     #endif
 #endif
 
+// Refraction
+#if defined(SS_REFRACTION) && defined(SS_USE_LOCAL_REFRACTIONMAP_CUBIC)
+    uniform vec3 vRefractionPosition;
+    uniform vec3 vRefractionSize; 
+#endif
+
 // Clear Coat
 #ifdef CLEARCOAT
     uniform vec2 vClearCoatParams;
@@ -135,7 +141,7 @@ uniform mat4 view;
 // SubSurface
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION
-        uniform vec3 vRefractionMicrosurfaceInfos;
+        uniform vec4 vRefractionMicrosurfaceInfos;
         uniform vec4 vRefractionInfos;
         uniform mat4 refractionMatrix;
         #ifdef REALTIME_FILTERING

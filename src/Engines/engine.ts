@@ -25,6 +25,7 @@ import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
+import { IStencilState } from "../States/IStencilState";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -370,6 +371,9 @@ export class Engine extends ThinEngine {
      */
     public scenes = new Array<Scene>();
 
+    /** @hidden */
+    public _virtualScenes = new Array<Scene>();
+
     /**
      * Event raised when a new scene is created
      */
@@ -437,7 +441,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
      * @ignorenaming
      */
-    public static audioEngine: IAudioEngine;
+    public static audioEngine: Nullable<IAudioEngine>;
 
     /**
      * Default AudioEngine factory responsible of creating the Audio Engine.
@@ -515,7 +519,7 @@ export class Engine extends ThinEngine {
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+    constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
         Engine.Instances.push(this);
@@ -739,19 +743,21 @@ export class Engine extends ThinEngine {
 
     /**
      * Set various states to the webGL context
-     * @param culling defines backface culling state
+     * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
      * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+     * @param stencil stencil states to set
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
         }
 
         // Cull face
-        var cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+        var cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? this._gl.BACK : this._gl.FRONT;
         if (this._depthCullingState.cullFace !== cullFace || force) {
             this._depthCullingState.cullFace = cullFace;
         }
@@ -764,6 +770,8 @@ export class Engine extends ThinEngine {
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }
+
+        this._stencilStateComposer.stencilMaterial = stencil;
     }
 
     /**
@@ -1099,8 +1107,8 @@ export class Engine extends ThinEngine {
         gl.disable(gl.SCISSOR_TEST);
     }
 
-    protected _reportDrawCall() {
-        this._drawCalls.addCount(1, false);
+    protected _reportDrawCall(numDrawCalls = 1) {
+        this._drawCalls.addCount(numDrawCalls, false);
     }
 
     /**
@@ -1245,6 +1253,12 @@ export class Engine extends ThinEngine {
     protected _rebuildBuffers(): void {
         // Index / Vertex
         for (var scene of this.scenes) {
+            scene.resetCachedMaterial();
+            scene._rebuildGeometries();
+            scene._rebuildTextures();
+        }
+
+        for (var scene of this._virtualScenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
             scene._rebuildTextures();
@@ -1819,9 +1833,14 @@ export class Engine extends ThinEngine {
             this.scenes[0].dispose();
         }
 
+        while (this._virtualScenes.length) {
+            this._virtualScenes[0].dispose();
+        }
+
         // Release audio engine
         if (Engine.Instances.length === 1 && Engine.audioEngine) {
             Engine.audioEngine.dispose();
+            Engine.audioEngine = null;
         }
 
         //WebVR

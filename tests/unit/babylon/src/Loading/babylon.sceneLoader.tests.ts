@@ -703,12 +703,6 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
-        it('File object', () => {
-            BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.gltf").then((gltf) => {
-                return BABYLON.SceneLoader.LoadAsync("/Playground/scenes/Box/", new File([gltf], "Box.gltf"));
-            });
-        });
-
         it('Files input', () => {
             return Promise.all([
                 BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.gltf", true),
@@ -720,5 +714,21 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
+        it('File object', () => {
+            return BABYLON.Tools.LoadFileAsync("/Playground/scenes/BoomBox.glb").then((glb) => {
+                return BABYLON.SceneLoader.LoadAsync("", new File([glb], "BoomBox.glb"));
+            });
+        });
+
+        it('File url (Babylon Native)', () => {
+            const urlRedirects = {
+                "file:///Box.gltf": "/Playground/scenes/Box/Box.gltf",
+                "file:///Box.bin": "/Playground/scenes/Box/Box.bin"
+            };
+            const oldPreprocessUrl = BABYLON.FileTools.PreprocessUrl;
+            BABYLON.FileTools.PreprocessUrl = (url) => urlRedirects[url] || url;
+            const resetPreprocessUrl = () => BABYLON.FileTools.PreprocessUrl = oldPreprocessUrl;
+            return BABYLON.SceneLoader.LoadAsync("file:///", "Box.gltf").then(resetPreprocessUrl, resetPreprocessUrl);
+        });
     });
 });

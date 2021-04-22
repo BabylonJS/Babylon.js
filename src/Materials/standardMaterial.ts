@@ -104,6 +104,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public REFLECTIONMAP_PLANAR = false;
     public REFLECTIONMAP_CUBIC = false;
     public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
+    public USE_LOCAL_REFRACTIONMAP_CUBIC = false;
     public REFLECTIONMAP_PROJECTION = false;
     public REFLECTIONMAP_SKYBOX = false;
     public REFLECTIONMAP_EXPLICIT = false;
@@ -1024,6 +1025,7 @@ export class StandardMaterial extends PushMaterial {
 
                         defines.REFRACTIONMAP_3D = this._refractionTexture.isCube;
                         defines.RGBDREFRACTION = this._refractionTexture.isRGBD;
+                        defines.USE_LOCAL_REFRACTIONMAP_CUBIC = (<any>this._refractionTexture).boundingBoxSize ? true : false;
                     }
                 } else {
                     defines.REFRACTION = false;
@@ -1214,7 +1216,7 @@ export class StandardMaterial extends PushMaterial {
                 "mBones",
                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                 "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                "vReflectionPosition", "vReflectionSize",
+                "vReflectionPosition", "vReflectionSize", "vRefractionPosition", "vRefractionSize",
                 "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth",
                 "morphTargetTextureInfo", "morphTargetTextureIndices"
             ];
@@ -1342,11 +1344,15 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("bumpMatrix", 16);
         ubo.addUniform("vTangentSpaceParams", 2);
         ubo.addUniform("pointSize", 1);
+        ubo.addUniform("alphaCutOff", 1);
         ubo.addUniform("refractionMatrix", 16);
         ubo.addUniform("vRefractionInfos", 4);
+        ubo.addUniform("vRefractionPosition", 3);
+        ubo.addUniform("vRefractionSize", 3);
         ubo.addUniform("vSpecularColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
         ubo.addUniform("vDiffuseColor", 4);
+        ubo.addUniform("vAmbientColor", 3);
 
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
 
@@ -1467,7 +1473,7 @@ export class StandardMaterial extends PushMaterial {
                     }
 
                     if (this._hasAlphaChannel()) {
-                        effect.setFloat("alphaCutOff", this.alphaCutOff);
+                        ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
@@ -1518,6 +1524,13 @@ export class StandardMaterial extends PushMaterial {
                             }
                         }
                         ubo.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
+
+                        if ((<any>this._refractionTexture).boundingBoxSize) {
+                            let cubeTexture = <CubeTexture>this._refractionTexture;
+
+                            ubo.updateVector3("vRefractionPosition", cubeTexture.boundingBoxPosition);
+                            ubo.updateVector3("vRefractionSize", cubeTexture.boundingBoxSize);
+                        }
                     }
                 }
 
@@ -1529,10 +1542,12 @@ export class StandardMaterial extends PushMaterial {
                 if (defines.SPECULARTERM) {
                     ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                 }
-                ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
 
-                // Diffuse
+                ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
+
+                scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
+                ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
             }
 
             // Textures
@@ -1589,11 +1604,7 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.BindClipPlane(effect, scene);
 
             // Colors
-            scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-
             this.bindEyePosition(effect);
-
-            effect.setColor3("vAmbientColor", this._globalAmbientColor);
         }
 
         if (mustRebind || !this.isFrozen) {
@@ -1603,7 +1614,7 @@ export class StandardMaterial extends PushMaterial {
             }
 
             // View
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
+            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture || mesh.receiveShadows) {
                 this.bindView(effect);
             }
 
@@ -1813,6 +1824,8 @@ export class StandardMaterial extends PushMaterial {
         result.name = name;
         result.id = name;
 
+        this.stencil.copyTo(result.stencil);
+
         return result;
     }
 
@@ -1821,7 +1834,11 @@ export class StandardMaterial extends PushMaterial {
      * @returns the serialized material object
      */
     public serialize(): any {
-        return SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
+
+        serializationObject.stencil = this.stencil.serialize();
+
+        return serializationObject;
     }
 
     /**
@@ -1832,7 +1849,13 @@ export class StandardMaterial extends PushMaterial {
      * @returns a new standard material
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
-        return SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
+
+        if (source.stencil) {
+            material.stencil.parse(source.stencil, scene, rootUrl);
+        }
+
+        return material;
     }
 
     // Flags used to enable or disable a type of texture for all Standard Materials

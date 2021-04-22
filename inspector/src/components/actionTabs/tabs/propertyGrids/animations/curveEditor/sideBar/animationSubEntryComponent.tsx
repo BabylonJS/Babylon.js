@@ -4,7 +4,7 @@ import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { KeyPointComponent } from "../graph/keyPoint";
+import { SelectionState } from "../graph/keyPoint";
 
 const selectedIcon = require("../assets/keySelectedIcon.svg");
 
@@ -25,19 +25,40 @@ IAnimationSubEntryComponentProps,
 IAnimationSubEntryComponentState
 > {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
-    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: KeyPointComponent, channel: string}>>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
 
     constructor(props: IAnimationSubEntryComponentProps) {
         super(props);
 
-        this.state = { isSelected: false };
+        let isSelected = false;
+
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeKeyPoints) {
+            for (var keyPoint of this.props.context.activeKeyPoints) {
+                if (keyPoint.state.selectedState === SelectionState.Selected && keyPoint.props.channel === this.props.color) {
+                    isSelected = true;
+                }
+            }
+        }
+
+        this.state = { isSelected: isSelected };
 
         this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(animation => {
             this.forceUpdate();
         });
 
-        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(data => {
-            this.setState({isSelected: data?.channel === this.props.color && this.props.animation === this.props.context.activeAnimation})
+        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(() => {
+            let isSelected = false;
+
+            if (this.props.context.activeKeyPoints) {
+                for (let activeKeyPoint of this.props.context.activeKeyPoints) {
+                    if (activeKeyPoint.props.channel === this.props.color && this.props.animation === this.props.context.activeAnimation) {
+                        isSelected = true;
+                        break;
+                    }
+                }
+            }
+
+            this.setState({isSelected: isSelected});
         });
     }
 
@@ -52,17 +73,19 @@ IAnimationSubEntryComponentState
     }
 
     private _activate() {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === this.props.color) {
             return;
         }
 
-        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+        this.props.context.activeKeyPoints = [];
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = this.props.color;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 
     public render() {
-        let isActive = this.props.animation === this.props.context.activeAnimation;
+        let isActive = this.props.animation === this.props.context.activeAnimation && (this.props.context.activeColor === null || this.props.context.activeColor === this.props.color);
         return (
             <>
                 <div className={"animation-entry" + (isActive ? " isActive" : "")}>

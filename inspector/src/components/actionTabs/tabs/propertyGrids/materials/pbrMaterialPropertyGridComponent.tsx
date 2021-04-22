@@ -237,13 +237,21 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Mask From Thickness" target={material.subSurface} propertyName="useMaskFromThicknessTexture"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="glTF-Style Thickness Texture" target={material.subSurface} propertyName="useGltfStyleThicknessTexture"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Use Thickness as Depth" target={material.subSurface} propertyName="useThicknessAsDepth"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Tint Color" target={material.subSurface} propertyName="tintColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
 
                     <CheckBoxLineComponent label="Scattering Enabled" target={material.subSurface} propertyName="isScatteringEnabled"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     { (material.subSurface as any).isScatteringEnabled && material.getScene().prePassRenderer && material.getScene().subSurfaceConfiguration &&
-                        <SliderLineComponent label="Meters per unit" target={ material.getScene().subSurfaceConfiguration! } propertyName="metersPerUnit" minimum={0.01} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <div className="fragment">
+                            <SliderLineComponent label="Meters per unit" target={ material.getScene().subSurfaceConfiguration! } propertyName="metersPerUnit" minimum={0.01} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        </div>
                     }
                     <CheckBoxLineComponent label="Refraction Enabled" target={material.subSurface} propertyName="isRefractionEnabled"
                         onValueChanged={() => this.forceUpdate()}
@@ -268,6 +276,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         <div className="fragment">
                             <SliderLineComponent label="Intensity" target={material.subSurface} propertyName="translucencyIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <Color3LineComponent label="Diffusion Distance" target={material.subSurface} propertyName="diffusionDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
+                            <CheckBoxLineComponent label="Use albedo to tint surface translucency" target={material.subSurface} propertyName="useAlbedoToTintTranslucency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         </div>
                     }
                 </LineContainerComponent>

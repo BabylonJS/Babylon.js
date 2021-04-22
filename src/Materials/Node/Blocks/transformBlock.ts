@@ -171,7 +171,7 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = `${this._codeVariableName}.complementZ = ${this.complementZ};\r\n`;
+        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.complementZ = ${this.complementZ};\r\n`;
 
         codeString += `${this._codeVariableName}.complementW = ${this.complementW};\r\n`;
 

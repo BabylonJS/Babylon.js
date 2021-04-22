@@ -13,6 +13,7 @@ import { MorphTargetManager } from '../Morph/morphTargetManager';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 import { PostProcess } from '../PostProcesses/postProcess';
 import { Texture } from "../Materials/Textures/texture";
+import { SerializationHelper } from './decorators';
 
 /**
  * Class used to record delta files between 2 scene states
@@ -28,7 +29,9 @@ export class SceneRecorder {
     public track(scene: Scene) {
         this._trackedScene = scene;
 
+        SerializationHelper.AllowLoadingUniqueId = true;
         this._savedJSON = SceneSerializer.Serialize(scene);
+        SerializationHelper.AllowLoadingUniqueId = false;
     }
 
     /**
@@ -43,7 +46,9 @@ export class SceneRecorder {
         const currentForceSerializeBuffers = Texture.ForceSerializeBuffers;
         Texture.ForceSerializeBuffers = false;
 
+        SerializationHelper.AllowLoadingUniqueId = true;
         let newJSON = SceneSerializer.Serialize(this._trackedScene);
+        SerializationHelper.AllowLoadingUniqueId = false;
         let deltaJSON: any = {};
 
         for (var node in newJSON) {
@@ -144,6 +149,12 @@ export class SceneRecorder {
                 diffFound = (JSON.stringify(originalValue) !== JSON.stringify(currentValue));
             } else if (!isNaN(originalValue) || Object.prototype.toString.call(originalValue) == '[object String]') {
                 diffFound = (originalValue !== currentValue);
+            } else if (typeof originalValue === "object" && typeof currentValue === "object") {
+                let newObject = {};
+                if (!this._compareObjects(originalValue, currentValue, newObject)) {
+                    deltaJSON[prop] = newObject;
+                    aDifferenceWasFound = true;
+                }
             }
 
             if (diffFound) {
@@ -263,6 +274,8 @@ export class SceneRecorder {
                 entity[prop] = source;
             } else if (property.fromArray) {
                 property.fromArray(source);
+            } else if (typeof property === "object" && property !== null) {
+                this._ApplyPropertiesToEntity(source, property);
             }
         }
     }

@@ -603,7 +603,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         dispose(): void;
         private _onResize;
         /** @hidden */
-        _getGlobalViewport(scene: Scene): Viewport;
+        _getGlobalViewport(): Viewport;
         /**
         * Get screen coordinates for a vector3
         * @param position defines the position to project
@@ -803,6 +803,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _cachedOffsetY;
         private _isVisible;
         private _isHighlighted;
+        private _highlightLineWidth;
         /** @hidden */
         _linkedMesh: Nullable<TransformNode>;
         private _fontSet;
@@ -945,6 +946,11 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
         get alpha(): number;
         set alpha(value: number);
+        /**
+         * Gets or sets a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
+         */
+        get highlightLineWidth(): number;
+        set highlightLineWidth(value: number);
         /**
          * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
          */
@@ -1398,6 +1404,7 @@ declare module "babylonjs-gui/2D/controls/container" {
     import { Measure } from "babylonjs-gui/2D/measure";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
     /**
      * Root class for 2D containers
      * @see https://doc.babylonjs.com/how_to/gui#containers
@@ -1414,6 +1421,13 @@ declare module "babylonjs-gui/2D/controls/container" {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /** @hidden */
+        protected _renderToIntermediateTexture: boolean;
+        /** @hidden */
+        protected _intermediateTexture: Nullable<DynamicTexture>;
+        /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
+        get renderToIntermediateTexture(): boolean;
+        set renderToIntermediateTexture(value: boolean);
         /**
          * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
          */
@@ -4360,7 +4374,7 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         linkToTransformNode(node: Nullable<TransformNode>): Control3D;
         /** @hidden **/
         _prepareNode(scene: Scene): void;
-        protected _injectGUI3DMetadata(node: TransformNode): any;
+        protected _injectGUI3DReservedDataStore(node: TransformNode): any;
         /**
          * Node creation.
          * Can be overriden by children
@@ -5760,7 +5774,7 @@ declare module BABYLON.GUI {
         dispose(): void;
         private _onResize;
         /** @hidden */
-        _getGlobalViewport(scene: BABYLON.Scene): BABYLON.Viewport;
+        _getGlobalViewport(): BABYLON.Viewport;
         /**
         * Get screen coordinates for a vector3
         * @param position defines the position to project
@@ -5948,6 +5962,7 @@ declare module BABYLON.GUI {
         private _cachedOffsetY;
         private _isVisible;
         private _isHighlighted;
+        private _highlightLineWidth;
         /** @hidden */
         _linkedMesh: BABYLON.Nullable<BABYLON.TransformNode>;
         private _fontSet;
@@ -6090,6 +6105,11 @@ declare module BABYLON.GUI {
         /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
         get alpha(): number;
         set alpha(value: number);
+        /**
+         * Gets or sets a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
+         */
+        get highlightLineWidth(): number;
+        set highlightLineWidth(value: number);
         /**
          * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
          */
@@ -6554,6 +6574,13 @@ declare module BABYLON.GUI {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /** @hidden */
+        protected _renderToIntermediateTexture: boolean;
+        /** @hidden */
+        protected _intermediateTexture: BABYLON.Nullable<BABYLON.DynamicTexture>;
+        /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
+        get renderToIntermediateTexture(): boolean;
+        set renderToIntermediateTexture(value: boolean);
         /**
          * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
          */
@@ -9289,7 +9316,7 @@ declare module BABYLON.GUI {
         linkToTransformNode(node: BABYLON.Nullable<BABYLON.TransformNode>): Control3D;
         /** @hidden **/
         _prepareNode(scene: BABYLON.Scene): void;
-        protected _injectGUI3DMetadata(node: BABYLON.TransformNode): any;
+        protected _injectGUI3DReservedDataStore(node: BABYLON.TransformNode): any;
         /**
          * Node creation.
          * Can be overriden by children

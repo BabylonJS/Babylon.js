@@ -117,7 +117,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findIconDefinition", function() { return findIconDefinition; });
 /*!
- * Font Awesome Free 5.15.0 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 5.15.3 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  */
 function _typeof(obj) {
@@ -1214,7 +1214,7 @@ var p = config.measurePerformance && PERFORMANCE && PERFORMANCE.mark && PERFORMA
   mark: noop$1,
   measure: noop$1
 };
-var preamble = "FA \"5.15.0\"";
+var preamble = "FA \"5.15.3\"";
 
 var begin = function begin(name) {
   p.mark("".concat(preamble, " ").concat(name, " begins"));
@@ -1290,35 +1290,6 @@ function toHex(unicode) {
   }
 
   return result;
-}
-function codePointAt(string, index) {
-  /*! https://mths.be/codepointat v0.2.0 by @mathias */
-  var size = string.length;
-  var first = string.charCodeAt(index);
-  var second;
-
-  if (first >= 0xD800 && first <= 0xDBFF && size > index + 1) {
-    second = string.charCodeAt(index + 1);
-
-    if (second >= 0xDC00 && second <= 0xDFFF) {
-      return (first - 0xD800) * 0x400 + second - 0xDC00 + 0x10000;
-    }
-  }
-
-  return first;
-}
-/**
- * Used to check that the character is between the E000..F8FF private unicode
- * range
- */
-
-function isPrivateUnicode(iconName) {
-  if (iconName.length !== 1) {
-    return false;
-  } else {
-    var cp = codePointAt(iconName, 0);
-    return cp >= 57344 && cp <= 63743;
-  }
 }
 
 function defineIcons(prefix, icons) {
@@ -1898,27 +1869,6 @@ var missing = {
 };
 
 var styles$2 = namespace.styles;
-function resolveCustomIconVersion() {
-  var kitConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var iconName = arguments.length > 1 ? arguments[1] : undefined;
-
-  if (iconName && isPrivateUnicode(iconName)) {
-    if (kitConfig && kitConfig.iconUploads) {
-      var iconUploads = kitConfig.iconUploads;
-      var descriptiveIconName = Object.keys(iconUploads).find(function (key) {
-        return iconUploads[key] && iconUploads[key].u && iconUploads[key].u === toHex(iconName);
-      });
-
-      if (descriptiveIconName) {
-        return iconUploads[descriptiveIconName].v;
-      }
-    }
-  } else {
-    if (kitConfig && kitConfig.iconUploads && kitConfig.iconUploads[iconName] && kitConfig.iconUploads[iconName].v) {
-      return kitConfig.iconUploads[iconName].v;
-    }
-  }
-}
 function asFoundIcon(icon) {
   var width = icon[0];
   var height = icon[1];
@@ -1980,12 +1930,6 @@ function findIcon(iconName, prefix) {
     if (iconName && prefix && styles$2[prefix] && styles$2[prefix][iconName]) {
       var icon = styles$2[prefix][iconName];
       return resolve(asFoundIcon(icon));
-    }
-    var kitToken = null;
-    var iconVersion = resolveCustomIconVersion(WINDOW.FontAwesomeKitConfig, iconName);
-
-    if (WINDOW.FontAwesomeKitConfig && WINDOW.FontAwesomeKitConfig.token) {
-      kitToken = WINDOW.FontAwesomeKitConfig.token;
     }
 
     if (iconName && prefix && !config.showMissingIcons) {
@@ -9908,9 +9852,12 @@ function log () {
   }
 }
 
-// Normalize icon arguments
 function normalizeIconArgs(icon) {
-  // if the icon is null, there's nothing to do
+  if (_fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].icon) {
+    return _fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].icon(icon);
+  } // if the icon is null, there's nothing to do
+
+
   if (icon === null) {
     return null;
   } // if the icon is an object and has a prefix and an icon name, return it
@@ -9957,14 +9904,16 @@ function FontAwesomeIcon(_ref) {
       maskArgs = props.mask,
       symbol = props.symbol,
       className = props.className,
-      title = props.title;
+      title = props.title,
+      titleId = props.titleId;
   var iconLookup = normalizeIconArgs(iconArgs);
   var classes = objectWithKey('classes', [].concat(_toConsumableArray(classList(props)), _toConsumableArray(className.split(' '))));
   var transform = objectWithKey('transform', typeof props.transform === 'string' ? _fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].transform(props.transform) : props.transform);
   var mask = objectWithKey('mask', normalizeIconArgs(maskArgs));
   var renderedIcon = Object(_fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["icon"])(iconLookup, _objectSpread2({}, classes, {}, transform, {}, mask, {
     symbol: symbol,
-    title: title
+    title: title,
+    titleId: titleId
   }));
 
   if (!renderedIcon) {
@@ -10077,7 +10026,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#propertyTab {\n  color: white;\n  background: #333333; }\n  #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 6px;\n    background: #d3d3d3;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #propertyTab .range:hover {\n    opacity: 1; }\n  #propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  #propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  #propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #propertyTab .sliderLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 1fr 50px auto; }\n    #propertyTab .sliderLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .sliderLine .slider {\n      grid-column: 3;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center; }\n    #propertyTab .sliderLine .floatLine {\n      grid-column: 2;\n      padding-left: 5px; }\n      #propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #propertyTab .sliderLine .floatLine .short input {\n          width: 35px; }\n        #propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #propertyTab .textInputLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #propertyTab .textInputLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #propertyTab .textInputLine .value input {\n        width: calc(100% - 5px); }\n  #propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 50px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #555555;\n        height: 30px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #propertyTab .color-picker {\n    height: calc(100% - 8px);\n    margin: 4px;\n    width: calc(100% - 8px); }\n    #propertyTab .color-picker .color-rect {\n      height: calc(100% - 4px);\n      border: 2px white solid;\n      cursor: pointer;\n      min-height: 18px; }\n    #propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #propertyTab .floatLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .floatLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .floatLine .value {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .floatLine .value input {\n        width: 110px; }\n    #propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .floatLine .short input {\n        width: 27px; }\n      #propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: #164975;\n        cursor: pointer; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #propertyTab .listLine .options select {\n        width: 115px; }\n  #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        width: 50px;\n        display: flex;\n        align-items: center; }\n        #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #propertyTab .textLine .value.check {\n        color: green; }\n      #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
+exports.push([module.i, "#propertyTab {\n  color: white;\n  background: #333333; }\n  #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 6px;\n    background: #d3d3d3;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #propertyTab .range:hover {\n    opacity: 1; }\n  #propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  #propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  #propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #propertyTab .sliderLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 1fr 50px auto; }\n    #propertyTab .sliderLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .sliderLine .slider {\n      grid-column: 3;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center; }\n    #propertyTab .sliderLine .floatLine {\n      grid-column: 2;\n      padding-left: 5px; }\n      #propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #propertyTab .sliderLine .floatLine .short input {\n          width: 35px; }\n        #propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #propertyTab .textInputLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #propertyTab .textInputLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #propertyTab .textInputLine .value input {\n        width: calc(100% - 5px); }\n  #propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 50px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #555555;\n        height: 30px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #propertyTab .color-picker {\n    height: calc(100% - 8px);\n    margin: 4px;\n    width: calc(100% - 8px); }\n    #propertyTab .color-picker .color-rect {\n      height: calc(100% - 4px);\n      border: 2px white solid;\n      cursor: pointer;\n      min-height: 18px; }\n    #propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #propertyTab .floatLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .floatLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .floatLine .value {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .floatLine .value input {\n        width: 110px; }\n    #propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .floatLine .short input {\n        width: 27px; }\n      #propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #propertyTab .buttonLine.disabled {\n      opacity: 0.3; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: #164975;\n        cursor: pointer; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #propertyTab .listLine .options select {\n        width: 115px; }\n  #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        width: 50px;\n        display: flex;\n        align-items: center; }\n        #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #propertyTab .textLine .value.check {\n        color: green; }\n      #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10131,7 +10080,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ".color-picker-container {\n  width: 320px;\n  height: 300px;\n  background-color: white;\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 50% 50px 60px 40px 1fr;\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal;\n  font-size: 14px; }\n  .color-picker-container .color-picker-saturation {\n    grid-row: 1;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    position: relative;\n    cursor: pointer; }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-white {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to right, #fff, rgba(255, 255, 255, 0));\n      background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-black {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to top, #000, rgba(0, 0, 0, 0));\n      background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-cursor {\n      pointer-events: none;\n      width: 4px;\n      height: 4px;\n      box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 1px 2px rgba(0, 0, 0, 0.4);\n      border-radius: 50%;\n      transform: translate(-2px, -2px);\n      position: absolute; }\n  .color-picker-container .color-picker-hue {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 24% 76%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hue .color-picker-hue-color {\n      grid-row: 1;\n      grid-column: 1;\n      align-self: center;\n      justify-self: center;\n      width: 30px;\n      height: 30px;\n      border-radius: 15px;\n      border: 1px solid black; }\n    .color-picker-container .color-picker-hue .color-picker-hue-slider {\n      grid-row: 1;\n      grid-column: 2;\n      align-self: center;\n      height: 16px;\n      position: relative;\n      cursor: pointer;\n      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\n      background: -webkit-linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }\n      .color-picker-container .color-picker-hue .color-picker-hue-slider .color-picker-hue-cursor {\n        pointer-events: none;\n        width: 8px;\n        height: 18px;\n        transform: translate(-4px, -2px);\n        background-color: #f8f8f8;\n        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\n        position: absolute; }\n  .color-picker-container .color-picker-component {\n    display: grid;\n    margin: 5px;\n    grid-template-columns: 100%;\n    grid-template-rows: 50% 50%; }\n    .color-picker-container .color-picker-component .color-picker-component-value {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-bottom: 4px; }\n      .color-picker-container .color-picker-component .color-picker-component-value input {\n        width: 50px; }\n    .color-picker-container .color-picker-component .color-picker-component-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 2;\n      grid-column: 1;\n      color: black; }\n  .color-picker-container .color-picker-rgb {\n    grid-row: 3;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\n    grid-template-rows: 100%; }\n  .color-picker-container .red {\n    grid-row: 1;\n    grid-column: 1; }\n  .color-picker-container .green {\n    grid-row: 1;\n    grid-column: 3; }\n  .color-picker-container .blue {\n    grid-row: 1;\n    grid-column: 5; }\n  .color-picker-container .alpha {\n    grid-row: 1;\n    grid-column: 7; }\n    .color-picker-container .alpha.grayed {\n      opacity: 0.5; }\n  .color-picker-container .color-picker-hex {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 20% 80%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hex .color-picker-hex-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-left: 10px;\n      color: black; }\n    .color-picker-container .color-picker-hex .color-picker-hex-value {\n      justify-self: left;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 2;\n      margin-left: 10px;\n      margin-right: 10px; }\n      .color-picker-container .color-picker-hex .color-picker-hex-value input {\n        width: 70px; }\n", ""]);
+exports.push([module.i, ".color-picker-container {\n  width: 320px;\n  height: 300px;\n  background-color: white;\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 50% 50px 60px 40px 1fr auto;\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal;\n  font-size: 14px; }\n  .color-picker-container.with-hints {\n    height: 380px; }\n  .color-picker-container .color-picker-saturation {\n    grid-row: 1;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    position: relative;\n    cursor: pointer; }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-white {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to right, #fff, rgba(255, 255, 255, 0));\n      background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-black {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to top, #000, rgba(0, 0, 0, 0));\n      background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-cursor {\n      pointer-events: none;\n      width: 4px;\n      height: 4px;\n      box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 1px 2px rgba(0, 0, 0, 0.4);\n      border-radius: 50%;\n      transform: translate(-2px, -2px);\n      position: absolute; }\n  .color-picker-container .color-picker-hue {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 24% 76%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hue .color-picker-hue-color {\n      grid-row: 1;\n      grid-column: 1;\n      align-self: center;\n      justify-self: center;\n      width: 30px;\n      height: 30px;\n      border-radius: 15px;\n      border: 1px solid black; }\n    .color-picker-container .color-picker-hue .color-picker-hue-slider {\n      grid-row: 1;\n      grid-column: 2;\n      align-self: center;\n      height: 16px;\n      position: relative;\n      cursor: pointer;\n      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\n      background: -webkit-linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }\n      .color-picker-container .color-picker-hue .color-picker-hue-slider .color-picker-hue-cursor {\n        pointer-events: none;\n        width: 8px;\n        height: 18px;\n        transform: translate(-4px, -2px);\n        background-color: #f8f8f8;\n        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\n        position: absolute; }\n  .color-picker-container .color-picker-component {\n    display: grid;\n    margin: 5px;\n    grid-template-columns: 100%;\n    grid-template-rows: 50% 50%; }\n    .color-picker-container .color-picker-component .color-picker-component-value {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-bottom: 4px; }\n      .color-picker-container .color-picker-component .color-picker-component-value input {\n        width: 50px; }\n    .color-picker-container .color-picker-component .color-picker-component-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 2;\n      grid-column: 1;\n      color: black; }\n  .color-picker-container .color-picker-rgb {\n    grid-row: 3;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\n    grid-template-rows: 100%; }\n  .color-picker-container .red {\n    grid-row: 1;\n    grid-column: 1; }\n  .color-picker-container .green {\n    grid-row: 1;\n    grid-column: 3; }\n  .color-picker-container .blue {\n    grid-row: 1;\n    grid-column: 5; }\n  .color-picker-container .alpha {\n    grid-row: 1;\n    grid-column: 7; }\n    .color-picker-container .alpha.grayed {\n      opacity: 0.5; }\n  .color-picker-container .color-picker-hex {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 20% 80%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hex .color-picker-hex-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-left: 10px;\n      color: black; }\n    .color-picker-container .color-picker-hex .color-picker-hex-value {\n      justify-self: left;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 2;\n      margin-left: 10px;\n      margin-right: 10px; }\n      .color-picker-container .color-picker-hex .color-picker-hex-value input {\n        width: 70px; }\n  .color-picker-container .color-picker-warning {\n    color: black;\n    font-size: 11px;\n    padding: 4px;\n    justify-self: left;\n    align-self: center;\n    grid-row: 6;\n    grid-column: 1; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -17827,6 +17776,36 @@ module.exports = baseToString;
 
 /***/ }),
 
+/***/ "../../node_modules/lodash/_baseTrim.js":
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseTrim.js ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var trimmedEndIndex = __webpack_require__(/*! ./_trimmedEndIndex */ "../../node_modules/lodash/_trimmedEndIndex.js");
+
+/** Used to match leading whitespace. */
+var reTrimStart = /^\s+/;
+
+/**
+ * The base implementation of `_.trim`.
+ *
+ * @private
+ * @param {string} string The string to trim.
+ * @returns {string} Returns the trimmed string.
+ */
+function baseTrim(string) {
+  return string
+    ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, '')
+    : string;
+}
+
+module.exports = baseTrim;
+
+
+/***/ }),
+
 /***/ "../../node_modules/lodash/_baseUnary.js":
 /*!*************************************************************!*\
   !*** C:/Repos/Babylon.js/node_modules/lodash/_baseUnary.js ***!
@@ -21349,6 +21328,36 @@ module.exports = toSource;
 
 /***/ }),
 
+/***/ "../../node_modules/lodash/_trimmedEndIndex.js":
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_trimmedEndIndex.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/** Used to match a single whitespace character. */
+var reWhitespace = /\s/;
+
+/**
+ * Used by `_.trim` and `_.trimEnd` to get the index of the last non-whitespace
+ * character of `string`.
+ *
+ * @private
+ * @param {string} string The string to inspect.
+ * @returns {number} Returns the index of the last non-whitespace character.
+ */
+function trimmedEndIndex(string) {
+  var index = string.length;
+
+  while (index-- && reWhitespace.test(string.charAt(index))) {}
+  return index;
+}
+
+module.exports = trimmedEndIndex;
+
+
+/***/ }),
+
 /***/ "../../node_modules/lodash/_unicodeSize.js":
 /*!***************************************************************!*\
   !*** C:/Repos/Babylon.js/node_modules/lodash/_unicodeSize.js ***!
@@ -23979,14 +23988,12 @@ module.exports = toInteger;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(/*! ./isObject */ "../../node_modules/lodash/isObject.js"),
+var baseTrim = __webpack_require__(/*! ./_baseTrim */ "../../node_modules/lodash/_baseTrim.js"),
+    isObject = __webpack_require__(/*! ./isObject */ "../../node_modules/lodash/isObject.js"),
     isSymbol = __webpack_require__(/*! ./isSymbol */ "../../node_modules/lodash/isSymbol.js");
 
 /** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
-
-/** Used to match leading and trailing whitespace. */
-var reTrim = /^\s+|\s+$/g;
 
 /** Used to detect bad signed hexadecimal string values. */
 var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
@@ -24037,7 +24044,7 @@ function toNumber(value) {
   if (typeof value != 'string') {
     return value === 0 ? value : +value;
   }
-  value = value.replace(reTrim, '');
+  value = baseTrim(value);
   var isBinary = reIsBinary.test(value);
   return (isBinary || reIsOctal.test(value))
     ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
@@ -54293,7 +54300,7 @@ function applyToTag(style, options, obj) {
     style.removeAttribute('media');
   }
 
-  if (sourceMap && btoa) {
+  if (sourceMap && typeof btoa !== 'undefined') {
     css += "\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))), " */");
   } // For old IE
 
@@ -54926,6 +54933,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -55340,6 +55348,42 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FragCoordBlock"]("FragCoord");
             case "ScreenSizeBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ScreenSizeBlock"]("ScreenSize");
+            case "EqualBlock":
+                var equalBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("Equal");
+                equalBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Equal;
+                return equalBlock;
+            case "NotEqualBlock":
+                var notEqualBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("NotEqual");
+                notEqualBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].NotEqual;
+                return notEqualBlock;
+            case "LessThanBlock":
+                var lessThanBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("LessThan");
+                lessThanBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].LessThan;
+                return lessThanBlock;
+            case "LessOrEqualBlock":
+                var lessOrEqualBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("LessOrEqual");
+                lessOrEqualBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].LessOrEqual;
+                return lessOrEqualBlock;
+            case "GreaterThanBlock":
+                var greaterThanBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("GreaterThan");
+                greaterThanBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].GreaterThan;
+                return greaterThanBlock;
+            case "GreaterOrEqualBlock":
+                var greaterOrEqualBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("GreaterOrEqual");
+                greaterOrEqualBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].GreaterOrEqual;
+                return greaterOrEqualBlock;
+            case "XorBlock":
+                var xorBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("Xor");
+                xorBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Xor;
+                return xorBlock;
+            case "OrBlock":
+                var orBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("Or");
+                orBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Or;
+                return orBlock;
+            case "AndBlock":
+                var andBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("And");
+                andBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].And;
+                return andBlock;
         }
         return null;
     };
@@ -55642,6 +55686,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
+            Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
@@ -55841,6 +55886,15 @@ var NodeListComponent = /** @class */ (function (_super) {
         "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
         "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
+        "EqualBlock": "Return a value if two operands are equals",
+        "NotEqualBlock": "Return a value if two operands are not equals",
+        "LessThanBlock": "Return a value if an operand is smaller than a second operand",
+        "LessOrEqualBlock": "Return a value if an operand is smaller or equal to a second operand",
+        "GreaterThanBlock": "Return a value if an operand is greater than a second operand",
+        "GreaterOrEqualBlock": "Return a value if an operand is greater or equal to a second operand",
+        "XorBlock": "Return a value if (a xor b) > 0",
+        "OrBlock": "Return a value if (a or b) > 0",
+        "AndBlock": "Return a value if (a and b) > 0"
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -56074,17 +56128,6 @@ var PreviewManager = /** @class */ (function () {
             _this._lightParent.rotation.y += rotateLighting;
             lastOffsetX = evt.event.offsetX;
         });
-        // this._scene.registerBeforeRender(() => {
-        //     if (this._camera.alpha === cameraLastRotation) {
-        //         return;
-        //     }
-        //     if (!this._globalState.controlCamera) {
-        //         return;
-        //     }
-        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed;
-        //     this._lightParent.rotate(Vector3.Up(), rotateLighting);
-        //     cameraLastRotation = this._camera.alpha;
-        // });
     }
     PreviewManager.prototype._handleAnimations = function () {
         this._scene.stopAllAnimations();
@@ -57184,7 +57227,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null };
+        _this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null, uploadInProgress: false };
         _this._modeSelect = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
@@ -57273,11 +57316,14 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     };
     PropertyTabComponent.prototype.customSave = function () {
         var _this = this;
+        this.setState({ uploadInProgress: true });
         this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Saving your material to Babylon.js snippet server...", isError: false });
         this.props.globalState.customSave.action(_serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(function () {
             _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Material saved successfully", isError: false });
+            _this.setState({ uploadInProgress: false });
         }).catch(function (err) {
             _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: err, isError: true });
+            _this.setState({ uploadInProgress: false });
         });
     };
     PropertyTabComponent.prototype.saveToSnippetServer = function () {
@@ -57472,7 +57518,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
                         } }),
                     this.props.globalState.customSave &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, onClick: function () {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, isDisabled: this.state.uploadInProgress, onClick: function () {
                                 _this.customSave();
                             } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load Frame", uploadName: 'frame-upload', onClick: function (file) { return _this.loadFrame(file); }, accept: ".json" })),
@@ -57524,6 +57570,74 @@ var ClampDisplayManager = /** @class */ (function () {
         contentArea.innerHTML = "[" + clampBlock.minimum + ", " + clampBlock.maximum + "]";
     };
     return ClampDisplayManager;
+}());
+
+
+
+/***/ }),
+
+/***/ "./diagram/display/conditionalDisplayManager.ts":
+/*!******************************************************!*\
+  !*** ./diagram/display/conditionalDisplayManager.ts ***!
+  \******************************************************/
+/*! exports provided: ConditionalDisplayManager */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConditionalDisplayManager", function() { return ConditionalDisplayManager; });
+/* harmony import */ var babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/conditionalBlock */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__);
+
+var ConditionalDisplayManager = /** @class */ (function () {
+    function ConditionalDisplayManager() {
+    }
+    ConditionalDisplayManager.prototype.getHeaderClass = function (block) {
+        return "";
+    };
+    ConditionalDisplayManager.prototype.shouldDisplayPortLabels = function (block) {
+        return true;
+    };
+    ConditionalDisplayManager.prototype.getHeaderText = function (block) {
+        var conditionBlock = block;
+        var desc = "";
+        switch (conditionBlock.condition) {
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Equal:
+                desc = "=";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].NotEqual:
+                desc = "!=";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].LessThan:
+                desc = "<";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].LessOrEqual:
+                desc = "<=";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].GreaterThan:
+                desc = ">";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].GreaterOrEqual:
+                desc = ">=";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Xor:
+                desc = "xor";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].Or:
+                desc = "|";
+                break;
+            case babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].And:
+                desc = "&";
+                break;
+        }
+        return block.name + " (" + desc + ")";
+    };
+    ConditionalDisplayManager.prototype.getBackgroundColor = function (block) {
+        return "#00A080";
+    };
+    ConditionalDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
+    };
+    return ConditionalDisplayManager;
 }());
 
 
@@ -57999,6 +58113,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./display/textureDisplayManager */ "./diagram/display/textureDisplayManager.ts");
 /* harmony import */ var _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./display/discardDisplayManager */ "./diagram/display/discardDisplayManager.ts");
 /* harmony import */ var _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./display/pbrDisplayManager */ "./diagram/display/pbrDisplayManager.ts");
+/* harmony import */ var _display_conditionalDisplayManager__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./display/conditionalDisplayManager */ "./diagram/display/conditionalDisplayManager.ts");
+
 
 
 
@@ -58022,6 +58138,7 @@ DisplayLedger.RegisteredControls["ClampBlock"] = _display_clampDisplayManager__W
 DisplayLedger.RegisteredControls["GradientBlock"] = _display_gradientDisplayManager__WEBPACK_IMPORTED_MODULE_3__["GradientDisplayManager"];
 DisplayLedger.RegisteredControls["RemapBlock"] = _display_remapDisplayManager__WEBPACK_IMPORTED_MODULE_4__["RemapDisplayManager"];
 DisplayLedger.RegisteredControls["TrigonometryBlock"] = _display_trigonometryDisplayManager__WEBPACK_IMPORTED_MODULE_5__["TrigonometryDisplayManager"];
+DisplayLedger.RegisteredControls["ConditionalBlock"] = _display_conditionalDisplayManager__WEBPACK_IMPORTED_MODULE_9__["ConditionalDisplayManager"];
 DisplayLedger.RegisteredControls["TextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ReflectionBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
@@ -61304,6 +61421,68 @@ var NodePort = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./diagram/properties/conditionalNodePropertyComponent.tsx":
+/*!*****************************************************************!*\
+  !*** ./diagram/properties/conditionalNodePropertyComponent.tsx ***!
+  \*****************************************************************/
+/*! exports provided: ConditionalPropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConditionalPropertyTabComponent", function() { return ConditionalPropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/conditionalBlock */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
+
+
+
+
+
+
+var ConditionalPropertyTabComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ConditionalPropertyTabComponent, _super);
+    function ConditionalPropertyTabComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    ConditionalPropertyTabComponent.prototype.render = function () {
+        var _this = this;
+        var conditionBlock = this.props.block;
+        var conditionOptions = [
+            { label: "Equal", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Equal },
+            { label: "NotEqual", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].NotEqual },
+            { label: "LessThan", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].LessThan },
+            { label: "GreaterThan", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].GreaterThan },
+            { label: "LessOrEqual", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].LessOrEqual },
+            { label: "GreaterOrEqual", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].GreaterOrEqual },
+            { label: "Xor", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Xor },
+            { label: "Or", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Or },
+            { label: "And", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].And }
+        ];
+        conditionOptions.sort(function (a, b) {
+            return a.label.localeCompare(b.label);
+        });
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_5__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Condition", options: conditionOptions, target: conditionBlock, propertyName: "condition", onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.forceUpdate();
+                    } }))));
+    };
+    return ConditionalPropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./diagram/properties/frameNodePortPropertyComponent.tsx":
 /*!***************************************************************!*\
   !*** ./diagram/properties/frameNodePortPropertyComponent.tsx ***!
@@ -61976,7 +62155,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                 systemValuesOptions = [
                     { label: "World", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].World },
                     { label: "World x View", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].WorldView },
-                    { label: "World x ViewxProjection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].WorldViewProjection },
+                    { label: "World x View x Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].WorldViewProjection },
                     { label: "View", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].View },
                     { label: "View x Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].ViewProjection },
                     { label: "Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].Projection }
@@ -62477,6 +62656,20 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 label: "Spherical", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SPHERICAL_MODE
             },
         ];
+        var samplingMode = [
+            { label: "Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_NEAREST },
+            { label: "Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_LINEAR },
+            { label: "Linear & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_LINEAR_MIPLINEAR },
+            { label: "Linear & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_LINEAR_MIPNEAREST },
+            { label: "Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_NEAREST_MIPLINEAR },
+            { label: "Nearest & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_NEAREST_MIPNEAREST },
+            { label: "Nearest/Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_LINEAR },
+            { label: "Nearest/Linear & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_LINEAR_MIPLINEAR },
+            { label: "Nearest/Linear & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_LINEAR_MIPNEAREST },
+            { label: "Linear/Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_NEAREST },
+            { label: "Linear/Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_NEAREST_MIPLINEAR },
+            { label: "Linear/Nearest & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_NEAREST_MIPNEAREST }, // 9
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_11__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
@@ -62493,6 +62686,15 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                 texture && showIsInGammaSpace &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Is in gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Disable multiplying by level", propertyName: "disableLevelMultiplication", target: this.props.block, onValueChanged: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
+                texture && texture.updateSamplingMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
+                            texture.updateSamplingMode(value);
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && isInReflectionMode &&
@@ -62702,6 +62904,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _properties_lightInformationPropertyTabComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./properties/lightInformationPropertyTabComponent */ "./diagram/properties/lightInformationPropertyTabComponent.tsx");
 /* harmony import */ var _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./properties/texturePropertyTabComponent */ "./diagram/properties/texturePropertyTabComponent.tsx");
 /* harmony import */ var _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./properties/trigonometryNodePropertyComponent */ "./diagram/properties/trigonometryNodePropertyComponent.tsx");
+/* harmony import */ var _properties_conditionalNodePropertyComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./properties/conditionalNodePropertyComponent */ "./diagram/properties/conditionalNodePropertyComponent.tsx");
+
 
 
 
@@ -62728,6 +62932,7 @@ PropertyLedger.RegisteredControls["RefractionBlock"] = _properties_textureProper
 PropertyLedger.RegisteredControls["CurrentScreenBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["ParticleTextureBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__["TrigonometryPropertyTabComponent"];
+PropertyLedger.RegisteredControls["ConditionalBlock"] = _properties_conditionalNodePropertyComponent__WEBPACK_IMPORTED_MODULE_7__["ConditionalPropertyTabComponent"];
 
 
 /***/ }),
@@ -63839,8 +64044,13 @@ var ButtonLineComponent = /** @class */ (function (_super) {
     }
     ButtonLineComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { onClick: function () { return _this.props.onClick(); } }, this.props.label)));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" + (this.props.isDisabled ? " disabled" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { onClick: function () {
+                    if (_this.props.isDisabled) {
+                        return;
+                    }
+                    _this.props.onClick();
+                } }, this.props.label)));
     };
     return ButtonLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -66056,7 +66266,7 @@ var ColorPicker = /** @class */ (function (_super) {
         babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
         var colorHexRef = colorRef.toHexString();
         var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" + (this.props.linearhint ? " with-hints" : "") },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
                     background: colorHexRef
                 } },
@@ -66101,7 +66311,9 @@ var ColorPicker = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-value" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
                             _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
-                        } })))));
+                        } }))),
+            this.props.linearhint &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-warning" }, "(Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))")));
     };
     return ColorPicker;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

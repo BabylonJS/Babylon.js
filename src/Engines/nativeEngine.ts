@@ -28,6 +28,7 @@ import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOpti
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { ICanvas } from "./ICanvas";
+import { IStencilState } from "../States/IStencilState";
 
 interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
@@ -828,6 +829,7 @@ export class NativeEngine extends Engine {
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: false,
             trackUbosInFrame: false,
+            checkUbosContentBeforeUpload: false,
             supportCSM: false,
             basisNeedsPOT: false,
             support3DTextures: false,
@@ -838,6 +840,7 @@ export class NativeEngine extends Engine {
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
             needsInvertingBitmap: true,
+            useUBOBindingCache: true,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -1193,8 +1196,8 @@ export class NativeEngine extends Engine {
         this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-        this._native.setState(culling, zOffset, this.cullBackFaces, reverseSide);
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+        this._native.setState(culling, zOffset, this.cullBackFaces ?? cullBackFaces ?? true, reverseSide);
     }
 
     /**
@@ -1540,7 +1543,7 @@ export class NativeEngine extends Engine {
         if (bruteForce) {
             this._currentProgram = null;
 
-            this._stencilState.reset();
+            this._stencilStateComposer.reset();
             this._depthCullingState.reset();
             this._alphaState.reset();
         }

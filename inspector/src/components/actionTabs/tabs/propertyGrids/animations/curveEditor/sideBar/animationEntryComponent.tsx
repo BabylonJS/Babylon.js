@@ -6,7 +6,6 @@ import { ActionButtonComponent } from "../controls/actionButtonComponent";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { AnimationSubEntryComponent } from "./animationSubEntryComponent";
-import { KeyPointComponent } from "../graph/keyPoint";
 
 const gearIcon = require("../assets/animationOptionsIcon.svg");
 const deleteIcon = require("../assets/closeWindowIcon.svg");
@@ -31,7 +30,8 @@ IAnimationEntryComponentProps,
 IAnimationEntryComponentState
 > {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
-    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: KeyPointComponent, channel: string}>>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
+    private _unmount = false;
 
     constructor(props: IAnimationEntryComponentProps) {
         super(props);
@@ -39,19 +39,23 @@ IAnimationEntryComponentState
         this.state = { isExpanded: false, isSelected: false };
 
         this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(() => {
+            if (this._unmount) {
+                return;
+            }
             if (this.props.animation !== this.props.context.activeAnimation) {
                 this.setState({isSelected: false});
             }
             this.forceUpdate();
         });
 
-        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(data => {
+        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(() => {
             this.setState({isSelected: this.props.animation.dataType === Animation.ANIMATIONTYPE_FLOAT && this.props.animation === this.props.context.activeAnimation})
         });
     }
 
     private _onGear() {
-
+        this.props.context.onEditAnimationUIClosed.addOnce(() => {if (!this._unmount) { this.forceUpdate()}});
+        this.props.context.onEditAnimationRequired.notifyObservers(this.props.animation);
     }
 
     private _onDelete() {
@@ -59,6 +63,7 @@ IAnimationEntryComponentState
     }
 
     componentWillUnmount() {
+        this._unmount = true;
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
@@ -69,12 +74,14 @@ IAnimationEntryComponentState
     }
 
     private _activate() {
-        if (this.props.animation === this.props.context.activeAnimation) {
+        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === null) {
             return;
         }
         
-        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+        this.props.context.activeKeyPoints = [];
+        this.props.context.onActiveKeyPointChanged.notifyObservers();
         this.props.context.activeAnimation = this.props.animation;
+        this.props.context.activeColor = null;
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 

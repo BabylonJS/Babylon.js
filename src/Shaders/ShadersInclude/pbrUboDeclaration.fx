@@ -83,7 +83,7 @@ uniform Material {
     mat4 sheenMatrix;
     mat4 sheenRoughnessMatrix;
 
-    vec3 vRefractionMicrosurfaceInfos;
+    vec4 vRefractionMicrosurfaceInfos;
     vec2 vRefractionFilteringInfo;
     vec4 vRefractionInfos;
     mat4 refractionMatrix;
@@ -93,6 +93,8 @@ uniform Material {
     vec3 vDiffusionDistance;
     vec4 vTintColor;
     vec3 vSubSurfaceIntensity;
+    vec3 vRefractionPosition;
+    vec3 vRefractionSize;
     float scatteringDiffusionProfile;
 
     vec4 vDetailInfos;

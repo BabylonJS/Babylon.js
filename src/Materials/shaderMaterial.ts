@@ -57,6 +57,11 @@ export interface IShaderMaterialOptions {
      * The list of defines used in the shader
      */
     defines: string[];
+
+    /**
+     * Defines if clip planes have to be turned on: true to turn them on, false to turn them off and null to turn them on/off depending on the scene configuration (scene.clipPlaneX)
+     */
+    useClipPlane: Nullable<boolean>;
 }
 
 /**
@@ -126,6 +131,7 @@ export class ShaderMaterial extends Material {
             uniformBuffers: [],
             samplers: [],
             defines: [],
+            useClipPlane: false,
             ...options
         };
     }
@@ -520,7 +526,7 @@ export class ShaderMaterial extends Material {
             this._multiview = true;
             defines.push("#define MULTIVIEW");
             if (this._options.uniforms.indexOf("viewProjection") !== -1 &&
-                this._options.uniforms.push("viewProjectionR") === -1) {
+                this._options.uniforms.indexOf("viewProjectionR") === -1) {
                 this._options.uniforms.push("viewProjectionR");
             }
         }
@@ -639,6 +645,49 @@ export class ShaderMaterial extends Material {
             defines.push("#define ALPHATEST");
         }
 
+        // Clip planes
+        if ((this._options.useClipPlane === null && !!scene.clipPlane) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE");
+            if (uniforms.indexOf("vClipPlane") === -1) {
+                uniforms.push("vClipPlane");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane2) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE2");
+            if (uniforms.indexOf("vClipPlane2") === -1) {
+                uniforms.push("vClipPlane2");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane3) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE3");
+            if (uniforms.indexOf("vClipPlane3") === -1) {
+                uniforms.push("vClipPlane3");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane4) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE4");
+            if (uniforms.indexOf("vClipPlane4") === -1) {
+                uniforms.push("vClipPlane4");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane5) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE5");
+            if (uniforms.indexOf("vClipPlane5") === -1) {
+                uniforms.push("vClipPlane5");
+            }
+        }
+
+        if ((this._options.useClipPlane === null && !!scene.clipPlane6) || this._options.useClipPlane) {
+            defines.push("#define CLIPPLANE6");
+            if (uniforms.indexOf("vClipPlane6") === -1) {
+                uniforms.push("vClipPlane6");
+            }
+        }
+
         if (this.customShaderNameResolve) {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();
@@ -738,18 +787,41 @@ export class ShaderMaterial extends Material {
 
         const effect = effectOverride ?? this.getEffect();
 
+        const uniformBuffers = this._options.uniformBuffers;
+
+        let useSceneUBO = false;
+
+        if (effect && uniformBuffers && uniformBuffers.length > 0 && this.getScene().getEngine().supportsUniformBuffers) {
+            for (let i = 0; i < uniformBuffers.length; ++i) {
+                const bufferName = uniformBuffers[i];
+                switch (bufferName) {
+                    case "Mesh":
+                        if (mesh) {
+                            mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+                            mesh.transferToEffect(world);
+                        }
+                        break;
+                    case "Scene":
+                        this.getScene().finalizeSceneUbo();
+                        MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                        useSceneUBO = true;
+                        break;
+                }
+            }
+        }
+
         let mustRebind = this.getScene().getCachedMaterial() !== this;
 
         if (effect && mustRebind) {
-            if (this._options.uniforms.indexOf("view") !== -1) {
+            if (!useSceneUBO && this._options.uniforms.indexOf("view") !== -1) {
                 effect.setMatrix("view", this.getScene().getViewMatrix());
             }
 
-            if (this._options.uniforms.indexOf("projection") !== -1) {
+            if (!useSceneUBO && this._options.uniforms.indexOf("projection") !== -1) {
                 effect.setMatrix("projection", this.getScene().getProjectionMatrix());
             }
 
-            if (this._options.uniforms.indexOf("viewProjection") !== -1) {
+            if (!useSceneUBO && this._options.uniforms.indexOf("viewProjection") !== -1) {
                 effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
                 if (this._multiview) {
                     effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
@@ -762,6 +834,9 @@ export class ShaderMaterial extends Material {
 
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
+
+            // Clip plane
+            MaterialHelper.BindClipPlane(effect, this.getScene());
 
             var name: string;
             // Texture
@@ -956,6 +1031,9 @@ export class ShaderMaterial extends Material {
             }
         });
 
+        // Stencil
+        this.stencil.copyTo(result.stencil);
+
         // Texture
         for (var key in this._textures) {
             result.setTexture(key, this._textures[key]);
@@ -1053,6 +1131,9 @@ export class ShaderMaterial extends Material {
         serializationObject.shaderPath = this._shaderPath;
 
         var name: string;
+
+        // Stencil
+        serializationObject.stencil = this.stencil.serialize();
 
         // Texture
         serializationObject.textures = {};
@@ -1180,6 +1261,11 @@ export class ShaderMaterial extends Material {
         var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options), source, scene, rootUrl);
 
         var name: string;
+
+        // Stencil
+        if (source.stencil) {
+            material.stencil.parse(source.stencil, scene, rootUrl);
+        }
 
         // Texture
         for (name in source.textures) {

@@ -663,7 +663,7 @@ var GradientMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         if (scene.lightsEnabled && !this.disableLighting) {
             babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);

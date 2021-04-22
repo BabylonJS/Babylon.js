@@ -109,7 +109,7 @@ export class Sound {
         }
 
         let currentTime: number = this._startOffset;
-        if (this.isPlaying && Engine.audioEngine.audioContext) {
+        if (this.isPlaying && Engine.audioEngine?.audioContext) {
             currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
         }
         return currentTime;
@@ -194,7 +194,7 @@ export class Sound {
             this._offset = options.offset;
         }
 
-        if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
+        if (Engine.audioEngine?.canUseWebAudio && Engine.audioEngine.audioContext) {
             this._soundGain = Engine.audioEngine.audioContext.createGain();
             this._soundGain!.gain.value = this._volume;
             this._inputAudioNode = this._soundGain;
@@ -258,7 +258,7 @@ export class Sound {
                                     url.indexOf(".m4a", url.length - 4) !== -1 ||
                                     url.indexOf("blob:") !== -1;
                                 if (codecSupportedFound) {
-                                    // Loading sound using XHR2
+                                    // Loading sound
                                     if (!this._streaming) {
                                         this._scene._loadFile(
                                             url,
@@ -328,7 +328,7 @@ export class Sound {
         } else {
             // Adding an empty sound to avoid breaking audio calls for non Web Audio browsers
             this._scene.mainSoundTrack.addSound(this);
-            if (!Engine.audioEngine.WarnedWebAudioUnsupported) {
+            if (Engine.audioEngine && !Engine.audioEngine.WarnedWebAudioUnsupported) {
                 Logger.Error("Web Audio is not supported by your browser.");
                 Engine.audioEngine.WarnedWebAudioUnsupported = true;
             }
@@ -347,7 +347,7 @@ export class Sound {
      * Release the sound and its associated resources
      */
     public dispose() {
-        if (Engine.audioEngine.canUseWebAudio) {
+        if (Engine.audioEngine?.canUseWebAudio) {
             if (this.isPlaying) {
                 this.stop();
             }
@@ -405,7 +405,7 @@ export class Sound {
     }
 
     private _soundLoaded(audioData: ArrayBuffer) {
-        if (!Engine.audioEngine.audioContext) {
+        if (!Engine.audioEngine?.audioContext) {
             return;
         }
         Engine.audioEngine.audioContext.decodeAudioData(
@@ -431,7 +431,7 @@ export class Sound {
      * @param audioBuffer The audioBuffer containing the data
      */
     public setAudioBuffer(audioBuffer: AudioBuffer): void {
-        if (Engine.audioEngine.canUseWebAudio) {
+        if (Engine.audioEngine?.canUseWebAudio) {
             this._audioBuffer = audioBuffer;
             this._isReadyToPlay = true;
         }
@@ -478,7 +478,7 @@ export class Sound {
     }
 
     private _createSpatialParameters() {
-        if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
+        if (Engine.audioEngine?.canUseWebAudio && Engine.audioEngine.audioContext) {
             if (this._scene.headphone) {
                 this._panningModel = "HRTF";
             }
@@ -531,7 +531,7 @@ export class Sound {
     }
 
     private _switchPanningModel() {
-        if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
+        if (Engine.audioEngine?.canUseWebAudio && this.spatialSound && this._soundPanner) {
             this._soundPanner.panningModel = this._panningModel as any;
         }
     }
@@ -541,7 +541,7 @@ export class Sound {
      * @param soundTrackAudioNode the sound track audio node to connect to
      */
     public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void {
-        if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
+        if (Engine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
             if (this._isOutputConnected) {
                 this._outputAudioNode.disconnect();
             }
@@ -590,7 +590,7 @@ export class Sound {
             }
 
             this._coneInnerAngle = value;
-            if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
+            if (Engine.audioEngine?.canUseWebAudio && this.spatialSound && this._soundPanner) {
                 this._soundPanner.coneInnerAngle = this._coneInnerAngle;
             }
         }
@@ -614,7 +614,7 @@ export class Sound {
             }
 
             this._coneOuterAngle = value;
-            if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
+            if (Engine.audioEngine?.canUseWebAudio && this.spatialSound && this._soundPanner) {
                 this._soundPanner.coneOuterAngle = this._coneOuterAngle;
             }
         }
@@ -627,7 +627,7 @@ export class Sound {
     public setPosition(newPosition: Vector3): void {
         this._position = newPosition;
 
-        if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner && !isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
+        if (Engine.audioEngine?.canUseWebAudio && this.spatialSound && this._soundPanner && !isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
         }
     }
@@ -639,7 +639,7 @@ export class Sound {
     public setLocalDirectionToMesh(newLocalDirection: Vector3): void {
         this._localDirection = newLocalDirection;
 
-        if (Engine.audioEngine.canUseWebAudio && this._connectedTransformNode && this.isPlaying) {
+        if (Engine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.isPlaying) {
             this._updateDirection();
         }
     }
@@ -657,7 +657,7 @@ export class Sound {
 
     /** @hidden */
     public updateDistanceFromListener() {
-        if (Engine.audioEngine.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
+        if (Engine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
             var distance = this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
             this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
         }
@@ -679,13 +679,13 @@ export class Sound {
      * @param length (optional) Sound duration (in seconds)
      */
     public play(time?: number, offset?: number, length?: number): void {
-        if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine.audioContext) {
+        if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine?.audioContext) {
             try {
                 if (this._startOffset < 0) {
                     time = -this._startOffset;
                     this._startOffset = 0;
                 }
-                var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
+                var startTime = time ? Engine.audioEngine?.audioContext.currentTime + time : Engine.audioEngine?.audioContext.currentTime;
                 if (!this._soundSource || !this._streamingSource) {
                     if (this.spatialSound && this._soundPanner) {
                         if (!isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
@@ -721,7 +721,7 @@ export class Sound {
                         // the audio engine to be unlocked by a user gesture before trying to play
                         // an HTML Audio element
                         var tryToPlay = () => {
-                            if (Engine.audioEngine.unlocked) {
+                            if (Engine.audioEngine?.unlocked) {
                                 var playPromise = this._htmlAudioElement.play();
 
                                 // In browsers that don’t yet support this functionality,
@@ -730,9 +730,9 @@ export class Sound {
                                     playPromise.catch((error) => {
                                         // Automatic playback failed.
                                         // Waiting for the audio engine to be unlocked by user click on unmute
-                                        Engine.audioEngine.lock();
+                                        Engine.audioEngine?.lock();
                                         if (this.loop || this.autoplay) {
-                                            Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
+                                            Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
                                                 tryToPlay();
                                             });
                                         }
@@ -740,7 +740,7 @@ export class Sound {
                                 }
                             } else {
                                 if (this.loop || this.autoplay) {
-                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
+                                    Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
                                         tryToPlay();
                                     });
                                 }
@@ -750,7 +750,7 @@ export class Sound {
                     }
                 } else {
                     var tryToPlay = () => {
-                        if (Engine.audioEngine.audioContext) {
+                        if (Engine.audioEngine?.audioContext) {
                             length = length || this._length;
                             offset = offset || this._offset;
 
@@ -760,7 +760,7 @@ export class Sound {
                                     oldSource.disconnect();
                                 };
                             }
-                            this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
+                            this._soundSource = Engine.audioEngine?.audioContext.createBufferSource();
                             if (this._soundSource && this._inputAudioNode) {
                                 this._soundSource.buffer = this._audioBuffer;
                                 this._soundSource.connect(this._inputAudioNode);
@@ -775,17 +775,17 @@ export class Sound {
                                 this._soundSource.onended = () => {
                                     this._onended();
                                 };
-                                startTime = time ? Engine.audioEngine.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
+                                startTime = time ? Engine.audioEngine?.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
                                 const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
                                 this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
                         }
                     };
 
-                    if (Engine.audioEngine.audioContext.state === "suspended") {
+                    if (Engine.audioEngine?.audioContext.state === "suspended") {
                         // Wait a bit for FF as context seems late to be ready.
                         setTimeout(() => {
-                            if (Engine.audioEngine.audioContext!.state === "suspended") {
+                            if (Engine.audioEngine?.audioContext!.state === "suspended") {
                                 // Automatic playback failed.
                                 // Waiting for the audio engine to be unlocked by user click on unmute
                                 Engine.audioEngine.lock();
@@ -837,7 +837,7 @@ export class Sound {
                     this._streamingSource.disconnect();
                 }
                 this.isPlaying = false;
-            } else if (Engine.audioEngine.audioContext && this._soundSource) {
+            } else if (Engine.audioEngine?.audioContext && this._soundSource) {
                 var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : undefined;
                 this._soundSource.stop(stopTime);
                 if (stopTime === undefined) {
@@ -868,7 +868,7 @@ export class Sound {
                     this._streamingSource.disconnect();
                 }
                 this.isPlaying = false;
-            } else if (Engine.audioEngine.audioContext) {
+            } else if (Engine.audioEngine?.audioContext) {
                 this.stop(0);
                 this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
@@ -881,7 +881,7 @@ export class Sound {
      * @param time Define time for gradual change to new volume
      */
     public setVolume(newVolume: number, time?: number): void {
-        if (Engine.audioEngine.canUseWebAudio && this._soundGain) {
+        if (Engine.audioEngine?.canUseWebAudio && this._soundGain) {
             if (time && Engine.audioEngine.audioContext) {
                 this._soundGain.gain.cancelScheduledValues(Engine.audioEngine.audioContext.currentTime);
                 this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, Engine.audioEngine.audioContext.currentTime);
@@ -960,7 +960,7 @@ export class Sound {
             let boundingInfo = mesh.getBoundingInfo();
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
         }
-        if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
+        if (Engine.audioEngine?.canUseWebAudio && this._isDirectional && this.isPlaying) {
             this._updateDirection();
         }
     }

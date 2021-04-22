@@ -96,7 +96,7 @@ export class TouchButton3D extends Button3D {
         }
 
         this._collisionMesh = collisionMesh;
-        this._injectGUI3DMetadata(this._collisionMesh).control = this;
+        this._injectGUI3DReservedDataStore(this._collisionMesh).control = this;
 
         this.collidableFrontDirection = collisionMesh.forward;
 

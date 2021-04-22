@@ -55,6 +55,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         constructor(props: IWorkbenchComponentProps);
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
+        changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: Vector2): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
@@ -582,6 +583,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/colorPicker/colorPicker"
      */
     export interface IColorPickerProps {
         color: Color3 | Color4;
+        linearhint?: boolean;
         debugMode?: boolean;
         onColorChanged?: (color: Color3 | Color4) => void;
     }
@@ -619,6 +621,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/colorPickerCompone
     import { Color4, Color3 } from 'babylonjs/Maths/math.color';
     export interface IColorPickerComponentProps {
         value: Color4 | Color3;
+        linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
     }
     interface IColorPickerComponentState {
@@ -1522,6 +1525,7 @@ declare module GUIEDITOR {
         constructor(props: IWorkbenchComponentProps);
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
+        changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
@@ -1980,6 +1984,7 @@ declare module GUIEDITOR {
      */
     export interface IColorPickerProps {
         color: BABYLON.Color3 | BABYLON.Color4;
+        linearhint?: boolean;
         debugMode?: boolean;
         onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
     }
@@ -2015,6 +2020,7 @@ declare module GUIEDITOR {
 declare module GUIEDITOR {
     export interface IColorPickerComponentProps {
         value: BABYLON.Color4 | BABYLON.Color3;
+        linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
     }
     interface IColorPickerComponentState {

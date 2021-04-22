@@ -32,9 +32,7 @@ export const isFramePortData = (variableToCheck: any): variableToCheck is FrameP
 };
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    private _gridCanvas: HTMLDivElement;
-    private _svgCanvas: HTMLElement;
-    private _rootContainer: HTMLDivElement;
+    private _rootContainer: React.RefObject<HTMLCanvasElement>;;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
     private _textureMesh: Mesh;
@@ -63,6 +61,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         super(props);
         props.globalState.onSelectionChangedObservable.add((selection) => {
             if (!selection) {
+                this.changeSelectionHighlight(false);
                 this._selectedGuiNodes = [];
             } else {
                 if (selection instanceof Control) {
@@ -73,6 +72,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     } else {
                         this._selectedGuiNodes = [selection];
                     }
+                    this.changeSelectionHighlight(true);
                 }
             }
         });
@@ -106,6 +106,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
     }
 
+    changeSelectionHighlight(value: boolean) {
+        this.selectedGuiNodes.forEach(node => {
+            node.isHighlighted = value;
+        });
+    }
+
     resizeGuiTexture(newvalue: Vector2) {
         this._textureMesh.scaling.x = newvalue.x;
         this._textureMesh.scaling.z = newvalue.y;
@@ -120,11 +126,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     findNodeFromGuiElement(guiControl: Control) {
         return this.nodes.filter((n) => n === guiControl)[0];
-    }
-
-    reset() {
-        this._gridCanvas.innerHTML = "";
-        this._svgCanvas.innerHTML = "";
     }
 
     appendBlock(guiElement: Control) {
@@ -169,6 +170,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             default:
                 break;
         }
+        guiControl.highlightLineWidth = 5;
     }
 
     public isSelected(value: boolean, guiNode: Control) {
@@ -189,9 +191,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     componentDidMount() {
-        this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-container") as HTMLDivElement;
-        this._gridCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas-container") as HTMLDivElement;
-        this._svgCanvas = this.props.globalState.hostDocument.getElementById("workbench-svg-container") as HTMLElement;
+        this._rootContainer = React.createRef();//this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLDivElement;
     }
 
     onMove(evt: React.PointerEvent) {
@@ -234,7 +234,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
-        this._rootContainer.setPointerCapture(evt.pointerId);
+        this._rootContainer.current?.setPointerCapture(evt.pointerId);
 
         if (!this.isOverGUINode) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
@@ -249,7 +249,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onUp(evt: React.PointerEvent) {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
-        this._rootContainer.releasePointerCapture(evt.pointerId);
+        this._rootContainer.current?.releasePointerCapture(evt.pointerId);
         this.isUp = true;
     }
 
@@ -339,6 +339,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }, PointerEventTypes.POINTERDOWN);
 
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
+            this._panning = false;
             removeObservers();
         }, PointerEventTypes.POINTERUP);
 
@@ -434,13 +435,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     render() {
         return (
-            <canvas id="workbench-canvas" onPointerMove={(evt) => this.onMove(evt)} onPointerDown={(evt) => this.onDown(evt)} onPointerUp={(evt) => this.onUp(evt)}>
-                <div id="workbench-container">
-                    <div id="workbench-canvas-container"></div>
-                    <div id="frame-container"></div>
-                    <svg id="workbench-svg-container"></svg>
-                    <div id="selection-container"></div>
-                </div>
+            <canvas id="workbench-canvas" onPointerMove={(evt) => this.onMove(evt)} onPointerDown={(evt) => this.onDown(evt)} onPointerUp={(evt) => this.onUp(evt)}
+                ref={this._rootContainer}>
             </canvas>
         );
     }

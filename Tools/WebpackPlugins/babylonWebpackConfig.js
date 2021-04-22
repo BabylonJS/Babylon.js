@@ -46,10 +46,15 @@ module.exports = function defaultConfig(options) {
         module: {
             rules: [{
                 test: /\.tsx?$/,
-                loader: 'awesome-typescript-loader',
+                loader: 'ts-loader',
                 options: {
-                    configFileName: settings.computed.tsConfigPath,
-                    declaration: false
+                    configFile: settings.computed.tsConfigPath,
+                    compilerOptions: {
+                        declaration: false,
+                        exclude: [
+                            'node_modules'
+                        ]
+                    }
                 }
             }, ...options.moduleRules]
         },

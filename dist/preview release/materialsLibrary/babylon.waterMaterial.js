@@ -950,7 +950,7 @@ var WaterMaterial = /** @class */ (function (_super) {
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
-            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         if (defines.SPECULARTERM) {
@@ -1061,7 +1061,7 @@ var WaterMaterial = /** @class */ (function (_super) {
             scene.clipPlane = clipPlane;
             // Transform
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = true;
+            scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
         };
     };

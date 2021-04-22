@@ -27,7 +27,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
     /**
      * Defines a number that determines the order the extensions are applied.
      */
-    public order = 175;
+    public order = 174;
 
     private _loader: GLTFLoader;
 
@@ -72,7 +72,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
         pbrMaterial.subSurface.maximumThickness = 0.0;
 
         // Albedo colour will tint transmission.
-        pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
+        pbrMaterial.subSurface.useAlbedoToTintTranslucency = true;
 
         if (extension.translucencyFactor !== undefined) {
             pbrMaterial.subSurface.translucencyIntensity = extension.translucencyFactor;
@@ -86,7 +86,8 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
             return this._loader.loadTextureInfoAsync(`${context}/translucencyTexture`, extension.translucencyTexture)
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
-                    pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
+                    pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
+                    pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
                 });
         } else {
             return Promise.resolve();

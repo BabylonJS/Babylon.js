@@ -38,6 +38,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { ICanvas } from "./ICanvas";
+import { StencilStateComposer } from "../States/stencilStateComposer";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -171,14 +172,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.14";
+        return "babylonjs@5.0.0-alpha.18";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.14";
+        return "5.0.0-alpha.18";
     }
 
     /**
@@ -241,9 +242,10 @@ export class ThinEngine {
     public isFullscreen = false;
 
     /**
-     * Gets or sets a boolean indicating if back faces must be culled (true by default)
+     * Gets or sets a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
+     * If non null, this takes precedence over the value from the material
      */
-    public cullBackFaces = true;
+    public cullBackFaces: Nullable<boolean> = null;
 
     /**
      * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foregroun
@@ -324,7 +326,8 @@ export class ThinEngine {
     /** @hidden */
     public _badDesktopOS = false;
 
-    protected _hardwareScalingLevel: number;
+    /** @hidden */
+    public _hardwareScalingLevel: number;
     /** @hidden */
     public _caps: EngineCapabilities;
     /** @hidden */
@@ -389,6 +392,8 @@ export class ThinEngine {
     protected _colorWriteChanged = true;
     /** @hidden */
     protected _depthCullingState = new DepthCullingState();
+    /** @hidden */
+    protected _stencilStateComposer = new StencilStateComposer();
     /** @hidden */
     protected _stencilState = new StencilState();
     /** @hidden */
@@ -564,6 +569,32 @@ export class ThinEngine {
         return this._shaderPlatformName;
     }
 
+    protected _snapshotRenderingEnabled = false;
+    /**
+     * Enables or disables the snapshot rendering mode
+     * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
+     */
+    public get snapshotRendering(): boolean {
+        return this._snapshotRenderingEnabled;
+    }
+
+    public set snapshotRendering(activate) {
+        // WebGL engine does not support snapshot rendering
+        this._snapshotRenderingEnabled = false;
+    }
+
+    protected _snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD;
+    /**
+     * Gets or sets the snapshot rendering mode
+     */
+    public get snapshotRenderingMode(): number {
+        return this._snapshotRenderingMode;
+    }
+
+    public set snapshotRenderingMode(mode: number) {
+        this._snapshotRenderingMode = mode;
+    }
+
     /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
@@ -576,6 +607,8 @@ export class ThinEngine {
         let canvas: Nullable<HTMLCanvasElement> = null;
 
         options = options || {};
+
+        this._stencilStateComposer.stencilGlobal = this._stencilState;
 
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
@@ -681,6 +714,13 @@ export class ThinEngine {
                 this._onContextRestored = () => {
                     // Adding a timeout to avoid race condition at browser level
                     setTimeout(() => {
+                        this._dummyFramebuffer = null;
+
+                        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to _initGLContext / wipeCaches will reset them
+                        const depthFunc = this._depthCullingState.depthFunc;
+                        const depthMask = this._depthCullingState.depthMask;
+                        const stencilTest = this._stencilState.stencilTest;
+
                         // Rebuild gl context
                         this._initGLContext();
                         // Rebuild effects
@@ -691,6 +731,12 @@ export class ThinEngine {
                         this._rebuildBuffers();
                         // Cache
                         this.wipeCaches(true);
+
+                        this._depthCullingState.depthTest = depthTest;
+                        this._depthCullingState.depthFunc = depthFunc;
+                        this._depthCullingState.depthMask = depthMask;
+                        this._stencilState.stencilTest = stencilTest;
+
                         Logger.Warn("WebGL context successfully restored.");
                         this.onContextRestoredObservable.notifyObservers(this);
                         this._contextWasLost = false;
@@ -852,6 +898,8 @@ export class ThinEngine {
         for (var key in this._compiledEffects) {
             let effect = <Effect>this._compiledEffects[key];
 
+            effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
+            effect._wasPreviouslyReady = false;
             effect._prepareEffect();
         }
 
@@ -877,6 +925,7 @@ export class ThinEngine {
     protected _rebuildBuffers(): void {
         // Uniforms
         for (var uniformBuffer of this._uniformBuffers) {
+            uniformBuffer._alreadyBound = false;
             uniformBuffer._rebuild();
         }
     }
@@ -1086,6 +1135,7 @@ export class ThinEngine {
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: this._webGLVersion !== 1,
             trackUbosInFrame: false,
+            checkUbosContentBeforeUpload: false,
             supportCSM: this._webGLVersion !== 1,
             basisNeedsPOT: this._webGLVersion === 1,
             support3DTextures: this._webGLVersion !== 1,
@@ -1096,6 +1146,7 @@ export class ThinEngine {
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
             needsInvertingBitmap: true,
+            useUBOBindingCache: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1331,7 +1382,12 @@ export class ThinEngine {
      * @param stencil defines if the stencil buffer must be cleared
      */
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        const useStencilGlobalOnly = this.stencilStateComposer.useStencilGlobalOnly;
+        this.stencilStateComposer.useStencilGlobalOnly = true; // make sure the stencil mask is coming from the global stencil and not from a material (effect) which would currently be in effect
+
         this.applyStates();
+
+        this.stencilStateComposer.useStencilGlobalOnly = useStencilGlobalOnly;
 
         var mode = 0;
         if (backBuffer && color) {
@@ -2538,6 +2594,8 @@ export class ThinEngine {
             return;
         }
 
+        this._stencilStateComposer.stencilMaterial = undefined;
+
         effect = effect as Effect;
 
         // Use program
@@ -2869,7 +2927,7 @@ export class ThinEngine {
      */
     public applyStates() {
         this._depthCullingState.apply(this._gl);
-        this._stencilState.apply(this._gl);
+        this._stencilStateComposer.apply(this._gl);
         this._alphaState.apply(this._gl);
 
         if (this._colorWriteChanged) {
@@ -2919,6 +2977,13 @@ export class ThinEngine {
         return this._stencilState;
     }
 
+    /**
+     * Gets the stencil state composer
+     */
+     public get stencilStateComposer(): StencilStateComposer {
+        return this._stencilStateComposer;
+    }
+
     // Textures
 
     /**
@@ -2951,7 +3016,7 @@ export class ThinEngine {
             this._currentProgram = null;
             this.resetTextureCache();
 
-            this._stencilState.reset();
+            this._stencilStateComposer.reset();
 
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = this._gl.LEQUAL;

@@ -270,6 +270,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
+    public SS_HAS_THICKNESS = false;
 
     public SS_REFRACTIONMAP_3D = false;
     public SS_REFRACTIONMAP_OPPOSITEZ = false;
@@ -279,9 +280,12 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_LINEARSPECULARREFRACTION = false;
     public SS_LINKREFRACTIONTOTRANSPARENCY = false;
     public SS_ALBEDOFORREFRACTIONTINT = false;
+    public SS_ALBEDOFORTRANSLUCENCYTINT = false;
+    public SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
+    public SS_USE_THICKNESS_AS_DEPTH = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
-    public SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
+    public SS_USE_GLTF_THICKNESS_TEXTURE = false;
 
     public UNLIT = false;
 
@@ -695,7 +699,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Quality switch for realtime filtering
      */
-    public get realTimeFilteringQuality() : number {
+    public get realTimeFilteringQuality(): number {
         return this._realTimeFilteringQuality;
     }
     public set realTimeFilteringQuality(n: number) {
@@ -1154,7 +1158,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null,
-                useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): Nullable<Effect> {
+        useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): Nullable<Effect> {
         this._prepareDefines(mesh, defines, useInstances, useClipPlane, useThinInstances);
 
         if (!defines.isDirty) {
@@ -2069,7 +2073,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering);
+            this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering, subMesh);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY, subMesh);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
             this.sheen.bindForSubMesh(ubo, scene, this.isFrozen, subMesh);
@@ -2087,7 +2091,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // View
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || reflectionTexture) {
+            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || reflectionTexture || mesh.receiveShadows) {
                 this.bindView(effect);
             }
 

@@ -434,6 +434,27 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Gets or Set the boolean value that controls whether or not the mouse wheel
+     * zooms to the location of the mouse pointer or not.  The default is false.
+     */
+     @serialize()
+     public get zoomToMouseLocation(): boolean {
+        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        if (mousewheel) {
+            return mousewheel.zoomToMouseLocation;
+        }
+
+        return false;
+    }
+
+    public set zoomToMouseLocation(value: boolean) {
+        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        if (mousewheel) {
+            mousewheel.zoomToMouseLocation = value;
+        }
+    }
+
+    /**
      * Gets or Set the mouse wheel delta percentage or how fast is the camera zooming.
      * It will be used instead of pinchDeltaPrecision if different from 0.
      * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
@@ -689,7 +710,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     protected _getTargetPosition(): Vector3 {
         if (this._targetHost && this._targetHost.getAbsolutePosition) {
-            var pos: Vector3 = this._targetHost.absolutePosition;
+            var pos: Vector3 = this._targetHost.getAbsolutePosition();
             if (this._targetBoundingCenter) {
                 pos.addToRef(this._targetBoundingCenter, this._target);
             } else {
