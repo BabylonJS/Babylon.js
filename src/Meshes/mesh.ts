@@ -139,6 +139,8 @@ class _InternalMeshDataInfo {
     public _checkReadinessObserver: Nullable<Observer<Scene>>;
 
     public _onMeshReadyObserverAdded: (observer: Observer<Mesh>) => void;
+
+    public _effectiveMaterial: Nullable<Material> = null;
 }
 
 /**
@@ -410,8 +412,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _thinInstanceDataStorage = new _ThinInstanceDataStorage();
-
-    private _effectiveMaterial: Nullable<Material> = null;
 
     /** @hidden */
     public _shouldGenerateFlatShading: boolean = false;
@@ -2032,7 +2032,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this._userInstancedBuffersStorage.vertexArrayObjects = {};
             }
         }
-        this._effectiveMaterial = null;
+        this._internalMeshDataInfo._effectiveMaterial = null;
         super._rebuild(dispose);
     }
 
@@ -2047,7 +2047,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._getInstancesRenderList(index);
         }
 
-        this._effectiveMaterial = null;
+        this._internalMeshDataInfo._effectiveMaterial = null;
         this._instanceDataStorage.isFrozen = true;
     }
 
@@ -2116,7 +2116,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Material
-        if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
+        if (!instanceDataStorage.isFrozen || !this._internalMeshDataInfo._effectiveMaterial || this._internalMeshDataInfo._effectiveMaterial !== material) {
             if (material._storeEffectOnSubMeshes) {
                 if (!material.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                     if (oldCamera) {
@@ -2133,7 +2133,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return this;
             }
 
-            this._effectiveMaterial = material;
+            this._internalMeshDataInfo._effectiveMaterial = material;
         } else if (
             (material._storeEffectOnSubMeshes && !subMesh.effect?._wasPreviouslyReady) ||
             (!material._storeEffectOnSubMeshes && !material.getEffect()?._wasPreviouslyReady)
@@ -2147,14 +2147,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Alpha mode
         if (enableAlphaMode) {
-            engine.setAlphaMode(this._effectiveMaterial.alphaMode);
+            engine.setAlphaMode(this._internalMeshDataInfo._effectiveMaterial.alphaMode);
         }
 
         var drawWrapper: Nullable<DrawWrapper>;
-        if (this._effectiveMaterial._storeEffectOnSubMeshes) {
+        if (this._internalMeshDataInfo._effectiveMaterial._storeEffectOnSubMeshes) {
             drawWrapper = subMesh._drawWrapper;
         } else {
-            drawWrapper = this._effectiveMaterial._getDrawWrapper();
+            drawWrapper = this._internalMeshDataInfo._effectiveMaterial._getDrawWrapper();
         }
 
         var effect = drawWrapper?.effect ?? null;
@@ -2175,11 +2175,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var sideOrientation: Nullable<number>;
 
-        if (!instanceDataStorage.isFrozen && (this._effectiveMaterial.backFaceCulling || this.overrideMaterialSideOrientation !== null)) {
+        if (!instanceDataStorage.isFrozen && (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling || this.overrideMaterialSideOrientation !== null)) {
             let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
-                sideOrientation = this._effectiveMaterial.sideOrientation;
+                sideOrientation = this._internalMeshDataInfo._effectiveMaterial.sideOrientation;
             }
             if (mainDeterminant < 0) {
                 sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
@@ -2189,14 +2189,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             sideOrientation = instanceDataStorage.sideOrientation;
         }
 
-        var reverse = this._effectiveMaterial._preBind(drawWrapper, sideOrientation);
+        var reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, sideOrientation);
 
-        if (this._effectiveMaterial.forceDepthWrite) {
+        if (this._internalMeshDataInfo._effectiveMaterial.forceDepthWrite) {
             engine.setDepthWrite(true);
         }
 
         // Bind
-        var fillMode = scene.forcePointsCloud ? Material.PointFillMode : scene.forceWireframe ? Material.WireFrameFillMode : this._effectiveMaterial.fillMode;
+        var fillMode = scene.forcePointsCloud ? Material.PointFillMode : scene.forceWireframe ? Material.WireFrameFillMode : this._internalMeshDataInfo._effectiveMaterial.fillMode;
 
         if (this._internalMeshDataInfo._onBeforeBindObservable) {
             this._internalMeshDataInfo._onBeforeBindObservable.notifyObservers(this);
@@ -2208,16 +2208,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var world = effectiveMesh.getWorldMatrix();
-        if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-            this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
+        if (this._internalMeshDataInfo._effectiveMaterial._storeEffectOnSubMeshes) {
+            this._internalMeshDataInfo._effectiveMaterial.bindForSubMesh(world, this, subMesh);
         } else {
-            this._effectiveMaterial.bind(world, this);
+            this._internalMeshDataInfo._effectiveMaterial.bind(world, this);
         }
 
-        if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
-            engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse, this._effectiveMaterial.cullBackFaces, this._effectiveMaterial.stencil);
-            this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
-            engine.setState(true, this._effectiveMaterial.zOffset, false, reverse, this._effectiveMaterial.cullBackFaces, this._effectiveMaterial.stencil);
+        if (!this._internalMeshDataInfo._effectiveMaterial.backFaceCulling && this._internalMeshDataInfo._effectiveMaterial.separateCullingPass) {
+            engine.setState(true, this._internalMeshDataInfo._effectiveMaterial.zOffset, false, !reverse, this._internalMeshDataInfo._effectiveMaterial.cullBackFaces, this._internalMeshDataInfo._effectiveMaterial.stencil);
+            this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._internalMeshDataInfo._effectiveMaterial);
+            engine.setState(true, this._internalMeshDataInfo._effectiveMaterial.zOffset, false, reverse, this._internalMeshDataInfo._effectiveMaterial.cullBackFaces, this._internalMeshDataInfo._effectiveMaterial.stencil);
 
             if (this._internalMeshDataInfo._onBetweenPassObservable) {
                 this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(subMesh);
@@ -2225,10 +2225,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Draw
-        this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
+        this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._internalMeshDataInfo._effectiveMaterial);
 
         // Unbind
-        this._effectiveMaterial.unbind();
+        this._internalMeshDataInfo._effectiveMaterial.unbind();
 
         for (let step of scene._afterRenderingMeshStage) {
             step.action(this, subMesh, batch, effect);
