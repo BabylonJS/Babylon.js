@@ -54713,6 +54713,10 @@ declare module BABYLON {
          * handedness (left/right/none) of this controller
          */
         handedness: MotionControllerHandedness;
+        /**
+         * @hidden
+         */
+        _doNotLoadControllerMesh: boolean;
         private _initComponent;
         private _modelReady;
         /**
@@ -54754,7 +54758,11 @@ declare module BABYLON {
         /**
          * handedness (left/right/none) of this controller
          */
-        handedness: MotionControllerHandedness, _doNotLoadControllerMesh?: boolean);
+        handedness: MotionControllerHandedness, 
+        /**
+         * @hidden
+         */
+        _doNotLoadControllerMesh?: boolean);
         /**
          * Dispose this controller, the model mesh and all its components
          */
@@ -57427,6 +57435,10 @@ declare module BABYLON {
          * Custom sensitivity value for the drag strength
          */
         sensitivity: number;
+        /**
+         * The magnitude of the drag strength (scaling factor)
+         */
+        dragScale: number;
         private _isEnabled;
         private _parent;
         private _gizmoMesh;
@@ -81831,6 +81843,7 @@ declare module BABYLON {
     export class WebXRControllerPhysics extends WebXRAbstractFeature {
         private readonly _options;
         private _attachController;
+        private _createPhysicsImpostor;
         private _controllers;
         private _debugMode;
         private _delta;
@@ -82472,6 +82485,29 @@ declare module BABYLON {
         getXRSessionInitExtension(): Promise<Partial<XRSessionInit>>;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _init;
+    }
+}
+declare module BABYLON {
+    /**
+     * A generic hand controller class that supports select and a secondary grasp
+     */
+    export class WebXRGenericHandController extends WebXRAbstractMotionController {
+        profileId: string;
+        /**
+         * Create a new hand controller object, without loading a controller model
+         * @param scene the scene to use to create this controller
+         * @param gamepadObject the corresponding gamepad object
+         * @param handedness the handedness of the controller
+         */
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness);
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        protected _getModelLoadingConstraints(): boolean;
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+        protected _updateModel(): void;
     }
 }
 declare module BABYLON {
