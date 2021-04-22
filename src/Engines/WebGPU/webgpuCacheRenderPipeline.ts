@@ -918,7 +918,7 @@ export abstract class WebGPUCacheRenderPipeline {
                     stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
                     attributes: []
                 };
-    
+
                 descriptors.push(vertexBufferDescriptor);
                 currentGPUAttributes = vertexBufferDescriptor.attributes;
                 offset = 0; // vertexBuffer.byteOffset for the first attribute is set when calling renderPass.setVertexBuffer (3rd parameter)
