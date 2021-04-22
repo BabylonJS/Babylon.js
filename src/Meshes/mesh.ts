@@ -135,6 +135,10 @@ class _InternalMeshDataInfo {
 
     // Morph
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
+
+    public _checkReadinessObserver: Nullable<Observer<Scene>>;
+
+    public _onMeshReadyObserverAdded: (observer: Observer<Mesh>) => void;
 }
 
 /**
@@ -243,10 +247,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Internal data
     private _internalMeshDataInfo = new _InternalMeshDataInfo();
 
-    private _isCompletelyReady: boolean = false;
-
     /**
      * Will notify when the mesh is completely ready, including materials.
+     * Observers added to this observable will be removed once triggered
      */
     public onMeshReadyObservable: Observable<Mesh>;
 
@@ -663,7 +666,26 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         this._instanceDataStorage.hardwareInstancedRendering = this.getEngine().getCaps().instancedArrays;
 
-        this.onMeshReadyObservable = new Observable(this._onMeshReadyObserverAdded);
+        this._internalMeshDataInfo._onMeshReadyObserverAdded = (observer: Observer<Mesh>) => {
+            // only notify once! then unregister the observer
+            observer.unregisterOnNextCall = true;
+            if (this.isReady(true)) {
+                this.onMeshReadyObservable.notifyObservers(this);
+            } else {
+                if (!this._internalMeshDataInfo._checkReadinessObserver) {
+                    this._internalMeshDataInfo._checkReadinessObserver = this._scene.onBeforeRenderObservable.add(() => {
+                        // check for complete readiness
+                        if (this.isReady(true)) {
+                            this._scene.onBeforeRenderObservable.remove(this._internalMeshDataInfo._checkReadinessObserver);
+                            this._internalMeshDataInfo._checkReadinessObserver = null;
+                            this.onMeshReadyObservable.notifyObservers(this);
+                        }
+                    });
+                }
+            }
+        };
+
+        this.onMeshReadyObservable = new Observable(this._internalMeshDataInfo._onMeshReadyObserverAdded);
     }
 
     // Methods
@@ -1180,28 +1202,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         return true;
     }
-
-    private _checkReadinessObserver: Nullable<Observer<Scene>>;
-
-    private _onMeshReadyObserverAdded = (observer: Observer<Mesh>) => {
-        // only notify once! then unregister the observer
-        observer.unregisterOnNextCall = true;
-        if (this._isCompletelyReady) {
-            this.onMeshReadyObservable.notifyObservers(this);
-        } else {
-            if (!this._checkReadinessObserver) {
-                this._checkReadinessObserver = this._scene.onBeforeRenderObservable.add(() => {
-                    // check for complete readiness
-                    if (this.isReady(true)) {
-                        this._isCompletelyReady = true;
-                        this._scene.onBeforeRenderObservable.remove(this._checkReadinessObserver);
-                        this._checkReadinessObserver = null;
-                        this.onMeshReadyObservable.notifyObservers(this);
-                    }
-                });
-            }
-        }
-    };
 
     /**
      * Gets a boolean indicating if the normals aren't to be recomputed on next mesh `positions` array update. This property is pertinent only for updatable parametric shapes.
@@ -2704,8 +2704,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Thin instances
         this._disposeThinInstanceSpecificData();
 
-        if (this._checkReadinessObserver) {
-            this._scene.onBeforeRenderObservable.remove(this._checkReadinessObserver);
+        if (this._internalMeshDataInfo._checkReadinessObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._internalMeshDataInfo._checkReadinessObserver);
         }
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
