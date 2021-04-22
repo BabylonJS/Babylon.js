@@ -125,9 +125,9 @@ export class HolographicSlate extends ContentDisplay3D {
         if (followButtonMesh && closeButtonMesh && backPlate) {
             followButtonMesh.scaling.copyFromFloats(0.37, 0.37, 0.37);
             closeButtonMesh.scaling.copyFromFloats(0.37, 0.37, 0.37);
-            followButtonMesh.position.copyFromFloats(2.80 * this.relativeWidth - 0.55, 0, -0.05);
-            closeButtonMesh.position.copyFromFloats(2.80 * this.relativeWidth - 0.15, 0, -0.05);
-
+            followButtonMesh.position.copyFromFloats(2.8 * this.relativeWidth - 0.55, (this._relativeHeight - 1) / 0.82, -0.05);
+            closeButtonMesh.position.copyFromFloats(2.8 * this.relativeWidth - 0.15, (this._relativeHeight - 1) / 0.82, -0.05);
+            backPlate.position.y = (this._relativeHeight - 1) / 0.82;
             backPlate.scaling.x = this.relativeWidth;
             contentPlate.scaling.x = this.relativeWidth;
             contentPlate.scaling.y = this.relativeHeight;
