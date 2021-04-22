@@ -222,7 +222,7 @@ export class Line extends Control {
             return;
         }
 
-        var globalViewport = this._host._getGlobalViewport(scene);
+        var globalViewport = this._host._getGlobalViewport();
         var projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
 
         this._moveToProjectedPosition(projectedPosition, end);

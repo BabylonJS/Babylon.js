@@ -8,7 +8,6 @@ import { GLTFLoader } from "../glTFLoader";
 import { IKHRMaterialsTransmission } from 'babylonjs-gltf2interface';
 import { Scene } from "babylonjs/scene";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
 import { Observable, Observer } from "babylonjs/Misc/observable";
@@ -74,8 +73,8 @@ class TransmissionHelper {
     private _options: ITransmissionHelperOptions;
 
     private _opaqueRenderTarget: Nullable<RenderTargetTexture> = null;
-    private _opaqueMeshesCache: Mesh[] = [];
-    private _transparentMeshesCache: Mesh[] = [];
+    private _opaqueMeshesCache: AbstractMesh[] = [];
+    private _transparentMeshesCache: AbstractMesh[] = [];
     private _materialObservers: { [id: string]: Nullable<Observer<AbstractMesh>> } = {};
 
     /**
@@ -150,28 +149,24 @@ class TransmissionHelper {
     }
 
     private _addMesh(mesh: AbstractMesh): void {
-        if (mesh instanceof Mesh) {
-            this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
-            if (this.shouldRenderAsTransmission(mesh.material)) {
-                this._transparentMeshesCache.push(mesh);
-            } else {
-                this._opaqueMeshesCache.push(mesh);
-            }
+        this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+        if (this.shouldRenderAsTransmission(mesh.material)) {
+            this._transparentMeshesCache.push(mesh);
+        } else {
+            this._opaqueMeshesCache.push(mesh);
         }
     }
 
     private _removeMesh(mesh: AbstractMesh): void {
-        if (mesh instanceof Mesh) {
-            mesh.onMaterialChangedObservable.remove(this._materialObservers[mesh.uniqueId]);
-            delete this._materialObservers[mesh.uniqueId];
-            let idx = this._transparentMeshesCache.indexOf(mesh);
-            if (idx !== -1) {
-                this._transparentMeshesCache.splice(idx, 1);
-            }
-            idx = this._opaqueMeshesCache.indexOf(mesh);
-            if (idx !== -1) {
-                this._opaqueMeshesCache.splice(idx, 1);
-            }
+        mesh.onMaterialChangedObservable.remove(this._materialObservers[mesh.uniqueId]);
+        delete this._materialObservers[mesh.uniqueId];
+        let idx = this._transparentMeshesCache.indexOf(mesh);
+        if (idx !== -1) {
+            this._transparentMeshesCache.splice(idx, 1);
+        }
+        idx = this._opaqueMeshesCache.indexOf(mesh);
+        if (idx !== -1) {
+            this._opaqueMeshesCache.splice(idx, 1);
         }
     }
 
@@ -185,30 +180,28 @@ class TransmissionHelper {
 
     // When one of the meshes in the scene has its material changed, make sure that it's in the correct cache list.
     private onMeshMaterialChanged(mesh: AbstractMesh) {
-        if (mesh instanceof Mesh) {
-            const transparentIdx = this._transparentMeshesCache.indexOf(mesh);
-            const opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
+        const transparentIdx = this._transparentMeshesCache.indexOf(mesh);
+        const opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
 
-            // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
-            const useTransmission = this.shouldRenderAsTransmission(mesh.material);
-            if (useTransmission) {
-                if (mesh.material instanceof PBRMaterial) {
-                    mesh.material.subSurface.refractionTexture = this._opaqueRenderTarget;
-                }
-                if (opaqueIdx !== -1) {
-                    this._opaqueMeshesCache.splice(opaqueIdx, 1);
-                    this._transparentMeshesCache.push(mesh);
-                } else if (transparentIdx === -1) {
-                    this._transparentMeshesCache.push(mesh);
-                }
-                // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
-            } else {
-                if (transparentIdx !== -1) {
-                    this._transparentMeshesCache.splice(transparentIdx, 1);
-                    this._opaqueMeshesCache.push(mesh);
-                } else if (opaqueIdx === -1) {
-                    this._opaqueMeshesCache.push(mesh);
-                }
+        // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
+        const useTransmission = this.shouldRenderAsTransmission(mesh.material);
+        if (useTransmission) {
+            if (mesh.material instanceof PBRMaterial) {
+                mesh.material.subSurface.refractionTexture = this._opaqueRenderTarget;
+            }
+            if (opaqueIdx !== -1) {
+                this._opaqueMeshesCache.splice(opaqueIdx, 1);
+                this._transparentMeshesCache.push(mesh);
+            } else if (transparentIdx === -1) {
+                this._transparentMeshesCache.push(mesh);
+            }
+            // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
+        } else {
+            if (transparentIdx !== -1) {
+                this._transparentMeshesCache.splice(transparentIdx, 1);
+                this._opaqueMeshesCache.push(mesh);
+            } else if (opaqueIdx === -1) {
+                this._opaqueMeshesCache.push(mesh);
             }
         }
     }
@@ -218,6 +211,7 @@ class TransmissionHelper {
      */
     private _setupRenderTargets(): void {
         this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
+        this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
         this._opaqueRenderTarget.gammaSpace = true;
@@ -321,12 +315,15 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             return Promise.resolve();
         }
 
+        pbrMaterial.subSurface.minimumThickness = 0.0;
+        pbrMaterial.subSurface.maximumThickness = 0.0;
         if (extension.transmissionTexture) {
             (extension.transmissionTexture as ITextureInfo).nonColorData = true;
             return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined)
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
-                    pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
+                    pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
+                    pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
                 });
         } else {
             return Promise.resolve();

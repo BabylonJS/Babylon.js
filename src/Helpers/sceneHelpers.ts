@@ -84,7 +84,7 @@ declare module "../scene" {
          * @param options experience options
          * @returns a promise for a new WebXRDefaultExperience
          */
-        createDefaultXRExperienceAsync(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
+        createDefaultXRExperienceAsync(options?: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
     }
 }
 

@@ -147,6 +147,15 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
         "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
+        "EqualBlock": "Return a value if two operands are equals", 
+        "NotEqualBlock": "Return a value if two operands are not equals", 
+        "LessThanBlock": "Return a value if an operand is smaller than a second operand", 
+        "LessOrEqualBlock": "Return a value if an operand is smaller or equal to a second operand", 
+        "GreaterThanBlock": "Return a value if an operand is greater than a second operand", 
+        "GreaterOrEqualBlock": "Return a value if an operand is greater or equal to a second operand", 
+        "XorBlock": "Return a value if (a xor b) > 0", 
+        "OrBlock": "Return a value if (a or b) > 0", 
+        "AndBlock": "Return a value if (a and b) > 0"
     };
     
     private _customFrameList: {[key: string]: string};
@@ -229,6 +238,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
+            Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", ],

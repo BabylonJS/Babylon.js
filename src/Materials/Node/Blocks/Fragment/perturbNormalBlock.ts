@@ -36,6 +36,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
+        this._isUnique = true;
+
         // Vertex
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false);
@@ -151,7 +153,9 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
 
-        let replaceForBumpInfos = this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant ? `${state._emitFloat(1.0 / this.strength.connectInputBlock!.value)}` : `1.0 / ${this.strength.associatedVariableName}`;
+        let replaceForBumpInfos = this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant ?
+            `\r\n#if !defined(NORMALXYSCALE)\r\n1.0/\r\n#endif\r\n${state._emitFloat(this.strength.connectInputBlock!.value)}` :
+            `\r\n#if !defined(NORMALXYSCALE)\r\n1.0/\r\n#endif\r\n${this.strength.associatedVariableName}`;
 
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
@@ -173,18 +177,18 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
                 { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
-                { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /varying vec2 vBumpUV;/g, replace: ""},
-                { search: /uniform sampler2D bumpSampler;[\s\S]*?\}/g, replace: ""},
+                { search: /uniform sampler2D bumpSampler;/g, replace: ""},
             ]
         });
 
         state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
-                { search: /perturbNormal\(TBN,vBumpUV\+uvOffset\)/g, replace: `perturbNormal(TBN, ${this.normalMapColor.associatedVariableName})` },
-                { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
+                { search: /perturbNormal\(TBN,texture2D\(bumpSampler,vBumpUV\+uvOffset\).xyz,vBumpInfos.y\)/g, replace: `perturbNormal(TBN, ${this.normalMapColor.associatedVariableName}, vBumpInfos.y)` },
+                { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
+                { search: /vBumpInfos.y/g, replace: replaceForBumpInfos },
                 { search: /vBumpUV/g, replace: uv.associatedVariableName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /normalW=/g, replace: this.output.associatedVariableName + ".xyz = " },
@@ -198,7 +202,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = `${this._codeVariableName}.invertX = ${this.invertX};\r\n`;
+        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.invertX = ${this.invertX};\r\n`;
 
         codeString += `${this._codeVariableName}.invertY = ${this.invertY};\r\n`;
 

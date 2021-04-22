@@ -54,7 +54,7 @@ export class WebXRSessionManager implements IDisposable {
      */
     public onXRSessionEnded: Observable<any> = new Observable<any>();
     /**
-     * Fires when the xr session is ended either by the device or manually done
+     * Fires when the xr session is initialized: right after requestSession was called and returned with a successful result
      */
     public onXRSessionInit: Observable<XRSession> = new Observable<XRSession>();
     /**
@@ -184,6 +184,8 @@ export class WebXRSessionManager implements IDisposable {
                 () => {
                     this._sessionEnded = true;
 
+                    // Notify frame observers
+                    this.onXRSessionEnded.notifyObservers(null);
                     // Remove render target texture
                     this._rttProvider = null;
 
@@ -199,12 +201,11 @@ export class WebXRSessionManager implements IDisposable {
                         this._engine._renderLoop();
                     }
 
-                    // Notify frame observers
-                    this.onXRSessionEnded.notifyObservers(null);
-
-                    // Dispose render target textures.
-                    this._renderTargetTextures.forEach((rtt) => rtt.dispose());
-                    this._renderTargetTextures = [];
+                    // Dispose render target textures
+                    if (this.isNative) {
+                        this._renderTargetTextures.forEach((rtt) => rtt.dispose());
+                        this._renderTargetTextures.length = 0;
+                    }
                 },
                 { once: true }
             );
@@ -257,10 +258,7 @@ export class WebXRSessionManager implements IDisposable {
         };
 
         if (this._xrNavigator.xr.native) {
-            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(
-                this.session,
-                this._createRenderTargetTexture.bind(this),
-                this._destroyRenderTargetTexture.bind(this));
+            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, this._createRenderTargetTexture.bind(this), this._destroyRenderTargetTexture.bind(this));
         } else {
             // Create render target texture from xr's webgl render target
             let rtt: RenderTargetTexture, framebufferWidth: number, framebufferHeight: number, framebuffer: WebGLFramebuffer;
@@ -389,6 +387,7 @@ export class WebXRSessionManager implements IDisposable {
         // Create render target texture from the internal texture
         const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
         renderTargetTexture._texture = internalTexture;
+        renderTargetTexture.disableRescaling();
 
         // Store the render target texture for cleanup when the session ends.
         this._renderTargetTextures.push(renderTargetTexture);

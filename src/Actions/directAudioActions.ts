@@ -89,5 +89,5 @@ export class StopSoundAction extends Action {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PlaySoundAction"] = StopSoundAction;
+_TypeStore.RegisteredTypes["BABYLON.PlaySoundAction"] = PlaySoundAction;
 _TypeStore.RegisteredTypes["BABYLON.StopSoundAction"] = StopSoundAction;

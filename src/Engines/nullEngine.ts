@@ -154,6 +154,7 @@ export class NullEngine extends Engine {
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: false,
             trackUbosInFrame: false,
+            checkUbosContentBeforeUpload: false,
             supportCSM: false,
             basisNeedsPOT: false,
             support3DTextures: false,
@@ -164,6 +165,7 @@ export class NullEngine extends Engine {
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
             needsInvertingBitmap: false,
+            useUBOBindingCache: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -566,7 +568,7 @@ export class NullEngine extends Engine {
         if (bruteForce) {
             this._currentProgram = null;
 
-            this.stencilState.reset();
+            this._stencilStateComposer.reset();
             this.depthCullingState.reset();
             this.alphaState.reset();
         }

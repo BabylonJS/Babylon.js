@@ -22,12 +22,13 @@ import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
 import { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
+import { MaterialStencilState } from "./materialStencilState";
+import { Scene } from "../scene";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
-declare type Scene = import("../scene").Scene;
 
 declare var BABYLON: any;
 
@@ -284,7 +285,7 @@ export class Material implements IAnimatable {
     protected _backFaceCulling = true;
 
     /**
-     * Sets the back-face culling state
+     * Sets the culling state (true to enable culling, false to disable)
      */
     public set backFaceCulling(value: boolean) {
         if (this._backFaceCulling === value) {
@@ -295,13 +296,37 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the back-face culling state
+     * Gets the culling state
      */
     public get backFaceCulling(): boolean {
         return this._backFaceCulling;
     }
 
     /**
+     * Specifies if back or front faces should be culled (when culling is enabled)
+     */
+     @serialize("cullBackFaces")
+     protected _cullBackFaces = true;
+
+     /**
+      * Sets the type of faces that should be culled (true for back faces, false for front faces)
+      */
+     public set cullBackFaces(value: boolean) {
+         if (this._cullBackFaces === value) {
+             return;
+         }
+         this._cullBackFaces = value;
+         this.markAsDirty(Material.TextureDirtyFlag);
+     }
+
+     /**
+      * Gets the type of faces that should be culled
+      */
+     public get cullBackFaces(): boolean {
+         return this._cullBackFaces;
+     }
+
+     /**
      * Stores the value for side orientation
      */
     @serialize()
@@ -616,6 +641,11 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Gives access to the stencil properties of the material
+     */
+    public readonly stencil = new MaterialStencilState();
+
+    /**
      * @hidden
      * Stores the effects for the material
      */
@@ -916,7 +946,7 @@ export class Material implements IAnimatable {
         var reverse = orientation === Material.ClockWiseSideOrientation;
 
         engine.enableEffect(effect ? effect : this._getDrawWrapper());
-        engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
+        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces, this.stencil);
 
         return reverse;
     }
@@ -977,7 +1007,7 @@ export class Material implements IAnimatable {
      */
     public bindEyePosition(effect: Effect, variableName?: string): void {
         if (!this._useUBO) {
-            MaterialHelper.BindEyePosition(effect, this._scene, variableName);
+            this._scene.bindEyePosition(effect, variableName);
         } else {
             this._needToBindSceneUbo = true;
         }
@@ -992,7 +1022,7 @@ export class Material implements IAnimatable {
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
-                MaterialHelper.FinalizeSceneUbo(this.getScene());
+                this._scene.finalizeSceneUbo();
                 MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         }
@@ -1465,7 +1495,11 @@ export class Material implements IAnimatable {
      * @returns the serialized material object
      */
     public serialize(): any {
-        return SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
+
+        serializationObject.stencil = this.stencil.serialize();
+
+        return serializationObject;
     }
 
     /**

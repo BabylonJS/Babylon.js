@@ -45,7 +45,7 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
 
     protected _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void {
         let node = this._nodeStack[this._stateDirtyLowestIndex];
-        for (let i = this._stateDirtyLowestIndex; i < this._states.length; ++i) {
+        for (let i = this._stateDirtyLowestIndex; i < this._statesLength; ++i) {
             let nn: NodeState | undefined = node!.values[this._states[i]];
             if (!nn) {
                 nn = new NodeState();

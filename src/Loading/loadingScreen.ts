@@ -32,6 +32,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
 
     private _loadingDiv: Nullable<HTMLDivElement>;
     private _loadingTextDiv: HTMLDivElement;
+    private _style: Nullable<HTMLStyleElement>;
 
     /** Gets or sets the logo url to use for the default loading screen */
     public static DefaultLogoUrl = "";
@@ -91,8 +92,8 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingTextDiv.innerHTML = this._loadingText;
 
         // Generating keyframes
-        var style = document.createElement('style');
-        style.type = 'text/css';
+        this._style = document.createElement('style');
+        this._style.type = 'text/css';
         var keyFrames =
             `@-webkit-keyframes spin1 {\
                     0% { -webkit-transform: rotate(0deg);}
@@ -102,8 +103,8 @@ export class DefaultLoadingScreen implements ILoadingScreen {
                     0% { transform: rotate(0deg);}
                     100% { transform: rotate(360deg);}
                 }`;
-        style.innerHTML = keyFrames;
-        document.getElementsByTagName('head')[0].appendChild(style);
+        this._style.innerHTML = keyFrames;
+        document.getElementsByTagName('head')[0].appendChild(this._style);
 
         const svgSupport = !!window.SVGSVGElement;
         // Loading img
@@ -184,15 +185,19 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         }
 
         var onTransitionEnd = () => {
-            if (!this._loadingDiv) {
-                return;
+            if (this._loadingDiv) {
+                if (this._loadingDiv.parentElement) {
+                    this._loadingDiv.parentElement.removeChild(this._loadingDiv);
+                }
+                this._loadingDiv = null;
             }
-            if (this._loadingDiv.parentElement) {
-                this._loadingDiv.parentElement.removeChild(this._loadingDiv);
+            if (this._style) {
+                if (this._style.parentElement) {
+                    this._style.parentElement.removeChild(this._style);
+                }
+                this._style = null;
             }
             window.removeEventListener("resize", this._resizeLoadingUI);
-
-            this._loadingDiv = null;
         };
 
         this._loadingDiv.style.opacity = "0";

@@ -135,7 +135,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             this.world.addEventListener("preStep", impostor.beforeStep);
             this.world.addEventListener("postStep", impostor.afterStep);
             impostor.physicsBody.addShape(shape);
-            this.world.add(impostor.physicsBody);
+            if (typeof this.world.addBody === 'function') {
+                this.world.addBody(impostor.physicsBody);
+            } else {
+                this.world.add(impostor.physicsBody);
+            }
 
             //try to keep the body moving in the right direction by taking old properties.
             //Should be tested!

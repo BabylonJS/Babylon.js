@@ -20,6 +20,7 @@ ICurveComponentProps,
 ICurveComponentState
 > {    
     private _onDataUpdatedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
 
     constructor(props: ICurveComponentProps) {
         super(props);
@@ -27,26 +28,39 @@ ICurveComponentState
         this.state = { isSelected: false };
 
         this._onDataUpdatedObserver = this.props.curve.onDataUpdatedObservable.add(() => this.forceUpdate());
+
+        this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(() => {
+            if (this._onDataUpdatedObserver) {
+                this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
+            }
+            this._onDataUpdatedObserver = null;
+            this.forceUpdate();
+        });        
     }
 
     componentWillUnmount() {
         if (this._onDataUpdatedObserver) {
             this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
         }
+
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
     }
 
-    shouldComponentUpdate(newProps: ICurveComponentProps) {
-        if (newProps.curve !== this.props.curve) {
-            if (this._onDataUpdatedObserver) {
-                this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
-            }
-            this._onDataUpdatedObserver = newProps.curve.onDataUpdatedObservable.add(() => this.forceUpdate());
+    componentDidUpdate() {
+        if (!this._onDataUpdatedObserver) {            
+            this._onDataUpdatedObserver = this.props.curve.onDataUpdatedObservable.add(() => this.forceUpdate());
         }
 
         return true;
     }
 
     public render() {
+        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+            return null;
+        }
+
         return (
             <svg
                 style={{ cursor: "pointer", overflow: "auto" }}>            

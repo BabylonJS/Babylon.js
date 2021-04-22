@@ -208,7 +208,7 @@ export type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<Ren
 /**
  * Strong typing of a pointer move action.
  */
-export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement) => Nullable<PickingInfo>;
+export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: Nullable<HTMLElement>) => Nullable<PickingInfo>;
 
 /**
  * Strong typing of a pointer up/down action.

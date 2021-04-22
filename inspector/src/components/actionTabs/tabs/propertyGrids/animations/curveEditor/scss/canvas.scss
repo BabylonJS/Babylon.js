@@ -15,6 +15,7 @@
         grid-template-columns: 100%;
         grid-template-rows: 100%;
         overflow: hidden;
+        position: relative;
         
         #svg-graph-grid {
             grid-column: 1;
@@ -26,6 +27,7 @@
             &:focus {
                 outline: none;
             }
+            z-index: 1;
         }
 
         #dark-rectangle {
@@ -34,9 +36,19 @@
             margin-left: 40px;
             width: calc(100% - 40px);
             height: 100%;
-            background: black;
-            opacity: 0.4;
+            background: #111111;
+            opacity: 0.2;
             pointer-events: none;
+            position: absolute;
+        }
+
+        #block-rectangle {
+            grid-column: 1;
+            grid-row: 1;
+            width:40px;
+            height: 100%;            
+            background: #222222;
+            z-index: 1;
         }
 
         #svg-graph-curves {
@@ -49,6 +61,19 @@
             &:focus {
                 outline: none;
             }
+        }
+
+        #selection-rectangle {
+            grid-column: 1;
+            grid-row: 1;
+            width: calc(100% - 40px);
+            height: 100%;            
+            pointer-events: none;
+            position: absolute;
+            left: 40px;
+            visibility: hidden;
+
+            border: 1px dashed white;
         }
     }
 
@@ -140,7 +165,8 @@
             justify-self: center;
             width: 1.5px;
             background: #ffffff;
-            height: 100%;        
+            height: 100%;   
+            pointer-events: none;     
         }
 
         #play-head-circle {
@@ -158,5 +184,14 @@
             color:#555555;
             cursor: pointer;       
         }            
+    }
+
+    #angle-mode {
+        grid-column: 1;
+        grid-row: 2;
+        width: 40px;
+        height: 100%;
+        z-index: 1;
+        background: black;
     }
 }

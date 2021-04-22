@@ -36,8 +36,23 @@
         align-self: center;
     }
 
+    #new-key {
+        grid-row: 1;
+        grid-column: 7;
+    }
+
     #frame-canvas {
         grid-row: 1;
         grid-column: 8;
+    }
+
+    #flatten-tangent {
+        grid-row: 1;
+        grid-column: 9;
+    }
+    
+    #linear-tangent {
+        grid-row: 1;
+        grid-column: 10;
     }
 }

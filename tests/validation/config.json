@@ -1,16 +1,15 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
-
         {
             "title": "Sprites",
             "playgroundId": "#ZX8DJ3#1",
             "referenceImage": "Sprites.png"
         },
         {
-            "title": "Procedural texture with NME",       
+            "title": "Procedural texture with NME",
             "renderCount": 2,
-            "playgroundId": "#8S19ZC#3",            
+            "playgroundId": "#8S19ZC#3",
             "referenceImage": "procedural_nme.png"
         },
         {
@@ -39,7 +38,7 @@
             "playgroundId": "#ARLADE#23",
             "referenceImage": "sprite-maps.png",
             "excludeFromAutomaticTesting": true
-        },              
+        },
         {
             "title": "Point light shadows",
             "playgroundId": "#U2F7P9#4",
@@ -405,16 +404,14 @@
         },
         {
             "title": "Shadow depth wrappers",
-            "playgroundId": "#PNQRY1#9",
+            "playgroundId": "#PNQRY1#73",
             "referenceImage": "shadowDepthWrappers.png",
             "renderCount": 20
         },
         {
             "title": "Displacement map",
-            "scriptToRun": "/Demos/DisplacementMap/displacementMap.js",
-            "functionToCall": "CreateDisplacementTestScene",
-            "referenceImage": "displacementMap.png",
-            "replace": "/Scenes/Customs/skybox/, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Assets/skybox/"
+            "playgroundId": "#WZ8JL4#0",
+            "referenceImage": "displacementMap.png"
         },
         {
             "title": "Normals",
@@ -457,23 +454,20 @@
             "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 0",
-            "referenceImage": "gltfAnimationSkin0.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "gltfAnimationSkin0.png"
         },
         {
             "title": "GLTF Animation Skin (1)",
             "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 1",
-            "referenceImage": "gltfAnimationSkin1.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "gltfAnimationSkin1.png"
         },
         {
             "title": "GLTF Animation Skin Type",
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_SkinType, __page__, 0",
-            "referenceImage": "gltfAnimationSkinType.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "gltfAnimationSkinType.png"
         },
         {
             "title": "GLTF Buffer Interleaved",
@@ -693,6 +687,11 @@
             "title": "GLTF Extension KHR_texture_transform",
             "playgroundId": "#RNT7K4#2",
             "referenceImage": "gltfExtensionKhrTextureTransform.png"
+        },
+        {
+            "title": "GLTF Extension KHR_materials_volume",
+            "playgroundId": "#YG3BBF#16",
+            "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
         },
         {
             "title": "Asset Containers",
@@ -1203,6 +1202,74 @@
             "playgroundId": "#W7E7CF#12",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test.png"
+        },
+        {
+            "title": "Refraction local cube map STD",
+            "renderCount": 1,
+            "playgroundId": "#RJN64I#7",
+            "referenceImage": "refraction-local-std.png"
+        },
+        {
+            "title": "Refraction local cube map PBR",
+            "renderCount": 1,
+            "playgroundId": "#RJN64I#5",
+            "referenceImage": "refraction-local-pbr.png"
+        },
+        {
+            "title": "Instances + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#402",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "instances-mb.png"
+        },
+        {
+            "title": "Instances + GBR + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#403",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "instances-gbr-mb.png"
+        },
+        {
+            "title": "Instances manual update + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#HJGC2G#50",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "instances-mb-manual.png"
+        },
+        {
+            "title": "Thin instances + motion blur",
+            "renderCount": 30,
+            "playgroundId": "#HJGC2G#60",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "thin-instances-mb.png"
+        },
+        {
+            "title": "Thin instances + motion blur + manual",
+            "renderCount": 30,
+            "playgroundId": "#HJGC2G#61",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "thin-instances-mb-manual.png"
+        },
+        {
+            "title": "Thin instances + dynamic buffer resize",
+            "renderCount": 10,
+            "playgroundId": "#217750#33",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "thin-instances-buffer-resize.png"
+        },
+        {
+            "title": "Instances + render self motion blur",
+            "renderCount": 10,
+            "playgroundId": "#217750#34",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "instances-renderself-mb.png"
+        },
+        {
+            "title": "Thin instances + render self motion blur",
+            "renderCount": 10,
+            "playgroundId": "#217750#35",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "thin-instances-renderself-mb.png"
         }
     ]
 }

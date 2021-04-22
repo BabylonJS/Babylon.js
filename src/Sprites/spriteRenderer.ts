@@ -112,19 +112,7 @@ export class SpriteRenderer {
         this._drawWrapperFog = new DrawWrapper(engine);
 
         if (!this._useInstancing) {
-            const indices = [];
-            let index = 0;
-            for (let count = 0; count < capacity; count++) {
-                indices.push(index);
-                indices.push(index + 1);
-                indices.push(index + 2);
-                indices.push(index);
-                indices.push(index + 2);
-                indices.push(index + 3);
-                index += 4;
-            }
-
-            this._indexBuffer = engine.createIndexBuffer(indices);
+            this._buildIndexBuffer();
         }
 
         // VBO
@@ -370,6 +358,44 @@ export class SpriteRenderer {
         this._vertexData[arrayOffset + 15] = sprite.color.g;
         this._vertexData[arrayOffset + 16] = sprite.color.b;
         this._vertexData[arrayOffset + 17] = sprite.color.a;
+    }
+
+    private _buildIndexBuffer(): void {
+        const indices = [];
+        let index = 0;
+        for (let count = 0; count < this._capacity; count++) {
+            indices.push(index);
+            indices.push(index + 1);
+            indices.push(index + 2);
+            indices.push(index);
+            indices.push(index + 2);
+            indices.push(index + 3);
+            index += 4;
+        }
+
+        this._indexBuffer = this._engine.createIndexBuffer(indices);
+    }
+
+    /**
+     * Rebuilds the renderer (after a context lost, for eg)
+     */
+     public rebuild(): void {
+        if (this._indexBuffer) {
+            this._buildIndexBuffer();
+        }
+
+        if (this._useVAO) {
+            this._vertexArrayObject = undefined as any;
+        }
+
+        this._buffer._rebuild();
+
+        for (const key in this._vertexBuffers) {
+            const vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
+            vertexBuffer._rebuild();
+        }
+
+        this._spriteBuffer?._rebuild();
     }
 
     /**

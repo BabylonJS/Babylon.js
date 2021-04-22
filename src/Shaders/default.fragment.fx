@@ -15,8 +15,6 @@
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 
-uniform vec3 vAmbientColor;
-
 // Input
 varying vec3 vPositionW;
 
@@ -120,10 +118,6 @@ uniform sampler2D refraction2DSampler;
 		varying vec2 vSpecularUV;
 	#endif
 	uniform sampler2D specularSampler;
-#endif
-
-#ifdef ALPHATEST
-	uniform float alphaCutOff;
 #endif
 
 // Fresnel
@@ -274,6 +268,9 @@ void main(void) {
 #ifdef REFRACTION
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
 	#ifdef REFRACTIONMAP_3D
+        #ifdef USE_LOCAL_REFRACTIONMAP_CUBIC
+            refractionVector = parallaxCorrectNormal(vPositionW, refractionVector, vRefractionSize, vRefractionPosition);
+        #endif
 		refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
 		if (dot(refractionVector, viewDirectionW) < 1.0) {

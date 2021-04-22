@@ -5,6 +5,7 @@ uniform vec4 vDiffuseColor;
 uniform vec4 vSpecularColor;
 #endif
 uniform vec3 vEmissiveColor;
+uniform vec3 vAmbientColor;
 
 uniform float visibility;
 
@@ -34,21 +35,30 @@ uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
+#ifdef ALPHATEST
+uniform float alphaCutOff;
+#endif
+
 #if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
 uniform mat4 view;
 #endif
 
 #ifdef REFRACTION
-uniform vec4 vRefractionInfos;
+    uniform vec4 vRefractionInfos;
 
-#ifndef REFRACTIONMAP_3D
-uniform mat4 refractionMatrix;
-#endif
+    #ifndef REFRACTIONMAP_3D
+        uniform mat4 refractionMatrix;
+    #endif
 
-#ifdef REFRACTIONFRESNEL
-uniform vec4 refractionLeftColor;
-uniform vec4 refractionRightColor;
-#endif
+    #ifdef REFRACTIONFRESNEL
+        uniform vec4 refractionLeftColor;
+        uniform vec4 refractionRightColor;
+    #endif
+
+    #if defined(USE_LOCAL_REFRACTIONMAP_CUBIC) && defined(REFRACTIONMAP_3D)
+        uniform vec3 vRefractionPosition;
+        uniform vec3 vRefractionSize; 
+    #endif
 #endif
 
 #if defined(SPECULAR) && defined(SPECULARTERM)

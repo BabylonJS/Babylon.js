@@ -35,8 +35,7 @@ const ZeroVec = Vector3.Zero();
 
 let tmpv1 = new Vector3(),
     tmpv2 = new Vector3(),
-    tmpMatrix = new Matrix(),
-    tmpMatrix2 = new Matrix();
+    tmpMatrix = new Matrix();
 
 /**
  * A CSM implementation allowing casting shadows on large scenes.
@@ -108,7 +107,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         this._numCascades = value;
+        this._setNamesForDrawWrapper();
         this.recreateShadowMap();
+    }
+
+    private _setNamesForDrawWrapper(): void {
+        this._nameForDrawWrapper.length = this._numCascades;
+        for (let i = 0; i < this._numCascades; ++i) {
+            this._nameForDrawWrapper[i] = this._nameForDrawWrapperOrig + "_" + i;
+        }
     }
 
     /**
@@ -705,6 +712,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         throw _DevTools.WarnImport("ShadowGeneratorSceneComponent");
     }
 
+    private _nameForDrawWrapperOrig: string;
+
     /**
      * Creates a Cascaded Shadow Generator object.
      * A ShadowGenerator is the required tool to use the shadows.
@@ -723,11 +732,13 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         super(mapSize, light, usefulFloatFirst);
 
         this.usePercentageCloserFiltering = true;
+        this._nameForDrawWrapperOrig = this._nameForDrawWrapper[0];
     }
 
     protected _initializeGenerator(): void {
         this.penumbraDarkness = this.penumbraDarkness ?? 1.0;
         this._numCascades = this._numCascades ?? CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
+        this._setNamesForDrawWrapper();
         this.stabilizeCascades = this.stabilizeCascades ?? false;
         this._freezeShadowCastersBoundingInfoObservable = this._freezeShadowCastersBoundingInfoObservable ?? null;
         this.freezeShadowCastersBoundingInfo = this.freezeShadowCastersBoundingInfo ?? false;
@@ -803,11 +814,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._shadowMap.onBeforeRenderObservable.clear();
 
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
+            this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[layer];
             this._currentLayer = layer;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
             }
             this._scene.setTransformMatrix(this.getCascadeViewMatrix(layer)!, this.getCascadeProjectionMatrix(layer)!);
+            if (this._useUBO) {
+                this._scene.finalizeSceneUbo();
+            }
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
@@ -821,24 +836,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._splitFrustum();
     }
 
-    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void {
-        effect.setMatrix(matriceNames?.viewProjection ?? "viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
-
-        effect.setMatrix(matriceNames?.view ?? "view", this.getCascadeViewMatrix(this._currentLayer)!);
-
-        effect.setMatrix(matriceNames?.projection ?? "projection", this.getCascadeProjectionMatrix(this._currentLayer)!);
-
-        const world = mesh.getWorldMatrix();
-
-        effect.setMatrix(matriceNames?.world ?? "world", world);
-
-        world.multiplyToRef(this.getCascadeTransformMatrix(this._currentLayer)!, tmpMatrix);
-
-        effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);
-
-        world.multiplyToRef(this.getCascadeViewMatrix(this._currentLayer)!, tmpMatrix2);
-
-        effect.setMatrix(matriceNames?.worldView ?? "worldView", tmpMatrix2);
+    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void {
+        effect.setMatrix("viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
     }
 
     protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {

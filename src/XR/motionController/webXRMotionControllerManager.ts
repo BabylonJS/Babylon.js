@@ -63,6 +63,7 @@ export class WebXRMotionControllerManager {
         this.RegisterFallbacksForProfileId("samsung-gearvr", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
         this.RegisterFallbacksForProfileId("samsung-odyssey", ["generic-touchpad"]);
         this.RegisterFallbacksForProfileId("valve-index", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("generic-hand-select", ["generic-trigger"]);
     }
 
     /**

@@ -12,14 +12,14 @@ import { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Color4 } from '../Maths/math.color';
-import { StandardMaterial } from '../Materials/standardMaterial';
-import { PBRMaterial } from '../Materials/PBR/pbrMaterial';
-import { _DevTools } from '../Misc/devTools';
-import { Observer } from '../Misc/observable';
-import { Engine } from '../Engines/engine';
-import { Nullable } from '../types';
-import { Material } from '../Materials/material';
+import { Color4 } from "../Maths/math.color";
+import { StandardMaterial } from "../Materials/standardMaterial";
+import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
+import { _DevTools } from "../Misc/devTools";
+import { Observer } from "../Misc/observable";
+import { Engine } from "../Engines/engine";
+import { Nullable } from "../types";
+import { Material } from "../Materials/material";
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
@@ -211,10 +211,14 @@ export class GeometryBufferRenderer {
      */
     public getTextureIndex(textureType: number): number {
         switch (textureType) {
-            case GeometryBufferRenderer.POSITION_TEXTURE_TYPE: return this._positionIndex;
-            case GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE: return this._velocityIndex;
-            case GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE: return this._reflectivityIndex;
-            default: return -1;
+            case GeometryBufferRenderer.POSITION_TEXTURE_TYPE:
+                return this._positionIndex;
+            case GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE:
+                return this._velocityIndex;
+            case GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE:
+                return this._reflectivityIndex;
+            default:
+                return -1;
         }
     }
 
@@ -259,6 +263,8 @@ export class GeometryBufferRenderer {
             this.dispose();
             this._createRenderTargets();
         }
+
+        this._scene.needsPreviousWorldMatrices = enable;
     }
 
     /**
@@ -298,7 +304,7 @@ export class GeometryBufferRenderer {
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _DevTools.WarnImport("GeometryBufferRendererSceneComponent");
-    }
+    };
 
     /**
      * Creates a new G Buffer for the scene
@@ -324,7 +330,7 @@ export class GeometryBufferRenderer {
      * @returns true if ready otherwise false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
-        var material = <any> subMesh.getMaterial();
+        var material = <any>subMesh.getMaterial();
 
         if (material && material.disableDepthWrite) {
             return false;
@@ -439,7 +445,7 @@ export class GeometryBufferRenderer {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs);
+            MaterialHelper.PushAttributesForInstances(attribs, this._enableVelocity);
             if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
             }
@@ -456,13 +462,26 @@ export class GeometryBufferRenderer {
         var join = defines.join("\n");
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
-            this._drawWrapper.effect = this._scene.getEngine().createEffect("geometry",
+            this._drawWrapper.effect = this._scene.getEngine().createEffect(
+                "geometry",
                 {
                     attributes: attribs,
                     uniformsNames: [
-                        "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
-                        "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos",
-                        "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"
+                        "world",
+                        "mBones",
+                        "viewProjection",
+                        "diffuseMatrix",
+                        "view",
+                        "previousWorld",
+                        "previousViewProjection",
+                        "mPreviousBones",
+                        "bumpMatrix",
+                        "reflectivityMatrix",
+                        "vTangentSpaceParams",
+                        "vBumpInfos",
+                        "morphTargetInfluences",
+                        "morphTargetTextureInfo",
+                        "morphTargetTextureIndices",
                     ],
                     samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "morphTargets"],
                     defines: join,
@@ -472,7 +491,8 @@ export class GeometryBufferRenderer {
                     uniformBuffersNames: ["Scene"],
                     indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
                 },
-                this._scene.getEngine());
+                this._scene.getEngine()
+            );
         }
 
         return this._drawWrapper.effect!.isReady();
@@ -512,7 +532,7 @@ export class GeometryBufferRenderer {
         this.getGBuffer().dispose();
     }
 
-    private _assignRenderTargetIndices() : number {
+    private _assignRenderTargetIndices(): number {
         let count = 2;
 
         if (this._enablePosition) {
@@ -537,9 +557,7 @@ export class GeometryBufferRenderer {
         var engine = this._scene.getEngine();
         var count = this._assignRenderTargetIndices();
 
-        this._multiRenderTarget = new MultiRenderTarget("gBuffer",
-            { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_FLOAT });
+        this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_FLOAT });
         if (!this.isSupported) {
             return;
         }
@@ -551,7 +569,7 @@ export class GeometryBufferRenderer {
 
         // set default depth value to 1.0 (far away)
         this._multiRenderTarget.onClearObservable.add((engine) => {
-            engine.clear(new Color4(0.0, 0.0, 0.0, 1.0), true, true, true);
+            engine.clear(new Color4(0.0, 0.0, 0.0, 0.0), true, true, true);
         });
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
@@ -566,7 +584,7 @@ export class GeometryBufferRenderer {
             var effectiveMesh = subMesh.getEffectiveMesh();
             var scene = this._scene;
             var engine = scene.getEngine();
-            let material = <any> subMesh.getMaterial();
+            let material = <any>subMesh.getMaterial();
 
             if (!material) {
                 return;
@@ -578,7 +596,7 @@ export class GeometryBufferRenderer {
             if (this._enableVelocity && !this._previousTransformationMatrices[effectiveMesh.uniqueId]) {
                 this._previousTransformationMatrices[effectiveMesh.uniqueId] = {
                     world: Matrix.Identity(),
-                    viewProjection: scene.getTransformMatrix()
+                    viewProjection: scene.getTransformMatrix(),
                 };
 
                 if (renderingMesh.skeleton) {
@@ -594,20 +612,22 @@ export class GeometryBufferRenderer {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
+            var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
             var world = effectiveMesh.getWorldMatrix();
 
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 const effect = this._drawWrapper.effect!;
 
                 engine.enableEffect(this._drawWrapper);
-                renderingMesh._bind(subMesh, effect, material.fillMode);
+                if (!hardwareInstancedRendering) {
+                    renderingMesh._bind(subMesh, effect, material.fillMode);
+                }
 
                 if (!this._useUbo) {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     effect.setMatrix("view", scene.getViewMatrix());
                 } else {
-                    MaterialHelper.FinalizeSceneUbo(this._scene);
+                    this._scene.finalizeSceneUbo();
                     MaterialHelper.BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
                 }
 
@@ -615,15 +635,14 @@ export class GeometryBufferRenderer {
                     var sideOrientation: Nullable<number>;
                     let instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
 
-                    if (!instanceDataStorage.isFrozen &&
-                        (material.backFaceCulling || material.overrideMaterialSideOrientation !== null)) {
+                    if (!instanceDataStorage.isFrozen && (material.backFaceCulling || material.overrideMaterialSideOrientation !== null)) {
                         let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
                         sideOrientation = material.overrideMaterialSideOrientation;
                         if (sideOrientation == null) {
                             sideOrientation = material.sideOrientation;
                         }
                         if (mainDeterminant < 0) {
-                            sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+                            sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
                         }
                     } else {
                         sideOrientation = instanceDataStorage.sideOrientation;
@@ -678,11 +697,17 @@ export class GeometryBufferRenderer {
                 if (this._enableVelocity) {
                     effect.setMatrix("previousWorld", this._previousTransformationMatrices[effectiveMesh.uniqueId].world);
                     effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection);
+                    if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {
+                        effect.setMatrix("world", world);
+                    }
                 }
 
                 // Draw
-                renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
-                    (isInstance, w) => effect.setMatrix("world", w));
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, w) => {
+                    if (!isInstance) {
+                        effect.setMatrix("world", w);
+                    }
+                });
             }
 
             // Velocity

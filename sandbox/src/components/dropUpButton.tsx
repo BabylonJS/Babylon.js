@@ -14,7 +14,7 @@ interface IDropUpButtonProps {
     options: string[];
     activeEntry: () => string;
     selectedOption?: string;
-    onOptionPicked: (option: string) => void;
+    onOptionPicked: (option: string, index: number) => void;
 }
 
 export class DropUpButton extends React.Component<IDropUpButtonProps, {isOpen: boolean}> {
@@ -39,9 +39,9 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, {isOpen: b
         this.setState({isOpen: !this.state.isOpen});
     }
 
-    clickOption(option: string) {
+    clickOption(option: string, index: number) {
         this.switchDropUp()
-        this.props.onOptionPicked(option);
+        this.props.onOptionPicked(option, index);
     }
 
     public render() {
@@ -77,9 +77,9 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, {isOpen: b
                     this.state.isOpen &&
                     <div className={"dropup-content" + (this.props.selectedOption ? " long-mode" : "")}>
                     {
-                        this.props.options.map(o => {
+                        this.props.options.map((o, i) => {
                             return(
-                                <div key={o} onClick={() => this.clickOption(o)} className="dropup-content-line">
+                                <div key={o} onClick={() => this.clickOption(o, i)} className="dropup-content-line">
                                     <div style={{
                                         opacity: this.props.activeEntry() === o ? "1.0" : "0.8",
                                         fontSize: this.props.activeEntry() === o ? "var(--active-font-size)" : "var(--font-size)"

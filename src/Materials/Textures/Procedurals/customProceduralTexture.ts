@@ -43,7 +43,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
                 this.setFragment(this._texturePath);
             }
             catch (ex) {
-                Logger.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");
+                Logger.Log("No json or ShaderStore or DOM element found for CustomProceduralTexture");
             }
         };
 

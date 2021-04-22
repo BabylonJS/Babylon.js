@@ -4,8 +4,15 @@ import { Scalar } from '../../Maths/math.scalar';
 import { Nullable } from '../../types';
 import * as WebGPUConstants from './webgpuConstants';
 
+declare type WebGPUBundleList = import("./webgpuBundleList").WebGPUBundleList;
+
 /** @hidden */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
+
+    /** @hidden */
+    public _bundleLists: WebGPUBundleList[];
+    /** @hidden */
+    public _currentLayer: number;
 
     private _webgpuTexture: Nullable<GPUTexture>;
     private _webgpuMSAATexture: Nullable<GPUTexture>;
@@ -44,10 +51,12 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         generateMipMaps = textureSource === InternalTextureSource.RenderTarget ? false : generateMipMaps;
 
         this.createView({
+            format: this.format,
             dimension: isCube ? WebGPUConstants.TextureViewDimension.Cube : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: generateMipMaps ? Scalar.ILog2(Math.max(width, height)) + 1 : 1,
             baseArrayLayer: 0,
             baseMipLevel: 0,
+            arrayLayerCount: isCube ? 6 : 1,
             aspect: WebGPUConstants.TextureAspect.All
         });
     }

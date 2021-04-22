@@ -521,9 +521,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
     }
     /** @hidden */
-    public _getGlobalViewport(scene: Scene): Viewport {
-        var engine = scene.getEngine();
-        return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    public _getGlobalViewport(): Viewport {
+        var size = this.getSize();
+        return this._fullscreenViewport.toGlobal(size.width, size.height);
     }
     /**
     * Get screen coordinates for a vector3
@@ -536,7 +536,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return Vector2.Zero();
         }
-        var globalViewport = this._getGlobalViewport(scene);
+        var globalViewport = this._getGlobalViewport();
         var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
         projectedPosition.scaleInPlace(this.renderScale);
         return new Vector2(projectedPosition.x, projectedPosition.y);
@@ -552,7 +552,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return Vector3.Zero();
         }
-        var globalViewport = this._getGlobalViewport(scene);
+        var globalViewport = this._getGlobalViewport();
         var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
         projectedPosition.scaleInPlace(this.renderScale);
         return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
@@ -568,7 +568,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (!scene) {
                 return;
             }
-            var globalViewport = this._getGlobalViewport(scene);
+            var globalViewport = this._getGlobalViewport();
             for (let control of this._linkedControls) {
                 if (!control.isVisible) {
                     continue;

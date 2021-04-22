@@ -51,6 +51,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public _cubeSamplerName: string;
     /** @hidden */
     public _2DSamplerName: string;
+    /** @hidden */
+    public _reflectionPositionName: string;
+    /** @hidden */
+    public _reflectionSizeName: string;
+
     protected _positionUVWName: string;
     protected _directionWName: string;
     protected _reflectionVectorName: string;
@@ -221,6 +226,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         } else {
             effect.setTexture(this._2DSamplerName, texture);
         }
+
+        if ((<any>texture).boundingBoxSize) {
+            let cubeTexture = <CubeTexture>texture;
+            effect.setVector3(this._reflectionPositionName, cubeTexture.boundingBoxPosition);
+            effect.setVector3(this._reflectionSizeName, cubeTexture.boundingBoxSize);
+        }
     }
 
     /**
@@ -298,6 +309,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         let comments = `//${this.name}`;
         state._emitFunction("ReciprocalPI", "#define RECIPROCAL_PI2 0.15915494", "");
+        state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitFunctionFromInclude("reflectionFunction", comments, {
             replaceStrings: [
                 { search: /vec3 computeReflectionCoords/g, replace: "void DUMMYFUNC" }
@@ -307,6 +319,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._reflectionColorName = state._getFreeVariableName("reflectionColor");
         this._reflectionVectorName = state._getFreeVariableName("reflectionUVW");
         this._reflectionCoordsName = state._getFreeVariableName("reflectionCoords");
+
+        this._reflectionPositionName = state._getFreeVariableName("vReflectionPosition");
+        state._emitUniformFromString(this._reflectionPositionName, "vec3");
+
+        this._reflectionSizeName = state._getFreeVariableName("vReflectionPosition");
+        state._emitUniformFromString(this._reflectionSizeName, "vec3");
     }
 
     /**
@@ -351,7 +369,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
             #ifdef ${this._defineCubicName}
                 #ifdef ${this._defineLocalCubicName}
-                    vec3 ${this._reflectionVectorName} = computeCubicLocalCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix}, vReflectionSize, vReflectionPosition);
+                    vec3 ${this._reflectionVectorName} = computeCubicLocalCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix}, ${this._reflectionSizeName}, ${this._reflectionPositionName});
                 #else
                 vec3 ${this._reflectionVectorName} = computeCubicCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix});
                 #endif
@@ -447,17 +465,17 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        if (!this.texture) {
-            return "";
-        }
+        let codeString = super._dumpPropertiesCode();
 
-        let codeString: string;
+        if (!this.texture) {
+            return codeString;
+        }
 
         if (this.texture.isCube) {
             const forcedExtension = (this.texture as CubeTexture).forcedExtension;
-            codeString = `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}", undefined, undefined, ${this.texture.noMipmap}, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? "\"" + forcedExtension + "\"" : "null"});\r\n`;
+            codeString += `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}", undefined, undefined, ${this.texture.noMipmap}, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? "\"" + forcedExtension + "\"" : "null"});\r\n`;
         } else {
-            codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\r\n`;
+            codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\r\n`;
         }
         codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
 

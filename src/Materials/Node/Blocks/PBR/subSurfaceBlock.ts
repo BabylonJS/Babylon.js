@@ -115,7 +115,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         defines.setValue("SS_TRANSLUCENCY", translucencyEnabled, true);
         defines.setValue("SS_THICKNESSANDMASK_TEXTURE", false, true);
         defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE", false, true);
-        defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE_GLTF", false, true);
+        defines.setValue("SS_USE_GLTF_THICKNESS_TEXTURE", false, true);
     }
 
     /**
@@ -175,11 +175,13 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                     #endif
                 #endif
             #endif
+            #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
+                surfaceAlbedo,
+            #endif
             #ifdef SS_REFRACTION
                 ${worldPosVarName}.xyz,
                 viewDirectionW,
                 ${refractionView},
-                surfaceAlbedo,
                 ${refractionBlock?._vRefractionInfosName ?? ""},
                 ${refractionBlock?._refractionMatrixName ?? ""},
                 ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""},
@@ -192,9 +194,8 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
                 #ifdef ${refractionBlock?._defineLinearSpecularRefraction ?? "IGNORE"}
                     roughness,
-                #else
-                    alphaG,
                 #endif
+                alphaG,
                 #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
                     ${refractionBlock?._cubeSamplerName ?? ""},
                 #else
@@ -214,6 +215,10 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
                 #ifdef REALTIME_FILTERING
                     ${refractionBlock?._vRefractionFilteringInfoName ?? ""},
+                #endif
+                #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+                    vRefractionPosition,
+                    vRefractionSize,
                 #endif
             #endif
             #ifdef SS_TRANSLUCENCY

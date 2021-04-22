@@ -117,7 +117,7 @@ export class DepthRenderer {
             }
 
             // Culling and reverse (right handed system)
-            engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
+            engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem, material.cullBackFaces);
 
             // Managing instances
             var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
@@ -137,7 +137,9 @@ export class DepthRenderer {
 
                 engine.enableEffect(drawWrapper);
 
-                renderingMesh._bind(subMesh, effect, material.fillMode);
+                if (!hardwareInstancedRendering) {
+                    renderingMesh._bind(subMesh, effect, material.fillMode);
+                }
 
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());

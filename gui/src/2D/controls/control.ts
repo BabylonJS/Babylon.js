@@ -88,6 +88,7 @@ export class Control {
     private _cachedOffsetY: number;
     private _isVisible = true;
     private _isHighlighted = false;
+    private _highlightLineWidth = 2;
     /** @hidden */
     public _linkedMesh: Nullable<TransformNode>;
     private _fontSet = false;
@@ -335,6 +336,22 @@ export class Control {
     }
 
     /**
+     * Gets or sets a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
+     */
+    public get highlightLineWidth(): number {
+        return this._highlightLineWidth;
+    }
+
+    public set highlightLineWidth(value: number) {
+        if (this._highlightLineWidth === value) {
+            return;
+        }
+
+        this._highlightLineWidth = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
      */
     public get isHighlighted(): boolean {
@@ -343,7 +360,7 @@ export class Control {
 
     public set isHighlighted(value: boolean) {
         if (this._isHighlighted === value) {
-            return;
+             return;
         }
 
         this._isHighlighted = value;
@@ -1149,7 +1166,7 @@ export class Control {
         this.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
-        var globalViewport = this._host._getGlobalViewport(scene);
+        var globalViewport = this._host._getGlobalViewport();
         var projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
 
         this._moveToProjectedPosition(projectedPosition);
@@ -1439,7 +1456,7 @@ export class Control {
 
         context.save();
         context.strokeStyle = "#4affff";
-        context.lineWidth = 2;
+        context.lineWidth = this._highlightLineWidth;
 
         this._renderHighlightSpecific(context);
         context.restore();
@@ -1472,7 +1489,7 @@ export class Control {
         if (Control.AllowAlphaInheritance) {
             context.globalAlpha *= this._alpha;
         } else if (this._alphaSet) {
-            context.globalAlpha = this.parent ? this.parent.alpha * this._alpha : this._alpha;
+            context.globalAlpha = (this.parent && !this.parent.renderToIntermediateTexture) ? this.parent.alpha * this._alpha : this._alpha;
         }
     }
 

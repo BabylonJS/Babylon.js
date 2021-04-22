@@ -47,6 +47,7 @@ interface IPropertyTabComponentState {
     currentFrame: Nullable<GraphFrame>;
     currentFrameNodePort: Nullable<FrameNodePort>;
     currentNodePort: Nullable<NodePort>;
+    uploadInProgress: boolean;
  }
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
@@ -56,7 +57,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
-        this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null };
+        this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null, uploadInProgress: false };
 
         this._modeSelect = React.createRef();
     }
@@ -180,11 +181,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     customSave() {
+        this.setState({uploadInProgress: true});
         this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Saving your material to Babylon.js snippet server...", isError: false});
         this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(() => {
             this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Material saved successfully", isError: false});
+            this.setState({uploadInProgress: false});
         }).catch((err) => {
             this.props.globalState.onLogRequiredObservable.notifyObservers({message: err, isError: true});
+            this.setState({uploadInProgress: false});
         });
     }
 
@@ -435,7 +439,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }} />
                         {
                             this.props.globalState.customSave &&
-                            <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
+                            <ButtonLineComponent label={this.props.globalState.customSave!.label} isDisabled={this.state.uploadInProgress} onClick={() => {
                                 this.customSave();
                             }} />
                         }
