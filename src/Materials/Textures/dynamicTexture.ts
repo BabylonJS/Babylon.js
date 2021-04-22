@@ -5,7 +5,7 @@ import { ISize } from "../../Maths/math.size";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.dynamicTexture";
-import { ICanvas } from "../../Engines/ICanvas";
+import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 /**
  * A class extending Texture allowing drawing on a texture
@@ -14,7 +14,7 @@ import { ICanvas } from "../../Engines/ICanvas";
 export class DynamicTexture extends Texture {
     private _generateMipMaps: boolean;
     private _canvas: ICanvas;
-    private _context: CanvasRenderingContext2D;
+    private _context: ICanvasRenderingContext;
 
     /**
      * Creates a DynamicTexture
@@ -58,7 +58,7 @@ export class DynamicTexture extends Texture {
 
         this._canvas.width = textureSize.width;
         this._canvas.height = textureSize.height;
-        this._context = <CanvasRenderingContext2D>this._canvas.getContext("2d");
+        this._context = this._canvas.getContext("2d");
     }
 
     /**
@@ -116,7 +116,7 @@ export class DynamicTexture extends Texture {
      * Gets the context of the canvas used by the texture
      * @returns the canvas context of the dynamic texture
      */
-    public getContext(): CanvasRenderingContext2D {
+    public getContext(): ICanvasRenderingContext {
         return this._context;
     }
 
@@ -134,7 +134,7 @@ export class DynamicTexture extends Texture {
      * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
      */
     public update(invertY?: boolean, premulAlpha = false): void {
-        this._getEngine()!.updateDynamicTexture(this._texture, <HTMLCanvasElement>(this._canvas), invertY === undefined ? true : invertY, premulAlpha, this._format || undefined);
+        this._getEngine()!.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined);
     }
 
     /**
@@ -209,8 +209,8 @@ export class DynamicTexture extends Texture {
         }
 
         const serializationObject = super.serialize();
-        if (this._IsCanvasElement(<HTMLCanvasElement>(this._canvas))) {
-            serializationObject.base64String = (this._canvas as HTMLCanvasElement).toDataURL();
+        if (this._IsCanvasElement(this._canvas)) {
+            serializationObject.base64String = this._canvas.toDataURL();
         }
 
         serializationObject.invertY = this._invertY;
@@ -219,7 +219,7 @@ export class DynamicTexture extends Texture {
         return serializationObject;
     }
 
-    private _IsCanvasElement(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is HTMLCanvasElement {
+    private _IsCanvasElement(canvas: HTMLCanvasElement | OffscreenCanvas | ICanvas): canvas is HTMLCanvasElement {
         return (canvas as HTMLCanvasElement).toDataURL !== undefined;
     }
 

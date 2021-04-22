@@ -2,11 +2,8 @@ export interface ICanvas
 {
     width: number;
     height: number;
-    getContext(contextType: string, contextAttributes?: any): ICanvasRenderingContext2D;
+    getContext(contextType: string, contextAttributes?: any): ICanvasRenderingContext;
     toDataURL(mime: string): string;
-}
-
-export interface ICanvasElement extends ICanvas{
 }
 
 export interface ICanvasGradient {
@@ -32,6 +29,8 @@ export interface ICanvasRenderingContext {
     shadowOffsetX: number;
     shadowOffsetY: number;
     lineWidth: number;
+    canvas: ICanvas;
+    msImageSmoothingEnabled: boolean;
 
     clearRect(x: number, y: number, width: number, height: number): void;
     save(): void;
@@ -61,7 +60,5 @@ export interface ICanvasRenderingContext {
     fillText(text: string, x: number, y: number, maxWidth?: number): void;
     strokeText(text: string, x: number, y: number, maxWidth?: number): void;
     createLinearGradient(x0: number, y0: number, x1: number, y1: number): ICanvasGradient;
-}
-
-export interface ICanvasRenderingContext2D extends ICanvasRenderingContext {
+    setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
 }

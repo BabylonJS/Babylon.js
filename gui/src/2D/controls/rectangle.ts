@@ -2,7 +2,7 @@ import { Container } from "./container";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /** Class used to create rectangle container */
 export class Rectangle extends Container {
@@ -55,7 +55,7 @@ export class Rectangle extends Container {
         return "Rectangle";
     }
 
-    protected _localDraw(context: ICanvasRenderingContext2D): void {
+    protected _localDraw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -101,7 +101,7 @@ export class Rectangle extends Container {
         context.restore();
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.width -= 2 * this._thickness;
@@ -110,7 +110,7 @@ export class Rectangle extends Container {
         this._measureForChildren.top += this._thickness;
     }
 
-    private _drawRoundedRect(context: ICanvasRenderingContext2D, offset: number = 0): void {
+    private _drawRoundedRect(context: ICanvasRenderingContext, offset: number = 0): void {
         var x = this._currentMeasure.left + offset;
         var y = this._currentMeasure.top + offset;
         var width = this._currentMeasure.width - offset * 2;
@@ -131,7 +131,7 @@ export class Rectangle extends Container {
         context.closePath();
     }
 
-    protected _clipForChildren(context: ICanvasRenderingContext2D) {
+    protected _clipForChildren(context: ICanvasRenderingContext) {
         if (this._cornerRadius) {
             this._drawRoundedRect(context, this._thickness);
             context.clip();

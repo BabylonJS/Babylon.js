@@ -7,7 +7,7 @@ import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create multi line control
@@ -178,7 +178,7 @@ export class MultiLine extends Control {
         return "MultiLine";
     }
 
-    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -224,7 +224,7 @@ export class MultiLine extends Control {
         context.restore();
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._minX = null;
         this._minY = null;
         this._maxX = null;
@@ -258,7 +258,7 @@ export class MultiLine extends Control {
         this._currentMeasure.height = Math.abs(this._maxY - this._minY) + this._lineWidth;
     }
 
-    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._minX == null || this._minY == null) {
             return;
         }

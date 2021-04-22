@@ -3,7 +3,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { Measure } from '../measure';
 import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /** Class used to render a grid  */
 export class DisplayGrid extends Control {
@@ -160,7 +160,7 @@ export class DisplayGrid extends Control {
         super(name);
     }
 
-    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);

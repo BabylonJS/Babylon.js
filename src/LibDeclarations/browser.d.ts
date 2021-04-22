@@ -42,7 +42,7 @@ interface ITextMetrics {
     readonly width: number;
 }
 
-interface ICanvasRenderingContext2D {
+interface ICanvasRenderingContext {
     msImageSmoothingEnabled: boolean;
 
     beginPath() : void;

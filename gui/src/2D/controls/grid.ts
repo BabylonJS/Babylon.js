@@ -6,7 +6,7 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { Tools } from 'babylonjs/Misc/tools';
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
-import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create a 2D grid container
@@ -416,7 +416,7 @@ export class Grid extends Container {
         definitionCallback(lefts, tops, widths, heights);
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
             // Setting child sizes
             for (var key in this._cells) {
@@ -453,7 +453,7 @@ export class Grid extends Container {
         }
     }
 
-    public _renderHighlightSpecific(context: ICanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         super._renderHighlightSpecific(context);
 
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {

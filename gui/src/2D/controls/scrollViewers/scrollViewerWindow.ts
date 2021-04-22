@@ -2,7 +2,7 @@ import { Measure } from "../../measure";
 import { Container } from "../container";
 import { ValueAndUnit } from "../../valueAndUnit";
 import { Control } from "../control";
-import { ICanvasRenderingContext2D } from 'babylonjs/Engines/ICanvas';
+import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
 
 /**
  * Class used to hold a the container for ScrollViewer
@@ -37,7 +37,7 @@ export class _ScrollViewerWindow extends Container {
         var renderWidth = textureSize.width;
         var renderHeight = textureSize.height;
 
-        var context = <ICanvasRenderingContext2D>(<any>(this.host.getContext()));
+        var context = <ICanvasRenderingContext>(<any>(this.host.getContext()));
 
         var measure = new Measure(0, 0, renderWidth, renderHeight);
 
@@ -183,7 +183,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._parentMeasure = parentMeasure;
@@ -196,7 +196,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (this._freezeControls) {
             this.invalidateRect(); // will trigger a redraw of the window
             return false;
@@ -244,7 +244,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /** @hidden */
-    public _draw(context: ICanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
         if (!this._freezeControls) {
             super._draw(context, invalidatedRectangle);
             return;

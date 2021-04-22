@@ -12,7 +12,7 @@ import { _ScrollViewerWindow } from "./scrollViewerWindow";
 import { ScrollBar } from "../sliders/scrollBar";
 import { ImageScrollBar } from "../sliders/imageScrollBar";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
-import { ICanvasRenderingContext2D } from "babylonjs/Engines/ICanvas";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to hold a viewer window and sliders in a grid
@@ -255,7 +255,7 @@ export class ScrollViewer extends Rectangle {
         this._clientHeight = this._window.parentClientHeight;
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._buildClientSizes();
@@ -686,7 +686,7 @@ export class ScrollViewer extends Rectangle {
         });
     }
 
-    public _renderHighlightSpecific(context: ICanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         if (!this.isHighlighted) {
             return;
         }
