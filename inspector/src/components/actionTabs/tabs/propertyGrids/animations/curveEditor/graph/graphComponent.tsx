@@ -195,7 +195,7 @@ IGraphComponentState
 
                 if (derivative !== null) {
                     newKey.inTangent = derivative;
-                    newKey.outTangent = derivative;
+                    newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
                 }
             }
 
@@ -203,7 +203,7 @@ IGraphComponentState
             keys.splice(indexToAdd + 1, 0, newKey);
 
             this._currentAnimation.setKeys(keys);
-            this._evaluateKeys(false);
+            this._evaluateKeys(false, false);
 
             this.props.context.activeKeyPoints = [];            
             this.props.context.onActiveKeyPointChanged.notifyObservers();
@@ -241,7 +241,7 @@ IGraphComponentState
         }
     }
 
-    private _evaluateKeys(frame = true) {
+    private _evaluateKeys(frame = true, range = true) {
         if (!this.props.context.activeAnimation) {
             this._curves = [];
             return;
@@ -286,11 +286,13 @@ IGraphComponentState
 
         let values = this._extractValuesFromKeys(keys, animation.dataType, true);
 
-        this._minValue = values.min;
-        this._maxValue = values.max;
+        if (range) {
+            this._minValue = values.min;
+            this._maxValue = values.max;
 
-        this._minFrame = keys[0].frame;
-        this._maxFrame = keys[keys.length - 1].frame;
+            this._minFrame = keys[0].frame;
+            this._maxFrame = keys[keys.length - 1].frame;
+        }
 
         if (frame) {
             this._frame();
