@@ -66,6 +66,7 @@
 - `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 - `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
 - Add option to decompose the `newWorldMatrix` when passed into `TransformNode.freezeWorldMatrix`. ([bghgary](https://github.com/bghgary))
+- Added `mesh.onMeshReadyObservable` to get notified when a mesh is ready ([RaananW](https://github.com/RaananW))
 
 ### Inspector
 
@@ -78,6 +79,7 @@
 
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
+- NME `TextureBlock`: add an output for the texture level and a switch to disable the internal multiplication (level * texture) ([#10192](https://github.com/BabylonJS/Babylon.js/pull/10192)) ([rassie](https://github.com/rassie))
 
 ### GUIEditor
 
@@ -92,6 +94,7 @@
 - Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
 - Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
 - Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
+- Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -195,6 +198,9 @@
 - Fix NME `TextureBlock` to use correct transformed UV coordinates when reading from the texture ([#10176](https://github.com/BabylonJS/Babylon.js/issues/10176)) ([Popov72](https://github.com/Popov72))
 - Fix context lost handling ([#10163](https://github.com/BabylonJS/Babylon.js/issues/10163)) ([Popov72](https://github.com/Popov72))
 - Fix for GUI slider step values greater than one ([msDestiny14](https://github.com/msDestiny14))
+- Fix Instances wrongly rendered with motion blur ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix for wrongly rendered GUI rectangle on resize with adaptWidthToChildren ([msDestiny14](https://github.com/msDestiny14))
+- Fix glTF loader promise stuck when runs on non-json data ([mrlika](https://github.com/mrlika))
 
 ## Breaking changes
 

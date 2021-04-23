@@ -1111,7 +1111,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
             engine.enableEffect(drawWrapper);
 
-            renderingMesh._bind(subMesh, effect, material.fillMode);
+            if (!hardwareInstancedRendering) {
+                renderingMesh._bind(subMesh, effect, material.fillMode);
+            }
 
             this.getTransformMatrix(); // make sure _cachedDirection et _cachedPosition are up to date
 
@@ -1485,7 +1487,7 @@ export class ShadowGenerator implements IShadowGenerator {
                                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM",
                                 "morphTargetTextureInfo", "morphTargetTextureIndices"];
                 const samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
-                const uniformBuffers = ["Mesh", "Scene"];
+                const uniformBuffers = ["Scene", "Mesh"];
 
                 // Custom shader?
                 if (this.customShaderOptions) {
