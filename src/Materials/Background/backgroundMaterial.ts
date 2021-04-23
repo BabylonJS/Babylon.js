@@ -1135,7 +1135,7 @@ export class BackgroundMaterial extends PushMaterial {
 
         if (mustRebind || !this.isFrozen) {
             if (scene.lightsEnabled) {
-                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights, false);
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
             }
 
             // View
