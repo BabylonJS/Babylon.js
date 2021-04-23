@@ -216,7 +216,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      @serializeAsTexture()
      @expandToProperty("_markAllSubMeshesAsTexturesDirty")
      public reflectanceTexture: Nullable<BaseTexture>;
- 
+
      /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
      * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
