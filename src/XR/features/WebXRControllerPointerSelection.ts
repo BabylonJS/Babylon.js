@@ -364,7 +364,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             }
 
             controllerData.laserPointer.isVisible = this.displayLaserPointer;
-
             let controllerGlobalPosition: Vector3;
             controllerData.nearPick = false;
             controllerData.nearHover = false;
@@ -390,9 +389,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                                 controllerData.hoverIndexMesh.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z);
                             }
                             // set near interaction grab ray parameters
+                            let nearGrabRayLength = 0.5;
+                            let indexTipZaxisMultiplier = -1;
                             controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, (indexTipPos.z * zAxisMultiplier));
-                            controllerData.grabRay.direction.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z) * -1);
-                            controllerData.grabRay.length = 5;
+                            controllerData.grabRay.direction.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z) * indexTipZaxisMultiplier);
+                            controllerData.grabRay.length = nearGrabRayLength;
                         }   
                     }
                 }
@@ -453,7 +454,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 }
                 if (nearHover && !hoverAtOrigin) {   
                     controllerData.nearHover = true;
-                    pick = hoverInfo;
+                    pick = hoverPickInfo;
                 }
             }
 
@@ -462,8 +463,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 let pickInfo = this._pickWithMesh(controllerData.pickIndexMesh, false, true);
                 let nearPick = pickInfo && pickInfo.pickedPoint && pickInfo.hit;
                 let pickAtOrigin = false;
-                if (pickInfo?.pickedPoint)
-                {
+                if (pickInfo?.pickedPoint) {
                     pickAtOrigin = pickInfo.pickedPoint.x === 0 && pickInfo.pickedPoint.y === 0 && pickInfo.pickedPoint.z === 0;
                 }
                 if (nearPick && !pickAtOrigin) {
@@ -472,19 +472,15 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 }
             }
 
-            if(controllerData.grabRay)
-            {
+            if (controllerData.grabRay) {
                 let pinchInfo = this._scene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
-                if(pinchInfo && pinchInfo.pickedPoint && pinchInfo.hit)
-                {  
-                    controllerData.laserPointer.isVisible = false;
+                if (pinchInfo && pinchInfo.pickedPoint && pinchInfo.hit) {  
                     controllerData.nearGrab = true;
                     pinchInfo.ray = controllerData.grabRay;
                     pick = pinchInfo;
                 }
             }
-            
-            
+
             if (!controllerData.nearHover && !controllerData.nearPick && !controllerData.nearGrab) {
                 pick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
                 if (pick && pick.pickedPoint && pick.hit) {
@@ -512,7 +508,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, controllerData.selectionMesh.rotation);
                     controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                 }
-                controllerData.selectionMesh.isVisible = true && this.displaySelectionMesh;
+                if (!controllerData.nearGrab) {
+                    controllerData.selectionMesh.isVisible = true && this.displaySelectionMesh;   
+                }
                 controllerData.meshUnderPointer = pick.pickedMesh;
             } else {
                 controllerData.selectionMesh.isVisible = false;
