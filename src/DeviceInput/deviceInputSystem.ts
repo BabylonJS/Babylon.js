@@ -157,7 +157,6 @@ export class DeviceInputSystem implements IDisposable {
         // Blur Events
         this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
         this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
-        this._elementToAttachTo.removeEventListener(this._eventPrefix + "out", this._pointerBlurEvent);
 
         // Keyboard Events
         if (this._keyboardActive) {
@@ -169,7 +168,7 @@ export class DeviceInputSystem implements IDisposable {
         if (this._pointerActive) {
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-            this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+            window.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
             this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
 
             if (this._pointerWheelClearObserver) {
@@ -544,8 +543,7 @@ export class DeviceInputSystem implements IDisposable {
 
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-        this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
-        this._elementToAttachTo.addEventListener(this._eventPrefix + "out", this._pointerBlurEvent);
+        window.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
 
