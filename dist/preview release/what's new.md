@@ -66,6 +66,7 @@
 - `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 - `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
 - Add option to decompose the `newWorldMatrix` when passed into `TransformNode.freezeWorldMatrix`. ([bghgary](https://github.com/bghgary))
+- Added `mesh.onMeshReadyObservable` to get notified when a mesh is ready ([RaananW](https://github.com/RaananW))
 
 ### Inspector
 
