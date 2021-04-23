@@ -225,6 +225,9 @@ export abstract class WebGPUCacheRenderPipeline {
         return this._mrtAttachments1 > 0 ? this._mrtFormats : this._webgpuColorFormat;
     }
 
+    public mrtAttachments: number[];
+    public mrtTextureArray: InternalTexture[];
+
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline {
         if (this.disabled) {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
@@ -351,6 +354,9 @@ export abstract class WebGPUCacheRenderPipeline {
             // so we can encode 5 texture formats in 32 bits
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
+        this.mrtAttachments = attachments;
+        this.mrtTextureArray = textureArray;
+
         let bits: number[] = [0, 0], indexBits = 0, mask = 0, numRT = 0;
         for (let i = 0; i < attachments.length; ++i) {
             const index = attachments[i];
