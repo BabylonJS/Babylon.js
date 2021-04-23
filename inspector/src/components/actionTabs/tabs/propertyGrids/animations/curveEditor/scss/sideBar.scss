@@ -13,6 +13,10 @@
         grid-template-rows: 100%;
         grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px;
 
+        &.small {            
+            grid-template-columns: 0px 0px 30px 30px 1fr 52px 3px;
+        }
+
         #add-animation {
             grid-row: 1;
             grid-column: 1;

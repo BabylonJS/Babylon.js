@@ -381,16 +381,11 @@ export abstract class Light extends Node {
      * @param scene The scene where the light belongs to
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false, receiveShadows = true): void {
+    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
         let iAsString = lightIndex.toString();
         let needUpdate = false;
-
-        if (rebuildInParallel && this._uniformBuffer._alreadyBound) {
-            return;
-        }
 
         this._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
 
