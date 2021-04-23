@@ -8418,8 +8418,6 @@ declare module BABYLON {
         private _currentEffectName;
         private _name;
         private _currentFrameId;
-        /** @hidden */
-        _alreadyBound: boolean;
         private static _MAX_UNIFORM_SIZE;
         private static _tempBuffer;
         private static _tempBufferInt32View;
@@ -9389,10 +9387,9 @@ declare module BABYLON {
          * @param scene The scene where the light belongs to
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
-         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
          */
-        _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean, receiveShadows?: boolean): void;
+        _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows?: boolean): void;
         /**
          * Sets the passed Effect "effect" with the Light information.
          * @param effect The effect to update
@@ -10233,10 +10230,9 @@ declare module BABYLON {
          * @param scene The scene where the light belongs to
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
-         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
          */
-        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean, receiveShadows?: boolean): void;
+        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows?: boolean): void;
         /**
          * Binds the lights information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
@@ -10244,9 +10240,8 @@ declare module BABYLON {
          * @param effect The effect we are binding the data to
          * @param defines The generated defines for the effect
          * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number, rebuildInParallel?: boolean): void;
+        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number): void;
         private static _tempFogColor;
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
@@ -24685,7 +24680,6 @@ declare module BABYLON {
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
         protected _useLogarithmicDepth: boolean;
-        protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new standard material.
          * This is the default material used in Babylon. It is the best trade off between quality
@@ -27117,7 +27111,6 @@ declare module BABYLON {
          * Defines the detail map parameters for the material.
          */
         readonly detailMap: DetailMapConfiguration;
-        protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new PBRMaterial instance.
          *
@@ -34210,6 +34203,11 @@ declare module BABYLON {
          */
         static _GetDefaultSideOrientation(orientation?: number): number;
         private _internalMeshDataInfo;
+        /**
+         * Will notify when the mesh is completely ready, including materials.
+         * Observers added to this observable will be removed once triggered
+         */
+        onMeshReadyObservable: Observable<Mesh>;
         get computeBonesUsingShaders(): boolean;
         set computeBonesUsingShaders(value: boolean);
         /**
@@ -34280,7 +34278,6 @@ declare module BABYLON {
         _instanceDataStorage: _InstanceDataStorage;
         /** @hidden */
         _thinInstanceDataStorage: _ThinInstanceDataStorage;
-        private _effectiveMaterial;
         /** @hidden */
         _shouldGenerateFlatShading: boolean;
         /** @hidden */
@@ -71415,7 +71412,7 @@ declare module BABYLON {
         autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]): void;
-        isReady(): boolean;
+        isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         private _getAlbedoOpacityCode;
@@ -82023,7 +82020,7 @@ declare module BABYLON {
              * Using this function you can either manipulate the instance or return a new mesh.
              * When returning a new mesh the instance created before will be disposed
              */
-            onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => Mesh | undefined;
+            onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => AbstractMesh | undefined;
             /**
              * Should the source mesh stay visible. Defaults to false
              */
