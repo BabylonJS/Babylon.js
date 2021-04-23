@@ -1125,7 +1125,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _clearFullQuad(clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
-        let renderPass = !this.compatibilityMode ? null : this._getCurrentRenderPass();
+        const renderPass = !this.compatibilityMode ? null : this._getCurrentRenderPass();
 
         this._clearQuad.setColorFormat(this._colorFormat);
         this._clearQuad.setDepthStencilFormat(this._depthTextureFormat);

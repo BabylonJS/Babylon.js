@@ -56,7 +56,7 @@ export class WebGPUClearQuad {
             bundleKey = (clearColor ? clearColor.r + clearColor.g * 256 + clearColor.b * 256 * 256 + clearColor.a * 256 * 256 * 256 : 0) +
                 (clearDepth ? 2 ** 32 : 0) +
                 (clearStencil ? 2 ** 33 : 0) +
-                (this._engine.useReverseDepthBuffer ? 2 ** 34 : 0) + 
+                (this._engine.useReverseDepthBuffer ? 2 ** 34 : 0) +
                 sampleCount * (2 ** 35);
 
             bundle = this._bundleCache[bundleKey];
