@@ -869,8 +869,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
-    protected _rebuildInParallel = false;
-
     /**
      * Instantiates a new PBRMaterial instance.
      *
@@ -1144,7 +1142,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             // Use previous effect while new one is compiling
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                 effect = previousEffect;
-                this._rebuildInParallel = true;
                 defines.markAsUnprocessed();
 
                 if (lightDisposed) {
@@ -1153,7 +1150,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     return false;
                 }
             } else {
-                this._rebuildInParallel = false;
                 scene.resetCachedMaterial();
                 subMesh.setEffect(effect, defines, this._materialContext);
                 this.buildUniformLayout();
@@ -2137,7 +2133,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights, this._rebuildInParallel);
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
             }
 
             // View
