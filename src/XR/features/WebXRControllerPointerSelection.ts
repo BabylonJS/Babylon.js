@@ -687,29 +687,32 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.squeezeComponent = motionController.getComponent("grasp");
 
                 // onSqueezeButtonChangedObserver is also a new variable
-                controllerData.onSqueezeButtonChangedObserver = controllerData.squeezeComponent.onButtonStateChangedObservable.add((component) => {
-                    if (component.changes.pressed) {
-                        const pressed = component.changes.pressed.current;
-                        if (controllerData.pick) {
-                            // Comment this next check out to have objects only react to near grabs from the active hand
-                            if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
-                                if (pressed) {
-                                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
-                                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
-                                } else {
-                                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
+                if(controllerData.squeezeComponent)
+                {
+                    controllerData.onSqueezeButtonChangedObserver = controllerData.squeezeComponent.onButtonStateChangedObservable.add((component) => {
+                        if (component.changes.pressed) {
+                            const pressed = component.changes.pressed.current;
+                            if (controllerData.pick) {
+                                // Comment this next check out to have objects only react to near grabs from the active hand
+                                if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
+                                    if (pressed) {
+                                        this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                                        (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+                                    } else {
+                                        this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                                        (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
+                                    }
+                                } 
+                            } else {
+                                if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {
+                                    this._attachedController = xrController.uniqueId;
                                 }
-                            } 
-                        } else {
-                            if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {
-                                this._attachedController = xrController.uniqueId;
                             }
                         }
-                    }
-                });
+                    });
+                }
             };
             if (xrController.motionController) {
                 init(xrController.motionController);
