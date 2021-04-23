@@ -497,7 +497,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * This is multiplied against the scalar values defined in the material.
      * If both _reflectanceTexture and _metallicReflectanceTexture textures are provided and _useOnlyMetallicFromMetallicReflectanceTexture
      * is false, _metallicReflectanceTexture takes precedence and _reflectanceTexture is not used
-     * 
      */
      protected _reflectanceTexture: Nullable<BaseTexture> = null;
 
