@@ -5,6 +5,7 @@ import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { AnimationEntryComponent } from "./animationEntryComponent";
 import { Animation } from "babylonjs/Animations/animation";
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 
 interface IAnimationListComponentProps {
     globalState: GlobalState;
@@ -58,9 +59,9 @@ IAnimationListComponentState
         return (
             <div id="animation-list">
                 {
-                    this.props.context.animations?.map((a, i) => {
+                    this.props.context.animations?.map((a: Animation | TargetedAnimation, i: number) => {
                         return (
-                            <AnimationEntryComponent key={i} globalState={this.props.globalState} context={this.props.context} animation={a}/>
+                            <AnimationEntryComponent key={i} globalState={this.props.globalState} context={this.props.context} animation={this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : a as Animation}/>
                         );
                     })
                 }
