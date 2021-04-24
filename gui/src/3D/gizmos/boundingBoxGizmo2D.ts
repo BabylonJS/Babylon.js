@@ -29,9 +29,9 @@ export class BoundingBoxGizmo2D extends Gizmo {
     // private _sides: TransformNode[] = [];
 
     /**
-     * Percentage of the BB we use to offset handles
+     * Value we use to offset handles from mesh
      */
-    private _relativeGizmoMargin = 0.02;
+    private _margin = 0.1;
 
     constructor(utilityLayer: UtilityLayerRenderer) {
         super(utilityLayer);
@@ -127,12 +127,11 @@ export class BoundingBoxGizmo2D extends Gizmo {
             // Update gizmo to match bounding box scaling and rotation
             // The position set here is the offset from the origin for the boundingbox when the attached mesh is at the origin
             // The position of the gizmo is then set to the attachedMesh in gizmo._update
-            const margin = Math.max(this._boundingDimensions.x * this._relativeGizmoMargin, this._boundingDimensions.y * this._relativeGizmoMargin);
 
-            boundingMinMax.min.x -= margin;
-            boundingMinMax.min.y -= margin;
-            boundingMinMax.max.x += margin;
-            boundingMinMax.max.y += margin;
+            boundingMinMax.min.x -= this._margin;
+            boundingMinMax.min.y -= this._margin;
+            boundingMinMax.max.x += this._margin;
+            boundingMinMax.max.y += this._margin;
 
             this._corners[0].position.copyFromFloats(boundingMinMax.min.x, boundingMinMax.min.y, 0);
             this._corners[1].position.copyFromFloats(boundingMinMax.max.x, boundingMinMax.min.y, 0);
