@@ -16,11 +16,19 @@ import { AdvancedDynamicTexture, Image } from "../../2D";
  */
 export class HolographicSlate extends ContentDisplay3D {
     /**
-     * @hidden
-     * Initial dimensions of the slate
+     * Dimensions of the slate
      */
     public dimensions = new Vector3(5, 5, 0.04);
+
+    /**
+     * Dimensions of the backplate
+     */
     public backplateDimensions = new Vector3(5, 0.4, 0.04);
+
+    /**
+     * Origin in local coordinates (top left corner)
+     */
+    public origin = new Vector3(0, 0, 0);
 
     private _backPlateMaterial: FluentMaterial;
     private _contentMaterial: FluentMaterial;
@@ -139,16 +147,16 @@ export class HolographicSlate extends ContentDisplay3D {
             closeButtonMesh.scaling.copyFromFloats(backPlateYScale, backPlateYScale, backPlateYScale);
             followButtonMesh.scaling.copyFromFloats(backPlateYScale, backPlateYScale, backPlateYScale);
             closeButtonMesh.position.copyFromFloats(
-                (this.backplateDimensions.x / 2) * this.relativeWidth - backPlateYScale / 2,
-                (this._relativeHeight - 1) / 0.82,
+                this.backplateDimensions.x * this.relativeWidth - backPlateYScale / 2,
+                (this._relativeHeight - 1) / 0.82 - this.backplateDimensions.y / 2,
                 -this.backplateDimensions.z / 2
             );
             followButtonMesh.position.copyFromFloats(
-                (this.backplateDimensions.x / 2) * this.relativeWidth - (3 * backPlateYScale) / 2,
-                (this._relativeHeight - 1) / 0.82,
+                this.backplateDimensions.x * this.relativeWidth - (3 * backPlateYScale) / 2,
+                (this._relativeHeight - 1) / 0.82 - this.backplateDimensions.y / 2,
                 -this.backplateDimensions.z / 2
             );
-            backPlate.position.y = (this._relativeHeight - 1) / 0.82;
+            // backPlate.position.y = (this._relativeHeight - 1) / 0.82;
             backPlate.scaling.x = this.relativeWidth;
             contentPlate.scaling.x = this.relativeWidth;
             contentPlate.scaling.y = this.relativeHeight;
@@ -158,12 +166,16 @@ export class HolographicSlate extends ContentDisplay3D {
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         const node = new Mesh("slate" + this.name);
-        const backPlateHeight = this.backplateDimensions.y;
         const backPlateMargin = 0.05;
 
-        this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: this.dimensions.x, height: backPlateHeight, depth: this.dimensions.z }, scene);
+        this._backPlate = BoxBuilder.CreateBox(
+            "backPlate" + this.name,
+            { width: this.backplateDimensions.x, height: this.backplateDimensions.y, depth: this.backplateDimensions.z },
+            scene
+        );
+        this._backPlate.position.copyFromFloats(this.backplateDimensions.x / 2, -(this.backplateDimensions.y / 2), 0);
 
-        const contentPlateHeight = this.dimensions.y - backPlateHeight - backPlateMargin;
+        const contentPlateHeight = this.dimensions.y - this.backplateDimensions.y - backPlateMargin;
         this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, {
             width: this.dimensions.x,
             height: contentPlateHeight,
@@ -172,7 +184,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._backPlate.parent = node;
         this._contentPlate.parent = node;
-        this._contentPlate.position.y = -(backPlateHeight / 2 + backPlateMargin + contentPlateHeight / 2);
+        this._contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.backplateDimensions.y + backPlateMargin + contentPlateHeight / 2), 0);
 
         this._addControl(this._followButton);
         this._addControl(this._closeButton);
@@ -186,9 +198,6 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._followButton.imageUrl = "./textures/IconFollowMe.png";
         this._closeButton.imageUrl = "./textures/IconClose.png";
-
-        // this._followButton.showBackPlate = false;
-        // this._closeButton.showBackPlate = false;
 
         this._followButton.backMaterial.alpha = 0;
         this._closeButton.backMaterial.alpha = 0;
