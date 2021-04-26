@@ -8,6 +8,7 @@ import { PivotTools } from "babylonjs/Misc/pivotTools";
 import { Node } from "babylonjs/node";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { Nullable } from "babylonjs/types";
+import { off } from "node:process";
 import { HolographicSlate } from "../controls";
 
 export class BoundingBoxGizmo2D extends Gizmo {
@@ -18,11 +19,6 @@ export class BoundingBoxGizmo2D extends Gizmo {
      * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
      */
     public scalePivot: Nullable<Vector3> = null;
-
-    // Dragging
-    // private _dragMesh: Nullable<Mesh> = null;
-    // private _pointerDragBehavior = new PointerDragBehavior();
-    // private _normalVector: Vector3 = new Vector3(0, 0, 1);
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
@@ -62,13 +58,19 @@ export class BoundingBoxGizmo2D extends Gizmo {
         this._cornersParent = new TransformNode("cornersParent", this.gizmoLayer.utilityLayerScene);
         this._cornersParent.rotationQuaternion = Quaternion.Identity();
 
+        const moveFns = [
+            (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveBLCorner(originStart, dimensionsStart, offset),
+            (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveBRCorner(originStart, dimensionsStart, offset),
+            (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveTRCorner(originStart, dimensionsStart, offset),
+            (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveTLCorner(originStart, dimensionsStart, offset),
+        ];
         for (let i = 0; i < 4; i++) {
             const node = this._createAngleMesh();
             this._corners.push(node);
             node.rotation.z = (Math.PI / 2) * i;
             node.scaling.copyFromFloats(0.1, 0.1, 0.1);
             node.parent = this._cornersParent;
-            this._assignDragBehavior(node);
+            this._assignDragBehavior(node, moveFns[i]);
         }
 
         this._corners[0].position.copyFromFloats(-1, -1, 0);
@@ -78,7 +80,49 @@ export class BoundingBoxGizmo2D extends Gizmo {
         this._cornersParent.parent = this._rootMesh;
     }
 
-    private _assignDragBehavior(node: Node) {
+    // Move functions
+    private _moveTLCorner(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) {
+        if (!this._attachedSlate) {
+            return;
+        }
+
+        this._attachedSlate.origin.copyFrom(originStart).addInPlace(offset);
+        offset.y *= -1;
+        this._attachedSlate.dimensions.copyFrom(dimensionsStart).subtractInPlace(offset);
+        this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
+    }
+
+    private _moveBLCorner(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) {
+        if (!this._attachedSlate) {
+            return;
+        }
+
+        this._attachedSlate.origin.x = originStart.x + offset.x;
+        this._attachedSlate.dimensions.copyFrom(dimensionsStart).subtractInPlace(offset);
+        this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
+    }
+
+    private _moveBRCorner(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) {
+        if (!this._attachedSlate) {
+            return;
+        }
+
+        offset.y *= -1;
+        this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offset);
+        this._attachedSlate.backplateDimensions.x = dimensionsStart.x + offset.x;
+    }
+
+    private _moveTRCorner(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) {
+        if (!this._attachedSlate) {
+            return;
+        }
+
+        this._attachedSlate.origin.y = originStart.y + offset.y;
+        this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offset);
+        this._attachedSlate.backplateDimensions.x = dimensionsStart.x + offset.x;
+    }
+
+    private _assignDragBehavior(node: Node, moveFn: (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => void) {
         // Drag behavior
         var _dragBehavior = new PointerDragBehavior({
             dragPlaneNormal: this._dragPlaneNormal,
@@ -87,47 +131,29 @@ export class BoundingBoxGizmo2D extends Gizmo {
         _dragBehavior.updateDragPlane = false;
         node.addBehavior(_dragBehavior);
 
-        let dimensionsStart = new Vector2();
+        let dimensionsStart = new Vector3();
+        let originStart = new Vector3();
         let dragOrigin = new Vector3();
         _dragBehavior.onDragStartObservable.add((event) => {
             if (this.attachedSlate) {
-                dimensionsStart.copyFromFloats(this.attachedSlate.relativeWidth, this.attachedSlate.relativeHeight);
+                dimensionsStart.copyFrom(this.attachedSlate.dimensions);
+                originStart.copyFrom(this.attachedSlate.origin);
                 dragOrigin.copyFrom(event.dragPlanePoint);
             }
         });
 
         _dragBehavior.onDragObservable.add((event) => {
             if (this.attachedSlate) {
-                // Todo : To local
-                const offset = event.dragPlanePoint.subtract(dragOrigin);
-                const offsetProjected = new Vector2(offset.x, offset.y);
-                const newDimensions = dimensionsStart.add(offsetProjected.multiplyByFloats(1 / HolographicSlate._DIMENSIONS.x, 1 / HolographicSlate._DIMENSIONS.y));
-                console.log(newDimensions);
-                this.attachedSlate.relativeWidth = newDimensions.x;
-                this.attachedSlate.relativeHeight = newDimensions.y;
-                // project drag delta on to the resulting drag axis and rotate based on that
-                // var projectDist = Vector3.Dot(dragAxis, event.delta) < 0 ? Math.abs(event.delta.length()) : -Math.abs(event.delta.length());
+                this._tmpVector.copyFrom(event.dragPlanePoint);
+                this._tmpVector.subtractInPlace(dragOrigin);
+                this._tmpVector.z = 0; // make sure there is no numerical imprecision adding over time
 
-                // Make rotation relative to size of mesh.
-                // projectDist = (projectDist / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
-
-                // Do not allow the object to turn more than a full circle
-                // totalTurnAmountOfDrag += projectDist;
-                // if (Math.abs(totalTurnAmountOfDrag) <= 2 * Math.PI) {
-                //     if (i >= 8) {
-                //         Quaternion.RotationYawPitchRollToRef(0, 0, projectDist, this._tmpQuaternion);
-                //     } else if (i >= 4) {
-                //         Quaternion.RotationYawPitchRollToRef(projectDist, 0, 0, this._tmpQuaternion);
-                //     } else {
-                //         Quaternion.RotationYawPitchRollToRef(0, projectDist, 0, this._tmpQuaternion);
-                //     }
-
-                //     // Rotate around center of bounding box
-                //     this._anchorMesh.addChild(this.attachedMesh);
-                //     this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
-                //     this._anchorMesh.removeChild(this.attachedMesh);
-                //     this.attachedMesh.setParent(originalParent);
-                // }
+                // const newDimensions = dimensionsStart.add(offset);
+                // this.attachedSlate.dimensions.copyFrom(newDimensions);
+                // this.attachedSlate.backplateDimensions.x = newDimensions.x;
+                debugger;
+                moveFn(originStart, dimensionsStart, this._tmpVector);
+                this.attachedSlate._positionElements();
                 this.updateBoundingBox();
             }
         });
@@ -150,23 +176,7 @@ export class BoundingBoxGizmo2D extends Gizmo {
 
     protected _attachedNodeChanged(value: Nullable<AbstractMesh>) {
         if (value) {
-            // Reset anchor mesh to match attached mesh's scale
-            // This is needed to avoid invalid box/sphere position on first drag
-            // this._anchorMesh.scaling.setAll(1);
-            // PivotTools._RemoveAndStorePivotPoint(value);
-            // const originalParent = value.parent;
-            // this._anchorMesh.addChild(value);
-            // this._anchorMesh.removeChild(value);
-            // value.setParent(originalParent);
-            // PivotTools._RestorePivotPoint(value);
             this.updateBoundingBox();
-            // value.getChildMeshes(false).forEach((m) => {
-            //     m.markAsDirty("scaling");
-            // });
-
-            // this.gizmoLayer.utilityLayerScene.onAfterRenderObservable.addOnce(() => {
-            //     this._updateDummy();
-            // });
         }
     }
 

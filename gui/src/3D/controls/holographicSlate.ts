@@ -18,12 +18,17 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * Dimensions of the slate
      */
-    public dimensions = new Vector3(5, 5, 0.04);
+    public dimensions = new Vector3(5, 3, 0.04);
 
     /**
      * Dimensions of the backplate
      */
-    public backplateDimensions = new Vector3(5, 0.4, 0.04);
+    public backplateDimensions = new Vector3(5, 0.3, 0.04);
+
+    /**
+     * Margin between backplate and contentplate
+     */
+    public backPlateMargin = 0.05;
 
     /**
      * Origin in local coordinates (top left corner)
@@ -131,14 +136,14 @@ export class HolographicSlate extends ContentDisplay3D {
         return "HolographicSlate";
     }
 
-    private _positionElements() {
+    public _positionElements() {
         const followButtonMesh = this._followButton.mesh;
         const closeButtonMesh = this._closeButton.mesh;
         const backPlate = this._backPlate;
         const contentPlate = this._contentPlate;
 
         if (followButtonMesh && closeButtonMesh && backPlate) {
-            // Size of a button with 1 scaling
+            // World size of a button with 1 scaling
             const buttonBaseSize = 1;
 
             // Buttons take full backPlate on Y axis
@@ -146,45 +151,30 @@ export class HolographicSlate extends ContentDisplay3D {
 
             closeButtonMesh.scaling.copyFromFloats(backPlateYScale, backPlateYScale, backPlateYScale);
             followButtonMesh.scaling.copyFromFloats(backPlateYScale, backPlateYScale, backPlateYScale);
-            closeButtonMesh.position.copyFromFloats(
-                this.backplateDimensions.x * this.relativeWidth - backPlateYScale / 2,
-                (this._relativeHeight - 1) / 0.82 - this.backplateDimensions.y / 2,
-                -this.backplateDimensions.z / 2
-            );
-            followButtonMesh.position.copyFromFloats(
-                this.backplateDimensions.x * this.relativeWidth - (3 * backPlateYScale) / 2,
-                (this._relativeHeight - 1) / 0.82 - this.backplateDimensions.y / 2,
-                -this.backplateDimensions.z / 2
-            );
-            // backPlate.position.y = (this._relativeHeight - 1) / 0.82;
-            backPlate.scaling.x = this.relativeWidth;
-            contentPlate.scaling.x = this.relativeWidth;
-            contentPlate.scaling.y = this.relativeHeight;
+            closeButtonMesh.position
+                .copyFromFloats(this.backplateDimensions.x - backPlateYScale / 2, -this.backplateDimensions.y / 2, -this.backplateDimensions.z / 2)
+                .addInPlace(this.origin);
+            followButtonMesh.position
+                .copyFromFloats(this.backplateDimensions.x - (3 * backPlateYScale) / 2, -this.backplateDimensions.y / 2, -this.backplateDimensions.z / 2)
+                .addInPlace(this.origin);
+
+            const contentPlateHeight = this.dimensions.y - this.backplateDimensions.y - this.backPlateMargin;
+            backPlate.scaling.copyFrom(this.backplateDimensions);
+            contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, this.dimensions.z);
+            backPlate.position.copyFromFloats(this.backplateDimensions.x / 2, -(this.backplateDimensions.y / 2), 0).addInPlace(this.origin);
+            contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.backplateDimensions.y + this.backPlateMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
         }
     }
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         const node = new Mesh("slate" + this.name);
-        const backPlateMargin = 0.05;
 
-        this._backPlate = BoxBuilder.CreateBox(
-            "backPlate" + this.name,
-            { width: this.backplateDimensions.x, height: this.backplateDimensions.y, depth: this.backplateDimensions.z },
-            scene
-        );
-        this._backPlate.position.copyFromFloats(this.backplateDimensions.x / 2, -(this.backplateDimensions.y / 2), 0);
-
-        const contentPlateHeight = this.dimensions.y - this.backplateDimensions.y - backPlateMargin;
-        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, {
-            width: this.dimensions.x,
-            height: contentPlateHeight,
-            depth: this.dimensions.z,
-        });
+        this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
+        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
 
         this._backPlate.parent = node;
         this._contentPlate.parent = node;
-        this._contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.backplateDimensions.y + backPlateMargin + contentPlateHeight / 2), 0);
 
         this._addControl(this._followButton);
         this._addControl(this._closeButton);
