@@ -4744,6 +4744,70 @@ declare module "babylonjs-gui/3D/controls/scatterPanel" {
         protected _finalProcessing(): void;
     }
 }
+declare module "babylonjs-gui/3D/controls/slider3D" {
+    import { Nullable } from "babylonjs/types";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Scene } from "babylonjs/scene";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
+    import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    /**
+     * Class used to create a slider in 3D
+     */
+    export class Slider3D extends Control3D {
+        private _sliderBarMaterial;
+        private _sliderThumbMaterial;
+        private _sliderThumb;
+        private _sliderBar;
+        private _minimum;
+        private _maximum;
+        private _value;
+        private _step;
+        /** Observable raised when the sldier value changes */
+        onValueChangedObservable: Observable<number>;
+        /**
+         * Creates a new slider
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): Nullable<AbstractMesh>;
+        /** Gets or sets minimum value */
+        get minimum(): number;
+        set minimum(value: number);
+        /** Gets or sets maximum value */
+        get maximum(): number;
+        set maximum(value: number);
+        /** Gets or sets step value */
+        get step(): number;
+        set step(value: number);
+        /** Gets or sets current value */
+        get value(): number;
+        set value(value: number);
+        protected get start(): number;
+        protected get end(): number;
+        /**
+         * Gets the slider bar material used by this control
+         */
+        get sliderBarMaterial(): StandardMaterial;
+        /**
+         * Gets the slider thumb material used by this control
+         */
+        get sliderThumbMaterial(): StandardMaterial;
+        protected _createNode(scene: Scene): TransformNode;
+        protected _affectMaterial(mesh: AbstractMesh): void;
+        private _createBehavior;
+        private _convertToPosition;
+        private _convertToValue;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
 declare module "babylonjs-gui/3D/controls/spherePanel" {
     import { Vector3 } from "babylonjs/Maths/math.vector";
     import { float } from "babylonjs/types";
@@ -5159,6 +5223,7 @@ declare module "babylonjs-gui/3D/controls/index" {
     export * from "babylonjs-gui/3D/controls/meshButton3D";
     export * from "babylonjs-gui/3D/controls/planePanel";
     export * from "babylonjs-gui/3D/controls/scatterPanel";
+    export * from "babylonjs-gui/3D/controls/slider3D";
     export * from "babylonjs-gui/3D/controls/spherePanel";
     export * from "babylonjs-gui/3D/controls/stackPanel3D";
     export * from "babylonjs-gui/3D/controls/touchButton3D";
@@ -9641,6 +9706,63 @@ declare module BABYLON.GUI {
         protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
         private _scatterMapping;
         protected _finalProcessing(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a slider in 3D
+     */
+    export class Slider3D extends Control3D {
+        private _sliderBarMaterial;
+        private _sliderThumbMaterial;
+        private _sliderThumb;
+        private _sliderBar;
+        private _minimum;
+        private _maximum;
+        private _value;
+        private _step;
+        /** BABYLON.Observable raised when the sldier value changes */
+        onValueChangedObservable: BABYLON.Observable<number>;
+        /**
+         * Creates a new slider
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        /** Gets or sets minimum value */
+        get minimum(): number;
+        set minimum(value: number);
+        /** Gets or sets maximum value */
+        get maximum(): number;
+        set maximum(value: number);
+        /** Gets or sets step value */
+        get step(): number;
+        set step(value: number);
+        /** Gets or sets current value */
+        get value(): number;
+        set value(value: number);
+        protected get start(): number;
+        protected get end(): number;
+        /**
+         * Gets the slider bar material used by this control
+         */
+        get sliderBarMaterial(): BABYLON.StandardMaterial;
+        /**
+         * Gets the slider thumb material used by this control
+         */
+        get sliderThumbMaterial(): BABYLON.StandardMaterial;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        private _createBehavior;
+        private _convertToPosition;
+        private _convertToValue;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON.GUI {
