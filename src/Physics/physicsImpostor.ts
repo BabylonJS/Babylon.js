@@ -621,6 +621,10 @@ export class PhysicsImpostor {
             const boundingInfo = this.object.getBoundingInfo();
             // get the global scaling of the object
             const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(scaling);
+            // correct the size for negative scaling (e.g. flipped mesh)
+            size.x *= this.object.scaling.x < 0 ? -1 : 1;
+            size.y *= this.object.scaling.y < 0 ? -1 : 1;
+            size.z *= this.object.scaling.z < 0 ? -1 : 1;
             //bring back the rotation
             this.object.rotationQuaternion = q;
             //calculate the world matrix with the new rotation
@@ -638,7 +642,12 @@ export class PhysicsImpostor {
     public getObjectCenter(): Vector3 {
         if (this.object.getBoundingInfo) {
             let boundingInfo = this.object.getBoundingInfo();
-            return boundingInfo.boundingBox.centerWorld;
+            const centerWorld = boundingInfo.boundingBox.centerWorld.clone();
+            // correct the size for negative scaling (e.g. flipped mesh)
+            centerWorld.x *= this.object.scaling.x < 0 ? -1 : 1;
+            centerWorld.y *= this.object.scaling.y < 0 ? -1 : 1;
+            centerWorld.z *= this.object.scaling.z < 0 ? -1 : 1;
+            return centerWorld;
         } else {
             return this.object.position;
         }
