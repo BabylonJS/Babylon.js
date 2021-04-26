@@ -59,6 +59,7 @@
 - `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 - `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
 - Add option to decompose the `newWorldMatrix` when passed into `TransformNode.freezeWorldMatrix`. ([bghgary](https://github.com/bghgary))
+- Added `mesh.onMeshReadyObservable` to get notified when a mesh is ready ([RaananW](https://github.com/RaananW))
 
 ### Inspector
 
@@ -187,6 +188,7 @@
 - Fix for GUI slider step values greater than one ([msDestiny14](https://github.com/msDestiny14))
 - Fix Instances wrongly rendered with motion blur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix for wrongly rendered GUI rectangle on resize with adaptWidthToChildren ([msDestiny14](https://github.com/msDestiny14))
+- Fix glTF loader promise stuck when runs on non-json data ([mrlika](https://github.com/mrlika))
 
 ## Breaking changes
 
