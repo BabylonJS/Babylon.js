@@ -123,6 +123,7 @@ export class GUI3DManager implements IDisposable {
         let buttonIndex = pointerEvent.button;
 
         let pickingInfo = pi.pickInfo;
+
         if (!pickingInfo || !pickingInfo.hit) {
             this._handlePointerOut(pointerId, pi.type === PointerEventTypes.POINTERUP);
             return false;
