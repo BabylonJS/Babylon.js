@@ -135,7 +135,7 @@ export class BoundingBoxGizmo2D extends Gizmo {
         let originStart = new Vector3();
         let dragOrigin = new Vector3();
         _dragBehavior.onDragStartObservable.add((event) => {
-            if (this.attachedSlate) {
+            if (this.attachedSlate && this.attachedNode) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
                 originStart.copyFrom(this.attachedSlate.origin);
                 dragOrigin.copyFrom(event.dragPlanePoint);
@@ -143,15 +143,11 @@ export class BoundingBoxGizmo2D extends Gizmo {
         });
 
         _dragBehavior.onDragObservable.add((event) => {
-            if (this.attachedSlate) {
+            if (this.attachedSlate && this.attachedNode) {
                 this._tmpVector.copyFrom(event.dragPlanePoint);
                 this._tmpVector.subtractInPlace(dragOrigin);
-                this._tmpVector.z = 0; // make sure there is no numerical imprecision adding over time
+                Vector3.TransformCoordinatesToRef(this._tmpVector, this.attachedNode.computeWorldMatrix(true).getRotationMatrix().transpose(), this._tmpVector);
 
-                // const newDimensions = dimensionsStart.add(offset);
-                // this.attachedSlate.dimensions.copyFrom(newDimensions);
-                // this.attachedSlate.backplateDimensions.x = newDimensions.x;
-                debugger;
                 moveFn(originStart, dimensionsStart, this._tmpVector);
                 this.attachedSlate._positionElements();
                 this.updateBoundingBox();
