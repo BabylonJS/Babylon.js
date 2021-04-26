@@ -1,14 +1,18 @@
+import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
+import { Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/index";
 import { MeshBuilder } from "babylonjs/Meshes/meshBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { PivotTools } from "babylonjs/Misc/pivotTools";
+import { Node } from "babylonjs/node";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { Nullable } from "babylonjs/types";
+import { HolographicSlate } from "../controls";
 
 export class BoundingBoxGizmo2D extends Gizmo {
     private _boundingDimensions = new Vector3(0, 0, 0);
+    private _dragPlaneNormal = new Vector3(0, 0, 1);
 
     /**
      * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
@@ -33,6 +37,20 @@ export class BoundingBoxGizmo2D extends Gizmo {
      */
     private _margin = 0.1;
 
+    private _attachedSlate: Nullable<HolographicSlate> = null;
+    public set attachedSlate(control: Nullable<HolographicSlate>) {
+        this._attachedSlate = control;
+        if (control) {
+            this.attachedMesh = control.mesh;
+        } else {
+            this.attachedMesh = null;
+        }
+    }
+
+    public get attachedSlate(): Nullable<HolographicSlate> {
+        return this._attachedSlate;
+    }
+
     constructor(utilityLayer: UtilityLayerRenderer) {
         super(utilityLayer);
 
@@ -50,14 +68,69 @@ export class BoundingBoxGizmo2D extends Gizmo {
             node.rotation.z = (Math.PI / 2) * i;
             node.scaling.copyFromFloats(0.1, 0.1, 0.1);
             node.parent = this._cornersParent;
+            this._assignDragBehavior(node);
         }
 
         this._corners[0].position.copyFromFloats(-1, -1, 0);
         this._corners[1].position.copyFromFloats(1, -1, 0);
         this._corners[2].position.copyFromFloats(1, 1, 0);
         this._corners[3].position.copyFromFloats(-1, 1, 0);
-
         this._cornersParent.parent = this._rootMesh;
+    }
+
+    private _assignDragBehavior(node: Node) {
+        // Drag behavior
+        var _dragBehavior = new PointerDragBehavior({
+            dragPlaneNormal: this._dragPlaneNormal,
+        });
+        _dragBehavior.moveAttached = false;
+        _dragBehavior.updateDragPlane = false;
+        node.addBehavior(_dragBehavior);
+
+        let dimensionsStart = new Vector2();
+        let dragOrigin = new Vector3();
+        _dragBehavior.onDragStartObservable.add((event) => {
+            if (this.attachedSlate) {
+                dimensionsStart.copyFromFloats(this.attachedSlate.relativeWidth, this.attachedSlate.relativeHeight);
+                dragOrigin.copyFrom(event.dragPlanePoint);
+            }
+        });
+
+        _dragBehavior.onDragObservable.add((event) => {
+            if (this.attachedSlate) {
+                // Todo : To local
+                const offset = event.dragPlanePoint.subtract(dragOrigin);
+                const offsetProjected = new Vector2(offset.x, offset.y);
+                const newDimensions = dimensionsStart.add(offsetProjected.multiplyByFloats(1 / HolographicSlate._DIMENSIONS.x, 1 / HolographicSlate._DIMENSIONS.y));
+                console.log(newDimensions);
+                this.attachedSlate.relativeWidth = newDimensions.x;
+                this.attachedSlate.relativeHeight = newDimensions.y;
+                // project drag delta on to the resulting drag axis and rotate based on that
+                // var projectDist = Vector3.Dot(dragAxis, event.delta) < 0 ? Math.abs(event.delta.length()) : -Math.abs(event.delta.length());
+
+                // Make rotation relative to size of mesh.
+                // projectDist = (projectDist / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
+
+                // Do not allow the object to turn more than a full circle
+                // totalTurnAmountOfDrag += projectDist;
+                // if (Math.abs(totalTurnAmountOfDrag) <= 2 * Math.PI) {
+                //     if (i >= 8) {
+                //         Quaternion.RotationYawPitchRollToRef(0, 0, projectDist, this._tmpQuaternion);
+                //     } else if (i >= 4) {
+                //         Quaternion.RotationYawPitchRollToRef(projectDist, 0, 0, this._tmpQuaternion);
+                //     } else {
+                //         Quaternion.RotationYawPitchRollToRef(0, projectDist, 0, this._tmpQuaternion);
+                //     }
+
+                //     // Rotate around center of bounding box
+                //     this._anchorMesh.addChild(this.attachedMesh);
+                //     this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
+                //     this._anchorMesh.removeChild(this.attachedMesh);
+                //     this.attachedMesh.setParent(originalParent);
+                // }
+                this.updateBoundingBox();
+            }
+        });
     }
 
     private _createAngleMesh(): TransformNode {

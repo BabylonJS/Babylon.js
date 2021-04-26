@@ -6,9 +6,9 @@ import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
 import { Observable, Observer } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
-import { _DevTools } from './Misc/devTools';
-import { AbstractActionManager } from './Actions/abstractActionManager';
-import { IInspectable } from './Misc/iInspectable';
+import { _DevTools } from "./Misc/devTools";
+import { AbstractActionManager } from "./Actions/abstractActionManager";
+import { IInspectable } from "./Misc/iInspectable";
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -28,7 +28,7 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
         throw _DevTools.WarnImport("AnimationRange");
-    }
+    };
 
     private static _NodeConstructors: { [key: string]: any } = {};
 
@@ -265,8 +265,8 @@ export class Node implements IBehaviorAware<Node> {
     public readonly _isNode = true;
 
     /**
-    * An event triggered when the mesh is disposed
-    */
+     * An event triggered when the mesh is disposed
+     */
     public onDisposeObservable = new Observable<Node>();
 
     private _onDisposeObserver: Nullable<Observer<Node>> = null;
@@ -442,8 +442,7 @@ export class Node implements IBehaviorAware<Node> {
     // override it in derived class if you add new variables to the cache
     // and call the parent class method if !ignoreParentClass
     /** @hidden */
-    public _updateCache(ignoreParentClass?: boolean): void {
-    }
+    public _updateCache(ignoreParentClass?: boolean): void {}
 
     // override it in derived class if you add new variables to the cache
     /** @hidden */
@@ -592,7 +591,7 @@ export class Node implements IBehaviorAware<Node> {
     public getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[] {
         var results: Array<AbstractMesh> = [];
         this._getDescendants(results, directDescendantsOnly, (node: Node) => {
-            return ((!predicate || predicate(node)) && ((<AbstractMesh>node).cullingStrategy !== undefined));
+            return (!predicate || predicate(node)) && (<AbstractMesh>node).cullingStrategy !== undefined;
         });
         return results;
     }
@@ -793,12 +792,12 @@ export class Node implements IBehaviorAware<Node> {
         }
     }
     /**
- * Return the minimum and maximum world vectors of the entire hierarchy under current node
- * @param includeDescendants Include bounding info from descendants as well (true by default)
- * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
- * @returns the new bounding vectors
- */
-    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3, max: Vector3 } {
+     * Return the minimum and maximum world vectors of the entire hierarchy under current node
+     * @param includeDescendants Include bounding info from descendants as well (true by default)
+     * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
+     * @returns the new bounding vectors
+     */
+    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3; max: Vector3 } {
         // Ensures that all world matrix will be recomputed.
         this.getScene().incrementRenderId();
 
@@ -807,7 +806,7 @@ export class Node implements IBehaviorAware<Node> {
         let min: Vector3;
         let max: Vector3;
 
-        let thisAbstractMesh = (this as Node as AbstractMesh);
+        let thisAbstractMesh = (this as Node) as AbstractMesh;
         if (thisAbstractMesh.getBoundingInfo && thisAbstractMesh.subMeshes) {
             // If this is an abstract mesh get its bounding info
             let boundingInfo = thisAbstractMesh.getBoundingInfo();
@@ -848,7 +847,7 @@ export class Node implements IBehaviorAware<Node> {
 
         return {
             min: min,
-            max: max
+            max: max,
         };
     }
 }

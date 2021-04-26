@@ -15,6 +15,12 @@ import { AdvancedDynamicTexture, Image } from "../../2D";
  * Class used to create a holographic slate
  */
 export class HolographicSlate extends ContentDisplay3D {
+    /**
+     * @hidden
+     * Initial dimensions of the slate
+     */
+    public static readonly _DIMENSIONS = new Vector3(5.7, 2.85, 0.04);
+
     private _backPlateMaterial: FluentMaterial;
     private _contentMaterial: FluentMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
@@ -137,12 +143,25 @@ export class HolographicSlate extends ContentDisplay3D {
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         const node = new Mesh("slate" + this.name);
-        this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: 5.7, height: 0.4, depth: 0.04 }, scene);
-        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: 5.7, height: 2.4, depth: 0.04 });
+        const backPlateHeight = 0.4;
+        const backPlateMargin = 0.05;
+
+        this._backPlate = BoxBuilder.CreateBox(
+            "backPlate" + this.name,
+            { width: HolographicSlate._DIMENSIONS.x, height: backPlateHeight, depth: HolographicSlate._DIMENSIONS.z },
+            scene
+        );
+
+        const contentPlateHeight = HolographicSlate._DIMENSIONS.y - backPlateHeight - backPlateMargin;
+        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, {
+            width: HolographicSlate._DIMENSIONS.x,
+            height: contentPlateHeight,
+            depth: HolographicSlate._DIMENSIONS.z,
+        });
 
         this._backPlate.parent = node;
         this._contentPlate.parent = node;
-        this._contentPlate.position.y = -1.45;
+        this._contentPlate.position.y = -(backPlateHeight / 2 + backPlateMargin + contentPlateHeight / 2);
 
         this._addControl(this._followButton);
         this._addControl(this._closeButton);
