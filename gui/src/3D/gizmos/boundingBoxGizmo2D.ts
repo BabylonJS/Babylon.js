@@ -1,16 +1,19 @@
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
-import { AbstractMesh } from "babylonjs/Meshes/index";
-import { MeshBuilder } from "babylonjs/Meshes/meshBuilder";
+import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { PivotTools } from "babylonjs/Misc/pivotTools";
 import { Node } from "babylonjs/node";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { Nullable } from "babylonjs/types";
-import { off } from "node:process";
-import { HolographicSlate } from "../controls";
 
+import { HolographicSlate } from "../controls/holographicSlate";
+
+/**
+ * Gizmo to resize 2D slates
+ */
 export class BoundingBoxGizmo2D extends Gizmo {
     private _boundingDimensions = new Vector3(0, 0, 0);
     private _dragPlaneNormal = new Vector3(0, 0, 1);
@@ -34,6 +37,9 @@ export class BoundingBoxGizmo2D extends Gizmo {
     private _margin = 0.1;
 
     private _attachedSlate: Nullable<HolographicSlate> = null;
+    /**
+     * The slate attached to this gizmo
+     */
     public set attachedSlate(control: Nullable<HolographicSlate>) {
         this._attachedSlate = control;
         if (control) {
@@ -157,8 +163,8 @@ export class BoundingBoxGizmo2D extends Gizmo {
 
     private _createAngleMesh(): TransformNode {
         // Draw 2 boxes making a bottom left corner
-        const horizontalBox = MeshBuilder.CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
-        const verticalBox = MeshBuilder.CreateBox("angleVert", { width: 1, height: 3, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
+        const horizontalBox = BoxBuilder.CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
+        const verticalBox = BoxBuilder.CreateBox("angleVert", { width: 1, height: 3, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
 
         const angleNode = new TransformNode("angle", this.gizmoLayer.utilityLayerScene);
         horizontalBox.parent = angleNode;

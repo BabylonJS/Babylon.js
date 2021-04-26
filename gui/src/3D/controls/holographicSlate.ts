@@ -1,15 +1,18 @@
-import { AbstractMesh, Scene, TransformNode } from "babylonjs/index";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Scene } from "babylonjs/scene";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
-import { Mesh } from "babylonjs/Meshes/index";
-import { FluentMaterial } from "../materials";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { HolographicButton } from "./holographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
-import { AdvancedDynamicTexture, Image } from "../../2D";
+import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
+import { Image } from "../../2D/controls/image";
 
 /**
  * Class used to create a holographic slate
@@ -73,26 +76,6 @@ export class HolographicSlate extends ContentDisplay3D {
         this._rebuildContent();
     }
 
-    // TODO : temporary to resize the slate and verify everything follows responsively
-    private _relativeWidth: number = 1;
-    public get relativeWidth() {
-        return this._relativeWidth;
-    }
-
-    public set relativeWidth(value: number) {
-        this._relativeWidth = value;
-        this._positionElements();
-    }
-
-    private _relativeHeight: number = 1;
-    public get relativeHeight() {
-        return this._relativeHeight;
-    }
-
-    public set relativeHeight(value: number) {
-        this._relativeHeight = value;
-        this._positionElements();
-    }
     /**
      * Creates a new slate
      * @param name defines the control name
@@ -136,6 +119,9 @@ export class HolographicSlate extends ContentDisplay3D {
         return "HolographicSlate";
     }
 
+    /**
+     * @hidden
+     */
     public _positionElements() {
         const followButtonMesh = this._followButton.mesh;
         const closeButtonMesh = this._closeButton.mesh;
