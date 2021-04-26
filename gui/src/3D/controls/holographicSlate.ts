@@ -19,7 +19,8 @@ export class HolographicSlate extends ContentDisplay3D {
      * @hidden
      * Initial dimensions of the slate
      */
-    public static readonly _DIMENSIONS = new Vector3(5.7, 2.85, 0.04);
+    public dimensions = new Vector3(5, 5, 0.04);
+    public backplateDimensions = new Vector3(5, 0.4, 0.04);
 
     private _backPlateMaterial: FluentMaterial;
     private _contentMaterial: FluentMaterial;
@@ -129,10 +130,24 @@ export class HolographicSlate extends ContentDisplay3D {
         const contentPlate = this._contentPlate;
 
         if (followButtonMesh && closeButtonMesh && backPlate) {
-            followButtonMesh.scaling.copyFromFloats(0.37, 0.37, 0.37);
-            closeButtonMesh.scaling.copyFromFloats(0.37, 0.37, 0.37);
-            followButtonMesh.position.copyFromFloats(2.8 * this.relativeWidth - 0.55, (this._relativeHeight - 1) / 0.82, -0.05);
-            closeButtonMesh.position.copyFromFloats(2.8 * this.relativeWidth - 0.15, (this._relativeHeight - 1) / 0.82, -0.05);
+            // Size of a button with 1 scaling
+            const buttonBaseSize = 1;
+
+            // Buttons take full backPlate on Y axis
+            const backPlateYScale = this.backplateDimensions.y / buttonBaseSize;
+
+            closeButtonMesh.scaling.copyFromFloats(backPlateYScale, backPlateYScale, backPlateYScale);
+            followButtonMesh.scaling.copyFromFloats(backPlateYScale, backPlateYScale, backPlateYScale);
+            closeButtonMesh.position.copyFromFloats(
+                (this.backplateDimensions.x / 2) * this.relativeWidth - backPlateYScale / 2,
+                (this._relativeHeight - 1) / 0.82,
+                -this.backplateDimensions.z / 2
+            );
+            followButtonMesh.position.copyFromFloats(
+                (this.backplateDimensions.x / 2) * this.relativeWidth - (3 * backPlateYScale) / 2,
+                (this._relativeHeight - 1) / 0.82,
+                -this.backplateDimensions.z / 2
+            );
             backPlate.position.y = (this._relativeHeight - 1) / 0.82;
             backPlate.scaling.x = this.relativeWidth;
             contentPlate.scaling.x = this.relativeWidth;
@@ -143,20 +158,16 @@ export class HolographicSlate extends ContentDisplay3D {
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         const node = new Mesh("slate" + this.name);
-        const backPlateHeight = 0.4;
+        const backPlateHeight = this.backplateDimensions.y;
         const backPlateMargin = 0.05;
 
-        this._backPlate = BoxBuilder.CreateBox(
-            "backPlate" + this.name,
-            { width: HolographicSlate._DIMENSIONS.x, height: backPlateHeight, depth: HolographicSlate._DIMENSIONS.z },
-            scene
-        );
+        this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { width: this.dimensions.x, height: backPlateHeight, depth: this.dimensions.z }, scene);
 
-        const contentPlateHeight = HolographicSlate._DIMENSIONS.y - backPlateHeight - backPlateMargin;
+        const contentPlateHeight = this.dimensions.y - backPlateHeight - backPlateMargin;
         this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, {
-            width: HolographicSlate._DIMENSIONS.x,
+            width: this.dimensions.x,
             height: contentPlateHeight,
-            depth: HolographicSlate._DIMENSIONS.z,
+            depth: this.dimensions.z,
         });
 
         this._backPlate.parent = node;
