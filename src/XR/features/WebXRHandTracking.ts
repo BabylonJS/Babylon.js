@@ -56,7 +56,7 @@ export interface IWebXRHandTrackingOptions {
          * Using this function you can either manipulate the instance or return a new mesh.
          * When returning a new mesh the instance created before will be disposed
          */
-        onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => Mesh | undefined;
+        onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => AbstractMesh | undefined;
         /**
          * Should the source mesh stay visible. Defaults to false
          */
