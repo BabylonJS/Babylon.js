@@ -1,9 +1,12 @@
 import { Control } from "../../2D/controls/control";
-import { AdvancedDynamicTexture } from "../../2D";
+import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Nullable } from "babylonjs/types";
 import { Control3D } from "./control3D";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 
+/**
+ * The base class for controls that display content
+ */
 export class ContentDisplay3D extends Control3D {
     private _content: Control;
     private _facadeTexture: Nullable<AdvancedDynamicTexture>;
