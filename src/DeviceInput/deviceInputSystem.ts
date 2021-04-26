@@ -416,7 +416,7 @@ export class DeviceInputSystem implements IDisposable {
             const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             const pointer = this._inputs[deviceType]?.[deviceSlot];
-            if (pointer) {
+            if (pointer && pointer[evt.button + 2] !== 0) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
                 const previousVertical = pointer[PointerInput.Vertical];
                 const previousButton = pointer[evt.button + 2];

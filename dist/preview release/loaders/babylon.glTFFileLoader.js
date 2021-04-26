@@ -3780,8 +3780,15 @@ var KHR_materials_specular = /** @class */ (function () {
         if (properties.specularTexture) {
             properties.specularTexture.nonColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(context + "/specularTexture", properties.specularTexture, function (texture) {
-                texture.name = babylonMaterial.name + " (Specular F0 Color)";
+                texture.name = babylonMaterial.name + " (Specular F0 Strength)";
                 babylonMaterial.metallicReflectanceTexture = texture;
+                babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
+            }));
+        }
+        if (properties.specularColorTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(context + "/specularColorTexture", properties.specularColorTexture, function (texture) {
+                texture.name = babylonMaterial.name + " (Specular F0 Color)";
+                babylonMaterial.reflectanceTexture = texture;
             }));
         }
         return Promise.all(promises).then(function () { });
