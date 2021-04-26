@@ -1,7 +1,6 @@
 
 import { TreeItemLabelComponent } from "./treeItemLabelComponent";
 import { faProjectDiagram } from '@fortawesome/free-solid-svg-icons';
-
 import * as React from "react";
 import { ControlTreeItemComponent } from "./entities/gui/controlTreeItemComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
@@ -9,7 +8,6 @@ import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture"
 import { AdvancedDynamicTextureTreeItemComponent } from "./entities/gui/advancedDynamicTextureTreeItemComponent";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 import { GlobalState } from "../../globalState";
-
 
 interface ITreeItemSpecializedComponentProps {
     label: string,
@@ -36,10 +34,9 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
         const entity = this.props.entity;
 
         if (entity && entity.getClassName) {
-            const className = entity.getClassName();            if (className === "AdvancedDynamicTexture") {
+            const className = entity.getClassName(); if (className === "AdvancedDynamicTexture") {
                 return (<AdvancedDynamicTextureTreeItemComponent onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} extensibilityGroups={this.props.extensibilityGroups} texture={entity as AdvancedDynamicTexture} onClick={() => this.onClick()} />);
             }
-
 
             if (entity._host) {
                 return (<ControlTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} control={entity as Control} onClick={() => this.onClick()} />);

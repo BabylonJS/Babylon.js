@@ -121,12 +121,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }
     onCreate(value: string): void {
         let guiElement = GUINodeTools.CreateControlFromString(value);
-
         let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
-
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
-
         this.forceUpdate();
     }
 }
