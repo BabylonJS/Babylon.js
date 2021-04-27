@@ -724,6 +724,7 @@ export class ThinEngine {
                         this._initGLContext();
                         // Rebuild effects
                         this._rebuildEffects();
+                        this._rebuildComputeEffects();
                         // Rebuild textures
                         this._rebuildInternalTextures();
                         // Rebuild buffers
@@ -976,6 +977,7 @@ export class ThinEngine {
             depthTextureExtension: false,
             canUseGLInstanceID: !(this._badOS && this._webGLVersion <= 1),
             canUseGLVertexID: this._webGLVersion > 1,
+            supportComputeShaders: false,
         };
 
         // Infos
@@ -4201,6 +4203,7 @@ export class ThinEngine {
 
         // Release effects
         this.releaseEffects();
+        this.releaseComputeEffects();
 
         // Unbind
         this.unbindAllAttributes();

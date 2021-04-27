@@ -47,6 +47,9 @@ import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
 import { IStencilState } from "../States/IStencilState";
 import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
+import { ComputeEffect, IComputeEffectCreationOptions } from "../Compute/computeEffect";
+import { IComputePipelineContext } from "../Compute/IComputePipelineContext";
+import { WebGPUComputePipelineContext } from "./WebGPU/webgpuComputePipelineContext";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -656,7 +659,8 @@ export class WebGPUEngine extends Engine {
             blendMinMax: true,
             maxMSAASamples: 4,
             canUseGLInstanceID: true,
-            canUseGLVertexID: true
+            canUseGLVertexID: true,
+            supportComputeShaders: true,
         };
 
         this._caps.parallelShaderCompile = null as any;
@@ -1438,6 +1442,95 @@ export class WebGPUEngine extends Engine {
     }
 
     //------------------------------------------------------------------------------
+    //                             Compute Shaders
+    //------------------------------------------------------------------------------
+    public createComputeEffect(baseName: any, options: IComputeEffectCreationOptions): ComputeEffect {
+        const compute = baseName.computeElement || baseName.compute || baseName.computeToken || baseName.computeSource || baseName;
+
+        const name = compute + "@" + options.defines;
+        if (this._compiledComputeEffects[name]) {
+            var compiledEffect = <ComputeEffect>this._compiledComputeEffects[name];
+            if (options.onCompiled && compiledEffect.isReady()) {
+                options.onCompiled(compiledEffect);
+            }
+
+            return compiledEffect;
+        }
+        const effect = new ComputeEffect(baseName, options, this, name);
+        this._compiledComputeEffects[name] = effect;
+
+        return effect;
+    }
+
+    /**
+     * Creates a new compute pipeline context
+     * @returns the new pipeline
+     */
+    public createComputePipelineContext(): IComputePipelineContext {
+        return new WebGPUComputePipelineContext(this);
+    }
+
+    /**
+     * Force the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
+     */
+    public releaseComputeEffects() {
+        for (const name in this._compiledComputeEffects) {
+            const webGPUPipelineContextCompute = this._compiledComputeEffects[name].getPipelineContext() as WebGPUComputePipelineContext;
+            this._deleteComputePipelineContext(webGPUPipelineContextCompute);
+        }
+
+        this._compiledComputeEffects = {};
+    }
+
+    /** @hidden */
+    public _prepareComputePipelineContext(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>): void {
+        const webGpuContext = pipelineContext as WebGPUComputePipelineContext;
+
+        if (this.dbgShowShaderCode) {
+            console.log(defines);
+            console.log(computeSourceCode);
+        }
+
+        webGpuContext.sources = {
+            compute: computeSourceCode,
+            rawCompute: rawComputeSourceCode,
+        };
+
+        webGpuContext.stage = this._createComputePipelineStageDescriptor(computeSourceCode, defines);
+    }
+
+    /** @hidden */
+    public _releaseComputeEffect(effect: ComputeEffect): void {
+        if (this._compiledComputeEffects[effect._key]) {
+            delete this._compiledComputeEffects[effect._key];
+
+            this._deleteComputePipelineContext(effect.getPipelineContext() as WebGPUComputePipelineContext);
+        }
+    }
+
+    /** @hidden */
+    public _deleteComputePipelineContext(pipelineContext: IComputePipelineContext): void {
+        const webgpuPipelineContext = pipelineContext as WebGPUComputePipelineContext;
+        if (webgpuPipelineContext) {
+            pipelineContext.dispose();
+        }
+    }
+
+    private _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>): GPUProgrammableStage {
+        if (defines) {
+            defines = "//" + defines.split("\n").join("\n//");
+        } else {
+            defines = "";
+        }
+        return {
+            module: this._device.createShaderModule({
+                code: defines + computeShader,
+            }),
+            entryPoint: "main",
+        };
+    }
+
+    //------------------------------------------------------------------------------
     //                              Effects
     //------------------------------------------------------------------------------
 
@@ -1662,14 +1755,23 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _releaseEffect(effect: Effect): void {
-        // Effect gets garbage collected without explicit destroy in WebGPU.
+        if (this._compiledEffects[effect._key]) {
+            delete this._compiledEffects[effect._key];
+
+            this._deletePipelineContext(effect.getPipelineContext() as WebGPUPipelineContext);
+        }
     }
 
     /**
      * Force the engine to release all cached effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
      */
     public releaseEffects() {
-        // Effect gets garbage collected without explicit destroy in WebGPU.
+        for (const name in this._compiledEffects) {
+            const webGPUPipelineContext = this._compiledEffects[name].getPipelineContext() as WebGPUPipelineContext;
+            this._deletePipelineContext(webGPUPipelineContext);
+        }
+
+        this._compiledEffects = {};
     }
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
