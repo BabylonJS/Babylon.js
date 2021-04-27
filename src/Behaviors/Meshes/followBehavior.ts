@@ -4,7 +4,7 @@ import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Observer } from "../../Misc";
 import { Camera } from "../../Cameras/camera";
-import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to fade in and out
@@ -12,6 +12,7 @@ import { Matrix, Vector3 } from "../../Maths/math.vector";
 export class FollowBehavior implements Behavior<AbstractMesh> {
     private _scene: Scene;
     private _tmpVector: Vector3 = new Vector3();
+    private _tmpQuaternion: Quaternion = new Quaternion();
     private _tmpMatrix: Matrix = new Matrix();
 
     public attachedNode: Nullable<AbstractMesh>;
@@ -74,12 +75,15 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
 
         this._tmpVector.subtractInPlace(cameraPosition);
         const norm = this._tmpVector.length();
+        if (norm < 1e-5) {
+            return;
+        }
+
         this._tmpVector.scaleInPlace(this.followDistance / norm);
         this._tmpVector.addInPlace(cameraPosition);
 
-        this._tmpMatrix.invert();
-        Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpMatrix, this._tmpVector);
-        mesh.position.addInPlace(this._tmpVector);
+        mesh.position.copyFrom(this._tmpVector);
+        // todo : handle parent if mesh is parented
     }
 
     private _correctAngles(vector: Vector3, horizontal: number, vertical: number, radius: number) {
@@ -96,7 +100,7 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
         Vector3.TransformCoordinatesToRef(localPosition, camera.getViewMatrix(), localPosition);
         const dist = localPosition.length();
 
-        if (dist < 1e-7) {
+        if (dist < 1e-5) {
             return;
         }
 
@@ -118,26 +122,47 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
         }
 
         this._correctAngles(localPosition, Math.PI / 2 - horizontalRotation + deltaHorizontalRotation, Math.PI / 2 - verticalRotation + deltaVerticalRotation, dist);
-
         this._tmpMatrix.copyFrom(camera.getViewMatrix());
         this._tmpMatrix.invert();
         // To world
         Vector3.TransformCoordinatesToRef(localPosition, this._tmpMatrix, localPosition);
-        // To object
-        this._tmpMatrix.copyFrom(mesh.getWorldMatrix());
-        this._tmpMatrix.invert();
-        Vector3.TransformCoordinatesToRef(localPosition, this._tmpMatrix, localPosition);
-        mesh.position.addInPlace(localPosition);
+        mesh.position.copyFrom(localPosition);
+        // Todo : handle parent if mesh is parented
     }
 
-    private _orientationClamp(mesh: AbstractMesh, camera: Camera) {}
+    private _orientationClamp(mesh: AbstractMesh, camera: Camera) {
+        this._tmpMatrix.copyFrom(mesh.computeWorldMatrix(true));
+        let toTarget = this._tmpVector;
+        // Construct a rotation matrix from up vector and target vector
+        toTarget.copyFrom(camera.position).subtractInPlace(mesh.position);
+
+        // Todo : handle parent if parented
+        // const mat = mesh.computeWorldMatrix(true).clone().invert();
+        // toTarget = Vector3.TransformNormal(toTarget, mat);
+        toTarget.normalize();
+        let upVector = new Vector3(0, 1, 0);
+
+        if (Vector3.Cross(toTarget, upVector).length() < 1e-5) {
+            // todo : generates random jumps, maybe find something a bit closer
+            upVector.copyFromFloats(1, 0, 0);
+        }
+        Matrix.LookDirectionLHToRef(toTarget, upVector, this._tmpMatrix);
+        Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this._tmpQuaternion);
+
+        if (!mesh.rotationQuaternion) {
+            mesh.rotationQuaternion = new Quaternion();
+        }
+
+        mesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
+    }
 
     private _addObservables(followedCamera: Camera) {
         this._onFollowedCameraMatrixChanged = followedCamera.onViewMatrixChangedObservable.add((camera: Camera) => {
             if (this.attachedNode) {
-                this._distanceClamp(this.attachedNode, camera);
                 this._angularClamp(this.attachedNode, camera);
+                this._distanceClamp(this.attachedNode, camera);
                 this._orientationClamp(this.attachedNode, camera);
+                this.attachedNode.computeWorldMatrix(true);
             }
         });
     }
