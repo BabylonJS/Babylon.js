@@ -80,23 +80,54 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-        props.globalState.onPanObservable.add( () => {
+        props.globalState.onPanObservable.add(() => {
             this._forcePanning = true;
         });
-        
-        props.globalState.onSelectionObservable.add( () => {
+
+        props.globalState.onSelectionObservable.add(() => {
             this._forcePanning = false;
         });
 
-        props.globalState.onZoomObservable.add( () => {
+        props.globalState.onZoomObservable.add(() => {
             this._forceZooming = !this._forceZooming;
         });
 
-        this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
+        this.props.globalState.hostDocument!.addEventListener(
+            "keyup",
+            (evt) => {
+                this._ctrlKeyIsPressed = evt.ctrlKey;
+            },
+            false
+        );
+
+        // Hotkey shortcuts
         this.props.globalState.hostDocument!.addEventListener(
             "keydown",
             (evt) => {
                 this._ctrlKeyIsPressed = evt.ctrlKey;
+                if (this._ctrlKeyIsPressed) {
+                    switch (evt.key) {
+                        case "s": //Save
+                            this.globalState.onSnippetSaveObservable.notifyObservers();
+                            break;
+                        case "q": //zoom?
+                            this.globalState.onSnippetSaveObservable.notifyObservers();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                switch (evt.key) {
+                    case " ": //Space
+                        this.globalState.onSnippetSaveObservable.notifyObservers();
+                        break;
+                    case "s": //Pan
+                        this.globalState.onSnippetSaveObservable.notifyObservers();
+                        break;
+                    default:
+                        break;
+                }
             },
             false
         );
@@ -142,10 +173,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture.scaleTo(newvalue.x, newvalue.y);
         this.globalState.guiTexture.markAsDirty();
         this.globalState.onResizeObservable.notifyObservers(newvalue);
-    }
-
-    onKeyUp() {
-        this._ctrlKeyIsPressed = false;
     }
 
     findNodeFromGuiElement(guiControl: Control) {
@@ -232,7 +259,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     componentDidMount() {
-        this._rootContainer = React.createRef();//this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLDivElement;
+        this._rootContainer = React.createRef();
     }
 
     onMove(evt: React.PointerEvent) {
@@ -303,7 +330,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         // Create our first scene.
         this._scene = new Scene(engine);
-        const clearColor = 204/255.0;
+        const clearColor = 204 / 255.0;
         this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
         let camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, 1024, Vector3.Zero(), this._scene);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
@@ -316,7 +343,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this._textureMesh.showBoundingBox = true;
 
-        var background =  new Rectangle("Rectangle");
+        var background = new Rectangle("Rectangle");
         background.width = "100%"
         background.height = "100%";
         background.background = "white";
@@ -382,7 +409,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
                 this._panning = true;
             }
-            else if(this._forceZooming) {
+            else if (this._forceZooming) {
                 scene.onPointerObservable.add(zoomFn, PointerEventTypes.POINTERMOVE);
                 this._panning = false;
             }
