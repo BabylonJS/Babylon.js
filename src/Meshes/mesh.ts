@@ -1302,16 +1302,47 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
      * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+     * @param applyMorph  defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false): Mesh {
+    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = true): Mesh {
         if (this._boundingInfo && this._boundingInfo.isLocked) {
             return this;
         }
 
         const bias = this.geometry ? this.geometry.boundingBias : null;
-        this._refreshBoundingInfo(this._getPositionData(applySkeleton), bias);
+        this._refreshBoundingInfo(this._getPositionData(applySkeleton, applyMorph), bias);
         return this;
+    }
+
+    /** @hidden */
+    public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
+        var data = super._getPositionData(applySkeleton, applyMorph);
+
+        if (data && applyMorph && this.morphTargetManager) {
+            data = Tools.Slice(data);
+            this._generatePointsArray();
+
+            var influencedPositions = new Float32Array(data.length);
+
+            for(let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
+
+                var influence = this.morphTargetManager.getTarget(targetCount).influence;
+                if (influence > 0.0) {
+
+                    var morphTargetPositions = this.morphTargetManager.getTarget(targetCount).getPositions();
+                    if (morphTargetPositions) {
+                        for(let vertexCount = 0; vertexCount < influencedPositions.length; vertexCount++) {
+                            influencedPositions[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
+                        }
+                    }
+                }
+            }
+            for(let vertexCount = 0; vertexCount < influencedPositions.length; vertexCount++) {
+                data[vertexCount] = data[vertexCount] + influencedPositions[vertexCount];
+            }
+        }
+        return data;
     }
 
     /** @hidden */

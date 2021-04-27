@@ -1234,14 +1234,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
      * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+     * @param applyMorph  defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false): AbstractMesh {
+    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): AbstractMesh {
         if (this._boundingInfo && this._boundingInfo.isLocked) {
             return this;
         }
 
-        this._refreshBoundingInfo(this._getPositionData(applySkeleton), null);
+        this._refreshBoundingInfo(this._getPositionData(applySkeleton, applyMorph), null);
         return this;
     }
 
@@ -1267,7 +1268,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _getPositionData(applySkeleton: boolean): Nullable<FloatArray> {
+    public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
         var data = this.getVerticesData(VertexBuffer.PositionKind);
 
         if (data && applySkeleton && this.skeleton) {
