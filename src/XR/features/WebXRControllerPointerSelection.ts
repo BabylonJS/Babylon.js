@@ -472,6 +472,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 }
             }
 
+            // near interaction grab
             if (controllerData.grabRay) {
                 let pinchInfo = this._scene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
                 if (pinchInfo && pinchInfo.pickedPoint && pinchInfo.hit) {  
@@ -685,24 +686,16 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
                 // squeezeComponent is a new member on the controllerData
                 controllerData.squeezeComponent = motionController.getComponent("grasp");
-
-                // onSqueezeButtonChangedObserver is also a new variable
-                if(controllerData.squeezeComponent)
-                {
+                if (controllerData.squeezeComponent) {
                     controllerData.onSqueezeButtonChangedObserver = controllerData.squeezeComponent.onButtonStateChangedObservable.add((component) => {
                         if (component.changes.pressed) {
                             const pressed = component.changes.pressed.current;
-                            if (controllerData.pick) {
-                                // Comment this next check out to have objects only react to near grabs from the active hand
+                            if (controllerData.pick && controllerData.nearGrab) {
                                 if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
                                     if (pressed) {
                                         this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                                        (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
-                                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
                                     } else {
                                         this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                                        (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                                     }
                                 } 
                             } else {
@@ -953,6 +946,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 console.log("mesh cleared for pickwithMesh", mesh.name);
                 let result = mesh.intersectsMesh(handMesh, precise);
                 if (result) {
+                    pickingInfo = new PickingInfo();
                     pickingInfo.hit = result;
                     pickingInfo.pickedMesh = mesh;
                     pickingInfo.pickedPoint = indexTipMesh.position;
@@ -960,7 +954,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     pickingInfo.distance = Vector3.Distance(mesh.position, indexTipMesh.position);
                 }
             }
-        }
+        }  
         return pickingInfo;
     }
 }
