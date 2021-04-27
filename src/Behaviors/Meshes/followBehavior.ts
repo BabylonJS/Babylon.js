@@ -3,7 +3,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Observer } from "../../Misc";
-import { Camera } from "../../Cameras";
+import { Camera } from "../../Cameras/camera";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 
 /**
@@ -82,7 +82,53 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
         mesh.position.addInPlace(this._tmpVector);
     }
 
-    private _angularClamp(mesh: AbstractMesh, camera: Camera) {}
+    private _correctAngles(vector: Vector3, horizontal: number, vertical: number, radius: number) {
+        vector.copyFromFloats(radius * Math.cos(horizontal) * Math.sin(vertical), radius * Math.cos(vertical), radius * Math.sin(horizontal) * Math.sin(vertical));
+    }
+
+    private _angularClamp(mesh: AbstractMesh, camera: Camera) {
+        const verticalFovFixed = camera.fovMode === Camera.FOVMODE_VERTICAL_FIXED;
+        const horizontalAngularClamp = verticalFovFixed ? (this._scene.getEngine().getAspectRatio(camera) * camera.fov) / 2 : camera.fov / 2;
+        const verticalAngularClamp = verticalFovFixed ? camera.fov / 2 : camera.fov / this._scene.getEngine().getAspectRatio(camera) / 2;
+
+        const localPosition = new Vector3(0, 0, 0);
+        Vector3.TransformCoordinatesToRef(localPosition, mesh.computeWorldMatrix(true), localPosition);
+        Vector3.TransformCoordinatesToRef(localPosition, camera.getViewMatrix(), localPosition);
+        const dist = localPosition.length();
+
+        if (dist < 1e-7) {
+            return;
+        }
+
+        const horizontalRotation = Math.atan2(localPosition.x, localPosition.z);
+        const verticalRotation = Math.atan2(localPosition.y, Math.sqrt(localPosition.x * localPosition.x + localPosition.z * localPosition.z));
+
+        let deltaVerticalRotation = 0;
+        let deltaHorizontalRotation = 0;
+        if (verticalRotation > verticalAngularClamp) {
+            deltaVerticalRotation = verticalRotation - verticalAngularClamp;
+        } else if (verticalRotation < -verticalAngularClamp) {
+            deltaVerticalRotation = verticalRotation + verticalAngularClamp;
+        }
+
+        if (horizontalRotation > horizontalAngularClamp) {
+            deltaHorizontalRotation = horizontalRotation - horizontalAngularClamp;
+        } else if (horizontalRotation < -horizontalAngularClamp) {
+            deltaHorizontalRotation = horizontalRotation + horizontalAngularClamp;
+        }
+
+        this._correctAngles(localPosition, Math.PI / 2 - horizontalRotation + deltaHorizontalRotation, Math.PI / 2 - verticalRotation + deltaVerticalRotation, dist);
+
+        this._tmpMatrix.copyFrom(camera.getViewMatrix());
+        this._tmpMatrix.invert();
+        // To world
+        Vector3.TransformCoordinatesToRef(localPosition, this._tmpMatrix, localPosition);
+        // To object
+        this._tmpMatrix.copyFrom(mesh.getWorldMatrix());
+        this._tmpMatrix.invert();
+        Vector3.TransformCoordinatesToRef(localPosition, this._tmpMatrix, localPosition);
+        mesh.position.addInPlace(localPosition);
+    }
 
     private _orientationClamp(mesh: AbstractMesh, camera: Camera) {}
 
