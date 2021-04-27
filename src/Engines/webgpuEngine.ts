@@ -1127,7 +1127,7 @@ export class WebGPUEngine extends Engine {
     }
 
     //------------------------------------------------------------------------------
-    //                              Vertex/Index Buffers
+    //                              Vertex/Index/Storage Buffers
     //------------------------------------------------------------------------------
 
     /**
@@ -1269,6 +1269,68 @@ export class WebGPUEngine extends Engine {
         }
 
         this._bufferManager.setSubData(gpuBuffer, offset, view);
+    }
+
+    /**
+     * Creates a storage buffer
+     * @param data the data for the storage buffer
+     * @returns the new buffer
+     */
+     public createStorageBuffer(data: DataArray): DataBuffer {
+        let view: ArrayBufferView;
+
+        if (data instanceof Array) {
+            view = new Float32Array(data);
+        }
+        else if (data instanceof ArrayBuffer) {
+            view = new Uint8Array(data);
+        }
+        else {
+            view = data;
+        }
+
+        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Storage | WebGPUConstants.BufferUsage.CopyDst);
+        return dataBuffer;
+    }
+
+    /**
+     * Updates a storage buffer.
+     * @param buffer the storage buffer to update
+     * @param data the data used to update the storage buffer
+     * @param byteOffset the byte offset of the data
+     * @param byteLength the byte length of the data
+     */
+    public updateStorageBuffer(buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+        const dataBuffer = buffer as WebGPUDataBuffer;
+        if (byteOffset === undefined) {
+            byteOffset = 0;
+        }
+
+        let view: ArrayBufferView;
+        if (byteLength === undefined) {
+            if (data instanceof Array) {
+                view = new Float32Array(data);
+            }
+            else if (data instanceof ArrayBuffer) {
+                view = new Uint8Array(data);
+            }
+            else {
+                view = data;
+            }
+            byteLength = view.byteLength;
+        } else {
+            if (data instanceof Array) {
+                view = new Float32Array(data);
+            }
+            else if (data instanceof ArrayBuffer) {
+                view = new Uint8Array(data);
+            }
+            else {
+                view = data;
+            }
+        }
+
+        this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
     }
 
     /** @hidden */
