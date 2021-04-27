@@ -1325,20 +1325,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             var influencedPositions = new Float32Array(data.length);
 
-            for(let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
+            for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
 
                 var influence = this.morphTargetManager.getTarget(targetCount).influence;
                 if (influence > 0.0) {
 
                     var morphTargetPositions = this.morphTargetManager.getTarget(targetCount).getPositions();
                     if (morphTargetPositions) {
-                        for(let vertexCount = 0; vertexCount < influencedPositions.length; vertexCount++) {
+                        for (let vertexCount = 0; vertexCount < influencedPositions.length; vertexCount++) {
                             influencedPositions[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
                         }
                     }
                 }
             }
-            for(let vertexCount = 0; vertexCount < influencedPositions.length; vertexCount++) {
+            for (let vertexCount = 0; vertexCount < influencedPositions.length; vertexCount++) {
                 data[vertexCount] = data[vertexCount] + influencedPositions[vertexCount];
             }
         }
