@@ -11,7 +11,7 @@ export class WebGPUShaderManager {
         this._device = device;
     }
 
-    public getCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor {
+    public getRenderCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor {
         let shaders = this._shaders[name];
         if (!shaders) {
             shaders = this._shaders[name] = {
@@ -27,6 +27,21 @@ export class WebGPUShaderManager {
                     }),
                     entryPoint: 'main'
                 }
+            };
+        }
+        return shaders;
+    }
+
+    public getComputeCompiledShader(name: string): IWebGPURenderPipelineStageDescriptor {
+        let shaders = this._shaders[name];
+        if (!shaders) {
+            shaders = this._shaders[name] = {
+                vertexStage: {
+                    module: this._device.createShaderModule({
+                        code: Effect.ShadersStore[name + "ComputeShader"]
+                    }),
+                    entryPoint: 'main'
+                },
             };
         }
         return shaders;
