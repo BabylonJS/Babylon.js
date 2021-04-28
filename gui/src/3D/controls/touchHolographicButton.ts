@@ -270,7 +270,7 @@ export class TouchHolographicButton extends TouchButton3D {
             depth: 1.0,
         }, scene);
         collisionMesh.isPickable = true;
-        collisionMesh.isVisible = false;
+        collisionMesh.visibility = 0;
         collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
 
         SceneLoader.ImportMeshAsync(
@@ -282,11 +282,11 @@ export class TouchHolographicButton extends TouchButton3D {
                 var importedFrontPlate = result.meshes[1];
                 importedFrontPlate.name = `${this.name}_frontPlate`;
                 importedFrontPlate.parent = collisionMesh;
+                importedFrontPlate.isPickable = false;
                 if (!!this._frontMaterial) {
                     importedFrontPlate.material = this._frontMaterial;
                 }
                 this._frontPlate = importedFrontPlate;
-                this._injectGUI3DReservedDataStore(this._frontPlate).control = this;
             });
 
         const backPlateDepth = 0.04;
