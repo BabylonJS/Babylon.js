@@ -44,6 +44,9 @@ export class WebGPUComputePipelineContext implements IComputePipelineContext {
          
     }
  
+    /**
+     * Release all associated resources.
+     **/
     public dispose(): void {
 
     }

@@ -7,6 +7,7 @@ export * from "./Behaviors/index";
 export * from "./Bones/index";
 export * from "./Cameras/index";
 export * from "./Collisions/index";
+export * from "./Compute/index";
 export * from "./Culling/index";
 export * from "./Debug/index";
 export * from "./DeviceInput/index";
