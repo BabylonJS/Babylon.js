@@ -5,7 +5,7 @@ import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable } from '../../Misc/observable';
 import { DeviceInput } from './deviceTypes';
-import { IDeviceInputSystem } from '../Interfaces/inputInterfaces';
+import { IDeviceEvent, IDeviceInputSystem } from '../Interfaces/inputInterfaces';
 
 /**
  * Class that handles all input for a specific device
@@ -15,7 +15,7 @@ export class DeviceSource<T extends DeviceType> {
     /**
      * Observable to handle device input changes per device
      */
-    public readonly onInputChangedObservable = new Observable<{ inputIndex: DeviceInput<T>, previousState: Nullable<number>, currentState: Nullable<number> }>();
+    public readonly onInputChangedObservable = new Observable<IDeviceEvent>();
 
     // Private Members
     private readonly _deviceInputSystem: IDeviceInputSystem;
@@ -92,10 +92,7 @@ export class DeviceSourceManager implements IDisposable {
         });
 
         this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
-            const inputIndex = eventData.inputIndex;
-            const previousState = eventData.previousState;
-            const currentState = eventData.currentState;
-            this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
+            this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)?.onInputChangedObservable.notifyObservers(eventData);
         });
     }
 
