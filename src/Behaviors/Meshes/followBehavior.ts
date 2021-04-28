@@ -5,6 +5,9 @@ import { Nullable } from "../../types";
 import { Observer } from "../../Misc";
 import { Camera } from "../../Cameras/camera";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
+import { Scalar } from "../../Maths/math.scalar";
+
+const EPSILON = 1e-8;
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to fade in and out
@@ -12,7 +15,8 @@ import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 export class FollowBehavior implements Behavior<AbstractMesh> {
     private _scene: Scene;
     private _tmpVector: Vector3 = new Vector3();
-    private _tmpQuaternion: Quaternion = new Quaternion();
+    // Memory cache to avoid GC workload
+    private _tmpVectors: Vector3[] = [new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3()];
     private _tmpMatrix: Matrix = new Matrix();
 
     public attachedNode: Nullable<AbstractMesh>;
@@ -66,102 +70,176 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
     }
 
     // Constraints
-    private _distanceClamp(mesh: AbstractMesh, camera: Camera) {
-        const cameraPosition = camera.globalPosition;
-        this._tmpMatrix.copyFrom(mesh.computeWorldMatrix(true));
-        this._tmpVector.copyFromFloats(0, 0, 0);
-
-        Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpMatrix, this._tmpVector);
-
-        this._tmpVector.subtractInPlace(cameraPosition);
-        const norm = this._tmpVector.length();
-        if (norm < 1e-5) {
-            return;
+    private _simplifyAngle(angle: number) {
+        // Todo : better version => mod 2PI then - 2 * PI for > PI, + 2 * PI for < -PI
+        while (angle > Math.PI) {
+            angle -= 2 * Math.PI;
         }
 
-        this._tmpVector.scaleInPlace(this.followDistance / norm);
-        this._tmpVector.addInPlace(cameraPosition);
+        while (angle < -Math.PI) {
+            angle += 2 * Math.PI;
+        }
 
-        mesh.position.copyFrom(this._tmpVector);
-        // todo : handle parent if mesh is parented
+        return angle;
     }
 
-    private _correctAngles(vector: Vector3, horizontal: number, vertical: number, radius: number) {
-        vector.copyFromFloats(radius * Math.cos(horizontal) * Math.sin(vertical), radius * Math.cos(vertical), radius * Math.sin(horizontal) * Math.sin(vertical));
+    private _angleBetweenOnPlane(from: Vector3, to: Vector3, normal: Vector3) {
+        // Work on copies
+        this._tmpVectors[0].copyFrom(from);
+        from = this._tmpVectors[0];
+        this._tmpVectors[1].copyFrom(to);
+        to = this._tmpVectors[1];
+        this._tmpVectors[2].copyFrom(normal);
+        normal = this._tmpVectors[2];
+        const right = this._tmpVectors[3];
+        const forward = this._tmpVectors[4];
+
+        from.normalize();
+        to.normalize();
+        normal.normalize();
+
+        Vector3.CrossToRef(normal, from, right);
+        Vector3.CrossToRef(right, normal, forward);
+
+        const angle = Math.atan2(Vector3.Dot(to, right), Vector3.Dot(to, forward));
+
+        return this._simplifyAngle(angle);
     }
 
-    private _angularClamp(mesh: AbstractMesh, camera: Camera) {
+    private _angleBetweenVectorAndPlane(vector: Vector3, normal: Vector3) {
+        // Work on copies
+        this._tmpVectors[0].copyFrom(vector);
+        vector = this._tmpVectors[0];
+        this._tmpVectors[1].copyFrom(normal);
+        normal = this._tmpVectors[1];
+
+        vector.normalize();
+        normal.normalize();
+
+        return Math.PI / 2 - Math.acos(Vector3.Dot(vector, normal));
+    }
+
+    private _distanceClamp(mesh: AbstractMesh, camera: Camera, currentToTarget: Vector3, _ignorePitch: boolean = false, _moveToDefault: boolean = false) {
+        // Todo : parameters
+        const minDistance = 3;
+        const maxDistance = 6;
+        const defaultDistance = 5;
+
+        const direction = this._tmpVectors[0];
+        direction.copyFrom(currentToTarget);
+        const currentDistance = direction.length();
+        direction.normalizeFromLength(currentDistance);
+        let clampedDistance = currentDistance;
+
+        if (_moveToDefault) {
+            if (currentDistance < minDistance || currentDistance > maxDistance) {
+                clampedDistance = defaultDistance;
+            }
+        } else {
+            clampedDistance = Scalar.Clamp(currentDistance, minDistance, maxDistance);
+        }
+
+        currentToTarget.copyFrom(direction).scaleInPlace(clampedDistance);
+
+        return currentDistance !== clampedDistance;
+    }
+
+    private _angularClamp(mesh: AbstractMesh, camera: Camera, currentToTarget: Vector3, _ignoreVertical: boolean = false) {
         const verticalFovFixed = camera.fovMode === Camera.FOVMODE_VERTICAL_FIXED;
+        const invertView = this._tmpMatrix;
+        invertView.copyFrom(camera.getViewMatrix());
+        invertView.invert();
+
+        const forward = new Vector3();
+        const right = new Vector3();
+        Vector3.TransformNormalToRef(new Vector3(0, 0, 1), invertView, forward);
+        Vector3.TransformNormalToRef(new Vector3(1, 0, 0), invertView, right);
+        const up = new Vector3(0, 1, 0);
+
+        // Todo : angle as parameters
         const horizontalAngularClamp = verticalFovFixed ? (this._scene.getEngine().getAspectRatio(camera) * camera.fov) / 2 : camera.fov / 2;
         const verticalAngularClamp = verticalFovFixed ? camera.fov / 2 : camera.fov / this._scene.getEngine().getAspectRatio(camera) / 2;
 
-        const localPosition = new Vector3(0, 0, 0);
-        Vector3.TransformCoordinatesToRef(localPosition, mesh.computeWorldMatrix(true), localPosition);
-        Vector3.TransformCoordinatesToRef(localPosition, camera.getViewMatrix(), localPosition);
-        const dist = localPosition.length();
+        const dist = currentToTarget.length();
 
-        if (dist < 1e-5) {
+        if (dist < EPSILON) {
             return;
         }
 
-        const horizontalRotation = Math.atan2(localPosition.x, localPosition.z);
-        const verticalRotation = Math.atan2(localPosition.y, Math.sqrt(localPosition.x * localPosition.x + localPosition.z * localPosition.z));
-
-        let deltaVerticalRotation = 0;
-        let deltaHorizontalRotation = 0;
-        if (verticalRotation > verticalAngularClamp) {
-            deltaVerticalRotation = verticalRotation - verticalAngularClamp;
-        } else if (verticalRotation < -verticalAngularClamp) {
-            deltaVerticalRotation = verticalRotation + verticalAngularClamp;
+        let clamped = false;
+        // X-axis leashing
+        if (_ignoreVertical) {
+            const angle = this._angleBetweenOnPlane(currentToTarget, forward, right);
+            const rotationQuat = Quaternion.RotationAxis(right, angle);
+            currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
+        } else {
+            const angle = -this._angleBetweenOnPlane(currentToTarget, forward, right);
+            if (angle < -verticalAngularClamp) {
+                const rotationQuat = Quaternion.RotationAxis(right, -angle - verticalAngularClamp);
+                currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
+                clamped = true;
+            } else if (angle > verticalAngularClamp) {
+                const rotationQuat = Quaternion.RotationAxis(right, -angle + verticalAngularClamp);
+                currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
+                clamped = true;
+            }
         }
 
-        if (horizontalRotation > horizontalAngularClamp) {
-            deltaHorizontalRotation = horizontalRotation - horizontalAngularClamp;
-        } else if (horizontalRotation < -horizontalAngularClamp) {
-            deltaHorizontalRotation = horizontalRotation + horizontalAngularClamp;
+        // Y-axis leashing
+        const angle = this._angleBetweenVectorAndPlane(currentToTarget, right);
+        if (angle < -horizontalAngularClamp) {
+            const rotationQuat = Quaternion.RotationAxis(up, -angle - horizontalAngularClamp);
+            currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
+            clamped = true;
+        } else if (angle > horizontalAngularClamp) {
+            const rotationQuat = Quaternion.RotationAxis(up, -angle + horizontalAngularClamp);
+            currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
+            clamped = true;
         }
 
-        this._correctAngles(localPosition, Math.PI / 2 - horizontalRotation + deltaHorizontalRotation, Math.PI / 2 - verticalRotation + deltaVerticalRotation, dist);
-        this._tmpMatrix.copyFrom(camera.getViewMatrix());
-        this._tmpMatrix.invert();
-        // To world
-        Vector3.TransformCoordinatesToRef(localPosition, this._tmpMatrix, localPosition);
-        mesh.position.copyFrom(localPosition);
         // Todo : handle parent if mesh is parented
     }
 
-    private _orientationClamp(mesh: AbstractMesh, camera: Camera) {
-        this._tmpMatrix.copyFrom(mesh.computeWorldMatrix(true));
-        let toTarget = this._tmpVector;
-        // Construct a rotation matrix from up vector and target vector
-        toTarget.copyFrom(camera.position).subtractInPlace(mesh.position);
-
-        // Todo : handle parent if parented
-        // const mat = mesh.computeWorldMatrix(true).clone().invert();
-        // toTarget = Vector3.TransformNormal(toTarget, mat);
-        toTarget.normalize();
-        let upVector = new Vector3(0, 1, 0);
-
-        if (Vector3.Cross(toTarget, upVector).length() < 1e-5) {
-            // todo : generates random jumps, maybe find something a bit closer
-            upVector.copyFromFloats(1, 0, 0);
+    private _orientationClamp(mesh: AbstractMesh, camera: Camera, currentToTarget: Vector3, rotationQuaternion: Quaternion) {
+        let toFollowed = this._tmpVectors[0];
+        // Construct a rotation quat from up vector and target vector
+        toFollowed.copyFrom(currentToTarget).scaleInPlace(-1).normalize();
+        const invertView = this._tmpMatrix;
+        invertView.copyFrom(camera.getViewMatrix());
+        invertView.invert();
+        const up = new Vector3();
+        const right = new Vector3();
+        Vector3.TransformNormalToRef(new Vector3(0, 1, 0), Matrix.Identity(), up);
+        Vector3.CrossToRef(toFollowed, up, right);
+        if (right.length() < EPSILON) {
+            return;
         }
-        Matrix.LookDirectionLHToRef(toTarget, upVector, this._tmpMatrix);
-        Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this._tmpQuaternion);
-
-        if (!mesh.rotationQuaternion) {
-            mesh.rotationQuaternion = new Quaternion();
-        }
-
-        mesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
+        Vector3.CrossToRef(right, toFollowed, up);
+        Quaternion.FromLookDirectionLHToRef(toFollowed, up, rotationQuaternion);
     }
 
     private _addObservables(followedCamera: Camera) {
         this._onFollowedCameraMatrixChanged = followedCamera.onViewMatrixChangedObservable.add((camera: Camera) => {
             if (this.attachedNode) {
-                this._angularClamp(this.attachedNode, camera);
-                this._distanceClamp(this.attachedNode, camera);
-                this._orientationClamp(this.attachedNode, camera);
+                // Todo : handle parent
+                const worldMatrix = this.attachedNode.computeWorldMatrix(true);
+                const currentToTarget = this._tmpVector;
+                const rotationQuaternion = this.attachedNode.rotationQuaternion || Quaternion.Identity();
+                const pivot = this.attachedNode.getPivotPoint();
+                Vector3.TransformCoordinatesToRef(pivot, worldMatrix, currentToTarget);
+                currentToTarget.subtractInPlace(camera.globalPosition);
+
+                this._angularClamp(this.attachedNode, camera, currentToTarget);
+                this._distanceClamp(this.attachedNode, camera, currentToTarget);
+                this._orientationClamp(this.attachedNode, camera, currentToTarget, rotationQuaternion);
+
+                if (!this.attachedNode.rotationQuaternion) {
+                    this.attachedNode.rotationQuaternion = rotationQuaternion;
+                }
+
+                // Todo : handle parent
+                this.attachedNode.position.copyFrom(camera.globalPosition).addInPlace(currentToTarget).subtractInPlace(pivot);
+
                 this.attachedNode.computeWorldMatrix(true);
             }
         });
