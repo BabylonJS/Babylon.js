@@ -4,7 +4,8 @@ import { Buffer } from "../Meshes/buffer";
 import { ThinEngine } from "../Engines/thinEngine";
 import { Scene } from "../scene";
 import { Nullable } from "../types";
-import { serialize } from "../Misc/decorators";
+import { SerializationHelper, serialize } from "../Misc/decorators";
+import { _TypeStore } from '../Misc/typeStore';
 import { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
 
 /**
@@ -38,24 +39,24 @@ export class ComputeShader {
     /**
      * Gets or sets the unique id of the material
      */
-     @serialize()
-     public uniqueId: number;
+    @serialize()
+    public uniqueId: number;
  
      /**
       * The name of the material
       */
-     @serialize()
-     public name: string;
+    @serialize()
+    public name: string;
 
      /**
      * Callback triggered when the shader is compiled
      */
-     public onCompiled: Nullable<(effect: ComputeEffect) => void> = null;
+    public onCompiled: Nullable<(effect: ComputeEffect) => void> = null;
 
      /**
       * Callback triggered when an error occurs
       */
-     public onError: Nullable<(effect: ComputeEffect, errors: string) => void> = null;
+    public onError: Nullable<(effect: ComputeEffect, errors: string) => void> = null;
  
     constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IComputeShaderOptions> = {}) {
         this.name = name;
@@ -75,6 +76,15 @@ export class ComputeShader {
             defines: [],
             ...options
         };
+    }
+
+    /**
+     * Gets the current class name of the material e.g. "ComputeShader"
+     * Mainly use in serialization.
+     * @returns the class name
+     */
+    public getClassName(): string {
+        return "ComputeShader";
     }
 
     public setTexture(name: { group: number, binding: number } | string, texture: ThinTexture): void {
@@ -118,6 +128,8 @@ export class ComputeShader {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
             });
+
+            this._effect = effect;
         }
 
         if (!effect.isReady()) {
@@ -132,6 +144,41 @@ export class ComputeShader {
             return false;
         }
 
+        console.log("dispatched");
+
         return false;
     }
+
+    /**
+     * Serializes this compute shader in a JSON representation
+     * @returns the serialized compute shader object
+     */
+    public serialize(): any {
+        const serializationObject = SerializationHelper.Serialize(this);
+
+        serializationObject.options = this._options;
+        serializationObject.shaderPath = this._shaderPath;
+
+        // @TODO serialize textures, buffers, ...
+
+        return serializationObject;
+    }
+
+    /**
+     * Creates a shader material from parsed shader material data
+     * @param source defines the JSON representation of the material
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a new material
+     */
+    public static Parse(source: any, scene: Scene, rootUrl: string): ComputeShader {
+        const compute = SerializationHelper.Parse(() => new ComputeShader(source.name, scene, source.shaderPath, source.options), source, scene, rootUrl);
+
+        // @TODO parse textures, buffers, ...
+
+        return compute;
+    }
+
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ComputeShader"] = ComputeShader;

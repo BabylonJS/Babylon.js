@@ -123,7 +123,7 @@ export class ComputeEffect {
             indexParameters: undefined,
             isFragment: false,
             shouldUseHighPrecisionShader: false,
-            processor: this._engine._shaderProcessor,
+            processor: null,
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
             shadersRepository: ShaderStore.ShadersRepository,
             includesShadersStore: ShaderStore.IncludesShadersStore,
@@ -134,14 +134,14 @@ export class ComputeEffect {
 
         this._loadShader(computeSource, "Compute", "", (computeCode) => {
             ShaderProcessor.Initialize(processorOptions);
-            ShaderProcessor.Process(computeCode, processorOptions, (migratedCommputeCode) => {
+            ShaderProcessor.PreProcess(computeCode, processorOptions, (migratedCommputeCode) => {
                 this._rawComputeSourceCode = computeCode;
                 if (options.processFinalCode) {
                     migratedCommputeCode = options.processFinalCode(migratedCommputeCode);
                 }
                 const finalShaders = ShaderProcessor.Finalize(migratedCommputeCode, "", processorOptions);
                 this._useFinalCode(finalShaders.vertexCode, baseName);
-        }, this._engine);
+            }, this._engine);
         });
     }
 
@@ -149,7 +149,7 @@ export class ComputeEffect {
         if (baseName) {
             const compute = baseName.computeElement || baseName.compute || baseName.spectorName || baseName;
 
-            this._computeSourceCode = "//#define SHADER_NAME vertex:" + compute + "\n" + migratedCommputeCode;
+            this._computeSourceCode = "//#define SHADER_NAME compute:" + compute + "\n" + migratedCommputeCode;
         } else {
             this._computeSourceCode = migratedCommputeCode;
         }
@@ -322,7 +322,7 @@ export class ComputeEffect {
             this._pipelineContext = engine.createComputePipelineContext();
             this._pipelineContext._name = this._key;
 
-            engine._prepareComputePipelineContext(this._pipelineContext, this._computeSourceCodeOverride, this._rawComputeSourceCode, this._computeSourceCodeOverride ? null : defines);
+            engine._prepareComputePipelineContext(this._pipelineContext, this._computeSourceCodeOverride ? this._computeSourceCodeOverride : this._computeSourceCode, this._rawComputeSourceCode, this._computeSourceCodeOverride ? null : defines);
 
             engine._executeWhenComputeStateIsCompiled(this._pipelineContext, () => {
                 this._pipelineContext!._fillEffectInformation(this);
