@@ -85,6 +85,16 @@
     #endif
     uniform sampler2D metallicReflectanceSampler;
 #endif
+#ifdef REFLECTANCE
+    #if REFLECTANCEDIRECTUV == 1
+        #define vReflectanceUV vMainUV1
+    #elif REFLECTANCEDIRECTUV == 2
+        #define vReflectanceUV vMainUV2
+    #else
+        varying vec2 vReflectanceUV;
+    #endif
+    uniform sampler2D reflectanceSampler;
+#endif
 
 #ifdef CLEARCOAT
     #if defined(CLEARCOAT_TEXTURE)

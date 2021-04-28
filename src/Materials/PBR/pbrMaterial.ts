@@ -191,14 +191,33 @@ export class PBRMaterial extends PBRBaseMaterial {
     public metallicReflectanceColor = Color3.White();
 
     /**
+     * Specifies that only the A channel from metallicReflectanceTexture should be used.
+     * If false, both RGB and A channels will be used
+     */
+     @serialize()
+     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+     public useOnlyMetallicFromMetallicReflectanceTexture = false;
+
+     /**
      * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-     * This is multiply against the scalar values defined in the material.
+     * This is multiplied against the scalar values defined in the material.
+     * If useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public metallicReflectanceTexture: Nullable<BaseTexture>;
 
     /**
+     * Defines to store reflectanceColor in RGB
+     * This is multiplied against the scalar values defined in the material.
+     * If both reflectanceTexture and metallicReflectanceTexture textures are provided and useOnlyMetallicFromMetallicReflectanceTexture
+     * is false, metallicReflectanceTexture takes priority and reflectanceTexture is not used
+     */
+     @serializeAsTexture()
+     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+     public reflectanceTexture: Nullable<BaseTexture>;
+
+     /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
      * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
      */
