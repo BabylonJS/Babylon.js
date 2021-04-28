@@ -46,6 +46,8 @@ export class Context {
     onNewKeyPointRequired = new Observable<void>();
     onFlattenTangentRequired = new Observable<void>();
     onLinearTangentRequired = new Observable<void>();
+    onBreakTangentRequired = new Observable<void>();
+    onUnifyTangentRequired = new Observable<void>();
 
     onDeleteAnimation = new Observable<Animation>();
 
