@@ -264,7 +264,7 @@ export class TouchHolographicButton extends TouchButton3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const collisionMesh = BoxBuilder.CreateBox(this.name ?? "TouchHolographicButton", {
+        const collisionMesh = BoxBuilder.CreateBox((this.name ?? "TouchHolographicButton") + "_CollisionMesh", {
             width: 1.0,
             height: 1.0,
             depth: 1.0,
@@ -281,12 +281,12 @@ export class TouchHolographicButton extends TouchButton3D {
             .then((result) => {
                 var importedFrontPlate = result.meshes[1];
                 importedFrontPlate.name = `${this.name}_frontPlate`;
-                importedFrontPlate.isPickable = false;
                 importedFrontPlate.parent = collisionMesh;
                 if (!!this._frontMaterial) {
                     importedFrontPlate.material = this._frontMaterial;
                 }
                 this._frontPlate = importedFrontPlate;
+                this._injectGUI3DReservedDataStore(this._frontPlate).control = this;
             });
 
         const backPlateDepth = 0.04;
