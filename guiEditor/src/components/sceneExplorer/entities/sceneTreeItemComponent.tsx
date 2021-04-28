@@ -164,9 +164,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
                 // Pick light gizmos first
                 if (this.props.globalState.lightGizmos.length > 0) {
-                    var gizmoScene = this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
-                    let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
-                        for (var g of (this.props.globalState.lightGizmos as any)) {
+                    const gizmoScene = this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
+                    const pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
+                        for (let g of (this.props.globalState.lightGizmos as any)) {
                             if (g.attachedNode == m) {
                                 return true;
                             }
@@ -180,9 +180,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 }
                 // Pick camera gizmos
                 if (this.props.globalState.cameraGizmos.length > 0) {
-                    var gizmoScene = this.props.globalState.cameraGizmos[0].gizmoLayer.utilityLayerScene;
-                    let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
-                        for (var g of (this.props.globalState.cameraGizmos as any)) {
+                    const gizmoScene = this.props.globalState.cameraGizmos[0].gizmoLayer.utilityLayerScene;
+                    const pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
+                        for (let g of (this.props.globalState.cameraGizmos as any)) {
                             if (g.attachedNode == m) {
                                 return true;
                             }

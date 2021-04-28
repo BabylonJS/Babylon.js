@@ -10,9 +10,11 @@ import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { HeaderComponent } from "./components/headerComponent";
+
+import { CommandBarComponent } from "./components/commandBarComponent";
 
 require("./main.scss");
+require("./scss/header.scss");
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -262,7 +264,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     render() {
         return (
             <Portal globalState={this.props.globalState}>
-                 <HeaderComponent globalState={this.props.globalState}></HeaderComponent>
+                <div id="pg-header">
+                    <div className="command-bar">
+                        <CommandBarComponent globalState={this.props.globalState} />
+                    </div>
+                </div>
                 <div
                     id="gui-editor-workbench-root"
                     style={{
@@ -273,7 +279,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                             return;
                         }
                         this.props.globalState.blockKeyboardEvents = false;
-                    }}>  
+                    }}>
                     {/* Node creation menu */}
 
                     <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
@@ -282,7 +288,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     <div
                         className="diagram-container"
                     >
-                    <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
+                        <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                     </div>
 
                     <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>
