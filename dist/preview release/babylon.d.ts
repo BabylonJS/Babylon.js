@@ -3112,6 +3112,12 @@ declare module BABYLON {
          */
         static Normalize(vector: DeepImmutable<Vector2>): Vector2;
         /**
+         * Normalize a given vector into a second one
+         * @param vector defines the vector to normalize
+         * @param result defines the vector where to store the result
+         */
+        static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2): void;
+        /**
          * Gets a new Vector2 set with the minimal coordinate values from the "left" and "right" vectors
          * @param left defines 1st vector
          * @param right defines 2nd vector

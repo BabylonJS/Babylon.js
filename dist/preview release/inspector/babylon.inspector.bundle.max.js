@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -11232,7 +11232,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n", ""]);
+exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n  #top-bar #break-tangent {\n    grid-row: 1;\n    grid-column: 11; }\n  #top-bar #unify-tangent {\n    grid-row: 1;\n    grid-column: 12; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -46858,6 +46858,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/breakTangentIcon.svg":
+/*!*****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/breakTangentIcon.svg ***!
+  \*****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M29.89,13.53a1.2,1.2,0,0,0-2,1.18l-6.23,6.23L21,20.26a1.41,1.41,0,0,0-2,0l-.67.68-6.23-6.23a1.21,1.21,0,1,0-.85.83l6.24,6.24-.58.58a1.4,1.4,0,0,0,0,2L19,26.42a1.4,1.4,0,0,0,2,0l2.09-2.09a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.2,1.2,0,0,0,1.15-2Zm-7.66,10-2.09,2.09a.19.19,0,0,1-.28,0l-2.09-2.09a.21.21,0,0,1,0-.28l2.09-2.09a.22.22,0,0,1,.28,0l2.09,2.09A.21.21,0,0,1,22.23,23.48Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/closeWindowIcon.svg":
 /*!****************************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/closeWindowIcon.svg ***!
@@ -46987,6 +46998,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='21' viewBox='0 0 20 21'%3E%3Crect width='20' height='21' style='fill:none'/%3E%3Cpath d='M13.68,17.39V3.61a.61.61,0,0,1,1.21-.08V17.39a.61.61,0,0,1-1.22.08Zm-4.29,0V3.61A.61.61,0,0,1,10,3a.62.62,0,0,1,.61.53V17.39a.61.61,0,0,1-1.21.08Zm-4.29,0V3.61a.61.61,0,0,1,1.22-.08V17.39a.61.61,0,0,1-1.21.08Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/unifyTangentIcon.svg":
+/*!*****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/unifyTangentIcon.svg ***!
+  \*****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M29.89,10.2a1.2,1.2,0,0,0-2,1.18l-6.23,6.23L21,16.94a1.39,1.39,0,0,0-2,0L16.92,19a1.4,1.4,0,0,0,0,2l.57.56-6.23,6.23a1.18,1.18,0,0,0-1.15.3,1.2,1.2,0,0,0,0,1.71,1.2,1.2,0,0,0,2-1.18l6.22-6.22.68.69a1.4,1.4,0,0,0,2,0L23.08,21a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.18,1.18,0,0,0,1.15-.3A1.2,1.2,0,0,0,29.89,10.2Zm-7.66,10-2.09,2.09a.19.19,0,0,1-.28,0l-2.09-2.09a.2.2,0,0,1,0-.27l2.09-2.09a.19.19,0,0,1,.28,0l2.09,2.09A.2.2,0,0,1,22.23,20.15Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47355,6 +47377,8 @@ var Context = /** @class */ (function () {
         this.onNewKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFlattenTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLinearTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onBreakTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onUnifyTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDeleteAnimation = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphScaled = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47670,7 +47694,13 @@ var Curve = /** @class */ (function () {
         }
         return pathData;
     };
-    Curve.prototype.getInControlPoint = function (keyIndex, length) {
+    Curve.prototype.updateLockedTangentMode = function (keyIndex, enabled) {
+        var keys = this.keys;
+        keys[keyIndex].lockedTangent = enabled;
+        var animationKeys = this.animation.getKeys();
+        animationKeys[keyIndex].lockedTangent = enabled;
+    };
+    Curve.prototype.getInControlPoint = function (keyIndex) {
         if (keyIndex === 0) {
             return 0;
         }
@@ -47679,9 +47709,9 @@ var Curve = /** @class */ (function () {
         if (inTangent === undefined) {
             inTangent = this.evaluateInTangent(keyIndex);
         }
-        return length * inTangent;
+        return inTangent;
     };
-    Curve.prototype.getOutControlPoint = function (keyIndex, length) {
+    Curve.prototype.getOutControlPoint = function (keyIndex) {
         var keys = this.keys;
         if (keyIndex === keys.length - 1) {
             return 0;
@@ -47690,7 +47720,7 @@ var Curve = /** @class */ (function () {
         if (outTangent === undefined) {
             outTangent = this.evaluateOutTangent(keyIndex);
         }
-        return length * outTangent;
+        return outTangent;
     };
     Curve.prototype.evaluateOutTangent = function (keyIndex) {
         var keys = this.keys;
@@ -47771,59 +47801,8 @@ var Curve = /** @class */ (function () {
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyFrame = function (keyId, frame) {
-        var currentFrame = this.keys[keyId].frame;
         var originalKey = this.animation.getKeys()[keyId];
         originalKey.frame = frame;
-        if (keyId > 0) {
-            var oldWidth = currentFrame - this.keys[keyId - 1].frame;
-            var newWidth = frame - this.keys[keyId - 1].frame;
-            var previousOriginalKey = this.animation.getKeys()[keyId - 1];
-            if (this.keys[keyId].inTangent) {
-                var newInTangent = (this.keys[keyId].inTangent / oldWidth) * newWidth;
-                this.keys[keyId].inTangent = newInTangent;
-                if (this.property) {
-                    originalKey.inTangent[this.property] = newInTangent;
-                }
-                else {
-                    originalKey.inTangent = newInTangent;
-                }
-            }
-            if (this.keys[keyId - 1].outTangent) {
-                var newOutTangent = (this.keys[keyId - 1].outTangent / oldWidth) * newWidth;
-                this.keys[keyId - 1].outTangent = newOutTangent;
-                if (this.property) {
-                    previousOriginalKey.outTangent[this.property] = newOutTangent;
-                }
-                else {
-                    previousOriginalKey.outTangent = newOutTangent;
-                }
-            }
-        }
-        if (keyId < this.keys.length - 1) {
-            var oldWidth = this.keys[keyId + 1].frame - currentFrame;
-            var newWidth = this.keys[keyId + 1].frame - frame;
-            var nextOriginalKey = this.animation.getKeys()[keyId + 1];
-            if (this.keys[keyId].outTangent) {
-                var newOutTangent = (this.keys[keyId].outTangent / oldWidth) * newWidth;
-                this.keys[keyId].outTangent = newOutTangent;
-                if (this.property) {
-                    originalKey.outTangent[this.property] = newOutTangent;
-                }
-                else {
-                    originalKey.outTangent = newOutTangent;
-                }
-            }
-            if (this.keys[keyId + 1].inTangent) {
-                var newInTangent = (this.keys[keyId + 1].inTangent / oldWidth) * newWidth;
-                this.keys[keyId + 1].inTangent = newInTangent;
-                if (this.property) {
-                    nextOriginalKey.inTangent[this.property] = newInTangent;
-                }
-                else {
-                    nextOriginalKey.inTangent = newInTangent;
-                }
-            }
-        }
         this.keys[keyId].frame = frame;
         this.onDataUpdatedObservable.notifyObservers();
     };
@@ -48268,6 +48247,10 @@ var GraphComponent = /** @class */ (function (_super) {
         var maxValue = -Number.MAX_VALUE;
         for (var _i = 0, keys_2 = keys; _i < keys_2.length; _i++) {
             var key = keys_2[_i];
+            var lockedTangent = true;
+            if (key.lockedTangent !== undefined) {
+                lockedTangent = key.lockedTangent;
+            }
             switch (dataType) {
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
                     minValue = Math.min(minValue, key.value);
@@ -48278,6 +48261,7 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value,
                             inTangent: key.inTangent,
                             outTangent: key.outTangent,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48296,12 +48280,14 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.x,
                             inTangent: (_a = key.inTangent) === null || _a === void 0 ? void 0 : _a.x,
                             outTangent: (_b = key.outTangent) === null || _b === void 0 ? void 0 : _b.x,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_c = key.inTangent) === null || _c === void 0 ? void 0 : _c.y,
                             outTangent: (_d = key.outTangent) === null || _d === void 0 ? void 0 : _d.y,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48324,18 +48310,21 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.x,
                             inTangent: (_e = key.inTangent) === null || _e === void 0 ? void 0 : _e.x,
                             outTangent: (_f = key.outTangent) === null || _f === void 0 ? void 0 : _f.x,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_g = key.inTangent) === null || _g === void 0 ? void 0 : _g.y,
                             outTangent: (_h = key.outTangent) === null || _h === void 0 ? void 0 : _h.y,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame,
                             value: key.value.z,
                             inTangent: (_j = key.inTangent) === null || _j === void 0 ? void 0 : _j.z,
                             outTangent: (_k = key.outTangent) === null || _k === void 0 ? void 0 : _k.z,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48358,18 +48347,21 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.r,
                             inTangent: (_l = key.inTangent) === null || _l === void 0 ? void 0 : _l.r,
                             outTangent: (_m = key.outTangent) === null || _m === void 0 ? void 0 : _m.r,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.g,
                             inTangent: (_o = key.inTangent) === null || _o === void 0 ? void 0 : _o.g,
                             outTangent: (_p = key.outTangent) === null || _p === void 0 ? void 0 : _p.g,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame,
                             value: key.value.b,
                             inTangent: (_q = key.inTangent) === null || _q === void 0 ? void 0 : _q.b,
                             outTangent: (_r = key.outTangent) === null || _r === void 0 ? void 0 : _r.b,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48396,24 +48388,28 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.x,
                             inTangent: (_s = key.inTangent) === null || _s === void 0 ? void 0 : _s.x,
                             outTangent: (_t = key.outTangent) === null || _t === void 0 ? void 0 : _t.x,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_u = key.inTangent) === null || _u === void 0 ? void 0 : _u.y,
                             outTangent: (_v = key.outTangent) === null || _v === void 0 ? void 0 : _v.y,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame,
                             value: key.value.z,
                             inTangent: (_w = key.inTangent) === null || _w === void 0 ? void 0 : _w.z,
                             outTangent: (_x = key.outTangent) === null || _x === void 0 ? void 0 : _x.z,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[3].keys.push({
                             frame: key.frame,
                             value: key.value.w,
                             inTangent: (_y = key.inTangent) === null || _y === void 0 ? void 0 : _y.w,
                             outTangent: (_z = key.outTangent) === null || _z === void 0 ? void 0 : _z.w,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48440,24 +48436,28 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.r,
                             inTangent: (_0 = key.inTangent) === null || _0 === void 0 ? void 0 : _0.r,
                             outTangent: (_1 = key.outTangent) === null || _1 === void 0 ? void 0 : _1.r,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.g,
                             inTangent: (_2 = key.inTangent) === null || _2 === void 0 ? void 0 : _2.g,
                             outTangent: (_3 = key.outTangent) === null || _3 === void 0 ? void 0 : _3.g,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame,
                             value: key.value.b,
                             inTangent: (_4 = key.inTangent) === null || _4 === void 0 ? void 0 : _4.b,
                             outTangent: (_5 = key.outTangent) === null || _5 === void 0 ? void 0 : _5.b,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[3].keys.push({
                             frame: key.frame,
                             value: key.value.a,
                             inTangent: (_6 = key.inTangent) === null || _6 === void 0 ? void 0 : _6.a,
                             outTangent: (_7 = key.outTangent) === null || _7 === void 0 ? void 0 : _7.a,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48734,6 +48734,22 @@ var KeyPointComponent = /** @class */ (function (_super) {
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y, tangentSelectedIndex: -1 };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._keyPointSVG = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        _this._onUnifyTangentRequiredObserver = _this.props.context.onUnifyTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._unifyTangent();
+        });
+        _this._onBreakTangentRequiredObserver = _this.props.context.onBreakTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._breakTangent();
+        });
         _this._onFlattenTangentRequiredObserver = _this.props.context.onFlattenTangentRequired.add(function () {
             var _a;
             var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
@@ -48860,6 +48876,12 @@ var KeyPointComponent = /** @class */ (function (_super) {
         return _this;
     }
     KeyPointComponent.prototype.componentWillUnmount = function () {
+        if (this._onUnifyTangentRequiredObserver) {
+            this.props.context.onUnifyTangentRequired.remove(this._onUnifyTangentRequiredObserver);
+        }
+        if (this._onBreakTangentRequiredObserver) {
+            this.props.context.onBreakTangentRequired.remove(this._onBreakTangentRequiredObserver);
+        }
         if (this._onFlattenTangentRequiredObserver) {
             this.props.context.onFlattenTangentRequired.remove(this._onFlattenTangentRequiredObserver);
         }
@@ -48894,6 +48916,14 @@ var KeyPointComponent = /** @class */ (function (_super) {
             newState.y = newProps.y;
         }
         return true;
+    };
+    KeyPointComponent.prototype._breakTangent = function () {
+        this.props.curve.updateLockedTangentMode(this.props.keyId, false);
+        this.forceUpdate();
+    };
+    KeyPointComponent.prototype._unifyTangent = function () {
+        this.props.curve.updateLockedTangentMode(this.props.keyId, true);
+        this.forceUpdate();
     };
     KeyPointComponent.prototype._flattenTangent = function () {
         if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
@@ -48981,9 +49011,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
         }
         evt.stopPropagation();
     };
-    KeyPointComponent.prototype._processTangentMove = function (evt, vec, storedLength, isIn) {
-        vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-        vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+    KeyPointComponent.prototype._extractSlope = function (vec, storedLength, isIn) {
         if (isIn && vec.x >= 0) {
             vec.x = -0.01;
         }
@@ -48998,20 +49026,17 @@ var KeyPointComponent = /** @class */ (function (_super) {
         var frame = isIn ? keys[this.props.keyId].frame - this.props.invertX(currentPosition.x + this.state.x) : this.props.invertX(currentPosition.x + this.state.x) - keys[this.props.keyId].frame;
         return value / frame;
     };
+    KeyPointComponent.prototype._processTangentMove = function (evt, vec, storedLength, isIn) {
+        vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+        vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+        return this._extractSlope(vec, storedLength, isIn);
+    };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
         var _this = this;
         if (!this._pointerIsDown || this.state.selectedState !== SelectionState.Selected) {
             return;
         }
-        if (this._controlMode === ControlMode.TangentLeft) {
-            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
-            this.forceUpdate();
-        }
-        else if (this._controlMode === ControlMode.TangentRight) {
-            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
-            this.forceUpdate();
-        }
-        else if (this._controlMode === ControlMode.Key) {
+        if (this._controlMode === ControlMode.Key) {
             var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
             var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
             var previousX = this.props.getPreviousX();
@@ -49046,6 +49071,41 @@ var KeyPointComponent = /** @class */ (function (_super) {
                 });
             }
         }
+        else {
+            var keys = this.props.curve.keys;
+            var isLockedTangent = keys[this.props.keyId].lockedTangent && this.props.keyId !== 0 && this.props.keyId !== keys.length - 1
+                && keys[this.props.keyId].inTangent !== undefined && keys[this.props.keyId].outTangent !== undefined;
+            var angleDiff = 0;
+            var tmpVector = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[0];
+            if (isLockedTangent) {
+                var va = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[1];
+                var vb = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[2];
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].NormalizeToRef(this._inVec, va);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].NormalizeToRef(this._outVec, vb);
+                angleDiff = Math.acos(Math.min(1.0, Math.max(-1, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Dot(va, vb))));
+                this._inVec.rotateToRef(-angleDiff, tmpVector);
+                if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Distance(tmpVector, this._outVec) > 0.01) {
+                    angleDiff = -angleDiff;
+                }
+            }
+            if (this._controlMode === ControlMode.TangentLeft) {
+                this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
+                if (isLockedTangent) {
+                    this._inVec.rotateToRef(-angleDiff, tmpVector);
+                    tmpVector.x = Math.abs(tmpVector.x);
+                    this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthOut, false));
+                }
+            }
+            else if (this._controlMode === ControlMode.TangentRight) {
+                this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
+                if (isLockedTangent) {
+                    this._outVec.rotateToRef(angleDiff, tmpVector);
+                    tmpVector.x = -Math.abs(tmpVector.x);
+                    this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthIn, true));
+                }
+            }
+            this.forceUpdate();
+        }
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
         evt.stopPropagation();
@@ -49058,23 +49118,20 @@ var KeyPointComponent = /** @class */ (function (_super) {
     };
     KeyPointComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
             return null;
         }
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         var keys = this.props.curve.keys;
-        var prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
-        var currentFrame = keys[this.props.keyId].frame;
-        var nextFrame = this.props.keyId < keys.length - 1 ? keys[this.props.keyId + 1].frame : 0;
-        var inFrameLength = (currentFrame - prevFrame) / 3;
-        var outFrameLength = (nextFrame - currentFrame) / 3;
+        var isLockedTangent = (_a = keys[this.props.keyId].lockedTangent) !== null && _a !== void 0 ? _a : true;
         var convertedX = this.props.invertX(this.state.x);
         var convertedY = this.props.invertY(this.state.y);
-        var inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId, inFrameLength);
-        var outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId, outFrameLength);
+        var inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId);
+        var outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId);
         // We want to store the delta in the key local space
-        this._outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX + outFrameLength) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
-        this._inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX - inFrameLength) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        this._outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX + 1) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
+        this._inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX - 1) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
         this._storedLengthIn = this._inVec.length();
         this._storedLengthOut = this._outVec.length();
         this._inVec.normalize();
@@ -49089,7 +49146,8 @@ var KeyPointComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._inVec.x + "px", y2: this._inVec.y + "px", style: {
                                     stroke: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
-                                    strokeWidth: "" + 1 * this.props.scale
+                                    strokeWidth: "" + 1 * this.props.scale,
+                                    strokeDasharray: isLockedTangent ? "" : "2, 2"
                                 } }),
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: this._inVec.x + "px", cy: this._inVec.y + "px", r: "" + 4 * this.props.scale, style: {
                                     fill: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA"
@@ -49098,7 +49156,8 @@ var KeyPointComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._outVec.x + "px", y2: this._outVec.y + "px", style: {
                                     stroke: this.state.tangentSelectedIndex === 1 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
-                                    strokeWidth: "" + 1 * this.props.scale
+                                    strokeWidth: "" + 1 * this.props.scale,
+                                    strokeDasharray: isLockedTangent ? "" : "2, 2"
                                 } }),
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: this._outVec.x + "px", cy: this._outVec.y + "px", r: "" + 4 * this.props.scale, style: {
                                     fill: this.state.tangentSelectedIndex === 1 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA"
@@ -50443,6 +50502,8 @@ var frameIcon = __webpack_require__(/*! ./assets/frameIcon.svg */ "./components/
 var newKeyIcon = __webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/newKeyIcon.svg");
 var flatTangentIcon = __webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg");
 var linearTangentIcon = __webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg");
+var breakTangentIcon = __webpack_require__(/*! ./assets/breakTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/breakTangentIcon.svg");
+var unifyTangentIcon = __webpack_require__(/*! ./assets/unifyTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/unifyTangentIcon.svg");
 var TopBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TopBarComponent, _super);
     function TopBarComponent(props) {
@@ -50492,7 +50553,9 @@ var TopBarComponent = /** @class */ (function (_super) {
             this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Break tangent", id: "break-tangent", globalState: this.props.globalState, context: this.props.context, icon: breakTangentIcon, onClick: function () { return _this.props.context.onBreakTangentRequired.notifyObservers(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Unify tangent", id: "unify-tangent", globalState: this.props.globalState, context: this.props.context, icon: unifyTangentIcon, onClick: function () { return _this.props.context.onUnifyTangentRequired.notifyObservers(); } }))));
     };
     return TopBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -52565,7 +52628,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -64356,7 +64419,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -64663,7 +64726,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -65080,7 +65143,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -65419,14 +65482,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/image":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 
