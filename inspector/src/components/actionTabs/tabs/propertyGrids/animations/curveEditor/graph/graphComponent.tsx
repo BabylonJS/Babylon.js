@@ -304,6 +304,11 @@ IGraphComponentState
         let maxValue = -Number.MAX_VALUE;
 
         for (var key of keys) {
+            let lockedTangent = true;
+            if (key.lockedTangent !== undefined) {
+                lockedTangent = key.lockedTangent;
+            }
+
             switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:
                     minValue = Math.min(minValue, key.value);
@@ -315,6 +320,7 @@ IGraphComponentState
                             value: key.value,
                             inTangent: key.inTangent,
                             outTangent: key.outTangent,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -334,12 +340,14 @@ IGraphComponentState
                             value: key.value.x,
                             inTangent: key.inTangent?.x,
                             outTangent: key.outTangent?.x,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame, 
                             value: key.value.y,
                             inTangent: key.inTangent?.y,
                             outTangent: key.outTangent?.y,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -365,18 +373,21 @@ IGraphComponentState
                             value: key.value.x,
                             inTangent: key.inTangent?.x,
                             outTangent: key.outTangent?.x,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame, 
                             value: key.value.y,
                             inTangent: key.inTangent?.y,
                             outTangent: key.outTangent?.y,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame, 
                             value: key.value.z,
                             inTangent: key.inTangent?.z,
                             outTangent: key.outTangent?.z,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -402,18 +413,21 @@ IGraphComponentState
                             value: key.value.r,
                             inTangent: key.inTangent?.r,
                             outTangent: key.outTangent?.r,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame, 
                             value: key.value.g,
                             inTangent: key.inTangent?.g,
                             outTangent: key.outTangent?.g,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame, 
                             value: key.value.b,
                             inTangent: key.inTangent?.b,
                             outTangent: key.outTangent?.b,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;                    
@@ -444,24 +458,28 @@ IGraphComponentState
                             value: key.value.x,
                             inTangent: key.inTangent?.x,
                             outTangent: key.outTangent?.x,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame, 
                             value: key.value.y,
                             inTangent: key.inTangent?.y,
                             outTangent: key.outTangent?.y,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame, 
                             value: key.value.z,
                             inTangent: key.inTangent?.z,
                             outTangent: key.outTangent?.z,
+                            lockedTangent: lockedTangent
                         });   
                         this._curves[3].keys.push({
                             frame: key.frame, 
                             value: key.value.w,
                             inTangent: key.inTangent?.w,
                             outTangent: key.outTangent?.w,
+                            lockedTangent: lockedTangent
                         }); 
                     }                   
                     break;
@@ -492,24 +510,28 @@ IGraphComponentState
                             value: key.value.r,
                             inTangent: key.inTangent?.r,
                             outTangent: key.outTangent?.r,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame, 
                             value: key.value.g,
                             inTangent: key.inTangent?.g,
                             outTangent: key.outTangent?.g,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame, 
                             value: key.value.b,
                             inTangent: key.inTangent?.b,
                             outTangent: key.outTangent?.b,
+                            lockedTangent: lockedTangent
                         });   
                         this._curves[3].keys.push({
                             frame: key.frame, 
                             value: key.value.a,
                             inTangent: key.inTangent?.a,
                             outTangent: key.outTangent?.a,
+                            lockedTangent: lockedTangent
                         });                  
                     }
                     break;                    
