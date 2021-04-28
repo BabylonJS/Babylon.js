@@ -281,8 +281,8 @@ export class TouchHolographicButton extends TouchButton3D {
             .then((result) => {
                 var importedFrontPlate = result.meshes[1];
                 importedFrontPlate.name = `${this.name}_frontPlate`;
-                importedFrontPlate.parent = collisionMesh;
                 importedFrontPlate.isPickable = false;
+                importedFrontPlate.parent = collisionMesh;
                 if (!!this._frontMaterial) {
                     importedFrontPlate.material = this._frontMaterial;
                 }
