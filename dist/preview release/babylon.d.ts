@@ -2990,6 +2990,13 @@ declare module BABYLON {
          */
         fract(): Vector2;
         /**
+         * Rotate the current vector into a given result vector
+         * @param angle defines the rotation angle
+         * @param result defines the result vector where to store the rotated vector
+         * @returns the current vector
+         */
+        rotateToRef(angle: number, result: Vector2): this;
+        /**
          * Gets the length of the vector
          * @returns the vector length (float)
          */
@@ -7030,6 +7037,10 @@ declare module BABYLON {
          * The animation interpolation type
          */
         interpolation?: AnimationKeyInterpolation;
+        /**
+         * Property defined by UI tools to link (or not ) the tangents
+         */
+        lockedTangent?: boolean;
     }
     /**
      * Enum for the animation key frame interpolation type
@@ -67010,7 +67021,7 @@ declare module BABYLON {
      * This represents a texture coming from an HDR input.
      *
      * The only supported format is currently panorama picture stored in RGBE format.
-     * Example of such files can be found on HDRLib: http://hdrlib.com/
+     * Example of such files can be found on HDR Haven: https://hdrihaven.com/
      */
     export class HDRCubeTexture extends BaseTexture {
         private static _facesMapping;
@@ -69159,9 +69170,13 @@ declare module BABYLON {
          */
         constructor(name: string);
         /**
-         * Gets the current class name
-         * @returns the class name
+         * Defines if the input should be converted to linear space (default: true)
          */
+        convertInputToLinearSpace: boolean;
+        /**
+        * Gets the current class name
+        * @returns the class name
+        */
         getClassName(): string;
         /**
          * Gets the color input component
@@ -69180,6 +69195,9 @@ declare module BABYLON {
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
