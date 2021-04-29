@@ -96,6 +96,7 @@
 - Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
 - Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
 - Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
+- Added navigation hotkeys ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
