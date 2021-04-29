@@ -26,11 +26,11 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Base Url for the button model.
      */
-    public static MODEL_BASE_URL: string = 'https://assets.babylonjs.com/meshes/MRTK/';
+    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
     /**
      * File name for the button model.
      */
-    public static MODEL_FILENAME: string = 'mrtk-fluent-button.glb';
+    public static MODEL_FILENAME: string = "mrtk-fluent-button.glb";
 
     private _backPlate: Mesh;
     private _textPlate: Mesh;
@@ -256,45 +256,47 @@ export class TouchHolographicButton extends TouchButton3D {
         }
 
         // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
-        if (!!document.createElement)
-        {
+        if (!!document.createElement) {
             this.content = panel;
         }
     }
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const collisionMesh = BoxBuilder.CreateBox(this.name ?? "TouchHolographicButton", {
-            width: 1.0,
-            height: 1.0,
-            depth: 1.0,
-        }, scene);
+        const collisionMesh = BoxBuilder.CreateBox(
+            this.name ?? "TouchHolographicButton",
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: 1.0,
+            },
+            scene
+        );
         collisionMesh.isPickable = true;
-        collisionMesh.isVisible = false;
+        collisionMesh.visibility = 0;
         collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
 
-        SceneLoader.ImportMeshAsync(
-            undefined,
-            TouchHolographicButton.MODEL_BASE_URL,
-            TouchHolographicButton.MODEL_FILENAME,
-            scene)
-            .then((result) => {
-                var importedFrontPlate = result.meshes[1];
-                importedFrontPlate.name = `${this.name}_frontPlate`;
-                importedFrontPlate.isPickable = false;
-                importedFrontPlate.parent = collisionMesh;
-                if (!!this._frontMaterial) {
-                    importedFrontPlate.material = this._frontMaterial;
-                }
-                this._frontPlate = importedFrontPlate;
-            });
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
+            var importedFrontPlate = result.meshes[1];
+            importedFrontPlate.name = `${this.name}_frontPlate`;
+            importedFrontPlate.isPickable = false;
+            importedFrontPlate.parent = collisionMesh;
+            if (!!this._frontMaterial) {
+                importedFrontPlate.material = this._frontMaterial;
+            }
+            this._frontPlate = importedFrontPlate;
+        });
 
         const backPlateDepth = 0.04;
-        this._backPlate = BoxBuilder.CreateBox(this.name + "BackMesh", {
-            width: 1.0,
-            height: 1.0,
-            depth: backPlateDepth
-        }, scene);
+        this._backPlate = BoxBuilder.CreateBox(
+            this.name + "BackMesh",
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: backPlateDepth,
+            },
+            scene
+        );
 
         this._backPlate.parent = collisionMesh;
         this._backPlate.position.z = 0.5 - backPlateDepth / 2;
