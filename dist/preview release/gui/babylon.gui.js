@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3777,6 +3777,7 @@ var Container = /** @class */ (function (_super) {
     };
     /** @hidden */
     Container.prototype._layout = function (parentMeasure, context) {
+        var _a, _b;
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -3794,8 +3795,8 @@ var Container = /** @class */ (function (_super) {
             this._rebuildLayout = false;
             this._processMeasures(parentMeasure, context);
             if (!this._isClipped) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                    var child = _a[_i];
+                for (var _i = 0, _c = this._children; _i < _c.length; _i++) {
+                    var child = _c[_i];
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
                     if (child._layout(this._measureForChildren, context)) {
                         if (this.adaptWidthToChildren && child._width.isPixel) {
@@ -3809,6 +3810,7 @@ var Container = /** @class */ (function (_super) {
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
                     computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
+                        (_a = this.parent) === null || _a === void 0 ? void 0 : _a._markAsDirty();
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
@@ -3816,6 +3818,7 @@ var Container = /** @class */ (function (_super) {
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
                     computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
+                        (_b = this.parent) === null || _b === void 0 ? void 0 : _b._markAsDirty();
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
                     }
@@ -17098,7 +17101,7 @@ var HolographicButton = /** @class */ (function (_super) {
 /*!******************************!*\
   !*** ./3D/controls/index.ts ***!
   \******************************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17130,28 +17133,32 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _scatterPanel__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./scatterPanel */ "./3D/controls/scatterPanel.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _scatterPanel__WEBPACK_IMPORTED_MODULE_8__["ScatterPanel"]; });
 
-/* harmony import */ var _spherePanel__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./spherePanel */ "./3D/controls/spherePanel.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _spherePanel__WEBPACK_IMPORTED_MODULE_9__["SpherePanel"]; });
+/* harmony import */ var _slider3D__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./slider3D */ "./3D/controls/slider3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _slider3D__WEBPACK_IMPORTED_MODULE_9__["Slider3D"]; });
 
-/* harmony import */ var _stackPanel3D__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./stackPanel3D */ "./3D/controls/stackPanel3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _stackPanel3D__WEBPACK_IMPORTED_MODULE_10__["StackPanel3D"]; });
+/* harmony import */ var _spherePanel__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./spherePanel */ "./3D/controls/spherePanel.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _spherePanel__WEBPACK_IMPORTED_MODULE_10__["SpherePanel"]; });
 
-/* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_11__["ButtonState"]; });
+/* harmony import */ var _stackPanel3D__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./stackPanel3D */ "./3D/controls/stackPanel3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _stackPanel3D__WEBPACK_IMPORTED_MODULE_11__["StackPanel3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_11__["TouchButton3D"]; });
+/* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_12__["ButtonState"]; });
 
-/* harmony import */ var _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./touchMeshButton3D */ "./3D/controls/touchMeshButton3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_12__["TouchMeshButton3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_12__["TouchButton3D"]; });
 
-/* harmony import */ var _touchHolographicButton__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./touchHolographicButton */ "./3D/controls/touchHolographicButton.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _touchHolographicButton__WEBPACK_IMPORTED_MODULE_13__["TouchHolographicButton"]; });
+/* harmony import */ var _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./touchMeshButton3D */ "./3D/controls/touchMeshButton3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_13__["TouchMeshButton3D"]; });
 
-/* harmony import */ var _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./touchToggleButton3D */ "./3D/controls/touchToggleButton3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_14__["TouchToggleButton3D"]; });
+/* harmony import */ var _touchHolographicButton__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./touchHolographicButton */ "./3D/controls/touchHolographicButton.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _touchHolographicButton__WEBPACK_IMPORTED_MODULE_14__["TouchHolographicButton"]; });
 
-/* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_15__["VolumeBasedPanel"]; });
+/* harmony import */ var _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./touchToggleButton3D */ "./3D/controls/touchToggleButton3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_15__["TouchToggleButton3D"]; });
+
+/* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_16__["VolumeBasedPanel"]; });
+
 
 
 
@@ -17427,6 +17434,234 @@ var ScatterPanel = /** @class */ (function (_super) {
     };
     return ScatterPanel;
 }(_volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__["VolumeBasedPanel"]));
+
+
+
+/***/ }),
+
+/***/ "./3D/controls/slider3D.ts":
+/*!*********************************!*\
+  !*** ./3D/controls/slider3D.ts ***!
+  \*********************************/
+/*! exports provided: Slider3D */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return Slider3D; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
+
+
+
+
+
+
+
+
+
+
+var SLIDER_MIN = 0;
+var SLIDER_MAX = 100;
+var SLIDER_VAL = 50;
+var SLIDER_STEP = 0;
+var SLIDER_SCALING = 2.0;
+/**
+ * Class used to create a slider in 3D
+ */
+var Slider3D = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Slider3D, _super);
+    /**
+     * Creates a new slider
+     * @param name defines the control name
+     */
+    function Slider3D(name) {
+        var _this = _super.call(this, name) || this;
+        /** Observable raised when the sldier value changes */
+        _this.onValueChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        _this._minimum = SLIDER_MIN;
+        _this._maximum = SLIDER_MAX;
+        _this._step = SLIDER_STEP;
+        _this._value = SLIDER_VAL;
+        return _this;
+    }
+    Object.defineProperty(Slider3D.prototype, "mesh", {
+        /**
+         * Gets the mesh used to render this control
+         */
+        get: function () {
+            if (this.node) {
+                return this._sliderThumb;
+            }
+            return null;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider3D.prototype, "minimum", {
+        /** Gets or sets minimum value */
+        get: function () {
+            return this._minimum;
+        },
+        set: function (value) {
+            if (this._minimum === value) {
+                return;
+            }
+            this._minimum = Math.max(value, SLIDER_MIN);
+            this._value = Math.max(Math.min(this._value, this._maximum), this._minimum);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider3D.prototype, "maximum", {
+        /** Gets or sets maximum value */
+        get: function () {
+            return this._maximum;
+        },
+        set: function (value) {
+            if (this._maximum === value) {
+                return;
+            }
+            this._maximum = Math.max(value, this._minimum);
+            this._value = Math.max(Math.min(this._value, this._maximum), this._minimum);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider3D.prototype, "step", {
+        /** Gets or sets step value */
+        get: function () {
+            return this._step;
+        },
+        set: function (value) {
+            if (this._step === value) {
+                return;
+            }
+            this._step = Math.max(Math.min(value, this._maximum - this._minimum), SLIDER_STEP);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider3D.prototype, "value", {
+        /** Gets or sets current value */
+        get: function () {
+            return this._value;
+        },
+        set: function (value) {
+            if (this._value === value) {
+                return;
+            }
+            this._value = Math.max(Math.min(value, this._maximum), this._minimum);
+            this.onValueChangedObservable.notifyObservers(this._value);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider3D.prototype, "start", {
+        get: function () {
+            if (!this.node) {
+                return -SLIDER_SCALING / 2;
+            }
+            return this._sliderBar.position.x - this._sliderBar.scaling.y / 2;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider3D.prototype, "end", {
+        get: function () {
+            if (!this.node) {
+                return SLIDER_SCALING / 2;
+            }
+            return this._sliderBar.position.x + this._sliderBar.scaling.y / 2;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider3D.prototype, "sliderBarMaterial", {
+        /**
+         * Gets the slider bar material used by this control
+         */
+        get: function () {
+            return this._sliderBarMaterial;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider3D.prototype, "sliderThumbMaterial", {
+        /**
+         * Gets the slider thumb material used by this control
+         */
+        get: function () {
+            return this._sliderThumbMaterial;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    // Mesh association
+    Slider3D.prototype._createNode = function (scene) {
+        var anchor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["TransformNode"](this.name + "_slider", scene);
+        var sliderBar = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["CylinderBuilder"].CreateCylinder(this.name + "_sliderbar", { diameter: 0.03, height: 1.0 }, scene);
+        sliderBar.rotation.z = -Math.PI / 2;
+        sliderBar.scaling.y = SLIDER_SCALING;
+        sliderBar.isPickable = false;
+        sliderBar.setParent(anchor);
+        var sliderThumb = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_sliderthumb", { size: 0.1 }, scene);
+        sliderThumb.scaling = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"](SLIDER_SCALING, SLIDER_SCALING, SLIDER_SCALING);
+        sliderThumb.position.x = this._convertToPosition(this.value);
+        sliderThumb.addBehavior(this._createBehavior());
+        sliderThumb.setParent(anchor);
+        this._sliderBar = sliderBar;
+        this._sliderThumb = sliderThumb;
+        return anchor;
+    };
+    Slider3D.prototype._affectMaterial = function (mesh) {
+        var barMaterial = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"](this.name + "_sliderbar_material", mesh.getScene());
+        barMaterial.specularColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
+        this._sliderBar.material = barMaterial;
+        var thumbMaterial = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"](this.name + "_sliderthumb_material", mesh.getScene());
+        thumbMaterial.specularColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
+        mesh.material = thumbMaterial;
+        this._sliderBarMaterial = barMaterial;
+        this._sliderThumbMaterial = thumbMaterial;
+    };
+    Slider3D.prototype._createBehavior = function () {
+        var _this = this;
+        var pointerDragBehavior = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerDragBehavior"]({ dragAxis: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Right() });
+        pointerDragBehavior.moveAttached = false;
+        pointerDragBehavior.onDragObservable.add(function (event) {
+            var newPosition = _this._sliderThumb.position.x + event.dragDistance;
+            _this._sliderThumb.position.x = Math.max(Math.min(newPosition, _this.end), _this.start);
+            _this.value = _this._convertToValue(_this._sliderThumb.position.x);
+        });
+        pointerDragBehavior.onDragEndObservable.add(function (event) {
+            _this._sliderThumb.position.x = _this._convertToPosition(_this.value);
+        });
+        return pointerDragBehavior;
+    };
+    Slider3D.prototype._convertToPosition = function (value) {
+        var position = ((value - this.minimum) / (this.maximum - this.minimum)) * (this.end - this.start) + this.start;
+        return Math.min(Math.max(position, this.start), this.end);
+    };
+    Slider3D.prototype._convertToValue = function (position) {
+        var value = ((position - this.start) / (this.end - this.start)) * (this.maximum - this.minimum);
+        value = this.step ? Math.round(value / this.step) * this.step : value;
+        return Math.max(Math.min(this.minimum + value, this._maximum), this._minimum);
+    };
+    /**
+     * Releases all associated resources
+     */
+    Slider3D.prototype.dispose = function () {
+        var _a, _b, _c, _d;
+        _super.prototype.dispose.call(this);
+        (_a = this._sliderBar) === null || _a === void 0 ? void 0 : _a.dispose();
+        (_b = this._sliderThumb) === null || _b === void 0 ? void 0 : _b.dispose();
+        (_c = this._sliderBarMaterial) === null || _c === void 0 ? void 0 : _c.dispose();
+        (_d = this._sliderThumbMaterial) === null || _d === void 0 ? void 0 : _d.dispose();
+    };
+    return Slider3D;
+}(_control3D__WEBPACK_IMPORTED_MODULE_2__["Control3D"]));
 
 
 
@@ -18978,7 +19213,7 @@ var GUI3DManager = /** @class */ (function () {
 /*!*********************!*\
   !*** ./3D/index.ts ***!
   \*********************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19001,6 +19236,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["PlanePanel"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ScatterPanel"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Slider3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["SpherePanel"]; });
 
@@ -20084,7 +20321,7 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20197,6 +20434,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["ScatterPanel"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["Slider3D"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["SpherePanel"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["StackPanel3D"]; });
@@ -20233,7 +20472,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20344,6 +20583,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["PlanePanel"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["ScatterPanel"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Slider3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["SpherePanel"]; });
 

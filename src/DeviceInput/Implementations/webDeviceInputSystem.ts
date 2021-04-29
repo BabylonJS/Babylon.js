@@ -147,7 +147,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         if (this._pointerActive) {
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-            this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+            window.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
             this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
 
             if (this._pointerWheelClearObserver) {
@@ -452,7 +452,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             const pointer = this._inputs[deviceType]?.[deviceSlot];
-            if (pointer) {
+            if (pointer && pointer[evt.button + 2] !== 0) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
                 const previousVertical = pointer[PointerInput.Vertical];
                 const previousButton = pointer[evt.button + 2];
@@ -614,8 +614,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-        this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
-        this._elementToAttachTo.addEventListener(this._eventPrefix + "out", this._pointerBlurEvent);
+        window.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
 

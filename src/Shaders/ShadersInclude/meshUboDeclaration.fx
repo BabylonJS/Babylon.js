@@ -5,3 +5,5 @@ uniform Mesh
     mat4 world;
     float visibility;
 };
+
+#define WORLD_UBO
