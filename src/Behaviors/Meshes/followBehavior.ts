@@ -1,25 +1,26 @@
 import { Behavior } from "../behavior";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Observer } from "../../Misc";
 import { Camera } from "../../Cameras/camera";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
+import { TransformNode } from "../../Meshes/transformNode";
 
 const EPSILON = 1e-5;
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to fade in and out
  */
-export class FollowBehavior implements Behavior<AbstractMesh> {
+export class FollowBehavior implements Behavior<TransformNode> {
     private _scene: Scene;
-    private _tmpVector: Vector3 = new Vector3();
+
     // Memory cache to avoid GC workload
+    private _tmpQuaternion: Quaternion = new Quaternion();
     private _tmpVectors: Vector3[] = [new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3()];
     private _tmpMatrix: Matrix = new Matrix();
 
-    public attachedNode: Nullable<AbstractMesh>;
+    public attachedNode: Nullable<TransformNode>;
     public followDistance = 5;
     public lerpTime = 100;
 
@@ -28,10 +29,12 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
     private _onBeforeRender: Nullable<Observer<Scene>>;
 
     private _workingPosition: Vector3 = new Vector3();
-    private _workingPivot: Vector3 = new Vector3();
     private _workingQuaternion: Quaternion = new Quaternion();
     private _lastTick: number = -1;
 
+    /**
+     * The camera that should be followed by this behavior
+     */
     public get followedCamera(): Nullable<Camera> {
         return this._followedCamera;
     }
@@ -62,13 +65,20 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
     /**
      * Attaches the follow behavior
      * @param ownerNode The mesh that will be following once attached
+     * @param followedCamera The camera that should be followed by the node
      */
-    public attach(ownerNode: AbstractMesh, followedCamera?: Camera): void {
+    public attach(ownerNode: TransformNode, followedCamera?: Camera): void {
         this._scene = ownerNode.getScene();
         this.attachedNode = ownerNode;
 
-        this.followedCamera = followedCamera || this._scene.activeCamera;
+        if (followedCamera) {
+            this.followedCamera = followedCamera;
+        }
+        if (!this.followedCamera) {
+            this.followedCamera = this._scene.activeCamera;
+        }
     }
+
     /**
      *  Detaches the behavior from the mesh
      */
@@ -126,7 +136,7 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
         return Math.PI / 2 - Math.acos(Vector3.Dot(vector, normal));
     }
 
-    private _distanceClamp(mesh: AbstractMesh, camera: Camera, currentToTarget: Vector3, _ignorePitch: boolean = false, _moveToDefault: boolean = false) {
+    private _distanceClamp(currentToTarget: Vector3, _ignorePitch: boolean = false, _moveToDefault: boolean = false) {
         // Todo : parameters
         const minDistance = 3;
         const maxDistance = 6;
@@ -151,17 +161,24 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
         return currentDistance !== clampedDistance;
     }
 
-    private _angularClamp(mesh: AbstractMesh, camera: Camera, currentToTarget: Vector3, _ignoreVertical: boolean = false) {
+    private _angularClamp(camera: Camera, currentToTarget: Vector3, _ignoreVertical: boolean = false) {
         const verticalFovFixed = camera.fovMode === Camera.FOVMODE_VERTICAL_FIXED;
         const invertView = this._tmpMatrix;
         invertView.copyFrom(camera.getViewMatrix());
         invertView.invert();
 
-        const forward = new Vector3();
-        const right = new Vector3();
-        Vector3.TransformNormalToRef(new Vector3(0, 0, 1), invertView, forward);
-        Vector3.TransformNormalToRef(new Vector3(1, 0, 0), invertView, right);
-        const up = new Vector3(0, 1, 0);
+        const forward = this._tmpVectors[0];
+        forward.copyFromFloats(0, 0, 1);
+        const right = this._tmpVectors[1];
+        forward.copyFromFloats(1, 0, 0);
+
+        // forward and right are related to camera frame of reference
+        Vector3.TransformNormalToRef(forward, invertView, forward);
+        Vector3.TransformNormalToRef(right, invertView, right);
+
+        // Up is global Z
+        const up = this._tmpVectors[2];
+        up.copyFromFloats(0, 1, 0);
 
         // Todo : angle as parameters
         const horizontalAngularClamp = verticalFovFixed ? (this._scene.getEngine().getAspectRatio(camera) * camera.fov) / 2 : camera.fov / 2;
@@ -174,19 +191,21 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
         }
 
         let clamped = false;
+        const rotationQuat = this._tmpQuaternion;
+
         // X-axis leashing
         if (_ignoreVertical) {
             const angle = this._angleBetweenOnPlane(currentToTarget, forward, right);
-            const rotationQuat = Quaternion.RotationAxis(right, angle);
+            Quaternion.RotationAxisToRef(right, angle, rotationQuat);
             currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
         } else {
             const angle = -this._angleBetweenOnPlane(currentToTarget, forward, right);
             if (angle < -verticalAngularClamp) {
-                const rotationQuat = Quaternion.RotationAxis(right, -angle - verticalAngularClamp);
+                Quaternion.RotationAxisToRef(right, -angle - verticalAngularClamp, rotationQuat);
                 currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
                 clamped = true;
             } else if (angle > verticalAngularClamp) {
-                const rotationQuat = Quaternion.RotationAxis(right, -angle + verticalAngularClamp);
+                Quaternion.RotationAxisToRef(right, -angle + verticalAngularClamp, rotationQuat);
                 currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
                 clamped = true;
             }
@@ -195,33 +214,43 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
         // Y-axis leashing
         const angle = this._angleBetweenVectorAndPlane(currentToTarget, right);
         if (angle < -horizontalAngularClamp) {
-            const rotationQuat = Quaternion.RotationAxis(up, -angle - horizontalAngularClamp);
+            Quaternion.RotationAxisToRef(up, -angle - horizontalAngularClamp, rotationQuat);
             currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
             clamped = true;
         } else if (angle > horizontalAngularClamp) {
-            const rotationQuat = Quaternion.RotationAxis(up, -angle + horizontalAngularClamp);
+            Quaternion.RotationAxisToRef(up, -angle + horizontalAngularClamp, rotationQuat);
             currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
             clamped = true;
         }
     }
 
-    private _orientationClamp(mesh: AbstractMesh, camera: Camera, currentToTarget: Vector3, rotationQuaternion: Quaternion) {
-        let toFollowed = this._tmpVectors[0];
+    private _orientationClamp(camera: Camera, currentToTarget: Vector3, rotationQuaternion: Quaternion) {
         // Construct a rotation quat from up vector and target vector
+        const toFollowed = this._tmpVectors[0];
         toFollowed.copyFrom(currentToTarget).scaleInPlace(-1).normalize();
+
+        // Inverted view matrix goes from camera frame to world
         const invertView = this._tmpMatrix;
         invertView.copyFrom(camera.getViewMatrix());
         invertView.invert();
-        const up = new Vector3();
-        const right = new Vector3();
-        Vector3.TransformNormalToRef(new Vector3(0, 1, 0), Matrix.Identity(), up);
+
+        const up = this._tmpVectors[1];
+        const right = this._tmpVectors[2];
+        // We use global up vector to orient the following node (global +Y)
+        up.copyFromFloats(0, 1, 0);
+
+        // Gram-Schmidt to create an orthonormal frame
         Vector3.CrossToRef(toFollowed, up, right);
-        if (right.length() < EPSILON) {
+        const length = right.length();
+
+        if (length < EPSILON) {
             return;
         }
+
+        right.normalizeFromLength(length);
+
         Vector3.CrossToRef(right, toFollowed, up);
         Quaternion.FromLookDirectionLHToRef(toFollowed, up, rotationQuaternion);
-        rotationQuaternion.normalize();
     }
 
     private _vectorSlerpToRef(vector1: Vector3, vector2: Vector3, slerp: number, result: Vector3) {
@@ -278,18 +307,18 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
             this.attachedNode.setParent(null);
 
             const worldMatrix = this.attachedNode.computeWorldMatrix(true);
-            const currentToTarget = this._tmpVector;
+            const currentToTarget = this._workingPosition;
             const rotationQuaternion = this._workingQuaternion;
             const pivot = this.attachedNode.getPivotPoint();
-            this._workingPivot.copyFrom(pivot);
+
             Vector3.TransformCoordinatesToRef(pivot, worldMatrix, currentToTarget);
             currentToTarget.subtractInPlace(camera.globalPosition);
 
-            this._angularClamp(this.attachedNode, camera, currentToTarget);
-            this._distanceClamp(this.attachedNode, camera, currentToTarget);
-            this._orientationClamp(this.attachedNode, camera, currentToTarget, rotationQuaternion);
+            this._angularClamp(camera, currentToTarget);
+            this._distanceClamp(currentToTarget);
+            this._orientationClamp(camera, currentToTarget, rotationQuaternion);
 
-            this._workingPosition.copyFrom(currentToTarget).subtractInPlace(pivot);
+            this._workingPosition.subtractInPlace(pivot);
 
             this.attachedNode.setParent(oldParent);
             this.attachedNode.computeWorldMatrix(true);
