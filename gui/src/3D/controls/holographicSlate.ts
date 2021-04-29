@@ -5,7 +5,7 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
-import { HolographicButton } from "./holographicButton";
+import { TouchHolographicButton } from "./touchHolographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
@@ -45,8 +45,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
     protected _backPlate: Mesh;
     protected _contentPlate: Mesh;
-    protected _followButton: HolographicButton;
-    protected _closeButton: HolographicButton;
+    protected _followButton: TouchHolographicButton;
+    protected _closeButton: TouchHolographicButton;
     protected _contentScaleRatio = 1;
 
     /**
@@ -83,8 +83,8 @@ export class HolographicSlate extends ContentDisplay3D {
     constructor(name?: string) {
         super(name);
 
-        this._followButton = new HolographicButton("followButton" + this.name);
-        this._closeButton = new HolographicButton("closeButton" + this.name);
+        this._followButton = new TouchHolographicButton("followButton" + this.name);
+        this._closeButton = new TouchHolographicButton("closeButton" + this.name);
     }
 
     /**
