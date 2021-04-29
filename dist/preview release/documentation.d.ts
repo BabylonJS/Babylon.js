@@ -91405,7 +91405,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         static DecoderPath: string;
         private _loader;
-        private _decoderPromise?;
+        private static _DecoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
