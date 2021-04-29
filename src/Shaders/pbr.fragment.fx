@@ -157,21 +157,20 @@ void main(void) {
 
 #ifdef METALLICWORKFLOW
     vec4 metallicReflectanceFactors = vMetallicReflectanceFactors;
-    #ifdef METALLIC_REFLECTANCE
-        vec4 metallicReflectanceFactorsMap = texture2D(metallicReflectanceSampler, vMetallicReflectanceUV + uvOffset);
-        metallicReflectanceFactorsMap = toLinearSpace(metallicReflectanceFactorsMap);
-
-        #ifdef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
-            metallicReflectanceFactors.a *= metallicReflectanceFactorsMap.a;
-        #else
-            metallicReflectanceFactors *= metallicReflectanceFactorsMap;
-        #endif
-    #endif
     #ifdef REFLECTANCE
         vec4 reflectanceFactorsMap = texture2D(reflectanceSampler, vReflectanceUV + uvOffset);
         reflectanceFactorsMap = toLinearSpace(reflectanceFactorsMap);
 
         metallicReflectanceFactors.rgb *= reflectanceFactorsMap.rgb;
+    #endif
+    #ifdef METALLIC_REFLECTANCE
+        vec4 metallicReflectanceFactorsMap = texture2D(metallicReflectanceSampler, vMetallicReflectanceUV + uvOffset);
+        metallicReflectanceFactorsMap = toLinearSpace(metallicReflectanceFactorsMap);
+
+        #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
+            metallicReflectanceFactors.rgb *= metallicReflectanceFactorsMap.rgb;
+        #endif
+        metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
     #endif
 #endif
 

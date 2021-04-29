@@ -67,7 +67,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     componentDidMount() {
         this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
             if (this.state.selectedEntity !== entity) {
-                this.setState({ selectedEntity: entity});
+                this.setState({ selectedEntity: entity });
             }
         });
 
@@ -139,32 +139,35 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let search = false;
         let goNext = false;
 
-        if (keyEvent.keyCode === 38) {
-            // up
-            search = true;
-        } else if (keyEvent.keyCode === 40) {
-            // down
-            goNext = true;
-            search = true;
-        } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) {
-            // enter or right
-            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
-            if (reservedDataStore && reservedDataStore.setExpandedState) {
-                reservedDataStore.setExpandedState(true);
-            }
-            keyEvent.preventDefault();
-            return;
-        } else if (keyEvent.keyCode === 37) {
-            // left
-            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
-            if (reservedDataStore && reservedDataStore.setExpandedState) {
-                reservedDataStore.setExpandedState(false);
-            }
-            keyEvent.preventDefault();
-            return;
-        } else if (keyEvent.keyCode === 46) {
-            // delete
-            this.state.selectedEntity.dispose();
+        switch (keyEvent.key) {
+            case "ArrowUp":
+                search = true;
+                break;
+            case "ArrowDown":
+                goNext = true;
+                search = true;
+                break;
+            case "Enter":
+            case "ArrowRight":
+                var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+                if (reservedDataStore && reservedDataStore.setExpandedState) {
+                    reservedDataStore.setExpandedState(true);
+                }
+                keyEvent.preventDefault();
+                return;
+            case "ArrowLeft":
+                var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+                if (reservedDataStore && reservedDataStore.setExpandedState) {
+                    reservedDataStore.setExpandedState(false);
+                }
+                keyEvent.preventDefault();
+                return;
+                break;
+            case "Delete":
+                this.state.selectedEntity.dispose();
+                break;
+            default:
+                break;
         }
 
         if (!search) {
