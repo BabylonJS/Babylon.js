@@ -108,16 +108,17 @@ export class Database implements IOfflineProvider {
         };
 
         var timeStampUsed = false;
-        var manifestURL = this._currentSceneUrl + ".manifest";
+        var manifestURL = new URL(this._currentSceneUrl)
+        manifestURL.pathname += '.manifest';
 
         var xhr = new WebRequest();
 
         if (navigator.onLine) {
             // Adding a timestamp to by-pass browsers' cache
             timeStampUsed = true;
-            manifestURL = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + Date.now();
+            manifestURL.search += (manifestURL.search.match(/\?/) == null ? "?" : "&") + Date.now();
         }
-        xhr.open("GET", manifestURL);
+        xhr.open("GET", manifestURL.toString());
 
         xhr.addEventListener("load", () => {
             if (xhr.status === 200 || Database._ValidateXHRData(xhr, 1)) {
@@ -146,8 +147,9 @@ export class Database implements IOfflineProvider {
                 timeStampUsed = false;
                 // Let's retry without the timeStamp
                 // It could fail when coupled with HTML5 Offline API
-                var retryManifestURL = this._currentSceneUrl + ".manifest";
-                xhr.open("GET", retryManifestURL);
+                var retryManifestURL = new URL(this._currentSceneUrl)
+                retryManifestURL.pathname += '.manifest';
+                xhr.open("GET", retryManifestURL.toString());
                 xhr.send();
             }
             else {
