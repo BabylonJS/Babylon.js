@@ -167,17 +167,17 @@ export class FollowBehavior implements Behavior<TransformNode> {
         invertView.copyFrom(camera.getViewMatrix());
         invertView.invert();
 
-        const forward = this._tmpVectors[0];
+        const forward = new Vector3();
         forward.copyFromFloats(0, 0, 1);
-        const right = this._tmpVectors[1];
-        forward.copyFromFloats(1, 0, 0);
+        const right = new Vector3();
+        right.copyFromFloats(1, 0, 0);
 
         // forward and right are related to camera frame of reference
         Vector3.TransformNormalToRef(forward, invertView, forward);
         Vector3.TransformNormalToRef(right, invertView, right);
 
         // Up is global Z
-        const up = this._tmpVectors[2];
+        const up = new Vector3();
         up.copyFromFloats(0, 1, 0);
 
         // Todo : angle as parameters
@@ -313,7 +313,6 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
             Vector3.TransformCoordinatesToRef(pivot, worldMatrix, currentToTarget);
             currentToTarget.subtractInPlace(camera.globalPosition);
-
             this._angularClamp(camera, currentToTarget);
             this._distanceClamp(currentToTarget);
             this._orientationClamp(camera, currentToTarget, rotationQuaternion);
