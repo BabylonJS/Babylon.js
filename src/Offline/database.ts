@@ -107,18 +107,27 @@ export class Database implements IOfflineProvider {
             this._callbackManifestChecked(false);
         };
 
+        var createManifestURL = (): string => {
+            if (typeof URL !== 'undefined') {
+                var url = new URL(this._currentSceneUrl)
+                url.pathname += '.manifest';
+                return url.toString();
+            }
+
+            return this._currentSceneUrl + ".manifest";
+        }
+
         var timeStampUsed = false;
-        var manifestURL = new URL(this._currentSceneUrl)
-        manifestURL.pathname += '.manifest';
+        var manifestURL = createManifestURL();
 
         var xhr = new WebRequest();
 
         if (navigator.onLine) {
             // Adding a timestamp to by-pass browsers' cache
             timeStampUsed = true;
-            manifestURL.search += (manifestURL.search.match(/\?/) == null ? "?" : "&") + Date.now();
+            manifestURL = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + Date.now();
         }
-        xhr.open("GET", manifestURL.toString());
+        xhr.open("GET", manifestURL);
 
         xhr.addEventListener("load", () => {
             if (xhr.status === 200 || Database._ValidateXHRData(xhr, 1)) {
@@ -147,9 +156,8 @@ export class Database implements IOfflineProvider {
                 timeStampUsed = false;
                 // Let's retry without the timeStamp
                 // It could fail when coupled with HTML5 Offline API
-                var retryManifestURL = new URL(this._currentSceneUrl)
-                retryManifestURL.pathname += '.manifest';
-                xhr.open("GET", retryManifestURL.toString());
+                var retryManifestURL = createManifestURL();
+                xhr.open("GET", retryManifestURL);
                 xhr.send();
             }
             else {
