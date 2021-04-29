@@ -196,8 +196,6 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
             currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
             clamped = true;
         }
-
-        // Todo : handle parent if mesh is parented
     }
 
     private _orientationClamp(mesh: AbstractMesh, camera: Camera, currentToTarget: Vector3, rotationQuaternion: Quaternion) {
@@ -221,7 +219,8 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
     private _addObservables(followedCamera: Camera) {
         this._onFollowedCameraMatrixChanged = followedCamera.onViewMatrixChangedObservable.add((camera: Camera) => {
             if (this.attachedNode) {
-                // Todo : handle parent
+                let oldParent = this.attachedNode.parent;
+                this.attachedNode.setParent(null);
                 const worldMatrix = this.attachedNode.computeWorldMatrix(true);
                 const currentToTarget = this._tmpVector;
                 const rotationQuaternion = this.attachedNode.rotationQuaternion || Quaternion.Identity();
@@ -232,14 +231,14 @@ export class FollowBehavior implements Behavior<AbstractMesh> {
                 this._angularClamp(this.attachedNode, camera, currentToTarget);
                 this._distanceClamp(this.attachedNode, camera, currentToTarget);
                 this._orientationClamp(this.attachedNode, camera, currentToTarget, rotationQuaternion);
-
+                rotationQuaternion.normalize();
                 if (!this.attachedNode.rotationQuaternion) {
                     this.attachedNode.rotationQuaternion = rotationQuaternion;
                 }
 
-                // Todo : handle parent
                 this.attachedNode.position.copyFrom(camera.globalPosition).addInPlace(currentToTarget).subtractInPlace(pivot);
 
+                this.attachedNode.setParent(oldParent);
                 this.attachedNode.computeWorldMatrix(true);
             }
         });

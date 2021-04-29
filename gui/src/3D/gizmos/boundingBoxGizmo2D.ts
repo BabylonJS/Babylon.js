@@ -226,13 +226,10 @@ export class BoundingBoxGizmo2D extends Gizmo {
             // Restore position/rotation values
             this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
             this.attachedMesh.position.copyFrom(this._tmpVector);
+            PivotTools._RestorePivotPoint(this.attachedMesh);
 
             // Restore original parent
             this.attachedMesh.setParent(originalParent);
-        }
-
-        if (this.attachedMesh) {
-            PivotTools._RestorePivotPoint(this.attachedMesh);
         }
     }
 }
