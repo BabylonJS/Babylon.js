@@ -87,25 +87,35 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forcePanning = ! this._forcePanning;
             this._forceSelecting = false;
             this._forceZooming = false;
-            if(!this._forcePanning)
+            if(!this._forcePanning) {
                 this.globalState.onSelectionObservable.notifyObservers();
-            this.updateMouseIcon();
+            }
+            else {
+                const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
+                canvas.style.cursor = "move";
+            }
         });
 
         props.globalState.onSelectionObservable.add(() => {
             this._forceSelecting = true;
             this._forcePanning = false;
             this._forceZooming = false;
-            this.updateMouseIcon();
+            const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
+            canvas.style.cursor = "default"
         });
 
         props.globalState.onZoomObservable.add(() => {
+
             this._forceZooming = !this._forceZooming;
             this._forcePanning = false;
             this._forceSelecting = false;
-            if(!this._forceZooming)
+            if(!this._forceZooming) {
                 this.globalState.onSelectionObservable.notifyObservers();
-            this.updateMouseIcon();
+            }
+            else {
+                const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
+                canvas.style.cursor = "zoom-in";
+            }
         });
 
         this.props.globalState.hostDocument!.addEventListener(
@@ -133,11 +143,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         );
 
         this.props.globalState.workbench = this;
-    }
-
-    updateMouseIcon() {
-        let canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
-        canvas.style.cursor = "move";
     }
 
     loadFromJson(serializationObject: any) {
