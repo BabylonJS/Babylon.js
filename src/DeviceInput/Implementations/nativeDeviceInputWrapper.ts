@@ -22,6 +22,9 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
 
     public constructor(nativeInput: INativeInput) {
         this._nativeInput = nativeInput;
+        this.onDeviceConnectedObservable = new Observable<{ deviceType: DeviceType; deviceSlot: number; }>();
+        this.onDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType; deviceSlot: number; }>();
+        this.onInputChangedObservable = new Observable<IDeviceEvent>();
 
         this._nativeInput.onDeviceConnected = (deviceType, deviceSlot) => {
             this.onDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
