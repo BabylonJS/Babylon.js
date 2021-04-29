@@ -109,13 +109,13 @@ export class Database implements IOfflineProvider {
 
         var createManifestURL = (): string => {
             if (typeof URL !== 'undefined') {
-                var url = new URL(this._currentSceneUrl)
+                var url = new URL(this._currentSceneUrl);
                 url.pathname += '.manifest';
                 return url.toString();
             }
 
             return this._currentSceneUrl + ".manifest";
-        }
+        };
 
         var timeStampUsed = false;
         var manifestURL = createManifestURL();
