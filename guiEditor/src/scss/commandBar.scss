@@ -71,14 +71,14 @@
             background-color: #666666;
         } 
         
-        &:active {
+        .active {
             transform-origin: center;
-            transform: scale(0.95);
+            background-color: #666666;
         }
 
         img {
             &.active {
-                filter: invert(100%);
+                background-color: #666666;
             }
         }
     }
