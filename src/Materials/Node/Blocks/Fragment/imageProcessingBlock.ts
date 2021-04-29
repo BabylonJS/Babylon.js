@@ -8,6 +8,8 @@ import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { Scene } from '../../../../scene';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/imageProcessingDeclaration";
@@ -31,6 +33,12 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Defines if the input should be converted to linear space (default: true)
+     */
+     @editableInPropertyPage("Convert input to linear space", PropertyTypeForEdition.Boolean, "ADVANCED")
+     public convertInputToLinearSpace: boolean = true;
+
+     /**
      * Gets the current class name
      * @returns the class name
      */
@@ -135,15 +143,41 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
             state.compilationString += `${this._declareOutput(output, state)} = vec4(${color.associatedVariableName}, 1.0);\r\n`;
         }
         state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\r\n`;
-        state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
+        if (this.convertInputToLinearSpace) {
+            state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
+        }
         state.compilationString += `#else\r\n`;
         state.compilationString += `#ifdef IMAGEPROCESSING\r\n`;
-        state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
+        if (this.convertInputToLinearSpace) {
+            state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
+        }
         state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\r\n`;
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#endif\r\n`;
 
         return this;
+    }
+
+    protected _dumpPropertiesCode() {
+        let codeString = super._dumpPropertiesCode();
+
+        codeString += `${this._codeVariableName}.convertInputToLinearSpace = ${this.convertInputToLinearSpace};\r\n`;
+
+        return codeString;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.convertInputToLinearSpace = this.convertInputToLinearSpace;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.convertInputToLinearSpace = serializationObject.convertInputToLinearSpace ?? true;
     }
 }
 

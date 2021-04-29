@@ -1,3 +1,8 @@
+:root {
+    --backgroundGrey: #aaaaaa;
+}
+
+
 #propertyTab {
     $line-padding-left: 5px;
     color:black;
@@ -489,7 +494,7 @@
         }
 
         .file-upload {            
-            background: #aaaaaa;
+            background: var(--backgroundGrey);
             border: 1px solid rgb(51, 122, 183);
             margin: 5px 10px;
             color:white;
@@ -510,7 +515,7 @@
         }
 
         button {
-            background: #aaaaaa;
+            background: var(--backgroundGrey);
             border: 1px solid rgb(51, 122, 183);
             margin: 5px 10px 5px 10px;
             color:white;

@@ -1,4 +1,3 @@
-import { Engine } from "babylonjs/Engines/engine";
 import * as React from "react";
 import { GlobalState } from '../globalState';
 import { FileButtonLineComponent } from "../sharedUiComponents/lines/fileButtonLineComponent";
@@ -31,8 +30,6 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
     }    
 
     public render() {
-        var engineVersion = Engine.Version.split("-")[0];
-
         return (
             <>
                 {
@@ -60,13 +57,10 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                             <div className="command-dropdown-icon">
                                 <img src={"../imgs/" + this.props.icon + ".svg"}/>
                             </div>
-                        }
+                        }                        
                         {
                             !this.props.icon &&
                             <div className="command-dropdown-active">
-                                {
-                                    this.state.activeState === "Latest" ? engineVersion : this.state.activeState
-                                }
                             </div>
                         }
                     </div>

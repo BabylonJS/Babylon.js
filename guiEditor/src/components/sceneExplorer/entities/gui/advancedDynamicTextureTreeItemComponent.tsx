@@ -65,7 +65,7 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
         return (
             <div className="adtextureTools">
                 <TreeItemLabelComponent label={this.props.texture.name} onClick={() => this.props.onClick()} icon={faImage} color="mediumpurple" />
-                <div className={this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon"} onClick={() => this.onPickingMode()} title="Turn picking mode on/off">
+                <div className={`pickingMode icon ${this.state.isInPickingMode ? 'selected' : ''}`} onClick={() => this.onPickingMode()} title="Turn picking mode on/off">
                     <FontAwesomeIcon icon={faCrosshairs} />
                 </div>
                 <ExtensionsComponent target={this.props.texture} extensibilityGroups={this.props.extensibilityGroups} />
