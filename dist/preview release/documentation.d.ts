@@ -2990,6 +2990,13 @@ declare module BABYLON {
          */
         fract(): Vector2;
         /**
+         * Rotate the current vector into a given result vector
+         * @param angle defines the rotation angle
+         * @param result defines the result vector where to store the rotated vector
+         * @returns the current vector
+         */
+        rotateToRef(angle: number, result: Vector2): this;
+        /**
          * Gets the length of the vector
          * @returns the vector length (float)
          */
@@ -3104,6 +3111,12 @@ declare module BABYLON {
          * @returns a new Vector2
          */
         static Normalize(vector: DeepImmutable<Vector2>): Vector2;
+        /**
+         * Normalize a given vector into a second one
+         * @param vector defines the vector to normalize
+         * @param result defines the vector where to store the result
+         */
+        static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2): void;
         /**
          * Gets a new Vector2 set with the minimal coordinate values from the "left" and "right" vectors
          * @param left defines 1st vector
@@ -7030,6 +7043,10 @@ declare module BABYLON {
          * The animation interpolation type
          */
         interpolation?: AnimationKeyInterpolation;
+        /**
+         * Property defined by UI tools to link (or not ) the tangents
+         */
+        lockedTangent?: boolean;
     }
     /**
      * Enum for the animation key frame interpolation type
@@ -26537,6 +26554,9 @@ declare module BABYLON {
         AOSTOREINMETALMAPRED: boolean;
         METALLIC_REFLECTANCE: boolean;
         METALLIC_REFLECTANCEDIRECTUV: number;
+        METALLIC_REFLECTANCE_USE_ALPHA_ONLY: boolean;
+        REFLECTANCE: boolean;
+        REFLECTANCEDIRECTUV: number;
         ENVIRONMENTBRDF: boolean;
         ENVIRONMENTBRDF_RGBD: boolean;
         NORMAL: boolean;
@@ -26837,14 +26857,27 @@ declare module BABYLON {
          */
         protected _metallicReflectanceColor: Color3;
         /**
-         * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-         * This is multiply against the scalar values defined in the material.
+         * Specifies that only the A channel from _metallicReflectanceTexture should be used.
+         * If false, both RGB and A channels will be used
          */
+        protected _useOnlyMetallicFromMetallicReflectanceTexture: boolean;
+        /**
+        * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+        * This is multiplied against the scalar values defined in the material.
+        * If _useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
+        */
         protected _metallicReflectanceTexture: Nullable<BaseTexture>;
         /**
-         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+         * Defines to store reflectanceColor in RGB
+         * This is multiplied against the scalar values defined in the material.
+         * If both _reflectanceTexture and _metallicReflectanceTexture textures are provided and _useOnlyMetallicFromMetallicReflectanceTexture
+         * is false, _metallicReflectanceTexture takes precedence and _reflectanceTexture is not used
          */
+        protected _reflectanceTexture: Nullable<BaseTexture>;
+        /**
+        * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
+        * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+        */
         protected _microSurfaceTexture: Nullable<BaseTexture>;
         /**
          * Stores surface normal data used to displace a mesh in a texture.
@@ -27354,14 +27387,27 @@ declare module BABYLON {
          */
         metallicReflectanceColor: Color3;
         /**
-         * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-         * This is multiply against the scalar values defined in the material.
+         * Specifies that only the A channel from metallicReflectanceTexture should be used.
+         * If false, both RGB and A channels will be used
          */
+        useOnlyMetallicFromMetallicReflectanceTexture: boolean;
+        /**
+        * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+        * This is multiplied against the scalar values defined in the material.
+        * If useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
+        */
         metallicReflectanceTexture: Nullable<BaseTexture>;
         /**
-         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+         * Defines to store reflectanceColor in RGB
+         * This is multiplied against the scalar values defined in the material.
+         * If both reflectanceTexture and metallicReflectanceTexture textures are provided and useOnlyMetallicFromMetallicReflectanceTexture
+         * is false, metallicReflectanceTexture takes priority and reflectanceTexture is not used
          */
+        reflectanceTexture: Nullable<BaseTexture>;
+        /**
+        * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
+        * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+        */
         microSurfaceTexture: BaseTexture;
         /**
          * Stores surface normal data used to displace a mesh in a texture.
@@ -60688,8 +60734,10 @@ declare module BABYLON {
             token: any;
             pipeline: Nullable<GPURenderPipeline>;
         }): void;
-        vertexBuffers: VertexBuffer[];
+        readonly vertexBuffers: VertexBuffer[];
         get colorFormats(): GPUTextureFormat[];
+        readonly mrtAttachments: number[];
+        readonly mrtTextureArray: InternalTexture[];
         getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline;
         endFrame(): void;
         setAlphaToCoverage(enabled: boolean): void;
@@ -60898,10 +60946,13 @@ declare module BABYLON {
         private _cacheRenderPipeline;
         private _effect;
         private _bindGroups;
+        private _depthTextureFormat;
+        private _bundleCache;
         setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
         setColorFormat(format: GPUTextureFormat): void;
+        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
         constructor(device: GPUDevice, engine: WebGPUEngine, emptyVertexBuffer: VertexBuffer);
-        clear(renderPass: GPURenderPassEncoder, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount?: number): void;
+        clear(renderPass: Nullable<GPURenderPassEncoder>, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount?: number): Nullable<GPURenderBundle>;
     }
 }
 declare module BABYLON {
@@ -66976,7 +67027,7 @@ declare module BABYLON {
      * This represents a texture coming from an HDR input.
      *
      * The only supported format is currently panorama picture stored in RGBE format.
-     * Example of such files can be found on HDRLib: http://hdrlib.com/
+     * Example of such files can be found on HDR Haven: https://hdrihaven.com/
      */
     export class HDRCubeTexture extends BaseTexture {
         private static _facesMapping;
@@ -69125,9 +69176,13 @@ declare module BABYLON {
          */
         constructor(name: string);
         /**
-         * Gets the current class name
-         * @returns the class name
+         * Defines if the input should be converted to linear space (default: true)
          */
+        convertInputToLinearSpace: boolean;
+        /**
+        * Gets the current class name
+        * @returns the class name
+        */
         getClassName(): string;
         /**
          * Gets the color input component
@@ -69146,6 +69201,9 @@ declare module BABYLON {
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -89197,6 +89255,63 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Class used to create a slider in 3D
+     */
+    export class Slider3D extends Control3D {
+        private _sliderBarMaterial;
+        private _sliderThumbMaterial;
+        private _sliderThumb;
+        private _sliderBar;
+        private _minimum;
+        private _maximum;
+        private _value;
+        private _step;
+        /** BABYLON.Observable raised when the sldier value changes */
+        onValueChangedObservable: BABYLON.Observable<number>;
+        /**
+         * Creates a new slider
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        /** Gets or sets minimum value */
+        get minimum(): number;
+        set minimum(value: number);
+        /** Gets or sets maximum value */
+        get maximum(): number;
+        set maximum(value: number);
+        /** Gets or sets step value */
+        get step(): number;
+        set step(value: number);
+        /** Gets or sets current value */
+        get value(): number;
+        set value(value: number);
+        protected get start(): number;
+        protected get end(): number;
+        /**
+         * Gets the slider bar material used by this control
+         */
+        get sliderBarMaterial(): BABYLON.StandardMaterial;
+        /**
+         * Gets the slider thumb material used by this control
+         */
+        get sliderThumbMaterial(): BABYLON.StandardMaterial;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        private _createBehavior;
+        private _convertToPosition;
+        private _convertToValue;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to create a container panel deployed on the surface of a sphere
      */
     export class SpherePanel extends VolumeBasedPanel {
@@ -94573,6 +94688,7 @@ declare module BABYLON.GLTF2 {
         specularFactor: number;
         specularColorFactor: number[];
         specularTexture: ITextureInfo;
+        specularColorTexture: ITextureInfo;
     }
 
     /**

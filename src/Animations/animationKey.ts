@@ -22,6 +22,10 @@ export interface IAnimationKey {
      * The animation interpolation type
      */
     interpolation?: AnimationKeyInterpolation;
+    /**
+     * Property defined by UI tools to link (or not ) the tangents
+     */
+    lockedTangent?: boolean;
 }
 
 /**
