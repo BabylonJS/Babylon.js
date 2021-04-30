@@ -887,7 +887,7 @@ export class WebGPUTextureHelper {
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :
             texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.RenderAttachment : -1;
 
-        gpuTextureWrapper.textureAdditionalUsages = (creationFlags ?? 0) & 1 ? WebGPUConstants.TextureUsage.Storage : 0;
+        gpuTextureWrapper.textureAdditionalUsages = (creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE ? WebGPUConstants.TextureUsage.Storage : 0;
 
         const hasMipMaps = texture.generateMipMaps;
         const layerCount = depth || 1;
