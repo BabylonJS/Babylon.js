@@ -20,9 +20,10 @@ declare module "../../Engines/thinEngine" {
          * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
          * @param compression defines the compression used (null by default)
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns the raw texture inside an InternalTexture
          */
-        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, type: number): InternalTexture;
+        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, type: number, creationFlags: number): InternalTexture;
 
         /**
          * Update a raw texture
@@ -147,9 +148,10 @@ declare module "../../Engines/thinEngine" {
          * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compressed used (can be null)
          * @param textureType defines the compressed used (can be null)
+         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns a new raw 3D texture (stored in an InternalTexture)
          */
-        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number): InternalTexture;
+        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number, creationFlags: number): InternalTexture;
 
         /**
          * Update a raw 3D texture
@@ -183,9 +185,10 @@ declare module "../../Engines/thinEngine" {
          * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compressed used (can be null)
          * @param textureType defines the compressed used (can be null)
+         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns a new raw 2D array texture (stored in an InternalTexture)
          */
-        createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number): InternalTexture;
+        createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number, creationFlags: number): InternalTexture;
 
         /**
          * Update a raw 2D array texture
@@ -248,7 +251,9 @@ ThinEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTextu
     texture.isReady = true;
 };
 
-ThinEngine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+ThinEngine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
+    compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture
+{
     var texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
     texture.baseHeight = height;

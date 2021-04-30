@@ -1,7 +1,4 @@
-import { UniformBuffer } from "../Materials/uniformBuffer";
-import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { Logger } from "../Misc/logger";
-import { Buffer } from "../Meshes/buffer";
 import { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { IComputePipelineContext } from "./IComputePipelineContext";
@@ -9,6 +6,7 @@ import { DomManagement } from "../Misc/domManagement";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from '../Engines/shaderStore';
+import { ComputeBindingList } from "../Engines/Extensions/engine.computeShader";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -34,6 +32,9 @@ export interface IComputeEffectCreationOptions {
     processFinalCode?: Nullable<(code: string) => string>;
 }
 
+/**
+ * Effect wrapping a compute shader and let execute (dispatch) the shader
+ */
 export class ComputeEffect {
     private static _uniqueIdSeed = 0;
 
@@ -93,12 +94,21 @@ export class ComputeEffect {
     public _computeSourceCode: string = "";
     private _rawComputeSourceCode: string = "";
 
+    /**
+     * Creates a compute effect that can be used to execute a compute shader
+     * @param baseName Name of the effect
+     * @param options Set of all options to create the effect
+     * @param engine The engine the effect is created for
+     * @param key Effect Key identifying uniquely compiled shader variants
+     */
     constructor(baseName: any, options: IComputeEffectCreationOptions, engine: Engine, key = "") {
         this.name = baseName;
         this._key = key;
 
         this._engine = engine;
         this.uniqueId = ComputeEffect._uniqueIdSeed++;
+
+        this.defines = options.defines ?? "";
         this.onError = options.onError;
         this.onCompiled = options.onCompiled;
 
@@ -399,30 +409,14 @@ export class ComputeEffect {
     }
 
     /**
-     * Checks if the effect is supported. (Must be called after compilation)
+     * Executes the compute shader
+     * @param bindings List of all the bindings of the shader
+     * @param x Number of workgroups to execute on the X dimension
+     * @param y Number of workgroups to execute on the Y dimension (default: 1)
+     * @param z Number of workgroups to execute on the Z dimension (default: 1)
      */
-    public get isSupported(): boolean {
-        return this._compilationError === "";
-    }
-
-    public setShader(shaderName: string): void {
-
-    }
-
-    public setTexture(name: { group: number, binding: number } | string, texture: ThinTexture): void {
-
-    }
-
-    public setStorageTexture(name: { group: number, binding: number } | string, texture: ThinTexture, readOnly: boolean): void {
-
-    }
-
-    public setUniformBuffer(name: { group: number, binding: number } | string, buffer: UniformBuffer): void {
-
-    }
-
-    public setStorageBuffer(name: { group: number, binding: number } | string, buffer: Buffer, readOnly?: boolean): void {
-
+    public dispatch(bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
+        this._engine.computeDispatch(this, bindings, x, y, z);
     }
 
     /**

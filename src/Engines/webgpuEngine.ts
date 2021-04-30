@@ -50,6 +50,7 @@ import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 import { ComputeEffect, IComputeEffectCreationOptions } from "../Compute/computeEffect";
 import { IComputePipelineContext } from "../Compute/IComputePipelineContext";
 import { WebGPUComputePipelineContext } from "./WebGPU/webgpuComputePipelineContext";
+import { ComputeBindingList, ComputeBindingType } from "./Extensions/engine.computeShader";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -1466,6 +1467,13 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
     //                             Compute Shaders
     //------------------------------------------------------------------------------
+
+    /**
+     * Creates a new compute effect
+     * @param baseName Name of the effect
+     * @param options Options used to create the effect
+     * @returns The new compute effect
+     */
     public createComputeEffect(baseName: any, options: IComputeEffectCreationOptions): ComputeEffect {
         const compute = baseName.computeElement || baseName.compute || baseName.computeToken || baseName.computeSource || baseName;
 
@@ -1493,7 +1501,90 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Force the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
+     * Dispatches a compute shader
+     * @param effect The compute effect
+     * @param bindings The list of resources to bind to the shader
+     * @param x The number of workgroups to execute on the X dimension
+     * @param y The number of workgroups to execute on the Y dimension
+     * @param z The number of workgroups to execute on the Z dimension
+     */
+    public computeDispatch(effect: ComputeEffect, bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
+        const contextPipeline = effect._pipelineContext as WebGPUComputePipelineContext;
+
+        if (!contextPipeline.computePipeline) {
+            contextPipeline.computePipeline = this._device.createComputePipeline({
+                compute: contextPipeline.stage!
+            });
+        }
+
+        const bindGroupEntries: GPUBindGroupEntry[][] = [];
+        for (const key in bindings) {
+            const binding = bindings[key],
+                  group = (binding.location as any).group,
+                  index = (binding.location as any).binding,
+                  type = binding.type,
+                  object = binding.object;
+
+            let entries = bindGroupEntries[group];
+            if (!entries) {
+                entries = bindGroupEntries[group] = [];
+            }
+
+            switch (type) {
+                case ComputeBindingType.Texture: {
+                    const texture = object as BaseTexture;
+                    const hardwareTexture = texture._texture!._hardwareTexture as WebGPUHardwareTexture;
+                    entries.push({
+                        binding: index - 1,
+                        resource: this._cacheSampler.getSampler(texture._texture!),
+                    });
+                    entries.push({
+                        binding: index,
+                        resource: hardwareTexture.view!,
+                    });
+                    break;
+                }
+
+                case ComputeBindingType.StorageTexture: {
+                    const texture = object as BaseTexture;
+                    const hardwareTexture = texture._texture!._hardwareTexture as WebGPUHardwareTexture;
+                    if ((hardwareTexture.textureAdditionalUsages & WebGPUConstants.TextureUsage.Storage) === 0) {
+                        Logger.Error(`computeDispatch: The texture (name=${texture.name}, uniqueId=${texture.uniqueId}) is not a storage texture!`, 50);
+                    }
+                    entries.push({
+                        binding: index,
+                        resource: hardwareTexture.view!,
+                    });
+                    break;
+                }
+            }
+        }
+
+        const commandEncoder = this._device.createCommandEncoder({});
+        const computePass = commandEncoder.beginComputePass({});
+
+        computePass.setPipeline(contextPipeline.computePipeline);
+
+        for (let i = 0; i < bindGroupEntries.length; ++i) {
+            const entries = bindGroupEntries[i];
+            if (!entries) {
+                continue;
+            }
+            const bindGroup = this._device.createBindGroup({
+                layout: contextPipeline.computePipeline.getBindGroupLayout(i),
+                entries,
+            });
+            computePass.setBindGroup(i, bindGroup);
+        }
+
+        computePass.dispatch(x, y, z);
+        computePass.endPass();
+
+        this._device.queue.submit([commandEncoder.finish()]);
+    }
+    
+    /**
+     * Forces the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
      */
     public releaseComputeEffects() {
         for (const name in this._compiledComputeEffects) {
@@ -1540,7 +1631,7 @@ export class WebGPUEngine extends Engine {
 
     private _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>): GPUProgrammableStage {
         if (defines) {
-            defines = "//" + defines.split("\n").join("\n//");
+            defines = "//" + defines.split("\n").join("\n//") + "\n";
         } else {
             defines = "";
         }
@@ -1858,12 +1949,13 @@ export class WebGPUEngine extends Engine {
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param mimeType defines an optional mime type
      * @param loaderOptions options to be passed to the loader
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture {
 
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
@@ -1880,7 +1972,7 @@ export class WebGPUEngine extends Engine {
                     processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
                     if (!texture._hardwareTexture?.underlyingResource) { // the texture could have been created before reaching this point so don't recreate it if already existing
-                        const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height);
+                        const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height, undefined, creationFlags);
 
                         if (WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
                             this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
@@ -1975,10 +2067,11 @@ export class WebGPUEngine extends Engine {
      * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param compression defines the compression used (null by default)
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-        compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture
+        compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture
     {
         const texture = new InternalTexture(this, InternalTextureSource.Raw);
         texture.baseWidth = width;
@@ -1996,7 +2089,7 @@ export class WebGPUEngine extends Engine {
             texture._bufferView = data;
         }
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, creationFlags);
 
         this.updateRawTexture(texture, data, format, invertY, compression, type);
 
@@ -2144,10 +2237,11 @@ export class WebGPUEngine extends Engine {
      * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
      * @param compression defines the compressed used (can be null)
      * @param textureType defines the compressed used (can be null)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
     public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-        compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture
+        compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture
     {
         var source = InternalTextureSource.Raw2DArray;
         var texture = new InternalTexture(this, source);
@@ -2168,7 +2262,7 @@ export class WebGPUEngine extends Engine {
             texture._bufferView = data;
         }
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, creationFlags);
 
         this.updateRawTexture2DArray(texture, data, format, invertY, compression, textureType);
 
@@ -2189,10 +2283,11 @@ export class WebGPUEngine extends Engine {
      * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
      * @param compression defines the compressed used (can be null)
      * @param textureType defines the compressed used (can be null)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns a new raw 3D texture (stored in an InternalTexture)
      */
     public createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-        compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture
+        compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture
     {
         const source = InternalTextureSource.Raw3D;
         const texture = new InternalTexture(this, source);
@@ -2213,7 +2308,7 @@ export class WebGPUEngine extends Engine {
             texture._bufferView = data;
         }
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, creationFlags);
 
         this.updateRawTexture3D(texture, data, format, invertY, compression, textureType);
 
@@ -2285,9 +2380,11 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
+        const additionalUsages = (texture._hardwareTexture as WebGPUHardwareTexture).textureAdditionalUsages;
+
         texture._hardwareTexture.release(); // don't defer the releasing! Else we will release at the end of this frame the gpu texture we are about to create in the next line...
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
     }
 
     private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
@@ -2804,6 +2901,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             fullOptions.samples = options.samples ?? 1;
+            fullOptions.creationFlags = options.creationFlags ?? 0;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
@@ -2812,6 +2910,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
             fullOptions.samples = 1;
+            fullOptions.creationFlags = 0;
         }
 
         const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
@@ -2860,7 +2959,7 @@ export class WebGPUEngine extends Engine {
             texture.generateMipMaps = true;
         }
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, undefined, undefined, undefined, fullOptions.creationFlags);
 
         if (options !== undefined && typeof options === "object" && options.createMipMaps && !fullOptions.generateMipMaps) {
             texture.generateMipMaps = false;

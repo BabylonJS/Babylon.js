@@ -23,4 +23,6 @@ export class RenderTargetCreationOptions {
     format?: number;
     /** Defines sample count (1 by default) */
     samples?: number;
+    /** Texture creation flags */
+    creationFlags?: number
 }
