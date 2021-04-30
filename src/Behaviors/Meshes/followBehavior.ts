@@ -10,27 +10,33 @@ import { TransformNode } from "../../Meshes/transformNode";
 const EPSILON = 1e-5;
 
 /**
- * A behavior that when attached to a mesh will allow the mesh to fade in and out
+ * A behavior that when attached to a mesh will follow a camera
  */
 export class FollowBehavior implements Behavior<TransformNode> {
     private _scene: Scene;
 
-    // Memory cache to avoid GC workload
+    // Memory cache to avoid GC usage
     private _tmpQuaternion: Quaternion = new Quaternion();
-    private _tmpVectors: Vector3[] = [new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3()];
+    private _tmpVectors: Vector3[] = [new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3()];
     private _tmpMatrix: Matrix = new Matrix();
 
-    public attachedNode: Nullable<TransformNode>;
-    public followDistance = 5;
-    public lerpTime = 100;
-
     private _followedCamera: Nullable<Camera>;
-    private _onFollowedCameraMatrixChanged: Nullable<Observer<Camera>>;
     private _onBeforeRender: Nullable<Observer<Scene>>;
 
     private _workingPosition: Vector3 = new Vector3();
     private _workingQuaternion: Quaternion = new Quaternion();
     private _lastTick: number = -1;
+
+    /**
+     * Attached node of this behavior
+     */
+    public attachedNode: Nullable<TransformNode>;
+
+    /**
+     * Time in ms to interpolate position and rotation of the attached node.
+     * Higher values will give a slower interpolation.
+     */
+    public lerpTime = 100;
 
     /**
      * The camera that should be followed by this behavior
@@ -40,13 +46,6 @@ export class FollowBehavior implements Behavior<TransformNode> {
     }
 
     public set followedCamera(camera: Nullable<Camera>) {
-        if (this._followedCamera) {
-            this._removeObservables(this._followedCamera);
-        }
-        if (camera) {
-            this._addObservables(camera);
-        }
-
         this._followedCamera = camera;
     }
 
@@ -77,6 +76,8 @@ export class FollowBehavior implements Behavior<TransformNode> {
         if (!this.followedCamera) {
             this.followedCamera = this._scene.activeCamera;
         }
+
+        this._addObservables();
     }
 
     /**
@@ -84,16 +85,16 @@ export class FollowBehavior implements Behavior<TransformNode> {
      */
     public detach(): void {
         this.attachedNode = null;
+        this._removeObservables();
     }
 
     // Constraints
     private _simplifyAngle(angle: number) {
-        // Todo : better version => mod 2PI then - 2 * PI for > PI, + 2 * PI for < -PI
-        while (angle > Math.PI) {
+        // Restrains the input angle between -Math.PI and Math.PI
+        angle = angle % (2 * Math.PI);
+        if (angle > Math.PI) {
             angle -= 2 * Math.PI;
-        }
-
-        while (angle < -Math.PI) {
+        } else if (angle < -Math.PI) {
             angle += 2 * Math.PI;
         }
 
@@ -167,9 +168,9 @@ export class FollowBehavior implements Behavior<TransformNode> {
         invertView.copyFrom(camera.getViewMatrix());
         invertView.invert();
 
-        const forward = new Vector3();
+        const forward = this._tmpVectors[5];
         forward.copyFromFloats(0, 0, 1);
-        const right = new Vector3();
+        const right = this._tmpVectors[6];
         right.copyFromFloats(1, 0, 0);
 
         // forward and right are related to camera frame of reference
@@ -177,8 +178,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         Vector3.TransformNormalToRef(right, invertView, right);
 
         // Up is global Z
-        const up = new Vector3();
-        up.copyFromFloats(0, 1, 0);
+        const up = Vector3.UpReadOnly;
 
         // Todo : angle as parameters
         const horizontalAngularClamp = verticalFovFixed ? (this._scene.getEngine().getAspectRatio(camera) * camera.fov) / 2 : camera.fov / 2;
@@ -350,9 +350,8 @@ export class FollowBehavior implements Behavior<TransformNode> {
         this.attachedNode.setParent(oldParent);
     }
 
-    private _addObservables(followedCamera: Camera) {
+    private _addObservables() {
         this._lastTick = Date.now();
-        // this._onFollowedCameraMatrixChanged = followedCamera.onViewMatrixChangedObservable.add((camera: Camera) => this._updateLeashing(camera));
         this._onBeforeRender = this._scene.onBeforeRenderObservable.add(() => {
             if (!this.followedCamera) {
                 return;
@@ -365,11 +364,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         });
     }
 
-    private _removeObservables(followedCamera: Camera) {
-        if (this._onFollowedCameraMatrixChanged) {
-            followedCamera.onViewMatrixChangedObservable.remove(this._onFollowedCameraMatrixChanged);
-        }
-
+    private _removeObservables() {
         if (this._onBeforeRender) {
             this._scene.onBeforeRenderObservable.remove(this._onBeforeRender);
         }
