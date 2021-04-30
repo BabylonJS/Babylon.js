@@ -301,7 +301,7 @@ export class Texture extends BaseTexture {
      * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      * @param mimeType defines an optional mime type information
      * @param loaderOptions options to be passed to the loader
-     * @param creationFlags specific flags to use when creating the texture (1 for storage textures, for eg)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
@@ -838,7 +838,7 @@ export class Texture extends BaseTexture {
      * @param onLoad define a callback triggered when the texture has been loaded
      * @param onError define a callback triggered when an error occurred during the loading session
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
-     * @param creationFlags specific flags to use when creating the texture (1 for storage textures, for eg)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns the created texture
      */
     public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
@@ -859,7 +859,7 @@ export class Texture extends BaseTexture {
      * @param onLoad define a callback triggered when the texture has been loaded
      * @param onError define a callback triggered when an error occurred during the loading session
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
-     * @param creationFlags specific flags to use when creating the texture (1 for storage textures, for eg)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns the created texture
      */
     public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
