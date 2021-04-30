@@ -8,7 +8,7 @@ import { WebXRInputSource } from "../webXRInputSource";
 import { Scene } from "../../scene";
 import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
 import { Nullable } from "../../types";
-import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
 import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial";
@@ -135,6 +135,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             nearPick: false,
             nearHover: false,
             nearGrab: false,
+            indexTipQuaternion: new Quaternion(),
             id: WebXRControllerPointerSelection._idCounter++,
         };
 
@@ -183,6 +184,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             nearPick: boolean;
             nearHover: boolean;
             nearGrab: boolean;
+            indexTipQuaternion: Quaternion;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
         };
@@ -291,6 +293,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 nearPick: false,
                 nearHover: false,
                 nearGrab: false,
+                indexTipQuaternion: new Quaternion(),
                 id: WebXRControllerPointerSelection._idCounter++,
             };
             this._attachGazeMode();
@@ -381,6 +384,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         if (indexTipPose && indexTipPose.transform) {
                             const indexTipPos = indexTipPose.transform.position;
                             const indexTipOrientation = indexTipPose.transform.orientation;
+                            controllerData.indexTipQuaternion.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z * zAxisMultiplier), (indexTipOrientation.w * zAxisMultiplier));
+
                             // set positions for near pick and hover
                             if(controllerData.pickIndexMesh) {
                                 controllerData.pickIndexMesh.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z);
@@ -388,11 +393,14 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                             if(controllerData.hoverIndexMesh) {
                                 controllerData.hoverIndexMesh.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z);
                             }
+
                             // set near interaction grab ray parameters
                             let nearGrabRayLength = 0.5;
-                            let indexTipZaxisMultiplier = -1;
+                            let webxrZaxisMultiplier = -1;
+                            let indexTipOrientationVector = Vector3.Zero();
                             controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, (indexTipPos.z * zAxisMultiplier));
-                            controllerData.grabRay.direction.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z) * indexTipZaxisMultiplier);
+                            controllerData.indexTipQuaternion.toEulerAnglesToRef(indexTipOrientationVector);
+                            controllerData.grabRay.direction.set(indexTipOrientationVector.x, indexTipOrientationVector.y, (indexTipOrientationVector.z) * webxrZaxisMultiplier);
                             controllerData.grabRay.length = nearGrabRayLength;
                         }   
                     }
@@ -957,7 +965,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     pickingInfo.distance = Vector3.Distance(mesh.position, indexTipMesh.position);
                 }
             }
-        }  
+        }
         return pickingInfo;
     }
 }
