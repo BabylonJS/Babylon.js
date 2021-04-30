@@ -68,6 +68,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         super(props);
 
         this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
+
+        this.props.globalState.onSaveObservable.add(() => {
+            this.save();
+        });
+        this.props.globalState.onSnippetSaveObservable.add(() => {
+            this.saveToSnippetServer();
+        });
+        this.props.globalState.onSnippetLoadObservable.add(() => {
+            this.loadFromSnippet();
+        });
+
     }
 
     timerRefresh() {
@@ -113,8 +124,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     save() {
-        const json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
-        StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
+        try {
+            const json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
+            StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
+        } catch (error) {
+            alert("Unable to save your GUI");
+        }
     }
 
     saveToSnippetServer() {
