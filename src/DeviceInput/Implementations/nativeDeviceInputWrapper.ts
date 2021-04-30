@@ -66,7 +66,8 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
      * @returns bool with status of device's existence
      */
     public isDeviceAvailable(deviceType: DeviceType) {
-        return this._nativeInput.isDeviceAvailable(deviceType);
+        //TODO: FIx native side first
+        return (deviceType === DeviceType.Mouse || deviceType === DeviceType.Touch);
     }
 
     /**
