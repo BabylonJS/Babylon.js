@@ -4704,7 +4704,7 @@ export class ThinEngine {
 
         if (this._IsSupported === null) {
             try {
-                var tempcanvas = this._CreateCanvas(1, 1);
+                var tempcanvas = this._createCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
                 this._IsSupported = gl != null && !!window.WebGLRenderingContext;
@@ -4722,7 +4722,7 @@ export class ThinEngine {
     public static get HasMajorPerformanceCaveat(): boolean {
         if (this._HasMajorPerformanceCaveat === null) {
             try {
-                var tempcanvas = this._CreateCanvas(1, 1);
+                var tempcanvas = this._createCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) || (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat: true });
 
                 this._HasMajorPerformanceCaveat = !gl;
