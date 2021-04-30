@@ -119,8 +119,17 @@ export class ComputeShader {
         };
     }
 
+    /**
+     * Binds a uniform buffer to the shader
+     * @param name Binding name of the buffer
+     * @param texture Buffer to bind
+     */
     public setUniformBuffer(name: ComputeBindingLocation, buffer: UniformBuffer): void {
-
+        this._bindings[BindingLocationToString(name)] = {
+            location: name,
+            type: ComputeBindingType.UniformBuffer,
+            object: buffer,
+        };
     }
 
     public setStorageBuffer(name: ComputeBindingLocation, buffer: Buffer): void {
