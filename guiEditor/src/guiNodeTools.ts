@@ -20,23 +20,32 @@ export class GUINodeTools {
         switch (data) {
             case "Slider":
                 element = new Slider("Slider");
-                break;
+                element.isPointerBlocker = true;
+                element.width = "120px";
+                element.height = "30px";
+                return element;
             case "Checkbox":
                 element = new Checkbox("Checkbox");
-                element.width = "5%";
-                element.height = "5%";
-                element.color = "#FFFFFFFF";
-                element.isPointerBlocker = true;
+                element.width = "20px";
+                element.height = "20px";
+                element.color = "#cccccc";
                 return element;
             case "ColorPicker":
                 element = new ColorPicker("ColorPicker");
-                break;
+                element.isPointerBlocker = true;
+                element.width = "10%";
+                element.height = "10%";
+                return element;
             case "Ellipse":
                 element = new Ellipse("Ellipse");
-                break;
+                element.color = "#cccccc";
+                element.isPointerBlocker = true;
+                return element;
             case "Rectangle":
                 element = new Rectangle("Rectangle");
-                break;
+                element.color = "#cccccc";
+                element.isPointerBlocker = true;
+                return element;
             case "Line":
                 element = new Line();
                 element.x1 = 0;
@@ -46,22 +55,29 @@ export class GUINodeTools {
                 element.lineWidth = 5;
                 element.dash = [50, 10];
                 element.isPointerBlocker = true;
+                element.isHitTestVisible = true;
+                element.color = "#0";
                 return element;
             case "Text":
                 element = new TextBlock("Textblock");
                 element.text = "My Text";
-                element.color = "#FFFFFFFF";
+                element.color = "#0";
                 element.fontSize = 20;
                 element.resizeToFit = true;
                 element.isPointerBlocker = true;
                 return element;
             case "ImageButton":
                 element = Button.CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
-                break;
+                element.background = "#333333";
+                element.color = "#ffffff";
+                element.isPointerBlocker = true;
+                element.width = "120px";
+                element.height = "40px";
+                return element;
             case "VirtualKeyboard":
                 element = new VirtualKeyboard();
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
-                break;
+                return element;
             case "Image":
                 element = new Image("Image", "https://playground.babylonjs.com/textures/grass.png");
                 element.autoScale = true;
@@ -71,20 +87,20 @@ export class GUINodeTools {
                 element = new InputText("InputText");
                 element.maxWidth = 0.6;
                 element.text = "Input Text";
-                break;
+                element.background = "#333333";
+                element.color = "#ffffff";
+                element.isPointerBlocker = true;
+                return element;
             case "InputPassword":
                 element = new InputPassword("InputPassword");
                 element.maxWidth = 0.6;
                 element.text = "Input Text";
-                break;
+                element.background = "#333333";
+                element.color = "#ffffff";
+                element.isPointerBlocker = true;
+                return element;
             case "Grid":
                 element = new Grid("Grid");
-                element.addColumnDefinition(50, false);
-                element.addColumnDefinition(0.5);
-                element.addColumnDefinition(0.5);
-                element.addColumnDefinition(50, false);
-                element.addRowDefinition(0.5);
-                element.addRowDefinition(0.5);
                 element.isHighlighted = true;
                 element.isPointerBlocker = true;
                 return element;
@@ -97,12 +113,14 @@ export class GUINodeTools {
                 return element;
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");
-                break;
+                element.background = "#333333";
+                element.color = "#ffffff";
+                element.isPointerBlocker = true;
+                element.width = "120px";
+                element.height = "40px";
+                return element;
         }
-        element.width = "15%";
-        element.height = "5%";
-        element.color = "#FFFFFFFF";
-        element.isPointerBlocker = true;
-        return element;
+
+
     }
 }
