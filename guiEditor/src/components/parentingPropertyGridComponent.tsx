@@ -17,18 +17,6 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
     }
     public parentIndex: number = 0;
 
-    private _isContainer(guiControl: Control) {
-        switch (guiControl.typeName) {
-            case "Button":
-            case "StackPanel":
-            case "Rectangle":
-            case "Ellipse":
-                return true;
-            default:
-                return false;
-        }
-    }
-
     public addChildGui(childNode: Control, parentNode: Control) {
         this.props.globalState.guiTexture.removeControl(childNode);
         (parentNode as Container).addControl(childNode);
@@ -44,7 +32,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
         var containerNodes: Control[] = [];
 
         this.props.guiNodes.forEach((node) => {
-            if (this._isContainer(node) && node != this.props.guiNode) {
+            if (this.props.globalState.workbench.isContainer(node) && node != this.props.guiNode) {
                 var name = node.name ? node.name : "";
                 parentOptions.push({ label: name, value: parentOptions.length });
                 containerNodes.push(node);

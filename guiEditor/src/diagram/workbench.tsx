@@ -17,6 +17,8 @@ import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Button } from "babylonjs-gui/2D/controls/button";
+import { Container } from "babylonjs-gui/2D/controls/container";
+import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -39,11 +41,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _scene: Scene;
     private _selectedGuiNodes: Control[] = [];
     private _ctrlKeyIsPressed = false;
-
+    private _forcePanning = false;
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
     private _panning: boolean;
+    private _forceZooming: any;
 
     public get globalState() {
         return this.props.globalState;
@@ -77,6 +80,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
+        props.globalState.onPanObservable.add( () => {
+            this._forcePanning = true;
+        });
+        
+        props.globalState.onSelectionObservable.add( () => {
+            this._forcePanning = false;
+        });
+
+        props.globalState.onZoomObservable.add( () => {
+            this._forceZooming = !this._forceZooming;
+        });
+
         this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
         this.props.globalState.hostDocument!.addEventListener(
             "keydown",
@@ -99,11 +114,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.globalState.guiTexture.parseContent(serializationObject);
+        this.loadToEditor();
     }
 
     async loadFromSnippet(snippedID: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
+        this.loadToEditor();
+    }
+
+    loadToEditor() {
+        var children = this.globalState.guiTexture.getChildren();
+        children[0].children.forEach(guiElement => {
+            this.createNewGuiNode(guiElement);
+        });
     }
 
     changeSelectionHighlight(value: boolean) {
@@ -134,6 +158,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
+    public isContainer(guiControl: Control) {
+        switch (guiControl.typeName) {
+            case "Button":
+            case "StackPanel":
+            case "Rectangle":
+            case "Ellipse":
+                return true;
+            default:
+                return false;
+        }
+    }
+
     createNewGuiNode(guiControl: Control) {
         this.enableEditorProperties(guiControl);
 
@@ -154,6 +190,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.onPointerOutObservable.add((evt) => {
             this.isOverGUINode = false;
         });
+
+        if (this.isContainer(guiControl)) {
+            (guiControl as Container).children.forEach(child => {
+                this.createNewGuiNode(child);
+            });
+        }
         return guiControl;
     }
 
@@ -180,7 +222,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public clicked: boolean;
 
     public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
-        //if (!this.clicked && !ignorClick) return false;
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
@@ -262,17 +303,25 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         // Create our first scene.
         this._scene = new Scene(engine);
-        this._scene.clearColor = new Color4(0.2, 0.2, 0.3, 1.0);
+        const clearColor = 204/255.0;
+        this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
         let camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, 1024, Vector3.Zero(), this._scene);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
-        let textureSize = 1200;
-        this._textureMesh = Mesh.CreateGround("earth", 1, 1, 1, this._scene);
+        let textureSize = 1024;
+        this._textureMesh = Mesh.CreateGround("GuiCanvas", 1, 1, 1, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
-        this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize);
+        this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this._textureMesh.showBoundingBox = true;
+
+        var background =  new Rectangle("Rectangle");
+        background.width = "100%"
+        background.height = "100%";
+        background.background = "white";
+
+        this.globalState.guiTexture.addControl(background);
         this.addControls(this._scene, camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
@@ -283,10 +332,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
-        engine.runRenderLoop(() => {
-            this._scene.render();
-        });
-    }
+        engine.runRenderLoop(() => { this._scene.render() });
+        this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
+    };
 
     //Add map-like controls to an ArcRotate camera
     addControls(scene: Scene, camera: ArcRotateCamera) {
@@ -329,11 +377,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
             removeObservers();
-            if (p.event.button !== 0) {
+            if (p.event.button !== 0 || this._forcePanning) {
                 initialPos = this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
                 this._panning = true;
-            } else {
+            }
+            else if(this._forceZooming) {
+                scene.onPointerObservable.add(zoomFn, PointerEventTypes.POINTERMOVE);
+                this._panning = false;
+            }
+            else {
+
                 this._panning = false;
             }
         }, PointerEventTypes.POINTERDOWN);
