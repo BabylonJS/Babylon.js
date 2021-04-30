@@ -36,7 +36,7 @@ import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
-import { ICanvas } from "./ICanvas";
+import { ICanvas, ICanvasRenderingContext } from "./ICanvas";
 import { StencilStateComposer } from "../States/stencilStateComposer";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
@@ -439,9 +439,9 @@ export class ThinEngine {
     private _textureUnits: Int32Array;
 
     /** @hidden */
-    public _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas | ICanvas>;
+    public _workingCanvas: Nullable<ICanvas>;
     /** @hidden */
-    public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
+    public _workingContext: Nullable<ICanvasRenderingContext>;
 
     /** @hidden */
     public _boundRenderFunction: any;
@@ -592,6 +592,26 @@ export class ThinEngine {
 
     public set snapshotRenderingMode(mode: number) {
         this._snapshotRenderingMode = mode;
+    }
+
+    private static _CreateCanvas(width: number, height: number) : ICanvas {
+        if (typeof document === "undefined") {
+            return <ICanvas>(<any>(new OffscreenCanvas(width, height)));
+        }
+        let canvas = <ICanvas>(<any>(document.createElement("canvas")));
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+    }
+
+    /**
+     * Create a canvas. This method is overiden by other engines
+     * @param width width
+     * @param height height
+     * @return ICanvas interface
+     */
+    public CreateCanvas(width: number, height: number) : ICanvas {
+        return ThinEngine._CreateCanvas(width, height);
     }
 
     /**
@@ -3351,7 +3371,7 @@ export class ThinEngine {
                     this._workingCanvas.height = potHeight;
 
                     this._workingContext.drawImage(img as any, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas as TexImageSource);
 
                     texture.width = potWidth;
                     texture.height = potHeight;
@@ -4684,7 +4704,7 @@ export class ThinEngine {
 
         if (this._IsSupported === null) {
             try {
-                var tempcanvas = this.CreateCanvas(1, 1);
+                var tempcanvas = this._CreateCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
                 this._IsSupported = gl != null && !!window.WebGLRenderingContext;
@@ -4702,7 +4722,7 @@ export class ThinEngine {
     public static get HasMajorPerformanceCaveat(): boolean {
         if (this._HasMajorPerformanceCaveat === null) {
             try {
-                var tempcanvas = this.CreateCanvas(1, 1);
+                var tempcanvas = this._CreateCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) || (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat: true });
 
                 this._HasMajorPerformanceCaveat = !gl;
@@ -4835,21 +4855,6 @@ export class ThinEngine {
         return document;
     }
 
-    /**
-     * Create a canvas
-     * @param width width
-     * @param height height
-     * @return ICanvas interface
-     */
-    public CreateCanvas(width: number, height: number) : ICanvas {
-        if (typeof document === "undefined") {
-            return <ICanvas>(<any>(new OffscreenCanvas(width, height)));
-        }
-        let canvas = <ICanvas>(<any>(document.createElement("canvas")));
-        canvas.width = width;
-        canvas.height = height;
-        return canvas;
-    }
     /**
      * Get Font size information
      * @param font font name

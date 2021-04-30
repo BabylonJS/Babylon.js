@@ -516,7 +516,7 @@ export class TextBlock extends Control {
      */
     public computeExpectedHeight(): number {
         if (this.text && this.widthInPixels) {
-            const context = Engine.LastCreatedEngine?.createCanvas(0, 0).getContext("2d");
+            const context = Engine.LastCreatedEngine?.CreateCanvas(0, 0).getContext("2d");
             if (context) {
                 this._applyStates(context);
                 if (!this._fontOffset) {

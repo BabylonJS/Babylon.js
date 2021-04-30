@@ -45,7 +45,7 @@ export class DynamicTexture extends Texture {
             this._canvas = options;
             this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
         } else {
-            this._canvas = engine.createCanvas(1, 1);
+            this._canvas = engine.CreateCanvas(1, 1);
 
             if (options.width || options.width === 0) {
                 this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
