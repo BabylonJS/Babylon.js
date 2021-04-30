@@ -1428,8 +1428,15 @@ var KHR_materials_specular = /** @class */ (function () {
         if (properties.specularTexture) {
             properties.specularTexture.nonColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(context + "/specularTexture", properties.specularTexture, function (texture) {
-                texture.name = babylonMaterial.name + " (Specular F0 Color)";
+                texture.name = babylonMaterial.name + " (Specular F0 Strength)";
                 babylonMaterial.metallicReflectanceTexture = texture;
+                babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
+            }));
+        }
+        if (properties.specularColorTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(context + "/specularColorTexture", properties.specularColorTexture, function (texture) {
+                texture.name = babylonMaterial.name + " (Specular F0 Color)";
+                babylonMaterial.reflectanceTexture = texture;
             }));
         }
         return Promise.all(promises).then(function () { });
@@ -1556,6 +1563,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * A class to handle setting up the rendering of opaque objects to be shown through transmissive objects.
  */
@@ -1630,13 +1638,19 @@ var TransmissionHelper = /** @class */ (function () {
         return false;
     };
     TransmissionHelper.prototype._addMesh = function (mesh) {
+        var _this = this;
         this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
-        if (this.shouldRenderAsTransmission(mesh.material)) {
-            this._transparentMeshesCache.push(mesh);
-        }
-        else {
-            this._opaqueMeshesCache.push(mesh);
-        }
+        // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
+        // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
+        babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Tools"].SetImmediate(function () {
+            if (_this.shouldRenderAsTransmission(mesh.material)) {
+                mesh.material.refractionTexture = _this._opaqueRenderTarget;
+                _this._transparentMeshesCache.push(mesh);
+            }
+            else {
+                _this._opaqueMeshesCache.push(mesh);
+            }
+        });
     };
     TransmissionHelper.prototype._removeMesh = function (mesh) {
         mesh.onMaterialChangedObservable.remove(this._materialObservers[mesh.uniqueId]);

@@ -4,17 +4,19 @@ import { Observable } from "babylonjs/Misc/observable";
 import { KeyPointComponent } from "./graph/keyPoint";
 import { Scene } from "babylonjs/scene";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 
 export class Context {
     title: string;
-    animations: Nullable<Animation[]>;
+    animations: Nullable<Animation[] | TargetedAnimation[]>;
     scene: Scene;
-    target: IAnimatable;
+    target: Nullable<IAnimatable>;
     activeAnimation: Nullable<Animation>;
     activeColor: Nullable<string> = null;
     activeKeyPoints: Nullable<KeyPointComponent[]>;
     mainKeyPoint: Nullable<KeyPointComponent>;
     snippetId: string;
+    useTargetAnimations: boolean;
 
     activeFrame: number;
     fromKey: number;
@@ -44,6 +46,8 @@ export class Context {
     onNewKeyPointRequired = new Observable<void>();
     onFlattenTangentRequired = new Observable<void>();
     onLinearTangentRequired = new Observable<void>();
+    onBreakTangentRequired = new Observable<void>();
+    onUnifyTangentRequired = new Observable<void>();
 
     onDeleteAnimation = new Observable<Animation>();
 
@@ -71,13 +75,14 @@ export class Context {
             return;
         }
 
-        const animation = this.animations[0];
+        const animation = this.useTargetAnimations ? (this.animations[0] as TargetedAnimation).animation : (this.animations[0] as Animation);
         const keys = animation.getKeys();
         this.fromKey = keys[0].frame;
         this.toKey = keys[keys.length - 1].frame;
 
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = this.toKey;
+        this.snippetId = animation.snippetId;
     
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
@@ -117,7 +122,9 @@ export class Context {
             return;
         }
 
-        for (var animation of this.animations) {
+        for (var animationEntry of this.animations) {
+            const animation = this.useTargetAnimations ? (animationEntry as TargetedAnimation).animation : animationEntry as Animation;
+
             if (!animation.hasRunningRuntimeAnimations) {
                 return;
             }

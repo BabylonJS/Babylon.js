@@ -41297,6 +41297,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.props.globalState.workbench = _this;
         return _this;
     }
+    ;
     Object.defineProperty(WorkbenchComponent.prototype, "globalState", {
         get: function () {
             return this.props.globalState;
@@ -41354,10 +41355,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.findNodeFromGuiElement = function (guiControl) {
         return this.nodes.filter(function (n) { return n === guiControl; })[0];
     };
-    WorkbenchComponent.prototype.reset = function () {
-        this._gridCanvas.innerHTML = "";
-        this._svgCanvas.innerHTML = "";
-    };
     WorkbenchComponent.prototype.appendBlock = function (guiElement) {
         var newGuiNode = this.createNewGuiNode(guiElement);
         this.globalState.guiTexture.addControl(guiElement);
@@ -41411,9 +41408,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         return true;
     };
     WorkbenchComponent.prototype.componentDidMount = function () {
-        this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-container");
-        this._gridCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas-container");
-        this._svgCanvas = this.props.globalState.hostDocument.getElementById("workbench-svg-container");
+        this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"](); //this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLDivElement;
     };
     WorkbenchComponent.prototype.onMove = function (evt) {
         var _this = this;
@@ -41447,7 +41442,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         return null;
     };
     WorkbenchComponent.prototype.onDown = function (evt) {
-        this._rootContainer.setPointerCapture(evt.pointerId);
+        var _a;
+        (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.setPointerCapture(evt.pointerId);
         if (!this.isOverGUINode) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
@@ -41456,9 +41452,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
     };
     WorkbenchComponent.prototype.onUp = function (evt) {
+        var _a;
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
-        this._rootContainer.releasePointerCapture(evt.pointerId);
+        (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.releasePointerCapture(evt.pointerId);
         this.isUp = true;
     };
     WorkbenchComponent.prototype.createGUICanvas = function () {
@@ -41535,6 +41532,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             }
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERDOWN);
         scene.onPointerObservable.add(function (p, e) {
+            _this._panning = false;
             removeObservers();
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERUP);
         scene.onPointerObservable.add(zoomFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERWHEEL);
@@ -41619,12 +41617,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "workbench-container" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "workbench-canvas-container" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "frame-container" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { id: "workbench-svg-container" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "selection-container" }))));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); }, ref: this._rootContainer }));
     };
     return WorkbenchComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

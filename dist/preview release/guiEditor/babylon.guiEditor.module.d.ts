@@ -36,8 +36,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
     export type FramePortData = {};
     export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-        private _gridCanvas;
-        private _svgCanvas;
         private _rootContainer;
         private _mouseStartPointX;
         private _mouseStartPointY;
@@ -59,7 +57,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         resizeGuiTexture(newvalue: Vector2): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
-        reset(): void;
         appendBlock(guiElement: Control): Control;
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
@@ -1506,8 +1503,6 @@ declare module GUIEDITOR {
     export type FramePortData = {};
     export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-        private _gridCanvas;
-        private _svgCanvas;
         private _rootContainer;
         private _mouseStartPointX;
         private _mouseStartPointY;
@@ -1529,7 +1524,6 @@ declare module GUIEDITOR {
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
-        reset(): void;
         appendBlock(guiElement: Control): Control;
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;

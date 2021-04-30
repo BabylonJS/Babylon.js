@@ -1,4 +1,4 @@
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { TmpVectors, Vector2 } from "babylonjs/Maths/math.vector";
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
@@ -61,6 +61,8 @@ IKeyPointComponentState
     private _onSelectionRectangleMovedObserver: Nullable<Observer<DOMRect>>;
     private _onFlattenTangentRequiredObserver: Nullable<Observer<void>>;
     private _onLinearTangentRequiredObserver: Nullable<Observer<void>>;
+    private _onBreakTangentRequiredObserver: Nullable<Observer<void>>;
+    private _onUnifyTangentRequiredObserver: Nullable<Observer<void>>;
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
@@ -87,6 +89,26 @@ IKeyPointComponentState
         
         this._svgHost = React.createRef();
         this._keyPointSVG = React.createRef();
+
+        this._onUnifyTangentRequiredObserver = this.props.context.onUnifyTangentRequired.add(() => {
+            const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+
+            if (!isSelected) {
+                return;
+            }
+
+            this._unifyTangent();
+        });
+
+        this._onBreakTangentRequiredObserver = this.props.context.onBreakTangentRequired.add(() => {
+            const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+
+            if (!isSelected) {
+                return;
+            }
+
+            this._breakTangent();
+        });
 
         this._onFlattenTangentRequiredObserver = this.props.context.onFlattenTangentRequired.add(() => {
             const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
@@ -236,6 +258,13 @@ IKeyPointComponentState
     }
 
     componentWillUnmount() {
+        if (this._onUnifyTangentRequiredObserver) {
+            this.props.context.onUnifyTangentRequired.remove(this._onUnifyTangentRequiredObserver);
+        }
+
+        if (this._onBreakTangentRequiredObserver) {
+            this.props.context.onBreakTangentRequired.remove(this._onBreakTangentRequiredObserver);
+        }
 
         if (this._onFlattenTangentRequiredObserver) {
             this.props.context.onFlattenTangentRequired.remove(this._onFlattenTangentRequiredObserver);
@@ -281,6 +310,16 @@ IKeyPointComponentState
         }
 
         return true;
+    }
+
+    private _breakTangent() {
+        this.props.curve.updateLockedTangentMode(this.props.keyId, false);
+        this.forceUpdate();
+    }
+
+    private _unifyTangent() {
+        this.props.curve.updateLockedTangentMode(this.props.keyId, true);
+        this.forceUpdate();
     }
 
     private _flattenTangent() {
@@ -378,15 +417,12 @@ IKeyPointComponentState
         evt.stopPropagation();
     }
 
-    private _processTangentMove(evt: React.PointerEvent<SVGSVGElement>, vec: Vector2, storedLength: number, isIn: boolean) {
-        vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-        vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
-
+    private _extractSlope(vec: Vector2, storedLength: number, isIn: boolean) {
         if (isIn && vec.x >= 0) {
             vec.x = -0.01;
         } else if (!isIn && vec.x <= 0) {
             vec.x = 0.01;
-        }
+        }       
 
         let currentPosition = vec.clone();
 
@@ -400,27 +436,25 @@ IKeyPointComponentState
         return value / frame;
     }
 
+    private _processTangentMove(evt: React.PointerEvent<SVGSVGElement>, vec: Vector2, storedLength: number, isIn: boolean) {
+        vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+        vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale; 
+
+        return this._extractSlope(vec, storedLength, isIn);
+    }
+
     private _onPointerMove(evt: React.PointerEvent<SVGSVGElement>) {
         if (!this._pointerIsDown || this.state.selectedState !==  SelectionState.Selected) {
             return;
         }
 
-        if (this._controlMode === ControlMode.TangentLeft) {
-            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
-            this.forceUpdate();
-
-        } else if (this._controlMode === ControlMode.TangentRight) {
-            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
-            this.forceUpdate();
-
-        } else if (this._controlMode === ControlMode.Key) {
+        if (this._controlMode === ControlMode.Key) {
 
             let newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
             let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
             let previousX = this.props.getPreviousX();
             let nextX = this.props.getNextX();
             const epsilon = 0.01;
-
 
             if (previousX !== null) {
                 newX = Math.max(previousX + epsilon, newX);
@@ -455,6 +489,49 @@ IKeyPointComponentState
                     }
                 });
             }
+        } else {                        
+            const keys = this.props.curve.keys;
+            const isLockedTangent = keys[this.props.keyId].lockedTangent && this.props.keyId !== 0 && this.props.keyId !== keys.length - 1
+                                    && keys[this.props.keyId].inTangent !== undefined && keys[this.props.keyId].outTangent !== undefined;
+
+            let angleDiff = 0;
+            let tmpVector = TmpVectors.Vector2[0];            
+
+            if (isLockedTangent) {
+                const va = TmpVectors.Vector2[1];  
+                const vb = TmpVectors.Vector2[2];  
+
+                Vector2.NormalizeToRef(this._inVec, va);
+                Vector2.NormalizeToRef(this._outVec, vb);
+                angleDiff = Math.acos(Math.min(1.0, Math.max(-1, Vector2.Dot(va, vb))));
+
+                this._inVec.rotateToRef(-angleDiff, tmpVector);  
+                if (Vector2.Distance(tmpVector, this._outVec) > 0.01) {
+                    angleDiff = -angleDiff;
+                }
+            }
+
+            if (this._controlMode === ControlMode.TangentLeft) {
+                this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
+
+                if (isLockedTangent) {
+                    this._inVec.rotateToRef(-angleDiff, tmpVector);                   
+                    tmpVector.x = Math.abs(tmpVector.x);
+
+                    this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthOut, false));
+                }
+
+            } else if (this._controlMode === ControlMode.TangentRight) {
+                this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
+
+                if (isLockedTangent) {
+                    this._outVec.rotateToRef(angleDiff, tmpVector);
+                    tmpVector.x = -Math.abs(tmpVector.x);
+
+                    this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthIn, true));
+                }
+            }  
+            this.forceUpdate();
         }
 
         this._sourcePointerX = evt.nativeEvent.offsetX;
@@ -479,21 +556,16 @@ IKeyPointComponentState
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         const keys = this.props.curve.keys;
 
-        const prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
-        const currentFrame = keys[this.props.keyId].frame;
-        const nextFrame = this.props.keyId < keys.length - 1 ? keys[this.props.keyId + 1].frame : 0;
-
-        let inFrameLength = (currentFrame - prevFrame) / 3;
-        let outFrameLength = (nextFrame - currentFrame) / 3;
+        const isLockedTangent = keys[this.props.keyId].lockedTangent ?? true;
 
         const convertedX = this.props.invertX(this.state.x);
         const convertedY = this.props.invertY(this.state.y);
-        const inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId, inFrameLength);
-        const outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId, outFrameLength);
-        
+        const inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId);
+        const outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId);
+       
         // We want to store the delta in the key local space
-        this._outVec = new Vector2(this.props.convertX(convertedX + outFrameLength) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
-        this._inVec = new Vector2(this.props.convertX(convertedX - inFrameLength) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        this._outVec = new Vector2(this.props.convertX(convertedX + 1) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
+        this._inVec = new Vector2(this.props.convertX(convertedX - 1) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
         this._storedLengthIn = this._inVec.length();
         this._storedLengthOut = this._outVec.length();
 
@@ -533,9 +605,9 @@ IKeyPointComponentState
                                 x2={`${this._inVec.x}px`}
                                 y2={`${this._inVec.y}px`}
                                 style={{
-                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
-                                    stroke: "#F9BF00",
-                                    strokeWidth: `${1 * this.props.scale}`
+                                    stroke: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
+                                    strokeWidth: `${1 * this.props.scale}`,
+                                    strokeDasharray: isLockedTangent ? "" : "2, 2"
                                 }}>
                             </line>
                             <circle
@@ -544,8 +616,7 @@ IKeyPointComponentState
                                 cy={`${this._inVec.y}px`}
                                 r={`${4 * this.props.scale}`}
                                 style={{
-                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
-                                    fill: "#F9BF00",
+                                    fill: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA"
                                 }}>
                             </circle>
                         </>
@@ -559,9 +630,9 @@ IKeyPointComponentState
                                 x2={`${this._outVec.x}px`}
                                 y2={`${this._outVec.y}px`}
                                 style={{
-                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
-                                    stroke: "#F9BF00",
-                                    strokeWidth: `${1 * this.props.scale}`
+                                    stroke: this.state.tangentSelectedIndex === 1 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
+                                    strokeWidth: `${1 * this.props.scale}`,
+                                    strokeDasharray: isLockedTangent ? "" : "2, 2"
                                 }}>
                             </line>                        
                             <circle
@@ -570,8 +641,7 @@ IKeyPointComponentState
                                 cy={`${this._outVec.y}px`}
                                 r={`${4 * this.props.scale}`}
                                 style={{
-                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
-                                    fill: "#F9BF00",
+                                    fill: this.state.tangentSelectedIndex === 1 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA"
                                 }}>
                             </circle>
                         </>
