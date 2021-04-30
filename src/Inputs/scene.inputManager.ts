@@ -64,6 +64,7 @@ export class InputManager {
 
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
+    private _controlsInit = false;
     private _alreadyAttachedTo: HTMLElement;
 
     // Pointers
@@ -841,44 +842,48 @@ export class InputManager {
             }
         };
 
-        this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
-            const evt: IEvent = eventData;
-            // Keyboard Events
-            if (eventData.deviceType === DeviceType.Keyboard) {
-                if (eventData.currentState === 1) {
-                    this._onKeyDown(evt as IKeyboardEvent);
-                }
+        if (!this._controlsInit) {
+            this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
+                if (this._alreadyAttached) {
+                    const evt: IEvent = eventData;
+                    // Keyboard Events
+                    if (eventData.deviceType === DeviceType.Keyboard) {
+                        if (eventData.currentState === 1) {
+                            this._onKeyDown(evt as IKeyboardEvent);
+                        }
 
-                if (eventData.currentState === 0) {
-                    this._onKeyUp(evt as IKeyboardEvent);
-                }
-            }
+                        if (eventData.currentState === 0) {
+                            this._onKeyUp(evt as IKeyboardEvent);
+                        }
+                    }
 
-            // Pointer Events
-            if (eventData.deviceType === DeviceType.Mouse || eventData.deviceType === DeviceType.Touch) {
-                if (attachDown && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 1) {
-                    this._onPointerDown(evt as IPointerEvent);
-                }
+                    // Pointer Events
+                    if (eventData.deviceType === DeviceType.Mouse || eventData.deviceType === DeviceType.Touch) {
+                        if (attachDown && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 1) {
+                            this._onPointerDown(evt as IPointerEvent);
+                        }
 
-                if (attachUp && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 0) {
-                    this._onPointerUp(evt as IPointerEvent);
-                }
+                        if (attachUp && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 0) {
+                            this._onPointerUp(evt as IPointerEvent);
+                        }
 
-                if (attachMove) {
-                    if (
-                        eventData.inputIndex === PointerInput.Horizontal ||
-                        eventData.inputIndex === PointerInput.Vertical ||
-                        eventData.inputIndex === PointerInput.DeltaHorizontal ||
-                        eventData.inputIndex === PointerInput.DeltaVertical ||
-                        eventData.inputIndex === PointerInput.FakeMove
-                    ) {
-                        this._onPointerMove(evt as IPointerEvent);
-                    } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
-                        this._onPointerMove(evt as IWheelEvent);
+                        if (attachMove) {
+                            if (
+                                eventData.inputIndex === PointerInput.Horizontal ||
+                                eventData.inputIndex === PointerInput.Vertical ||
+                                eventData.inputIndex === PointerInput.DeltaHorizontal ||
+                                eventData.inputIndex === PointerInput.DeltaVertical ||
+                                eventData.inputIndex === PointerInput.FakeMove
+                            ) {
+                                this._onPointerMove(evt as IPointerEvent);
+                            } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
+                                this._onPointerMove(evt as IWheelEvent);
+                            }
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         this._alreadyAttached = true;
     }
@@ -890,8 +895,6 @@ export class InputManager {
         if (!this._alreadyAttachedTo || !this._alreadyAttached) {
             return;
         }
-
-        this._deviceInputSystem.dispose();
 
         // Cursor
         if (!this._scene.doNotHandleCursors) {

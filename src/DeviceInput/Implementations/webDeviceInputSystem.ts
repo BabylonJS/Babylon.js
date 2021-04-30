@@ -136,7 +136,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             // Blur Events
             this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
             this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
-            this._elementToAttachTo.removeEventListener(this._eventPrefix + "out", this._pointerBlurEvent);
 
             // Keyboard Events
             if (this._keyboardActive) {
