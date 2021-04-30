@@ -29,7 +29,6 @@ import { ThinTexture } from '../Materials/Textures/thinTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
-import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { PerformanceConfigurator } from './performanceConfigurator';
 import { EngineFeatures } from './engineFeatures';
 import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
@@ -440,7 +439,7 @@ export class ThinEngine {
     private _textureUnits: Int32Array;
 
     /** @hidden */
-    public _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas>;
+    public _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas | ICanvas>;
     /** @hidden */
     public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
 
@@ -1179,7 +1178,7 @@ export class ThinEngine {
             return;
         }
 
-        this._workingCanvas = CanvasGenerator.CreateCanvas(1, 1);
+        this._workingCanvas = this.CreateCanvas(1, 1);
         let context = this._workingCanvas.getContext("2d");
 
         if (context) {
@@ -4685,7 +4684,7 @@ export class ThinEngine {
 
         if (this._IsSupported === null) {
             try {
-                var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+                var tempcanvas = this.CreateCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
                 this._IsSupported = gl != null && !!window.WebGLRenderingContext;
@@ -4703,7 +4702,7 @@ export class ThinEngine {
     public static get HasMajorPerformanceCaveat(): boolean {
         if (this._HasMajorPerformanceCaveat === null) {
             try {
-                var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+                var tempcanvas = this.CreateCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) || (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat: true });
 
                 this._HasMajorPerformanceCaveat = !gl;
@@ -4842,7 +4841,7 @@ export class ThinEngine {
      * @param height height
      * @return ICanvas interface
      */
-    public createCanvas(width: number, height: number) : ICanvas {
+    public CreateCanvas(width: number, height: number) : ICanvas {
         if (typeof document === "undefined") {
             return <ICanvas>(<any>(new OffscreenCanvas(width, height)));
         }

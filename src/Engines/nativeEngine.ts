@@ -2232,13 +2232,13 @@ export class NativeEngine extends Engine {
      * @return ICanvas interface
      */
     public createCanvas(width: number, height: number) : ICanvas {
-        if (_native.NativeCanvas) {
-            const canvas = new _native.NativeCanvas();
-            canvas.width = width;
-            canvas.height = height;
-            return canvas;
+        if (!_native.NativeCanvas) {
+            throw new Error("Native Canvas plugin not available.");
         }
-        throw new Error("Native Canvas plugin not available.");
+        const canvas = new _native.NativeCanvas();
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
     }
 
     /** @hidden */
