@@ -212,7 +212,7 @@ export class ColorPicker extends Control {
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
-        var canvas = engine.createCanvas(radius * 2, radius * 2);
+        var canvas = engine.CreateCanvas(radius * 2, radius * 2);
         var context = canvas.getContext("2d");
         var image = context.getImageData(0, 0, radius * 2, radius * 2);
         var data = image.data;
