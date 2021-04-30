@@ -1,3 +1,6 @@
+:root {
+    --selectioGrey: #666666;
+}
 
 .commands {
     grid-row: 1;
@@ -68,17 +71,17 @@
         }
 
         &:hover {
-            background-color: #666666;
+            background-color: var(--selectionGrey);;
         } 
         
         .active {
             transform-origin: center;
-            background-color: #666666;
+            background-color: var(--selectionGrey);;
         }
 
         img {
             &.active {
-                background-color: #666666;
+                background-color: var(--selectionGrey);;
             }
         }
     }
@@ -112,7 +115,7 @@
         }
 
         &:hover, &.activated {
-            background-color:#666666;
+            background-color:var(--selectionGrey);;
             color: black;
         } 
         
@@ -186,7 +189,7 @@
             }
 
             &:hover {
-                background: #666666;
+                background: var(--selectionGrey);;
                 .sub-items {
                     display: block;
                 }
