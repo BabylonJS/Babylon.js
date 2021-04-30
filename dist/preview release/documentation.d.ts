@@ -67027,7 +67027,7 @@ declare module BABYLON {
      * This represents a texture coming from an HDR input.
      *
      * The only supported format is currently panorama picture stored in RGBE format.
-     * Example of such files can be found on HDR Haven: https://hdrihaven.com/
+     * Example of such files can be found on HDRI Haven: https://hdrihaven.com/
      */
     export class HDRCubeTexture extends BaseTexture {
         private static _facesMapping;
@@ -81379,6 +81379,10 @@ declare module BABYLON {
          * Enable transient (for example touch-based) hit test inspections
          */
         enableTransientHitTest?: boolean;
+        /**
+        * Override the default transient hit test profile (generic-touchscreen).
+        */
+        transientHitTestProfile?: string;
         /**
          * Offset ray for the permanent hit test
          */
