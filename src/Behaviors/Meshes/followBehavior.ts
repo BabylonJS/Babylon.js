@@ -19,6 +19,9 @@ export class FollowBehavior implements Behavior<TransformNode> {
     private _tmpQuaternion: Quaternion = new Quaternion();
     private _tmpVectors: Vector3[] = [new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3()];
     private _tmpMatrix: Matrix = new Matrix();
+    private _tmpInvertView: Matrix = new Matrix();
+    private _tmpForward: Vector3 = new Vector3();
+    private _tmpNodeForward: Vector3 = new Vector3();
 
     private _followedCamera: Nullable<Camera>;
     private _onBeforeRender: Nullable<Observer<Scene>>;
@@ -33,10 +36,39 @@ export class FollowBehavior implements Behavior<TransformNode> {
     public attachedNode: Nullable<TransformNode>;
 
     /**
-     * Time in ms to interpolate position and rotation of the attached node.
+     * Set to false if the node should strictly follow the camera without any interpolation time
+     */
+    public interpolatePose = true;
+
+    /**
+     * Rate of interpolation of position and rotation of the attached node.
      * Higher values will give a slower interpolation.
      */
-    public lerpTime = 100;
+    public lerpTime = 500;
+
+    /**
+     * If the behavior should ignore the pitch and roll of the camera.
+     */
+    public ignoreCameraPitchAndRoll = true;
+
+    /**
+     * Pitch offset from camera (relative to Max Distance)
+     * Is only effective if `ignoreCameraPitchAndRoll` is set to `true`.
+     */
+    public pitchOffset = 45;
+
+    public maxViewVerticalDegrees = 30;
+    public maxViewHorizontalDegrees = 30;
+    public orientToCameraDeadzoneDegrees = 60;
+    public ignoreDistanceClamp = false;
+    public ignoreAngleClamp = false;
+    public fixedVerticalOffset = 0.5;
+    public useFixedVerticalOffset = true;
+    public verticalMaxDistance = 0;
+    public defaultDistance = 7.5;
+    public maximumDistance = 10;
+    public minimumDistance = 5;
+    public recenterNextUpdate = true;
 
     /**
      * The camera that should be followed by this behavior
@@ -88,17 +120,11 @@ export class FollowBehavior implements Behavior<TransformNode> {
         this._removeObservables();
     }
 
-    // Constraints
-    private _simplifyAngle(angle: number) {
-        // Restrains the input angle between -Math.PI and Math.PI
-        angle = angle % (2 * Math.PI);
-        if (angle > Math.PI) {
-            angle -= 2 * Math.PI;
-        } else if (angle < -Math.PI) {
-            angle += 2 * Math.PI;
-        }
-
-        return angle;
+    /**
+     * Recenters the attached node in front of the camera on the next update
+     */
+    public recenter() {
+        this.recenterNextUpdate = true;
     }
 
     private _angleBetweenOnPlane(from: Vector3, to: Vector3, normal: Vector3) {
@@ -121,7 +147,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
         const angle = Math.atan2(Vector3.Dot(to, right), Vector3.Dot(to, forward));
 
-        return this._simplifyAngle(angle);
+        return Scalar.NormalizeRadians(angle);
     }
 
     private _angleBetweenVectorAndPlane(vector: Vector3, normal: Vector3) {
@@ -137,19 +163,36 @@ export class FollowBehavior implements Behavior<TransformNode> {
         return Math.PI / 2 - Math.acos(Vector3.Dot(vector, normal));
     }
 
-    private _distanceClamp(currentToTarget: Vector3, _ignorePitch: boolean = false, _moveToDefault: boolean = false) {
-        // Todo : parameters
-        const minDistance = 3;
-        const maxDistance = 6;
-        const defaultDistance = 5;
+    private _length2D(vector: Vector3) {
+        return Math.sqrt(vector.x * vector.x + vector.z * vector.z);
+    }
+
+    private _distanceClamp(currentToTarget: Vector3, moveToDefault: boolean = false) {
+        let minDistance = this.minimumDistance;
+        let maxDistance = this.maximumDistance;
+        const defaultDistance = this.defaultDistance;
 
         const direction = this._tmpVectors[0];
         direction.copyFrom(currentToTarget);
-        const currentDistance = direction.length();
+        let currentDistance = direction.length();
         direction.normalizeFromLength(currentDistance);
+
+        if (this.ignoreCameraPitchAndRoll) {
+            // If we don't account for pitch offset, the casted object will float up/down as the reference
+            // gets closer to it because we will still be casting in the direction of the pitched offset.
+            // To fix this, only modify the YZ position of the object.
+            minDistance = this._length2D(direction) * minDistance;
+            maxDistance = this._length2D(direction) * maxDistance;
+
+            const currentDistance2D = this._length2D(currentToTarget);
+            direction.scaleInPlace(currentDistance / currentDistance2D);
+            currentDistance = currentDistance2D;
+        }
+
         let clampedDistance = currentDistance;
 
-        if (_moveToDefault) {
+        if (moveToDefault) {
+            // moveToDefault seems to induce glitches when angle clamped
             if (currentDistance < minDistance || currentDistance > maxDistance) {
                 clampedDistance = defaultDistance;
             }
@@ -162,12 +205,36 @@ export class FollowBehavior implements Behavior<TransformNode> {
         return currentDistance !== clampedDistance;
     }
 
-    private _angularClamp(camera: Camera, currentToTarget: Vector3, _ignoreVertical: boolean = false) {
-        const verticalFovFixed = camera.fovMode === Camera.FOVMODE_VERTICAL_FIXED;
-        const invertView = this._tmpMatrix;
-        invertView.copyFrom(camera.getViewMatrix());
-        invertView.invert();
+    private _applyVerticalClamp(currentToTarget: Vector3) {
+        if (this.verticalMaxDistance !== 0) {
+            currentToTarget.y = Scalar.Clamp(currentToTarget.y, -this.verticalMaxDistance, this.verticalMaxDistance);
+        }
+    }
 
+    private _toOrientationQuatToRef(vector: Vector3, quaternion: Quaternion) {
+        Quaternion.RotationYawPitchRollToRef(Math.atan2(vector.x, vector.z), Math.atan2(vector.y, Math.sqrt(vector.z*vector.z + vector.y*vector.y)), 0, quaternion);
+    }
+
+    private _applyPitchOffset(invertView: Matrix) {
+        const forward = this._tmpVectors[0];
+        const right = this._tmpVectors[1];
+        forward.copyFromFloats(0, 0, 1);
+        right.copyFromFloats(1, 0, 0);
+        Vector3.TransformNormalToRef(forward, invertView, forward);
+        forward.y = 0;
+        Vector3.TransformNormalToRef(right, invertView, right);
+
+        Quaternion.RotationAxisToRef(right, this.pitchOffset * Math.PI / 180, this._tmpQuaternion);
+        forward.rotateByQuaternionToRef(this._tmpQuaternion, forward);
+        this._toOrientationQuatToRef(forward, this._tmpQuaternion);
+        this._tmpQuaternion.toRotationMatrix(this._tmpMatrix);
+
+        // Since we already extracted position from the invert view matrix, we can
+        // disregard the position part of the matrix in the copy
+        invertView.copyFrom(this._tmpMatrix);
+    }
+
+    private _angularClamp(invertView: Matrix, currentToTarget: Vector3): boolean {
         const forward = this._tmpVectors[5];
         forward.copyFromFloats(0, 0, 1);
         const right = this._tmpVectors[6];
@@ -180,59 +247,54 @@ export class FollowBehavior implements Behavior<TransformNode> {
         // Up is global Z
         const up = Vector3.UpReadOnly;
 
-        // Todo : angle as parameters
-        const horizontalAngularClamp = verticalFovFixed ? (this._scene.getEngine().getAspectRatio(camera) * camera.fov) / 2 : camera.fov / 2;
-        const verticalAngularClamp = verticalFovFixed ? camera.fov / 2 : camera.fov / this._scene.getEngine().getAspectRatio(camera) / 2;
-
         const dist = currentToTarget.length();
 
         if (dist < EPSILON) {
-            return;
+            return false;
         }
 
-        let clamped = false;
+        let angularClamped = false;
         const rotationQuat = this._tmpQuaternion;
 
         // X-axis leashing
-        if (_ignoreVertical) {
+        if (this.ignoreCameraPitchAndRoll) {
             const angle = this._angleBetweenOnPlane(currentToTarget, forward, right);
             Quaternion.RotationAxisToRef(right, angle, rotationQuat);
-            currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
+            // currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
         } else {
             const angle = -this._angleBetweenOnPlane(currentToTarget, forward, right);
-            if (angle < -verticalAngularClamp) {
-                Quaternion.RotationAxisToRef(right, -angle - verticalAngularClamp, rotationQuat);
+            const minMaxAngle = ((this.maxViewVerticalDegrees * Math.PI) / 180) * 0.5;
+            if (angle < -minMaxAngle) {
+                Quaternion.RotationAxisToRef(right, -angle - minMaxAngle, rotationQuat);
                 currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
-                clamped = true;
-            } else if (angle > verticalAngularClamp) {
-                Quaternion.RotationAxisToRef(right, -angle + verticalAngularClamp, rotationQuat);
+                angularClamped = true;
+            } else if (angle > minMaxAngle) {
+                Quaternion.RotationAxisToRef(right, -angle + minMaxAngle, rotationQuat);
                 currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
-                clamped = true;
+                angularClamped = true;
             }
         }
 
         // Y-axis leashing
         const angle = this._angleBetweenVectorAndPlane(currentToTarget, right);
-        if (angle < -horizontalAngularClamp) {
-            Quaternion.RotationAxisToRef(up, -angle - horizontalAngularClamp, rotationQuat);
+        const minMaxAngle = ((this.maxViewHorizontalDegrees * Math.PI) / 180) * 0.5;
+        if (angle < -minMaxAngle) {
+            Quaternion.RotationAxisToRef(up, -angle - minMaxAngle, rotationQuat);
             currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
-            clamped = true;
-        } else if (angle > horizontalAngularClamp) {
-            Quaternion.RotationAxisToRef(up, -angle + horizontalAngularClamp, rotationQuat);
+            angularClamped = true;
+        } else if (angle > minMaxAngle) {
+            Quaternion.RotationAxisToRef(up, -angle + minMaxAngle, rotationQuat);
             currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
-            clamped = true;
+            angularClamped = true;
         }
+
+        return angularClamped;
     }
 
-    private _orientationClamp(camera: Camera, currentToTarget: Vector3, rotationQuaternion: Quaternion) {
+    private _orientationClamp(currentToTarget: Vector3, rotationQuaternion: Quaternion) {
         // Construct a rotation quat from up vector and target vector
         const toFollowed = this._tmpVectors[0];
         toFollowed.copyFrom(currentToTarget).scaleInPlace(-1).normalize();
-
-        // Inverted view matrix goes from camera frame to world
-        const invertView = this._tmpMatrix;
-        invertView.copyFrom(camera.getViewMatrix());
-        invertView.invert();
 
         const up = this._tmpVectors[1];
         const right = this._tmpVectors[2];
@@ -301,6 +363,15 @@ export class FollowBehavior implements Behavior<TransformNode> {
         return Quaternion.SlerpToRef(source, goal, slerp, result);
     }
 
+    private _passedOrientationDeadzone(currentToTarget: Vector3, forward: Vector3) {
+        const leashToFollow = this._tmpVectors[5];
+        leashToFollow.copyFrom(currentToTarget);
+        leashToFollow.normalize();
+
+        const angle = Math.abs(this._angleBetweenOnPlane(forward, leashToFollow, Vector3.UpReadOnly));
+        return angle * 180 / Math.PI > this.orientToCameraDeadzoneDegrees;
+    }
+
     private _updateLeashing(camera: Camera) {
         if (this.attachedNode) {
             let oldParent = this.attachedNode.parent;
@@ -310,12 +381,51 @@ export class FollowBehavior implements Behavior<TransformNode> {
             const currentToTarget = this._workingPosition;
             const rotationQuaternion = this._workingQuaternion;
             const pivot = this.attachedNode.getPivotPoint();
+            const invertView = this._tmpInvertView;
+            invertView.copyFrom(camera.getViewMatrix());
+            invertView.invert();
 
             Vector3.TransformCoordinatesToRef(pivot, worldMatrix, currentToTarget);
             currentToTarget.subtractInPlace(camera.globalPosition);
-            this._angularClamp(camera, currentToTarget);
-            this._distanceClamp(currentToTarget);
-            this._orientationClamp(camera, currentToTarget, rotationQuaternion);
+
+            if (this.ignoreCameraPitchAndRoll && !this.useFixedVerticalOffset) {
+                this._applyPitchOffset(invertView);
+            }
+
+            let angularClamped = false;
+            const forward = this._tmpForward;
+            forward.copyFromFloats(0, 0, 1);
+            Vector3.TransformNormalToRef(forward, invertView, forward);
+            
+            const nodeForward = this._tmpNodeForward;
+            nodeForward.copyFromFloats(0, 0, 1);
+            Vector3.TransformNormalToRef(nodeForward, worldMatrix, nodeForward);
+
+            if (this.recenterNextUpdate) {
+                currentToTarget.copyFrom(forward).scaleInPlace(this.defaultDistance);
+                this.recenterNextUpdate = false;
+            } else {
+                if (this.ignoreAngleClamp) {
+                    const currentDistance = currentToTarget.length();
+                    currentToTarget.copyFrom(forward).scaleInPlace(currentDistance);
+                } else {
+                    angularClamped = this._angularClamp(invertView, currentToTarget);
+                }
+            }
+            
+            let distanceClamped = false;
+            if (!this.ignoreDistanceClamp) {
+                distanceClamped = this._distanceClamp(currentToTarget, angularClamped);
+                this._applyVerticalClamp(currentToTarget);
+            }
+
+            if (this.useFixedVerticalOffset) {
+                // currentToTarget.y = this.fixedVerticalOffset;
+            }
+
+            if (angularClamped || distanceClamped || this._passedOrientationDeadzone(currentToTarget, nodeForward)) {
+                this._orientationClamp(currentToTarget, rotationQuaternion);
+            }
 
             this._workingPosition.subtractInPlace(pivot);
 
@@ -335,6 +445,12 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
         const oldParent = this.attachedNode.parent;
         this.attachedNode.setParent(null);
+
+        if (!this.interpolatePose) {
+            this.attachedNode.position.copyFrom(this.followedCamera.globalPosition).addInPlace(this._workingPosition);
+            this.attachedNode.rotationQuaternion.copyFrom(this._workingQuaternion);
+            return;
+        }
 
         // position
         const currentDirection = new Vector3();
