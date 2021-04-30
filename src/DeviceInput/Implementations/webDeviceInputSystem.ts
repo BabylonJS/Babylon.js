@@ -132,32 +132,34 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onDeviceDisconnectedObservable.clear();
         this.onInputChangedObservable.clear();
 
-        // Blur Events
-        this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
-        this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
-        this._elementToAttachTo.removeEventListener(this._eventPrefix + "out", this._pointerBlurEvent);
+        if (this._elementToAttachTo) {
+            // Blur Events
+            this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
+            this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "out", this._pointerBlurEvent);
 
-        // Keyboard Events
-        if (this._keyboardActive) {
-            this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
-            this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
-        }
-
-        // Pointer Events
-        if (this._pointerActive) {
-            this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
-            this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-            window.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
-            this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
-
-            if (this._pointerWheelClearObserver) {
-                this._engine.onEndFrameObservable.remove(this._pointerWheelClearObserver);
+            // Keyboard Events
+            if (this._keyboardActive) {
+                this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
+                this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
             }
-        }
 
-        // Gamepad Events
-        window.removeEventListener("gamepadconnected", this._gamepadConnectedEvent);
-        window.removeEventListener("gamepaddisconnected", this._gamepadDisconnectedEvent);
+            // Pointer Events
+            if (this._pointerActive) {
+                this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
+                this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
+                window.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+                this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
+
+                if (this._pointerWheelClearObserver) {
+                    this._engine.onEndFrameObservable.remove(this._pointerWheelClearObserver);
+                }
+            }
+
+            // Gamepad Events
+            window.removeEventListener("gamepadconnected", this._gamepadConnectedEvent);
+            window.removeEventListener("gamepaddisconnected", this._gamepadDisconnectedEvent);
+        }
     }
 
     /**
