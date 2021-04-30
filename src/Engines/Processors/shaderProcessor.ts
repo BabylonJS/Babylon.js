@@ -268,7 +268,7 @@ export class ShaderProcessor {
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
         }
 
-        if (!addGLES) {
+        if (addGLES) {
             preprocessors["GL_ES"] = "true";
         }
         preprocessors["__VERSION__"] = options.version;
