@@ -883,6 +883,8 @@ export class InputManager {
                     }
                 }
             });
+
+            this._controlsInit = true;
         }
 
         this._alreadyAttached = true;
