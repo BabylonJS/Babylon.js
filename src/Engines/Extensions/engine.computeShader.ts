@@ -3,12 +3,35 @@ import { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { Nullable } from "../../types";
 
+/**
+ * Type used to locate a resource in a compute shader.
+ * Note that for the time being the string variant does not work because reflection is not implemented in browsers yet
+ */
+export type ComputeBindingLocation = { group: number, binding: number } | string;
+
+/** @hidden */
+export enum ComputeBindingType {
+    Texture = 0,
+    StorageTexture = 1,
+    UniformBuffer = 2,
+    StorageBuffer = 3,
+}
+
+/** @hidden */
+export type ComputeBindingList = { [key: string]: { location: ComputeBindingLocation, type: ComputeBindingType, object: any } };
+
+/** @hidden */
+export function BindingLocationToString(location: ComputeBindingLocation): string {
+    return (location as any).group !== undefined ? (location as any).group + "_" + (location as any).binding : <string>location;
+}
+
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /**
-         * 
-         * @param baseName 
-         * @param options 
+         * Creates a new compute effect
+         * @param baseName Name of the effect
+         * @param options Options used to create the effect
+         * @returns The new compute effect
          */
         createComputeEffect(baseName: any, options: IComputeEffectCreationOptions): ComputeEffect;
 
@@ -19,13 +42,23 @@ declare module "../../Engines/thinEngine" {
         createComputePipelineContext(): IComputePipelineContext;
 
         /**
+         * Dispatches a compute shader
+         * @param effect The compute effect
+         * @param bindings The list of resources to bind to the shader
+         * @param x The number of workgroups to execute on the X dimension
+         * @param y The number of workgroups to execute on the Y dimension
+         * @param z The number of workgroups to execute on the Z dimension
+         */
+        computeDispatch(effect: ComputeEffect, bindings: ComputeBindingList, x: number, y?: number, z?: number): void;
+
+        /**
          * Gets a boolean indicating if all created compute effects are ready
          * @returns true if all effects are ready
          */
         areAllComputeEffectsReady(): boolean;
 
         /**
-         * Force the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
+         * Forces the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
          */
         releaseComputeEffects(): void;
 
@@ -57,6 +90,10 @@ ThinEngine.prototype.createComputeEffect = function(baseName: any, options: ICom
 
 ThinEngine.prototype.createComputePipelineContext = function(): IComputePipelineContext {
     throw new Error("createComputePipelineContext: This engine does not support compute shaders!");
+};
+
+ThinEngine.prototype.computeDispatch = function(effect: ComputeEffect, bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
+    throw new Error("computeDispatch: This engine does not support compute shaders!");
 };
 
 ThinEngine.prototype.areAllComputeEffectsReady = function(): boolean {

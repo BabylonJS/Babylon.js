@@ -14,7 +14,7 @@ export class WebGPUComputePipelineContext implements IComputePipelineContext {
 
     public stage: Nullable<GPUProgrammableStage>;
 
-    public bindGroupLayouts: GPUBindGroupLayout[];
+    public computePipeline: GPUComputePipeline;
 
     public get isAsync() {
         return false;
@@ -41,13 +41,9 @@ export class WebGPUComputePipelineContext implements IComputePipelineContext {
     }
  
     public _fillEffectInformation(effect: ComputeEffect): void {
-         
+         // TODO WEBGPU: use reflection (when supported by browsers) to get group+bindings of input variables
     }
  
-    /**
-     * Release all associated resources.
-     **/
     public dispose(): void {
-
     }
 }
