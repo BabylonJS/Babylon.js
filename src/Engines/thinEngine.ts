@@ -594,7 +594,7 @@ export class ThinEngine {
         this._snapshotRenderingMode = mode;
     }
 
-    private static _CreateCanvas(width: number, height: number) : ICanvas {
+    private static _createCanvas(width: number, height: number) : ICanvas {
         if (typeof document === "undefined") {
             return <ICanvas>(<any>(new OffscreenCanvas(width, height)));
         }
@@ -610,8 +610,8 @@ export class ThinEngine {
      * @param height height
      * @return ICanvas interface
      */
-    public CreateCanvas(width: number, height: number) : ICanvas {
-        return ThinEngine._CreateCanvas(width, height);
+    public createCanvas(width: number, height: number) : ICanvas {
+        return ThinEngine._createCanvas(width, height);
     }
 
     /**
@@ -1198,7 +1198,7 @@ export class ThinEngine {
             return;
         }
 
-        this._workingCanvas = this.CreateCanvas(1, 1);
+        this._workingCanvas = this.createCanvas(1, 1);
         let context = this._workingCanvas.getContext("2d");
 
         if (context) {

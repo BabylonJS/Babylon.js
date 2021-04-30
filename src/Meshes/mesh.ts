@@ -2753,7 +2753,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Getting height map data
             var heightMapWidth = img.width;
             var heightMapHeight = img.height;
-            var canvas = this.getEngine().CreateCanvas(heightMapWidth, heightMapHeight);
+            var canvas = this.getEngine().createCanvas(heightMapWidth, heightMapHeight);
             var context = <CanvasRenderingContext2D>canvas.getContext("2d");
 
             context.drawImage(img, 0, 0);

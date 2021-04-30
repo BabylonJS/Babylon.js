@@ -309,7 +309,7 @@ export class Engine extends ThinEngine {
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
     public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        var canvas = this.CreateCanvas(bufferWidth, bufferHeight);
+        var canvas = this.createCanvas(bufferWidth, bufferHeight);
         var context = canvas.getContext("2d");
 
         if (!context) {
