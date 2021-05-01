@@ -28,6 +28,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     private _workingPosition: Vector3 = new Vector3();
     private _workingQuaternion: Quaternion = new Quaternion();
     private _lastTick: number = -1;
+    private _recenterNextUpdate = true;
 
     /**
      * Attached node of this behavior
@@ -56,16 +57,43 @@ export class FollowBehavior implements Behavior<TransformNode> {
      */
     public pitchOffset = 15;
 
+    /**
+     * The vertical angle from the camera forward axis to the owner will not exceed this value
+     */
     public maxViewVerticalDegrees = 30;
+
+    /**
+     * The horizontal angle from the camera forward axis to the owner will not exceed this value
+     */
     public maxViewHorizontalDegrees = 30;
+    /**
+     * The attached node will not reorient until the angle between its forward vector and the vector to the camera is greater than this value
+     */
     public orientToCameraDeadzoneDegrees = 60;
+    /**
+     * Option to ignore distance clamping
+     */
     public ignoreDistanceClamp = false;
+    /**
+     * Option to ignore angle clamping
+     */
     public ignoreAngleClamp = false;
+    /**
+     * Max vertical distance between the attachedNode and camera
+     */
     public verticalMaxDistance = 0;
+    /**
+     *  Default distance from eye to attached node, i.e. the sphere radius
+     */
     public defaultDistance = 5;
+    /**
+     *  Max distance from eye to attached node, i.e. the sphere radius
+     */
     public maximumDistance = 10;
+    /**
+     *  Min distance from eye to attached node, i.e. the sphere radius
+     */
     public minimumDistance = 3;
-    public recenterNextUpdate = true;
 
     /**
      * The camera that should be followed by this behavior
@@ -121,7 +149,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
      * Recenters the attached node in front of the camera on the next update
      */
     public recenter() {
-        this.recenterNextUpdate = true;
+        this._recenterNextUpdate = true;
     }
 
     private _angleBetweenOnPlane(from: Vector3, to: Vector3, normal: Vector3) {
@@ -206,7 +234,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     }
 
     private _toOrientationQuatToRef(vector: Vector3, quaternion: Quaternion) {
-        Quaternion.RotationYawPitchRollToRef(Math.atan2(vector.x, vector.z), Math.atan2(vector.y, Math.sqrt(vector.z*vector.z + vector.x*vector.x)), 0, quaternion);
+        Quaternion.RotationYawPitchRollToRef(Math.atan2(vector.x, vector.z), Math.atan2(vector.y, Math.sqrt(vector.z * vector.z + vector.x * vector.x)), 0, quaternion);
     }
 
     private _applyPitchOffset(invertView: Matrix) {
@@ -219,7 +247,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         forward.normalize();
         Vector3.TransformNormalToRef(right, invertView, right);
 
-        Quaternion.RotationAxisToRef(right, this.pitchOffset * Math.PI / 180, this._tmpQuaternion);
+        Quaternion.RotationAxisToRef(right, (this.pitchOffset * Math.PI) / 180, this._tmpQuaternion);
         forward.rotateByQuaternionToRef(this._tmpQuaternion, forward);
         this._toOrientationQuatToRef(forward, this._tmpQuaternion);
         this._tmpQuaternion.toRotationMatrix(this._tmpMatrix);
@@ -364,7 +392,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         leashToFollow.normalize();
 
         const angle = Math.abs(this._angleBetweenOnPlane(forward, leashToFollow, Vector3.UpReadOnly));
-        return angle * 180 / Math.PI > this.orientToCameraDeadzoneDegrees;
+        return (angle * 180) / Math.PI > this.orientToCameraDeadzoneDegrees;
     }
 
     private _updateLeashing(camera: Camera) {
@@ -391,14 +419,14 @@ export class FollowBehavior implements Behavior<TransformNode> {
             const forward = this._tmpForward;
             forward.copyFromFloats(0, 0, 1);
             Vector3.TransformNormalToRef(forward, invertView, forward);
-            
+
             const nodeForward = this._tmpNodeForward;
             nodeForward.copyFromFloats(0, 0, 1);
             Vector3.TransformNormalToRef(nodeForward, worldMatrix, nodeForward);
 
-            if (this.recenterNextUpdate) {
+            if (this._recenterNextUpdate) {
                 currentToTarget.copyFrom(forward).scaleInPlace(this.defaultDistance);
-                this.recenterNextUpdate = false;
+                this._recenterNextUpdate = false;
             } else {
                 if (this.ignoreAngleClamp) {
                     const currentDistance = currentToTarget.length();
@@ -407,7 +435,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
                     angularClamped = this._angularClamp(invertView, currentToTarget);
                 }
             }
-            
+
             let distanceClamped = false;
             if (!this.ignoreDistanceClamp) {
                 distanceClamped = this._distanceClamp(currentToTarget, angularClamped);
