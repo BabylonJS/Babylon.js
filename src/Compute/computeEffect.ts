@@ -6,7 +6,6 @@ import { DomManagement } from "../Misc/domManagement";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from '../Engines/shaderStore';
-import { ComputeBindingList } from "../Engines/Extensions/engine.computeShader";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -335,8 +334,6 @@ export class ComputeEffect {
             engine._prepareComputePipelineContext(this._pipelineContext, this._computeSourceCodeOverride ? this._computeSourceCodeOverride : this._computeSourceCode, this._rawComputeSourceCode, this._computeSourceCodeOverride ? null : defines);
 
             engine._executeWhenComputeStateIsCompiled(this._pipelineContext, () => {
-                this._pipelineContext!._fillEffectInformation(this);
-
                 this._compilationError = "";
                 this._isReady = true;
                 if (this.onCompiled) {
@@ -406,17 +403,6 @@ export class ComputeEffect {
             }
             this.onErrorObservable.notifyObservers(this);
         }
-    }
-
-    /**
-     * Executes the compute shader
-     * @param bindings List of all the bindings of the shader
-     * @param x Number of workgroups to execute on the X dimension
-     * @param y Number of workgroups to execute on the Y dimension (default: 1)
-     * @param z Number of workgroups to execute on the Z dimension (default: 1)
-     */
-    public dispatch(bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
-        this._engine.computeDispatch(this, bindings, x, y, z);
     }
 
     /**

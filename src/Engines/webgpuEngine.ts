@@ -50,7 +50,9 @@ import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 import { ComputeEffect, IComputeEffectCreationOptions } from "../Compute/computeEffect";
 import { IComputePipelineContext } from "../Compute/IComputePipelineContext";
 import { WebGPUComputePipelineContext } from "./WebGPU/webgpuComputePipelineContext";
-import { ComputeBindingList, ComputeBindingType } from "./Extensions/engine.computeShader";
+import { ComputeBindingList } from "./Extensions/engine.computeShader";
+import { IComputeContext } from "../Compute/IComputeContext";
+import { WebGPUComputeContext } from "./WebGPU/webgpuComputeContext";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -214,6 +216,7 @@ export class WebGPUEngine extends Engine {
     private _emptyVertexBuffer: VertexBuffer;
     private _mrtAttachments: number[];
     private _timestampQuery: WebGPUTimestampQuery;
+    private _compiledComputeEffects: { [key: string]: ComputeEffect } = {};
     /** @hidden */
     public _counters: {
         numEnableEffects: number;
@@ -1469,6 +1472,14 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     /**
+     * Creates a new compute context
+     * @returns the new context
+     */
+     public createComputeContext(): IComputeContext | undefined {
+        return new WebGPUComputeContext(this._device, this._cacheSampler);
+    }
+
+    /**
      * Creates a new compute effect
      * @param baseName Name of the effect
      * @param options Options used to create the effect
@@ -1501,15 +1512,33 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Gets a boolean indicating if all created compute effects are ready
+     * @returns true if all effects are ready
+     */
+    public areAllComputeEffectsReady(): boolean {
+        for (const key in this._compiledComputeEffects) {
+            const effect = this._compiledComputeEffects[key];
+    
+            if (!effect.isReady()) {
+                return false;
+            }
+        }
+    
+        return true;
+    }
+    
+    /**
      * Dispatches a compute shader
      * @param effect The compute effect
+     * @param context The compute context
      * @param bindings The list of resources to bind to the shader
      * @param x The number of workgroups to execute on the X dimension
      * @param y The number of workgroups to execute on the Y dimension
      * @param z The number of workgroups to execute on the Z dimension
      */
-    public computeDispatch(effect: ComputeEffect, bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
+    public computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
         const contextPipeline = effect._pipelineContext as WebGPUComputePipelineContext;
+        const computeContext = context as WebGPUComputeContext;
 
         if (!contextPipeline.computePipeline) {
             contextPipeline.computePipeline = this._device.createComputePipeline({
@@ -1517,78 +1546,17 @@ export class WebGPUEngine extends Engine {
             });
         }
 
-        const bindGroupEntries: GPUBindGroupEntry[][] = [];
-        for (const key in bindings) {
-            const binding = bindings[key],
-                  group = (binding.location as any).group,
-                  index = (binding.location as any).binding,
-                  type = binding.type,
-                  object = binding.object;
-
-            let entries = bindGroupEntries[group];
-            if (!entries) {
-                entries = bindGroupEntries[group] = [];
-            }
-
-            switch (type) {
-                case ComputeBindingType.Texture: {
-                    const texture = object as BaseTexture;
-                    const hardwareTexture = texture._texture!._hardwareTexture as WebGPUHardwareTexture;
-                    entries.push({
-                        binding: index - 1,
-                        resource: this._cacheSampler.getSampler(texture._texture!),
-                    });
-                    entries.push({
-                        binding: index,
-                        resource: hardwareTexture.view!,
-                    });
-                    break;
-                }
-
-                case ComputeBindingType.StorageTexture: {
-                    const texture = object as BaseTexture;
-                    const hardwareTexture = texture._texture!._hardwareTexture as WebGPUHardwareTexture;
-                    if ((hardwareTexture.textureAdditionalUsages & WebGPUConstants.TextureUsage.Storage) === 0) {
-                        Logger.Error(`computeDispatch: The texture (name=${texture.name}, uniqueId=${texture.uniqueId}) is not a storage texture!`, 50);
-                    }
-                    entries.push({
-                        binding: index,
-                        resource: hardwareTexture.view!,
-                    });
-                    break;
-                }
-
-                case ComputeBindingType.UniformBuffer: {
-                    const buffer = object as UniformBuffer;
-                    const dataBuffer = buffer.getBuffer()!;
-                    const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
-                    entries.push({
-                        binding: index,
-                        resource: {
-                            buffer: webgpuBuffer,
-                            offset: 0,
-                            size: dataBuffer.capacity,
-                        }
-                    });
-                    break;
-                }
-            }
-        }
-
         const commandEncoder = this._device.createCommandEncoder({});
-        const computePass = commandEncoder.beginComputePass({});
+        const computePass = commandEncoder.beginComputePass();
 
         computePass.setPipeline(contextPipeline.computePipeline);
 
-        for (let i = 0; i < bindGroupEntries.length; ++i) {
-            const entries = bindGroupEntries[i];
-            if (!entries) {
+        const bindGroups = computeContext.getBindGroups(bindings, contextPipeline.computePipeline);
+        for (let i = 0; i < bindGroups.length; ++i) {
+            const bindGroup = bindGroups[i];
+            if (!bindGroup) {
                 continue;
             }
-            const bindGroup = this._device.createBindGroup({
-                layout: contextPipeline.computePipeline.getBindGroupLayout(i),
-                entries,
-            });
             computePass.setBindGroup(i, bindGroup);
         }
 
@@ -1636,6 +1604,17 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /** @hidden */
+    public _rebuildComputeEffects(): void {
+        for (const key in this._compiledComputeEffects) {
+            const effect = this._compiledComputeEffects[key];
+    
+            effect._pipelineContext = null;
+            effect._wasPreviouslyReady = false;
+            effect._prepareEffect();
+        }
+    };
+    
     /** @hidden */
     public _deleteComputePipelineContext(pipelineContext: IComputePipelineContext): void {
         const webgpuPipelineContext = pipelineContext as WebGPUComputePipelineContext;
