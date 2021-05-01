@@ -6,8 +6,7 @@ import { Camera } from "../../Cameras/camera";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { TransformNode } from "../../Meshes/transformNode";
-
-const EPSILON = 1e-5;
+import { Epsilon } from "../../Maths/math.constants";
 
 /**
  * A behavior that when attached to a mesh will follow a camera
@@ -63,9 +62,9 @@ export class FollowBehavior implements Behavior<TransformNode> {
     public ignoreDistanceClamp = false;
     public ignoreAngleClamp = false;
     public verticalMaxDistance = 0;
-    public defaultDistance = 2.5;
-    public maximumDistance = 5;
-    public minimumDistance = 1;
+    public defaultDistance = 5;
+    public maximumDistance = 10;
+    public minimumDistance = 3;
     public recenterNextUpdate = true;
 
     /**
@@ -165,7 +164,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         return Math.sqrt(vector.x * vector.x + vector.z * vector.z);
     }
 
-    private _distanceClamp(currentToTarget: Vector3) {
+    private _distanceClamp(currentToTarget: Vector3, moveToDefault: boolean = false) {
         let minDistance = this.minimumDistance;
         let maxDistance = this.maximumDistance;
         const defaultDistance = this.defaultDistance;
@@ -188,7 +187,12 @@ export class FollowBehavior implements Behavior<TransformNode> {
         }
 
         let clampedDistance = currentDistance;
-        clampedDistance = Scalar.Clamp(currentDistance, minDistance, maxDistance);
+
+        if (moveToDefault) {
+            clampedDistance = defaultDistance;
+        } else {
+            clampedDistance = Scalar.Clamp(currentDistance, minDistance, maxDistance);
+        }
 
         currentToTarget.copyFrom(direction).scaleInPlace(clampedDistance);
 
@@ -240,7 +244,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
         const dist = currentToTarget.length();
 
-        if (dist < EPSILON) {
+        if (dist < Epsilon) {
             return false;
         }
 
@@ -296,7 +300,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         Vector3.CrossToRef(toFollowed, up, right);
         const length = right.length();
 
-        if (length < EPSILON) {
+        if (length < Epsilon) {
             return;
         }
 
@@ -326,7 +330,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         let scale1;
         let scale2;
 
-        if (Math.abs(dot) < 1 - EPSILON) {
+        if (dot < 1 - Epsilon) {
             const omega = Math.acos(dot);
             const invSin = 1 / Math.sin(omega);
             scale1 = Math.sin((1 - slerp) * omega) * invSin;
@@ -406,7 +410,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
             
             let distanceClamped = false;
             if (!this.ignoreDistanceClamp) {
-                distanceClamped = this._distanceClamp(currentToTarget);
+                distanceClamped = this._distanceClamp(currentToTarget, angularClamped);
                 this._applyVerticalClamp(currentToTarget);
             }
 
