@@ -726,10 +726,16 @@ export class ShadowGenerator implements IShadowGenerator {
             this._shadowMap.renderList = [];
         }
 
-        this._shadowMap.renderList.push(mesh);
+        var renderListMap: Record<string, undefined> = {};
+        this._shadowMap.renderList.forEach(
+            (renderedMesh) => { renderListMap[renderedMesh.name] = undefined; },
+        );
 
-        if (includeDescendants) {
-            this._shadowMap.renderList.push(...mesh.getChildMeshes());
+        var meshes = includeDescendants ? [mesh, ...mesh.getChildMeshes()] : [mesh];
+        for (var addedMesh of meshes) {
+            if (!renderListMap.hasOwnProperty(addedMesh.name)) {
+                this._shadowMap.renderList.push(addedMesh);
+            }
         }
 
         return this;
