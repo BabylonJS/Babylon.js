@@ -1,4 +1,5 @@
 import { ComputeEffect, IComputeEffectCreationOptions } from "../../Compute/computeEffect";
+import { IComputeContext } from "../../Compute/IComputeContext";
 import { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { Nullable } from "../../types";
@@ -42,14 +43,21 @@ declare module "../../Engines/thinEngine" {
         createComputePipelineContext(): IComputePipelineContext;
 
         /**
+         * Creates a new compute context
+         * @returns the new context
+         */
+        createComputeContext(): IComputeContext | undefined;
+
+        /**
          * Dispatches a compute shader
          * @param effect The compute effect
+         * @param context The compute context
          * @param bindings The list of resources to bind to the shader
          * @param x The number of workgroups to execute on the X dimension
          * @param y The number of workgroups to execute on the Y dimension
          * @param z The number of workgroups to execute on the Z dimension
          */
-        computeDispatch(effect: ComputeEffect, bindings: ComputeBindingList, x: number, y?: number, z?: number): void;
+        computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number): void;
 
         /**
          * Gets a boolean indicating if all created compute effects are ready
@@ -76,13 +84,8 @@ declare module "../../Engines/thinEngine" {
 
         /** @hidden */
         _deleteComputePipelineContext(pipelineContext: IComputePipelineContext): void;
-
-        /** @hidden */
-        _compiledComputeEffects: { [key: string]: ComputeEffect };
     }
 }
-
-ThinEngine.prototype._compiledComputeEffects = {};
 
 ThinEngine.prototype.createComputeEffect = function(baseName: any, options: IComputeEffectCreationOptions): ComputeEffect {
     throw new Error("createComputeEffect: This engine does not support compute shaders!");
@@ -92,37 +95,25 @@ ThinEngine.prototype.createComputePipelineContext = function(): IComputePipeline
     throw new Error("createComputePipelineContext: This engine does not support compute shaders!");
 };
 
-ThinEngine.prototype.computeDispatch = function(effect: ComputeEffect, bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
+ThinEngine.prototype.createComputeContext = function(): IComputeContext | undefined {
+    return undefined;
+}
+
+ThinEngine.prototype.computeDispatch = function(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
     throw new Error("computeDispatch: This engine does not support compute shaders!");
 };
 
 ThinEngine.prototype.areAllComputeEffectsReady = function(): boolean {
-    for (const key in this._compiledComputeEffects) {
-        const effect = this._compiledComputeEffects[key];
-
-        if (!effect.isReady()) {
-            return false;
-        }
-    }
-
     return true;
 };
 
 ThinEngine.prototype.releaseComputeEffects = function(): void {
-    this._compiledComputeEffects = {};
 };
 
 ThinEngine.prototype._prepareComputePipelineContext = function(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>): void {
 };
 
 ThinEngine.prototype._rebuildComputeEffects = function(): void {
-    for (const key in this._compiledComputeEffects) {
-        const effect = this._compiledComputeEffects[key];
-
-        effect._pipelineContext = null;
-        effect._wasPreviouslyReady = false;
-        effect._prepareEffect();
-    }
 };
 
 ThinEngine.prototype._executeWhenComputeStateIsCompiled = function(pipelineContext: IComputePipelineContext, action: () => void): void {

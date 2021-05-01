@@ -1,5 +1,3 @@
-import { ComputeEffect } from './computeEffect';
-
 /**
  * Class used to store and describe the pipeline context associated with a compute effect
  */
@@ -18,9 +16,6 @@ export interface IComputePipelineContext {
 
     /** @hidden */
     _getComputeShaderCode(): string | null;
-
-    /** @hidden */
-    _fillEffectInformation(effect: ComputeEffect): void;
 
     /** Releases the resources associated with the pipeline. */
     dispose(): void;

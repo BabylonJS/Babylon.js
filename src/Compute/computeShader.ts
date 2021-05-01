@@ -9,6 +9,7 @@ import { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
 import { BindingLocationToString, ComputeBindingList, ComputeBindingLocation, ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
 import { BaseTexture } from "../Materials/Textures";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
+import { IComputeContext } from "./IComputeContext";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -25,6 +26,8 @@ import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
     processFinalCode?: Nullable<(code: string) => string>;
 }
 
+type Sampler = { wrapU: number, wrapV: number, wrapR: number, anisotropicFilteringLevel: number, samplingMode: number };
+
 /**
  * The ComputeShader object lets you execute a compute shader on your GPU (if supported by the engine)
  */
@@ -35,6 +38,9 @@ export class ComputeShader {
     private _effect: ComputeEffect;
     private _cachedDefines: string;
     private _bindings : ComputeBindingList = {};
+    private _samplers : { [key: string]: Sampler } = {};
+    private _context: IComputeContext;
+    private _contextIsDirty = false;
 
     /**
      * Gets the unique id of the compute shader
@@ -77,6 +83,7 @@ export class ComputeShader {
             throw new Error("This engine does not support compute shaders!");
         }
 
+        this._context = engine.createComputeContext()!;
         this._shaderPath = shaderPath;
         this._options = {
             defines: [],
@@ -99,7 +106,12 @@ export class ComputeShader {
      * @param texture Texture to bind
      */
     public setTexture(name: ComputeBindingLocation, texture: BaseTexture): void {
-        this._bindings[BindingLocationToString(name)] = {
+        const key = BindingLocationToString(name);
+        const current = this._bindings[key];
+
+        this._contextIsDirty ||= !current || current.object !== texture;
+
+        this._bindings[key] = {
             location: name,
             type: ComputeBindingType.Texture,
             object: texture,
@@ -112,7 +124,12 @@ export class ComputeShader {
      * @param texture Texture to bind
      */
     public setStorageTexture(name: ComputeBindingLocation, texture: BaseTexture): void {
-        this._bindings[BindingLocationToString(name)] = {
+        const key = BindingLocationToString(name);
+        const current = this._bindings[key];
+
+        this._contextIsDirty ||= !current || current.object !== texture;
+
+        this._bindings[key] = {
             location: name,
             type: ComputeBindingType.StorageTexture,
             object: texture,
@@ -125,7 +142,12 @@ export class ComputeShader {
      * @param texture Buffer to bind
      */
     public setUniformBuffer(name: ComputeBindingLocation, buffer: UniformBuffer): void {
-        this._bindings[BindingLocationToString(name)] = {
+        const key = BindingLocationToString(name);
+        const current = this._bindings[key];
+
+        this._contextIsDirty ||= !current || current.object !== buffer;
+
+        this._bindings[key] = {
             location: name,
             type: ComputeBindingType.UniformBuffer,
             object: buffer,
@@ -190,6 +212,14 @@ export class ComputeShader {
         return true;
     }
 
+    private _compareSampler(texture: BaseTexture, sampler: Sampler): boolean {
+        return  texture.wrapU === sampler.wrapU &&
+                texture.wrapV === sampler.wrapV &&
+                texture.wrapR === sampler.wrapR &&
+                texture.anisotropicFilteringLevel === sampler.anisotropicFilteringLevel &&
+                texture._texture?.samplingMode === sampler.samplingMode;
+    }
+
     /**
      * Dispatches (executes) the compute shader
      * @param x Number of workgroups to execute on the X dimension
@@ -202,7 +232,35 @@ export class ComputeShader {
             return false;
         }
 
-        this._effect.dispatch(this._bindings, x, y, z);
+        // If the sampling parameters of a texture bound to the shader have changed, we must clear the compute context so that it is recreated with the updated values
+        for (const key in this._bindings) {
+            const binding = this._bindings[key];
+
+            if (binding.type !== ComputeBindingType.Texture) {
+                continue;
+            }
+
+            const sampler = this._samplers[key];
+            const texture = binding.object as BaseTexture;
+
+            if (!sampler || !this._compareSampler(texture, sampler)) {
+                this._samplers[key] = {
+                    wrapU: texture.wrapU,
+                    wrapV: texture.wrapV,
+                    wrapR: texture.wrapR,
+                    anisotropicFilteringLevel: texture.anisotropicFilteringLevel,
+                    samplingMode: texture._texture!.samplingMode,
+                };
+                this._contextIsDirty = true;
+            }
+        }
+
+        if (this._contextIsDirty) {
+            this._contextIsDirty = false;
+            this._context.clear();
+        }
+
+        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z);
 
         return true;
     }

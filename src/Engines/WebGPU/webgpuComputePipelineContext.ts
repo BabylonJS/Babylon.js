@@ -1,4 +1,3 @@
-import { ComputeEffect } from "../../Compute/computeEffect";
 import { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { Nullable } from "../../types";
 import { WebGPUEngine } from "../webgpuEngine";
@@ -38,10 +37,6 @@ export class WebGPUComputePipelineContext implements IComputePipelineContext {
  
     public _getComputeShaderCode(): string | null {
         return this.sources?.compute;
-    }
- 
-    public _fillEffectInformation(effect: ComputeEffect): void {
-         // TODO WEBGPU: use reflection (when supported by browsers) to get group+bindings of input variables
     }
  
     public dispose(): void {
