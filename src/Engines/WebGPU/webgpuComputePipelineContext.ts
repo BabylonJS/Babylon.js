@@ -34,11 +34,11 @@ export class WebGPUComputePipelineContext implements IComputePipelineContext {
         this._name = "unnamed";
         this.engine = engine;
     }
- 
+
     public _getComputeShaderCode(): string | null {
         return this.sources?.compute;
     }
- 
+
     public dispose(): void {
     }
 }
