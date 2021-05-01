@@ -74,13 +74,13 @@ export class ComputeEffect {
      * Observable that will be called when effect is bound.
      */
     public onBindObservable = new Observable<ComputeEffect>();
- 
+
     /**
      * @hidden
      * Specifies if the effect was previously ready
      */
     public _wasPreviouslyReady = false;
- 
+
     private _engine: Engine;
     private _isReady = false;
     private _compilationError = "";

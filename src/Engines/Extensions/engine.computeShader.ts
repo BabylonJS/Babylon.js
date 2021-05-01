@@ -97,7 +97,7 @@ ThinEngine.prototype.createComputePipelineContext = function(): IComputePipeline
 
 ThinEngine.prototype.createComputeContext = function(): IComputeContext | undefined {
     return undefined;
-}
+};
 
 ThinEngine.prototype.computeDispatch = function(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
     throw new Error("computeDispatch: This engine does not support compute shaders!");

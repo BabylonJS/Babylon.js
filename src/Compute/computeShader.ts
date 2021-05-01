@@ -46,7 +46,7 @@ export class ComputeShader {
      * Gets the unique id of the compute shader
      */
     public readonly uniqueId: number;
- 
+
      /**
       * The name of the material
       */
@@ -62,7 +62,7 @@ export class ComputeShader {
       * Callback triggered when an error occurs
       */
     public onError: Nullable<(effect: ComputeEffect, errors: string) => void> = null;
- 
+
     /**
      * Instantiates a new compute shader.
      * @param name Defines the name of the compute shader in the scene
@@ -139,7 +139,7 @@ export class ComputeShader {
     /**
      * Binds a uniform buffer to the shader
      * @param name Binding name of the buffer
-     * @param texture Buffer to bind
+     * @param buffer Buffer to bind
      */
     public setUniformBuffer(name: ComputeBindingLocation, buffer: UniformBuffer): void {
         const key = BindingLocationToString(name);
@@ -154,8 +154,22 @@ export class ComputeShader {
         };
     }
 
+    /**
+     * Binds a storage buffer to the shader
+     * @param name Binding name of the buffer
+     * @param buffer Buffer to bind
+     */
     public setStorageBuffer(name: ComputeBindingLocation, buffer: Buffer): void {
+        const key = BindingLocationToString(name);
+        const current = this._bindings[key];
 
+        this._contextIsDirty ||= !current || current.object !== buffer;
+
+        this._bindings[key] = {
+            location: name,
+            type: ComputeBindingType.StorageBuffer,
+            object: buffer,
+        };
     }
 
     /**
@@ -190,7 +204,7 @@ export class ComputeShader {
                 defines.push(this._options.defines[index]);
             }
         }
-    
+
         const join = defines.join("\n");
 
         if (this._cachedDefines !== join) {

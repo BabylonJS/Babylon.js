@@ -1518,15 +1518,15 @@ export class WebGPUEngine extends Engine {
     public areAllComputeEffectsReady(): boolean {
         for (const key in this._compiledComputeEffects) {
             const effect = this._compiledComputeEffects[key];
-    
+
             if (!effect.isReady()) {
                 return false;
             }
         }
-    
+
         return true;
     }
-    
+
     /**
      * Dispatches a compute shader
      * @param effect The compute effect
@@ -1565,7 +1565,7 @@ export class WebGPUEngine extends Engine {
 
         this._device.queue.submit([commandEncoder.finish()]);
     }
-    
+
     /**
      * Forces the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
      */
@@ -1608,13 +1608,13 @@ export class WebGPUEngine extends Engine {
     public _rebuildComputeEffects(): void {
         for (const key in this._compiledComputeEffects) {
             const effect = this._compiledComputeEffects[key];
-    
+
             effect._pipelineContext = null;
             effect._wasPreviouslyReady = false;
             effect._prepareEffect();
         }
-    };
-    
+    }
+
     /** @hidden */
     public _deleteComputePipelineContext(pipelineContext: IComputePipelineContext): void {
         const webgpuPipelineContext = pipelineContext as WebGPUComputePipelineContext;
