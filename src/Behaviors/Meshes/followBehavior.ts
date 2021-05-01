@@ -49,25 +49,23 @@ export class FollowBehavior implements Behavior<TransformNode> {
     /**
      * If the behavior should ignore the pitch and roll of the camera.
      */
-    public ignoreCameraPitchAndRoll = true;
+    public ignoreCameraPitchAndRoll = false;
 
     /**
      * Pitch offset from camera (relative to Max Distance)
      * Is only effective if `ignoreCameraPitchAndRoll` is set to `true`.
      */
-    public pitchOffset = 45;
+    public pitchOffset = 15;
 
     public maxViewVerticalDegrees = 30;
     public maxViewHorizontalDegrees = 30;
     public orientToCameraDeadzoneDegrees = 60;
     public ignoreDistanceClamp = false;
     public ignoreAngleClamp = false;
-    public fixedVerticalOffset = 0.5;
-    public useFixedVerticalOffset = true;
     public verticalMaxDistance = 0;
-    public defaultDistance = 7.5;
-    public maximumDistance = 10;
-    public minimumDistance = 5;
+    public defaultDistance = 2.5;
+    public maximumDistance = 5;
+    public minimumDistance = 1;
     public recenterNextUpdate = true;
 
     /**
@@ -167,7 +165,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         return Math.sqrt(vector.x * vector.x + vector.z * vector.z);
     }
 
-    private _distanceClamp(currentToTarget: Vector3, moveToDefault: boolean = false) {
+    private _distanceClamp(currentToTarget: Vector3) {
         let minDistance = this.minimumDistance;
         let maxDistance = this.maximumDistance;
         const defaultDistance = this.defaultDistance;
@@ -180,7 +178,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         if (this.ignoreCameraPitchAndRoll) {
             // If we don't account for pitch offset, the casted object will float up/down as the reference
             // gets closer to it because we will still be casting in the direction of the pitched offset.
-            // To fix this, only modify the YZ position of the object.
+            // To fix this, only modify the XZ position of the object.
             minDistance = this._length2D(direction) * minDistance;
             maxDistance = this._length2D(direction) * maxDistance;
 
@@ -190,15 +188,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         }
 
         let clampedDistance = currentDistance;
-
-        if (moveToDefault) {
-            // moveToDefault seems to induce glitches when angle clamped
-            if (currentDistance < minDistance || currentDistance > maxDistance) {
-                clampedDistance = defaultDistance;
-            }
-        } else {
-            clampedDistance = Scalar.Clamp(currentDistance, minDistance, maxDistance);
-        }
+        clampedDistance = Scalar.Clamp(currentDistance, minDistance, maxDistance);
 
         currentToTarget.copyFrom(direction).scaleInPlace(clampedDistance);
 
@@ -212,7 +202,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     }
 
     private _toOrientationQuatToRef(vector: Vector3, quaternion: Quaternion) {
-        Quaternion.RotationYawPitchRollToRef(Math.atan2(vector.x, vector.z), Math.atan2(vector.y, Math.sqrt(vector.z*vector.z + vector.y*vector.y)), 0, quaternion);
+        Quaternion.RotationYawPitchRollToRef(Math.atan2(vector.x, vector.z), Math.atan2(vector.y, Math.sqrt(vector.z*vector.z + vector.x*vector.x)), 0, quaternion);
     }
 
     private _applyPitchOffset(invertView: Matrix) {
@@ -222,6 +212,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         right.copyFromFloats(1, 0, 0);
         Vector3.TransformNormalToRef(forward, invertView, forward);
         forward.y = 0;
+        forward.normalize();
         Vector3.TransformNormalToRef(right, invertView, right);
 
         Quaternion.RotationAxisToRef(right, this.pitchOffset * Math.PI / 180, this._tmpQuaternion);
@@ -260,7 +251,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         if (this.ignoreCameraPitchAndRoll) {
             const angle = this._angleBetweenOnPlane(currentToTarget, forward, right);
             Quaternion.RotationAxisToRef(right, angle, rotationQuat);
-            // currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
+            currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
         } else {
             const angle = -this._angleBetweenOnPlane(currentToTarget, forward, right);
             const minMaxAngle = ((this.maxViewVerticalDegrees * Math.PI) / 180) * 0.5;
@@ -388,7 +379,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
             Vector3.TransformCoordinatesToRef(pivot, worldMatrix, currentToTarget);
             currentToTarget.subtractInPlace(camera.globalPosition);
 
-            if (this.ignoreCameraPitchAndRoll && !this.useFixedVerticalOffset) {
+            if (this.ignoreCameraPitchAndRoll) {
                 this._applyPitchOffset(invertView);
             }
 
@@ -415,12 +406,8 @@ export class FollowBehavior implements Behavior<TransformNode> {
             
             let distanceClamped = false;
             if (!this.ignoreDistanceClamp) {
-                distanceClamped = this._distanceClamp(currentToTarget, angularClamped);
+                distanceClamped = this._distanceClamp(currentToTarget);
                 this._applyVerticalClamp(currentToTarget);
-            }
-
-            if (this.useFixedVerticalOffset) {
-                // currentToTarget.y = this.fixedVerticalOffset;
             }
 
             if (angularClamped || distanceClamped || this._passedOrientationDeadzone(currentToTarget, nodeForward)) {
