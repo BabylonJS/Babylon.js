@@ -19,31 +19,24 @@ var es6TestsWebpackFile = path.resolve(es6TestsFolder, "webpack.config.js");
  * Launches the ES6 modules tests to evaluate the min package size.
  */
 gulp.task("tests-es6Modules", function(done) {
-    colorConsole.log("Npm link dependencies");
-    shelljs.exec("npm link @babylonjs/core", {
-        async: false,
-        cwd: es6TestsFolder
-    });
+    const savedShellConfig = {...shelljs.config};
+    try {
+        Object.assign(shelljs.config, {verbose: true, silent: false, fatal: true});
 
-    shelljs.exec("npm link @babylonjs/materials", {
-        async: false,
-        cwd: es6TestsFolder
-    });
+        colorConsole.log("Link to dev copy of built modules");
+        const coreDevDir = config.core.computed.packageES6DevDirectory;
+        const materialsDevDir = config.materialsLibrary.computed.packageES6DevDirectory;
+        shelljs.exec(`npm install --no-save "${coreDevDir}"`, {cwd: es6TestsFolder});
+        shelljs.exec(`npm install --no-save "${materialsDevDir}"`, {cwd: es6TestsFolder});
 
-    colorConsole.log("Bundle test app");
-    var result = shelljs.exec("npx webpack", {
-        async: false,
-        cwd: es6TestsFolder
-    });
-
-    if (result.code != 0) {
-        colorConsole.error(result.stdout);
-        colorConsole.error(result.stderr);
-        throw "Can not build es6 dev apps."
+        colorConsole.log("Bundle test app with webpack");
+        shelljs.exec("npx webpack", {cwd: es6TestsFolder});
+    }
+    finally {
+        Object.assign(shelljs.config, savedShellConfig);
     }
 
     colorConsole.log("Gather output size");
-
     var testsBaseLine = fs.readJSONSync(baseLinePath);
     var webpackConfig = require(es6TestsWebpackFile);
     for (let entryName in webpackConfig.entry) {
