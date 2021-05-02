@@ -3821,7 +3821,7 @@ export class WebGPUEngine extends Engine {
 
             const buffer = vertexBuffer.getBuffer();
             if (buffer) {
-                renderPass2.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer.byteOffset);
+                renderPass2.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset);
             }
         }
 
