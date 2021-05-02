@@ -821,12 +821,11 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer._validOffsetRange = offset <= (this._kMaxVertexBufferStride - formatSize) && (byteStride === 0 || (offset + formatSize) <= byteStride);
             }
 
-            if (currentGPUBuffer && currentGPUBuffer === buffer && vertexBuffer._validOffsetRange) {
-                continue;
+            if (!(currentGPUBuffer && currentGPUBuffer === buffer && vertexBuffer._validOffsetRange)) {
+                // we can't combine the previous vertexBuffer with the current one
+                this.vertexBuffers[numVertexBuffers++] = vertexBuffer;
+                currentGPUBuffer = vertexBuffer._validOffsetRange ? buffer : null;
             }
-
-            this.vertexBuffers[numVertexBuffers++] = vertexBuffer;
-            currentGPUBuffer = vertexBuffer._validOffsetRange ? buffer : null;
 
             const vid = vertexBuffer.hashCode + (location << 7);
 
