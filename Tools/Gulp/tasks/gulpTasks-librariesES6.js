@@ -297,7 +297,7 @@ function buildES6Library(settings, module) {
     var cleanAndShaderTasks = [ function cleanES6(cb) { return cleanSourceAndDist(settings, cb); } ];
     if (settings.computed.shaderTSGlob) {
         cleanAndShaderTasks.push(function cleanES6Shaders() { return cleanShaders(settings); });
-        cleanAndShaderTasks.push(function() { return buildShaders(settings); });
+        cleanAndShaderTasks.push(function buildES6Shaders() { return buildShaders(settings); });
     }
     var copySource = function() { return source(settings); };
     var dependencies = function() { return dep(settings); };
@@ -324,7 +324,8 @@ function buildES6Library(settings, module) {
 
     tasks.push(...cleanAndShaderTasks, copySource, dependencies, sharedUiComponents, adaptSourceImportPaths, adaptSourceConstants, adaptTsConfigImportPaths, ...buildSteps);
 
-    return gulp.series.apply(this, tasks);
+    tasks.map(t => t.displayName = module + "-es6:" + t.name);
+    return gulp.series(...tasks);
 }
 
 /**
