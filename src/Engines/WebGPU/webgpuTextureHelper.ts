@@ -721,7 +721,9 @@ export class WebGPUTextureHelper {
 
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled;
-        const additionalUsages = hasMipmaps && !WebGPUTextureHelper.IsCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
+        let additionalUsages = hasMipmaps && !WebGPUTextureHelper.IsCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
+
+        additionalUsages |= WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopyDst; // we don't know in advance if the texture will be updated with copyImageBitmapToTexture (which requires to have those flags), so we need to force the flags all the times
 
         const gpuTexture = this._device.createTexture({
             size: textureSize,
@@ -756,7 +758,9 @@ export class WebGPUTextureHelper {
 
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1;
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled;
-        const additionalUsages = hasMipmaps && !WebGPUTextureHelper.IsCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
+        let additionalUsages = hasMipmaps && !WebGPUTextureHelper.IsCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
+
+        additionalUsages |= WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopyDst; // we don't know in advance if the texture will be updated with copyImageBitmapToTexture (which requires to have those flags), so we need to force the flags all the times
 
         const gpuTexture = this._device.createTexture({
             size: {
