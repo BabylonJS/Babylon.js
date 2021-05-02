@@ -1546,7 +1546,7 @@ export class WebGPUEngine extends Engine {
             });
         }
 
-        const commandEncoder = this._device.createCommandEncoder({});
+        const commandEncoder = this._renderTargetEncoder;
         const computePass = commandEncoder.beginComputePass();
 
         computePass.setPipeline(contextPipeline.computePipeline);
@@ -1562,8 +1562,6 @@ export class WebGPUEngine extends Engine {
 
         computePass.dispatch(x, y, z);
         computePass.endPass();
-
-        this._device.queue.submit([commandEncoder.finish()]);
     }
 
     /**
