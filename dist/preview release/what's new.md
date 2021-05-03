@@ -141,6 +141,10 @@
 
 - Faster scalar's WithinEpsilon with Math.abs ([nekochanoide](https://github.com/nekochanoide))
 
+### Serializers
+
+- Added the `exportUnusedUVs` property to the `IExportOptions` interface that will prevent any unused vertex uv attributes from being stripped during the glTF export. ([ericbroberic](https://github.com/ericbroberic))
+
 ## Bugs
 
 - Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))
