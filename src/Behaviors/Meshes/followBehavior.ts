@@ -21,6 +21,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     private _tmpInvertView: Matrix = new Matrix();
     private _tmpForward: Vector3 = new Vector3();
     private _tmpNodeForward: Vector3 = new Vector3();
+    private _tmpPosition: Vector3 = new Vector3();
 
     private _followedCamera: Nullable<Camera>;
     private _onBeforeRender: Nullable<Observer<Scene>>;
@@ -94,6 +95,16 @@ export class FollowBehavior implements Behavior<TransformNode> {
      *  Min distance from eye to attached node, i.e. the sphere radius
      */
     public minimumDistance = 3;
+
+    /**
+     * Ignore vertical movement and lock the Y position of the object.
+     */
+    public useFixedVerticalOffset = false;
+
+    /**
+     * Fixed vertical position offset distance.
+     */
+    public fixedVerticalOffset = 0;
 
     /**
      * The camera that should be followed by this behavior
@@ -409,6 +420,10 @@ export class FollowBehavior implements Behavior<TransformNode> {
             invertView.invert();
 
             Vector3.TransformCoordinatesToRef(pivot, worldMatrix, currentToTarget);
+            const position = this._tmpPosition;
+            position.copyFromFloats(0, 0, 0);
+            Vector3.TransformCoordinatesToRef(new Vector3(0, 0, 0), worldMatrix, position);
+            position.scaleInPlace(-1).subtractInPlace(pivot);
             currentToTarget.subtractInPlace(camera.globalPosition);
 
             if (this.ignoreCameraPitchAndRoll) {
@@ -440,6 +455,10 @@ export class FollowBehavior implements Behavior<TransformNode> {
             if (!this.ignoreDistanceClamp) {
                 distanceClamped = this._distanceClamp(currentToTarget, angularClamped);
                 this._applyVerticalClamp(currentToTarget);
+            }
+
+            if (this.useFixedVerticalOffset) {
+                currentToTarget.y = position.y - camera.globalPosition.y + this.fixedVerticalOffset;
             }
 
             if (angularClamped || distanceClamped || this._passedOrientationDeadzone(currentToTarget, nodeForward)) {
