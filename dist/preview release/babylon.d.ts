@@ -7287,6 +7287,8 @@ declare module BABYLON {
         private static _Counter;
         /** @hidden */
         _buffer: Buffer;
+        /** @hidden */
+        _validOffsetRange: boolean;
         private _kind;
         private _size;
         private _ownsBuffer;
@@ -7412,10 +7414,11 @@ declare module BABYLON {
          */
         getOffset(): number;
         /**
-         * Returns the number of components per vertex attribute (integer)
-         * @returns the size in float
+         * Returns the number of components or the byte size per vertex attribute
+         * @param sizeInBytes If true, returns the size in bytes or else the size in number of components of the vertex attribute (default: false)
+         * @returns the number of components
          */
-        getSize(): number;
+        getSize(sizeInBytes?: boolean): number;
         /**
          * Gets a boolean indicating is the internal buffer of the VertexBuffer is instanced
          * @returns true if this buffer is instanced
@@ -60906,6 +60909,7 @@ declare module BABYLON {
         private _isDirty;
         private _emptyVertexBuffer;
         private _parameter;
+        private _kMaxVertexBufferStride;
         private _shaderId;
         private _alphaToCoverageEnabled;
         private _frontFace;
