@@ -872,15 +872,6 @@ export class EdgesRenderer implements IEdgesRenderer {
             return;
         }
 
-        var engine = scene.getEngine();
-        this._lineShader._preBind();
-
-        if (this._source.edgesColor.a !== 1) {
-            engine.setAlphaMode(Constants.ALPHA_COMBINE);
-        } else {
-            engine.setAlphaMode(Constants.ALPHA_DISABLE);
-        }
-
         const hasInstances = this._source.hasInstances && this.customInstances.length > 0;
         const useBuffersWithInstances = hasInstances || this._source.hasThinInstances;
 
@@ -897,6 +888,10 @@ export class EdgesRenderer implements IEdgesRenderer {
 
                 instanceCount = this.customInstances.length;
 
+                if (!instanceStorage.instancesData) {
+                    return;
+                }
+
                 if (!instanceStorage.isFrozen) {
                     let offset = 0;
 
@@ -910,6 +905,15 @@ export class EdgesRenderer implements IEdgesRenderer {
             } else {
                 instanceCount = (this._source as Mesh).thinInstanceCount;
             }
+        }
+
+        var engine = scene.getEngine();
+        this._lineShader._preBind();
+
+        if (this._source.edgesColor.a !== 1) {
+            engine.setAlphaMode(Constants.ALPHA_COMBINE);
+        } else {
+            engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 
         // VBOs
