@@ -7,7 +7,8 @@ import { SerializationHelper, serialize } from "../Misc/decorators";
 import { _TypeStore } from '../Misc/typeStore';
 import { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
 import { BindingLocationToString, ComputeBindingList, ComputeBindingLocation, ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
-import { BaseTexture } from "../Materials/Textures";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Texture } from "../Materials/Textures/texture";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import { IComputeContext } from "./IComputeContext";
 
@@ -310,8 +311,32 @@ export class ComputeShader {
 
         serializationObject.options = this._options;
         serializationObject.shaderPath = this._shaderPath;
+        serializationObject.bindings = {};
+        serializationObject.textures = {};
 
-        // @TODO serialize textures, buffers, ...
+        for (const key in this._bindings) {
+            const binding = this._bindings[key];
+            const object = binding.object;
+
+            switch (binding.type) {
+                case ComputeBindingType.Texture:
+                case ComputeBindingType.StorageTexture: {
+                    const serializedData = (object as BaseTexture).serialize();
+                    if (serializedData) {
+                        serializationObject.textures[key] = serializedData;
+                        serializationObject.bindings[key] = {
+                            location: binding.location,
+                            type: binding.type,
+                        }
+                    }
+                    break;
+                }
+
+                case ComputeBindingType.UniformBuffer: {
+                    break;
+                }
+            }
+        }
 
         return serializationObject;
     }
@@ -326,7 +351,16 @@ export class ComputeShader {
     public static Parse(source: any, scene: Scene, rootUrl: string): ComputeShader {
         const compute = SerializationHelper.Parse(() => new ComputeShader(source.name, scene.getEngine(), source.shaderPath, source.options), source, scene, rootUrl);
 
-        // @TODO parse textures, buffers, ...
+        for (const key in source.textures) {
+            const binding = source.bindings[key];
+            const texture = <Texture>Texture.Parse(source.textures[key], scene, rootUrl);
+
+            if (binding.type === ComputeBindingType.Texture) {
+                compute.setTexture(binding.location, texture);
+            } else {
+                compute.setStorageTexture(binding.location, texture);
+            }
+        }
 
         return compute;
     }
