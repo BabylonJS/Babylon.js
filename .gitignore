@@ -209,7 +209,7 @@ Playground/temp/
 Sandbox/public/dist/
 ktx2Decoder/dist/
 
-# Symlinks
-inspector/src/sharedUiComponents/**/*
-nodeEditor/src/sharedUiComponents/**/*
-guiEditor/src/sharedUiComponents/**/*
+# Symlinks created during build
+inspector/src/sharedUiComponents
+nodeEditor/src/sharedUiComponents
+guiEditor/src/sharedUiComponents
