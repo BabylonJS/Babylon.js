@@ -264,7 +264,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     render() {
         return (
             <Portal globalState={this.props.globalState}>
-                <div id="pg-header">
+                <div id="ge-header">
                     <div className="command-bar">
                         <CommandBarComponent globalState={this.props.globalState} />
                     </div>

@@ -1,4 +1,4 @@
-#pg-header {
+#ge-header {
     width: 100%;
     grid-column: 2 / 4;
     grid-row: 1;
@@ -44,7 +44,7 @@
 
 
 @media screen and (max-width: 1280px) {
-    #pg-header {
+    #ge-header {
         .logo-area {
             width: 300px;
                 
@@ -62,7 +62,7 @@
 }
 
 @media screen and (max-width: 1080px) {
-    #pg-header {
+    #ge-header {
         grid-template-columns: 100%;
 
         .logo-area {
