@@ -203,6 +203,7 @@
 - Fix for wrongly rendered GUI rectangle on resize with adaptWidthToChildren ([msDestiny14](https://github.com/msDestiny14))
 - Fix glTF loader promise stuck when runs on non-json data ([mrlika](https://github.com/mrlika))
 - Fix for namepsace sharing in .scss files ([msDestiny14](https://github.com/msDestiny14))
+- Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
