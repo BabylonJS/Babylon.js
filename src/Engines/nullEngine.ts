@@ -312,7 +312,7 @@ export class NullEngine extends Engine {
      * @param culling defines backface culling state
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
-     * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
      */
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
     }
