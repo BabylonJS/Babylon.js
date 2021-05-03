@@ -206,7 +206,7 @@ gui/dist/
 .netlify
 Playground/dist/
 Playground/temp/
-Sandbox/public/dist/
+sandbox/public/dist/
 ktx2Decoder/dist/
 
 # Symlinks created during build
