@@ -261,7 +261,8 @@ export class PhysicsViewer {
                             const boundingInfo = m.getBoundingInfo();
                             const min = boundingInfo.boundingBox.minimum;
                             const max = boundingInfo.boundingBox.maximum;
-                            mesh.position = min.clone();
+                            mesh.position.copyFrom(min);
+
                             mesh.position.addInPlace(max);
                             mesh.position.scaleInPlace(0.5);
                             mesh.scaling.x = max.x - min.x;
