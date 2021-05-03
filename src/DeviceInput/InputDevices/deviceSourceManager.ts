@@ -5,6 +5,7 @@ import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable } from '../../Misc/observable';
 import { DeviceInput } from './deviceTypes';
+import { IDeviceEvent, IDeviceInputSystem } from '../Interfaces/inputInterfaces';
 
 /**
  * Class that handles all input for a specific device
@@ -14,10 +15,10 @@ export class DeviceSource<T extends DeviceType> {
     /**
      * Observable to handle device input changes per device
      */
-    public readonly onInputChangedObservable = new Observable<{ inputIndex: DeviceInput<T>, previousState: Nullable<number>, currentState: Nullable<number> }>();
+    public readonly onInputChangedObservable = new Observable<IDeviceEvent>();
 
     // Private Members
-    private readonly _deviceInputSystem: DeviceInputSystem;
+    private readonly _deviceInputSystem: IDeviceInputSystem;
 
     /**
      * Default Constructor
@@ -25,7 +26,7 @@ export class DeviceSource<T extends DeviceType> {
      * @param deviceType Type of device
      * @param deviceSlot "Slot" or index that device is referenced in
      */
-    constructor(deviceInputSystem: DeviceInputSystem,
+    constructor(deviceInputSystem: IDeviceInputSystem,
         /** Type of device */
         public readonly deviceType: DeviceType,
         /** "Slot" or index that device is referenced in */
@@ -67,7 +68,7 @@ export class DeviceSourceManager implements IDisposable {
     // Private Members
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
     private readonly _firstDevice: Array<number>;
-    private readonly _deviceInputSystem: DeviceInputSystem;
+    private readonly _deviceInputSystem: IDeviceInputSystem;
 
     /**
      * Default Constructor
@@ -79,21 +80,20 @@ export class DeviceSourceManager implements IDisposable {
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
         this._deviceInputSystem = DeviceInputSystem.Create(engine);
 
-        this._deviceInputSystem.onDeviceConnected = (deviceType, deviceSlot) => {
-            this._addDevice(deviceType, deviceSlot);
-            this.onDeviceConnectedObservable.notifyObservers(this.getDeviceSource(deviceType, deviceSlot)!);
-        };
-        this._deviceInputSystem.onDeviceDisconnected = (deviceType, deviceSlot) => {
-            const device = this.getDeviceSource(deviceType, deviceSlot)!; // Grab local reference to use before removing from devices
-            this._removeDevice(deviceType, deviceSlot);
-            this.onDeviceDisconnectedObservable.notifyObservers(device);
-        };
+        this._deviceInputSystem.onDeviceConnectedObservable.add((eventData) => {
+            this._addDevice(eventData.deviceType, eventData.deviceSlot);
+            this.onDeviceConnectedObservable.notifyObservers(this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)!);
+        });
 
-        if (!this._deviceInputSystem.onInputChanged) {
-            this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
-                this.getDeviceSource(deviceType, deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
-            };
-        }
+        this._deviceInputSystem.onDeviceDisconnectedObservable.add((eventData) => {
+            const device = this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)!; // Grab local reference to use before removing from devices
+            this._removeDevice(eventData.deviceType, eventData.deviceSlot);
+            this.onDeviceDisconnectedObservable.notifyObservers(device);
+        });
+
+        this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
+            this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)?.onInputChangedObservable.notifyObservers(eventData);
+        });
     }
 
     // Public Functions

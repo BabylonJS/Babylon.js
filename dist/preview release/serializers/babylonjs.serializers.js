@@ -3335,7 +3335,7 @@ var _Exporter = /** @class */ (function () {
                     for (var _d = 0, attributeData_2 = attributeData; _d < attributeData_2.length; _d++) {
                         var attribute = attributeData_2[_d];
                         var attributeKind = attribute.kind;
-                        if (attributeKind === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind || attributeKind === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind) {
+                        if ((attributeKind === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind || attributeKind === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind) && !this._options.exportUnusedUVs) {
                             if (glTFMaterial && !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
                                 continue;
                             }

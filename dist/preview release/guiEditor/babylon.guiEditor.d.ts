@@ -31,21 +31,25 @@ declare module GUIEDITOR {
         private _scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _forcePanning;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
         private _panning;
+        private _forceZooming;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
+        loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
+        isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
         isSelected(value: boolean, guiNode: Control): void;
@@ -78,33 +82,50 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GlobalState {
+        [x: string]: any;
         guiTexture: AdvancedDynamicTexture;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
         onResizeObservable: BABYLON.Observable<BABYLON.Vector2>;
-        onRebuildRequiredObservable: BABYLON.Observable<void>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
-        onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
         onIsLoadingChanged: BABYLON.Observable<boolean>;
         onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
+        onNewSceneObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Scene>>;
         onGuiNodeRemovalObservable: BABYLON.Observable<Control>;
         backgroundColor: BABYLON.Color4;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
         workbench: WorkbenchComponent;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
+        onZoomObservable: BABYLON.Observable<void>;
+        onPanObservable: BABYLON.Observable<void>;
+        onSelectionObservable: BABYLON.Observable<void>;
+        onLoadObservable: BABYLON.Observable<void>;
+        onSaveObservable: BABYLON.Observable<void>;
+        onSnippetLoadObservable: BABYLON.Observable<void>;
+        onSnippetSaveObservable: BABYLON.Observable<void>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
         };
         constructor();
+    }
+}
+declare module GUIEDITOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {
@@ -128,41 +149,6 @@ declare module GUIEDITOR {
         switchExpandedState(): void;
         renderHeader(): JSX.Element;
         componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export interface IButtonLineComponentProps {
-        data: string;
-        tooltip: string;
-    }
-    export class DraggableLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IGuiListComponentProps {
-        globalState: GlobalState;
-    }
-    export class GuiListComponent extends React.Component<IGuiListComponentProps, {
-        filter: string;
-    }> {
-        private _onResetRequiredObserver;
-        private static _Tooltips;
-        constructor(props: IGuiListComponentProps);
-        componentWillUnmount(): void;
-        filterContent(filter: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -732,7 +718,6 @@ declare module GUIEDITOR {
     export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
         constructor(props: IParentingPropertyGridComponentProps);
         parentIndex: number;
-        private _isContainer;
         addChildGui(childNode: Control, parentNode: Control): void;
         removeChildGui(childNode: Control, parentNode: Control): void;
         render(): JSX.Element;
@@ -785,6 +770,243 @@ declare module GUIEDITOR {
     }> {
         constructor(props: IMessageDialogComponentProps);
         render(): JSX.Element | null;
+    }
+}
+declare module GUIEDITOR {
+    interface ITreeItemLabelComponentProps {
+        label: string;
+        onClick?: () => void;
+        color: string;
+    }
+    export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps> {
+        constructor(props: ITreeItemLabelComponentProps);
+        onClick(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IExtensionsComponentProps {
+        target: any;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+    }
+    export class ExtensionsComponent extends React.Component<IExtensionsComponentProps, {
+        popupVisible: boolean;
+    }> {
+        private _popup;
+        private extensionRef;
+        constructor(props: IExtensionsComponentProps);
+        showPopup(): void;
+        componentDidMount(): void;
+        componentDidUpdate(): void;
+        render(): JSX.Element | null;
+    }
+}
+declare module GUIEDITOR {
+    interface IControlTreeItemComponentProps {
+        control: Control;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
+        isActive: boolean;
+        isVisible: boolean;
+    }> {
+        constructor(props: IControlTreeItemComponentProps);
+        highlight(): void;
+        switchVisibility(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IAdvancedDynamicTextureTreeItemComponentProps {
+        texture: AdvancedDynamicTexture;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onClick: () => void;
+    }
+    export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAdvancedDynamicTextureTreeItemComponentProps, {
+        isInPickingMode: boolean;
+    }> {
+        private _onControlPickedObserver;
+        constructor(props: IAdvancedDynamicTextureTreeItemComponentProps);
+        componentWillUnmount(): void;
+        onPickingMode(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ITreeItemSpecializedComponentProps {
+        label: string;
+        entity?: any;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        globalState: GlobalState;
+        onClick?: () => void;
+    }
+    export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpecializedComponentProps> {
+        constructor(props: ITreeItemSpecializedComponentProps);
+        onClick(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+    }
+}
+declare module GUIEDITOR {
+    export interface ITreeItemSelectableComponentProps {
+        entity: any;
+        selectedEntity?: any;
+        mustExpand?: boolean;
+        offset: number;
+        globalState: GlobalState;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        filter: BABYLON.Nullable<string>;
+    }
+    export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
+        isExpanded: boolean;
+        isSelected: boolean;
+    }> {
+        private _wasSelected;
+        constructor(props: ITreeItemSelectableComponentProps);
+        switchExpandedState(): void;
+        shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
+            isExpanded: boolean;
+            isSelected: boolean;
+        }): boolean;
+        scrollIntoView(): void;
+        componentDidMount(): void;
+        componentDidUpdate(): void;
+        onSelect(): void;
+        renderChildren(): JSX.Element[] | null;
+        render(): JSX.Element | null;
+    }
+}
+declare module GUIEDITOR {
+    export interface ITreeItemComponentProps {
+        items?: BABYLON.Nullable<any[]>;
+        label: string;
+        offset: number;
+        filter: BABYLON.Nullable<string>;
+        forceSubitems?: boolean;
+        globalState: GlobalState;
+        entity?: any;
+        selectedEntity: any;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        contextMenuItems?: {
+            label: string;
+            action: () => void;
+        }[];
+    }
+    export class TreeItemComponent extends React.Component<ITreeItemComponentProps, {
+        isExpanded: boolean;
+        mustExpand: boolean;
+    }> {
+        static _ContextMenuUniqueIdGenerator: number;
+        constructor(props: ITreeItemComponentProps);
+        switchExpandedState(): void;
+        shouldComponentUpdate(nextProps: ITreeItemComponentProps, nextState: {
+            isExpanded: boolean;
+        }): boolean;
+        expandAll(expand: boolean): void;
+        renderContextMenu(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISceneExplorerFilterComponentProps {
+        onFilter: (filter: string) => void;
+    }
+    export class SceneExplorerFilterComponent extends React.Component<ISceneExplorerFilterComponentProps> {
+        constructor(props: ISceneExplorerFilterComponentProps);
+        render(): JSX.Element;
+    }
+    interface ISceneExplorerComponentProps {
+        scene?: BABYLON.Scene;
+        noCommands?: boolean;
+        noHeader?: boolean;
+        noExpand?: boolean;
+        noClose?: boolean;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        globalState: GlobalState;
+        popupMode?: boolean;
+        onPopup?: () => void;
+        onClose?: () => void;
+    }
+    export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, {
+        filter: BABYLON.Nullable<string>;
+        selectedEntity: any;
+        scene: BABYLON.Nullable<BABYLON.Scene>;
+    }> {
+        private _onSelectionChangeObserver;
+        private _onNewSceneObserver;
+        constructor(props: ISceneExplorerComponentProps);
+        processMutation(): void;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        filterContent(filter: string): void;
+        findSiblings(parent: any, items: any[], target: any, goNext: boolean, data: {
+            previousOne?: any;
+            found?: boolean;
+        }): boolean;
+        processKeys(keyEvent: React.KeyboardEvent<HTMLDivElement>): void;
+        renderContent(): JSX.Element | null;
+        onClose(): void;
+        onPopup(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ICommandButtonComponentProps {
+        globalState: GlobalState;
+        tooltip: string;
+        shortcut?: string;
+        icon: string;
+        isActive: boolean;
+        onClick: () => void;
+    }
+    export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
+        constructor(props: ICommandButtonComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ICommandDropdownComponentProps {
+        globalState: GlobalState;
+        icon?: string;
+        tooltip: string;
+        defaultValue?: string;
+        items: {
+            label: string;
+            icon?: string;
+            fileButton?: boolean;
+            onClick?: () => void;
+            onCheck?: (value: boolean) => void;
+            storeKey?: string;
+            isActive?: boolean;
+            defaultValue?: boolean | string;
+            subItems?: string[];
+        }[];
+        toRight?: boolean;
+    }
+    export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, {
+        isExpanded: boolean;
+        activeState: string;
+    }> {
+        constructor(props: ICommandDropdownComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ICommandBarComponentProps {
+        globalState: GlobalState;
+    }
+    export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
+        constructor(props: ICommandBarComponentProps);
+        render(): JSX.Element;
+        onCreate(value: string): void;
     }
 }
 declare module GUIEDITOR {
@@ -877,6 +1099,31 @@ declare module GUIEDITOR {
         map?: {
             [key: number]: number;
         };
+    }
+}
+declare module GUIEDITOR {
+    export interface IButtonLineComponentProps {
+        data: string;
+        tooltip: string;
+    }
+    export class DraggableLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IGuiListComponentProps {
+        globalState: GlobalState;
+    }
+    export class GuiListComponent extends React.Component<IGuiListComponentProps, {
+        filter: string;
+    }> {
+        private _onResetRequiredObserver;
+        private static _Tooltips;
+        constructor(props: IGuiListComponentProps);
+        componentWillUnmount(): void;
+        filterContent(filter: string): void;
+        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {

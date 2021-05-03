@@ -18460,13 +18460,13 @@ var TouchHolographicButton = /** @class */ (function (_super) {
     TouchHolographicButton.prototype._createNode = function (scene) {
         var _this = this;
         var _a;
-        var collisionMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox((_a = this.name) !== null && _a !== void 0 ? _a : "TouchHolographicButton", {
+        var collisionMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(((_a = this.name) !== null && _a !== void 0 ? _a : "TouchHolographicButton") + "_CollisionMesh", {
             width: 1.0,
             height: 1.0,
             depth: 1.0,
         }, scene);
         collisionMesh.isPickable = true;
-        collisionMesh.isVisible = false;
+        collisionMesh.visibility = 0;
         collisionMesh.scaling = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.032, 0.032, 0.016);
         babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["SceneLoader"].ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene)
             .then(function (result) {
