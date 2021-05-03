@@ -15,6 +15,7 @@ export * from "./engine.dynamicBuffer";
 export * from "./engine.views";
 export * from "./engine.readTexture";
 export * from "./engine.computeShader";
+export * from "./engine.storageBuffer";
 
 // must import first since nothing references the exports
 import "./engine.textureSelector";

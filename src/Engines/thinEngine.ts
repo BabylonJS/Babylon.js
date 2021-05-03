@@ -14,7 +14,7 @@ import { AlphaState } from '../States/alphaCullingState';
 import { Constants } from './constants';
 import { InternalTexture, InternalTextureSource } from '../Materials/Textures/internalTexture';
 import { IViewportLike, IColor4Like } from '../Maths/math.like';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
 import { Logger } from '../Misc/logger';
 import { DomManagement } from '../Misc/domManagement';
@@ -23,7 +23,7 @@ import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IPipelineContext } from './IPipelineContext';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
-import { VertexBuffer } from '../Meshes/buffer';
+import { VertexBuffer } from '../Buffers/buffer';
 import { InstancingAttributeInfo } from './instancingAttributeInfo';
 import { ThinTexture } from '../Materials/Textures/thinTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
@@ -38,6 +38,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { StencilStateComposer } from "../States/stencilStateComposer";
+import { StorageBuffer } from "../Buffers/storageBuffer";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -286,6 +287,8 @@ export class ThinEngine {
 
     /** @hidden */
     public _uniformBuffers = new Array<UniformBuffer>();
+    /** @hidden */
+    public _storageBuffers = new Array<StorageBuffer>();
 
     /**
      * Gets a boolean indicating that the engine supports uniform buffers
@@ -924,8 +927,12 @@ export class ThinEngine {
 
     protected _rebuildBuffers(): void {
         // Uniforms
-        for (var uniformBuffer of this._uniformBuffers) {
+        for (const uniformBuffer of this._uniformBuffers) {
             uniformBuffer._rebuild();
+        }
+        // Storage buffers
+        for (const storageBuffer of this._storageBuffers) {
+            storageBuffer._rebuild();
         }
     }
 

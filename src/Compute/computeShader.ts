@@ -1,5 +1,4 @@
 import { UniformBuffer } from "../Materials/uniformBuffer";
-import { Buffer } from "../Meshes/buffer";
 import { ThinEngine } from "../Engines/thinEngine";
 import { Scene } from "../scene";
 import { Nullable } from "../types";
@@ -11,6 +10,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import { IComputeContext } from "./IComputeContext";
+import { StorageBuffer } from "../Buffers/storageBuffer";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -160,7 +160,7 @@ export class ComputeShader {
      * @param name Binding name of the buffer
      * @param buffer Buffer to bind
      */
-    public setStorageBuffer(name: ComputeBindingLocation, buffer: Buffer): void {
+    public setStorageBuffer(name: ComputeBindingLocation, buffer: StorageBuffer): void {
         const key = BindingLocationToString(name);
         const current = this._bindings[key];
 
@@ -327,7 +327,7 @@ export class ComputeShader {
                         serializationObject.bindings[key] = {
                             location: binding.location,
                             type: binding.type,
-                        }
+                        };
                     }
                     break;
                 }

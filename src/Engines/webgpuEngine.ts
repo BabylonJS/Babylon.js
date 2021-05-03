@@ -11,10 +11,10 @@ import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
 import * as WebGPUConstants from './WebGPU/webgpuConstants';
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { IShaderProcessor } from "./Processors/iShaderProcessor";
@@ -1303,11 +1303,13 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Creates a storage buffer
-     * @param data the data for the storage buffer
+     * @param data the data for the storage buffer or the size of the buffer
+     * @param read true if the buffer is readable
+     * @param write true if the buffer is writable
      * @returns the new buffer
      */
-     public createStorageBuffer(data: DataArray): DataBuffer {
-        let view: ArrayBufferView;
+     public createStorageBuffer(data: DataArray | number, read: boolean, write: boolean): DataBuffer {
+        let view: ArrayBufferView | number;
 
         if (data instanceof Array) {
             view = new Float32Array(data);
@@ -1319,7 +1321,7 @@ export class WebGPUEngine extends Engine {
             view = data;
         }
 
-        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Storage | WebGPUConstants.BufferUsage.CopyDst);
+        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Storage | (read ? WebGPUConstants.BufferUsage.CopySrc : 0) | (write ? WebGPUConstants.BufferUsage.CopyDst : 0));
         return dataBuffer;
     }
 
@@ -1361,6 +1363,50 @@ export class WebGPUEngine extends Engine {
         }
 
         this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
+    }
+
+    /**
+     * Read data from a storage buffer
+     * @param storageBuffer The storage buffer to read from
+     * @param offset The offset in the storage buffer to start reading from (default: 0)
+     * @param size  The number of bytes to read from the storage buffer (default: capacity of the buffer)
+     * @param buffer The buffer to write the data we have read from the storage buffer to (optional)
+     * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
+     */
+    public readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {
+        size = size || storageBuffer.capacity;
+
+        const gpuBuffer = this._bufferManager.createRawBuffer(size, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst);
+
+        this._renderTargetEncoder.copyBufferToBuffer(
+            storageBuffer.underlyingResource,
+            offset ?? 0,
+            gpuBuffer,
+            0,
+            size
+        );
+
+        return new Promise((resolve, reject) => {
+            // we are using onEndFrameObservable because we need to map the gpuBuffer AFTER the command buffers
+            // have been submitted, else we get the error: "Buffer used in a submit while mapped"
+            this.onEndFrameObservable.addOnce(() => {
+                gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, 0, size).then(() => {
+                    const copyArrayBuffer = gpuBuffer.getMappedRange(0, size);
+                    let data: ArrayBufferView | undefined = buffer;
+                    if (data === undefined) {
+                        data = new Uint8Array(size!);
+                        (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                    } else {
+                        const ctor = data.constructor as any; // we want to create result data with the same type as buffer (Uint8Array, Float32Array, ...)
+                        data = new ctor(data.buffer);
+                        (data as any).set(new ctor(copyArrayBuffer));
+                    }
+                    gpuBuffer.unmap();
+                    this._bufferManager.releaseBuffer(gpuBuffer);
+                    resolve(data!);
+                }, (reason) => reject(reason));
+            });
+        });
     }
 
     /** @hidden */

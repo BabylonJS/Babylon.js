@@ -5,6 +5,7 @@ export * from "./assetContainer";
 export * from "./Audio/index";
 export * from "./Behaviors/index";
 export * from "./Bones/index";
+export * from "./Buffers/index";
 export * from "./Cameras/index";
 export * from "./Collisions/index";
 export * from "./Compute/index";

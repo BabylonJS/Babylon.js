@@ -5,7 +5,7 @@ import { Logger } from "../../Misc/logger";
 import { Nullable, int, float } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
-import { VertexBuffer } from "../../Meshes/buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
