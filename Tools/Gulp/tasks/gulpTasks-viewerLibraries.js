@@ -97,7 +97,7 @@ var buildViewerLibraryOutput = function (library, settings, out) {
 
 function buildViewerLibraryOutputs(name, settings, library) {
     return settings.build.outputs.map(out => {
-        task = function() { buildViewerLibraryOutput(library, settings, out); }
+        task = function() { return buildViewerLibraryOutput(library, settings, out); }
         task.displayName = name + ":viewerLibrary:" + out.destinations[0].filename;
         return task;
     });
