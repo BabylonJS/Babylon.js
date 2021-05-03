@@ -43,10 +43,10 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                 <div className="controlTools" onMouseOut={ () =>  this.setState({ isHovered: false})}>
                     <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
-                        <img src={"../imgs/makeComponentIcon.svg"} color="black" className=""/>
+                        <img src={"./imgs/makeComponentIcon.svg"} color="black" className=""/>
                     </div>
                     <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide control">
-                        <img src={"../imgs/visibilityIcon.svg"} color="black" className=""/>
+                        <img src={"./imgs/visibilityIcon.svg"} color="black" className=""/>
                     </div>
                     <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
                 </div>
