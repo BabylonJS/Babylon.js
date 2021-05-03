@@ -889,6 +889,9 @@ export class EdgesRenderer implements IEdgesRenderer {
                 instanceCount = this.customInstances.length;
 
                 if (!instanceStorage.instancesData) {
+                    if (!this._source.getScene()._activeMeshesFrozen) {
+                        this.customInstances.reset();
+                    }
                     return;
                 }
 
