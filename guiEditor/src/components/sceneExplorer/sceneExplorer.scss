@@ -204,7 +204,7 @@
         color: black;
         margin-top: 0px;
         margin-bottom: 0px;
-        height: 24px;   
+        height: 32px;   
         -webkit-user-select: none; 
         -moz-user-select: none;   
         -ms-user-select: none;    
@@ -395,19 +395,12 @@
             margin-right: 5px;     
             display: grid;
             align-items: center;  
-            grid-template-columns: 25px 1fr; 
+            grid-template-columns: 1fr; 
             height: 24px;
             cursor: pointer;
 
-            .titleIcon {
-                grid-column: 1;
-                display: grid;
-                align-items: center; 
-                justify-items: center;
-            }
-
             .titleText {
-                grid-column: 2;
+                grid-column: 1;
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 overflow: hidden;                

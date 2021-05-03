@@ -1,6 +1,5 @@
 
 import { TreeItemLabelComponent } from "./treeItemLabelComponent";
-import { faProjectDiagram } from '@fortawesome/free-solid-svg-icons';
 import * as React from "react";
 import { ControlTreeItemComponent } from "./entities/gui/controlTreeItemComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
@@ -45,7 +44,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
 
         return (
             <div className="meshTools">
-                <TreeItemLabelComponent label={entity.name} onClick={() => this.onClick()} icon={faProjectDiagram} color="cornflowerblue" />
+                <TreeItemLabelComponent label={entity.name} onClick={() => this.onClick()} color="cornflowerblue" />
             </div>
         );
     }
