@@ -1603,6 +1603,8 @@ declare module BABYLON {
         /** TODO */
         static ValidateTransformGuid(node: TransformNode): void;
         /** TODO */
+        static AddShadowCastersToLight(light: BABYLON.IShadowLight, transforms: BABYLON.TransformNode[], includeChildren?: boolean): void;
+        /** TODO */
         static RegisterInstancedMeshBuffers(mesh: BABYLON.Mesh): void;
         /** TODO */
         static CloneValue(source: any, destinationObject: any): any;
