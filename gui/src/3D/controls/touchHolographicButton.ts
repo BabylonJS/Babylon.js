@@ -232,31 +232,30 @@ export class TouchHolographicButton extends TouchButton3D {
 
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
-
-        let panel = new StackPanel();
-        panel.isVertical = true;
-
-        if (this._imageUrl) {
-            let image = new Image();
-            image.source = this._imageUrl;
-            image.paddingTop = "40px";
-            image.height = "180px";
-            image.width = "100px";
-            image.paddingBottom = "40px";
-            panel.addControl(image);
-        }
-
-        if (this._text) {
-            let text = new TextBlock();
-            text.text = this._text;
-            text.color = "white";
-            text.height = "30px";
-            text.fontSize = 24;
-            panel.addControl(text);
-        }
-
         // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
         if (!!document.createElement) {
+            let panel = new StackPanel();
+            panel.isVertical = true;
+
+            if (this._imageUrl) {
+                let image = new Image();
+                image.source = this._imageUrl;
+                image.paddingTop = "40px";
+                image.height = "180px";
+                image.width = "100px";
+                image.paddingBottom = "40px";
+                panel.addControl(image);
+            }
+
+            if (this._text) {
+                let text = new TextBlock();
+                text.text = this._text;
+                text.color = "white";
+                text.height = "30px";
+                text.fontSize = 24;
+                panel.addControl(text);
+            }
+
             this.content = panel;
         }
     }
