@@ -1,6 +1,6 @@
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -140,19 +140,23 @@ export class BoundingBoxGizmo2D extends Gizmo {
         let dimensionsStart = new Vector3();
         let originStart = new Vector3();
         let dragOrigin = new Vector3();
+        let toObjectFrame = new Matrix();
+
         _dragBehavior.onDragStartObservable.add((event) => {
             if (this.attachedSlate && this.attachedNode) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
                 originStart.copyFrom(this.attachedSlate.origin);
                 dragOrigin.copyFrom(event.dragPlanePoint);
+                toObjectFrame.copyFrom(this.attachedNode.computeWorldMatrix(true));
+                toObjectFrame.invert();
             }
         });
-
+        
         _dragBehavior.onDragObservable.add((event) => {
             if (this.attachedSlate && this.attachedNode) {
                 this._tmpVector.copyFrom(event.dragPlanePoint);
                 this._tmpVector.subtractInPlace(dragOrigin);
-                Vector3.TransformCoordinatesToRef(this._tmpVector, this.attachedNode.computeWorldMatrix(true).getRotationMatrix().transpose(), this._tmpVector);
+                Vector3.TransformNormalToRef(this._tmpVector, toObjectFrame, this._tmpVector);
 
                 moveFn(originStart, dimensionsStart, this._tmpVector);
                 this.attachedSlate._positionElements();
