@@ -98,12 +98,15 @@ export class HolographicSlate extends ContentDisplay3D {
 
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
-        if (this._imageUrl) {
-            let image = new Image();
-            image.source = this._imageUrl;
+        // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
+        if (!!document.createElement) {
+            if (this._imageUrl) {
+                let image = new Image();
+                image.source = this._imageUrl;
 
-            if (this._contentPlate) {
-                this.content = image;
+                if (this._contentPlate) {
+                    this.content = image;
+                }
             }
         }
     }
