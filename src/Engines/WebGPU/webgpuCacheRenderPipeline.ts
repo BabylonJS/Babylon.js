@@ -145,6 +145,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private _isDirty: boolean;
     private _emptyVertexBuffer: VertexBuffer;
     private _parameter: { token: any, pipeline: Nullable<GPURenderPipeline> };
+    private _kMaxVertexBufferStride;
 
     private _shaderId: number;
     private _alphaToCoverageEnabled: boolean;
@@ -193,6 +194,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._parameter = { token: undefined, pipeline: null };
         this.disabled = false;
         this.vertexBuffers = [];
+        this._kMaxVertexBufferStride = 2048; // TODO WEBGPU: get this value from device.limits.maxVertexBufferArrayStride
         this.reset();
     }
 
@@ -806,15 +808,24 @@ export abstract class WebGPUCacheRenderPipeline {
                 // So we must bind a dummy buffer when we are not given one for a specific attribute
                 vertexBuffer = this._emptyVertexBuffer;
             }
+
             const buffer = vertexBuffer.getBuffer()?.underlyingResource;
-            if (currentGPUBuffer && currentGPUBuffer === buffer) {
-                // We optimize usage of GPUVertexBufferLayout: we will create a single GPUVertexBufferLayout for all the attributes which follow each other and which use the same GPU buffer
-                // See _getVertexInputDescriptor() below
-                continue;
+
+            // We optimize usage of GPUVertexBufferLayout: we will create a single GPUVertexBufferLayout for all the attributes which follow each other and which use the same GPU buffer
+            // However, there are some constraints in the attribute.offset value range, so we must check for them before being able to reuse the same GPUVertexBufferLayout
+            // See _getVertexInputDescriptor() below
+            if (vertexBuffer._validOffsetRange === undefined) {
+                const offset = vertexBuffer.byteOffset;
+                const formatSize = vertexBuffer.getSize(true);
+                const byteStride = vertexBuffer.byteStride;
+                vertexBuffer._validOffsetRange = offset <= (this._kMaxVertexBufferStride - formatSize) && (byteStride === 0 || (offset + formatSize) <= byteStride);
             }
 
-            this.vertexBuffers[numVertexBuffers++] = vertexBuffer;
-            currentGPUBuffer = buffer;
+            if (!(currentGPUBuffer && currentGPUBuffer === buffer && vertexBuffer._validOffsetRange)) {
+                // we can't combine the previous vertexBuffer with the current one
+                this.vertexBuffers[numVertexBuffers++] = vertexBuffer;
+                currentGPUBuffer = vertexBuffer._validOffsetRange ? buffer : null;
+            }
 
             const vid = vertexBuffer.hashCode + (location << 7);
 
@@ -913,12 +924,12 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            const buffer = vertexBuffer.getBuffer()?.underlyingResource;
+            let buffer = vertexBuffer.getBuffer()?.underlyingResource;
 
             // We reuse the same GPUVertexBufferLayout for all attributes that use the same underlying GPU buffer (and for attributes that follow each other in the attributes array)
-            // Hence the check below
             let offset = vertexBuffer.byteOffset;
-            if (!(currentGPUBuffer && currentGPUAttributes && currentGPUBuffer === buffer)) {
+            const invalidOffsetRange = !vertexBuffer._validOffsetRange;
+            if (!(currentGPUBuffer && currentGPUAttributes && currentGPUBuffer === buffer) || invalidOffsetRange) {
                 const vertexBufferDescriptor: GPUVertexBufferLayout = {
                     arrayStride: vertexBuffer.byteStride,
                     stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
@@ -927,7 +938,10 @@ export abstract class WebGPUCacheRenderPipeline {
 
                 descriptors.push(vertexBufferDescriptor);
                 currentGPUAttributes = vertexBufferDescriptor.attributes;
-                offset = 0; // vertexBuffer.byteOffset for the first attribute is set when calling renderPass.setVertexBuffer (3rd parameter)
+                if (invalidOffsetRange) {
+                    offset = 0; // the offset will be set directly in the setVertexBuffer call
+                    buffer = null; // buffer can't be reused
+                }
             }
 
             currentGPUAttributes.push({
