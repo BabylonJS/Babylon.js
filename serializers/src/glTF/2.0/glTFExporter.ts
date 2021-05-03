@@ -1525,7 +1525,7 @@ export class _Exporter {
 
                     for (const attribute of attributeData) {
                         const attributeKind = attribute.kind;
-                        if (attributeKind === VertexBuffer.UVKind || attributeKind === VertexBuffer.UV2Kind) {
+                        if ((attributeKind === VertexBuffer.UVKind || attributeKind === VertexBuffer.UV2Kind) && !this._options.exportUnusedUVs) {
                             if (glTFMaterial && !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
                                 continue;
                             }
