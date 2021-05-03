@@ -36,7 +36,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         const control = this.props.control;
         const name = (control.name || "No name") + ` [${control.getClassName()}]`;
 
-        if (true) {
+        if (this.state.isHovered) {
             return (
                 <div className="controlTools" onMouseOutCapture={() => this.setState({ isHovered: false })}>
                     <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
