@@ -35,15 +35,15 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
     public static DecoderPath: string = "https://preview.babylonjs.com/meshopt_decoder.js";
 
     private _loader: GLTFLoader;
-    private _decoderPromise?: Promise<any>;
+    private static _DecoderPromise?: Promise<any>;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this.enabled = loader.isExtensionUsed(NAME);
         this._loader = loader;
 
-        if (this.enabled) {
-            this._decoderPromise = Tools.LoadScriptAsync(EXT_meshopt_compression.DecoderPath).then(() => {
+        if (this.enabled && !EXT_meshopt_compression._DecoderPromise) {
+            EXT_meshopt_compression._DecoderPromise = Tools.LoadScriptAsync(EXT_meshopt_compression.DecoderPath).then(() => {
                 // Wait for WebAssembly compilation before resolving promise
                 return MeshoptDecoder.ready;
             });
@@ -53,7 +53,6 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
     /** @hidden */
     public dispose() {
         (this._loader as any) = null;
-        delete this._decoderPromise;
     }
 
     /** @hidden */
@@ -67,7 +66,7 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
             const buffer = ArrayItem.Get(`${context}/buffer`, this._loader.gltf.buffers, extension.buffer);
             const bufferPromise = this._loader.loadBufferAsync(`/buffers/${buffer.index}`, buffer, (extension.byteOffset || 0), extension.byteLength);
 
-            bufferViewMeshopt._meshOptData = Promise.all([bufferPromise, this._decoderPromise]).then((res) => {
+            bufferViewMeshopt._meshOptData = Promise.all([bufferPromise, EXT_meshopt_compression._DecoderPromise]).then((res) => {
                 const source = res[0] as Uint8Array;
                 const count = extension.count;
                 const stride = extension.byteStride;

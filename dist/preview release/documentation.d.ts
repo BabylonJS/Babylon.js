@@ -2990,6 +2990,13 @@ declare module BABYLON {
          */
         fract(): Vector2;
         /**
+         * Rotate the current vector into a given result vector
+         * @param angle defines the rotation angle
+         * @param result defines the result vector where to store the rotated vector
+         * @returns the current vector
+         */
+        rotateToRef(angle: number, result: Vector2): this;
+        /**
          * Gets the length of the vector
          * @returns the vector length (float)
          */
@@ -3104,6 +3111,12 @@ declare module BABYLON {
          * @returns a new Vector2
          */
         static Normalize(vector: DeepImmutable<Vector2>): Vector2;
+        /**
+         * Normalize a given vector into a second one
+         * @param vector defines the vector to normalize
+         * @param result defines the vector where to store the result
+         */
+        static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2): void;
         /**
          * Gets a new Vector2 set with the minimal coordinate values from the "left" and "right" vectors
          * @param left defines 1st vector
@@ -7030,6 +7043,10 @@ declare module BABYLON {
          * The animation interpolation type
          */
         interpolation?: AnimationKeyInterpolation;
+        /**
+         * Property defined by UI tools to link (or not ) the tangents
+         */
+        lockedTangent?: boolean;
     }
     /**
      * Enum for the animation key frame interpolation type
@@ -67010,7 +67027,7 @@ declare module BABYLON {
      * This represents a texture coming from an HDR input.
      *
      * The only supported format is currently panorama picture stored in RGBE format.
-     * Example of such files can be found on HDRLib: http://hdrlib.com/
+     * Example of such files can be found on HDRI Haven: https://hdrihaven.com/
      */
     export class HDRCubeTexture extends BaseTexture {
         private static _facesMapping;
@@ -69159,9 +69176,13 @@ declare module BABYLON {
          */
         constructor(name: string);
         /**
-         * Gets the current class name
-         * @returns the class name
+         * Defines if the input should be converted to linear space (default: true)
          */
+        convertInputToLinearSpace: boolean;
+        /**
+        * Gets the current class name
+        * @returns the class name
+        */
         getClassName(): string;
         /**
          * Gets the color input component
@@ -69180,6 +69201,9 @@ declare module BABYLON {
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -81356,6 +81380,10 @@ declare module BABYLON {
          */
         enableTransientHitTest?: boolean;
         /**
+        * Override the default transient hit test profile (generic-touchscreen).
+        */
+        transientHitTestProfile?: string;
+        /**
          * Offset ray for the permanent hit test
          */
         offsetRay?: Vector3;
@@ -91381,7 +91409,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         static DecoderPath: string;
         private _loader;
-        private _decoderPromise?;
+        private static _DecoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */

@@ -13,6 +13,8 @@ const frameIcon = require("./assets/frameIcon.svg");
 const newKeyIcon = require("./assets/newKeyIcon.svg");
 const flatTangentIcon = require("./assets/flatTangentIcon.svg");
 const linearTangentIcon = require("./assets/linearTangentIcon.svg");
+const breakTangentIcon = require("./assets/breakTangentIcon.svg");
+const unifyTangentIcon = require("./assets/unifyTangentIcon.svg");
 
 interface ITopBarComponentProps {
     globalState: GlobalState;
@@ -119,6 +121,14 @@ ITopBarComponentState
                             tooltip="Linear tangent"
                             id="linear-tangent" globalState={this.props.globalState} context={this.props.context} 
                             icon={linearTangentIcon} onClick={() => this.props.context.onLinearTangentRequired.notifyObservers()}/>
+                        <ActionButtonComponent 
+                            tooltip="Break tangent"
+                            id="break-tangent" globalState={this.props.globalState} context={this.props.context} 
+                            icon={breakTangentIcon} onClick={() => this.props.context.onBreakTangentRequired.notifyObservers()}/>
+                        <ActionButtonComponent 
+                            tooltip="Unify tangent"
+                            id="unify-tangent" globalState={this.props.globalState} context={this.props.context} 
+                            icon={unifyTangentIcon} onClick={() => this.props.context.onUnifyTangentRequired.notifyObservers()}/>                            
                     </>
                 }
             </div>

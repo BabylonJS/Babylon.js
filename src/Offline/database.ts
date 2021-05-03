@@ -107,8 +107,18 @@ export class Database implements IOfflineProvider {
             this._callbackManifestChecked(false);
         };
 
+        var createManifestURL = (): string => {
+            if (typeof URL !== 'undefined') {
+                var url = new URL(this._currentSceneUrl);
+                url.pathname += '.manifest';
+                return url.toString();
+            }
+
+            return this._currentSceneUrl + ".manifest";
+        };
+
         var timeStampUsed = false;
-        var manifestURL = this._currentSceneUrl + ".manifest";
+        var manifestURL = createManifestURL();
 
         var xhr = new WebRequest();
 
@@ -146,7 +156,7 @@ export class Database implements IOfflineProvider {
                 timeStampUsed = false;
                 // Let's retry without the timeStamp
                 // It could fail when coupled with HTML5 Offline API
-                var retryManifestURL = this._currentSceneUrl + ".manifest";
+                var retryManifestURL = createManifestURL();
                 xhr.open("GET", retryManifestURL);
                 xhr.send();
             }

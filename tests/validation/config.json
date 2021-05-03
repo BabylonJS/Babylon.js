@@ -692,6 +692,11 @@
             "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
         },
         {
+            "title": "GLTF Extension KHR_materials_specular",
+            "playgroundId": "#RNT7K4#8",
+            "referenceImage": "gltfExtensionKhrMaterialsSpecular.png"
+        },
+        {
             "title": "Asset Containers",
             "playgroundId": "#P3U079#19",
             "referenceImage": "assetContainer.png"

@@ -632,6 +632,7 @@ declare module INSPECTOR {
         value: number;
         inTangent?: number;
         outTangent?: number;
+        lockedTangent: boolean;
     }
     export class Curve {
         static readonly SampleRate: number;
@@ -646,8 +647,9 @@ declare module INSPECTOR {
         static readonly TangentLength: number;
         constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
-        getInControlPoint(keyIndex: number, length: number): number;
-        getOutControlPoint(keyIndex: number, length: number): number;
+        updateLockedTangentMode(keyIndex: number, enabled: boolean): void;
+        getInControlPoint(keyIndex: number): number;
+        getOutControlPoint(keyIndex: number): number;
         evaluateOutTangent(keyIndex: number): number;
         evaluateInTangent(keyIndex: number): number;
         storeDefaultInTangent(keyIndex: number): void;
@@ -698,6 +700,8 @@ declare module INSPECTOR {
         private _onSelectionRectangleMovedObserver;
         private _onFlattenTangentRequiredObserver;
         private _onLinearTangentRequiredObserver;
+        private _onBreakTangentRequiredObserver;
+        private _onUnifyTangentRequiredObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -713,10 +717,13 @@ declare module INSPECTOR {
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
+        private _breakTangent;
+        private _unifyTangent;
         private _flattenTangent;
         private _linearTangent;
         private _select;
         private _onPointerDown;
+        private _extractSlope;
         private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
@@ -756,6 +763,8 @@ declare module INSPECTOR {
         onNewKeyPointRequired: BABYLON.Observable<void>;
         onFlattenTangentRequired: BABYLON.Observable<void>;
         onLinearTangentRequired: BABYLON.Observable<void>;
+        onBreakTangentRequired: BABYLON.Observable<void>;
+        onUnifyTangentRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
