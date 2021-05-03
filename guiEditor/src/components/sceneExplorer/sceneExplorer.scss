@@ -368,7 +368,7 @@
         .controlTools {
             grid-column: 2;
             display: grid;
-            grid-template-columns: 1fr 20px 20px auto 5px;
+            grid-template-columns: 1fr 30px 30px auto 5px;
             align-items: center;
 
             .highlight {
@@ -383,6 +383,8 @@
                 width: 20px;
                 grid-column: 4;
             }
+
+
         }   
         
 
@@ -403,8 +405,9 @@
                 grid-column: 1;
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                overflow: hidden;                
-            }
+                overflow: hidden;          
+            }   
+ 
         }
     }
 }

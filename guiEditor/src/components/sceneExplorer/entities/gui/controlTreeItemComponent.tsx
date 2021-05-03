@@ -10,7 +10,7 @@ interface IControlTreeItemComponentProps {
     onClick: () => void;
 }
 
-export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean, isHovered: boolean}> {
+export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean, isHovered: boolean }> {
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 
@@ -35,18 +35,16 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
     render() {
         const control = this.props.control;
         const name = (control.name || "No name") + ` [${control.getClassName()}]`;
-        //const isActiveElement = this.state.isActive ? <FontAwesomeIcon icon={faHighlighter} /> : <FontAwesomeIcon icon={faHighlighter} className="isNotActive" />;
-        //const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />;
 
         if (true) {
             return (
-                <div className="controlTools" onMouseOut={ () =>  this.setState({ isHovered: false})}>
+                <div className="controlTools" onMouseOutCapture={() => this.setState({ isHovered: false })}>
                     <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
-                        <img src={"./imgs/makeComponentIcon.svg"} color="black" className=""/>
+                        <img src={"./imgs/makeComponentIcon.svg"}/>
                     </div>
                     <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide control">
-                        <img src={"./imgs/visibilityIcon.svg"} color="black" className=""/>
+                        <img src={this.state.isVisible? "./imgs/visibilityActiveIcon.svg": "./imgs/visibilityNotActiveIcon.svg"}/>
                     </div>
                     <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
                 </div>
@@ -54,7 +52,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         }
         else {
             return (
-                <div className="controlTools" onMouseEnter={ () =>  this.setState({ isHovered: true})}>
+                <div className="controlTools" onMouseEnter={() => this.setState({ isHovered: true })}>
                     <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
                     <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
                 </div>
