@@ -28,6 +28,7 @@ import { IPointerEvent } from "../Events/deviceInputEvents";
 import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { IStencilState } from "../States/IStencilState";
 
+declare type IDeviceInputSystem = import("../DeviceInput/Interfaces/inputInterfaces").IDeviceInputSystem;
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -389,6 +390,11 @@ export class Engine extends ThinEngine {
      * Gets a boolean indicating if the pointer is currently locked
      */
     public isPointerLock = false;
+
+    /**
+     * Stores instance of DeviceInputSystem
+     */
+     public deviceInputSystem: IDeviceInputSystem;
 
     // Observables
 
@@ -1846,6 +1852,11 @@ export class Engine extends ThinEngine {
 
         //WebVR
         this.disableVR();
+
+        // DeviceInputSystem
+        if (this.deviceInputSystem) {
+            this.deviceInputSystem.dispose();
+        }
 
         // Events
         if (DomManagement.IsWindowObjectExist()) {

@@ -7,30 +7,40 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent";
 import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Scene } from "babylonjs/scene";
 import { Control } from "babylonjs-gui/2D/controls/control";
 
 export class GlobalState {
+    [x: string]: any;
     guiTexture: AdvancedDynamicTexture;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;
     onSelectionChangedObservable = new Observable<Nullable<Control>>();
     onResizeObservable = new Observable<Vector2>();
-    onRebuildRequiredObservable = new Observable<void>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
-    onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
     onIsLoadingChanged = new Observable<boolean>();
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
+    onNewSceneObservable = new Observable<Nullable<Scene>>();
     onGuiNodeRemovalObservable = new Observable<Control>();
     backgroundColor: Color4;
     blockKeyboardEvents = false;
     controlCamera: boolean;
     workbench: WorkbenchComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
+
+    onZoomObservable = new Observable<void>();
+    onPanObservable = new Observable<void>();
+    onSelectionObservable = new Observable<void>();
+    onLoadObservable = new Observable<void>();
+    onSaveObservable = new Observable<void>();
+    onSnippetLoadObservable = new Observable<void>();
+    onSnippetSaveObservable = new Observable<void>();
+
     storeEditorData: (serializationObject: any) => void;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
