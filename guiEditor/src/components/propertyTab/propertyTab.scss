@@ -1,7 +1,12 @@
-#propertyTab {
+:root {
+    --backgroundGrey: #aaaaaa;
+}
+
+
+#ge-propertyTab {
     $line-padding-left: 5px;
-    color:white;
-    background: #333333;
+    color:black;
+    background: #e2e2e2;
 
       #header {
         height: 30px;
@@ -229,7 +234,7 @@
             .header {
                 display: grid;
                 grid-template-columns: 1fr auto;
-                background: #555555;    
+                background: #cccccc;    
                 height: 30px;   
                 padding-right: 5px;                        
                 cursor: pointer;
@@ -489,7 +494,7 @@
         }
 
         .file-upload {            
-            background: #222222;
+            background: var(--backgroundGrey);
             border: 1px solid rgb(51, 122, 183);
             margin: 5px 10px;
             color:white;
@@ -510,7 +515,7 @@
         }
 
         button {
-            background: #222222;
+            background: var(--backgroundGrey);
             border: 1px solid rgb(51, 122, 183);
             margin: 5px 10px 5px 10px;
             color:white;

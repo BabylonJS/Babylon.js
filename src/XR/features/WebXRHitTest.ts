@@ -21,6 +21,10 @@ export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
      */
     enableTransientHitTest?: boolean;
     /**
+    * Override the default transient hit test profile (generic-touchscreen).
+    */
+    transientHitTestProfile?: string;
+    /**
      * Offset ray for the permanent hit test
      */
     offsetRay?: Vector3;
@@ -174,7 +178,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             const offsetRay = new XRRay(this.options.transientOffsetRay || {});
             this._xrSessionManager.session
                 .requestHitTestSourceForTransientInput!({
-                    profile: "generic-touchscreen",
+                    profile: this.options.transientHitTestProfile || "generic-touchscreen",
                     offsetRay,
                     entityTypes: this.options.entityTypes,
                 })

@@ -95,6 +95,7 @@
 - Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
 - Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
 - Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
+- Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -201,6 +202,7 @@
 - Fix Instances wrongly rendered with motion blur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix for wrongly rendered GUI rectangle on resize with adaptWidthToChildren ([msDestiny14](https://github.com/msDestiny14))
 - Fix glTF loader promise stuck when runs on non-json data ([mrlika](https://github.com/mrlika))
+- Fix for namepsace sharing in .scss files ([msDestiny14](https://github.com/msDestiny14))
 
 ## Breaking changes
 
