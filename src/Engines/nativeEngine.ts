@@ -1,6 +1,6 @@
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
@@ -8,7 +8,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { VideoTexture } from "../Materials/Textures/videoTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Effect } from "../Materials/effect";
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";

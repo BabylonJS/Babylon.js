@@ -1,5 +1,5 @@
 import { Immutable, Nullable } from "../types";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh";
@@ -15,7 +15,7 @@ import { Node } from "../node";
 
 import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { SmartArray } from '../Misc/smartArray';
 import { Tools } from '../Misc/tools';
 
