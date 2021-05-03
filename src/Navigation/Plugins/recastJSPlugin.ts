@@ -33,6 +33,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     private _maximumSubStepCount: number = 10;
     private _timeStep: number = 1 / 60;
 
+    private _tempVec1: any;
+    private _tempVec2: any;
+
     /**
      * Initializes the recastJS plugin
      * @param recastInjection can be used to inject your own recast reference
@@ -49,6 +52,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
             return;
         }
         this.setTimeStep();
+
+        this._tempVec1 = new this.bjsRECAST.Vec3();
+        this._tempVec2 = new this.bjsRECAST.Vec3();
     }
 
     /**
@@ -212,8 +218,10 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     getClosestPoint(position: Vector3) : Vector3
     {
-        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
-        var ret = this.navMesh.getClosestPoint(p);
+        this._tempVec1.x = position.x;
+        this._tempVec1.y = position.y;
+        this._tempVec1.z = position.z;
+        var ret = this.navMesh.getClosestPoint(this._tempVec1);
         var pr = new Vector3(ret.x, ret.y, ret.z);
         return pr;
     }
@@ -224,8 +232,10 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param result output the closest point to position constrained by the navigation mesh
      */
     getClosestPointToRef(position: Vector3, result: Vector3) : void {
-        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
-        var ret = this.navMesh.getClosestPoint(p);
+        this._tempVec1.x = position.x;
+        this._tempVec1.y = position.y;
+        this._tempVec1.z = position.z;
+        var ret = this.navMesh.getClosestPoint(this._tempVec1);
         result.set(ret.x, ret.y, ret.z);
     }
 
@@ -236,8 +246,10 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @returns the closest point to position constrained by the navigation mesh
      */
     getRandomPointAround(position: Vector3, maxRadius: number): Vector3 {
-        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
-        var ret = this.navMesh.getRandomPointAround(p, maxRadius);
+        this._tempVec1.x = position.x;
+        this._tempVec1.y = position.y;
+        this._tempVec1.z = position.z;
+        var ret = this.navMesh.getRandomPointAround(this._tempVec1, maxRadius);
         var pr = new Vector3(ret.x, ret.y, ret.z);
         return pr;
     }
@@ -249,8 +261,10 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param result output the closest point to position constrained by the navigation mesh
      */
     getRandomPointAroundToRef(position: Vector3, maxRadius: number, result: Vector3): void {
-        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
-        var ret = this.navMesh.getRandomPointAround(p, maxRadius);
+        this._tempVec1.x = position.x;
+        this._tempVec1.y = position.y;
+        this._tempVec1.z = position.z;
+        var ret = this.navMesh.getRandomPointAround(this._tempVec1, maxRadius);
         result.set(ret.x, ret.y, ret.z);
     }
 
@@ -261,9 +275,13 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @returns the resulting point along the navmesh
      */
     moveAlong(position: Vector3, destination: Vector3): Vector3 {
-        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
-        var d = new this.bjsRECAST.Vec3(destination.x, destination.y, destination.z);
-        var ret = this.navMesh.moveAlong(p, d);
+        this._tempVec1.x = position.x;
+        this._tempVec1.y = position.y;
+        this._tempVec1.z = position.z;
+        this._tempVec2.x = destination.x;
+        this._tempVec2.y = destination.y;
+        this._tempVec2.z = destination.z;
+        var ret = this.navMesh.moveAlong(this._tempVec1, this._tempVec2);
         var pr = new Vector3(ret.x, ret.y, ret.z);
         return pr;
     }
@@ -275,9 +293,13 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param result output the resulting point along the navmesh
      */
     moveAlongToRef(position: Vector3, destination: Vector3, result: Vector3): void {
-        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
-        var d = new this.bjsRECAST.Vec3(destination.x, destination.y, destination.z);
-        var ret = this.navMesh.moveAlong(p, d);
+        this._tempVec1.x = position.x;
+        this._tempVec1.y = position.y;
+        this._tempVec1.z = position.z;
+        this._tempVec2.x = destination.x;
+        this._tempVec2.y = destination.y;
+        this._tempVec2.z = destination.z;
+        var ret = this.navMesh.moveAlong(this._tempVec1, this._tempVec2);
         result.set(ret.x, ret.y, ret.z);
     }
 
@@ -290,9 +312,13 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     computePath(start: Vector3, end: Vector3): Vector3[]
     {
         var pt: number;
-        let startPos = new this.bjsRECAST.Vec3(start.x, start.y, start.z);
-        let endPos = new this.bjsRECAST.Vec3(end.x, end.y, end.z);
-        let navPath = this.navMesh.computePath(startPos, endPos);
+        this._tempVec1.x = start.x;
+        this._tempVec1.y = start.y;
+        this._tempVec1.z = start.z;
+        this._tempVec2.x = end.x;
+        this._tempVec2.y = end.y;
+        this._tempVec2.z = end.z;
+        let navPath = this.navMesh.computePath(this._tempVec1, this._tempVec2);
         let pointCount = navPath.getPointCount();
         var positions = [];
         for (pt = 0; pt < pointCount; pt++)
@@ -324,8 +350,10 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     setDefaultQueryExtent(extent: Vector3): void
     {
-        let ext = new this.bjsRECAST.Vec3(extent.x, extent.y, extent.z);
-        this.navMesh.setDefaultQueryExtent(ext);
+        this._tempVec1.x = extent.x;
+        this._tempVec1.y = extent.y;
+        this._tempVec1.z = extent.z;
+        this.navMesh.setDefaultQueryExtent(this._tempVec1);
     }
 
     /**
@@ -400,7 +428,10 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle
     {
-        return this.navMesh.addCylinderObstacle(new this.bjsRECAST.Vec3(position.x, position.y, position.z), radius, height);
+        this._tempVec1.x = position.x;
+        this._tempVec1.y = position.y;
+        this._tempVec1.z = position.z;
+        return this.navMesh.addCylinderObstacle(this._tempVec1, radius, height);
     }
 
     /**
@@ -412,7 +443,13 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle
     {
-        return this.navMesh.addBoxObstacle(new this.bjsRECAST.Vec3(position.x, position.y, position.z), new this.bjsRECAST.Vec3(extent.x, extent.y, extent.z), angle);
+        this._tempVec1.x = position.x;
+        this._tempVec1.y = position.y;
+        this._tempVec1.z = position.z;
+        this._tempVec2.x = extent.x;
+        this._tempVec2.y = extent.y;
+        this._tempVec2.z = extent.z;
+        return this.navMesh.addBoxObstacle(this._tempVec1, this._tempVec2, angle);
     }
 
     /**
