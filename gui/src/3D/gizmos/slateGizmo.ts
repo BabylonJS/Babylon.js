@@ -5,7 +5,6 @@ import { Matrix, Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Observer } from "babylonjs/Misc/observable";
 import { PivotTools } from "babylonjs/Misc/pivotTools";
 import { Node } from "babylonjs/node";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
@@ -16,7 +15,7 @@ import { HolographicSlate } from "../controls/holographicSlate";
 /**
  * Gizmo to resize 2D slates
  */
-export class BoundingBoxGizmo2D extends Gizmo {
+export class SlateGizmo extends Gizmo {
     private _boundingDimensions = new Vector3(0, 0, 0);
     private _dragPlaneNormal = new Vector3(0, 0, 1);
 
