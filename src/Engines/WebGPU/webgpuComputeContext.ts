@@ -1,6 +1,6 @@
 import { StorageBuffer } from "../../Buffers/storageBuffer";
 import { IComputeContext } from "../../Compute/IComputeContext";
-import { BaseTexture } from "../../Materials/Textures";
+import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Logger } from "../../Misc/logger";
 import { ComputeBindingList, ComputeBindingType } from "../Extensions/engine.computeShader";
