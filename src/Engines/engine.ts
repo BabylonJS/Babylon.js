@@ -27,6 +27,7 @@ import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
 import { IStencilState } from "../States/IStencilState";
 
+declare type IDeviceInputSystem = import("../DeviceInput/Interfaces/inputInterfaces").IDeviceInputSystem;
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -389,6 +390,11 @@ export class Engine extends ThinEngine {
      */
     public isPointerLock = false;
 
+    /**
+     * Stores instance of DeviceInputSystem
+     */
+     public deviceInputSystem: IDeviceInputSystem;
+
     // Observables
 
     /**
@@ -746,7 +752,7 @@ export class Engine extends ThinEngine {
      * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
-     * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
      * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
      * @param stencil stencil states to set
      */
@@ -1845,6 +1851,11 @@ export class Engine extends ThinEngine {
 
         //WebVR
         this.disableVR();
+
+        // DeviceInputSystem
+        if (this.deviceInputSystem) {
+            this.deviceInputSystem.dispose();
+        }
 
         // Events
         if (DomManagement.IsWindowObjectExist()) {

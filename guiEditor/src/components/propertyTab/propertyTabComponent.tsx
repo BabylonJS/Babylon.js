@@ -276,7 +276,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     render() {
         if (this.state.currentNode) {
             return (
-                <div id="propertyTab">
+                <div id="ge-propertyTab">
                     <div id="header">
                         <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                         <div id="title">GUI EDITOR</div>
@@ -295,7 +295,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
 
         return (
-            <div id="propertyTab">
+            <div id="ge-propertyTab">
                 <div id="header">
                     <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                     <div id="title">GUI EDITOR</div>
