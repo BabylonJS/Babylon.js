@@ -1,7 +1,7 @@
 import { Nullable, IndicesArray } from "../../types";
 import { Vector3, Matrix, Vector2 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
-import { VertexBuffer } from "../buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
 import { AbstractMesh } from "../abstractMesh";
 import { Camera } from "../../Cameras/camera";

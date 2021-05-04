@@ -2,12 +2,12 @@ import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Engine } from "../Engines/engine";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { Constants } from "./constants";
 import { IPipelineContext } from './IPipelineContext';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
 import { ISceneLike } from './thinEngine';
 import { PerformanceConfigurator } from './performanceConfigurator';
@@ -143,7 +143,8 @@ export class NullEngine extends Engine {
             maxMSAASamples: 1,
             blendMinMax: false,
             canUseGLInstanceID: false,
-            canUseGLVertexID: false
+            canUseGLVertexID: false,
+            supportComputeShaders: false,
         };
 
         this._features = {

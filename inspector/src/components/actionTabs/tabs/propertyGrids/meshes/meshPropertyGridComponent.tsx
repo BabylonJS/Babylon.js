@@ -5,7 +5,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import { Vector3, TmpVectors } from "babylonjs/Maths/math.vector";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { Mesh } from "babylonjs/Meshes/mesh";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { LinesBuilder } from "babylonjs/Meshes/Builders/linesBuilder";
 import { PhysicsImpostor } from "babylonjs/Physics/physicsImpostor";
 import { Scene } from "babylonjs/scene";

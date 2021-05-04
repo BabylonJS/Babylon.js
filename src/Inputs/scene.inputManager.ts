@@ -1,4 +1,4 @@
-import { Observable } from "../Misc/observable";
+import { Observable, Observer } from "../Misc/observable";
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { Nullable } from "../types";
 import { AbstractActionManager } from "../Actions/abstractActionManager";
@@ -11,7 +11,7 @@ import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/key
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
 import { DeviceInputSystem } from "../DeviceInput/deviceInputSystem";
-import { IDeviceInputSystem } from "../DeviceInput/Interfaces/inputInterfaces";
+import { IDeviceEvent, IDeviceInputSystem } from "../DeviceInput/Interfaces/inputInterfaces";
 
 declare type Scene = import("../scene").Scene;
 
@@ -65,6 +65,9 @@ export class InputManager {
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
     private _alreadyAttachedTo: HTMLElement;
+
+    // Observer
+    private _onInputObserver: Nullable<Observer<IDeviceEvent>>;
 
     // Pointers
     private _onPointerMove: (evt: IMouseEvent) => void;
@@ -841,7 +844,7 @@ export class InputManager {
             }
         };
 
-        this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
+        this._onInputObserver = this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
             const evt: IEvent = eventData;
             // Keyboard Events
             if (eventData.deviceType === DeviceType.Keyboard) {
@@ -891,7 +894,7 @@ export class InputManager {
             return;
         }
 
-        this._deviceInputSystem.dispose();
+        this._deviceInputSystem.onInputChangedObservable.remove(this._onInputObserver);
 
         // Cursor
         if (!this._scene.doNotHandleCursors) {

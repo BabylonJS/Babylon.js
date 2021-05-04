@@ -5,12 +5,13 @@ import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
 import { IDisposable } from '../scene';
 import { IPipelineContext } from '../Engines/IPipelineContext';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { ProcessingOptions, ShaderProcessingContext } from '../Engines/Processors/shaderProcessingOptions';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
+import { ShaderStore as EngineShaderStore } from '../Engines/shaderStore';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -83,7 +84,12 @@ export class Effect implements IDisposable {
     /**
      * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
      */
-    public static ShadersRepository = "src/Shaders/";
+    public static get ShadersRepository(): string {
+            return EngineShaderStore.ShadersRepository;
+    }
+    public static set ShadersRepository(repo: string) {
+        EngineShaderStore.ShadersRepository = repo;
+    }
     /**
      * Enable logging of the shader code when a compilation error occurs
      */
@@ -1289,11 +1295,11 @@ export class Effect implements IDisposable {
     /**
      * Store of each shader (The can be looked up using effect.key)
      */
-    public static ShadersStore: { [key: string]: string } = {};
+    public static ShadersStore: { [key: string]: string } = EngineShaderStore.ShadersStore;
     /**
      * Store of each included file for a shader (The can be looked up using effect.key)
      */
-    public static IncludesShadersStore: { [key: string]: string } = {};
+    public static IncludesShadersStore: { [key: string]: string } = EngineShaderStore.IncludesShadersStore;
 
     /**
      * Resets the cache of effects.
