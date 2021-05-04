@@ -226,7 +226,7 @@ class TransmissionHelper {
         this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
-        this._opaqueRenderTarget.clearColor = this._options.clearColor ?? this._scene.clearColor.clone();
+        this._opaqueRenderTarget.clearColor = this._options.clearColor?.clone() ?? this._scene.clearColor.clone();
         this._opaqueRenderTarget.gammaSpace = false;
         this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
         this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
