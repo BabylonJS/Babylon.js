@@ -27,6 +27,7 @@
 - Added new helper functions for Quaternion.FromLookDirection and Matrix.LookDirection ([Alex-MSFT](https://github.com/Alex-MSFT))
 - Added support for clip planes to the edge renderer ([#10053](https://github.com/BabylonJS/Babylon.js/issues/10053)) ([Popov72](https://github.com/Popov72))
 - Added support for [cannon-es](https://github.com/pmndrs/cannon-es) to the cannonJSPlugin. ([frankieali](https://github.com/frankieali))
+- Added check for duplicates in addShadowCaster ([ivankoleda](https://github.com/ivankoleda))
 
 ### Engine
 
@@ -141,6 +142,10 @@
 
 - Faster scalar's WithinEpsilon with Math.abs ([nekochanoide](https://github.com/nekochanoide))
 
+### Serializers
+
+- Added the `exportUnusedUVs` property to the `IExportOptions` interface that will prevent any unused vertex uv attributes from being stripped during the glTF export. ([ericbroberic](https://github.com/ericbroberic))
+
 ## Bugs
 
 - Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))
@@ -202,7 +207,8 @@
 - Fix Instances wrongly rendered with motion blur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix for wrongly rendered GUI rectangle on resize with adaptWidthToChildren ([msDestiny14](https://github.com/msDestiny14))
 - Fix glTF loader promise stuck when runs on non-json data ([mrlika](https://github.com/mrlika))
-- Fix for namepsace sharing in .scss files ([msDestiny14](https://github.com/msDestiny14))
+- Fix for namepsace sharing in .scss files; PropertyTab, SceneExplorer ([msDestiny14](https://github.com/msDestiny14))
+- Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

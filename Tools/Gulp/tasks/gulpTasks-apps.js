@@ -46,7 +46,7 @@ var buildApp = function(settings, isMin) {
 /**
  * Dynamic app creation In Serie for WebPack leaks.
  */
-function buildAppLibraries(settings) {
+function buildAppLibraries(name, settings) {
     // Creates the required tasks.
     var tasks = [];
 
@@ -54,7 +54,8 @@ function buildAppLibraries(settings) {
 
     tasks.push(buildMin);
 
-    return gulp.series.apply(this, tasks);
+    tasks.map(t => t.displayName = name + ":" + t.name);
+    return gulp.series(...tasks);
 }
 
 /**
@@ -62,7 +63,7 @@ function buildAppLibraries(settings) {
  */
 config.apps.map(function(app) {
     const settings = config[app];
-    gulp.task(app, buildAppLibraries(settings));
+    gulp.task(app, buildAppLibraries(app, settings));
 });
 
 /**

@@ -18,7 +18,7 @@ const webpack = require("webpack");
 /**
  * Build the viewer
  */
-var buildViewerLibrary = function (library, settings, out) {
+var buildViewerLibraryOutput = function (library, settings, out) {
     const sequence = [];
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
@@ -92,30 +92,26 @@ var buildViewerLibrary = function (library, settings, out) {
 
     sequence.push(build);
 
-    // });
-
     return merge2(sequence);
 }
 
-function buildViewerOutputs(settings, library) {
-    var outputBuilds = settings.build.outputs.map(out => {
-        var buildOutput = function () {
-            return buildViewerLibrary(library, settings, out);
-        }
-        return buildOutput;
+function buildViewerLibraryOutputs(name, settings, library) {
+    return settings.build.outputs.map(out => {
+        task = function() { return buildViewerLibraryOutput(library, settings, out); }
+        task.displayName = name + ":viewerLibrary:" + out.destinations[0].filename;
+        return task;
     });
-    return (outputBuilds);
 }
 
 /**
- * Dynamic viewer module creation In Serie for WebPack leaks.
+ * Dynamic viewer module creation in series for WebPack leaks.
  */
-function buildViewerLibraries(settings) {
+function buildViewerLibraries(name, settings) {
     var tasks = settings.libraries.map(function (library) {
-        return buildViewerOutputs(settings, library);
+        return buildViewerLibraryOutputs(name, settings, library);
     });
 
-    return gulp.series.apply(this, tasks);
+    return gulp.series(...tasks);
 }
 
 
@@ -126,5 +122,5 @@ config.viewerModules.map(function (module) {
     var settings = config[module];
 
     // Build the libraries.
-    gulp.task(module, buildViewerLibraries(settings));
+    gulp.task(module, buildViewerLibraries(module, settings));
 });
