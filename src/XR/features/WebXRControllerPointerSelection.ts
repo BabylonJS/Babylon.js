@@ -384,7 +384,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         if (indexTipPose && indexTipPose.transform) {
                             const indexTipPos = indexTipPose.transform.position;
                             const indexTipOrientation = indexTipPose.transform.orientation;
-                            controllerData.indexTipQuaternion.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z * zAxisMultiplier), (indexTipOrientation.w * zAxisMultiplier));
+                            controllerData.indexTipQuaternion.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z * zAxisRHSMultiplier), (indexTipOrientation.w * zAxisRHSMultiplier));
 
                             // set positions for near pick and hover
                             if(controllerData.pickIndexMesh) {
@@ -396,11 +396,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
                             // set near interaction grab ray parameters
                             let nearGrabRayLength = 0.5;
-                            let webxrZaxisMultiplier = -1;
+                            //let webxrZaxisMultiplier = -1;
                             let indexTipOrientationVector = Vector3.Zero();
-                            controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, (indexTipPos.z * zAxisMultiplier));
+                            controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, (indexTipPos.z * zAxisRHSMultiplier));
                             controllerData.indexTipQuaternion.toEulerAnglesToRef(indexTipOrientationVector);
-                            controllerData.grabRay.direction.set(indexTipOrientationVector.x, indexTipOrientationVector.y, (indexTipOrientationVector.z) * webxrZaxisMultiplier);
+                            controllerData.grabRay.direction.set(indexTipOrientationVector.x, indexTipOrientationVector.y, indexTipOrientationVector.z);
                             controllerData.grabRay.length = nearGrabRayLength;
                         }   
                     }
