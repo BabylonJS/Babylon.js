@@ -67,7 +67,10 @@ varying vec2 vMicroSurfaceSamplerUV;
 #endif
 
 #if defined(METALLIC_REFLECTANCE) && METALLIC_REFLECTANCEDIRECTUV == 0
-varying vec2 vMetallicReflectanceUV;
+    varying vec2 vMetallicReflectanceUV;
+#endif
+#if defined(REFLECTANCE) && REFLECTANCEDIRECTUV == 0
+    varying vec2 vReflectanceUV;
 #endif
 
 #if defined(BUMP) && BUMPDIRECTUV == 0
@@ -347,6 +350,16 @@ void main(void) {
     else
     {
         vMetallicReflectanceUV = vec2(metallicReflectanceMatrix * vec4(uv2, 1.0, 0.0));
+    }
+#endif
+#if defined(REFLECTANCE) && REFLECTANCEDIRECTUV == 0
+    if (vReflectanceInfos.x == 0.)
+    {
+        vReflectanceUV = vec2(reflectanceMatrix * vec4(uvUpdated, 1.0, 0.0));
+    }
+    else
+    {
+        vReflectanceUV = vec2(reflectanceMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
 

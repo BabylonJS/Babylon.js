@@ -607,6 +607,17 @@ export class ShaderMaterial extends Material {
             if (numInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
             }
+            if (manager.isUsingTextureForTargets) {
+                defines.push("#define MORPHTARGETS_TEXTURE");
+
+                if (this._options.uniforms.indexOf("morphTargetTextureIndices") === -1) {
+                    this._options.uniforms.push("morphTargetTextureIndices");
+                }
+
+                if (this._options.samplers.indexOf("morphTargets") === -1) {
+                    this._options.samplers.push("morphTargets");
+                }
+            }
             defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
             for (var index = 0; index < numInfluencers; index++) {
                 attribs.push(VertexBuffer.PositionKind + index);

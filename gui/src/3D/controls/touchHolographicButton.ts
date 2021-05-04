@@ -262,29 +262,30 @@ export class TouchHolographicButton extends TouchButton3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const collisionMesh = BoxBuilder.CreateBox(
-            this.name ?? "TouchHolographicButton",
-            {
-                width: 1.0,
-                height: 1.0,
-                depth: 1.0,
-            },
-            scene
-        );
+        const collisionMesh = BoxBuilder.CreateBox((this.name ?? "TouchHolographicButton") + "_CollisionMesh", {
+            width: 1.0,
+            height: 1.0,
+            depth: 1.0,
+        }, scene);
         collisionMesh.isPickable = true;
         collisionMesh.visibility = 0;
         collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
 
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
-            var importedFrontPlate = result.meshes[1];
-            importedFrontPlate.name = `${this.name}_frontPlate`;
-            importedFrontPlate.isPickable = false;
-            importedFrontPlate.parent = collisionMesh;
-            if (!!this._frontMaterial) {
-                importedFrontPlate.material = this._frontMaterial;
-            }
-            this._frontPlate = importedFrontPlate;
-        });
+        SceneLoader.ImportMeshAsync(
+            undefined,
+            TouchHolographicButton.MODEL_BASE_URL,
+            TouchHolographicButton.MODEL_FILENAME,
+            scene)
+            .then((result) => {
+                var importedFrontPlate = result.meshes[1];
+                importedFrontPlate.name = `${this.name}_frontPlate`;
+                importedFrontPlate.isPickable = false;
+                importedFrontPlate.parent = collisionMesh;
+                if (!!this._frontMaterial) {
+                    importedFrontPlate.material = this._frontMaterial;
+                }
+                this._frontPlate = importedFrontPlate;
+            });
 
         const backPlateDepth = 0.04;
         this._backPlate = BoxBuilder.CreateBox(

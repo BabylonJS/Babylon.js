@@ -8,6 +8,7 @@ export * from "./holographicSlate";
 export * from "./meshButton3D";
 export * from "./planePanel";
 export * from "./scatterPanel";
+export * from "./slider3D";
 export * from "./spherePanel";
 export * from "./stackPanel3D";
 export * from "./touchButton3D";

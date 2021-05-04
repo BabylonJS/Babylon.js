@@ -1,6 +1,7 @@
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
+import { Scene } from "babylonjs/index";
+import { Matrix, Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -14,14 +15,9 @@ import { HolographicSlate } from "../controls/holographicSlate";
 /**
  * Gizmo to resize 2D slates
  */
-export class BoundingBoxGizmo2D extends Gizmo {
+export class SlateGizmo extends Gizmo {
     private _boundingDimensions = new Vector3(0, 0, 0);
     private _dragPlaneNormal = new Vector3(0, 0, 1);
-
-    /**
-     * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
-     */
-    public scalePivot: Nullable<Vector3> = null;
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
@@ -31,12 +27,30 @@ export class BoundingBoxGizmo2D extends Gizmo {
     private _cornersParent: TransformNode;
     // private _sides: TransformNode[] = [];
 
+    private _boundingBoxGizmo = {
+        min: new Vector3(),
+        max: new Vector3(),
+    };
+
     /**
      * Value we use to offset handles from mesh
      */
-    private _margin = 0.1;
-
+    private _margin = 1;
     private _attachedSlate: Nullable<HolographicSlate> = null;
+    /**
+     * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
+     */
+    public fixedScreenSize = false;
+    /**
+     * The distance away from the object which the draggable meshes should appear world sized when fixedScreenSize is set to true (default: 10)
+     */
+    public fixedScreenSizeDistanceFactor = 10;
+
+    /**
+     * Size of the handles
+     */
+    public handleSize = 0.1;
+
     /**
      * The slate attached to this gizmo
      */
@@ -74,7 +88,7 @@ export class BoundingBoxGizmo2D extends Gizmo {
             const node = this._createAngleMesh();
             this._corners.push(node);
             node.rotation.z = (Math.PI / 2) * i;
-            node.scaling.copyFromFloats(0.1, 0.1, 0.1);
+            node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
             node.parent = this._cornersParent;
             this._assignDragBehavior(node, moveFns[i]);
         }
@@ -140,11 +154,15 @@ export class BoundingBoxGizmo2D extends Gizmo {
         let dimensionsStart = new Vector3();
         let originStart = new Vector3();
         let dragOrigin = new Vector3();
+        let toObjectFrame = new Matrix();
+
         _dragBehavior.onDragStartObservable.add((event) => {
             if (this.attachedSlate && this.attachedNode) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
                 originStart.copyFrom(this.attachedSlate.origin);
                 dragOrigin.copyFrom(event.dragPlanePoint);
+                toObjectFrame.copyFrom(this.attachedNode.computeWorldMatrix(true));
+                toObjectFrame.invert();
             }
         });
 
@@ -152,7 +170,7 @@ export class BoundingBoxGizmo2D extends Gizmo {
             if (this.attachedSlate && this.attachedNode) {
                 this._tmpVector.copyFrom(event.dragPlanePoint);
                 this._tmpVector.subtractInPlace(dragOrigin);
-                Vector3.TransformCoordinatesToRef(this._tmpVector, this.attachedNode.computeWorldMatrix(true).getRotationMatrix().transpose(), this._tmpVector);
+                Vector3.TransformNormalToRef(this._tmpVector, toObjectFrame, this._tmpVector);
 
                 moveFn(originStart, dimensionsStart, this._tmpVector);
                 this.attachedSlate._positionElements();
@@ -209,19 +227,10 @@ export class BoundingBoxGizmo2D extends Gizmo {
             // Update bounding dimensions/positions
             const boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors();
             boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
-            // Update gizmo to match bounding box scaling and rotation
-            // The position set here is the offset from the origin for the boundingbox when the attached mesh is at the origin
-            // The position of the gizmo is then set to the attachedMesh in gizmo._update
-
-            boundingMinMax.min.x -= this._margin;
-            boundingMinMax.min.y -= this._margin;
-            boundingMinMax.max.x += this._margin;
-            boundingMinMax.max.y += this._margin;
-
-            this._corners[0].position.copyFromFloats(boundingMinMax.min.x, boundingMinMax.min.y, 0);
-            this._corners[1].position.copyFromFloats(boundingMinMax.max.x, boundingMinMax.min.y, 0);
-            this._corners[2].position.copyFromFloats(boundingMinMax.max.x, boundingMinMax.max.y, 0);
-            this._corners[3].position.copyFromFloats(boundingMinMax.min.x, boundingMinMax.max.y, 0);
+            this._boundingBoxGizmo.min = boundingMinMax.min;
+            this._boundingBoxGizmo.max = boundingMinMax.max;
+    
+            this._updateCornersPosition();
 
             // Restore position/rotation values
             this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
@@ -230,6 +239,39 @@ export class BoundingBoxGizmo2D extends Gizmo {
 
             // Restore original parent
             this.attachedMesh.setParent(originalParent);
+        }
+    }
+
+    private _updateCornersPosition() {
+        const min = this._boundingBoxGizmo.min.clone();
+        const max = this._boundingBoxGizmo.max.clone();
+
+        const handleScaling = this._corners[0].scaling.length();
+        min.x -= this._margin * handleScaling;
+        min.y -= this._margin * handleScaling;
+        max.x += this._margin * handleScaling;
+        max.y += this._margin * handleScaling;
+
+        this._corners[0].position.copyFromFloats(min.x, min.y, 0);
+        this._corners[1].position.copyFromFloats(max.x, min.y, 0);
+        this._corners[2].position.copyFromFloats(max.x, max.y, 0);
+        this._corners[3].position.copyFromFloats(min.x, max.y, 0);
+    }
+
+    protected _update() {
+        super._update();
+
+        if (!this.gizmoLayer.utilityLayerScene.activeCamera) {
+            return;
+        }
+
+        if (this._attachedSlate && this._attachedSlate.mesh) {
+            this._attachedSlate.mesh.absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
+            var distanceFromCamera = (this.handleSize * this._tmpVector.length()) / this.fixedScreenSizeDistanceFactor;
+            for (let i = 0; i < this._corners.length; i++) {
+                this._corners[i].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
+            }
+            this._updateCornersPosition();
         }
     }
 }

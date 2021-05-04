@@ -153,6 +153,11 @@ export class HolographicSlate extends ContentDisplay3D {
             backPlate.position.copyFromFloats(this.backplateDimensions.x / 2, -(this.backplateDimensions.y / 2), 0).addInPlace(this.origin);
             contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.backplateDimensions.y + this.backPlateMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
         }
+
+        // Update pivot point so it is at the center of geometry
+        if (this.mesh) {
+            this.mesh.setPivotPoint(this.origin.add(this.dimensions.scale(0.5)))
+        }
     }
 
     // Mesh association

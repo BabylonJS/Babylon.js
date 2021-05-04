@@ -672,6 +672,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             defines.setValue("ENVIRONMENTBRDF_RGBD", false);
         }
 
+        if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
+            nodeMaterial.imageProcessingConfiguration.prepareDefines(defines);
+        }
+
         if (!defines._areLightsDirty) {
             return;
         }
@@ -710,9 +714,15 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
-    public isReady() {
+    public isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (this._environmentBRDFTexture && !this._environmentBRDFTexture.isReady()) {
             return false;
+        }
+
+        if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
+            if (!nodeMaterial.imageProcessingConfiguration.isReady()) {
+                return false;
+            }
         }
 
         return true;
@@ -761,6 +771,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const metallicF90 = this._metallicF0Factor;
 
         effect.setColor4(this._vMetallicReflectanceFactorsName, TmpColors.Color3[0], metallicF90);
+
+        if (nodeMaterial.imageProcessingConfiguration) {
+            nodeMaterial.imageProcessingConfiguration.bind(effect);
+        }
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
@@ -952,6 +966,18 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitExtension("lod", "#extension GL_EXT_shader_texture_lod : enable", "defined(LODBASEDMICROSFURACE)");
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
+        // Image processing uniforms
+        state.uniforms.push("exposureLinear");
+        state.uniforms.push("contrast");
+        state.uniforms.push("vInverseScreenSize");
+        state.uniforms.push("vignetteSettings1");
+        state.uniforms.push("vignetteSettings2");
+        state.uniforms.push("vCameraColorCurveNegative");
+        state.uniforms.push("vCameraColorCurveNeutral");
+        state.uniforms.push("vCameraColorCurvePositive");
+        state.uniforms.push("txColorTransform");
+        state.uniforms.push("colorTransformSettings");
+
         //
         // Includes
         //
@@ -968,6 +994,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitFunctionFromInclude("importanceSampling", comments);
         state._emitFunctionFromInclude("pbrHelperFunctions", comments);
+        state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
@@ -1113,7 +1140,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ Clear Coat ____________________________
         const clearcoatBlock = this.clearcoat.isConnected ? this.clearcoat.connectedPoint?.ownerBlock as ClearCoatBlock : null;
         const generateTBNSpace = !this.perturbedNormal.isConnected && !this.anisotropy.isConnected;
-        const isTangentConnectedToPerturbNormal = this.perturbedNormal.isConnected && (this.perturbedNormal.connectedPoint?.ownerBlock as PerturbNormalBlock).worldTangent.isConnected;
+        const isTangentConnectedToPerturbNormal = this.perturbedNormal.isConnected && (this.perturbedNormal.connectedPoint?.ownerBlock as PerturbNormalBlock).worldTangent?.isConnected;
         const isTangentConnectedToAnisotropy = this.anisotropy.isConnected && (this.anisotropy.connectedPoint?.ownerBlock as AnisotropyBlock).worldTangent.isConnected;
         let vTBNAvailable = isTangentConnectedToPerturbNormal || (!this.perturbedNormal.isConnected && isTangentConnectedToAnisotropy);
 

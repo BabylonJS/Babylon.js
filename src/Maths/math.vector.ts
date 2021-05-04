@@ -371,6 +371,21 @@ export class Vector2 {
         return new Vector2(this.x - Math.floor(this.x), this.y - Math.floor(this.y));
     }
 
+    /**
+     * Rotate the current vector into a given result vector
+     * @param angle defines the rotation angle
+     * @param result defines the result vector where to store the rotated vector
+     * @returns the current vector
+     */
+    public rotateToRef(angle: number, result: Vector2) {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        result.x = cos * this.x - sin * this.y;
+        result.y = sin * this.x + cos * this.y;
+
+        return this;
+    }
+
     // Properties
 
     /**
@@ -396,15 +411,7 @@ export class Vector2 {
      * @returns the current updated Vector2
      */
     public normalize(): Vector2 {
-        var len = this.length();
-
-        if (len === 0) {
-            return this;
-        }
-
-        this.x /= len;
-        this.y /= len;
-
+        Vector2.NormalizeToRef(this, this);
         return this;
     }
 
@@ -585,9 +592,25 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Normalize(vector: DeepImmutable<Vector2>): Vector2 {
-        var newVector = vector.clone();
-        newVector.normalize();
+        var newVector = Vector2.Zero();
+        this.NormalizeToRef(vector, newVector);
         return newVector;
+    }
+
+    /**
+     * Normalize a given vector into a second one
+     * @param vector defines the vector to normalize
+     * @param result defines the vector where to store the result
+     */
+     public static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2) {
+        var len = vector.length();
+
+        if (len === 0) {
+            return;
+        }
+
+        result.x = vector.x / len;
+        result.y = vector.y / len;
     }
 
     /**

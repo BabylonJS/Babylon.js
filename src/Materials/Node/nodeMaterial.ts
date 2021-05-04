@@ -1276,7 +1276,7 @@ export class NodeMaterial extends PushMaterial {
 
         if (mustRebind) {
             let sharedData = this._sharedData;
-            if (effect && scene.getCachedMaterial() !== this) {
+            if (effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
                     block.bind(effect, this, mesh, subMesh);

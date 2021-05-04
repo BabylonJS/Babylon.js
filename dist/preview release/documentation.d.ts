@@ -2990,6 +2990,13 @@ declare module BABYLON {
          */
         fract(): Vector2;
         /**
+         * Rotate the current vector into a given result vector
+         * @param angle defines the rotation angle
+         * @param result defines the result vector where to store the rotated vector
+         * @returns the current vector
+         */
+        rotateToRef(angle: number, result: Vector2): this;
+        /**
          * Gets the length of the vector
          * @returns the vector length (float)
          */
@@ -3104,6 +3111,12 @@ declare module BABYLON {
          * @returns a new Vector2
          */
         static Normalize(vector: DeepImmutable<Vector2>): Vector2;
+        /**
+         * Normalize a given vector into a second one
+         * @param vector defines the vector to normalize
+         * @param result defines the vector where to store the result
+         */
+        static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2): void;
         /**
          * Gets a new Vector2 set with the minimal coordinate values from the "left" and "right" vectors
          * @param left defines 1st vector
@@ -7030,6 +7043,10 @@ declare module BABYLON {
          * The animation interpolation type
          */
         interpolation?: AnimationKeyInterpolation;
+        /**
+         * Property defined by UI tools to link (or not ) the tangents
+         */
+        lockedTangent?: boolean;
     }
     /**
      * Enum for the animation key frame interpolation type
@@ -7270,6 +7287,8 @@ declare module BABYLON {
         private static _Counter;
         /** @hidden */
         _buffer: Buffer;
+        /** @hidden */
+        _validOffsetRange: boolean;
         private _kind;
         private _size;
         private _ownsBuffer;
@@ -7395,10 +7414,11 @@ declare module BABYLON {
          */
         getOffset(): number;
         /**
-         * Returns the number of components per vertex attribute (integer)
-         * @returns the size in float
+         * Returns the number of components or the byte size per vertex attribute
+         * @param sizeInBytes If true, returns the size in bytes or else the size in number of components of the vertex attribute (default: false)
+         * @returns the number of components
          */
-        getSize(): number;
+        getSize(sizeInBytes?: boolean): number;
         /**
          * Gets a boolean indicating is the internal buffer of the VertexBuffer is instanced
          * @returns true if this buffer is instanced
@@ -8418,8 +8438,6 @@ declare module BABYLON {
         private _currentEffectName;
         private _name;
         private _currentFrameId;
-        /** @hidden */
-        _alreadyBound: boolean;
         private static _MAX_UNIFORM_SIZE;
         private static _tempBuffer;
         private static _tempBufferInt32View;
@@ -9389,10 +9407,9 @@ declare module BABYLON {
          * @param scene The scene where the light belongs to
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
-         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
          */
-        _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean, receiveShadows?: boolean): void;
+        _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows?: boolean): void;
         /**
          * Sets the passed Effect "effect" with the Light information.
          * @param effect The effect to update
@@ -10233,10 +10250,9 @@ declare module BABYLON {
          * @param scene The scene where the light belongs to
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
-         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
          */
-        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean, receiveShadows?: boolean): void;
+        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows?: boolean): void;
         /**
          * Binds the lights information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
@@ -10244,9 +10260,8 @@ declare module BABYLON {
          * @param effect The effect we are binding the data to
          * @param defines The generated defines for the effect
          * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number, rebuildInParallel?: boolean): void;
+        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number): void;
         private static _tempFogColor;
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
@@ -24685,7 +24700,6 @@ declare module BABYLON {
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
         protected _useLogarithmicDepth: boolean;
-        protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new standard material.
          * This is the default material used in Babylon. It is the best trade off between quality
@@ -26543,6 +26557,9 @@ declare module BABYLON {
         AOSTOREINMETALMAPRED: boolean;
         METALLIC_REFLECTANCE: boolean;
         METALLIC_REFLECTANCEDIRECTUV: number;
+        METALLIC_REFLECTANCE_USE_ALPHA_ONLY: boolean;
+        REFLECTANCE: boolean;
+        REFLECTANCEDIRECTUV: number;
         ENVIRONMENTBRDF: boolean;
         ENVIRONMENTBRDF_RGBD: boolean;
         NORMAL: boolean;
@@ -26843,14 +26860,27 @@ declare module BABYLON {
          */
         protected _metallicReflectanceColor: Color3;
         /**
-         * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-         * This is multiply against the scalar values defined in the material.
+         * Specifies that only the A channel from _metallicReflectanceTexture should be used.
+         * If false, both RGB and A channels will be used
          */
+        protected _useOnlyMetallicFromMetallicReflectanceTexture: boolean;
+        /**
+        * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+        * This is multiplied against the scalar values defined in the material.
+        * If _useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
+        */
         protected _metallicReflectanceTexture: Nullable<BaseTexture>;
         /**
-         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+         * Defines to store reflectanceColor in RGB
+         * This is multiplied against the scalar values defined in the material.
+         * If both _reflectanceTexture and _metallicReflectanceTexture textures are provided and _useOnlyMetallicFromMetallicReflectanceTexture
+         * is false, _metallicReflectanceTexture takes precedence and _reflectanceTexture is not used
          */
+        protected _reflectanceTexture: Nullable<BaseTexture>;
+        /**
+        * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
+        * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+        */
         protected _microSurfaceTexture: Nullable<BaseTexture>;
         /**
          * Stores surface normal data used to displace a mesh in a texture.
@@ -27117,7 +27147,6 @@ declare module BABYLON {
          * Defines the detail map parameters for the material.
          */
         readonly detailMap: DetailMapConfiguration;
-        protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new PBRMaterial instance.
          *
@@ -27361,14 +27390,27 @@ declare module BABYLON {
          */
         metallicReflectanceColor: Color3;
         /**
-         * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-         * This is multiply against the scalar values defined in the material.
+         * Specifies that only the A channel from metallicReflectanceTexture should be used.
+         * If false, both RGB and A channels will be used
          */
+        useOnlyMetallicFromMetallicReflectanceTexture: boolean;
+        /**
+        * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+        * This is multiplied against the scalar values defined in the material.
+        * If useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
+        */
         metallicReflectanceTexture: Nullable<BaseTexture>;
         /**
-         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+         * Defines to store reflectanceColor in RGB
+         * This is multiplied against the scalar values defined in the material.
+         * If both reflectanceTexture and metallicReflectanceTexture textures are provided and useOnlyMetallicFromMetallicReflectanceTexture
+         * is false, metallicReflectanceTexture takes priority and reflectanceTexture is not used
          */
+        reflectanceTexture: Nullable<BaseTexture>;
+        /**
+        * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
+        * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+        */
         microSurfaceTexture: BaseTexture;
         /**
          * Stores surface normal data used to displace a mesh in a texture.
@@ -34210,6 +34252,11 @@ declare module BABYLON {
          */
         static _GetDefaultSideOrientation(orientation?: number): number;
         private _internalMeshDataInfo;
+        /**
+         * Will notify when the mesh is completely ready, including materials.
+         * Observers added to this observable will be removed once triggered
+         */
+        onMeshReadyObservable: Observable<Mesh>;
         get computeBonesUsingShaders(): boolean;
         set computeBonesUsingShaders(value: boolean);
         /**
@@ -34280,7 +34327,6 @@ declare module BABYLON {
         _instanceDataStorage: _InstanceDataStorage;
         /** @hidden */
         _thinInstanceDataStorage: _ThinInstanceDataStorage;
-        private _effectiveMaterial;
         /** @hidden */
         _shouldGenerateFlatShading: boolean;
         /** @hidden */
@@ -43104,6 +43150,298 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum for Device Types
+     */
+    export enum DeviceType {
+        /** Generic */
+        Generic = 0,
+        /** Keyboard */
+        Keyboard = 1,
+        /** Mouse */
+        Mouse = 2,
+        /** Touch Pointers */
+        Touch = 3,
+        /** PS4 Dual Shock */
+        DualShock = 4,
+        /** Xbox */
+        Xbox = 5,
+        /** Switch Controller */
+        Switch = 6
+    }
+    /**
+     * Enum for All Pointers (Touch/Mouse)
+     */
+    export enum PointerInput {
+        /** Horizontal Axis */
+        Horizontal = 0,
+        /** Vertical Axis */
+        Vertical = 1,
+        /** Left Click or Touch */
+        LeftClick = 2,
+        /** Middle Click */
+        MiddleClick = 3,
+        /** Right Click */
+        RightClick = 4,
+        /** Browser Back */
+        BrowserBack = 5,
+        /** Browser Forward */
+        BrowserForward = 6,
+        /** Mouse Wheel X */
+        MouseWheelX = 7,
+        /** Mouse Wheel Y */
+        MouseWheelY = 8,
+        /** Mouse Wheel Z */
+        MouseWheelZ = 9,
+        /** Delta X */
+        DeltaHorizontal = 10,
+        /** Delta Y */
+        DeltaVertical = 11,
+        /** MoveBeing Hijack for simultaneous buttons pressed for instance */
+        FakeMove = 12
+    }
+    /**
+     * Enum for Dual Shock Gamepad
+     */
+    export enum DualShockInput {
+        /** Cross */
+        Cross = 0,
+        /** Circle */
+        Circle = 1,
+        /** Square */
+        Square = 2,
+        /** Triangle */
+        Triangle = 3,
+        /** L1 */
+        L1 = 4,
+        /** R1 */
+        R1 = 5,
+        /** L2 */
+        L2 = 6,
+        /** R2 */
+        R2 = 7,
+        /** Share */
+        Share = 8,
+        /** Options */
+        Options = 9,
+        /** L3 */
+        L3 = 10,
+        /** R3 */
+        R3 = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** TouchPad */
+        TouchPad = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+    /**
+     * Enum for Xbox Gamepad
+     */
+    export enum XboxInput {
+        /** A */
+        A = 0,
+        /** B */
+        B = 1,
+        /** X */
+        X = 2,
+        /** Y */
+        Y = 3,
+        /** LB */
+        LB = 4,
+        /** RB */
+        RB = 5,
+        /** LT */
+        LT = 6,
+        /** RT */
+        RT = 7,
+        /** Back */
+        Back = 8,
+        /** Start */
+        Start = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** LStickXAxis */
+        LStickXAxis = 17,
+        /** LStickYAxis */
+        LStickYAxis = 18,
+        /** RStickXAxis */
+        RStickXAxis = 19,
+        /** RStickYAxis */
+        RStickYAxis = 20
+    }
+    /**
+     * Enum for Switch (Pro/JoyCon L+R) Gamepad
+     */
+    export enum SwitchInput {
+        /** B */
+        B = 0,
+        /** A */
+        A = 1,
+        /** Y */
+        Y = 2,
+        /** X */
+        X = 3,
+        /** L */
+        L = 4,
+        /** R */
+        R = 5,
+        /** ZL */
+        ZL = 6,
+        /** ZR */
+        ZR = 7,
+        /** Minus */
+        Minus = 8,
+        /** Plus */
+        Plus = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** Capture */
+        Capture = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface for Observables in DeviceInputSystem
+     */
+    export interface IDeviceEvent extends IEvent {
+        /**
+         * Device type
+         */
+        deviceType: DeviceType;
+        /**
+         * Device slot
+         */
+        deviceSlot: number;
+        /**
+         * Input array index
+         */
+        inputIndex: number;
+        /**
+         * Previous state of given input
+         */
+        previousState: Nullable<number>;
+        /**
+         * Current state of given input
+         */
+        currentState: Nullable<number>;
+    }
+    /**
+     * Interface for NativeInput object
+     */
+    export interface INativeInput extends IDisposable {
+        /**
+         * Callback for when a device is connected
+         */
+        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Callback for when a device is disconnected
+         */
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Callback for when input is changed on a device
+         */
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
+        /**
+         * Checks for current device input value, given an id and input index.
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+    }
+    /**
+     * Interface for DeviceInputSystem implementations (JS and Native)
+     */
+    export interface IDeviceInputSystem extends IDisposable {
+        /**
+         * Observable for devices being connected
+         */
+        readonly onDeviceConnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        /**
+         * Observable for devices being disconnected
+         */
+        readonly onDeviceDisconnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        /**
+         * Observable for changes to device input
+         */
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        /**
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+    }
+}
+declare module BABYLON {
+    /**
      * Defines the interface used by display changed events
      */
     export interface IDisplayChangedEventArgs {
@@ -43390,6 +43728,10 @@ declare module BABYLON {
          */
         isPointerLock: boolean;
         /**
+         * Stores instance of DeviceInputSystem
+         */
+        deviceInputSystem: IDeviceInputSystem;
+        /**
          * Observable event triggered each time the rendering canvas is resized
          */
         onResizeObservable: Observable<Engine>;
@@ -43542,7 +43884,7 @@ declare module BABYLON {
          * @param culling defines culling state: true to enable culling, false to disable it
          * @param zOffset defines the value to apply to zOffset (0 by default)
          * @param force defines if states must be applied even if cache is up to date
-         * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+         * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
          * @param stencil stencil states to set
          */
@@ -44800,227 +45142,142 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Enum for Device Types
+     * Class to wrap DeviceInputSystem data into an event object
      */
-    export enum DeviceType {
-        /** Generic */
-        Generic = 0,
-        /** Keyboard */
-        Keyboard = 1,
-        /** Mouse */
-        Mouse = 2,
-        /** Touch Pointers */
-        Touch = 3,
-        /** PS4 Dual Shock */
-        DualShock = 4,
-        /** Xbox */
-        Xbox = 5,
-        /** Switch Controller */
-        Switch = 6
-    }
-    /**
-     * Enum for All Pointers (Touch/Mouse)
-     */
-    export enum PointerInput {
-        /** Horizontal Axis */
-        Horizontal = 0,
-        /** Vertical Axis */
-        Vertical = 1,
-        /** Left Click or Touch */
-        LeftClick = 2,
-        /** Middle Click */
-        MiddleClick = 3,
-        /** Right Click */
-        RightClick = 4,
-        /** Browser Back */
-        BrowserBack = 5,
-        /** Browser Forward */
-        BrowserForward = 6,
-        /** Mouse Wheel X */
-        MouseWheelX = 7,
-        /** Mouse Wheel Y */
-        MouseWheelY = 8,
-        /** Mouse Wheel Z */
-        MouseWheelZ = 9,
-        /** Delta X */
-        DeltaHorizontal = 10,
-        /** Delta Y */
-        DeltaVertical = 11,
-        /** MoveBeing Hijack for simultaneous buttons pressed for instance */
-        FakeMove = 12
-    }
-    /**
-     * Enum for Dual Shock Gamepad
-     */
-    export enum DualShockInput {
-        /** Cross */
-        Cross = 0,
-        /** Circle */
-        Circle = 1,
-        /** Square */
-        Square = 2,
-        /** Triangle */
-        Triangle = 3,
-        /** L1 */
-        L1 = 4,
-        /** R1 */
-        R1 = 5,
-        /** L2 */
-        L2 = 6,
-        /** R2 */
-        R2 = 7,
-        /** Share */
-        Share = 8,
-        /** Options */
-        Options = 9,
-        /** L3 */
-        L3 = 10,
-        /** R3 */
-        R3 = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** TouchPad */
-        TouchPad = 17,
-        /** LStickXAxis */
-        LStickXAxis = 18,
-        /** LStickYAxis */
-        LStickYAxis = 19,
-        /** RStickXAxis */
-        RStickXAxis = 20,
-        /** RStickYAxis */
-        RStickYAxis = 21
-    }
-    /**
-     * Enum for Xbox Gamepad
-     */
-    export enum XboxInput {
-        /** A */
-        A = 0,
-        /** B */
-        B = 1,
-        /** X */
-        X = 2,
-        /** Y */
-        Y = 3,
-        /** LB */
-        LB = 4,
-        /** RB */
-        RB = 5,
-        /** LT */
-        LT = 6,
-        /** RT */
-        RT = 7,
-        /** Back */
-        Back = 8,
-        /** Start */
-        Start = 9,
-        /** LS */
-        LS = 10,
-        /** RS */
-        RS = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** LStickXAxis */
-        LStickXAxis = 17,
-        /** LStickYAxis */
-        LStickYAxis = 18,
-        /** RStickXAxis */
-        RStickXAxis = 19,
-        /** RStickYAxis */
-        RStickYAxis = 20
-    }
-    /**
-     * Enum for Switch (Pro/JoyCon L+R) Gamepad
-     */
-    export enum SwitchInput {
-        /** B */
-        B = 0,
-        /** A */
-        A = 1,
-        /** Y */
-        Y = 2,
-        /** X */
-        X = 3,
-        /** L */
-        L = 4,
-        /** R */
-        R = 5,
-        /** ZL */
-        ZL = 6,
-        /** ZR */
-        ZR = 7,
-        /** Minus */
-        Minus = 8,
-        /** Plus */
-        Plus = 9,
-        /** LS */
-        LS = 10,
-        /** RS */
-        RS = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** Capture */
-        Capture = 17,
-        /** LStickXAxis */
-        LStickXAxis = 18,
-        /** LStickYAxis */
-        LStickYAxis = 19,
-        /** RStickXAxis */
-        RStickXAxis = 20,
-        /** RStickYAxis */
-        RStickYAxis = 21
+    export class DeviceEventFactory {
+        /**
+         * Create device input events based on provided type and slot
+         *
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object
+         */
+        static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IEvent;
+        /**
+         * Creates pointer event
+         *
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Pointer)
+         */
+        private static _createPointerEvent;
+        /**
+         * Create Mouse Wheel Event
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Wheel)
+         */
+        private static _createWheelEvent;
+        /**
+         * Create Mouse Event
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Mouse)
+         */
+        private static _createMouseEvent;
+        /**
+         * Create Keyboard Event
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Keyboard)
+         */
+        private static _createKeyboardEvent;
+        /**
+         * Add parameters for non-character keys (Ctrl, Alt, Meta, Shift)
+         * @param evt Event object to add parameters to
+         * @param deviceInputSystem DeviceInputSystem to pull values from
+         */
+        private static _checkNonCharacterKeys;
+        /**
+         * Create base event object
+         * @param elementToAttachTo Value to use as event target
+         * @returns
+         */
+        private static _createEvent;
     }
 }
 declare module BABYLON {
-    /**
-     * This class will take all inputs from Keyboard, Pointer, and
-     * any Gamepads and provide a polling system that all devices
-     * will use.  This class assumes that there will only be one
-     * pointer device and one keyboard.
-     */
-    export class DeviceInputSystem implements IDisposable {
+    /** @hidden */
+    export class NativeDeviceInputWrapper implements IDeviceInputSystem {
         /**
-         * Returns onDeviceConnected callback property
-         * @returns Callback with function to execute when a device is connected
+         * Observable for devices being connected
          */
-        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
+        readonly onDeviceConnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
         /**
-         * Sets callback function when a device is connected and executes against all connected devices
-         * @param callback Function to execute when a device is connected
+         * Observable for devices being disconnected
          */
-        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
+        readonly onDeviceDisconnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
         /**
-         * Callback to be triggered when a device is disconnected
+         * Observable for changes to device input
          */
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        private _nativeInput;
+        constructor(nativeInput: INativeInput);
         /**
-         * Callback to be triggered when event driven input is updated
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
          */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+        /**
+         * Dispose of all the observables
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebDeviceInputSystem implements IDeviceInputSystem {
+        /**
+         * Observable for devices being connected
+         */
+        readonly onDeviceConnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        /**
+         * Observable for devices being disconnected
+         */
+        readonly onDeviceDisconnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        /**
+         * Observable for changes to device input
+         */
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
         private _inputs;
         private _gamepads;
         private _keyboardActive;
@@ -45039,17 +45296,12 @@ declare module BABYLON {
         private _pointerWheelClearObserver;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
-        private _onDeviceConnected;
-        private static _MAX_KEYCODES;
-        private static _MAX_POINTER_INPUTS;
+        /** Max number of keycodes */
+        static MAX_KEYCODES: number;
+        /** Max number of pointer inputs */
+        static MAX_POINTER_INPUTS: number;
         private _eventPrefix;
-        private constructor();
-        /**
-         * Creates a new DeviceInputSystem instance
-         * @param engine Engine to pull input element from
-         * @returns The new instance
-         */
-        static Create(engine: Engine): DeviceInputSystem;
+        constructor(engine: Engine);
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -45124,6 +45376,22 @@ declare module BABYLON {
          * @returns DeviceType enum value
          */
         private _getGamepadDeviceType;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class will take all inputs from Keyboard, Pointer, and
+     * any Gamepads and provide a polling system that all devices
+     * will use.  This class assumes that there will only be one
+     * pointer device and one keyboard.
+     */
+    export class DeviceInputSystem {
+        /**
+         * Creates a new DeviceInputSystem instance or returns existing one in engine
+         * @param engine Engine to assign input system to
+         * @returns The new instance
+         */
+        static Create(engine: Engine): IDeviceInputSystem;
     }
 }
 declare module BABYLON {
@@ -54713,6 +54981,10 @@ declare module BABYLON {
          * handedness (left/right/none) of this controller
          */
         handedness: MotionControllerHandedness;
+        /**
+         * @hidden
+         */
+        _doNotLoadControllerMesh: boolean;
         private _initComponent;
         private _modelReady;
         /**
@@ -54754,7 +55026,11 @@ declare module BABYLON {
         /**
          * handedness (left/right/none) of this controller
          */
-        handedness: MotionControllerHandedness, _doNotLoadControllerMesh?: boolean);
+        handedness: MotionControllerHandedness, 
+        /**
+         * @hidden
+         */
+        _doNotLoadControllerMesh?: boolean);
         /**
          * Dispose this controller, the model mesh and all its components
          */
@@ -57427,6 +57703,10 @@ declare module BABYLON {
          * Custom sensitivity value for the drag strength
          */
         sensitivity: number;
+        /**
+         * The magnitude of the drag strength (scaling factor)
+         */
+        dragScale: number;
         private _isEnabled;
         private _parent;
         private _gizmoMesh;
@@ -58921,11 +59201,7 @@ declare module BABYLON {
         /**
          * Observable to handle device input changes per device
          */
-        readonly onInputChangedObservable: Observable<{
-            inputIndex: DeviceInput<T>;
-            previousState: Nullable<number>;
-            currentState: Nullable<number>;
-        }>;
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
         private readonly _deviceInputSystem;
         /**
          * Default Constructor
@@ -58933,7 +59209,7 @@ declare module BABYLON {
          * @param deviceType Type of device
          * @param deviceSlot "Slot" or index that device is referenced in
          */
-        constructor(deviceInputSystem: DeviceInputSystem, 
+        constructor(deviceInputSystem: IDeviceInputSystem, 
         /** Type of device */
         deviceType: DeviceType, 
         /** "Slot" or index that device is referenced in */
@@ -59134,7 +59410,7 @@ declare module BABYLON {
          * @param culling defines backface culling state
          * @param zOffset defines the value to apply to zOffset (0 by default)
          * @param force defines if states must be applied even if cache is up to date
-         * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+         * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
          */
         setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
         /**
@@ -60633,6 +60909,7 @@ declare module BABYLON {
         private _isDirty;
         private _emptyVertexBuffer;
         private _parameter;
+        private _kMaxVertexBufferStride;
         private _shaderId;
         private _alphaToCoverageEnabled;
         private _frontFace;
@@ -60679,8 +60956,10 @@ declare module BABYLON {
             token: any;
             pipeline: Nullable<GPURenderPipeline>;
         }): void;
-        vertexBuffers: VertexBuffer[];
+        readonly vertexBuffers: VertexBuffer[];
         get colorFormats(): GPUTextureFormat[];
+        readonly mrtAttachments: number[];
+        readonly mrtTextureArray: InternalTexture[];
         getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline;
         endFrame(): void;
         setAlphaToCoverage(enabled: boolean): void;
@@ -60889,10 +61168,13 @@ declare module BABYLON {
         private _cacheRenderPipeline;
         private _effect;
         private _bindGroups;
+        private _depthTextureFormat;
+        private _bundleCache;
         setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
         setColorFormat(format: GPUTextureFormat): void;
+        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
         constructor(device: GPUDevice, engine: WebGPUEngine, emptyVertexBuffer: VertexBuffer);
-        clear(renderPass: GPURenderPassEncoder, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount?: number): void;
+        clear(renderPass: Nullable<GPURenderPassEncoder>, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount?: number): Nullable<GPURenderBundle>;
     }
 }
 declare module BABYLON {
@@ -61799,7 +62081,7 @@ declare module BABYLON {
          * @param culling defines culling state: true to enable culling, false to disable it
          * @param zOffset defines the value to apply to zOffset (0 by default)
          * @param force defines if states must be applied even if cache is up to date
-         * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+         * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
          * @param stencil stencil states to set
          */
@@ -66967,7 +67249,7 @@ declare module BABYLON {
      * This represents a texture coming from an HDR input.
      *
      * The only supported format is currently panorama picture stored in RGBE format.
-     * Example of such files can be found on HDRLib: http://hdrlib.com/
+     * Example of such files can be found on HDRI Haven: https://hdrihaven.com/
      */
     export class HDRCubeTexture extends BaseTexture {
         private static _facesMapping;
@@ -69116,9 +69398,13 @@ declare module BABYLON {
          */
         constructor(name: string);
         /**
-         * Gets the current class name
-         * @returns the class name
+         * Defines if the input should be converted to linear space (default: true)
          */
+        convertInputToLinearSpace: boolean;
+        /**
+        * Gets the current class name
+        * @returns the class name
+        */
         getClassName(): string;
         /**
          * Gets the color input component
@@ -69137,6 +69423,9 @@ declare module BABYLON {
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -71403,7 +71692,7 @@ declare module BABYLON {
         autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]): void;
-        isReady(): boolean;
+        isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         private _getAlbedoOpacityCode;
@@ -73715,6 +74004,8 @@ declare module BABYLON {
         navMesh: any;
         private _maximumSubStepCount;
         private _timeStep;
+        private _tempVec1;
+        private _tempVec2;
         /**
          * Initializes the recastJS plugin
          * @param recastInjection can be used to inject your own recast reference
@@ -81313,6 +81604,10 @@ declare module BABYLON {
          */
         enableTransientHitTest?: boolean;
         /**
+        * Override the default transient hit test profile (generic-touchscreen).
+        */
+        transientHitTestProfile?: string;
+        /**
          * Offset ray for the permanent hit test
          */
         offsetRay?: Vector3;
@@ -81831,6 +82126,7 @@ declare module BABYLON {
     export class WebXRControllerPhysics extends WebXRAbstractFeature {
         private readonly _options;
         private _attachController;
+        private _createPhysicsImpostor;
         private _controllers;
         private _debugMode;
         private _delta;
@@ -82010,7 +82306,7 @@ declare module BABYLON {
              * Using this function you can either manipulate the instance or return a new mesh.
              * When returning a new mesh the instance created before will be disposed
              */
-            onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => Mesh | undefined;
+            onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => AbstractMesh | undefined;
             /**
              * Should the source mesh stay visible. Defaults to false
              */
@@ -82472,6 +82768,29 @@ declare module BABYLON {
         getXRSessionInitExtension(): Promise<Partial<XRSessionInit>>;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _init;
+    }
+}
+declare module BABYLON {
+    /**
+     * A generic hand controller class that supports select and a secondary grasp
+     */
+    export class WebXRGenericHandController extends WebXRAbstractMotionController {
+        profileId: string;
+        /**
+         * Create a new hand controller object, without loading a controller model
+         * @param scene the scene to use to create this controller
+         * @param gamepadObject the corresponding gamepad object
+         * @param handedness the handedness of the controller
+         */
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness);
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        protected _getModelLoadingConstraints(): boolean;
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+        protected _updateModel(): void;
     }
 }
 declare module BABYLON {
@@ -89164,6 +89483,63 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Class used to create a slider in 3D
+     */
+    export class Slider3D extends Control3D {
+        private _sliderBarMaterial;
+        private _sliderThumbMaterial;
+        private _sliderThumb;
+        private _sliderBar;
+        private _minimum;
+        private _maximum;
+        private _value;
+        private _step;
+        /** BABYLON.Observable raised when the sldier value changes */
+        onValueChangedObservable: BABYLON.Observable<number>;
+        /**
+         * Creates a new slider
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        /** Gets or sets minimum value */
+        get minimum(): number;
+        set minimum(value: number);
+        /** Gets or sets maximum value */
+        get maximum(): number;
+        set maximum(value: number);
+        /** Gets or sets step value */
+        get step(): number;
+        set step(value: number);
+        /** Gets or sets current value */
+        get value(): number;
+        set value(value: number);
+        protected get start(): number;
+        protected get end(): number;
+        /**
+         * Gets the slider bar material used by this control
+         */
+        get sliderBarMaterial(): BABYLON.StandardMaterial;
+        /**
+         * Gets the slider thumb material used by this control
+         */
+        get sliderThumbMaterial(): BABYLON.StandardMaterial;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        private _createBehavior;
+        private _convertToPosition;
+        private _convertToValue;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to create a container panel deployed on the surface of a sphere
      */
     export class SpherePanel extends VolumeBasedPanel {
@@ -91257,7 +91633,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         static DecoderPath: string;
         private _loader;
-        private _decoderPromise?;
+        private static _DecoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -92579,6 +92955,10 @@ declare module BABYLON {
          * Begin serialization without waiting for the scene to be ready
          */
         exportWithoutWaitingForScene?: boolean;
+        /**
+         * Indicates if unused vertex uv attributes should be included in export
+         */
+        exportUnusedUVs?: boolean;
         /**
          * Indicates if coordinate system swapping root nodes should be included in export
          */
@@ -94540,6 +94920,7 @@ declare module BABYLON.GLTF2 {
         specularFactor: number;
         specularColorFactor: number[];
         specularTexture: ITextureInfo;
+        specularColorTexture: ITextureInfo;
     }
 
     /**
