@@ -14,7 +14,7 @@ import { AlphaState } from '../States/alphaCullingState';
 import { Constants } from './constants';
 import { InternalTexture, InternalTextureSource } from '../Materials/Textures/internalTexture';
 import { IViewportLike, IColor4Like } from '../Maths/math.like';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
 import { Logger } from '../Misc/logger';
 import { DomManagement } from '../Misc/domManagement';
@@ -23,7 +23,7 @@ import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IPipelineContext } from './IPipelineContext';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
-import { VertexBuffer } from '../Meshes/buffer';
+import { VertexBuffer } from '../Buffers/buffer';
 import { InstancingAttributeInfo } from './instancingAttributeInfo';
 import { ThinTexture } from '../Materials/Textures/thinTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
@@ -38,6 +38,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { StencilStateComposer } from "../States/stencilStateComposer";
+import { StorageBuffer } from "../Buffers/storageBuffer";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -286,6 +287,8 @@ export class ThinEngine {
 
     /** @hidden */
     public _uniformBuffers = new Array<UniformBuffer>();
+    /** @hidden */
+    public _storageBuffers = new Array<StorageBuffer>();
 
     /**
      * Gets a boolean indicating that the engine supports uniform buffers
@@ -724,6 +727,7 @@ export class ThinEngine {
                         this._initGLContext();
                         // Rebuild effects
                         this._rebuildEffects();
+                        this._rebuildComputeEffects();
                         // Rebuild textures
                         this._rebuildInternalTextures();
                         // Rebuild buffers
@@ -923,8 +927,12 @@ export class ThinEngine {
 
     protected _rebuildBuffers(): void {
         // Uniforms
-        for (var uniformBuffer of this._uniformBuffers) {
+        for (const uniformBuffer of this._uniformBuffers) {
             uniformBuffer._rebuild();
+        }
+        // Storage buffers
+        for (const storageBuffer of this._storageBuffers) {
+            storageBuffer._rebuild();
         }
     }
 
@@ -976,6 +984,7 @@ export class ThinEngine {
             depthTextureExtension: false,
             canUseGLInstanceID: !(this._badOS && this._webGLVersion <= 1),
             canUseGLVertexID: this._webGLVersion > 1,
+            supportComputeShaders: false,
         };
 
         // Infos
@@ -3319,12 +3328,13 @@ export class ThinEngine {
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param mimeType defines an optional mime type
      * @param loaderOptions options to be passed to the loader
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture {
 
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
@@ -4201,6 +4211,7 @@ export class ThinEngine {
 
         // Release effects
         this.releaseEffects();
+        this.releaseComputeEffects();
 
         // Unbind
         this.unbindAllAttributes();

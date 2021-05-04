@@ -12,7 +12,7 @@ import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene } from "babylonjs/scene";
 import { WebRequest } from 'babylonjs/Misc/webRequest';
 import { MTLFileLoader } from './mtlFileLoader';
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 
 type MeshObject = {
     name: string;

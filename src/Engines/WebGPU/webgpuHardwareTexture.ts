@@ -32,6 +32,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     public view: Nullable<GPUTextureView>;
     public format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
     public textureUsages = 0;
+    public textureAdditionalUsages = 0;
 
     constructor(existingTexture: Nullable<GPUTexture> = null) {
         this._webgpuTexture = existingTexture;

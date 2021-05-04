@@ -1,4 +1,4 @@
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { _InstancesBatch, Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";

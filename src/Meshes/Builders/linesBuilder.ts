@@ -5,7 +5,7 @@ import { VertexData } from "../mesh.vertexData";
 import { FloatArray, Nullable } from "../../types";
 import { LinesMesh } from "../../Meshes/linesMesh";
 import { Scene } from "../../scene";
-import { VertexBuffer } from "../../Meshes/buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 
 VertexData.CreateLineSystem = function(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
     var indices = [];

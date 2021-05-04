@@ -1,6 +1,6 @@
 import { Scene } from "../scene";
 import { Vector3, Vector2, TmpVectors, Vector4 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";
 
 Mesh._GroundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {

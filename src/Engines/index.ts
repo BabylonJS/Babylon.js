@@ -22,3 +22,4 @@ export * from "./engineFeatures";
 export * from "./engineFactory";
 export * from "./IMaterialContext";
 export * from "./IDrawContext";
+export * from "./shaderStore";

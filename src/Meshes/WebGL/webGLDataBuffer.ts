@@ -1,4 +1,4 @@
-import { DataBuffer } from '../dataBuffer';
+import { DataBuffer } from '../../Buffers/dataBuffer';
 import { Nullable } from '../../types';
 
 /** @hidden */
