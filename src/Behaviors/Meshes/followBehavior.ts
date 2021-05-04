@@ -78,7 +78,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     /**
      * Option to ignore angle clamping
      */
-    public ignoreAngleClamp = true;
+    public ignoreAngleClamp = false;
     /**
      * Max vertical distance between the attachedNode and camera
      */
