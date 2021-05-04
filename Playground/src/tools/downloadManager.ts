@@ -60,7 +60,7 @@ export class DownloadManager {
             return Promise.resolve();
         }
 
-        if (textures[index].isRenderTarget || textures[index] instanceof BABYLON.DynamicTexture || textures[index].name.indexOf("data:") !== -1) {
+        if (textures[index].isRenderTarget || textures[index] instanceof BABYLON.RawTexture || textures[index] instanceof BABYLON.DynamicTexture || textures[index].name.indexOf("data:") !== -1) {
             return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
         }
 

@@ -18,7 +18,7 @@ import "../../Materials/Textures/baseTexture.polynomial";
  * This represents a texture coming from an HDR input.
  *
  * The only supported format is currently panorama picture stored in RGBE format.
- * Example of such files can be found on HDRLib: http://hdrlib.com/
+ * Example of such files can be found on HDRI Haven: https://hdrihaven.com/
  */
 export class HDRCubeTexture extends BaseTexture {
 

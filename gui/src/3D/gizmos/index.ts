@@ -1,1 +1,1 @@
-export * from "./boundingBoxGizmo2D";
+export * from "./slateGizmo";

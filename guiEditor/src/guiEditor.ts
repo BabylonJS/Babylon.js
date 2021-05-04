@@ -20,7 +20,6 @@ export interface IGUIEditorOptions {
  */
 export class GUIEditor {
     private static _CurrentState: GlobalState;
-
     /**
      * Show the gui editor
      * @param options defines the options to use to configure the gui editor
@@ -70,7 +69,7 @@ export class GUIEditor {
                 }
             }
         }
-
+                
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {
                 globalState.onResetRequiredObservable.notifyObservers();

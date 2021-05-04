@@ -518,7 +518,7 @@ export class WebGPUEngine extends Engine {
                     const validExtensions: GPUFeatureName[] = [];
 
                     for (let extension of requestedExtensions) {
-                        if (this._adapter.features.has(extension)) {
+                        if (this._adapterSupportedExtensions.indexOf(extension) !== -1) {
                             validExtensions.push(extension);
                         }
                     }
@@ -1033,7 +1033,7 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _applyStencilRef(renderPass: GPURenderPassEncoder): void {
-        renderPass.setStencilReference(this._stencilStateComposer.funcRef);
+        renderPass.setStencilReference(this._stencilStateComposer.funcRef ?? 0);
     }
 
     private _blendColorsCurrent: Array<Array<Nullable<number>>> = [[null, null, null, null], [null, null, null, null]];
@@ -1097,7 +1097,11 @@ export class WebGPUEngine extends Engine {
                 if (!this._rttRenderPassWrapper.renderPass) {
                     this._startRenderTargetRenderPass(this._currentRenderTarget!, false, backBuffer ? color : null, depth, stencil);
                 }
-                this._applyScissor(this._currentRenderPass!);
+                if (!this.compatibilityMode) {
+                    this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
+                } else {
+                    this._applyScissor(this._currentRenderPass!);
+                }
                 this._clearFullQuad(backBuffer ? color : null, depth, stencil);
             } else {
                 if (this._currentRenderPass) {
@@ -1110,20 +1114,38 @@ export class WebGPUEngine extends Engine {
                 this._startMainRenderPass(!hasScissor, backBuffer ? color : null, depth, stencil);
             }
             if (hasScissor) {
-                this._applyScissor(this._currentRenderPass!);
+                if (!this.compatibilityMode) {
+                    this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
+                } else {
+                    this._applyScissor(this._currentRenderPass!);
+                }
                 this._clearFullQuad(backBuffer ? color : null, depth, stencil);
             }
         }
     }
 
     private _clearFullQuad(clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
-        const renderPass = this._getCurrentRenderPass();
+        const renderPass = !this.compatibilityMode ? null : this._getCurrentRenderPass();
 
         this._clearQuad.setColorFormat(this._colorFormat);
         this._clearQuad.setDepthStencilFormat(this._depthTextureFormat);
-        this._clearQuad.clear(renderPass, clearColor, clearDepth, clearStencil, this.currentSampleCount);
+        this._clearQuad.setMRTAttachments(this._cacheRenderPipeline.mrtAttachments ?? [], this._cacheRenderPipeline.mrtTextureArray ?? []);
 
-        this._applyStencilRef(renderPass);
+        if (!this.compatibilityMode) {
+            this._bundleList.addItem(new WebGPURenderItemStencilRef(this._clearStencilValue));
+        } else {
+            renderPass!.setStencilReference(this._clearStencilValue);
+        }
+
+        const bundle = this._clearQuad.clear(renderPass, clearColor, clearDepth, clearStencil, this.currentSampleCount);
+
+        if (!this.compatibilityMode) {
+            this._bundleList.addBundle(bundle!);
+            this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef ?? 0));
+            this._reportDrawCall();
+        } else {
+            this._applyStencilRef(renderPass!);
+        }
     }
 
     //------------------------------------------------------------------------------
@@ -3594,7 +3616,7 @@ export class WebGPUEngine extends Engine {
      * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
-     * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
      * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
      * @param stencil stencil states to set
      */
@@ -3740,7 +3762,7 @@ export class WebGPUEngine extends Engine {
                 this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
             }
             if (mustUpdateStencilRef) {
-                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef));
+                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef ?? 0));
             }
             if (mustUpdateBlendColor) {
                 this._bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));
@@ -3799,7 +3821,7 @@ export class WebGPUEngine extends Engine {
 
             const buffer = vertexBuffer.getBuffer();
             if (buffer) {
-                renderPass2.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer.byteOffset);
+                renderPass2.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset);
             }
         }
 
