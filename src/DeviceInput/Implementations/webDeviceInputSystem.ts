@@ -23,7 +23,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     public readonly onInputChangedObservable: Observable<IDeviceEvent>;
 
     // Private Members
-    private _inputs: Array<Array<Array<number>>> = [];
+    private _inputs: Array<{ [deviceSlot: number]: Array<number> }> = [];
     private _gamepads: Array<DeviceType>;
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
@@ -61,8 +61,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onDeviceConnectedObservable = new Observable((observer) => {
             // Iterate through each active device and rerun new callback
             for (let deviceType = 0; deviceType < this._inputs.length; deviceType++) {
-                if (this._inputs[deviceType]) {
-                    for (let deviceSlot = 0; deviceSlot < this._inputs[deviceType].length; deviceSlot++) {
+                const inputs = this._inputs[deviceType];
+                if (inputs) {
+                    for (const deviceSlotKey in inputs) {
+                        const deviceSlot = +deviceSlotKey;
                         if (this._inputs[deviceType][deviceSlot]) {
                             this.onDeviceConnectedObservable.notifyObserver(observer, { deviceType, deviceSlot });
                         }
@@ -222,7 +224,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      */
     private _registerDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number) {
         if (!this._inputs[deviceType]) {
-            this._inputs[deviceType] = [];
+            this._inputs[deviceType] = {};
         }
 
         if (!this._inputs[deviceType][deviceSlot]) {
@@ -330,7 +332,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             if (!this._inputs[deviceType]) {
-                this._inputs[deviceType] = [];
+                this._inputs[deviceType] = {};
             }
 
             if (!this._inputs[deviceType][deviceSlot]) {
@@ -406,7 +408,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             if (!this._inputs[deviceType]) {
-                this._inputs[deviceType] = [];
+                this._inputs[deviceType] = {};
             }
 
             if (!this._inputs[deviceType][deviceSlot]) {
@@ -526,6 +528,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             // Handle mouse buttons
             if (this.isDeviceAvailable(DeviceType.Mouse)) {
                 const pointer = this._inputs[DeviceType.Mouse][0];
+
                 for (let i = 0; i <= PointerInput.BrowserForward; i++) {
                     if (pointer[i + 2] === 1) {
                         pointer[i + 2] = 0;
@@ -546,20 +549,22 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             if (this.isDeviceAvailable(DeviceType.Touch)) {
                 const pointer = this._inputs[DeviceType.Touch];
 
-                for (let i = 0; i < pointer.length; i++) {
-                    if (pointer[i]?.[PointerInput.LeftClick] === 1) {
-                        pointer[i][PointerInput.LeftClick] = 0;
+                for (const deviceSlotKey in pointer) {
+                    const deviceSlot = +deviceSlotKey;
 
-                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, i, PointerInput.LeftClick, 1, this, this._elementToAttachTo);
+                    if (pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
+                        pointer[deviceSlot][PointerInput.LeftClick] = 0;
+
+                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 1, this, this._elementToAttachTo);
                         const deviceEvent = evt as IDeviceEvent;
                         deviceEvent.deviceType = DeviceType.Mouse;
-                        deviceEvent.deviceSlot = i;
+                        deviceEvent.deviceSlot = deviceSlot;
                         deviceEvent.inputIndex = PointerInput.LeftClick;
-                        deviceEvent.currentState = pointer[i][PointerInput.LeftClick];
+                        deviceEvent.currentState = pointer[deviceSlot][PointerInput.LeftClick];
                         deviceEvent.previousState = 1;
                         this.onInputChangedObservable.notifyObservers(deviceEvent);
 
-                        this._unregisterDevice(DeviceType.Touch, i);
+                        this._unregisterDevice(DeviceType.Touch, deviceSlot);
                     }
                 }
             }

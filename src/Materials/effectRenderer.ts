@@ -2,12 +2,12 @@ import { Nullable } from '../types';
 import { InternalTexture } from './Textures/internalTexture';
 import { RenderTargetTexture } from './Textures/renderTargetTexture';
 import { ThinEngine } from '../Engines/thinEngine';
-import { VertexBuffer } from '../Meshes/buffer';
+import { VertexBuffer } from '../Buffers/buffer';
 import { Viewport } from '../Maths/math.viewport';
 import { Constants } from '../Engines/constants';
 import { Observable, Observer } from '../Misc/observable';
 import { Effect } from './effect';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { DrawWrapper } from "./drawWrapper";
 
 // Prevents ES6 Crash if not imported.

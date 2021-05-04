@@ -93,12 +93,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]) {
         const engine = this.engine;
 
-        // TODO WEBGPU. Cleanup SEB on this entire function. Should not need anything in here or almost.
-        let effectAvailableUniforms = engine.getUniforms(this, uniformsNames);
-        effectAvailableUniforms.forEach((uniform, index) => {
-            uniforms[uniformsNames[index]] = uniform;
-        });
-
         // Prevent Memory Leak by reducing the number of string, refer to the string instead of copy.
         effect._fragmentSourceCode = "";
         effect._vertexSourceCode = "";

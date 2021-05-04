@@ -1,5 +1,5 @@
 import { Scene } from "../scene";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
@@ -16,7 +16,7 @@ import "../Meshes/Builders/boxBuilder";
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { Observable } from '../Misc/observable';
 

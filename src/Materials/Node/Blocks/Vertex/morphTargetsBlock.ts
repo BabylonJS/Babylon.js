@@ -8,7 +8,7 @@ import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { MaterialHelper } from '../../../materialHelper';
-import { VertexBuffer } from '../../../../Meshes/buffer';
+import { VertexBuffer } from '../../../../Buffers/buffer';
 import { InputBlock } from '../Input/inputBlock';
 import { _TypeStore } from '../../../../Misc/typeStore';
 

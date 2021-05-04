@@ -10,7 +10,7 @@ import { Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from './transformNode';
 import { Light } from '../Lights/light';
-import { VertexBuffer } from './buffer';
+import { VertexBuffer } from '../Buffers/buffer';
 import { BoundingInfo } from '../Culling/boundingInfo';
 import { Tools } from '../Misc/tools';
 
