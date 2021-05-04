@@ -61,7 +61,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
                         <QuaternionLineComponent label="Rotation" useEuler={this.props.globalState.onlyUseEulers} target={bone} propertyName="rotationQuaternion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <Vector3LineComponent label="Scaling" target={bone} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
+                </LineContainerComponent>                
             </div>
         );
     }

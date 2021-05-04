@@ -12,6 +12,7 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Constants } from "babylonjs/Engines/constants";
+import { Tools } from "babylonjs/Misc/tools";
 
 interface ITransmissionHelperHolder {
     /**
@@ -150,11 +151,16 @@ class TransmissionHelper {
 
     private _addMesh(mesh: AbstractMesh): void {
         this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
-        if (this.shouldRenderAsTransmission(mesh.material)) {
-            this._transparentMeshesCache.push(mesh);
-        } else {
-            this._opaqueMeshesCache.push(mesh);
-        }
+        // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
+        // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
+        Tools.SetImmediate(() => {
+            if (this.shouldRenderAsTransmission(mesh.material)) {
+                (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
+                this._transparentMeshesCache.push(mesh);
+            } else {
+                this._opaqueMeshesCache.push(mesh);
+            }
+        });
     }
 
     private _removeMesh(mesh: AbstractMesh): void {
