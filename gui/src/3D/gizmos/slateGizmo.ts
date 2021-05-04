@@ -1,10 +1,10 @@
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { Scene } from "babylonjs/index";
 import { Matrix, Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Logger } from "babylonjs/Misc/logger";
 import { PivotTools } from "babylonjs/Misc/pivotTools";
 import { Node } from "babylonjs/node";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
@@ -56,16 +56,15 @@ export class SlateGizmo extends Gizmo {
      */
     public set attachedSlate(control: Nullable<HolographicSlate>) {
         this._attachedSlate = control;
-        if (control) {
-            this.attachedMesh = control.mesh;
-        } else {
-            this.attachedMesh = null;
+        if (this._attachedSlate) {
+            this.attachedMesh = this._attachedSlate.mesh;
         }
     }
 
     public get attachedSlate(): Nullable<HolographicSlate> {
         return this._attachedSlate;
     }
+
 
     constructor(utilityLayer?: UtilityLayerRenderer) {
         super(utilityLayer);

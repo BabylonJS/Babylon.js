@@ -87,8 +87,6 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._followButton = new TouchHolographicButton("followButton" + this.name);
         this._closeButton = new TouchHolographicButton("closeButton" + this.name);
-
-        this._gizmo = new SlateGizmo(this._host.utilityLayer!);
     }
 
     /**
@@ -160,7 +158,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
         // Update pivot point so it is at the center of geometry
         if (this.mesh) {
-            this.mesh.setPivotPoint(this.origin.add(this.dimensions.scale(0.5)))
+            this.mesh.setPivotPoint(this.origin.add(this.dimensions.scale(0.5)));
         }
     }
 
@@ -191,6 +189,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._closeButton.backMaterial.alpha = 0;
 
         node.isVisible = false;
+
         return node;
     }
 
@@ -217,6 +216,13 @@ export class HolographicSlate extends ContentDisplay3D {
         this._contentPlate.material = this._contentMaterial;
 
         this._rebuildContent();
+    }
+
+    /** @hidden **/
+    public _prepareNode(scene: Scene): void {
+        super._prepareNode(scene);
+        this._gizmo = new SlateGizmo(this._host.utilityLayer!);
+        this._gizmo.attachedSlate = this;
     }
 
     /**
