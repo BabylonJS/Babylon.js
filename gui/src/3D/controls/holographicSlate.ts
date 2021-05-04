@@ -8,12 +8,15 @@ import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Image } from "../../2D/controls/image";
 import { SlateGizmo } from "../gizmos/slateGizmo";
+import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
+import { PivotTools } from "babylonjs/Misc/pivotTools";
+// import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
 
 /**
  * Class used to create a holographic slate
@@ -43,7 +46,11 @@ export class HolographicSlate extends ContentDisplay3D {
     private _contentMaterial: FluentMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
     private _imageUrl: string;
-    private _gizmo: SlateGizmo;
+
+    /** @hidden */
+    public _followBehavior: FollowBehavior;
+    /** @hidden */
+    public _gizmo: SlateGizmo;
 
     protected _backPlate: Mesh;
     protected _contentPlate: Mesh;
@@ -127,7 +134,7 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * @hidden
      */
-    public _positionElements(mesh?: Mesh) {
+    public _positionElements() {
         const followButtonMesh = this._followButton.mesh;
         const closeButtonMesh = this._closeButton.mesh;
         const backPlate = this._backPlate;
@@ -155,18 +162,27 @@ export class HolographicSlate extends ContentDisplay3D {
             backPlate.position.copyFromFloats(this.backplateDimensions.x / 2, -(this.backplateDimensions.y / 2), 0).addInPlace(this.origin);
             contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.backplateDimensions.y + this.backPlateMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
         }
+    }
 
-        const refMesh = mesh || this.mesh;
-
-        // Update pivot point so it is at the center of geometry
-        if (refMesh) {
-            const center = this.dimensions.scale(0.5);
-            // As origin is topleft corner in 2D, dimensions are calculated towards bottom right corner, thus y axis is downwards
-            center.y *= -1;
-            center.addInPlace(this.origin);
-            console.log(center);
-            refMesh.setPivotPoint(center);
+    public _updatePivot() {
+        if (!this.mesh) {
+            return;
         }
+        
+        // Update pivot point so it is at the center of geometry
+        const center = this.dimensions.scale(0.5);
+        // As origin is topleft corner in 2D, dimensions are calculated towards bottom right corner, thus y axis is downwards
+        center.y *= -1;
+        center.addInPlace(this.origin);
+        center.z = 0;
+
+        const origin = new Vector3(0, 0, 0);
+        Vector3.TransformCoordinatesToRef(origin, this.mesh.computeWorldMatrix(true), origin);
+        console.log(origin);
+        this.mesh.setPivotPoint(center);
+        const origin2 = new Vector3(0, 0, 0);
+        Vector3.TransformCoordinatesToRef(origin2, this.mesh.computeWorldMatrix(true), origin2);
+        this.mesh.position.addInPlace(origin).subtractInPlace(origin2);
     }
 
     // Mesh association
@@ -187,13 +203,22 @@ export class HolographicSlate extends ContentDisplay3D {
         followButtonMesh.parent = node;
         closeButtonMesh.parent = node;
 
-        this._positionElements(node);
+        this._positionElements();
 
         this._followButton.imageUrl = "./textures/IconFollowMe.png";
         this._closeButton.imageUrl = "./textures/IconClose.png";
 
         this._followButton.backMaterial.alpha = 0;
         this._closeButton.backMaterial.alpha = 0;
+
+        this._followButton.onPointerClickObservable.add(() => {
+            if (this._followBehavior.attachedNode) {
+                this._followBehavior.detach();
+            } else {
+                this._followBehavior.attach(node);
+                this._followBehavior.recenter();
+            }
+        });
 
         node.isVisible = false;
 
@@ -230,6 +255,8 @@ export class HolographicSlate extends ContentDisplay3D {
         super._prepareNode(scene);
         this._gizmo = new SlateGizmo(this._host.utilityLayer!);
         this._gizmo.attachedSlate = this;
+        this._followBehavior = new FollowBehavior();
+        this._updatePivot();
     }
 
     /**

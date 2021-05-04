@@ -78,7 +78,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     /**
      * Option to ignore angle clamping
      */
-    public ignoreAngleClamp = false;
+    public ignoreAngleClamp = true;
     /**
      * Max vertical distance between the attachedNode and camera
      */
@@ -105,6 +105,12 @@ export class FollowBehavior implements Behavior<TransformNode> {
      * Fixed vertical position offset distance.
      */
     public fixedVerticalOffset = 0;
+
+    /**
+     * Enables/disables the behavior
+     * @hidden
+     */
+    public _enabled = true;
 
     /**
      * The camera that should be followed by this behavior
@@ -473,7 +479,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     }
 
     private _updateTransformToGoal(elapsed: number) {
-        if (!this.attachedNode || !this.followedCamera) {
+        if (!this.attachedNode || !this.followedCamera || !this._enabled) {
             return;
         }
 

@@ -4,7 +4,6 @@ import { Matrix, Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Logger } from "babylonjs/Misc/logger";
 import { PivotTools } from "babylonjs/Misc/pivotTools";
 import { Node } from "babylonjs/node";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
@@ -64,7 +63,6 @@ export class SlateGizmo extends Gizmo {
     public get attachedSlate(): Nullable<HolographicSlate> {
         return this._attachedSlate;
     }
-
 
     constructor(utilityLayer?: UtilityLayerRenderer) {
         super(utilityLayer);
@@ -156,17 +154,18 @@ export class SlateGizmo extends Gizmo {
         let toObjectFrame = new Matrix();
 
         _dragBehavior.onDragStartObservable.add((event) => {
-            if (this.attachedSlate && this.attachedNode) {
+            if (this.attachedSlate && this.attachedMesh) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
                 originStart.copyFrom(this.attachedSlate.origin);
                 dragOrigin.copyFrom(event.dragPlanePoint);
-                toObjectFrame.copyFrom(this.attachedNode.computeWorldMatrix(true));
+                toObjectFrame.copyFrom(this.attachedMesh.computeWorldMatrix(true));
                 toObjectFrame.invert();
+                this.attachedSlate._followBehavior._enabled = false;
             }
         });
 
         _dragBehavior.onDragObservable.add((event) => {
-            if (this.attachedSlate && this.attachedNode) {
+            if (this.attachedSlate && this.attachedMesh) {
                 this._tmpVector.copyFrom(event.dragPlanePoint);
                 this._tmpVector.subtractInPlace(dragOrigin);
                 Vector3.TransformNormalToRef(this._tmpVector, toObjectFrame, this._tmpVector);
@@ -176,6 +175,13 @@ export class SlateGizmo extends Gizmo {
                 this.updateBoundingBox();
             }
         });
+
+        _dragBehavior.onDragEndObservable.add(() => {
+            if (this.attachedSlate && this.attachedNode) {
+                this.attachedSlate._updatePivot();
+                this.attachedSlate._followBehavior._enabled = true;
+            }
+        })
     }
 
     private _createAngleMesh(): TransformNode {
@@ -228,14 +234,15 @@ export class SlateGizmo extends Gizmo {
             boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
             this._boundingBoxGizmo.min = boundingMinMax.min;
             this._boundingBoxGizmo.max = boundingMinMax.max;
-    
+
             this._updateCornersPosition();
 
             // Restore position/rotation values
             this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
             this.attachedMesh.position.copyFrom(this._tmpVector);
-            PivotTools._RestorePivotPoint(this.attachedMesh);
 
+            PivotTools._RestorePivotPoint(this.attachedMesh);
+            
             // Restore original parent
             this.attachedMesh.setParent(originalParent);
         }
