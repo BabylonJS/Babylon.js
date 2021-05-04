@@ -45415,6 +45415,7 @@ declare module BABYLON {
         /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
         private _alreadyAttached;
         private _alreadyAttachedTo;
+        private _onInputObserver;
         private _onPointerMove;
         private _onPointerDown;
         private _onPointerUp;
