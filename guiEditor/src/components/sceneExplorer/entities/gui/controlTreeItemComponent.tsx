@@ -3,19 +3,25 @@ import { Control } from "babylonjs-gui/2D/controls/control";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
+import { GlobalState } from "../../../../globalState";
 
 interface IControlTreeItemComponentProps {
     control: Control;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     onClick: () => void;
+    globalState: GlobalState;
 }
 
-export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean, isHovered: boolean }> {
+export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean, isHovered: boolean, isSelected: boolean }> {
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 
         const control = this.props.control;
-        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false };
+
+        props.globalState.onSelectionChangedObservable.add((selection) => {
+                this.setState({ isSelected: selection === this.props.control });
+        });
+        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
     }
 
     highlight() {
@@ -36,27 +42,21 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         const control = this.props.control;
         const name = (control.name || "No name") + ` [${control.getClassName()}]`;
 
-        if (this.state.isHovered) {
-            return (
-                <div className="controlTools" onMouseOutCapture={() => this.setState({ isHovered: false })}>
-                    <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
+        return (
+            <div className="controlTools" onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}>
+
+                <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
+                {(this.state.isHovered || this.state.isSelected) && <>
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
-                        <img src={"./imgs/makeComponentIcon.svg"}/>
+                        <img src={"./imgs/makeComponentIcon.svg"} />
                     </div>
                     <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide control">
-                        <img src={this.state.isVisible? "./imgs/visibilityActiveIcon.svg": "./imgs/visibilityNotActiveIcon.svg"}/>
+                        <img src={this.state.isVisible ? "./imgs/visibilityActiveIcon.svg" : "./imgs/visibilityNotActiveIcon.svg"} />
                     </div>
-                    <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
-                </div>
-            );
-        }
-        else {
-            return (
-                <div className="controlTools" onMouseEnter={() => this.setState({ isHovered: true })}>
-                    <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
-                    <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
-                </div>
-            );
-        }
+                </>}
+                <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
+            </div>
+        );
     }
+
 }

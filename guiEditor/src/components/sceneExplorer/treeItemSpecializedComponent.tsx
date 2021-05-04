@@ -38,7 +38,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
             }
 
             if (entity._host) {
-                return (<ControlTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} control={entity as Control} onClick={() => this.onClick()} />);
+                return (<ControlTreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} control={entity as Control} onClick={() => this.onClick()} />);
             }
         }
 
