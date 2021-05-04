@@ -34,6 +34,13 @@ export class ShaderProcessor {
         });
     }
 
+    public static PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
+        this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
+            let migratedCode = this._ApplyPreProcessing(codeWithIncludes, options, engine);
+            callback(migratedCode);
+        });
+    }
+
     public static Finalize(vertexCode: string, fragmentCode: string, options: ProcessingOptions): { vertexCode: string, fragmentCode: string } {
         if (!options.processor || !options.processor.finalizeShaders) {
             return { vertexCode, fragmentCode };
@@ -251,7 +258,7 @@ export class ShaderProcessor {
         return rootNode.process(preprocessors, options);
     }
 
-    private static _PreparePreProcessors(options: ProcessingOptions): { [key: string]: string } {
+    private static _PreparePreProcessors(options: ProcessingOptions, addGLES = true): { [key: string]: string } {
         let defines = options.defines;
         let preprocessors: { [key: string]: string } = {};
 
@@ -261,7 +268,9 @@ export class ShaderProcessor {
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
         }
 
-        preprocessors["GL_ES"] = "true";
+        if (addGLES) {
+            preprocessors["GL_ES"] = "true";
+        }
         preprocessors["__VERSION__"] = options.version;
         preprocessors[options.platformName] = "true";
 
@@ -294,6 +303,28 @@ export class ShaderProcessor {
 
         // Post processing
         if (options.processor.postProcessor) {
+            preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
+        }
+
+        return preparedSourceCode;
+    }
+
+    private static _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, engine: ThinEngine): string {
+        let preparedSourceCode = sourceCode;
+
+        const defines = options.defines;
+
+        let preprocessors = this._PreparePreProcessors(options, false);
+
+        // General pre processing
+        if (options.processor?.preProcessor) {
+            preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext);
+        }
+
+        preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+
+        // Post processing
+        if (options.processor?.postProcessor) {
             preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
         }
 

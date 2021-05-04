@@ -1,12 +1,12 @@
 import { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
-import { VertexBuffer } from "./buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
-import { DataBuffer } from './dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { extractMinAndMaxIndexed } from '../Maths/math.functions';
 import { Plane } from '../Maths/math.plane';
 import { DrawWrapper } from "../Materials/drawWrapper";

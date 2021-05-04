@@ -1,7 +1,7 @@
 import { Effect } from "../../Materials/effect";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { IColor4Like } from "../../Maths/math.like";
-import { VertexBuffer } from "../../Meshes/buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { Nullable } from "../../types";
 import { Constants } from "../constants";

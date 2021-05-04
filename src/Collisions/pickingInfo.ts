@@ -1,7 +1,7 @@
 import { Nullable, FloatArray } from "../types";
 import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { Sprite } from "../Sprites/sprite";
 
 declare type Ray = import("../Culling/ray").Ray;

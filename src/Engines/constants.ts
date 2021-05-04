@@ -126,6 +126,9 @@ export class Constants {
     /** Texture is repeating and mirrored */
     public static readonly TEXTURE_MIRROR_ADDRESSMODE = 2;
 
+    /** Flag to create a storage texture */
+    public static readonly TEXTURE_CREATIONFLAG_STORAGE = 1;
+
     /** ALPHA */
     public static readonly TEXTUREFORMAT_ALPHA = 0;
     /** LUMINANCE */

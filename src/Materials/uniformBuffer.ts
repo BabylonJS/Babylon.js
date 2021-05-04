@@ -3,7 +3,7 @@ import { Nullable, FloatArray } from "../types";
 import { IMatrixLike, IVector3Like, IVector4Like, IColor3Like } from "../Maths/math.like";
 import { Effect } from "./effect";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { ThinEngine } from "../Engines/thinEngine";
 import { Tools } from "../Misc/tools";
 
