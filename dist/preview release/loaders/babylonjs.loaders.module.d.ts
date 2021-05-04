@@ -1826,7 +1826,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/EXT_meshopt_compression" {
          */
         static DecoderPath: string;
         private _loader;
-        private _decoderPromise?;
+        private static _DecoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -4718,7 +4718,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         static DecoderPath: string;
         private _loader;
-        private _decoderPromise?;
+        private static _DecoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
