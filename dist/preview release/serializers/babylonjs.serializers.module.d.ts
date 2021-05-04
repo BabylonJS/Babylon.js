@@ -402,6 +402,10 @@ declare module "babylonjs-serializers/glTF/2.0/glTFSerializer" {
          */
         exportWithoutWaitingForScene?: boolean;
         /**
+         * Indicates if unused vertex uv attributes should be included in export
+         */
+        exportUnusedUVs?: boolean;
+        /**
          * Indicates if coordinate system swapping root nodes should be included in export
          */
         includeCoordinateSystemConversionNodes?: boolean;
@@ -1748,6 +1752,10 @@ declare module BABYLON {
          * Begin serialization without waiting for the scene to be ready
          */
         exportWithoutWaitingForScene?: boolean;
+        /**
+         * Indicates if unused vertex uv attributes should be included in export
+         */
+        exportUnusedUVs?: boolean;
         /**
          * Indicates if coordinate system swapping root nodes should be included in export
          */

@@ -27,6 +27,7 @@
 - Added new helper functions for Quaternion.FromLookDirection and Matrix.LookDirection ([Alex-MSFT](https://github.com/Alex-MSFT))
 - Added support for clip planes to the edge renderer ([#10053](https://github.com/BabylonJS/Babylon.js/issues/10053)) ([Popov72](https://github.com/Popov72))
 - Added support for [cannon-es](https://github.com/pmndrs/cannon-es) to the cannonJSPlugin. ([frankieali](https://github.com/frankieali))
+- Added check for duplicates in addShadowCaster ([ivankoleda](https://github.com/ivankoleda))
 
 ### Engine
 
@@ -66,6 +67,7 @@
 - `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 - `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
 - Add option to decompose the `newWorldMatrix` when passed into `TransformNode.freezeWorldMatrix`. ([bghgary](https://github.com/bghgary))
+- Added `mesh.onMeshReadyObservable` to get notified when a mesh is ready ([RaananW](https://github.com/RaananW))
 
 ### Inspector
 
@@ -93,6 +95,8 @@
 - Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
 - Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
 - Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
+- Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
+- Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -137,6 +141,10 @@
 ### Math
 
 - Faster scalar's WithinEpsilon with Math.abs ([nekochanoide](https://github.com/nekochanoide))
+
+### Serializers
+
+- Added the `exportUnusedUVs` property to the `IExportOptions` interface that will prevent any unused vertex uv attributes from being stripped during the glTF export. ([ericbroberic](https://github.com/ericbroberic))
 
 ## Bugs
 
@@ -198,6 +206,9 @@
 - Fix for GUI slider step values greater than one ([msDestiny14](https://github.com/msDestiny14))
 - Fix Instances wrongly rendered with motion blur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix for wrongly rendered GUI rectangle on resize with adaptWidthToChildren ([msDestiny14](https://github.com/msDestiny14))
+- Fix glTF loader promise stuck when runs on non-json data ([mrlika](https://github.com/mrlika))
+- Fix for namepsace sharing in .scss files; PropertyTab, SceneExplorer ([msDestiny14](https://github.com/msDestiny14))
+- Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

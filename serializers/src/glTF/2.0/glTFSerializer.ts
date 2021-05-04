@@ -32,6 +32,11 @@ export interface IExportOptions {
     exportWithoutWaitingForScene?: boolean;
 
     /**
+     * Indicates if unused vertex uv attributes should be included in export
+     */
+    exportUnusedUVs?: boolean;
+
+    /**
      * Indicates if coordinate system swapping root nodes should be included in export
      */
     includeCoordinateSystemConversionNodes?: boolean;

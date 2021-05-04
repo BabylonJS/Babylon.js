@@ -4450,6 +4450,63 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Class used to create a slider in 3D
+     */
+    export class Slider3D extends Control3D {
+        private _sliderBarMaterial;
+        private _sliderThumbMaterial;
+        private _sliderThumb;
+        private _sliderBar;
+        private _minimum;
+        private _maximum;
+        private _value;
+        private _step;
+        /** BABYLON.Observable raised when the sldier value changes */
+        onValueChangedObservable: BABYLON.Observable<number>;
+        /**
+         * Creates a new slider
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        /** Gets or sets minimum value */
+        get minimum(): number;
+        set minimum(value: number);
+        /** Gets or sets maximum value */
+        get maximum(): number;
+        set maximum(value: number);
+        /** Gets or sets step value */
+        get step(): number;
+        set step(value: number);
+        /** Gets or sets current value */
+        get value(): number;
+        set value(value: number);
+        protected get start(): number;
+        protected get end(): number;
+        /**
+         * Gets the slider bar material used by this control
+         */
+        get sliderBarMaterial(): BABYLON.StandardMaterial;
+        /**
+         * Gets the slider thumb material used by this control
+         */
+        get sliderThumbMaterial(): BABYLON.StandardMaterial;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        private _createBehavior;
+        private _convertToPosition;
+        private _convertToValue;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to create a container panel deployed on the surface of a sphere
      */
     export class SpherePanel extends VolumeBasedPanel {

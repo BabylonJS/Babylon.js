@@ -5,6 +5,7 @@ import { Animation } from "babylonjs/Animations/animation";
 import { Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import { IAnimationKey } from "babylonjs/Animations/animationKey";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 
 interface IAddAnimationComponentProps {
     globalState: GlobalState;
@@ -54,40 +55,48 @@ IAddAnimationComponentState
             return;
         }
         
-        const fps = this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond : 60;
+        const fps = this.props.context.animations && this.props.context.animations.length ? 
+            (this.props.context.useTargetAnimations ? (this.props.context.animations[0] as TargetedAnimation).animation.framePerSecond : (this.props.context.animations[0] as Animation).framePerSecond) : 60;
         let dataType = 0;
         let loopMode = 0;
-        let defaultValue: any;
+        let defaultValue0: any;
+        let defaultValue1: any;
 
         switch (type) {
             case "Float": {
                 dataType = Animation.ANIMATIONTYPE_FLOAT;
-                defaultValue = 0;
+                defaultValue0 = 0;
+                defaultValue1 = 1;
                 break;
             }
             case "Vector2": {
                 dataType = Animation.ANIMATIONTYPE_VECTOR2;
-                defaultValue = Vector2.Zero();
+                defaultValue0 = Vector2.Zero();
+                defaultValue1 = new Vector2(1, 1);
                 break;
             }
             case "Vector3": {
                 dataType = Animation.ANIMATIONTYPE_VECTOR3;
-                defaultValue = Vector3.Zero();
+                defaultValue0 = Vector3.Zero();
+                defaultValue1 = new Vector3(1, 1, 1);
                 break;
             }
             case "Quaternion": {
                 dataType = Animation.ANIMATIONTYPE_QUATERNION;
-                defaultValue = Quaternion.Zero();
+                defaultValue0 = Quaternion.Zero();
+                defaultValue1 = new Quaternion(1, 1, 1, 0);
                 break;
             }
             case "Color3": {
                 dataType = Animation.ANIMATIONTYPE_COLOR3;
-                defaultValue = Color3.Black();
+                defaultValue0 = Color3.Black();
+                defaultValue1 = Color3.White();
                 break;
             }                                                
             case "Color4": {
                 dataType = Animation.ANIMATIONTYPE_COLOR4;
-                defaultValue = new Color4(0, 0, 0, 0);
+                defaultValue0 = new Color4(0, 0, 0, 0);
+                defaultValue1 = new Color4(1, 1, 1, 1);
                 break;
             }            
         }
@@ -111,12 +120,12 @@ IAddAnimationComponentState
         let keys: IAnimationKey[] = [];
         keys.push({
             frame: context.referenceMinFrame,
-            value: defaultValue
+            value: defaultValue0
         });
 
         keys.push({
             frame: context.referenceMaxFrame,
-            value: defaultValue
+            value: defaultValue1
         });
 
         animation.setKeys(keys);
@@ -125,10 +134,14 @@ IAddAnimationComponentState
 
         if (!context.animations || context.animations.length === 0) {
             context.animations = [];            
-            context.target.animations = context.animations;
+            if (context.target) {
+                context.target.animations = context.animations as Animation[];
+            }
         }
 
-        context.animations.push(animation);
+        if (!context.useTargetAnimations) {
+            (context.animations as Animation[]).push(animation);
+        }
         context.activeAnimation = animation;
         context.prepare();
         context.onActiveAnimationChanged.notifyObservers();            

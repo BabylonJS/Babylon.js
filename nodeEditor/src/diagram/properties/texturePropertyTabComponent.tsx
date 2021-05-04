@@ -235,7 +235,6 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         }}/>
                     }
                     {
-                        texture &&
                         <CheckBoxLineComponent
                             label="Disable multiplying by level"
                             propertyName="disableLevelMultiplication"

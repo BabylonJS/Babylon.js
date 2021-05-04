@@ -145,6 +145,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private _isDirty: boolean;
     private _emptyVertexBuffer: VertexBuffer;
     private _parameter: { token: any, pipeline: Nullable<GPURenderPipeline> };
+    private _kMaxVertexBufferStride;
 
     private _shaderId: number;
     private _alphaToCoverageEnabled: boolean;
@@ -193,6 +194,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._parameter = { token: undefined, pipeline: null };
         this.disabled = false;
         this.vertexBuffers = [];
+        this._kMaxVertexBufferStride = 2048; // TODO WEBGPU: get this value from device.limits.maxVertexBufferArrayStride
         this.reset();
     }
 
@@ -219,11 +221,14 @@ export abstract class WebGPUCacheRenderPipeline {
     protected abstract _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
     protected abstract _setRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
 
-    public vertexBuffers: VertexBuffer[];
+    public readonly vertexBuffers: VertexBuffer[];
 
     public get colorFormats(): GPUTextureFormat[] {
         return this._mrtAttachments1 > 0 ? this._mrtFormats : this._webgpuColorFormat;
     }
+
+    public readonly mrtAttachments: number[];
+    public readonly mrtTextureArray: InternalTexture[];
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline {
         if (this.disabled) {
@@ -351,6 +356,9 @@ export abstract class WebGPUCacheRenderPipeline {
             // so we can encode 5 texture formats in 32 bits
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
+        (this.mrtAttachments as any) = attachments;
+        (this.mrtTextureArray as any) = textureArray;
+
         let bits: number[] = [0, 0], indexBits = 0, mask = 0, numRT = 0;
         for (let i = 0; i < attachments.length; ++i) {
             const index = attachments[i];
@@ -790,7 +798,8 @@ export abstract class WebGPUCacheRenderPipeline {
         const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
         const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
 
-        this.vertexBuffers.length = attributes.length;
+        let currentGPUBuffer;
+        let numVertexBuffers = 0;
         for (var index = 0; index < attributes.length; index++) {
             const location = locations[index];
             let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
@@ -800,13 +809,31 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            this.vertexBuffers[index] = vertexBuffer;
+            const buffer = vertexBuffer.getBuffer()?.underlyingResource;
+
+            // We optimize usage of GPUVertexBufferLayout: we will create a single GPUVertexBufferLayout for all the attributes which follow each other and which use the same GPU buffer
+            // However, there are some constraints in the attribute.offset value range, so we must check for them before being able to reuse the same GPUVertexBufferLayout
+            // See _getVertexInputDescriptor() below
+            if (vertexBuffer._validOffsetRange === undefined) {
+                const offset = vertexBuffer.byteOffset;
+                const formatSize = vertexBuffer.getSize(true);
+                const byteStride = vertexBuffer.byteStride;
+                vertexBuffer._validOffsetRange = offset <= (this._kMaxVertexBufferStride - formatSize) && (byteStride === 0 || (offset + formatSize) <= byteStride);
+            }
+
+            if (!(currentGPUBuffer && currentGPUBuffer === buffer && vertexBuffer._validOffsetRange)) {
+                // we can't combine the previous vertexBuffer with the current one
+                this.vertexBuffers[numVertexBuffers++] = vertexBuffer;
+                currentGPUBuffer = vertexBuffer._validOffsetRange ? buffer : null;
+            }
 
             const vid = vertexBuffer.hashCode + (location << 7);
 
             this._isDirty = this._isDirty || this._states[newNumStates] !== vid;
             this._states[newNumStates++] = vid;
         }
+
+        this.vertexBuffers.length = numVertexBuffers;
 
         this._statesLength = newNumStates;
         this._isDirty = this._isDirty || newNumStates !== currStateLen;
@@ -885,6 +912,9 @@ export abstract class WebGPUCacheRenderPipeline {
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
         const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
+
+        let currentGPUBuffer;
+        let currentGPUAttributes: GPUVertexAttribute[] | undefined;
         for (var index = 0; index < attributes.length; index++) {
             const location = locations[index];
             let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
@@ -894,20 +924,33 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            const attributeDescriptor: GPUVertexAttribute = {
+            let buffer = vertexBuffer.getBuffer()?.underlyingResource;
+
+            // We reuse the same GPUVertexBufferLayout for all attributes that use the same underlying GPU buffer (and for attributes that follow each other in the attributes array)
+            let offset = vertexBuffer.byteOffset;
+            const invalidOffsetRange = !vertexBuffer._validOffsetRange;
+            if (!(currentGPUBuffer && currentGPUAttributes && currentGPUBuffer === buffer) || invalidOffsetRange) {
+                const vertexBufferDescriptor: GPUVertexBufferLayout = {
+                    arrayStride: vertexBuffer.byteStride,
+                    stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
+                    attributes: []
+                };
+
+                descriptors.push(vertexBufferDescriptor);
+                currentGPUAttributes = vertexBufferDescriptor.attributes;
+                if (invalidOffsetRange) {
+                    offset = 0; // the offset will be set directly in the setVertexBuffer call
+                    buffer = null; // buffer can't be reused
+                }
+            }
+
+            currentGPUAttributes.push({
                 shaderLocation: location,
-                offset: 0, // not available in WebGL
+                offset,
                 format: WebGPUCacheRenderPipeline._GetVertexInputDescriptorFormat(vertexBuffer),
-            };
+            });
 
-            // TODO WEBGPU. Factorize the one with the same underlying buffer.
-            const vertexBufferDescriptor: GPUVertexBufferLayout = {
-                arrayStride: vertexBuffer.byteStride,
-                stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
-                attributes: [attributeDescriptor]
-            };
-
-            descriptors.push(vertexBufferDescriptor);
+            currentGPUBuffer = buffer;
         }
 
         return descriptors;

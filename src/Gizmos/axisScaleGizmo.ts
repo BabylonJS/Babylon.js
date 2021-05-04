@@ -41,6 +41,10 @@ export class AxisScaleGizmo extends Gizmo {
      * Custom sensitivity value for the drag strength
      */
     public sensitivity = 1;
+    /**
+     * The magnitude of the drag strength (scaling factor)
+     */
+    public dragScale = 1;
 
     private _isEnabled: boolean = true;
     private _parent: Nullable<ScaleGizmo> = null;
@@ -95,6 +99,7 @@ export class AxisScaleGizmo extends Gizmo {
 
             arrowMesh.position.z += dragStrength / 3.5;
             arrowTail.scaling.y += dragStrength;
+            this.dragScale = arrowTail.scaling.y;
             arrowTail.position.z = arrowMesh.position.z / 2;
         };
 
@@ -102,6 +107,7 @@ export class AxisScaleGizmo extends Gizmo {
             arrowMesh.position.set(nodePosition.x, nodePosition.y, nodePosition.z);
             arrowTail.position.set(linePosition.x, linePosition.y, linePosition.z);
             arrowTail.scaling.set(lineScale.x, lineScale.y, lineScale.z);
+            this.dragScale = arrowTail.scaling.y;
             this._dragging = false;
         };
 

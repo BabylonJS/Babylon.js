@@ -1,6 +1,5 @@
 import * as React from "react";
 import { GlobalState } from "./globalState";
-import { GuiListComponent } from "./components/guiList/guiListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
@@ -9,9 +8,13 @@ import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
+import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
 
+import { CommandBarComponent } from "./components/commandBarComponent";
+
 require("./main.scss");
+require("./scss/header.scss");
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -261,6 +264,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     render() {
         return (
             <Portal globalState={this.props.globalState}>
+                <div id="ge-header">
+                    <div className="command-bar">
+                        <CommandBarComponent globalState={this.props.globalState} />
+                    </div>
+                </div>
                 <div
                     id="gui-editor-workbench-root"
                     style={{
@@ -271,22 +279,14 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                             return;
                         }
                         this.props.globalState.blockKeyboardEvents = false;
-                    }}
-                >
+                    }}>
                     {/* Node creation menu */}
-                    <GuiListComponent globalState={this.props.globalState} />
 
                     <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
-
+                    <SceneExplorerComponent globalState={this.props.globalState}></SceneExplorerComponent>
                     {/* The gui workbench diagram */}
                     <div
                         className="diagram-container"
-                        onDrop={(event) => {
-                            this.emitNewBlock(event);
-                        }}
-                        onDragOver={(event) => {
-                            event.preventDefault();
-                        }}
                     >
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                     </div>

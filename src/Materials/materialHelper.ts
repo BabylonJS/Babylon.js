@@ -801,11 +801,10 @@ export class MaterialHelper {
      * @param scene The scene where the light belongs to
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false, receiveShadows = true): void {
-        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel, receiveShadows);
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
+        light._bindLight(lightIndex, scene, effect, useSpecular, receiveShadows);
     }
 
     /**
@@ -815,15 +814,14 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, rebuildInParallel = false): void {
+    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {
         let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel, mesh.receiveShadows);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], mesh.receiveShadows);
         }
     }
 

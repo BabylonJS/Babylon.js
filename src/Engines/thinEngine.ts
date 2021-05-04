@@ -171,14 +171,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.17";
+        return "babylonjs@5.0.0-alpha.19";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.17";
+        return "5.0.0-alpha.19";
     }
 
     /**
@@ -924,7 +924,6 @@ export class ThinEngine {
     protected _rebuildBuffers(): void {
         // Uniforms
         for (var uniformBuffer of this._uniformBuffers) {
-            uniformBuffer._alreadyBound = false;
             uniformBuffer._rebuild();
         }
     }
