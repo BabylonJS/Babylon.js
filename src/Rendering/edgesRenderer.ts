@@ -169,6 +169,12 @@ export interface IEdgesRendererOptions {
      * This option is used only if useAlternateEdgeFinder = true
      */
     epsilonVertexAligned?: number;
+
+    /**
+     * Gets or sets a boolean indicating that degenerated triangles should not be processed.
+     * Degenerated triangles are triangles that have 2 or 3 vertices with the same coordinates
+     */
+    removeDegeneratedTriangles?: boolean;
 }
 
 /**
@@ -659,7 +665,7 @@ export class EdgesRenderer implements IEdgesRenderer {
                 let p1Index = remapVertexIndices[indices[index + (i + 1) % 3]];
                 let p2Index = remapVertexIndices[indices[index + (i + 2) % 3]];
 
-                if (p0Index === p1Index) { continue; }
+                if (p0Index === p1Index || (p0Index === p2Index || p1Index === p2Index) && this._options?.removeDegeneratedTriangles) { continue; }
 
                 TmpVectors.Vector3[0].copyFromFloats(positions[p0Index * 3 + 0], positions[p0Index * 3 + 1], positions[p0Index * 3 + 2]);
                 TmpVectors.Vector3[1].copyFromFloats(positions[p1Index * 3 + 0], positions[p1Index * 3 + 1], positions[p1Index * 3 + 2]);
