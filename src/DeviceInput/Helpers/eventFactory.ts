@@ -22,13 +22,13 @@ export class DeviceEventFactory {
     public static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IEvent {
         switch (deviceType) {
             case DeviceType.Keyboard:
-                return this._createKeyboardEvent(inputIndex, currentState, elementToAttachTo, deviceInputSystem);
+                return this._createKeyboardEvent(inputIndex, currentState, deviceInputSystem, elementToAttachTo);
             case DeviceType.Mouse:
                 if (inputIndex === PointerInput.MouseWheelX || inputIndex === PointerInput.MouseWheelY || inputIndex === PointerInput.MouseWheelZ) {
-                    return this._createWheelEvent(deviceType, deviceSlot, inputIndex, currentState, elementToAttachTo, deviceInputSystem);
+                    return this._createWheelEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
                 }
             case DeviceType.Touch:
-                return this._createPointerEvent(deviceType, deviceSlot, inputIndex, currentState, elementToAttachTo, deviceInputSystem);
+                return this._createPointerEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
             default:
                 throw `Unable to generate event for device ${DeviceType[deviceType]}`;
         }
@@ -46,7 +46,7 @@ export class DeviceEventFactory {
      * @returns IEvent object (Pointer)
      */
     private static _createPointerEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): any {
-        const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, elementToAttachTo, deviceInputSystem);
+        const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
 
         evt.pointerId = deviceType === DeviceType.Mouse ? 1 : deviceSlot;
 
@@ -78,7 +78,7 @@ export class DeviceEventFactory {
      * @returns IEvent object (Wheel)
      */
     private static _createWheelEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo: any): any {
-        const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, elementToAttachTo, deviceInputSystem);
+        const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
 
         evt.type = "wheel";
         evt.deltaMode = EventConstants.DOM_DELTA_PIXEL;
