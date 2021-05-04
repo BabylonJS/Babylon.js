@@ -2351,7 +2351,7 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public GetFontOffset(font: string): { ascent: number, height: number, descent: number } {
+    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
         // TODO
         var result = { ascent: 0, height: 0, descent: 0 };
         return result;
