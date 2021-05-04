@@ -1,3 +1,6 @@
+/**
+ * Class used to abstract a canvas
+ */
 export interface ICanvas
 {
     /**
@@ -26,6 +29,9 @@ export interface ICanvas
     toDataURL(mime: string): string;
 }
 
+/**
+ * Class used to abstract a canvas gradient
+ */
 export interface ICanvasGradient {
     /**
      * adds a new color stop, defined by an offset and a color, to a given canvas gradient.
@@ -35,6 +41,9 @@ export interface ICanvasGradient {
     addColorStop(offset: number, color: string): void;
 }
 
+/**
+ * Class used to abstract a text measurement
+ */
 export interface ITextMetrics {
     /**
      * Text width.
