@@ -125,7 +125,7 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * @hidden
      */
-    public _positionElements() {
+    public _positionElements(mesh?: Mesh) {
         const followButtonMesh = this._followButton.mesh;
         const closeButtonMesh = this._closeButton.mesh;
         const backPlate = this._backPlate;
@@ -154,9 +154,16 @@ export class HolographicSlate extends ContentDisplay3D {
             contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.backplateDimensions.y + this.backPlateMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
         }
 
+        const refMesh = mesh || this.mesh;
+
         // Update pivot point so it is at the center of geometry
-        if (this.mesh) {
-            this.mesh.setPivotPoint(this.origin.add(this.dimensions.scale(0.5)))
+        if (refMesh) {
+            const center = this.dimensions.scale(0.5);
+            // As origin is topleft corner in 2D, dimensions are calculated towards bottom right corner, thus y axis is downwards
+            center.y *= -1;
+            center.addInPlace(this.origin);
+            console.log(center);
+            refMesh.setPivotPoint(center);
         }
     }
 
@@ -178,7 +185,7 @@ export class HolographicSlate extends ContentDisplay3D {
         followButtonMesh.parent = node;
         closeButtonMesh.parent = node;
 
-        this._positionElements();
+        this._positionElements(node);
 
         this._followButton.imageUrl = "./textures/IconFollowMe.png";
         this._closeButton.imageUrl = "./textures/IconClose.png";
