@@ -13,6 +13,7 @@ import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Image } from "../../2D/controls/image";
+import { SlateGizmo } from "../gizmos/slateGizmo";
 
 /**
  * Class used to create a holographic slate
@@ -42,6 +43,7 @@ export class HolographicSlate extends ContentDisplay3D {
     private _contentMaterial: FluentMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
     private _imageUrl: string;
+    private _gizmo: SlateGizmo;
 
     protected _backPlate: Mesh;
     protected _contentPlate: Mesh;
@@ -85,6 +87,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._followButton = new TouchHolographicButton("followButton" + this.name);
         this._closeButton = new TouchHolographicButton("closeButton" + this.name);
+
+        this._gizmo = new SlateGizmo(this._host.utilityLayer!);
     }
 
     /**
@@ -233,5 +237,7 @@ export class HolographicSlate extends ContentDisplay3D {
             this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
             this._pickedPointObserver = null;
         }
+
+        this._gizmo.dispose();
     }
 }

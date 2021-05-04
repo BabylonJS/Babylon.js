@@ -67,7 +67,7 @@ export class SlateGizmo extends Gizmo {
         return this._attachedSlate;
     }
 
-    constructor(utilityLayer: UtilityLayerRenderer) {
+    constructor(utilityLayer?: UtilityLayerRenderer) {
         super(utilityLayer);
 
         this._createNode();
