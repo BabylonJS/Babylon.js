@@ -8,15 +8,13 @@ import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
+import {  Vector3 } from "babylonjs/Maths/math.vector";
 import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Image } from "../../2D/controls/image";
 import { SlateGizmo } from "../gizmos/slateGizmo";
 import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
-import { PivotTools } from "babylonjs/Misc/pivotTools";
-// import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
 
 /**
  * Class used to create a holographic slate
@@ -168,7 +166,7 @@ export class HolographicSlate extends ContentDisplay3D {
         if (!this.mesh) {
             return;
         }
-        
+
         // Update pivot point so it is at the center of geometry
         const center = this.dimensions.scale(0.5);
         // As origin is topleft corner in 2D, dimensions are calculated towards bottom right corner, thus y axis is downwards
