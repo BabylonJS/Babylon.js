@@ -121,7 +121,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
 
         try {
+            // Set up the global object ("window" and "this" for user code).
+            // Delete (or rewrite) previous-run globals to avoid confusion.
             let globalObject = window as any;
+            delete globalObject.engine;
+            delete globalObject.scene;
+            delete globalObject.initFunction;
+
             let canvas = this._canvasRef.current!;
             globalObject.canvas = canvas;
 
@@ -210,10 +216,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
                 return;
             } else {
+                // Write an "initFunction" that creates engine and scene
+                // using the appropriate default or user-provided functions.
+                // (Use "window.x = foo" to allow later deletion, see above.)
                 code += `
-                var engine;
-                var scene;
-                initFunction = async function() {               
+                window.initFunction = async function() {               
                     var asyncEngineCreation = async function() {
                         try {
                         return ${createEngineFunction}();
@@ -223,18 +230,18 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                         }
                     }
 
-                    engine = await asyncEngineCreation();`;
+                    window.engine = await asyncEngineCreation();`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 if (this.props.globalState.language === "JS") {
-                    code += "\r\n" + "scene = " + createSceneFunction + "();";
+                    code += "\r\n" + "window.scene = " + createSceneFunction + "();";
                 } else {
                     var startCar = code.search("var " + createSceneFunction);
                     code = code.substr(0, startCar) + code.substr(startCar + 4);
-                    code += "\n" + "scene = " + createSceneFunction + "();";
+                    code += "\n" + "window.scene = " + createSceneFunction + "();";
                 }
 
-                code += `}`;
+                code += `}`;  // Finish "initFunction" definition.
 
                 // Execute the code
                 Utilities.FastEval(code);
@@ -331,7 +338,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
         } catch (err) {
-            this.props.globalState.onErrorObservable.notifyObservers(err);
+            this.props.globalState.onErrorObservable.notifyObservers({
+                message: err
+            });
         }
     }
 
