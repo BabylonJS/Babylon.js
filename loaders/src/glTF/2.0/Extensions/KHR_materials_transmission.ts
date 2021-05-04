@@ -232,14 +232,14 @@ class TransmissionHelper {
         this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
         this._opaqueRenderTarget.samples = this._options.samples;
 
-        let sceneImageProcessingapplyByPostProcess : boolean;
+        let sceneImageProcessingapplyByPostProcess: boolean;
 
-        this._opaqueRenderTarget.onBeforeBindObservable.add(() => {
+        this._opaqueRenderTarget.onBeforeBindObservable.add((opaqueRenderTarget) => {
             sceneImageProcessingapplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (!this._options.clearColor) {
-                this._scene.clearColor.toLinearSpaceToRef(this._opaqueRenderTarget!.clearColor);
+                this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor);
             } else {
-                this._opaqueRenderTarget!.clearColor = this._options.clearColor;
+                opaqueRenderTarget.clearColor.copyFrom(this._options.clearColor);
             }
             this._scene.imageProcessingConfiguration.applyByPostProcess = true;
         });
