@@ -246,7 +246,6 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _updateCornersPosition() {
-        const boundingMinMax = this._boundingBoxGizmo;
         const min = this._boundingBoxGizmo.min.clone();
         const max = this._boundingBoxGizmo.max.clone();
 
