@@ -1,5 +1,5 @@
 import { Matrix } from "../Maths/math.vector";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Constants } from "../Engines/constants";

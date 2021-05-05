@@ -6,7 +6,7 @@ import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { Light } from "../Lights/light";
 import { Constants } from "../Engines/constants";
 import { PrePassConfiguration } from "../Materials/prePassConfiguration";

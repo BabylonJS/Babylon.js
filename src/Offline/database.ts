@@ -1,13 +1,15 @@
 import { Nullable } from "../types";
 import { Tools } from "../Misc/tools";
 import { Logger } from "../Misc/logger";
-import { TGATools } from '../Misc/tga';
+import { TGATools } from "../Misc/tga";
 import { Engine } from "../Engines/engine";
 import { IOfflineProvider } from "./IOfflineProvider";
-import { WebRequest } from '../Misc/webRequest';
+import { WebRequest } from "../Misc/webRequest";
 
 // Sets the default offline provider to Babylon.js
-Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) => { return new Database(urlToScene, callbackManifestChecked, disableManifestCheck); };
+Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) => {
+    return new Database(urlToScene, callbackManifestChecked, disableManifestCheck);
+};
 
 /**
  * Class used to enable access to IndexedDB
@@ -75,30 +77,28 @@ export class Database implements IOfflineProvider {
                 Tools.SetImmediate(() => {
                     this._callbackManifestChecked(true);
                 });
-            }
-            else {
+            } else {
                 this._checkManifestFile();
             }
         }
     }
 
     private static _ParseURL = (url: string) => {
-        var a = document.createElement('a');
+        var a = document.createElement("a");
         a.href = url;
         var urlWithoutHash = url.substring(0, url.lastIndexOf("#"));
         var fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length);
         var absLocation = url.substring(0, url.indexOf(fileName, 0));
         return absLocation;
-    }
+    };
 
     private static _ReturnFullUrlLocation = (url: string): string => {
         if (url.indexOf("http:/") === -1 && url.indexOf("https:/") === -1 && typeof window !== "undefined") {
-            return (Database._ParseURL(window.location.href) + url);
-        }
-        else {
+            return Database._ParseURL(window.location.href) + url;
+        } else {
             return url;
         }
-    }
+    };
 
     private _checkManifestFile() {
         var noManifestFile = () => {
@@ -108,13 +108,19 @@ export class Database implements IOfflineProvider {
         };
 
         var createManifestURL = (): string => {
-            if (typeof URL !== 'undefined') {
-                var url = new URL(this._currentSceneUrl);
-                url.pathname += '.manifest';
-                return url.toString();
+            try {
+                // make sure we have a valid URL.
+                if (typeof URL !== "undefined" && this._currentSceneUrl.indexOf("http") === 0) {
+                    // we don't have the base url, so the URL string must have a protocol
+                    var url = new URL(this._currentSceneUrl);
+                    url.pathname += ".manifest";
+                    return url.toString();
+                }
+            } catch (e) {
+                // defensive - if this fails for any reason, fall back to the older method
             }
 
-            return this._currentSceneUrl + ".manifest";
+            return `${this._currentSceneUrl}.manifest`;
         };
 
         var timeStampUsed = false;
@@ -129,46 +135,50 @@ export class Database implements IOfflineProvider {
         }
         xhr.open("GET", manifestURL);
 
-        xhr.addEventListener("load", () => {
-            if (xhr.status === 200 || Database._ValidateXHRData(xhr, 1)) {
-                try {
-                    var manifestFile = JSON.parse(xhr.response);
-                    this._enableSceneOffline = manifestFile.enableSceneOffline;
-                    this._enableTexturesOffline = manifestFile.enableTexturesOffline && Database.IsUASupportingBlobStorage;
-                    if (manifestFile.version && !isNaN(parseInt(manifestFile.version))) {
-                        this._manifestVersionFound = manifestFile.version;
+        xhr.addEventListener(
+            "load",
+            () => {
+                if (xhr.status === 200 || Database._ValidateXHRData(xhr, 1)) {
+                    try {
+                        var manifestFile = JSON.parse(xhr.response);
+                        this._enableSceneOffline = manifestFile.enableSceneOffline;
+                        this._enableTexturesOffline = manifestFile.enableTexturesOffline && Database.IsUASupportingBlobStorage;
+                        if (manifestFile.version && !isNaN(parseInt(manifestFile.version))) {
+                            this._manifestVersionFound = manifestFile.version;
+                        }
+                        if (this._callbackManifestChecked) {
+                            this._callbackManifestChecked(true);
+                        }
+                    } catch (ex) {
+                        noManifestFile();
                     }
-                    if (this._callbackManifestChecked) {
-                        this._callbackManifestChecked(true);
-                    }
-                }
-                catch (ex) {
+                } else {
                     noManifestFile();
                 }
-            }
-            else {
-                noManifestFile();
-            }
-        }, false);
+            },
+            false
+        );
 
-        xhr.addEventListener("error", () => {
-            if (timeStampUsed) {
-                timeStampUsed = false;
-                // Let's retry without the timeStamp
-                // It could fail when coupled with HTML5 Offline API
-                var retryManifestURL = createManifestURL();
-                xhr.open("GET", retryManifestURL);
-                xhr.send();
-            }
-            else {
-                noManifestFile();
-            }
-        }, false);
+        xhr.addEventListener(
+            "error",
+            () => {
+                if (timeStampUsed) {
+                    timeStampUsed = false;
+                    // Let's retry without the timeStamp
+                    // It could fail when coupled with HTML5 Offline API
+                    var retryManifestURL = createManifestURL();
+                    xhr.open("GET", retryManifestURL);
+                    xhr.send();
+                } else {
+                    noManifestFile();
+                }
+            },
+            false
+        );
 
         try {
             xhr.send();
-        }
-        catch (ex) {
+        } catch (ex) {
             Logger.Error("Error on XHR send request.");
             this._callbackManifestChecked(false);
         }
@@ -182,15 +192,18 @@ export class Database implements IOfflineProvider {
     public open(successCallback: () => void, errorCallback: () => void): void {
         let handleError = () => {
             this._isSupported = false;
-            if (errorCallback) { errorCallback(); }
+            if (errorCallback) {
+                errorCallback();
+            }
         };
 
         if (!this._idbFactory || !(this._enableSceneOffline || this._enableTexturesOffline)) {
             // Your browser doesn't support IndexedDB
             this._isSupported = false;
-            if (errorCallback) { errorCallback(); }
-        }
-        else {
+            if (errorCallback) {
+                errorCallback();
+            }
+        } else {
             // If the DB hasn't been opened or created yet
             if (!this._db) {
                 this._hasReachedQuota = false;
@@ -217,14 +230,13 @@ export class Database implements IOfflineProvider {
 
                 // Initialization of the DB. Creating Scenes & Textures stores
                 request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-                    this._db = (<any>(event.target)).result;
+                    this._db = (<any>event.target).result;
                     if (this._db) {
                         try {
                             this._db.createObjectStore("scenes", { keyPath: "sceneUrl" });
                             this._db.createObjectStore("versions", { keyPath: "sceneUrl" });
                             this._db.createObjectStore("textures", { keyPath: "textureUrl" });
-                        }
-                        catch (ex) {
+                        } catch (ex) {
                             Logger.Error("Error while creating object stores. Exception: " + ex.message);
                             handleError();
                         }
@@ -233,7 +245,9 @@ export class Database implements IOfflineProvider {
             }
             // DB has already been created and opened
             else {
-                if (successCallback) { successCallback(); }
+                if (successCallback) {
+                    successCallback();
+                }
             }
         }
     }
@@ -286,8 +300,7 @@ export class Database implements IOfflineProvider {
                         image.src = url;
                     };
                     image.src = blobTextureURL;
-                }
-                else {
+                } else {
                     notInDBCallback();
                 }
             };
@@ -295,14 +308,13 @@ export class Database implements IOfflineProvider {
             var getRequest: IDBRequest = transaction.objectStore("textures").get(url);
 
             getRequest.onsuccess = (event) => {
-                texture = (<any>(event.target)).result;
+                texture = (<any>event.target).result;
             };
             getRequest.onerror = () => {
                 Logger.Error("Error loading texture " + url + " from DB.");
                 image.src = url;
             };
-        }
-        else {
+        } else {
             Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
             image.src = url;
         }
@@ -318,9 +330,8 @@ export class Database implements IOfflineProvider {
                     var URL = window.URL || window.webkitURL;
                     try {
                         blobTextureURL = URL.createObjectURL(blob);
-                    }
-                    // Chrome is raising a type error if we're setting the oneTimeOnly parameter
-                    catch (ex) {
+                    } catch (ex) {
+                        // Chrome is raising a type error if we're setting the oneTimeOnly parameter
                         blobTextureURL = URL.createObjectURL(blob);
                     }
                 }
@@ -330,75 +341,78 @@ export class Database implements IOfflineProvider {
                 }
             };
 
-            if (Database.IsUASupportingBlobStorage) { // Create XHR
+            if (Database.IsUASupportingBlobStorage) {
+                // Create XHR
                 var xhr = new WebRequest(),
                     blob: Blob;
 
                 xhr.open("GET", url);
                 xhr.responseType = "blob";
 
-                xhr.addEventListener("load", () => {
-                    if (xhr.status === 200 && this._db) {
-                        // Blob as response
-                        blob = xhr.response;
+                xhr.addEventListener(
+                    "load",
+                    () => {
+                        if (xhr.status === 200 && this._db) {
+                            // Blob as response
+                            blob = xhr.response;
 
-                        var transaction = this._db.transaction(["textures"], "readwrite");
+                            var transaction = this._db.transaction(["textures"], "readwrite");
 
-                        // the transaction could abort because of a QuotaExceededError error
-                        transaction.onabort = (event) => {
-                            try {
-                                //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                let srcElement = <any>(event.srcElement || event.target);
-                                var error = srcElement.error;
-                                if (error && error.name === "QuotaExceededError") {
-                                    this._hasReachedQuota = true;
-                                }
-                            }
-                            catch (ex) { }
-                            generateBlobUrl();
-                        };
-
-                        transaction.oncomplete = () => {
-                            generateBlobUrl();
-                        };
-
-                        var newTexture = { textureUrl: url, data: blob };
-
-                        try {
-                            // Put the blob into the dabase
-                            var addRequest = transaction.objectStore("textures").put(newTexture);
-                            addRequest.onsuccess = () => {
-                            };
-                            addRequest.onerror = () => {
+                            // the transaction could abort because of a QuotaExceededError error
+                            transaction.onabort = (event) => {
+                                try {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    let srcElement = <any>(event.srcElement || event.target);
+                                    var error = srcElement.error;
+                                    if (error && error.name === "QuotaExceededError") {
+                                        this._hasReachedQuota = true;
+                                    }
+                                } catch (ex) {}
                                 generateBlobUrl();
                             };
-                        }
-                        catch (ex) {
-                            // "DataCloneError" generated by Chrome when you try to inject blob into IndexedDB
-                            if (ex.code === 25) {
-                                Database.IsUASupportingBlobStorage = false;
-                                this._enableTexturesOffline = false;
+
+                            transaction.oncomplete = () => {
+                                generateBlobUrl();
+                            };
+
+                            var newTexture = { textureUrl: url, data: blob };
+
+                            try {
+                                // Put the blob into the dabase
+                                var addRequest = transaction.objectStore("textures").put(newTexture);
+                                addRequest.onsuccess = () => {};
+                                addRequest.onerror = () => {
+                                    generateBlobUrl();
+                                };
+                            } catch (ex) {
+                                // "DataCloneError" generated by Chrome when you try to inject blob into IndexedDB
+                                if (ex.code === 25) {
+                                    Database.IsUASupportingBlobStorage = false;
+                                    this._enableTexturesOffline = false;
+                                }
+                                image.src = url;
                             }
+                        } else {
                             image.src = url;
                         }
-                    }
-                    else {
-                        image.src = url;
-                    }
-                }, false);
+                    },
+                    false
+                );
 
-                xhr.addEventListener("error", () => {
-                    Logger.Error("Error in XHR request in BABYLON.Database.");
-                    image.src = url;
-                }, false);
+                xhr.addEventListener(
+                    "error",
+                    () => {
+                        Logger.Error("Error in XHR request in BABYLON.Database.");
+                        image.src = url;
+                    },
+                    false
+                );
 
                 xhr.send();
-            }
-            else {
+            } else {
                 image.src = url;
             }
-        }
-        else {
+        } else {
             Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             image.src = url;
         }
@@ -424,8 +438,7 @@ export class Database implements IOfflineProvider {
                         if (this._manifestVersionFound !== version.data) {
                             this._mustUpdateRessources = true;
                             updateInDBCallback();
-                        }
-                        else {
+                        } else {
                             callback(version.data);
                         }
                     }
@@ -443,19 +456,17 @@ export class Database implements IOfflineProvider {
                 var getRequest = transaction.objectStore("versions").get(url);
 
                 getRequest.onsuccess = (event) => {
-                    version = (<any>(event.target)).result;
+                    version = (<any>event.target).result;
                 };
                 getRequest.onerror = () => {
                     Logger.Error("Error loading version for scene " + url + " from DB.");
                     callback(-1);
                 };
-            }
-            catch (ex) {
+            } catch (ex) {
                 Logger.Error("Error while accessing 'versions' object store (READ OP). Exception: " + ex.message);
                 callback(-1);
             }
-        }
-        else {
+        } else {
             Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             callback(-1);
         }
@@ -469,13 +480,13 @@ export class Database implements IOfflineProvider {
 
                 // the transaction could abort because of a QuotaExceededError error
                 transaction.onabort = (event) => {
-                    try {//backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                        var error = (<any>event.srcElement)['error'];
+                    try {
+                        //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                        var error = (<any>event.srcElement)["error"];
                         if (error && error.name === "QuotaExceededError") {
                             this._hasReachedQuota = true;
                         }
-                    }
-                    catch (ex) { }
+                    } catch (ex) {}
                     callback(-1);
                 };
 
@@ -487,18 +498,15 @@ export class Database implements IOfflineProvider {
 
                 // Put the scene into the database
                 var addRequest = transaction.objectStore("versions").put(newVersion);
-                addRequest.onsuccess = () => {
-                };
+                addRequest.onsuccess = () => {};
                 addRequest.onerror = () => {
                     Logger.Error("Error in DB add version request in BABYLON.Database.");
                 };
-            }
-            catch (ex) {
+            } catch (ex) {
                 Logger.Error("Error while accessing 'versions' object store (WRITE OP). Exception: " + ex.message);
                 callback(-1);
             }
-        }
-        else {
+        } else {
             callback(-1);
         }
     }
@@ -523,12 +531,10 @@ export class Database implements IOfflineProvider {
             if (version !== -1) {
                 if (!this._mustUpdateRessources) {
                     this._loadFileAsync(completeUrl, sceneLoaded, saveAndLoadFile);
-                }
-                else {
+                } else {
                     this._saveFileAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer, errorCallback);
                 }
-            }
-            else {
+            } else {
                 if (errorCallback) {
                     errorCallback();
                 }
@@ -541,8 +547,7 @@ export class Database implements IOfflineProvider {
             var targetStore: string;
             if (url.indexOf(".babylon") !== -1) {
                 targetStore = "scenes";
-            }
-            else {
+            } else {
                 targetStore = "textures";
             }
 
@@ -566,26 +571,30 @@ export class Database implements IOfflineProvider {
             var getRequest = transaction.objectStore(targetStore).get(url);
 
             getRequest.onsuccess = (event) => {
-                file = (<any>(event.target)).result;
+                file = (<any>event.target).result;
             };
             getRequest.onerror = () => {
                 Logger.Error("Error loading file " + url + " from DB.");
                 notInDBCallback();
             };
-        }
-        else {
+        } else {
             Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
             callback();
         }
     }
 
-    private _saveFileAsync(url: string, callback: (data?: any) => void, progressCallback?: (this: XMLHttpRequestEventTarget, ev: ProgressEvent) => any, useArrayBuffer?: boolean, errorCallback?: (data?: any) => void) {
+    private _saveFileAsync(
+        url: string,
+        callback: (data?: any) => void,
+        progressCallback?: (this: XMLHttpRequestEventTarget, ev: ProgressEvent) => any,
+        useArrayBuffer?: boolean,
+        errorCallback?: (data?: any) => void
+    ) {
         if (this._isSupported) {
             var targetStore: string;
             if (url.indexOf(".babylon") !== -1) {
                 targetStore = "scenes";
-            }
-            else {
+            } else {
                 targetStore = "textures";
             }
 
@@ -602,74 +611,75 @@ export class Database implements IOfflineProvider {
                 xhr.onprogress = progressCallback;
             }
 
-            xhr.addEventListener("load", () => {
-                if (xhr.status === 200 || (xhr.status < 400 && Database._ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6))) {
-                    // Blob as response
-                    fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
+            xhr.addEventListener(
+                "load",
+                () => {
+                    if (xhr.status === 200 || (xhr.status < 400 && Database._ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6))) {
+                        // Blob as response
+                        fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
 
-                    if (!this._hasReachedQuota && this._db) {
-                        // Open a transaction to the database
-                        var transaction = this._db.transaction([targetStore], "readwrite");
+                        if (!this._hasReachedQuota && this._db) {
+                            // Open a transaction to the database
+                            var transaction = this._db.transaction([targetStore], "readwrite");
 
-                        // the transaction could abort because of a QuotaExceededError error
-                        transaction.onabort = (event) => {
-                            try {
-                                //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                var error = (<any>event.srcElement)['error'];
-                                if (error && error.name === "QuotaExceededError") {
-                                    this._hasReachedQuota = true;
-                                }
+                            // the transaction could abort because of a QuotaExceededError error
+                            transaction.onabort = (event) => {
+                                try {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    var error = (<any>event.srcElement)["error"];
+                                    if (error && error.name === "QuotaExceededError") {
+                                        this._hasReachedQuota = true;
+                                    }
+                                } catch (ex) {}
+                                callback(fileData);
+                            };
+
+                            transaction.oncomplete = () => {
+                                callback(fileData);
+                            };
+
+                            var newFile;
+                            if (targetStore === "scenes") {
+                                newFile = { sceneUrl: url, data: fileData, version: this._manifestVersionFound };
+                            } else {
+                                newFile = { textureUrl: url, data: fileData };
                             }
-                            catch (ex) { }
-                            callback(fileData);
-                        };
 
-                        transaction.oncomplete = () => {
-                            callback(fileData);
-                        };
-
-                        var newFile;
-                        if (targetStore === "scenes") {
-                            newFile = { sceneUrl: url, data: fileData, version: this._manifestVersionFound };
-                        }
-                        else {
-                            newFile = { textureUrl: url, data: fileData };
-                        }
-
-                        try {
-                            // Put the scene into the database
-                            var addRequest = transaction.objectStore(targetStore).put(newFile);
-                            addRequest.onsuccess = () => {
-                            };
-                            addRequest.onerror = () => {
-                                Logger.Error("Error in DB add file request in BABYLON.Database.");
-                            };
-                        }
-                        catch (ex) {
+                            try {
+                                // Put the scene into the database
+                                var addRequest = transaction.objectStore(targetStore).put(newFile);
+                                addRequest.onsuccess = () => {};
+                                addRequest.onerror = () => {
+                                    Logger.Error("Error in DB add file request in BABYLON.Database.");
+                                };
+                            } catch (ex) {
+                                callback(fileData);
+                            }
+                        } else {
                             callback(fileData);
                         }
-                    }
-                    else {
-                        callback(fileData);
-                    }
-                }
-                else {
-                    if (xhr.status >= 400 && errorCallback) {
-                        errorCallback(xhr);
                     } else {
-                        callback();
+                        if (xhr.status >= 400 && errorCallback) {
+                            errorCallback(xhr);
+                        } else {
+                            callback();
+                        }
                     }
-                }
-            }, false);
+                },
+                false
+            );
 
-            xhr.addEventListener("error", () => {
-                Logger.Error("error on XHR request.");
-                callback();
-            }, false);
+            xhr.addEventListener(
+                "error",
+                () => {
+                    Logger.Error("error on XHR request.");
+                    callback();
+                },
+                false
+            );
 
             xhr.send();
-        }
-        else {
+        } else {
             Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             callback();
         }
@@ -714,7 +724,6 @@ export class Database implements IOfflineProvider {
                     return false;
                 }
             }
-
         } catch (e) {
             // Global protection
         }

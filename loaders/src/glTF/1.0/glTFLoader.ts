@@ -17,7 +17,7 @@ import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Node } from "babylonjs/node";
 import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { Geometry } from "babylonjs/Meshes/geometry";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
