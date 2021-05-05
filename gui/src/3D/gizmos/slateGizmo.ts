@@ -4,6 +4,7 @@ import { Matrix, Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vecto
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Observer } from "babylonjs/Misc/observable";
 import { PivotTools } from "babylonjs/Misc/pivotTools";
 import { Node } from "babylonjs/node";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
@@ -38,6 +39,19 @@ export class SlateGizmo extends Gizmo {
         min: new Vector3(),
         max: new Vector3(),
     };
+
+    private _dragStartObserver: Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
+    private _draggingObserver: Nullable<
+        Observer<{
+            delta: Vector3;
+            dragPlanePoint: Vector3;
+            dragPlaneNormal: Vector3;
+            dragDistance: number;
+            pointerId: number;
+        }>
+    >;
+    private _dragEndObserver: Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
+    private _dragBehavior: PointerDragBehavior;
 
     /**
      * Value we use to offset handles from mesh
@@ -209,19 +223,19 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _assignDragBehavior(node: Node, moveFn: (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => void, masks: HandleMasks) {
-        var _dragBehavior = new PointerDragBehavior({
+        var dragBehavior = new PointerDragBehavior({
             dragPlaneNormal: this._dragPlaneNormal,
         });
-        _dragBehavior.moveAttached = false;
-        _dragBehavior.updateDragPlane = false;
-        node.addBehavior(_dragBehavior);
+        dragBehavior.moveAttached = false;
+        dragBehavior.updateDragPlane = false;
+        node.addBehavior(dragBehavior);
 
         let dimensionsStart = new Vector3();
         let originStart = new Vector3();
         let dragOrigin = new Vector3();
         let toObjectFrame = new Matrix();
 
-        _dragBehavior.onDragStartObservable.add((event) => {
+        this._dragStartObserver = dragBehavior.onDragStartObservable.add((event) => {
             if (this.attachedSlate && this.attachedMesh) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
                 originStart.copyFrom(this.attachedSlate.origin);
@@ -232,7 +246,7 @@ export class SlateGizmo extends Gizmo {
             }
         });
 
-        _dragBehavior.onDragObservable.add((event) => {
+        this._draggingObserver = dragBehavior.onDragObservable.add((event) => {
             if (this.attachedSlate && this.attachedMesh) {
                 this._tmpVector.copyFrom(event.dragPlanePoint);
                 this._tmpVector.subtractInPlace(dragOrigin);
@@ -244,12 +258,14 @@ export class SlateGizmo extends Gizmo {
             }
         });
 
-        _dragBehavior.onDragEndObservable.add(() => {
+        this._dragEndObserver = dragBehavior.onDragEndObservable.add(() => {
             if (this.attachedSlate && this.attachedNode) {
                 this.attachedSlate._updatePivot();
                 this.attachedSlate._followBehavior._enabled = true;
             }
         });
+
+        this._dragBehavior = dragBehavior;
     }
 
     private _createAngleMesh(): TransformNode {
@@ -366,5 +382,24 @@ export class SlateGizmo extends Gizmo {
             }
             this._updateHandlesPosition();
         }
+    }
+
+    public dispose() {
+        // Will dispose rootMesh and all descendants
+        super.dispose();
+
+        if (this._dragStartObserver) {
+            this._dragBehavior.onDragStartObservable.remove(this._dragStartObserver);
+        }
+
+        if (this._draggingObserver) {
+            this._dragBehavior.onDragObservable.remove(this._draggingObserver);
+        }
+
+        if (this._dragEndObserver) {
+            this._dragBehavior.onDragEndObservable.remove(this._dragEndObserver);
+        }
+
+        this._dragBehavior.detach();
     }
 }
