@@ -5788,8 +5788,8 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return STLExport; });
-/* harmony import */ var babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Meshes/buffer */ "babylonjs/Maths/math.vector");
-/* harmony import */ var babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Buffers/buffer */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0__);
 
 
 /**
@@ -5818,13 +5818,13 @@ var STLExport = /** @class */ (function () {
         var getFaceData = function (indices, vertices, i) {
             var id = [indices[i] * 3, indices[i + 1] * 3, indices[i + 2] * 3];
             var v = [
-                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[0]], vertices[id[0] + 2], vertices[id[0] + 1]),
-                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[1]], vertices[id[1] + 2], vertices[id[1] + 1]),
-                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[2]], vertices[id[2] + 2], vertices[id[2] + 1])
+                new babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[0]], vertices[id[0] + 2], vertices[id[0] + 1]),
+                new babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[1]], vertices[id[1] + 2], vertices[id[1] + 1]),
+                new babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[2]], vertices[id[2] + 2], vertices[id[2] + 1])
             ];
             var p1p2 = v[0].subtract(v[1]);
             var p3p2 = v[2].subtract(v[1]);
-            var n = (babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Cross(p3p2, p1p2)).normalize();
+            var n = (babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Cross(p3p2, p1p2)).normalize();
             return { v: v, n: n };
         };
         var writeVector = function (dataview, offset, vector, isLittleEndian) {
@@ -5860,7 +5860,7 @@ var STLExport = /** @class */ (function () {
             if (!doNotBakeTransform) {
                 mesh.bakeCurrentTransformIntoVertices();
             }
-            var vertices = mesh.getVerticesData(babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind) || [];
+            var vertices = mesh.getVerticesData(babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind) || [];
             var indices = mesh.getIndices() || [];
             for (var i_1 = 0; i_1 < indices.length; i_1 += 3) {
                 var fd = getFaceData(indices, vertices, i_1);

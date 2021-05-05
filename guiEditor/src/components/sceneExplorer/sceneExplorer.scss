@@ -204,7 +204,7 @@
         color: black;
         margin-top: 0px;
         margin-bottom: 0px;
-        height: 24px;   
+        height: 32px;   
         -webkit-user-select: none; 
         -moz-user-select: none;   
         -ms-user-select: none;    
@@ -368,7 +368,7 @@
         .controlTools {
             grid-column: 2;
             display: grid;
-            grid-template-columns: 1fr 20px 20px auto 5px;
+            grid-template-columns: 1fr 30px 30px auto 5px;
             align-items: center;
 
             .highlight {
@@ -383,6 +383,8 @@
                 width: 20px;
                 grid-column: 4;
             }
+
+
         }   
         
 
@@ -395,23 +397,17 @@
             margin-right: 5px;     
             display: grid;
             align-items: center;  
-            grid-template-columns: 25px 1fr; 
+            grid-template-columns: 1fr; 
             height: 24px;
             cursor: pointer;
 
-            .titleIcon {
-                grid-column: 1;
-                display: grid;
-                align-items: center; 
-                justify-items: center;
-            }
-
             .titleText {
-                grid-column: 2;
+                grid-column: 1;
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                overflow: hidden;                
-            }
+                overflow: hidden;          
+            }   
+ 
         }
     }
 }
