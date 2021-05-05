@@ -4,7 +4,7 @@ import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
 import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
 

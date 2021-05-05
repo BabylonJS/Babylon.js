@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { FloatArray, Nullable } from '../../types';
-import { DataBuffer } from '../../Meshes/dataBuffer';
+import { DataBuffer } from '../../Buffers/dataBuffer';
 import { WebGLDataBuffer } from '../../Meshes/WebGL/webGLDataBuffer';
 import { IPipelineContext } from '../IPipelineContext';
 import { WebGLPipelineContext } from '../WebGL/webGLPipelineContext';

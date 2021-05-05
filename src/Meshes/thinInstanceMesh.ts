@@ -1,6 +1,6 @@
 import { Nullable, DeepImmutableObject } from "../types";
 import { Mesh, _InstancesBatch } from "../Meshes/mesh";
-import { VertexBuffer, Buffer } from "./buffer";
+import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 
 declare module "./mesh" {
