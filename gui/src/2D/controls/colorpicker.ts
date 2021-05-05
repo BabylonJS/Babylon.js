@@ -208,6 +208,7 @@ export class ColorPicker extends Control {
     }
 
     private _createColorWheelCanvas(radius: number, thickness: number): ICanvas {
+        // Shoudl abstract platform instead of using LastCreatedEngine
         const engine = Engine.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");

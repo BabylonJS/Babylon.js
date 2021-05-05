@@ -516,6 +516,7 @@ export class TextBlock extends Control {
      */
     public computeExpectedHeight(): number {
         if (this.text && this.widthInPixels) {
+            // Shoudl abstract platform instead of using LastCreatedEngine
             const context = Engine.LastCreatedEngine?.createCanvas(0, 0).getContext("2d");
             if (context) {
                 this._applyStates(context);
