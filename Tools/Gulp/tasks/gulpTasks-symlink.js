@@ -26,7 +26,7 @@ var generateSharedUiComponents = function(settings, done) {
 /**
  * Dynamic build SymLinks.
  */
-function buildSymLinks(settings) {
+function buildSymLinks(name, settings) {
     // Creates the required tasks.
     var tasks = [];
 
@@ -34,7 +34,8 @@ function buildSymLinks(settings) {
 
     tasks.push(sharedUiComponents);
 
-    return gulp.series.apply(this, tasks);
+    tasks.map(t => t.displayName = name + "-symlinks:" + t.name);
+    return gulp.series(...tasks);
 }
 
 /**
@@ -42,7 +43,7 @@ function buildSymLinks(settings) {
  */
 config.modules.map(function(module) {
     const settings = config[module];
-    gulp.task(module + "-symlinks", buildSymLinks(settings));
+    gulp.task(module + "-symlinks", buildSymLinks(module, settings));
 });
 
 /**

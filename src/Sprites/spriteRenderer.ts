@@ -2,8 +2,8 @@ import { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
 import { IMatrixLike } from '../Maths/math.like';
 import { ThinEngine } from "../Engines/thinEngine";
-import { DataBuffer } from "../Meshes/dataBuffer";
-import { Buffer, VertexBuffer } from "../Meshes/buffer";
+import { DataBuffer } from "../Buffers/dataBuffer";
+import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { ThinSprite } from './thinSprite';
 import { ISize } from '../Maths/math.size';
@@ -224,10 +224,7 @@ export class SpriteRenderer {
         const culling = engine.depthCullingState.cull || true;
         const zOffset = engine.depthCullingState.zOffset;
 
-        // Handle Right Handed
-        if (useRightHandedSystem) {
-            this._scene!.getEngine().setState(culling, zOffset, false, false);
-        }
+        this._scene!.getEngine().setState(culling, zOffset, false, false);
 
         // Render
         engine.enableEffect(drawWrapper);

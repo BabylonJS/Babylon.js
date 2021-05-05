@@ -5,7 +5,7 @@ import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
 import { IndicesArray, Nullable, FloatArray } from '../../types';
-import { VertexBuffer } from '../../Meshes/buffer';
+import { VertexBuffer } from '../../Buffers/buffer';
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 /**

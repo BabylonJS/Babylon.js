@@ -3006,8 +3006,8 @@ var EXT_meshopt_compression = /** @class */ (function () {
         this.name = NAME;
         this.enabled = loader.isExtensionUsed(NAME);
         this._loader = loader;
-        if (this.enabled) {
-            this._decoderPromise = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].LoadScriptAsync(EXT_meshopt_compression.DecoderPath).then(function () {
+        if (this.enabled && !EXT_meshopt_compression._DecoderPromise) {
+            EXT_meshopt_compression._DecoderPromise = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].LoadScriptAsync(EXT_meshopt_compression.DecoderPath).then(function () {
                 // Wait for WebAssembly compilation before resolving promise
                 return MeshoptDecoder.ready;
             });
@@ -3016,7 +3016,6 @@ var EXT_meshopt_compression = /** @class */ (function () {
     /** @hidden */
     EXT_meshopt_compression.prototype.dispose = function () {
         this._loader = null;
-        delete this._decoderPromise;
     };
     /** @hidden */
     EXT_meshopt_compression.prototype.loadBufferViewAsync = function (context, bufferView) {
@@ -3028,7 +3027,7 @@ var EXT_meshopt_compression = /** @class */ (function () {
             }
             var buffer = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(context + "/buffer", _this._loader.gltf.buffers, extension.buffer);
             var bufferPromise = _this._loader.loadBufferAsync("/buffers/" + buffer.index, buffer, (extension.byteOffset || 0), extension.byteLength);
-            bufferViewMeshopt._meshOptData = Promise.all([bufferPromise, _this._decoderPromise]).then(function (res) {
+            bufferViewMeshopt._meshOptData = Promise.all([bufferPromise, EXT_meshopt_compression._DecoderPromise]).then(function (res) {
                 var source = res[0];
                 var count = extension.count;
                 var stride = extension.byteStride;
