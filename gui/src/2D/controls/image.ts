@@ -312,6 +312,7 @@ export class Image extends Control {
         const width = this._domImage.width;
         const height = this._domImage.height;
 
+        // Shoudl abstract platform instead of using LastCreatedEngine
         const engine = Engine.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
