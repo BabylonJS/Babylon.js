@@ -104,6 +104,8 @@ export interface IWebXRControllerPointerSelectionOptions {
      * The maximum distance of the pointer selection feature. Defaults to 100.
      */
     maxPointerDistance?: number;
+
+    disableNearInteraction?: boolean;
 }
 
 /**
@@ -117,9 +119,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // already attached
             return;
         }
-
+        const disableNearInteraction = this._options.disableNearInteraction as boolean;
         const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController.pointer);
-        const { hoverIndexMeshTip, pickIndexMeshTip} = this._generateNewHandTipMeshes();
+        const { hoverIndexMeshTip, pickIndexMeshTip} = this._generateNewHandTipMeshes(disableNearInteraction);
 
         // get two new meshes
         this._controllers[xrController.uniqueId] = {
@@ -276,9 +278,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
         if (this._options.gazeCamera) {
             const webXRCamera = this._options.gazeCamera;
+            const disableNearInteraction = this._options.disableNearInteraction as boolean;
 
             const { laserPointer, selectionMesh } = this._generateNewMeshPair(webXRCamera);
-            const { hoverIndexMeshTip, pickIndexMeshTip} = this._generateNewHandTipMeshes();
+            const { hoverIndexMeshTip, pickIndexMeshTip} = this._generateNewHandTipMeshes(disableNearInteraction);
 
             this._controllers["camera"] = {
                 webXRCamera,
@@ -883,7 +886,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         };
     }
 
-    private _generateNewHandTipMeshes() {
+    private _generateNewHandTipMeshes(disableNearInteraction: boolean) {
         // populate information for near hover, pick and pinch
 
         const hoverIndexMesh = SphereBuilder.CreateSphere("IndexHoverSphere", { diameter: 1});
@@ -897,6 +900,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             hoverIndexMeshTip,
             pickIndexMeshTip
         }; 
+
     }
 
     private _pickingMoved(oldPick: PickingInfo, newPick: PickingInfo) {
