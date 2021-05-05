@@ -105,6 +105,9 @@ export interface IWebXRControllerPointerSelectionOptions {
      */
     maxPointerDistance?: number;
 
+    /**
+     * Disable near interaction if not used to improve performance.
+     */
     disableNearInteraction?: boolean;
 }
 
@@ -137,7 +140,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             nearPick: false,
             nearHover: false,
             nearGrab: false,
-            indexTipQuaternion: new Quaternion(),
             id: WebXRControllerPointerSelection._idCounter++,
         };
 
@@ -186,7 +188,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             nearPick: boolean;
             nearHover: boolean;
             nearGrab: boolean;
-            indexTipQuaternion: Quaternion;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
         };
@@ -296,7 +297,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 nearPick: false,
                 nearHover: false,
                 nearGrab: false,
-                indexTipQuaternion: new Quaternion(),
                 id: WebXRControllerPointerSelection._idCounter++,
             };
             this._attachGazeMode();
@@ -357,6 +357,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _identityMatrix = Matrix.Identity();
     private _screenCoordinatesRef = Vector3.Zero();
     private _viewportRef = new Viewport(0, 0, 0, 0);
+    private readonly _hoverRadius = 0.1;
+    private readonly _pickRadius = 0.03;
+    private _indexTipQuaternion = new Quaternion();
+    private _indexTipOrientationVector = Vector3.Zero();
 
     protected _onXRFrame(_xrFrame: XRFrame) {
         Object.keys(this._controllers).forEach((id) => {
@@ -380,14 +384,14 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerGlobalPosition = controllerData.xrController.pointer.position;
                 controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
                 const hand = controllerData.xrController.inputSource.hand;
-                if (hand) {
+                if (hand && !this._options.disableNearInteraction) {
                     const xrIndexTip = hand.get("index-finger-tip");
                     if (xrIndexTip) {
                         let indexTipPose = _xrFrame.getJointPose!(xrIndexTip, this._xrSessionManager.referenceSpace);
                         if (indexTipPose && indexTipPose.transform) {
                             const indexTipPos = indexTipPose.transform.position;
                             const indexTipOrientation = indexTipPose.transform.orientation;
-                            controllerData.indexTipQuaternion.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z * zAxisRHSMultiplier), (indexTipOrientation.w * zAxisRHSMultiplier));
+                            this._indexTipQuaternion.set(indexTipOrientation.x, indexTipOrientation.y, (indexTipOrientation.z * zAxisRHSMultiplier), (indexTipOrientation.w * zAxisRHSMultiplier));
 
                             // set positions for near pick and hover
                             if(controllerData.pickIndexMesh) {
@@ -398,12 +402,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                             }
 
                             // set near interaction grab ray parameters
-                            let nearGrabRayLength = 0.5;
-                            //let webxrZaxisMultiplier = -1;
-                            let indexTipOrientationVector = Vector3.Zero();
+                            const nearGrabRayLength = 5 * this._hoverRadius;
                             controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, (indexTipPos.z * zAxisRHSMultiplier));
-                            controllerData.indexTipQuaternion.toEulerAnglesToRef(indexTipOrientationVector);
-                            controllerData.grabRay.direction.set(indexTipOrientationVector.x, indexTipOrientationVector.y, indexTipOrientationVector.z);
+                            this._indexTipQuaternion.toEulerAnglesToRef(this._indexTipOrientationVector);
+                            controllerData.grabRay.direction.set(this._indexTipOrientationVector.x, this._indexTipOrientationVector.y, this._indexTipOrientationVector.z);
                             controllerData.grabRay.length = nearGrabRayLength;
                         }   
                     }
@@ -484,7 +486,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             }
 
             // near interaction grab
-            if (controllerData.grabRay) {
+            if (!this._options.disableNearInteraction && controllerData.grabRay) {
                 let pinchInfo = this._scene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
                 if (pinchInfo && pinchInfo.pickedPoint && pinchInfo.hit) {  
                     controllerData.nearGrab = true;
@@ -900,7 +902,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             hoverIndexMeshTip,
             pickIndexMeshTip
         }; 
-
     }
 
     private _pickingMoved(oldPick: PickingInfo, newPick: PickingInfo) {
