@@ -86,7 +86,10 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
                 }
                 const sheenInfo: IKHRMaterialsSheen = {
                     sheenColorFactor: babylonMaterial.sheen.color.asArray(),
-                    sheenRoughnessFactor: babylonMaterial.sheen.roughness ?? 0
+                    sheenRoughnessFactor: babylonMaterial.sheen.roughness ?? 0,
+                    hasTextures: () => {
+                        return sheenInfo.sheenColorTexture !== null || sheenInfo.sheenRoughnessTexture !== null;
+                    }
                 };
 
                 if (babylonMaterial.sheen.texture) {
