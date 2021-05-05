@@ -25,7 +25,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this.setState({ _selecting: false});
         });
 
-        props.globalState.onSelectionObservable.add(() => {
+        props.globalState.onSelectionButtonObservable.add(() => {
             this.setState({ _selecting: true});
             this.setState({ _zooming: false});
             this.setState({ _panning: false});
@@ -60,7 +60,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         },
                     ]} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon="pointerIcon" shortcut="Q" isActive={this._selecting}
-                        onClick={() => { this.props.globalState.onSelectionObservable.notifyObservers(); }} />
+                        onClick={() => { this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon="handIcon" shortcut="W" isActive={this._panning}
                         onClick={() => { this.props.globalState.onPanObservable.notifyObservers(); }} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" icon="zoomIcon" shortcut="E" isActive={this._zooming}

@@ -49,7 +49,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _isLoading = false;
     public isOverGUINode = false;
     private _panning: boolean;
-
+    private _canvas : HTMLCanvasElement;
 
     public get globalState() {
         return this.props.globalState;
@@ -88,20 +88,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceSelecting = false;
             this._forceZooming = false;
             if (!this._forcePanning) {
-                this.globalState.onSelectionObservable.notifyObservers();
+                this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
-                const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
-                canvas.style.cursor = "move";
+                this._canvas.style.cursor = "move";
             }
         });
 
-        props.globalState.onSelectionObservable.add(() => {
+        props.globalState.onSelectionButtonObservable.add(() => {
             this._forceSelecting = true;
             this._forcePanning = false;
             this._forceZooming = false;
-            const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
-            canvas.style.cursor = "default"
+            this._canvas.style.cursor = "default"
         });
 
         props.globalState.onZoomObservable.add(() => {
@@ -110,11 +108,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forcePanning = false;
             this._forceSelecting = false;
             if (!this._forceZooming) {
-                this.globalState.onSelectionObservable.notifyObservers();
+                this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
-                const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
-                canvas.style.cursor = "zoom-in";
+                this._canvas.style.cursor = "zoom-in";
             }
         });
 
@@ -265,6 +262,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._rootContainer = React.createRef();
     }
 
+    componentWillUnmount() {
+        //this._scene.onPointerObservable.removeCallback(zoomFnMouse);
+    }
+
     onMove(evt: React.PointerEvent) {
         var pos = this.getGroundPosition();
         // Move or guiNodes
@@ -330,7 +331,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         // Associate a Babylon Engine to it.
         const engine = new Engine(canvas);
-
+        this._canvas = canvas;
         // Create our first scene.
         this._scene = new Scene(engine);
         const clearColor = 204 / 255.0;
@@ -439,7 +440,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             switch (k.event.key) {
                 case "q": //select?
                     if (!this._forceSelecting)
-                        this.globalState.onSelectionObservable.notifyObservers();
+                        this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
                 case "w": //pan?
                     if (!this._forcePanning)
