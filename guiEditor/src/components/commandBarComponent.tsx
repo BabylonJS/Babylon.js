@@ -22,9 +22,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     public render() {
 
         return (
-            <div className={"commands "}>
+            <div className={"ge-commands"}>
                 <div className="commands-left">
-                    <img src={"../imgs/babylonLogo.svg"} color="white" className={"active"} />
+                    <img src={"./imgs/babylonLogo.svg"} color="white" className={"active"} />
                     <CommandDropdownComponent globalState={this.props.globalState} icon="hamburgerIcon" tooltip="Options" items={[
                         {
                             label: "Save",

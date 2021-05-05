@@ -1,5 +1,5 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { DataBuffer } from '../../Meshes/dataBuffer';
+import { DataBuffer } from '../../Buffers/dataBuffer';
 import { IndicesArray, DataArray } from "../../types";
 
 declare module "../../Engines/thinEngine" {
