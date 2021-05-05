@@ -69,9 +69,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
 
                 this._wasUsed = true;
 
-                if (node.extensions == null) {
-                    node.extensions = {};
-                }
+                node.extensions = node.extensions || {};
 
                 let clearCoatTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.texture);
                 let clearCoatTextureRoughnessInfo;
