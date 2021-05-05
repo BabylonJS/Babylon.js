@@ -34,37 +34,7 @@ interface HTMLCanvasElement {
     captureStream(fps?: number): MediaStream;
 }
 
-interface ICanvasGradient {
-    addColorStop(offset: number, color: string): void;
-}
-
-interface ITextMetrics {
-    readonly width: number;
-}
-
-interface ICanvasRenderingContext {
-    msImageSmoothingEnabled: boolean;
-
-    beginPath() : void;
-    stroke(): void;
-    closePath(): void;
-    drawImage(image: any, dx: number, dy: number): void;
-    drawImage(image: any, dx: number, dy: number, dWidth: number, dHeight: number): void;
-    drawImage(image: any, sx: number, sy: number, sWidth: number, sHeight: number, dx: number, dy: number, dWidth: number, dHeight: number): void;
-    fillRect(x: number, y: number, width: number, height: number): void;
-    clearRect(x: number, y: number, width: number, height: number): void;
-    fill(): void;
-    arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise?: boolean): void;
-    getImageData(sx: number, sy: number, sw: number, sh: number): any; // check uses!!!
-    createLinearGradient(x0: number, y0: number, x1: number, y1: number): ICanvasGradient;
-    setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
-    fillText(text: string, x: number, y: number, maxWidth?: number): void;
-    measureText(text: string): ITextMetrics;
-    lineWidth: number;
-    strokeStyle: string;
-    fillStyle: string | ICanvasGradient;
-    font: string;
-    readonly canvas: ICanvas;
+interface CanvasRenderingContext2D {
     msImageSmoothingEnabled: boolean;
 }
 
