@@ -689,7 +689,8 @@
         {
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
-            "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
+            "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
+            "renderCount": 5
         },
         {
             "title": "GLTF Extension KHR_materials_specular",
