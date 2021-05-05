@@ -12,7 +12,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Material } from '../Materials/material';
 import { ShaderMaterial } from '../Materials/shaderMaterial';
 import { DynamicTexture } from '../Materials/Textures/dynamicTexture';
-import { VertexBuffer } from '../Meshes/buffer';
+import { VertexBuffer } from '../Buffers/buffer';
 import { Effect } from '../Materials/effect';
 
 import { ISkeletonViewerOptions, IBoneWeightShaderOptions, ISkeletonMapShaderOptions, ISkeletonMapShaderColorMapKnot } from './ISkeletonViewer';

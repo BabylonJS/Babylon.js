@@ -1,7 +1,7 @@
 import { Nullable, FloatArray } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
-import { VertexBuffer } from "../../Meshes/buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImpostor";

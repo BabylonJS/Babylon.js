@@ -3,7 +3,7 @@ import { Scene } from "../../scene";
 import { Vector3, Vector2, TmpVectors, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
-import { VertexBuffer } from "../buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 

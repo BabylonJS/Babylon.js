@@ -9,7 +9,7 @@ import { ISize } from "../Maths/math.size";
 import { Color4 } from '../Maths/math.color';
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -25,7 +25,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
 import { _DevTools } from '../Misc/devTools';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { EffectFallbacks } from '../Materials/effectFallbacks';
 import { DrawWrapper } from "../Materials/drawWrapper";
 

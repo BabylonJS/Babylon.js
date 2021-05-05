@@ -29847,6 +29847,11 @@ declare module BABYLON {
          * This option is used only if useAlternateEdgeFinder = true
          */
         epsilonVertexAligned?: number;
+        /**
+         * Gets or sets a boolean indicating that degenerated triangles should not be processed.
+         * Degenerated triangles are triangles that have 2 or 3 vertices with the same coordinates
+         */
+        removeDegeneratedTriangles?: boolean;
     }
     /**
      * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
@@ -45410,6 +45415,7 @@ declare module BABYLON {
         /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
         private _alreadyAttached;
         private _alreadyAttachedTo;
+        private _onInputObserver;
         private _onPointerMove;
         private _onPointerDown;
         private _onPointerUp;
