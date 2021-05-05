@@ -10,9 +10,9 @@ import { Quaternion, Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vec
 import { Color3, Color4 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { Node } from "../node";
-import { VertexBuffer } from "./buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData, IGetSetVerticesData } from "./mesh.vertexData";
-import { Buffer } from "./buffer";
+import { Buffer } from "../Buffers/buffer";
 import { Geometry } from "./geometry";
 import { AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";

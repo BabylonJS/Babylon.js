@@ -1,7 +1,7 @@
 import { SerializationHelper, serialize, expandToProperty, serializeAsVector2, serializeAsTexture } from "../../Misc/decorators";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { VertexBuffer } from "../../Meshes/buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 import { Vector2 } from "../../Maths/math.vector";
 import { Scene } from "../../scene";
 import { MaterialFlags } from "../../Materials/materialFlags";

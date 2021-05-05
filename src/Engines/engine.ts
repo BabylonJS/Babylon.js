@@ -15,7 +15,7 @@ import { Constants } from './constants';
 import { IViewportLike, IColor4Like } from '../Maths/math.like';
 import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
 import { PerformanceMonitor } from '../Misc/performanceMonitor';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { PerfCounter } from '../Misc/perfCounter';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { Logger } from '../Misc/logger';
