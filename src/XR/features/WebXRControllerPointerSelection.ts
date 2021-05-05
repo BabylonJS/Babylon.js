@@ -106,7 +106,7 @@ export interface IWebXRControllerPointerSelectionOptions {
     maxPointerDistance?: number;
 
     /**
-     * Disable near interaction if not used to improve performance.
+     * Disable near interaction if not used, to improve performance.
      */
     disableNearInteraction?: boolean;
 }
@@ -122,7 +122,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // already attached
             return;
         }
-        const disableNearInteraction = this._options.disableNearInteraction as boolean;
+        const disableNearInteraction = !!this._options.disableNearInteraction;
         const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController.pointer);
         const { hoverIndexMeshTip, pickIndexMeshTip} = this._generateNewHandTipMeshes(disableNearInteraction);
 
@@ -279,7 +279,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
         if (this._options.gazeCamera) {
             const webXRCamera = this._options.gazeCamera;
-            const disableNearInteraction = this._options.disableNearInteraction as boolean;
+            const disableNearInteraction = !!this._options.disableNearInteraction;
 
             const { laserPointer, selectionMesh } = this._generateNewMeshPair(webXRCamera);
             const { hoverIndexMeshTip, pickIndexMeshTip} = this._generateNewHandTipMeshes(disableNearInteraction);
