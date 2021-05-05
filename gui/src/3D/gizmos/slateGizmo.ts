@@ -11,6 +11,8 @@ import { Nullable } from "babylonjs/types";
 
 import { HolographicSlate } from "../controls/holographicSlate";
 
+// Mask contains the influence of the drag offset vectors on dimensions or origin of the slate
+// Mask vector is multiplied to the offset vector
 type HandleMasks = {
     dimensions: Vector3;
     origin: Vector3;
@@ -158,9 +160,6 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _clampDimensions(vector: Vector3, dimensions: Vector3, mask: Vector3, keepAspectRatio: boolean = false) {
-        // Mask contains the influence of the vector on dimensions
-        // Depending of the handle that is dragged, the vector will be added or subtracted from the
-        // slate dimensions
         const impact = vector.multiply(mask);
 
         const clampedDimensions = new Vector3(
@@ -183,7 +182,6 @@ export class SlateGizmo extends Gizmo {
         vector.y = Math.sign(vector.y) * Math.abs(factor.y);
     }
 
-    // Move functions
     private _moveCorner(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) {
         if (!this._attachedSlate) {
             return;
@@ -211,7 +209,6 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _assignDragBehavior(node: Node, moveFn: (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => void, masks: HandleMasks) {
-        // Drag behavior
         var _dragBehavior = new PointerDragBehavior({
             dragPlaneNormal: this._dragPlaneNormal,
         });
@@ -256,7 +253,7 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _createAngleMesh(): TransformNode {
-        // Draw 2 boxes making a bottom left corner
+        // Create 2 boxes making a bottom left corner
         const horizontalBox = BoxBuilder.CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
         const verticalBox = BoxBuilder.CreateBox("angleVert", { width: 1, height: 3, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
 
@@ -271,7 +268,7 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _createSideMesh(): TransformNode {
-        // Draw a simple vertical rectangle
+        // Create a simple vertical rectangle
         const verticalBox = BoxBuilder.CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
         const sideNode = new TransformNode("side", this.gizmoLayer.utilityLayerScene);
         verticalBox.parent = sideNode;
@@ -286,7 +283,7 @@ export class SlateGizmo extends Gizmo {
     }
 
     /**
-     * Updates the bounding box information for the Gizmo
+     * Updates the bounding box information for the gizmo
      */
     public updateBoundingBox() {
         if (this.attachedMesh) {
@@ -315,6 +312,7 @@ export class SlateGizmo extends Gizmo {
             this._boundingBoxGizmo.min = boundingMinMax.min;
             this._boundingBoxGizmo.max = boundingMinMax.max;
 
+            // Update handles of the gizmo
             this._updateHandlesPosition();
 
             // Restore position/rotation values
@@ -359,10 +357,12 @@ export class SlateGizmo extends Gizmo {
         }
 
         if (this._attachedSlate && this._attachedSlate.mesh) {
-            this._attachedSlate.mesh.absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
-            var distanceFromCamera = (this.handleSize * this._tmpVector.length()) / this.fixedScreenSizeDistanceFactor;
-            for (let i = 0; i < this._corners.length; i++) {
-                this._corners[i].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
+            if (this.fixedScreenSize) {
+                this._attachedSlate.mesh.absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
+                var distanceFromCamera = (this.handleSize * this._tmpVector.length()) / this.fixedScreenSizeDistanceFactor;
+                for (let i = 0; i < this._corners.length; i++) {
+                    this._corners[i].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
+                }
             }
             this._updateHandlesPosition();
         }
