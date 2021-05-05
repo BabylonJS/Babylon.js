@@ -518,7 +518,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                 }
                 if (!controllerData.nearGrab) {
-                    controllerData.selectionMesh.isVisible = true && this.displaySelectionMesh;   
+                    controllerData.selectionMesh.isVisible = this.displaySelectionMesh;   
                 }
                 controllerData.meshUnderPointer = pick.pickedMesh;
             } else {
