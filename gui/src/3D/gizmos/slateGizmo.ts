@@ -23,8 +23,9 @@ export class SlateGizmo extends Gizmo {
 
     // Ordered bl, br, tr, tl
     private _corners: TransformNode[] = [];
-    private _cornersParent: TransformNode;
-    // private _sides: TransformNode[] = [];
+    // Ordered left, bottom, right, top
+    private _sides: TransformNode[] = [];
+    private _handlesParent: TransformNode;
 
     private _boundingBoxGizmo = {
         min: new Vector3(),
@@ -72,29 +73,50 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _createNode() {
-        this._cornersParent = new TransformNode("cornersParent", this.gizmoLayer.utilityLayerScene);
-        this._cornersParent.rotationQuaternion = Quaternion.Identity();
+        this._handlesParent = new TransformNode("handlesParent", this.gizmoLayer.utilityLayerScene);
+        this._handlesParent.rotationQuaternion = Quaternion.Identity();
 
-        const moveFns = [
+        const moveFnsCorners = [
             (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveBLCorner(originStart, dimensionsStart, offset),
             (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveBRCorner(originStart, dimensionsStart, offset),
             (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveTRCorner(originStart, dimensionsStart, offset),
             (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveTLCorner(originStart, dimensionsStart, offset),
         ];
+        const moveFnsSides = [
+            (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveLeftSide(originStart, dimensionsStart, offset),
+            (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveBottomSide(originStart, dimensionsStart, offset),
+            (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveRightSide(originStart, dimensionsStart, offset),
+            (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => this._moveTopSide(originStart, dimensionsStart, offset),
+        ];
+
         for (let i = 0; i < 4; i++) {
             const node = this._createAngleMesh();
             this._corners.push(node);
             node.rotation.z = (Math.PI / 2) * i;
             node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
-            node.parent = this._cornersParent;
-            this._assignDragBehavior(node, moveFns[i]);
+            node.parent = this._handlesParent;
+            this._assignDragBehavior(node, moveFnsCorners[i]);
         }
 
-        this._corners[0].position.copyFromFloats(-1, -1, 0);
-        this._corners[1].position.copyFromFloats(1, -1, 0);
-        this._corners[2].position.copyFromFloats(1, 1, 0);
-        this._corners[3].position.copyFromFloats(-1, 1, 0);
-        this._cornersParent.parent = this._rootMesh;
+        for (let i = 0; i < 4; i++) {
+            const node = this._createSideMesh();
+            this._sides.push(node);
+            node.rotation.z = (Math.PI / 2) * i;
+            node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
+            node.parent = this._handlesParent;
+            this._assignDragBehavior(node, moveFnsSides[i]);
+        }
+
+        this._handlesParent.parent = this._rootMesh;
+    }
+
+    private _keepAspectRatio(vector: Vector3, aspectRatio: number, invertDiagonal: boolean = false) {
+        const axis = new Vector3(aspectRatio, 1, 0).normalize();
+        if (invertDiagonal) {
+            axis.y *= -1;
+        }
+        const dot = Vector3.Dot(vector, axis);
+        vector.copyFrom(axis).scaleInPlace(dot);
     }
 
     // Move functions
@@ -102,6 +124,9 @@ export class SlateGizmo extends Gizmo {
         if (!this._attachedSlate) {
             return;
         }
+
+        const aspectRatio = dimensionsStart.x / dimensionsStart.y;
+        this._keepAspectRatio(offset, aspectRatio, true);
 
         this._attachedSlate.origin.copyFrom(originStart).addInPlace(offset);
         offset.y *= -1;
@@ -114,6 +139,9 @@ export class SlateGizmo extends Gizmo {
             return;
         }
 
+        const aspectRatio = dimensionsStart.x / dimensionsStart.y;
+        this._keepAspectRatio(offset, aspectRatio);
+
         this._attachedSlate.origin.x = originStart.x + offset.x;
         this._attachedSlate.dimensions.copyFrom(dimensionsStart).subtractInPlace(offset);
         this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
@@ -123,6 +151,9 @@ export class SlateGizmo extends Gizmo {
         if (!this._attachedSlate) {
             return;
         }
+
+        const aspectRatio = dimensionsStart.x / dimensionsStart.y;
+        this._keepAspectRatio(offset, aspectRatio, true);
 
         offset.y *= -1;
         this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offset);
@@ -134,9 +165,48 @@ export class SlateGizmo extends Gizmo {
             return;
         }
 
+        const aspectRatio = dimensionsStart.x / dimensionsStart.y;
+        this._keepAspectRatio(offset, aspectRatio);
+
         this._attachedSlate.origin.y = originStart.y + offset.y;
         this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offset);
         this._attachedSlate.backplateDimensions.x = dimensionsStart.x + offset.x;
+    }
+
+    private _moveLeftSide(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) {
+        if (!this._attachedSlate) {
+            return;
+        }
+
+        this._attachedSlate.origin.x = originStart.x + offset.x;
+        this._attachedSlate.dimensions.x = dimensionsStart.x - offset.x;
+        this._attachedSlate.backplateDimensions.x = dimensionsStart.x - offset.x;
+    }
+
+    private _moveBottomSide(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) {
+        if (!this._attachedSlate) {
+            return;
+        }
+
+        this._attachedSlate.dimensions.y = dimensionsStart.y - offset.y;
+    }
+
+    private _moveRightSide(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) {
+        if (!this._attachedSlate) {
+            return;
+        }
+
+        this._attachedSlate.dimensions.x = dimensionsStart.x + offset.x;
+        this._attachedSlate.backplateDimensions.x = dimensionsStart.x + offset.x;
+    }
+
+    private _moveTopSide(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) {
+        if (!this._attachedSlate) {
+            return;
+        }
+
+        this._attachedSlate.dimensions.y = dimensionsStart.y + offset.y;
+        this._attachedSlate.origin.y = originStart.y + offset.y;
     }
 
     private _assignDragBehavior(node: Node, moveFn: (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3) => void) {
@@ -181,7 +251,7 @@ export class SlateGizmo extends Gizmo {
                 this.attachedSlate._updatePivot();
                 this.attachedSlate._followBehavior._enabled = true;
             }
-        })
+        });
     }
 
     private _createAngleMesh(): TransformNode {
@@ -197,6 +267,15 @@ export class SlateGizmo extends Gizmo {
         verticalBox.position.y = 1;
 
         return angleNode;
+    }
+
+    private _createSideMesh(): TransformNode {
+        // Draw a simple vertical rectangle
+        const verticalBox = BoxBuilder.CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
+        const sideNode = new TransformNode("side", this.gizmoLayer.utilityLayerScene);
+        verticalBox.parent = sideNode;
+
+        return sideNode;
     }
 
     protected _attachedNodeChanged(value: Nullable<AbstractMesh>) {
@@ -235,20 +314,20 @@ export class SlateGizmo extends Gizmo {
             this._boundingBoxGizmo.min = boundingMinMax.min;
             this._boundingBoxGizmo.max = boundingMinMax.max;
 
-            this._updateCornersPosition();
+            this._updateHandlesPosition();
 
             // Restore position/rotation values
             this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
             this.attachedMesh.position.copyFrom(this._tmpVector);
 
             PivotTools._RestorePivotPoint(this.attachedMesh);
-            
+
             // Restore original parent
             this.attachedMesh.setParent(originalParent);
         }
     }
 
-    private _updateCornersPosition() {
+    private _updateHandlesPosition() {
         const min = this._boundingBoxGizmo.min.clone();
         const max = this._boundingBoxGizmo.max.clone();
 
@@ -258,10 +337,17 @@ export class SlateGizmo extends Gizmo {
         max.x += this._margin * handleScaling;
         max.y += this._margin * handleScaling;
 
+        const center = min.add(max).scaleInPlace(0.5);
+
         this._corners[0].position.copyFromFloats(min.x, min.y, 0);
         this._corners[1].position.copyFromFloats(max.x, min.y, 0);
         this._corners[2].position.copyFromFloats(max.x, max.y, 0);
         this._corners[3].position.copyFromFloats(min.x, max.y, 0);
+
+        this._sides[0].position.copyFromFloats(min.x, center.y, 0);
+        this._sides[1].position.copyFromFloats(center.x, min.y, 0);
+        this._sides[2].position.copyFromFloats(max.x, center.y, 0);
+        this._sides[3].position.copyFromFloats(center.x, max.y, 0);
     }
 
     protected _update() {
@@ -277,7 +363,7 @@ export class SlateGizmo extends Gizmo {
             for (let i = 0; i < this._corners.length; i++) {
                 this._corners[i].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
             }
-            this._updateCornersPosition();
+            this._updateHandlesPosition();
         }
     }
 }
