@@ -26,6 +26,11 @@ export class HolographicSlate extends ContentDisplay3D {
     public dimensions = new Vector3(5, 3, 0.04);
 
     /**
+     * Minimum dimensions of the slate
+     */
+    public minDimensions = new Vector3(3, 1.5, 0.04);
+
+    /**
      * Dimensions of the backplate
      */
     public backplateDimensions = new Vector3(5, 0.3, 0.04);
@@ -176,7 +181,6 @@ export class HolographicSlate extends ContentDisplay3D {
 
         const origin = new Vector3(0, 0, 0);
         Vector3.TransformCoordinatesToRef(origin, this.mesh.computeWorldMatrix(true), origin);
-        console.log(origin);
         this.mesh.setPivotPoint(center);
         const origin2 = new Vector3(0, 0, 0);
         Vector3.TransformCoordinatesToRef(origin2, this.mesh.computeWorldMatrix(true), origin2);

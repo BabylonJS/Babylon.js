@@ -447,7 +447,6 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
             if (this._recenterNextUpdate) {
                 currentToTarget.copyFrom(forward).scaleInPlace(this.defaultDistance);
-                this._recenterNextUpdate = false;
             } else {
                 if (this.ignoreAngleClamp) {
                     const currentDistance = currentToTarget.length();
@@ -467,11 +466,12 @@ export class FollowBehavior implements Behavior<TransformNode> {
                 currentToTarget.y = position.y - camera.globalPosition.y + this.fixedVerticalOffset;
             }
 
-            if (angularClamped || distanceClamped || this._passedOrientationDeadzone(currentToTarget, nodeForward)) {
+            if (angularClamped || distanceClamped || this._passedOrientationDeadzone(currentToTarget, nodeForward) || this._recenterNextUpdate) {
                 this._orientationClamp(currentToTarget, rotationQuaternion);
             }
 
             this._workingPosition.subtractInPlace(pivot);
+            this._recenterNextUpdate = false;
 
             this.attachedNode.setParent(oldParent);
             this.attachedNode.computeWorldMatrix(true);
