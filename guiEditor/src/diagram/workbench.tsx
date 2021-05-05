@@ -84,9 +84,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         props.globalState.onPanObservable.add(() => {
-            this._forcePanning = !this._forcePanning;
-            this._forceSelecting = false;
-            this._forceZooming = false;
+            this.setState({_forcePanning: !this._forcePanning});
+            this.setState({_forceSelecting : false});
+            this.setState({_forceZooming : false});
             if (!this._forcePanning) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
             }
@@ -96,17 +96,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         props.globalState.onSelectionButtonObservable.add(() => {
-            this._forceSelecting = true;
-            this._forcePanning = false;
-            this._forceZooming = false;
+            this.setState({_forceSelecting: true});
+            this.setState({_forcePanning : false});
+            this.setState({_forceZooming : false});
             this._canvas.style.cursor = "default"
         });
 
         props.globalState.onZoomObservable.add(() => {
-
-            this._forceZooming = !this._forceZooming;
-            this._forcePanning = false;
-            this._forceSelecting = false;
+            this.setState({_forceZooming: !this._forceZooming});
+            this.setState({_forcePanning : false});
+            this.setState({_forceSelecting : false});
             if (!this._forceZooming) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
             }
