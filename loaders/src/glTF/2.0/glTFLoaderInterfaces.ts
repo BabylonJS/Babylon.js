@@ -3,7 +3,7 @@ import { Bone } from "babylonjs/Bones/bone";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { Material } from "babylonjs/Materials/material";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Buffer, VertexBuffer } from "babylonjs/Meshes/buffer";
+import { Buffer, VertexBuffer } from "babylonjs/Buffers/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 

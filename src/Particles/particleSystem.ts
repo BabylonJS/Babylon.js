@@ -3,8 +3,8 @@ import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from ".
 import { Observable, Observer } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
-import { VertexBuffer } from "../Meshes/buffer";
-import { Buffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
+import { Buffer } from "../Buffers/buffer";
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
@@ -23,7 +23,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { ISize } from '../Maths/math.size';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
