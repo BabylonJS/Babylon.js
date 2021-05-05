@@ -428,7 +428,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
             Vector3.TransformCoordinatesToRef(pivot, worldMatrix, currentToTarget);
             const position = this._tmpPosition;
             position.copyFromFloats(0, 0, 0);
-            Vector3.TransformCoordinatesToRef(new Vector3(0, 0, 0), worldMatrix, position);
+            Vector3.TransformCoordinatesToRef(position, worldMatrix, position);
             position.scaleInPlace(-1).subtractInPlace(pivot);
             currentToTarget.subtractInPlace(camera.globalPosition);
 
@@ -507,6 +507,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         const currentRotation = new Quaternion();
         currentRotation.copyFrom(this.attachedNode.rotationQuaternion);
         this._quaternionSmoothToRef(currentRotation, this._workingQuaternion, elapsed, this.lerpTime, this.attachedNode.rotationQuaternion);
+
         this.attachedNode.setParent(oldParent);
     }
 
