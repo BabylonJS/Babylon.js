@@ -222,6 +222,10 @@ export class HolographicSlate extends ContentDisplay3D {
             }
         });
 
+        this._closeButton.onPointerClickObservable.add(() => {
+            this.dispose();
+        })
+
         node.isVisible = false;
 
         return node;
