@@ -979,7 +979,7 @@ export class _GLTFMaterialExporter {
             let samplerIndex: Nullable<number> = null;
             const albedoTexture = babylonPBRMaterial._albedoTexture;
             const reflectivityTexture = babylonPBRMaterial._reflectivityTexture;
-            if (albedoTexture){
+            if (albedoTexture) {
                 const sampler = this._getGLTFTextureSampler(albedoTexture);
                 if (sampler.magFilter != null && sampler.minFilter != null && sampler.wrapS != null && sampler.wrapT != null) {
                     samplers.push(sampler);
