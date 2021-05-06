@@ -1,10 +1,10 @@
 import { IMaterial } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { Material } from 'babylonjs/Materials/material';
-import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
-import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-import { IKHRMaterialsSheen } from 'babylonjs-gltf2interface';
+import { Material } from "babylonjs/Materials/material";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { IKHRMaterialsSheen } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_sheen";
 
