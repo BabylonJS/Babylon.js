@@ -207,8 +207,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._positionElements();
 
-        this._followButton.imageUrl = "./textures/IconFollowMe.png";
-        this._closeButton.imageUrl = "./textures/IconClose.png";
+        this._followButton.imageUrl = "textures/IconFollowMe.png";
+        this._closeButton.imageUrl = "textures/IconClose.png";
 
         this._followButton.backMaterial.alpha = 0;
         this._closeButton.backMaterial.alpha = 0;
@@ -284,6 +284,7 @@ export class HolographicSlate extends ContentDisplay3D {
             this._pickedPointObserver = null;
         }
 
+        this._followBehavior.detach();
         this._gizmo.dispose();
     }
 }
