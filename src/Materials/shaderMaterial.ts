@@ -5,7 +5,7 @@ import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { SubMesh } from "../Meshes/subMesh";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
@@ -607,6 +607,17 @@ export class ShaderMaterial extends Material {
             if (numInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
             }
+            if (manager.isUsingTextureForTargets) {
+                defines.push("#define MORPHTARGETS_TEXTURE");
+
+                if (this._options.uniforms.indexOf("morphTargetTextureIndices") === -1) {
+                    this._options.uniforms.push("morphTargetTextureIndices");
+                }
+
+                if (this._options.samplers.indexOf("morphTargets") === -1) {
+                    this._options.samplers.push("morphTargets");
+                }
+            }
             defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
             for (var index = 0; index < numInfluencers; index++) {
                 attribs.push(VertexBuffer.PositionKind + index);
@@ -1031,6 +1042,9 @@ export class ShaderMaterial extends Material {
             }
         });
 
+        // Stencil
+        this.stencil.copyTo(result.stencil);
+
         // Texture
         for (var key in this._textures) {
             result.setTexture(key, this._textures[key]);
@@ -1128,6 +1142,9 @@ export class ShaderMaterial extends Material {
         serializationObject.shaderPath = this._shaderPath;
 
         var name: string;
+
+        // Stencil
+        serializationObject.stencil = this.stencil.serialize();
 
         // Texture
         serializationObject.textures = {};
@@ -1255,6 +1272,11 @@ export class ShaderMaterial extends Material {
         var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options), source, scene, rootUrl);
 
         var name: string;
+
+        // Stencil
+        if (source.stencil) {
+            material.stencil.parse(source.stencil, scene, rootUrl);
+        }
 
         // Texture
         for (name in source.textures) {

@@ -17,7 +17,7 @@ import { MaterialDefines } from '../../Materials/materialDefines';
 import { NodeMaterialOptimizer } from './Optimizers/nodeMaterialOptimizer';
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from '../imageProcessingConfiguration';
 import { Nullable } from '../../types';
-import { VertexBuffer } from '../../Meshes/buffer';
+import { VertexBuffer } from '../../Buffers/buffer';
 import { Tools } from '../../Misc/tools';
 import { TransformBlock } from './Blocks/transformBlock';
 import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';
@@ -265,6 +265,15 @@ export class NodeMaterial extends PushMaterial {
 
     public set mode(value: NodeMaterialModes) {
         this._mode = value;
+    }
+
+    /** Gets or sets the unique identifier used to identified the effect associated with the material */
+    public get buildId() {
+        return this._buildId;
+    }
+
+    public set buildId(value: number) {
+        this._buildId = value;
     }
 
     /**
@@ -615,8 +624,9 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
+     * @param updateBuildId defines if the internal build Id should be updated (default is true)
      */
-    public build(verbose: boolean = false) {
+    public build(verbose: boolean = false, updateBuildId = true) {
         this._buildWasSuccessful = false;
         var engine = this.getScene().getEngine();
 
@@ -688,7 +698,9 @@ export class NodeMaterial extends PushMaterial {
         this._vertexCompilationState.finalize(this._vertexCompilationState);
         this._fragmentCompilationState.finalize(this._fragmentCompilationState);
 
-        this._buildId = NodeMaterial._BuildIdGenerator++;
+        if (updateBuildId) {
+            this._buildId = NodeMaterial._BuildIdGenerator++;
+        }
 
         // Errors
         this._sharedData.emitErrors();
@@ -1264,7 +1276,7 @@ export class NodeMaterial extends PushMaterial {
 
         if (mustRebind) {
             let sharedData = this._sharedData;
-            if (effect && scene.getCachedEffect() !== effect) {
+            if (effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
                     block.bind(effect, this, mesh, subMesh);
@@ -1838,9 +1850,10 @@ export class NodeMaterial extends PushMaterial {
 
     /**
      * Makes a duplicate of the current material.
-     * @param name - name to use for the new material.
+     * @param name defines the name to use for the new material
+     * @param shareEffect defines if the clone material should share the same effect (default is false)
      */
-    public clone(name: string): NodeMaterial {
+    public clone(name: string, shareEffect: boolean = false): NodeMaterial {
         const serializationObject = this.serialize();
 
         const clone = SerializationHelper.Clone(() => new NodeMaterial(name, this.getScene(), this.options), this);
@@ -1848,7 +1861,8 @@ export class NodeMaterial extends PushMaterial {
         clone.name = name;
 
         clone.loadFromSerialization(serializationObject);
-        clone.build();
+        clone._buildId = this._buildId;
+        clone.build(false, !shareEffect);
 
         return clone;
     }

@@ -1,7 +1,7 @@
 import { Logger } from "../Misc/logger";
 import { Scene } from "../scene";
 import { Vector3, Vector2 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Engine } from "../Engines/engine";

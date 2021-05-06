@@ -11214,7 +11214,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #edit-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #111111; }\n    #sideBar #edit-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #edit-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #edit-animation-pane #edit-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      display: grid;\n      grid-template-columns: 50% 50%;\n      grid-template-rows: 100%; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-ok {\n        grid-row: 1;\n        grid-column: 1; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-cancel {\n        grid-row: 1;\n        grid-column: 2; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
+exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar.small {\n      grid-template-columns: 0px 0px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #edit-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #111111; }\n    #sideBar #edit-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #edit-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #edit-animation-pane #edit-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      display: grid;\n      grid-template-columns: 50% 50%;\n      grid-template-rows: 100%; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-ok {\n        grid-row: 1;\n        grid-column: 1; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-cancel {\n        grid-row: 1;\n        grid-column: 2; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11232,7 +11232,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n", ""]);
+exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n  #top-bar #break-tangent {\n    grid-row: 1;\n    grid-column: 11; }\n  #top-bar #unify-tangent {\n    grid-row: 1;\n    grid-column: 12; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -46243,6 +46243,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _curveEditor_context__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./curveEditor/context */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/context.ts");
+/* harmony import */ var _curveEditor_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./curveEditor/animationCurveEditorComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/animationCurveEditorComponent.tsx");
+
+
 
 
 
@@ -46337,6 +46341,13 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
         var _this = this;
         var animationGroup = this.props.animationGroup;
         var playButtonText = animationGroup.isPlaying ? "Pause" : "Play";
+        if (!this._animationCurveEditorContext) {
+            this._animationCurveEditorContext = new _curveEditor_context__WEBPACK_IMPORTED_MODULE_7__["Context"]();
+            this._animationCurveEditorContext.title = animationGroup.name || "";
+            this._animationCurveEditorContext.animations = animationGroup.targetedAnimations;
+            this._animationCurveEditorContext.scene = this.props.scene;
+            this._animationCurveEditorContext.useTargetAnimations = true;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: animationGroup.getClassName() }),
@@ -46347,6 +46358,7 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: animationGroup.from, maximum: animationGroup.to, step: (animationGroup.to - animationGroup.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "INFOS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Animation count", value: animationGroup.targetedAnimations.length.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveEditor_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_8__["AnimationCurveEditorComponent"], { globalState: this.props.globalState, context: this._animationCurveEditorContext }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "From", value: animationGroup.from.toFixed(2) }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "To", value: animationGroup.to.toFixed(2) }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: animationGroup.uniqueId.toString() }))));
@@ -46597,7 +46609,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                 this.props.context.prepare();
                 if (this.props.context.animations && this.props.context.animations.length) {
                     setTimeout(function () {
-                        _this.props.context.activeAnimation = _this.props.context.animations[0];
+                        _this.props.context.activeAnimation = _this.props.context.useTargetAnimations ? _this.props.context.animations[0].animation : _this.props.context.animations[0];
                         _this.props.context.onActiveAnimationChanged.notifyObservers();
                     });
                 }
@@ -46619,7 +46631,9 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     AnimationCurveEditorComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Edit", onClick: function () { return _this.setState({ isOpen: true }); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Edit", onClick: function () {
+                    _this.setState({ isOpen: true });
+                } }),
             this.state.isOpen &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "curve-editor", title: "Animation Curve Editor", size: { width: 1024, height: 512 }, onResize: function () { return _this.props.context.onHostWindowResized.notifyObservers(); }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); }, onKeyUp: function (evt) { return _this._onKeyUp(evt); } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "curve-editor" },
@@ -46844,6 +46858,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/breakTangentIcon.svg":
+/*!*****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/breakTangentIcon.svg ***!
+  \*****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M29.89,13.53a1.2,1.2,0,0,0-2,1.18l-6.23,6.23L21,20.26a1.41,1.41,0,0,0-2,0l-.67.68-6.23-6.23a1.21,1.21,0,1,0-.85.83l6.24,6.24-.58.58a1.4,1.4,0,0,0,0,2L19,26.42a1.4,1.4,0,0,0,2,0l2.09-2.09a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.2,1.2,0,0,0,1.15-2Zm-7.66,10-2.09,2.09a.19.19,0,0,1-.28,0l-2.09-2.09a.21.21,0,0,1,0-.28l2.09-2.09a.22.22,0,0,1,.28,0l2.09,2.09A.21.21,0,0,1,22.23,23.48Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/closeWindowIcon.svg":
 /*!****************************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/closeWindowIcon.svg ***!
@@ -46976,6 +47001,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/unifyTangentIcon.svg":
+/*!*****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/unifyTangentIcon.svg ***!
+  \*****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M29.89,10.2a1.2,1.2,0,0,0-2,1.18l-6.23,6.23L21,16.94a1.39,1.39,0,0,0-2,0L16.92,19a1.4,1.4,0,0,0,0,2l.57.56-6.23,6.23a1.18,1.18,0,0,0-1.15.3,1.2,1.2,0,0,0,0,1.71,1.2,1.2,0,0,0,2-1.18l6.22-6.22.68.69a1.4,1.4,0,0,0,2,0L23.08,21a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.18,1.18,0,0,0,1.15-.3A1.2,1.2,0,0,0,29.89,10.2Zm-7.66,10-2.09,2.09a.19.19,0,0,1-.28,0l-2.09-2.09a.2.2,0,0,1,0-.27l2.09-2.09a.19.19,0,0,1,.28,0l2.09,2.09A.2.2,0,0,1,22.23,20.15Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/bottomBar/bottomBarComponent.tsx":
 /*!**********************************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/bottomBar/bottomBarComponent.tsx ***!
@@ -47096,7 +47132,7 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
         var prevKey = -Number.MAX_VALUE;
         for (var _i = 0, _a = this.props.context.animations; _i < _a.length; _i++) {
             var animation = _a[_i];
-            var keys = animation.getKeys();
+            var keys = this.props.context.useTargetAnimations ? animation.animation.getKeys() : animation.getKeys();
             for (var _b = 0, keys_1 = keys; _b < keys_1.length; _b++) {
                 var key = keys_1[_b];
                 if (key.frame < this.props.context.activeFrame && key.frame > prevKey) {
@@ -47124,7 +47160,7 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
         var nextKey = Number.MAX_VALUE;
         for (var _i = 0, _a = this.props.context.animations; _i < _a.length; _i++) {
             var animation = _a[_i];
-            var keys = animation.getKeys();
+            var keys = this.props.context.useTargetAnimations ? animation.animation.getKeys() : animation.getKeys();
             for (var _b = 0, keys_2 = keys; _b < keys_2.length; _b++) {
                 var key = keys_2[_b];
                 if (key.frame > this.props.context.activeFrame && key.frame < nextKey) {
@@ -47271,7 +47307,7 @@ var RangeSelectorComponent = /** @class */ (function (_super) {
         var maxFrame = -Number.MAX_VALUE;
         for (var _i = 0, _a = this.props.context.animations; _i < _a.length; _i++) {
             var animation = _a[_i];
-            var keys = animation.getKeys();
+            var keys = this.props.context.useTargetAnimations ? animation.animation.getKeys() : animation.getKeys();
             minFrame = Math.min(minFrame, keys[0].frame);
             maxFrame = Math.max(maxFrame, keys[keys.length - 1].frame);
         }
@@ -47341,6 +47377,8 @@ var Context = /** @class */ (function () {
         this.onNewKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFlattenTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLinearTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onBreakTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onUnifyTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDeleteAnimation = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphScaled = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47358,12 +47396,13 @@ var Context = /** @class */ (function () {
         if (!this.animations || !this.animations.length) {
             return;
         }
-        var animation = this.animations[0];
+        var animation = this.useTargetAnimations ? this.animations[0].animation : this.animations[0];
         var keys = animation.getKeys();
         this.fromKey = keys[0].frame;
         this.toKey = keys[keys.length - 1].frame;
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = this.toKey;
+        this.snippetId = animation.snippetId;
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
         }
@@ -47396,7 +47435,8 @@ var Context = /** @class */ (function () {
             return;
         }
         for (var _i = 0, _a = this.animations; _i < _a.length; _i++) {
-            var animation = _a[_i];
+            var animationEntry = _a[_i];
+            var animation = this.useTargetAnimations ? animationEntry.animation : animationEntry;
             if (!animation.hasRunningRuntimeAnimations) {
                 return;
             }
@@ -47654,7 +47694,13 @@ var Curve = /** @class */ (function () {
         }
         return pathData;
     };
-    Curve.prototype.getInControlPoint = function (keyIndex, length) {
+    Curve.prototype.updateLockedTangentMode = function (keyIndex, enabled) {
+        var keys = this.keys;
+        keys[keyIndex].lockedTangent = enabled;
+        var animationKeys = this.animation.getKeys();
+        animationKeys[keyIndex].lockedTangent = enabled;
+    };
+    Curve.prototype.getInControlPoint = function (keyIndex) {
         if (keyIndex === 0) {
             return 0;
         }
@@ -47663,9 +47709,9 @@ var Curve = /** @class */ (function () {
         if (inTangent === undefined) {
             inTangent = this.evaluateInTangent(keyIndex);
         }
-        return length * inTangent;
+        return inTangent;
     };
-    Curve.prototype.getOutControlPoint = function (keyIndex, length) {
+    Curve.prototype.getOutControlPoint = function (keyIndex) {
         var keys = this.keys;
         if (keyIndex === keys.length - 1) {
             return 0;
@@ -47674,7 +47720,7 @@ var Curve = /** @class */ (function () {
         if (outTangent === undefined) {
             outTangent = this.evaluateOutTangent(keyIndex);
         }
-        return length * outTangent;
+        return outTangent;
     };
     Curve.prototype.evaluateOutTangent = function (keyIndex) {
         var keys = this.keys;
@@ -47755,59 +47801,8 @@ var Curve = /** @class */ (function () {
         this.onDataUpdatedObservable.notifyObservers();
     };
     Curve.prototype.updateKeyFrame = function (keyId, frame) {
-        var currentFrame = this.keys[keyId].frame;
         var originalKey = this.animation.getKeys()[keyId];
         originalKey.frame = frame;
-        if (keyId > 0) {
-            var oldWidth = currentFrame - this.keys[keyId - 1].frame;
-            var newWidth = frame - this.keys[keyId - 1].frame;
-            var previousOriginalKey = this.animation.getKeys()[keyId - 1];
-            if (this.keys[keyId].inTangent) {
-                var newInTangent = (this.keys[keyId].inTangent / oldWidth) * newWidth;
-                this.keys[keyId].inTangent = newInTangent;
-                if (this.property) {
-                    originalKey.inTangent[this.property] = newInTangent;
-                }
-                else {
-                    originalKey.inTangent = newInTangent;
-                }
-            }
-            if (this.keys[keyId - 1].outTangent) {
-                var newOutTangent = (this.keys[keyId - 1].outTangent / oldWidth) * newWidth;
-                this.keys[keyId - 1].outTangent = newOutTangent;
-                if (this.property) {
-                    previousOriginalKey.outTangent[this.property] = newOutTangent;
-                }
-                else {
-                    previousOriginalKey.outTangent = newOutTangent;
-                }
-            }
-        }
-        if (keyId < this.keys.length - 1) {
-            var oldWidth = this.keys[keyId + 1].frame - currentFrame;
-            var newWidth = this.keys[keyId + 1].frame - frame;
-            var nextOriginalKey = this.animation.getKeys()[keyId + 1];
-            if (this.keys[keyId].outTangent) {
-                var newOutTangent = (this.keys[keyId].outTangent / oldWidth) * newWidth;
-                this.keys[keyId].outTangent = newOutTangent;
-                if (this.property) {
-                    originalKey.outTangent[this.property] = newOutTangent;
-                }
-                else {
-                    originalKey.outTangent = newOutTangent;
-                }
-            }
-            if (this.keys[keyId + 1].inTangent) {
-                var newInTangent = (this.keys[keyId + 1].inTangent / oldWidth) * newWidth;
-                this.keys[keyId + 1].inTangent = newInTangent;
-                if (this.property) {
-                    nextOriginalKey.inTangent[this.property] = newInTangent;
-                }
-                else {
-                    nextOriginalKey.inTangent = newInTangent;
-                }
-            }
-        }
         this.keys[keyId].frame = frame;
         this.onDataUpdatedObservable.notifyObservers();
     };
@@ -48154,12 +48149,12 @@ var GraphComponent = /** @class */ (function (_super) {
                 }
                 if (derivative !== null) {
                     newKey.inTangent = derivative;
-                    newKey.outTangent = derivative;
+                    newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
                 }
             }
             keys.splice(indexToAdd + 1, 0, newKey);
             _this._currentAnimation.setKeys(keys);
-            _this._evaluateKeys(false);
+            _this._evaluateKeys(false, false);
             _this.props.context.activeKeyPoints = [];
             _this.props.context.onActiveKeyPointChanged.notifyObservers();
             _this.props.context.onActiveAnimationChanged.notifyObservers();
@@ -48193,9 +48188,10 @@ var GraphComponent = /** @class */ (function (_super) {
             curve.storeDefaultOutTangent(keyId);
         }
     };
-    GraphComponent.prototype._evaluateKeys = function (frame) {
+    GraphComponent.prototype._evaluateKeys = function (frame, range) {
         var _this = this;
         if (frame === void 0) { frame = true; }
+        if (range === void 0) { range = true; }
         if (!this.props.context.activeAnimation) {
             this._curves = [];
             return;
@@ -48235,10 +48231,12 @@ var GraphComponent = /** @class */ (function (_super) {
                 break;
         }
         var values = this._extractValuesFromKeys(keys, animation.dataType, true);
-        this._minValue = values.min;
-        this._maxValue = values.max;
-        this._minFrame = keys[0].frame;
-        this._maxFrame = keys[keys.length - 1].frame;
+        if (range) {
+            this._minValue = values.min;
+            this._maxValue = values.max;
+            this._minFrame = keys[0].frame;
+            this._maxFrame = keys[keys.length - 1].frame;
+        }
         if (frame) {
             this._frame();
         }
@@ -48249,6 +48247,10 @@ var GraphComponent = /** @class */ (function (_super) {
         var maxValue = -Number.MAX_VALUE;
         for (var _i = 0, keys_2 = keys; _i < keys_2.length; _i++) {
             var key = keys_2[_i];
+            var lockedTangent = true;
+            if (key.lockedTangent !== undefined) {
+                lockedTangent = key.lockedTangent;
+            }
             switch (dataType) {
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
                     minValue = Math.min(minValue, key.value);
@@ -48259,6 +48261,7 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value,
                             inTangent: key.inTangent,
                             outTangent: key.outTangent,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48277,12 +48280,14 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.x,
                             inTangent: (_a = key.inTangent) === null || _a === void 0 ? void 0 : _a.x,
                             outTangent: (_b = key.outTangent) === null || _b === void 0 ? void 0 : _b.x,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_c = key.inTangent) === null || _c === void 0 ? void 0 : _c.y,
                             outTangent: (_d = key.outTangent) === null || _d === void 0 ? void 0 : _d.y,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48305,18 +48310,21 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.x,
                             inTangent: (_e = key.inTangent) === null || _e === void 0 ? void 0 : _e.x,
                             outTangent: (_f = key.outTangent) === null || _f === void 0 ? void 0 : _f.x,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_g = key.inTangent) === null || _g === void 0 ? void 0 : _g.y,
                             outTangent: (_h = key.outTangent) === null || _h === void 0 ? void 0 : _h.y,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame,
                             value: key.value.z,
                             inTangent: (_j = key.inTangent) === null || _j === void 0 ? void 0 : _j.z,
                             outTangent: (_k = key.outTangent) === null || _k === void 0 ? void 0 : _k.z,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48339,18 +48347,21 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.r,
                             inTangent: (_l = key.inTangent) === null || _l === void 0 ? void 0 : _l.r,
                             outTangent: (_m = key.outTangent) === null || _m === void 0 ? void 0 : _m.r,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.g,
                             inTangent: (_o = key.inTangent) === null || _o === void 0 ? void 0 : _o.g,
                             outTangent: (_p = key.outTangent) === null || _p === void 0 ? void 0 : _p.g,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame,
                             value: key.value.b,
                             inTangent: (_q = key.inTangent) === null || _q === void 0 ? void 0 : _q.b,
                             outTangent: (_r = key.outTangent) === null || _r === void 0 ? void 0 : _r.b,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48377,24 +48388,28 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.x,
                             inTangent: (_s = key.inTangent) === null || _s === void 0 ? void 0 : _s.x,
                             outTangent: (_t = key.outTangent) === null || _t === void 0 ? void 0 : _t.x,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_u = key.inTangent) === null || _u === void 0 ? void 0 : _u.y,
                             outTangent: (_v = key.outTangent) === null || _v === void 0 ? void 0 : _v.y,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame,
                             value: key.value.z,
                             inTangent: (_w = key.inTangent) === null || _w === void 0 ? void 0 : _w.z,
                             outTangent: (_x = key.outTangent) === null || _x === void 0 ? void 0 : _x.z,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[3].keys.push({
                             frame: key.frame,
                             value: key.value.w,
                             inTangent: (_y = key.inTangent) === null || _y === void 0 ? void 0 : _y.w,
                             outTangent: (_z = key.outTangent) === null || _z === void 0 ? void 0 : _z.w,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48421,24 +48436,28 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.r,
                             inTangent: (_0 = key.inTangent) === null || _0 === void 0 ? void 0 : _0.r,
                             outTangent: (_1 = key.outTangent) === null || _1 === void 0 ? void 0 : _1.r,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[1].keys.push({
                             frame: key.frame,
                             value: key.value.g,
                             inTangent: (_2 = key.inTangent) === null || _2 === void 0 ? void 0 : _2.g,
                             outTangent: (_3 = key.outTangent) === null || _3 === void 0 ? void 0 : _3.g,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[2].keys.push({
                             frame: key.frame,
                             value: key.value.b,
                             inTangent: (_4 = key.inTangent) === null || _4 === void 0 ? void 0 : _4.b,
                             outTangent: (_5 = key.outTangent) === null || _5 === void 0 ? void 0 : _5.b,
+                            lockedTangent: lockedTangent
                         });
                         this._curves[3].keys.push({
                             frame: key.frame,
                             value: key.value.a,
                             inTangent: (_6 = key.inTangent) === null || _6 === void 0 ? void 0 : _6.a,
                             outTangent: (_7 = key.outTangent) === null || _7 === void 0 ? void 0 : _7.a,
+                            lockedTangent: lockedTangent
                         });
                     }
                     break;
@@ -48530,7 +48549,12 @@ var GraphComponent = /** @class */ (function (_super) {
         var propertyFilter = undefined;
         if (this.props.context.activeColor) {
             var activeCurve = this._curves.filter(function (c) { return c.color === _this.props.context.activeColor; })[0];
-            propertyFilter = activeCurve.property;
+            if (activeCurve) {
+                propertyFilter = activeCurve.property;
+            }
+            else {
+                this.props.context.activeColor = null;
+            }
         }
         var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false, propertyFilter);
         this._minValue = values.min;
@@ -48710,6 +48734,22 @@ var KeyPointComponent = /** @class */ (function (_super) {
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y, tangentSelectedIndex: -1 };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._keyPointSVG = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        _this._onUnifyTangentRequiredObserver = _this.props.context.onUnifyTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._unifyTangent();
+        });
+        _this._onBreakTangentRequiredObserver = _this.props.context.onBreakTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._breakTangent();
+        });
         _this._onFlattenTangentRequiredObserver = _this.props.context.onFlattenTangentRequired.add(function () {
             var _a;
             var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
@@ -48836,6 +48876,12 @@ var KeyPointComponent = /** @class */ (function (_super) {
         return _this;
     }
     KeyPointComponent.prototype.componentWillUnmount = function () {
+        if (this._onUnifyTangentRequiredObserver) {
+            this.props.context.onUnifyTangentRequired.remove(this._onUnifyTangentRequiredObserver);
+        }
+        if (this._onBreakTangentRequiredObserver) {
+            this.props.context.onBreakTangentRequired.remove(this._onBreakTangentRequiredObserver);
+        }
         if (this._onFlattenTangentRequiredObserver) {
             this.props.context.onFlattenTangentRequired.remove(this._onFlattenTangentRequiredObserver);
         }
@@ -48870,6 +48916,14 @@ var KeyPointComponent = /** @class */ (function (_super) {
             newState.y = newProps.y;
         }
         return true;
+    };
+    KeyPointComponent.prototype._breakTangent = function () {
+        this.props.curve.updateLockedTangentMode(this.props.keyId, false);
+        this.forceUpdate();
+    };
+    KeyPointComponent.prototype._unifyTangent = function () {
+        this.props.curve.updateLockedTangentMode(this.props.keyId, true);
+        this.forceUpdate();
     };
     KeyPointComponent.prototype._flattenTangent = function () {
         if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
@@ -48957,9 +49011,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
         }
         evt.stopPropagation();
     };
-    KeyPointComponent.prototype._processTangentMove = function (evt, vec, storedLength, isIn) {
-        vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-        vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+    KeyPointComponent.prototype._extractSlope = function (vec, storedLength, isIn) {
         if (isIn && vec.x >= 0) {
             vec.x = -0.01;
         }
@@ -48974,20 +49026,17 @@ var KeyPointComponent = /** @class */ (function (_super) {
         var frame = isIn ? keys[this.props.keyId].frame - this.props.invertX(currentPosition.x + this.state.x) : this.props.invertX(currentPosition.x + this.state.x) - keys[this.props.keyId].frame;
         return value / frame;
     };
+    KeyPointComponent.prototype._processTangentMove = function (evt, vec, storedLength, isIn) {
+        vec.x += (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
+        vec.y += (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+        return this._extractSlope(vec, storedLength, isIn);
+    };
     KeyPointComponent.prototype._onPointerMove = function (evt) {
         var _this = this;
         if (!this._pointerIsDown || this.state.selectedState !== SelectionState.Selected) {
             return;
         }
-        if (this._controlMode === ControlMode.TangentLeft) {
-            this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
-            this.forceUpdate();
-        }
-        else if (this._controlMode === ControlMode.TangentRight) {
-            this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
-            this.forceUpdate();
-        }
-        else if (this._controlMode === ControlMode.Key) {
+        if (this._controlMode === ControlMode.Key) {
             var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
             var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
             var previousX = this.props.getPreviousX();
@@ -49022,6 +49071,41 @@ var KeyPointComponent = /** @class */ (function (_super) {
                 });
             }
         }
+        else {
+            var keys = this.props.curve.keys;
+            var isLockedTangent = keys[this.props.keyId].lockedTangent && this.props.keyId !== 0 && this.props.keyId !== keys.length - 1
+                && keys[this.props.keyId].inTangent !== undefined && keys[this.props.keyId].outTangent !== undefined;
+            var angleDiff = 0;
+            var tmpVector = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[0];
+            if (isLockedTangent) {
+                var va = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[1];
+                var vb = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[2];
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].NormalizeToRef(this._inVec, va);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].NormalizeToRef(this._outVec, vb);
+                angleDiff = Math.acos(Math.min(1.0, Math.max(-1, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Dot(va, vb))));
+                this._inVec.rotateToRef(-angleDiff, tmpVector);
+                if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Distance(tmpVector, this._outVec) > 0.01) {
+                    angleDiff = -angleDiff;
+                }
+            }
+            if (this._controlMode === ControlMode.TangentLeft) {
+                this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._inVec, this._storedLengthIn, true));
+                if (isLockedTangent) {
+                    this._inVec.rotateToRef(-angleDiff, tmpVector);
+                    tmpVector.x = Math.abs(tmpVector.x);
+                    this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthOut, false));
+                }
+            }
+            else if (this._controlMode === ControlMode.TangentRight) {
+                this.props.curve.updateOutTangentFromControlPoint(this.props.keyId, this._processTangentMove(evt, this._outVec, this._storedLengthOut, false));
+                if (isLockedTangent) {
+                    this._outVec.rotateToRef(angleDiff, tmpVector);
+                    tmpVector.x = -Math.abs(tmpVector.x);
+                    this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthIn, true));
+                }
+            }
+            this.forceUpdate();
+        }
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
         evt.stopPropagation();
@@ -49034,23 +49118,20 @@ var KeyPointComponent = /** @class */ (function (_super) {
     };
     KeyPointComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
             return null;
         }
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         var keys = this.props.curve.keys;
-        var prevFrame = this.props.keyId > 0 ? keys[this.props.keyId - 1].frame : 0;
-        var currentFrame = keys[this.props.keyId].frame;
-        var nextFrame = this.props.keyId < keys.length - 1 ? keys[this.props.keyId + 1].frame : 0;
-        var inFrameLength = (currentFrame - prevFrame) / 3;
-        var outFrameLength = (nextFrame - currentFrame) / 3;
+        var isLockedTangent = (_a = keys[this.props.keyId].lockedTangent) !== null && _a !== void 0 ? _a : true;
         var convertedX = this.props.invertX(this.state.x);
         var convertedY = this.props.invertY(this.state.y);
-        var inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId, inFrameLength);
-        var outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId, outFrameLength);
+        var inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId);
+        var outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId);
         // We want to store the delta in the key local space
-        this._outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX + outFrameLength) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
-        this._inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX - inFrameLength) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        this._outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX + 1) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
+        this._inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX - 1) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
         this._storedLengthIn = this._inVec.length();
         this._storedLengthOut = this._outVec.length();
         this._inVec.normalize();
@@ -49064,24 +49145,22 @@ var KeyPointComponent = /** @class */ (function (_super) {
                     this.props.keyId !== 0 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._inVec.x + "px", y2: this._inVec.y + "px", style: {
-                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
-                                    stroke: "#F9BF00",
-                                    strokeWidth: "" + 1 * this.props.scale
+                                    stroke: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
+                                    strokeWidth: "" + 1 * this.props.scale,
+                                    strokeDasharray: isLockedTangent ? "" : "2, 2"
                                 } }),
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: this._inVec.x + "px", cy: this._inVec.y + "px", r: "" + 4 * this.props.scale, style: {
-                                    opacity: this.state.tangentSelectedIndex === 0 ? 1 : 0.6,
-                                    fill: "#F9BF00",
+                                    fill: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA"
                                 } })),
                     this.props.keyId !== keys.length - 1 &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._outVec.x + "px", y2: this._outVec.y + "px", style: {
-                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
-                                    stroke: "#F9BF00",
-                                    strokeWidth: "" + 1 * this.props.scale
+                                    stroke: this.state.tangentSelectedIndex === 1 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
+                                    strokeWidth: "" + 1 * this.props.scale,
+                                    strokeDasharray: isLockedTangent ? "" : "2, 2"
                                 } }),
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "right-tangent", cx: this._outVec.x + "px", cy: this._outVec.y + "px", r: "" + 4 * this.props.scale, style: {
-                                    opacity: this.state.tangentSelectedIndex === 1 ? 1 : 0.6,
-                                    fill: "#F9BF00",
+                                    fill: this.state.tangentSelectedIndex === 1 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA"
                                 } })))));
     };
     return KeyPointComponent;
@@ -49540,39 +49619,47 @@ var AddAnimationComponent = /** @class */ (function (_super) {
             document.defaultView.alert("Please define a property");
             return;
         }
-        var fps = this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond : 60;
+        var fps = this.props.context.animations && this.props.context.animations.length ?
+            (this.props.context.useTargetAnimations ? this.props.context.animations[0].animation.framePerSecond : this.props.context.animations[0].framePerSecond) : 60;
         var dataType = 0;
         var loopMode = 0;
-        var defaultValue;
+        var defaultValue0;
+        var defaultValue1;
         switch (type) {
             case "Float": {
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT;
-                defaultValue = 0;
+                defaultValue0 = 0;
+                defaultValue1 = 1;
                 break;
             }
             case "Vector2": {
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2;
-                defaultValue = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero();
+                defaultValue0 = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero();
+                defaultValue1 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](1, 1);
                 break;
             }
             case "Vector3": {
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3;
-                defaultValue = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+                defaultValue0 = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+                defaultValue1 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, 1, 1);
                 break;
             }
             case "Quaternion": {
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION;
-                defaultValue = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero();
+                defaultValue0 = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero();
+                defaultValue1 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"](1, 1, 1, 0);
                 break;
             }
             case "Color3": {
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3;
-                defaultValue = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black();
+                defaultValue0 = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black();
+                defaultValue1 = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].White();
                 break;
             }
             case "Color4": {
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4;
-                defaultValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](0, 0, 0, 0);
+                defaultValue0 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](0, 0, 0, 0);
+                defaultValue1 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](1, 1, 1, 1);
                 break;
             }
         }
@@ -49594,19 +49681,23 @@ var AddAnimationComponent = /** @class */ (function (_super) {
         var keys = [];
         keys.push({
             frame: context.referenceMinFrame,
-            value: defaultValue
+            value: defaultValue0
         });
         keys.push({
             frame: context.referenceMaxFrame,
-            value: defaultValue
+            value: defaultValue1
         });
         animation.setKeys(keys);
         context.stop();
         if (!context.animations || context.animations.length === 0) {
             context.animations = [];
-            context.target.animations = context.animations;
+            if (context.target) {
+                context.target.animations = context.animations;
+            }
         }
-        context.animations.push(animation);
+        if (!context.useTargetAnimations) {
+            context.animations.push(animation);
+        }
         context.activeAnimation = animation;
         context.prepare();
         context.onActiveAnimationChanged.notifyObservers();
@@ -49805,7 +49896,7 @@ var AnimationListComponent = /** @class */ (function (_super) {
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "animation-list" }, (_a = this.props.context.animations) === null || _a === void 0 ? void 0 : _a.map(function (a, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationEntryComponent__WEBPACK_IMPORTED_MODULE_2__["AnimationEntryComponent"], { key: i, globalState: _this.props.globalState, context: _this.props.context, animation: a }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationEntryComponent__WEBPACK_IMPORTED_MODULE_2__["AnimationEntryComponent"], { key: i, globalState: _this.props.globalState, context: _this.props.context, animation: _this.props.context.useTargetAnimations ? a.animation : a }));
         })));
     };
     return AnimationListComponent;
@@ -50050,13 +50141,14 @@ var LoadAnimationComponent = /** @class */ (function (_super) {
             var decoder = new TextDecoder("utf-8");
             var parsedAnimations = JSON.parse(decoder.decode(data)).animations;
             context.animations = [];
+            var animations = context.animations;
             for (var _i = 0, parsedAnimations_1 = parsedAnimations; _i < parsedAnimations_1.length; _i++) {
                 var parsedAnimation = parsedAnimations_1[_i];
-                context.animations.push(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Animation"].Parse(parsedAnimation));
+                animations.push(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Animation"].Parse(parsedAnimation));
             }
             context.stop();
-            context.target.animations = context.animations;
-            context.activeAnimation = context.animations.length ? context.animations[0] : null;
+            context.target.animations = animations;
+            context.activeAnimation = animations.length ? animations[0] : null;
             context.prepare();
             context.onAnimationsLoaded.notifyObservers();
             context.onActiveAnimationChanged.notifyObservers();
@@ -50130,13 +50222,20 @@ __webpack_require__.r(__webpack_exports__);
 var SaveAnimationComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SaveAnimationComponent, _super);
     function SaveAnimationComponent(props) {
-        var _a;
         var _this = _super.call(this, props) || this;
         _this._selectedAnimations = [];
         _this.state = {};
         _this._root = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         if (_this.props.context.animations) {
-            _this._selectedAnimations = (_a = _this.props.context.animations) === null || _a === void 0 ? void 0 : _a.slice(0);
+            if (_this.props.context.useTargetAnimations) {
+                for (var _i = 0, _a = _this.props.context.animations; _i < _a.length; _i++) {
+                    var targetedAnimation = _a[_i];
+                    _this._selectedAnimations.push(targetedAnimation.animation);
+                }
+            }
+            else {
+                _this._selectedAnimations = _this.props.context.animations.slice(0);
+            }
         }
         return _this;
     }
@@ -50165,9 +50264,6 @@ var SaveAnimationComponent = /** @class */ (function (_super) {
                         _this.props.context.snippetId += "#" + snippet.version;
                     }
                     _this.forceUpdate();
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(_this.props.context.snippetId);
-                    }
                     var windowAsAny = window;
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
@@ -50175,7 +50271,7 @@ var SaveAnimationComponent = /** @class */ (function (_super) {
                             replace: _this.props.context.snippetId
                         });
                     }
-                    hostDocument.defaultView.alert("Animations saved with ID: " + _this.props.context.snippetId + " (please note that the id was also saved to your clipboard)");
+                    hostDocument.defaultView.alert("Animations saved with ID: " + _this.props.context.snippetId);
                 }
                 else {
                     hostDocument.defaultView.alert("Unable to save your animations. It may be too large (" + (dataToSend.payload.length / 1024).toFixed(2) + " KB). Please try reducing the number of animations or the number of keys per animation and try again.");
@@ -50202,19 +50298,20 @@ var SaveAnimationComponent = /** @class */ (function (_super) {
         var _a;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-pane", ref: this._root },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-list" }, (_a = this.props.context.animations) === null || _a === void 0 ? void 0 : _a.map(function (a, i) {
+                var animation = _this.props.context.useTargetAnimations ? a.animation : a;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "save-animation-list-entry", key: i },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", value: a.name, defaultChecked: true, onClick: function (evt) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", value: animation.name, defaultChecked: true, onClick: function (evt) {
                             if (evt.currentTarget.checked) {
-                                _this._selectedAnimations.push(a);
+                                _this._selectedAnimations.push(animation);
                             }
                             else {
-                                var index = _this._selectedAnimations.indexOf(a);
+                                var index = _this._selectedAnimations.indexOf(animation);
                                 if (index > -1) {
                                     _this._selectedAnimations.splice(index, 1);
                                 }
                             }
                         } }),
-                    a.name));
+                    animation.name));
             })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "save-animation-buttons" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: "simple-button", id: "save-snippet", type: "button", onClick: function () {
@@ -50286,7 +50383,19 @@ var SideBarComponent = /** @class */ (function (_super) {
                 _this.props.context.activeAnimation = null;
                 _this.props.context.onActiveAnimationChanged.notifyObservers();
             }
-            var index = _this.props.context.animations.indexOf(animationToDelete);
+            var index = -1;
+            if (_this.props.context.useTargetAnimations) {
+                var targetedAnimations = _this.props.context.animations;
+                for (var i = 0; i < targetedAnimations.length; i++) {
+                    if (targetedAnimations[i].animation === animationToDelete) {
+                        index = i;
+                        break;
+                    }
+                }
+            }
+            else {
+                index = _this.props.context.animations.indexOf(animationToDelete);
+            }
             if (index > -1) {
                 _this.props.context.animations.splice(index, 1);
                 _this.props.context.play(_this.props.context.forwardAnimation);
@@ -50322,13 +50431,34 @@ var SideBarComponent = /** @class */ (function (_super) {
     };
     SideBarComponent.prototype.render = function () {
         var _this = this;
+        var fps = "60";
+        if (this.props.context.animations && this.props.context.animations.length) {
+            if (this.props.context.useTargetAnimations) {
+                fps = this.props.context.animations[0].animation.framePerSecond.toString();
+            }
+            else {
+                fps = this.props.context.animations[0].framePerSecond.toString();
+            }
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "sideBar" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "menu-bar" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Add new animation", isActive: this.state.mode === Mode.Add, id: "add-animation", globalState: this.props.globalState, context: this.props.context, icon: addIcon, onClick: function () { return _this._onAddAnimation(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Load animations", isActive: this.state.mode === Mode.Load, id: "load-animation", globalState: this.props.globalState, context: this.props.context, icon: loadIcon, onClick: function () { return _this._onLoadAnimation(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "menu-bar", className: (this.props.context.useTargetAnimations ? "small" : "") },
+                !this.props.context.useTargetAnimations &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Add new animation", isActive: this.state.mode === Mode.Add, id: "add-animation", globalState: this.props.globalState, context: this.props.context, icon: addIcon, onClick: function () { return _this._onAddAnimation(); } }),
+                !this.props.context.useTargetAnimations &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Load animations", isActive: this.state.mode === Mode.Load, id: "load-animation", globalState: this.props.globalState, context: this.props.context, icon: loadIcon, onClick: function () { return _this._onLoadAnimation(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "save current animations", isActive: this.state.mode === Mode.Save, id: "save-animation", globalState: this.props.globalState, context: this.props.context, icon: saveIcon, onClick: function () { return _this._onSaveAnimation(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Edit animations", isActive: this.state.mode === Mode.Edit, id: "edit-animation", globalState: this.props.globalState, context: this.props.context, icon: editIcon, onClick: function () { return _this._onEditAnimation(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputComponent"], { value: this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond.toString() : "60", complement: " fps", isNumber: true, onValueAsNumberChanged: function (value) { var _a; return (_a = _this.props.context.animations) === null || _a === void 0 ? void 0 : _a.forEach(function (anim) { return anim.framePerSecond = value; }); }, tooltip: "Framerate", id: "framerate-animation", globalState: this.props.globalState, context: this.props.context })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputComponent"], { value: fps, complement: " fps", isNumber: true, onValueAsNumberChanged: function (value) {
+                        var _a;
+                        (_a = _this.props.context.animations) === null || _a === void 0 ? void 0 : _a.forEach(function (anim) {
+                            if (_this.props.context.useTargetAnimations) {
+                                anim.animation.framePerSecond = value;
+                            }
+                            else {
+                                anim.framePerSecond = value;
+                            }
+                        });
+                    }, tooltip: "Framerate", id: "framerate-animation", globalState: this.props.globalState, context: this.props.context })),
             this.state.mode === Mode.Edit &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListComponent__WEBPACK_IMPORTED_MODULE_3__["AnimationListComponent"], { globalState: this.props.globalState, context: this.props.context }),
@@ -50372,6 +50502,8 @@ var frameIcon = __webpack_require__(/*! ./assets/frameIcon.svg */ "./components/
 var newKeyIcon = __webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/newKeyIcon.svg");
 var flatTangentIcon = __webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/flatTangentIcon.svg");
 var linearTangentIcon = __webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg");
+var breakTangentIcon = __webpack_require__(/*! ./assets/breakTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/breakTangentIcon.svg");
+var unifyTangentIcon = __webpack_require__(/*! ./assets/unifyTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/unifyTangentIcon.svg");
 var TopBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TopBarComponent, _super);
     function TopBarComponent(props) {
@@ -50421,7 +50553,9 @@ var TopBarComponent = /** @class */ (function (_super) {
             this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Break tangent", id: "break-tangent", globalState: this.props.globalState, context: this.props.context, icon: breakTangentIcon, onClick: function () { return _this.props.context.onBreakTangentRequired.notifyObservers(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Unify tangent", id: "unify-tangent", globalState: this.props.globalState, context: this.props.context, icon: unifyTangentIcon, onClick: function () { return _this.props.context.onUnifyTangentRequired.notifyObservers(); } }))));
     };
     return TopBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -50495,14 +50629,19 @@ var TargetedAnimationGridComponent = /** @class */ (function (_super) {
     TargetedAnimationGridComponent.prototype.render = function () {
         var _this = this;
         var targetedAnimation = this.props.targetedAnimation;
-        var animationCurveEditorContext = new _curveEditor_context__WEBPACK_IMPORTED_MODULE_7__["Context"]();
-        animationCurveEditorContext.title = this.props.targetedAnimation.target.name || "";
+        if (!this._animationCurveEditorContext) {
+            this._animationCurveEditorContext = new _curveEditor_context__WEBPACK_IMPORTED_MODULE_7__["Context"]();
+            this._animationCurveEditorContext.title = this.props.targetedAnimation.target.name || "";
+            this._animationCurveEditorContext.animations = [this.props.targetedAnimation.animation];
+            this._animationCurveEditorContext.target = this.props.targetedAnimation.target;
+            this._animationCurveEditorContext.scene = this.props.scene;
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL", selection: this.props.globalState },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: targetedAnimation.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: targetedAnimation.animation, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 targetedAnimation.target.name && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Target", value: targetedAnimation.target.name, onLink: function () { return _this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveEditor_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_6__["AnimationCurveEditorComponent"], { globalState: this.props.globalState, context: animationCurveEditorContext }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveEditor_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_6__["AnimationCurveEditorComponent"], { globalState: this.props.globalState, context: this._animationCurveEditorContext }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Dispose", onClick: this.deleteAnimation }))));
     };
     return TargetedAnimationGridComponent;
@@ -51565,6 +51704,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/hexLineComponent */ "./sharedUiComponents/lines/hexLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+
+
 
 
 
@@ -51621,6 +51764,26 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Greater or equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].GEQUAL },
             { label: "Not equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].NOTEQUAL },
         ];
+        var stencilFunctionOptions = [
+            { label: "Never", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].NEVER },
+            { label: "Always", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALWAYS },
+            { label: "Equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].EQUAL },
+            { label: "Less", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].LESS },
+            { label: "Less or equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].LEQUAL },
+            { label: "Greater", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].GREATER },
+            { label: "Greater or equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].GEQUAL },
+            { label: "Not equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].NOTEQUAL },
+        ];
+        var stencilOperationOptions = [
+            { label: "Keep", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].KEEP },
+            { label: "Zero", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ZERO },
+            { label: "Replace", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].REPLACE },
+            { label: "Incr", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].INCR },
+            { label: "Decr", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].DECR },
+            { label: "Invert", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].INVERT },
+            { label: "Incr wrap", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].INCR_WRAP },
+            { label: "Decr wrap", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].DECR_WRAP },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: material, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "GENERAL", selection: this.props.globalState },
@@ -51657,6 +51820,16 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 material.useAlphaFromAlbedoTexture !== undefined &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use alpha from albedo texture", target: material, propertyName: "useAlphaFromAlbedoTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Separate culling pass", target: material, propertyName: "separateCullingPass", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            material.stencil && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "STENCIL", selection: this.props.globalState },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Enabled", target: material.stencil, propertyName: "enabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_12__["HexLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Mask", target: material.stencil, propertyName: "mask", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Function", options: stencilFunctionOptions, target: material.stencil, propertyName: "func", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ stencilFunction: value }); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_13__["FloatLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Function reference", target: material.stencil, propertyName: "funcRef", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_12__["HexLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Function mask", target: material.stencil, propertyName: "funcMask", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Op stencil fail", options: stencilOperationOptions, target: material.stencil, propertyName: "opStencilFail", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ opStencilFail: value }); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Op depth fail", options: stencilOperationOptions, target: material.stencil, propertyName: "opDepthFail", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ opDepthFail: value }); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Op stencil+depth pass", options: stencilOperationOptions, target: material.stencil, propertyName: "opStencilDepthPass", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ opStencilDepthPass: value }); } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: material, scene: material.getScene(), lockObject: this.props.lockObject })));
     };
     return CommonMaterialPropertyGridComponent;
@@ -52060,7 +52233,9 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Index of Refraction", target: material, propertyName: "indexOfRefraction", minimum: 1, maximum: 3, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "F0 Factor", target: material, propertyName: "metallicF0Factor", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Reflectance Color", target: material, propertyName: "metallicReflectanceColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Reflectance Texture", texture: material.metallicReflectanceTexture, onTextureCreated: function (texture) { return material.metallicReflectanceTexture = texture; }, onTextureRemoved: function () { return material.metallicReflectanceTexture = null; }, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use only metallic from MetallicReflectance texture", target: material, propertyName: "useOnlyMetallicFromMetallicReflectanceTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "MetallicReflectance Texture", texture: material.metallicReflectanceTexture, onTextureCreated: function (texture) { return material.metallicReflectanceTexture = texture; }, onTextureRemoved: function () { return material.metallicReflectanceTexture = null; }, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Reflectance Texture", texture: material.reflectanceTexture, onTextureCreated: function (texture) { return material.reflectanceTexture = texture; }, onTextureRemoved: function () { return material.reflectanceTexture = null; }, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "CLEAR COAT", selection: this.props.globalState },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.clearCoat, propertyName: "isEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.clearCoat.isEnabled &&
@@ -52110,7 +52285,8 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Min Thickness", target: material.subSurface, propertyName: "minimumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Max Thickness", target: material.subSurface, propertyName: "maximumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Mask From Thickness", target: material.subSurface, propertyName: "useMaskFromThicknessTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Mask From Thickness (glTF-style)", target: material.subSurface, propertyName: "useMaskFromThicknessTextureGltf", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "glTF-Style Thickness Texture", target: material.subSurface, propertyName: "useGltfStyleThicknessTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use Thickness as Depth", target: material.subSurface, propertyName: "useThicknessAsDepth", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.subSurface, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Scattering Enabled", target: material.subSurface, propertyName: "isScatteringEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.subSurface.isScatteringEnabled && material.getScene().prePassRenderer && material.getScene().subSurfaceConfiguration &&

@@ -1083,6 +1083,7 @@ declare module BABYLON.GLTF2 {
         specularFactor: number;
         specularColorFactor: number[];
         specularTexture: ITextureInfo;
+        specularColorTexture: ITextureInfo;
     }
 
     /**

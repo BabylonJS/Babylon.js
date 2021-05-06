@@ -65,14 +65,19 @@
     "insertText" : "var camera = new BABYLON.ArcRotateCamera(\"${1:camera}\", BABYLON.Tools.ToRadians(${2:90}), BABYLON.Tools.ToRadians(${3:65}), ${4:10}, ${5:BABYLON.Vector3.Zero()}, scene);"
   },
   {
-  "label" : "Create an Arc Rotate Camera w/Radians",
-  "documentation" : "https://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera",
-  "insertText" : "var camera = new BABYLON.ArcRotateCamera(\"${1:camera}\", ${2:0}, ${3:Math.PI/2}, ${4:10}, ${5:BABYLON.Vector3.Zero()}, scene);"
+    "label" : "Create an Arc Rotate Camera w/Radians",
+    "documentation" : "https://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera",
+    "insertText" : "var camera = new BABYLON.ArcRotateCamera(\"${1:camera}\", ${2:0}, ${3:Math.PI/2}, ${4:10}, ${5:BABYLON.Vector3.Zero()}, scene);"
   },
   {
-  "label" : "Import a Mesh w/callback",
-  "documentation" : "https://doc.babylonjs.com/resources/external_pg_assets",
-  "insertText" : "BABYLON.SceneLoader.ImportMesh(\"${1:meshName}\", \"${2:url to the mesh parent directory}\", \"${3:Mesh filename.fileextension}\", scene, function(newMeshes){\n\n});"
+    "label": "Create a WebXR Camera",
+    "documentation": "https://doc.babylonjs.com/divingDeeper/webXR/introToWebXR",
+    "insertText": "scene.createDefaultXRExperienceAsync({}).then((defaultXRExperience) => {\n    ${1}\n});"
+  },
+  {
+    "label" : "Import a Mesh w/callback",
+    "documentation" : "https://doc.babylonjs.com/resources/external_pg_assets",
+    "insertText" : "BABYLON.SceneLoader.ImportMesh(\"${1:meshName}\", \"${2:url to the mesh parent directory}\", \"${3:Mesh filename.fileextension}\", scene, function(newMeshes){\n\n});"
   },
   {
     "label" : "Setup a shadow generator",

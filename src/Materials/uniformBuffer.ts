@@ -3,7 +3,7 @@ import { Nullable, FloatArray } from "../types";
 import { IMatrixLike, IVector3Like, IVector4Like, IColor3Like } from "../Maths/math.like";
 import { Effect } from "./effect";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { ThinEngine } from "../Engines/thinEngine";
 import { Tools } from "../Misc/tools";
 
@@ -41,9 +41,6 @@ export class UniformBuffer {
     private _currentEffectName: string;
     private _name: string;
     private _currentFrameId: number;
-
-    /** @hidden */
-    public _alreadyBound = false;
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -982,7 +979,6 @@ export class UniformBuffer {
             return;
         }
 
-        this._alreadyBound = true;
         effect.bindUniformBuffer(this._buffer, name);
     }
 

@@ -264,13 +264,13 @@ export class TouchHolographicButton extends TouchButton3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const collisionMesh = BoxBuilder.CreateBox(this.name ?? "TouchHolographicButton", {
+        const collisionMesh = BoxBuilder.CreateBox((this.name ?? "TouchHolographicButton") + "_CollisionMesh", {
             width: 1.0,
             height: 1.0,
             depth: 1.0,
         }, scene);
         collisionMesh.isPickable = true;
-        collisionMesh.isVisible = false;
+        collisionMesh.visibility = 0;
         collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
 
         SceneLoader.ImportMeshAsync(

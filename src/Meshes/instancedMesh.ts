@@ -10,7 +10,7 @@ import { Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from './transformNode';
 import { Light } from '../Lights/light';
-import { VertexBuffer } from './buffer';
+import { VertexBuffer } from '../Buffers/buffer';
 import { BoundingInfo } from '../Culling/boundingInfo';
 import { Tools } from '../Misc/tools';
 
@@ -40,6 +40,8 @@ export class InstancedMesh extends AbstractMesh {
     public _indexInSourceMeshInstanceArray = -1;
     /** @hidden */
     public _distanceToCamera: number = 0;
+    /** @hidden */
+    public _previousWorldMatrix: Nullable<Matrix>;
 
     constructor(name: string, source: Mesh) {
         super(name, source.getScene());

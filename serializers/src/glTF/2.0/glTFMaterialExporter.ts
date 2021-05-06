@@ -14,7 +14,7 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { PBRBaseMaterial } from "babylonjs/Materials/PBR/pbrBaseMaterial";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
-import { IMaterialExtension } from  'babylonjs-gltf2interface';
+import { IMaterialExtension } from  "babylonjs-gltf2interface";
 import { Scene } from "babylonjs/scene";
 
 import { _Exporter } from "./glTFExporter";

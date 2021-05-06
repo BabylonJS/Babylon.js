@@ -71,7 +71,7 @@ export class Footer extends React.Component<IFooterProps> {
         // Variants
         let hasVariants = false;
         let activeEntry = () => "";
-        let switchVariant = (name: string) => {};
+        let switchVariant = (name: string, index: number) => {};
         const variantExtension = this._getVariantsExtension();
         if (variantExtension && this.props.globalState.currentScene) {
             let scene = this.props.globalState.currentScene;
@@ -80,22 +80,29 @@ export class Footer extends React.Component<IFooterProps> {
             if (rootNode) {
                 let variants: string[] = variantExtension.getAvailableVariants(rootNode);
 
-                if (variants && variants.length > 1) {
+                if (variants && variants.length > 0) {
                     hasVariants = true;
+
+                    variants.splice(0, 0, "Original");
                     variantNames = variants;
-                    
-                    activeEntry = () => { 
+
+                    activeEntry = () => {
                         let lastPickedVariant = variantExtension!.getLastSelectedVariant(rootNode) || 0;
                         if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
                             return lastPickedVariant as string;
                         }
 
                         return variantNames[0];
-                    }
+                    };
 
-                    switchVariant = (name) => {
-                        variantExtension.selectVariant(rootNode, name);
-                    }
+                    switchVariant = (name, index) => {
+                        if (index === 0) {
+                            variantExtension.reset(rootNode);
+                        }
+                        else {
+                            variantExtension.selectVariant(rootNode, name);
+                        }
+                    };
                 }
             }
         }
@@ -139,7 +146,7 @@ export class Footer extends React.Component<IFooterProps> {
                                 label="Select variant"
                                 options={variantNames}
                                 activeEntry={() => activeEntry()}
-                                onOptionPicked={option => switchVariant(option)}
+                                onOptionPicked={(option, index) => switchVariant(option, index)}
                                 enabled={hasVariants}/>
                 </div>
             </div>

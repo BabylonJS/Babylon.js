@@ -1,8 +1,6 @@
 uniform mat4 view;
 uniform mat4 viewProjection;
 
-uniform mat4 world;
-
 #ifdef ALBEDO
 uniform mat4 albedoMatrix;
 uniform vec2 vAlbedoInfos;
@@ -34,8 +32,12 @@ uniform mat4 reflectivityMatrix;
 #endif
 
 #ifdef METALLIC_REFLECTANCE
-uniform vec2 vMetallicReflectanceInfos;
-uniform mat4 metallicReflectanceMatrix;
+    uniform vec2 vMetallicReflectanceInfos;
+    uniform mat4 metallicReflectanceMatrix;
+#endif
+#ifdef REFLECTANCE
+    uniform vec2 vReflectanceInfos;
+    uniform mat4 reflectanceMatrix;
 #endif
 
 #ifdef MICROSURFACEMAP

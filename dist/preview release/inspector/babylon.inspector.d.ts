@@ -632,6 +632,7 @@ declare module INSPECTOR {
         value: number;
         inTangent?: number;
         outTangent?: number;
+        lockedTangent: boolean;
     }
     export class Curve {
         static readonly SampleRate: number;
@@ -646,8 +647,9 @@ declare module INSPECTOR {
         static readonly TangentLength: number;
         constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any);
         gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
-        getInControlPoint(keyIndex: number, length: number): number;
-        getOutControlPoint(keyIndex: number, length: number): number;
+        updateLockedTangentMode(keyIndex: number, enabled: boolean): void;
+        getInControlPoint(keyIndex: number): number;
+        getOutControlPoint(keyIndex: number): number;
         evaluateOutTangent(keyIndex: number): number;
         evaluateInTangent(keyIndex: number): number;
         storeDefaultInTangent(keyIndex: number): void;
@@ -698,6 +700,8 @@ declare module INSPECTOR {
         private _onSelectionRectangleMovedObserver;
         private _onFlattenTangentRequiredObserver;
         private _onLinearTangentRequiredObserver;
+        private _onBreakTangentRequiredObserver;
+        private _onUnifyTangentRequiredObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -713,10 +717,13 @@ declare module INSPECTOR {
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
+        private _breakTangent;
+        private _unifyTangent;
         private _flattenTangent;
         private _linearTangent;
         private _select;
         private _onPointerDown;
+        private _extractSlope;
         private _processTangentMove;
         private _onPointerMove;
         private _onPointerUp;
@@ -726,14 +733,15 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     export class Context {
         title: string;
-        animations: BABYLON.Nullable<BABYLON.Animation[]>;
+        animations: BABYLON.Nullable<BABYLON.Animation[] | BABYLON.TargetedAnimation[]>;
         scene: BABYLON.Scene;
-        target: BABYLON.IAnimatable;
+        target: BABYLON.Nullable<BABYLON.IAnimatable>;
         activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
         activeColor: BABYLON.Nullable<string>;
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
         mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
         snippetId: string;
+        useTargetAnimations: boolean;
         activeFrame: number;
         fromKey: number;
         toKey: number;
@@ -755,6 +763,8 @@ declare module INSPECTOR {
         onNewKeyPointRequired: BABYLON.Observable<void>;
         onFlattenTangentRequired: BABYLON.Observable<void>;
         onLinearTangentRequired: BABYLON.Observable<void>;
+        onBreakTangentRequired: BABYLON.Observable<void>;
+        onUnifyTangentRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
@@ -1286,6 +1296,41 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IHexLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        lockObject?: LockObject;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
+        min?: number;
+    }
+    export class HexLineComponent extends React.Component<IHexLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        private _propertyChange;
+        constructor(props: IHexLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: IHexLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        convertToHexString(valueString: string): string;
+        updateValue(valueString: string, raisePropertyChanged: boolean): void;
+        lock(): void;
+        unlock(): void;
         render(): JSX.Element;
     }
 }
@@ -1945,41 +1990,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface IHexLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        lockObject?: LockObject;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        replaySourceReplacement?: string;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-        useEuler?: boolean;
-        min?: number;
-    }
-    export class HexLineComponent extends React.Component<IHexLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        private _propertyChange;
-        constructor(props: IHexLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: IHexLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        convertToHexString(valueString: string): string;
-        updateValue(valueString: string, raisePropertyChanged: boolean): void;
-        lock(): void;
-        unlock(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
     interface ICommonCameraPropertyGridComponentProps {
         globalState: GlobalState;
         camera: BABYLON.Camera;
@@ -2190,6 +2200,7 @@ declare module INSPECTOR {
         private _onAnimationGroupPauseObserver;
         private _onBeforeRenderObserver;
         private timelineRef;
+        private _animationCurveEditorContext;
         constructor(props: IAnimationGroupGridComponentProps);
         disconnect(animationGroup: BABYLON.AnimationGroup): void;
         connect(animationGroup: BABYLON.AnimationGroup): void;
@@ -2918,6 +2929,7 @@ declare module INSPECTOR {
     }
     export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
         private _animationGroup;
+        private _animationCurveEditorContext;
         constructor(props: ITargetedAnimationGridComponentProps);
         playOrPause: () => void;
         deleteAnimation: () => void;

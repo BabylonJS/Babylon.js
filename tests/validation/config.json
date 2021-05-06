@@ -1,7 +1,6 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
-
         {
             "title": "Sprites",
             "playgroundId": "#ZX8DJ3#1",
@@ -50,8 +49,7 @@
             "playgroundId": "#M5VQE9#20",
             "referenceImage": "node-material0.png",
             "renderCount": 5,
-            "excludeFromAutomaticTesting": true,
-            "excludedEngines": ["webgpu"]
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Node material 1",
@@ -103,8 +101,7 @@
         {
             "title": "LOD + Billboards + Instances",
             "playgroundId": "#UAIZCS#0",
-            "referenceImage": "lodbillboardinstances.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "lodbillboardinstances.png"
         },
         {
             "title": "Nested BBG",
@@ -697,7 +694,13 @@
         {
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
-            "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
+            "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
+            "renderCount": 5
+        },
+        {
+            "title": "GLTF Extension KHR_materials_specular",
+            "playgroundId": "#RNT7K4#8",
+            "referenceImage": "gltfExtensionKhrMaterialsSpecular.png"
         },
         {
             "title": "Asset Containers",
@@ -861,8 +864,7 @@
         {
             "title": "Instanced Bones",
             "playgroundId": "#2YLJ1L#2",
-            "referenceImage": "instancedBones.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "instancedBones.png"
         },
         {
             "title": "Thin Instances",
@@ -1052,7 +1054,7 @@
             "title": "Prepass SSAO + instanced bones",
             "renderCount": 50,
             "playgroundId": "#0K8EYN#197",
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-instanced-bones.png"
         },
         {
@@ -1220,6 +1222,62 @@
             "renderCount": 1,
             "playgroundId": "#RJN64I#5",
             "referenceImage": "refraction-local-pbr.png"
+        },
+        {
+            "title": "Instances + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#404",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "instances-mb.png"
+        },
+        {
+            "title": "Instances + GBR + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#403",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "instances-gbr-mb.png"
+        },
+        {
+            "title": "Instances manual update + motion blur",
+            "renderCount": 10,
+            "playgroundId": "#HJGC2G#50",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "instances-mb-manual.png"
+        },
+        {
+            "title": "Thin instances + motion blur",
+            "renderCount": 30,
+            "playgroundId": "#HJGC2G#60",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "referenceImage": "thin-instances-mb.png"
+        },
+        {
+            "title": "Thin instances + motion blur + manual",
+            "renderCount": 30,
+            "playgroundId": "#HJGC2G#61",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "thin-instances-mb-manual.png"
+        },
+        {
+            "title": "Thin instances + dynamic buffer resize",
+            "renderCount": 10,
+            "playgroundId": "#217750#33",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "thin-instances-buffer-resize.png"
+        },
+        {
+            "title": "Instances + render self motion blur",
+            "renderCount": 10,
+            "playgroundId": "#217750#34",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "instances-renderself-mb.png"
+        },
+        {
+            "title": "Thin instances + render self motion blur",
+            "renderCount": 10,
+            "playgroundId": "#217750#35",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "thin-instances-renderself-mb.png"
         }
     ]
 }

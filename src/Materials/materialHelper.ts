@@ -6,7 +6,7 @@ import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { Light } from "../Lights/light";
 import { Constants } from "../Engines/constants";
 import { PrePassConfiguration } from "../Materials/prePassConfiguration";
@@ -762,19 +762,26 @@ export class MaterialHelper {
      */
     public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
         if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
-            this.PushAttributesForInstances(attribs);
+            this.PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
         }
     }
 
     /**
      * Add the list of attributes required for instances to the attribs array.
      * @param attribs The current list of supported attribs
+     * @param needsPreviousMatrices If the shader needs previous matrices
      */
-    public static PushAttributesForInstances(attribs: string[]): void {
+    public static PushAttributesForInstances(attribs: string[], needsPreviousMatrices: boolean = false): void {
         attribs.push("world0");
         attribs.push("world1");
         attribs.push("world2");
         attribs.push("world3");
+        if (needsPreviousMatrices) {
+            attribs.push("previousWorld0");
+            attribs.push("previousWorld1");
+            attribs.push("previousWorld2");
+            attribs.push("previousWorld3");
+        }
     }
 
     /**
@@ -794,11 +801,10 @@ export class MaterialHelper {
      * @param scene The scene where the light belongs to
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false, receiveShadows = true): void {
-        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel, receiveShadows);
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
+        light._bindLight(lightIndex, scene, effect, useSpecular, receiveShadows);
     }
 
     /**
@@ -808,15 +814,14 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, rebuildInParallel = false): void {
+    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {
         let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel, mesh.receiveShadows);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], mesh.receiveShadows);
         }
     }
 
