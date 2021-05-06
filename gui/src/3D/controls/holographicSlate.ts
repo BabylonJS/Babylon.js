@@ -8,7 +8,7 @@ import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import {  Vector3 } from "babylonjs/Maths/math.vector";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
@@ -167,6 +167,9 @@ export class HolographicSlate extends ContentDisplay3D {
         }
     }
 
+    /**
+     * @hidden
+     */
     public _updatePivot() {
         if (!this.mesh) {
             return;
@@ -207,8 +210,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._positionElements();
 
-        this._followButton.imageUrl = "./textures/IconFollowMe.png";
-        this._closeButton.imageUrl = "./textures/IconClose.png";
+        this._followButton.imageUrl = "textures/IconFollowMe.png";
+        this._closeButton.imageUrl = "textures/IconClose.png";
 
         this._followButton.backMaterial.alpha = 0;
         this._closeButton.backMaterial.alpha = 0;
@@ -224,7 +227,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._closeButton.onPointerClickObservable.add(() => {
             this.dispose();
-        })
+        });
 
         node.isVisible = false;
 
