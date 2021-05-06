@@ -284,6 +284,7 @@ export class HolographicSlate extends ContentDisplay3D {
             this._pickedPointObserver = null;
         }
 
+        this._followBehavior.detach();
         this._gizmo.dispose();
     }
 }

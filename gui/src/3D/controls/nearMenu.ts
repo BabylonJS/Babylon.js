@@ -1,5 +1,5 @@
 import { Scene } from "babylonjs/scene";
-import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Nullable } from "babylonjs/types";
 import { Control3D } from "./control3D";
@@ -10,6 +10,10 @@ import { AbstractMesh } from "babylonjs/Meshes/index";
 import { FluentMaterial } from "../materials";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { Observer } from "babylonjs/Misc/observable";
+import { Logger } from "babylonjs/Misc/logger";
+import { Container3D } from "./container3D";
+import { TouchHolographicButton } from "./touchHolographicButton";
+import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
 
 /**
  * NearMenu that displays buttons and follows the camera
@@ -18,6 +22,10 @@ export class NearMenu extends VolumeBasedPanel {
     private _backPlate: Mesh;
     private _backPlateMaterial: FluentMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
+    private _followBehavior: FollowBehavior;
+
+    private _currentMin: Nullable<Vector3>;
+    private _currentMax: Nullable<Vector3>;
 
     protected _createNode(scene: Scene): Nullable<TransformNode> {
         // TODO : create backplate and pin button
@@ -25,6 +33,8 @@ export class NearMenu extends VolumeBasedPanel {
 
         this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
         this._backPlate.parent = node;
+
+        this._followBehavior.attach(node);
 
         return node;
     }
@@ -57,16 +67,79 @@ export class NearMenu extends VolumeBasedPanel {
         }
 
         control.position = nodePosition.clone();
+
+        if (!this._currentMin) {
+            this._currentMin = nodePosition.clone();
+            this._currentMax = nodePosition.clone();
+        }
+
+        this._currentMin.minimizeInPlace(nodePosition);
+        this._currentMax!.maximizeInPlace(nodePosition);
     }
 
     protected _finalProcessing() {
-        this._backPlate.scaling.x = this.columns * this._cellWidth;
-        this._backPlate.scaling.y = this.rows * this._cellHeight;
+        this._currentMin!.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
+        this._currentMax!.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
+        const extendSize = this._currentMax!.subtract(this._currentMin!);
+
+        // Also add a % margin
+        this._backPlate.scaling.x = extendSize.x + this._cellWidth * 1.25;
+        this._backPlate.scaling.y = extendSize.y + this._cellHeight * 1.25;
+        this._backPlate.scaling.z = 0.001;
+
+        for (let i = 0; i < this._children.length; i++) {
+            this._children[i].position.subtractInPlace(this._currentMin!).subtractInPlace(extendSize.scale(0.5));
+            this._children[i].position.z -= 0.01;
+        }
+
+        this._currentMin = null;
+        this._currentMax = null;
+
+        this._followBehavior.minimumDistance = extendSize.length() * 0.5 * this.scaling.length();
+        this._followBehavior.maximumDistance = extendSize.length() * 1.5 * this.scaling.length();
+        this._followBehavior.defaultDistance = extendSize.length() * this.scaling.length();
+    }
+
+    constructor(name: string) {
+        super();
+
+        this.name = name;
+        this._followBehavior = new FollowBehavior();
+    }
+
+    /**
+     * Adds a button to the near menu.
+     * Please note that the back material of the button will be set to transparent as it is attached to the near menu.
+     * 
+     * @param button Button to add
+     * @returns This near menu
+     */
+    public addButton(button: TouchHolographicButton): NearMenu {
+        super.addControl(button);
+
+        if (button.backMaterial) {
+            button.backMaterial.alpha = 0;
+        }
+
+        return this;
+    }
+
+    /**
+     * This method should not be used directly. It is inherited from `Container3D`.
+     * Please use `addButton` instead.
+     * @param _control
+     * @returns
+     */
+    public addControl(_control: Control3D): Container3D {
+        Logger.Warn("Near menu can only contain buttons. Please use the method `addButton` instead.");
+
+        return this;
     }
 
     public dispose() {
         super.dispose();
 
+        this._followBehavior.detach();
         this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
     }
 }
