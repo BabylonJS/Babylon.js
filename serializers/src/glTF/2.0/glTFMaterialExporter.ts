@@ -184,9 +184,7 @@ export class _GLTFMaterialExporter {
             for (let extension in material.extensions) {
                 let extensionObject = material.extensions[extension];
                 if (extensionObject as IMaterialExtension) {
-                    if (extensionObject.hasTextures()){
-                        return true;
-                    }
+                    return extensionObject.hasTextures?.();
                 }
             }
         }
