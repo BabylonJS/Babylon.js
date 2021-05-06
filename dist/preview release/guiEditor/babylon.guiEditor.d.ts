@@ -806,10 +806,13 @@ declare module GUIEDITOR {
         control: Control;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
+        globalState: GlobalState;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
+        isHovered: boolean;
+        isSelected: boolean;
     }> {
         constructor(props: IControlTreeItemComponentProps);
         highlight(): void;
