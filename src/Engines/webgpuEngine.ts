@@ -1304,11 +1304,14 @@ export class WebGPUEngine extends Engine {
     /**
      * Creates a storage buffer
      * @param data the data for the storage buffer or the size of the buffer
-     * @param read true if the buffer is readable
-     * @param write true if the buffer is writable
+     * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE will be automatically added
      * @returns the new buffer
      */
-     public createStorageBuffer(data: DataArray | number, read: boolean, write: boolean): DataBuffer {
+     public createStorageBuffer(data: DataArray | number, creationFlags: number): DataBuffer {
+        return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE);
+    }
+
+    private _createBuffer(data: DataArray | number, creationFlags: number): DataBuffer {
         let view: ArrayBufferView | number;
 
         if (data instanceof Array) {
@@ -1321,8 +1324,27 @@ export class WebGPUEngine extends Engine {
             view = data;
         }
 
-        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Storage | (read ? WebGPUConstants.BufferUsage.CopySrc : 0) | (write ? WebGPUConstants.BufferUsage.CopyDst : 0));
-        return dataBuffer;
+        let flags = 0;
+        if (creationFlags & Constants.BUFFER_CREATIONFLAG_READ) {
+            flags |= WebGPUConstants.BufferUsage.CopySrc;
+        }
+        if (creationFlags & Constants.BUFFER_CREATIONFLAG_WRITE) {
+            flags |= WebGPUConstants.BufferUsage.CopyDst;
+        }
+        if (creationFlags & Constants.BUFFER_CREATIONFLAG_UNIFORM) {
+            flags |= WebGPUConstants.BufferUsage.Uniform;
+        }
+        if (creationFlags & Constants.BUFFER_CREATIONFLAG_VERTEX) {
+            flags |= WebGPUConstants.BufferUsage.Vertex;
+        }
+        if (creationFlags & Constants.BUFFER_CREATIONFLAG_INDEX) {
+            flags |= WebGPUConstants.BufferUsage.Index;
+        }
+        if (creationFlags & Constants.BUFFER_CREATIONFLAG_STORAGE) {
+            flags |= WebGPUConstants.BufferUsage.Storage;
+        }
+
+        return this._bufferManager.createBuffer(view, flags);
     }
 
     /**
