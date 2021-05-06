@@ -1,9 +1,9 @@
 import { Nullable } from "../types";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { PostProcess } from "./postProcess";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "../Engines/constants";
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 
 declare type Scene = import("../scene").Scene;
 

@@ -206,6 +206,8 @@ export class VertexBuffer {
 
     /** @hidden */
     public _buffer: Buffer;
+    /** @hidden */
+    public _validOffsetRange: boolean; // used internally by the engine
     private _kind: string;
     private _size: number;
     private _ownsBuffer: boolean;
@@ -494,11 +496,12 @@ export class VertexBuffer {
     }
 
     /**
-     * Returns the number of components per vertex attribute (integer)
-     * @returns the size in float
+     * Returns the number of components or the byte size per vertex attribute
+     * @param sizeInBytes If true, returns the size in bytes or else the size in number of components of the vertex attribute (default: false)
+     * @returns the number of components
      */
-    public getSize(): number {
-        return this._size;
+    public getSize(sizeInBytes = false): number {
+        return sizeInBytes ? this._size * VertexBuffer.GetTypeByteLength(this.type) : this._size;
     }
 
     /**

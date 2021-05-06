@@ -1,6 +1,6 @@
 import { DracoCompression } from "babylonjs/Meshes/Compression/dracoCompression";
 import { Nullable } from "babylonjs/types";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { Geometry } from "babylonjs/Meshes/geometry";
 import { Mesh } from "babylonjs/Meshes/mesh";
 

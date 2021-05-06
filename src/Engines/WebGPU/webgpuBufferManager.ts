@@ -1,4 +1,4 @@
-import { DataBuffer } from '../../Meshes/dataBuffer';
+import { DataBuffer } from '../../Buffers/dataBuffer';
 import { WebGPUDataBuffer } from '../../Meshes/WebGPU/webgpuDataBuffer';
 import { Nullable } from '../../types';
 import * as WebGPUConstants from './webgpuConstants';

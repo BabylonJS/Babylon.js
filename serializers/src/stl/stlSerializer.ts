@@ -1,5 +1,5 @@
 import { Mesh } from "babylonjs/Meshes/mesh";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 
 /**

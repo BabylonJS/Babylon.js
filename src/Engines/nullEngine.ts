@@ -2,12 +2,12 @@ import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Engine } from "../Engines/engine";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { Constants } from "./constants";
 import { IPipelineContext } from './IPipelineContext';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
 import { ISceneLike } from './thinEngine';
 import { PerformanceConfigurator } from './performanceConfigurator';
@@ -143,7 +143,8 @@ export class NullEngine extends Engine {
             maxMSAASamples: 1,
             blendMinMax: false,
             canUseGLInstanceID: false,
-            canUseGLVertexID: false
+            canUseGLVertexID: false,
+            supportComputeShaders: false,
         };
 
         this._features = {
@@ -312,7 +313,7 @@ export class NullEngine extends Engine {
      * @param culling defines backface culling state
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
-     * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
      */
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
     }
