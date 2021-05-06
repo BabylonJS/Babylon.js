@@ -1,6 +1,6 @@
 import { Engine } from "../../../Engines/engine";
 import { AbstractMesh } from "../../../Meshes/abstractMesh";
-import { VertexBuffer } from "../../../Meshes/buffer";
+import { VertexBuffer } from "../../../Buffers/buffer";
 import { Scene } from "../../../scene";
 import { Material } from "../../material";
 import { Texture } from "../texture";

@@ -2,7 +2,7 @@ import { IndicesArray, FloatArray } from "../types";
 import { Color4, Color3 } from "../Maths/math";
 import { Vector2, Vector3, Vector4, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
 import { EngineStore } from "../Engines/engineStore";

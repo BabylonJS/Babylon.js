@@ -312,8 +312,11 @@ export class RenderTargetTexture extends Texture {
      * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      * @param samples sample count to use when creating the RTT
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
-    constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false, samples?: number) {
+    constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+            isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false, samples?: number, creationFlags?: number)
+        {
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
         scene = this.getScene();
         if (!scene) {
@@ -349,7 +352,8 @@ export class RenderTargetTexture extends Texture {
             samplingMode: this.samplingMode,
             generateDepthBuffer: generateDepthBuffer,
             generateStencilBuffer: generateStencilBuffer,
-            samples: samples,
+            samples,
+            creationFlags,
         };
 
         if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
@@ -1183,6 +1187,6 @@ export class RenderTargetTexture extends Texture {
     }
 }
 
-Texture._CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean) => {
+Texture._CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number) => {
     return new RenderTargetTexture(name, renderTargetSize, scene, generateMipMaps);
 };

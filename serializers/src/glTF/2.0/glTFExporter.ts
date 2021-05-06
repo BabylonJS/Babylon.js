@@ -4,7 +4,7 @@ import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
 import { Vector2, Vector3, Vector4, Quaternion, Matrix } from "babylonjs/Maths/math.vector";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { Tools } from "babylonjs/Misc/tools";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { Node } from "babylonjs/node";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -1525,7 +1525,7 @@ export class _Exporter {
 
                     for (const attribute of attributeData) {
                         const attributeKind = attribute.kind;
-                        if (attributeKind === VertexBuffer.UVKind || attributeKind === VertexBuffer.UV2Kind) {
+                        if ((attributeKind === VertexBuffer.UVKind || attributeKind === VertexBuffer.UV2Kind) && !this._options.exportUnusedUVs) {
                             if (glTFMaterial && !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
                                 continue;
                             }
