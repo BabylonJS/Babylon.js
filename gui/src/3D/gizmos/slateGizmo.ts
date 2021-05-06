@@ -387,18 +387,9 @@ export class SlateGizmo extends Gizmo {
     public dispose() {
         // Will dispose rootMesh and all descendants
         super.dispose();
-
-        if (this._dragStartObserver) {
-            this._dragBehavior.onDragStartObservable.remove(this._dragStartObserver);
-        }
-
-        if (this._draggingObserver) {
-            this._dragBehavior.onDragObservable.remove(this._draggingObserver);
-        }
-
-        if (this._dragEndObserver) {
-            this._dragBehavior.onDragEndObservable.remove(this._dragEndObserver);
-        }
+        this._dragBehavior.onDragStartObservable.remove(this._dragStartObserver);
+        this._dragBehavior.onDragObservable.remove(this._draggingObserver);
+        this._dragBehavior.onDragEndObservable.remove(this._dragEndObserver);
 
         this._dragBehavior.detach();
     }
