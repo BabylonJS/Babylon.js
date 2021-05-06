@@ -354,6 +354,20 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return null;
     }
 
+    /**
+     * Filter used for near interaction pick and hover
+     */
+    private nearPickPredicate(mesh: AbstractMesh): boolean {
+        return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearPickable;
+    }
+
+    /**
+     * Filter used for near interaction garb
+     */
+    private nearGrabPredicate(mesh: AbstractMesh): boolean {
+        return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearGrabbable;
+    }
+
     private _identityMatrix = Matrix.Identity();
     private _screenCoordinatesRef = Vector3.Zero();
     private _viewportRef = new Viewport(0, 0, 0, 0);
