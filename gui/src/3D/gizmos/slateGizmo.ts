@@ -1,6 +1,6 @@
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { Matrix, Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
