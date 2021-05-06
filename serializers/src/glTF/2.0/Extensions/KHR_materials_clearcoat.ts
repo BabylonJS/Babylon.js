@@ -40,7 +40,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
     }
 
     public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
-        let additionalTextures: BaseTexture[] = [];
+        const additionalTextures: BaseTexture[] = [];
         if (babylonMaterial instanceof PBRBaseMaterial) {
             if (babylonMaterial.clearCoat.isEnabled) {
                 if (babylonMaterial.clearCoat.texture) {
@@ -71,7 +71,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
 
                 node.extensions = node.extensions || {};
 
-                let clearCoatTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.texture);
+                const clearCoatTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.texture);
                 let clearCoatTextureRoughnessInfo;
                 if (babylonMaterial.clearCoat.useRoughnessFromMainTexture) {
                     clearCoatTextureRoughnessInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.texture);
@@ -87,7 +87,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
                     Tools.Warn(`Clear Color F0 remapping is not supported for glTF export. Ignoring for: ${babylonMaterial.name}`);
                 }
 
-                let clearCoatNormalTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.bumpTexture);
+                const clearCoatNormalTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.bumpTexture);
 
                 const clearCoatInfo: IKHRMaterialsClearcoat = {
                     clearcoatFactor: babylonMaterial.clearCoat.intensity,

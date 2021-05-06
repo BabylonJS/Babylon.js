@@ -23,18 +23,15 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
     /** Defines whether this extension is required */
     public required = false;
 
-    /** Reference to the glTF exporter */
-    private _textureInfos: ITextureInfo[] = [];
-    private _exportedTextures: Nullable<BaseTexture>[] = [];
-
     private _wasUsed = false;
 
+    private _exporter : _Exporter;
+
     constructor(exporter: _Exporter) {
+        this._exporter = exporter;
     }
 
     public dispose() {
-       this._textureInfos = [];
-       this._exportedTextures = [];
     }
 
     /** @hidden */
@@ -42,28 +39,9 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
-    private _getTextureIndex(babylonTexture: BaseTexture) {
-        let textureIndex = this._exportedTextures.indexOf(babylonTexture);
-
-        if (textureIndex === -1 && babylonTexture.reservedDataStore) {
-            textureIndex = this._exportedTextures.indexOf(babylonTexture.reservedDataStore.source);
-        }
-
-        return textureIndex;
-    }
-
-    public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
-        let textureIndex = this._getTextureIndex(babylonTexture);
-
-        if (textureIndex > -1) {
-            this._textureInfos[textureIndex] = textureInfo;
-        }
-    }
-
     public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
         if (babylonMaterial instanceof PBRMaterial) {
             if (babylonMaterial.sheen.isEnabled && babylonMaterial.sheen.texture) {
-                this._exportedTextures.push(babylonMaterial.sheen.texture);
                 return [babylonMaterial.sheen.texture];
             }
         }
@@ -93,25 +71,13 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
                 };
 
                 if (babylonMaterial.sheen.texture) {
-                    let textureIndex = this._getTextureIndex(babylonMaterial.sheen.texture);
-
-                    if (textureIndex > -1) {
-                        sheenInfo.sheenColorTexture = this._textureInfos[textureIndex];
-                    }
+                    sheenInfo.sheenColorTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
                 }
 
                 if (babylonMaterial.sheen.textureRoughness && !babylonMaterial.sheen.useRoughnessFromMainTexture) {
-                    let textureIndex = this._getTextureIndex(babylonMaterial.sheen.textureRoughness);
-
-                    if (textureIndex > -1) {
-                        sheenInfo.sheenRoughnessTexture = this._textureInfos[textureIndex];
-                    }
+                    sheenInfo.sheenRoughnessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.textureRoughness) ?? undefined;
                 } else if (babylonMaterial.sheen.texture && babylonMaterial.sheen.useRoughnessFromMainTexture) {
-                    let textureIndex = this._getTextureIndex(babylonMaterial.sheen.texture);
-
-                    if (textureIndex > -1) {
-                        sheenInfo.sheenRoughnessTexture = this._textureInfos[textureIndex];
-                    }
+                    sheenInfo.sheenRoughnessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
                 }
 
                 node.extensions[NAME] = sheenInfo;
