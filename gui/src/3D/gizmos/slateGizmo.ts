@@ -139,7 +139,8 @@ export class SlateGizmo extends Gizmo {
             const node = this._createAngleMesh();
             this._corners.push(node);
             node.rotation.z = (Math.PI / 2) * i;
-            node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
+            node.scaling.setAll(this.handleSize);
+
             node.parent = this._handlesParent;
             this._assignDragBehavior(
                 node,
