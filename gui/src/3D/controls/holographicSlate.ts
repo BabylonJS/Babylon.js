@@ -192,7 +192,7 @@ export class HolographicSlate extends ContentDisplay3D {
         const node = new Mesh("slate" + this.name);
 
         this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
-        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
+        this._contentPlate = BoxBuilder.CreateBox("contentPlate" + this.name, { size: 1 }, scene);
 
         this._backPlate.parent = node;
         this._contentPlate.parent = node;
