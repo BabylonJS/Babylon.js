@@ -1,6 +1,6 @@
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { Matrix, Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -139,7 +139,8 @@ export class SlateGizmo extends Gizmo {
             const node = this._createAngleMesh();
             this._corners.push(node);
             node.rotation.z = (Math.PI / 2) * i;
-            node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
+            node.scaling.setAll(this.handleSize);
+
             node.parent = this._handlesParent;
             this._assignDragBehavior(
                 node,
@@ -217,7 +218,9 @@ export class SlateGizmo extends Gizmo {
 
         this._clampDimensions(offset, dimensionsStart, masks.dimensions, false);
 
-        this._attachedSlate.origin.copyFrom(originStart).addInPlace(offset.multiply(masks.origin));
+        offset.multiplyToRef(masks.origin, TmpVectors.Vector3[0]);
+        this._attachedSlate.origin.copyFrom(originStart).addInPlace(TmpVectors.Vector3[0]);
+
         this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offset.multiply(masks.dimensions));
         this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
     }
@@ -387,18 +390,9 @@ export class SlateGizmo extends Gizmo {
     public dispose() {
         // Will dispose rootMesh and all descendants
         super.dispose();
-
-        if (this._dragStartObserver) {
-            this._dragBehavior.onDragStartObservable.remove(this._dragStartObserver);
-        }
-
-        if (this._draggingObserver) {
-            this._dragBehavior.onDragObservable.remove(this._draggingObserver);
-        }
-
-        if (this._dragEndObserver) {
-            this._dragBehavior.onDragEndObservable.remove(this._dragEndObserver);
-        }
+        this._dragBehavior.onDragStartObservable.remove(this._dragStartObserver);
+        this._dragBehavior.onDragObservable.remove(this._draggingObserver);
+        this._dragBehavior.onDragEndObservable.remove(this._dragEndObserver);
 
         this._dragBehavior.detach();
     }

@@ -1,7 +1,7 @@
 import { Behavior } from "../behavior";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
-import { Observer } from "../../Misc";
+import { Observer } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
@@ -417,7 +417,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
             let oldParent = this.attachedNode.parent;
             this.attachedNode.setParent(null);
 
-            const worldMatrix = this.attachedNode.computeWorldMatrix(true);
+            const worldMatrix = this.attachedNode.getWorldMatrix();
             const currentToTarget = this._workingPosition;
             const rotationQuaternion = this._workingQuaternion;
             const pivot = this.attachedNode.getPivotPoint();
@@ -474,7 +474,6 @@ export class FollowBehavior implements Behavior<TransformNode> {
             this._recenterNextUpdate = false;
 
             this.attachedNode.setParent(oldParent);
-            this.attachedNode.computeWorldMatrix(true);
         }
     }
 
