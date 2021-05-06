@@ -928,8 +928,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
-    protected _rebuildInParallel = false;
-
     /**
      * Instantiates a new PBRMaterial instance.
      *
