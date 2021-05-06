@@ -50,7 +50,7 @@ import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 import { ComputeEffect, IComputeEffectCreationOptions } from "../Compute/computeEffect";
 import { IComputePipelineContext } from "../Compute/IComputePipelineContext";
 import { WebGPUComputePipelineContext } from "./WebGPU/webgpuComputePipelineContext";
-import { ComputeBindingList } from "./Extensions/engine.computeShader";
+import { ComputeBindingList, ComputeBindingMapping } from "./Extensions/engine.computeShader";
 import { IComputeContext } from "../Compute/IComputeContext";
 import { WebGPUComputeContext } from "./WebGPU/webgpuComputeContext";
 
@@ -1581,8 +1581,9 @@ export class WebGPUEngine extends Engine {
      * @param x The number of workgroups to execute on the X dimension
      * @param y The number of workgroups to execute on the Y dimension
      * @param z The number of workgroups to execute on the Z dimension
+     * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
      */
-    public computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
+    public computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void {
         const contextPipeline = effect._pipelineContext as WebGPUComputePipelineContext;
         const computeContext = context as WebGPUComputeContext;
 
@@ -1597,7 +1598,7 @@ export class WebGPUEngine extends Engine {
 
         computePass.setPipeline(contextPipeline.computePipeline);
 
-        const bindGroups = computeContext.getBindGroups(bindings, contextPipeline.computePipeline);
+        const bindGroups = computeContext.getBindGroups(bindings, contextPipeline.computePipeline, bindingsMapping);
         for (let i = 0; i < bindGroups.length; ++i) {
             const bindGroup = bindGroups[i];
             if (!bindGroup) {
