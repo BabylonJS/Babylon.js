@@ -139,7 +139,8 @@ export class SlateGizmo extends Gizmo {
             const node = this._createAngleMesh();
             this._corners.push(node);
             node.rotation.z = (Math.PI / 2) * i;
-            node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
+            node.scaling.setAll(this.handleSize);
+
             node.parent = this._handlesParent;
             this._assignDragBehavior(
                 node,
@@ -217,7 +218,9 @@ export class SlateGizmo extends Gizmo {
 
         this._clampDimensions(offset, dimensionsStart, masks.dimensions, false);
 
-        this._attachedSlate.origin.copyFrom(originStart).addInPlace(offset.multiply(masks.origin));
+        offset.multiplyToRef(masks.origin, TmpVectors.Vector3[0]);
+        this._attachedSlate.origin.copyFrom(originStart).addInPlace(TmpVectors.Vector3[0]);
+
         this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offset.multiply(masks.dimensions));
         this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
     }
