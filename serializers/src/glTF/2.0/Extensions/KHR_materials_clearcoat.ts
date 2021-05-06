@@ -1,11 +1,10 @@
 import { IMaterial } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { Material } from 'babylonjs/Materials/material';
-import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
-import { PBRBaseMaterial } from 'babylonjs/Materials/PBR/pbrBaseMaterial';
-import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-import { IKHRMaterialsClearcoat } from 'babylonjs-gltf2interface';
+import { Material } from "babylonjs/Materials/material";
+import { PBRBaseMaterial } from "babylonjs/Materials/PBR/pbrBaseMaterial";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 import { Tools } from "babylonjs/Misc/tools";
 
 const NAME = "KHR_materials_clearcoat";
@@ -79,11 +78,11 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
                     clearCoatTextureRoughnessInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.textureRoughness);
                 }
 
-                if (babylonMaterial.clearCoat.isTintEnabled){
+                if (babylonMaterial.clearCoat.isTintEnabled) {
                     Tools.Warn(`Clear Color tint is not supported for glTF export. Ignoring for: ${babylonMaterial.name}`);
                 }
 
-                if (babylonMaterial.clearCoat.remapF0OnInterfaceChange){
+                if (babylonMaterial.clearCoat.remapF0OnInterfaceChange) {
                     Tools.Warn(`Clear Color F0 remapping is not supported for glTF export. Ignoring for: ${babylonMaterial.name}`);
                 }
 
