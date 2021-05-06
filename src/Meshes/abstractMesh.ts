@@ -352,12 +352,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets a boolean indicating if the mesh can be near picked. Default is false
-     */    
+     */
     public isNearPickable = false;
 
     /**
      * Gets or sets a boolean indicating if the mesh can be near grabbed. Default is false
-    */    
+     */
     public isNearGrabbable = false;
 
     /** Gets or sets a boolean indicating that bounding boxes of subMeshes must be rendered as well (false by default) */
