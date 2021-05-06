@@ -218,7 +218,9 @@ export class SlateGizmo extends Gizmo {
 
         this._clampDimensions(offset, dimensionsStart, masks.dimensions, false);
 
-        this._attachedSlate.origin.copyFrom(originStart).addInPlace(offset.multiply(masks.origin));
+        offset.multiplyToRef(masks.origin, TmpVectors.Vector3[0]);
+        this._attachedSlate.origin.copyFrom(originStart).addInPlace(TmpVectors.Vector3[0]);
+
         this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offset.multiply(masks.dimensions));
         this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
     }
