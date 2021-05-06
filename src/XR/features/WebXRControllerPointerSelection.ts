@@ -528,8 +528,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.meshUnderPointer = pick.pickedMesh;
             } else {
                 controllerData.selectionMesh.isVisible = false;
-                if(!controllerData.nearGrab)
-                {
+                if (!controllerData.nearGrab) {
                     this._updatePointerDistance(controllerData.laserPointer, 1);
                 }
                 controllerData.meshUnderPointer = null;
@@ -679,7 +678,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
                     if (component.changes.pressed) {
                         const pressed = component.changes.pressed.current;
-                        if (controllerData.pick && !controllerData.nearPick && !controllerData.nearHover) {
+                        if (controllerData.pick && !controllerData.nearPick && !controllerData.nearHover && !controllerData.nearGrab) {
                             if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
                                 if (pressed) {
                                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
