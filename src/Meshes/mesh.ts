@@ -1477,14 +1477,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Sets the mesh global Vertex Buffer
      * @param buffer defines the buffer to use
+     * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
      * @returns the current mesh
      */
-    public setVerticesBuffer(buffer: VertexBuffer): Mesh {
+    public setVerticesBuffer(buffer: VertexBuffer, disposeExistingBuffer = true): Mesh {
         if (!this._geometry) {
             this._geometry = Geometry.CreateGeometryForMesh(this);
         }
 
-        this._geometry.setVerticesBuffer(buffer);
+        this._geometry.setVerticesBuffer(buffer, null, disposeExistingBuffer);
         return this;
     }
 
