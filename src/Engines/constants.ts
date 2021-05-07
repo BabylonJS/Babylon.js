@@ -555,6 +555,19 @@ export class Constants {
      */
     public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 7;
 
+    /** Flag to create a readable buffer (the buffer can be the source of a copy) */
+    public static readonly BUFFER_CREATIONFLAG_READ = 1;
+    /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
+    public static readonly BUFFER_CREATIONFLAG_WRITE = 2;
+    /** Flag to create a buffer suitable to be used as a uniform buffer */
+    public static readonly BUFFER_CREATIONFLAG_UNIFORM = 4;
+    /** Flag to create a buffer suitable to be used as a vertex buffer */
+    public static readonly BUFFER_CREATIONFLAG_VERTEX = 8;
+    /** Flag to create a buffer suitable to be used as an index buffer */
+    public static readonly BUFFER_CREATIONFLAG_INDEX = 16;
+    /** Flag to create a buffer suitable to be used as a storage buffer */
+    public static readonly BUFFER_CREATIONFLAG_STORAGE = 32;
+
     /**
      * Prefixes used by the engine for sub mesh draw wrappers
      */
