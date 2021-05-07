@@ -8,13 +8,14 @@ import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Image } from "../../2D/controls/image";
 import { SlateGizmo } from "../gizmos/slateGizmo";
 import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
+import { SixDofDragBehavior } from "babylonjs/Behaviors/Meshes/sixDofDragBehavior";
 
 /**
  * Class used to create a holographic slate
@@ -52,6 +53,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
     /** @hidden */
     public _followBehavior: FollowBehavior;
+    /** @hidden */
+    public _sixDofDragBehavior: SixDofDragBehavior;
     /** @hidden */
     public _gizmo: SlateGizmo;
 
@@ -228,6 +231,18 @@ export class HolographicSlate extends ContentDisplay3D {
         this._closeButton.onPointerClickObservable.add(() => {
             this.dispose();
         });
+
+        // Creates a collision mesh that shares position with the backplate of the slate
+        node.rotationQuaternion = Quaternion.Identity();
+
+        // const collisionBox = BoxBuilder.CreateBox("collisionBox" + "this.name", { size: 1 }, scene);
+        // collisionBox.scaling = this._backPlate.scaling;
+        // collisionBox.position = this._backPlate.position;
+        // collisionBox.parent = node;
+
+        this._sixDofDragBehavior = new SixDofDragBehavior();
+        this._sixDofDragBehavior.attach(this._backPlate);
+        this._sixDofDragBehavior.dragParentInstead = true;
 
         node.isVisible = false;
 
