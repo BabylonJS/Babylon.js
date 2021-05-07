@@ -971,14 +971,18 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/contr
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import * as React from 'react';
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
     interface IControlTreeItemComponentProps {
         control: Control;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
         onClick: () => void;
+        globalState: GlobalState;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
+        isHovered: boolean;
+        isSelected: boolean;
     }> {
         constructor(props: IControlTreeItemComponentProps);
         highlight(): void;
@@ -2565,10 +2569,13 @@ declare module GUIEDITOR {
         control: Control;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
+        globalState: GlobalState;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
+        isHovered: boolean;
+        isSelected: boolean;
     }> {
         constructor(props: IControlTreeItemComponentProps);
         highlight(): void;
