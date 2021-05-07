@@ -1136,6 +1136,18 @@ declare module BABYLON {
          * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
          */
         static readonly PREPASS_ALBEDO_TEXTURE_TYPE: number;
+        /** Flag to create a readable buffer (the buffer can be the source of a copy) */
+        static readonly BUFFER_CREATIONFLAG_READ: number;
+        /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
+        static readonly BUFFER_CREATIONFLAG_WRITE: number;
+        /** Flag to create a buffer suitable to be used as a uniform buffer */
+        static readonly BUFFER_CREATIONFLAG_UNIFORM: number;
+        /** Flag to create a buffer suitable to be used as a vertex buffer */
+        static readonly BUFFER_CREATIONFLAG_VERTEX: number;
+        /** Flag to create a buffer suitable to be used as an index buffer */
+        static readonly BUFFER_CREATIONFLAG_INDEX: number;
+        /** Flag to create a buffer suitable to be used as a storage buffer */
+        static readonly BUFFER_CREATIONFLAG_STORAGE: number;
         /**
          * Prefixes used by the engine for sub mesh draw wrappers
          */
@@ -7247,7 +7259,7 @@ declare module BABYLON {
          * @param useBytes set to true if the stride in in bytes (optional)
          * @param divisor sets an optional divisor for instances (1 by default)
          */
-        constructor(engine: any, data: DataArray, updatable: boolean, stride?: number, postponeInternalCreation?: boolean, instanced?: boolean, useBytes?: boolean, divisor?: number);
+        constructor(engine: any, data: DataArray | DataBuffer, updatable: boolean, stride?: number, postponeInternalCreation?: boolean, instanced?: boolean, useBytes?: boolean, divisor?: number);
         /**
          * Create a new VertexBuffer based on the current buffer
          * @param kind defines the vertex buffer kind (position, normal, etc.)
@@ -7398,7 +7410,7 @@ declare module BABYLON {
          * @param divisor defines the instance divisor to use (1 by default)
          * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
          */
-        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number, takeBufferOwnership?: boolean);
+        constructor(engine: any, data: DataArray | Buffer | DataBuffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number, takeBufferOwnership?: boolean);
         private _computeHashCode;
         /** @hidden */
         _rebuild(): void;
@@ -32367,8 +32379,9 @@ declare module BABYLON {
          * Affect a vertex buffer to the geometry. the vertexBuffer.getKind() function is used to determine where to store the data
          * @param buffer defines the vertex buffer to use
          * @param totalVertices defines the total number of vertices for position kind (could be null)
+         * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
          */
-        setVerticesBuffer(buffer: VertexBuffer, totalVertices?: Nullable<number>): void;
+        setVerticesBuffer(buffer: VertexBuffer, totalVertices?: Nullable<number>, disposeExistingBuffer?: boolean): void;
         /**
          * Update a specific vertex buffer
          * This function will directly update the underlying DataBuffer according to the passed numeric array or Float32Array
@@ -34391,6 +34404,13 @@ declare module BABYLON {
         _delayInfo: Array<string>;
         /** @hidden */
         _delayLoadingFunction: (any: any, mesh: Mesh) => void;
+        /**
+         * Gets or sets the forced number of instances to display.
+         * If 0 (default value), the number of instances is not forced and depends on the draw type
+         * (regular / instance / thin instances mesh)
+         */
+        get forcedInstanceCount(): number;
+        set forcedInstanceCount(count: number);
         /** @hidden */
         _instanceDataStorage: _InstanceDataStorage;
         /** @hidden */
@@ -34729,9 +34749,10 @@ declare module BABYLON {
         /**
          * Sets the mesh global Vertex Buffer
          * @param buffer defines the buffer to use
+         * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
          * @returns the current mesh
          */
-        setVerticesBuffer(buffer: VertexBuffer): Mesh;
+        setVerticesBuffer(buffer: VertexBuffer, disposeExistingBuffer?: boolean): Mesh;
         /**
          * Update a specific associated vertex buffer
          * @param kind defines which buffer to write to (positions, indices, normals, etc). Possible `kind` values :
@@ -41001,16 +41022,14 @@ declare module BABYLON {
         private _engine;
         private _buffer;
         private _bufferSize;
-        private _read;
-        private _write;
+        private _creationFlags;
         /**
          * Creates a new storage buffer instance
          * @param engine The engine the buffer will be created inside
-         * @param read true if the buffer is readable (default: true)
-         * @param write true if the buffer is writable (default: true)
          * @param size The size of the buffer in bytes
+         * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added.
          */
-        constructor(engine: ThinEngine, size: number, read?: boolean, write?: boolean);
+        constructor(engine: ThinEngine, size: number, creationFlags?: number);
         private _create;
         /** @hidden */
         _rebuild(): void;
@@ -57273,12 +57292,19 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Type used to locate a resource in a compute shader.
-     * Note that for the time being the string variant does not work because reflection is not implemented in browsers yet
-     */
+     * TODO: remove this when browsers support reflection for wgsl shaders
+    */
     export type ComputeBindingLocation = {
         group: number;
         binding: number;
-    } | string;
+    };
+    /**
+     * Type used to lookup a resource and retrieve its binding location
+     * TODO: remove this when browsers support reflection for wgsl shaders
+     */
+    export type ComputeBindingMapping = {
+        [key: string]: ComputeBindingLocation;
+    };
     /** @hidden */
     export enum ComputeBindingType {
         Texture = 0,
@@ -57289,13 +57315,10 @@ declare module BABYLON {
     /** @hidden */
     export type ComputeBindingList = {
         [key: string]: {
-            location: ComputeBindingLocation;
             type: ComputeBindingType;
             object: any;
         };
     };
-    /** @hidden */
-    export function BindingLocationToString(location: ComputeBindingLocation): string;
         interface ThinEngine {
             /**
              * Creates a new compute effect
@@ -57322,8 +57345,9 @@ declare module BABYLON {
              * @param x The number of workgroups to execute on the X dimension
              * @param y The number of workgroups to execute on the Y dimension
              * @param z The number of workgroups to execute on the Z dimension
+             * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
              */
-            computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number): void;
+            computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void;
             /**
              * Gets a boolean indicating if all created compute effects are ready
              * @returns true if all effects are ready
@@ -57350,6 +57374,12 @@ declare module BABYLON {
      * Defines the options associated with the creation of a compute shader.
      */
     export interface IComputeShaderOptions {
+        /**
+         * list of bindings mapping (key is property name, value is binding location)
+         * Must be provided because browsers don't support reflection for wgsl shaders yet (so there's no way to query the binding/group from a variable name)
+         * TODO: remove this when browsers support reflection for wgsl shaders
+         */
+        bindingsMapping: ComputeBindingMapping;
         /**
          * The list of defines used in the shader
          */
@@ -57411,25 +57441,25 @@ declare module BABYLON {
          * @param name Binding name of the texture
          * @param texture Texture to bind
          */
-        setTexture(name: ComputeBindingLocation, texture: BaseTexture): void;
+        setTexture(name: string, texture: BaseTexture): void;
         /**
          * Binds a storage texture to the shader
          * @param name Binding name of the texture
          * @param texture Texture to bind
          */
-        setStorageTexture(name: ComputeBindingLocation, texture: BaseTexture): void;
+        setStorageTexture(name: string, texture: BaseTexture): void;
         /**
          * Binds a uniform buffer to the shader
          * @param name Binding name of the buffer
          * @param buffer Buffer to bind
          */
-        setUniformBuffer(name: ComputeBindingLocation, buffer: UniformBuffer): void;
+        setUniformBuffer(name: string, buffer: UniformBuffer): void;
         /**
          * Binds a storage buffer to the shader
          * @param name Binding name of the buffer
          * @param buffer Buffer to bind
          */
-        setStorageBuffer(name: ComputeBindingLocation, buffer: StorageBuffer): void;
+        setStorageBuffer(name: string, buffer: StorageBuffer): void;
         /**
          * Specifies that the compute shader is ready to be executed (the compute effect and all the resources are ready)
          * @returns true if the compute shader is ready to be executed
@@ -60469,11 +60499,10 @@ declare module BABYLON {
             /**
              * Creates a storage buffer
              * @param data the data for the storage buffer or the size of the buffer
-             * @param read true if the buffer is readable
-             * @param write true if the buffer is writable
+             * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added
              * @returns the new buffer
              */
-            createStorageBuffer(data: DataArray | number, read: boolean, write: boolean): DataBuffer;
+            createStorageBuffer(data: DataArray | number, creationFlags: number): DataBuffer;
             /**
              * Updates a storage buffer
              * @param buffer the storage buffer to update
@@ -61759,7 +61788,7 @@ declare module BABYLON {
         private _device;
         private _cacheSampler;
         private _bindGroups;
-        getBindGroups(bindings: ComputeBindingList, computePipeline: GPUComputePipeline): GPUBindGroup[];
+        getBindGroups(bindings: ComputeBindingList, computePipeline: GPUComputePipeline, bindingsMapping?: ComputeBindingMapping): GPUBindGroup[];
         constructor(device: GPUDevice, cacheSampler: WebGPUCacheSampler);
         clear(): void;
     }
@@ -62153,11 +62182,11 @@ declare module BABYLON {
         /**
          * Creates a storage buffer
          * @param data the data for the storage buffer or the size of the buffer
-         * @param read true if the buffer is readable
-         * @param write true if the buffer is writable
+         * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE will be automatically added
          * @returns the new buffer
          */
-        createStorageBuffer(data: DataArray | number, read: boolean, write: boolean): DataBuffer;
+        createStorageBuffer(data: DataArray | number, creationFlags: number): DataBuffer;
+        private _createBuffer;
         /**
          * Updates a storage buffer.
          * @param buffer the storage buffer to update
@@ -62253,8 +62282,9 @@ declare module BABYLON {
          * @param x The number of workgroups to execute on the X dimension
          * @param y The number of workgroups to execute on the Y dimension
          * @param z The number of workgroups to execute on the Z dimension
+         * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
          */
-        computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number): void;
+        computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void;
         /**
          * Forces the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
          */
