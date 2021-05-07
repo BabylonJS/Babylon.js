@@ -141,6 +141,8 @@ class _InternalMeshDataInfo {
     public _onMeshReadyObserverAdded: (observer: Observer<Mesh>) => void;
 
     public _effectiveMaterial: Nullable<Material> = null;
+
+    public _forcedInstanceCount: number = 0;
 }
 
 /**
@@ -406,6 +408,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public _delayInfo: Array<string>;
     /** @hidden */
     public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
+
+    /**
+     * Gets or sets the forced number of instances to display.
+     * If 0 (default value), the number of instances is not forced and depends on the draw type
+     * (regular / instance / thin instances mesh)
+     */
+    public get forcedInstanceCount(): number {
+        return this._internalMeshDataInfo._forcedInstanceCount;
+    }
+
+    public set forcedInstanceCount(count: number) {
+        this._internalMeshDataInfo._forcedInstanceCount = count;
+    }
 
     /** @hidden */
     public _instanceDataStorage = new _InstanceDataStorage();
@@ -1477,14 +1492,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Sets the mesh global Vertex Buffer
      * @param buffer defines the buffer to use
+     * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
      * @returns the current mesh
      */
-    public setVerticesBuffer(buffer: VertexBuffer): Mesh {
+    public setVerticesBuffer(buffer: VertexBuffer, disposeExistingBuffer = true): Mesh {
         if (!this._geometry) {
             this._geometry = Geometry.CreateGeometryForMesh(this);
         }
 
-        this._geometry.setVerticesBuffer(buffer);
+        this._geometry.setVerticesBuffer(buffer, null, disposeExistingBuffer);
         return this;
     }
 
@@ -1677,12 +1693,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (this._unIndexed || fillMode == Material.PointFillMode) {
             // or triangles as points
-            engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+            engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, this.forcedInstanceCount || instancesCount);
         } else if (fillMode == Material.WireFrameFillMode) {
             // Triangles as wireframe
-            engine.drawElementsType(fillMode, 0, subMesh._linesIndexCount, instancesCount);
+            engine.drawElementsType(fillMode, 0, subMesh._linesIndexCount, this.forcedInstanceCount || instancesCount);
         } else {
-            engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
+            engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
         }
 
         return this;

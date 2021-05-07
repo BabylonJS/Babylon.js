@@ -7,11 +7,10 @@ declare module "../../Engines/thinEngine" {
         /**
          * Creates a storage buffer
          * @param data the data for the storage buffer or the size of the buffer
-         * @param read true if the buffer is readable
-         * @param write true if the buffer is writable
+         * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added
          * @returns the new buffer
          */
-        createStorageBuffer(data: DataArray | number, read: boolean, write: boolean): DataBuffer;
+        createStorageBuffer(data: DataArray | number, creationFlags: number): DataBuffer;
 
         /**
          * Updates a storage buffer
@@ -34,7 +33,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.createStorageBuffer = function (data: DataArray | number, read: boolean, write: boolean): DataBuffer {
+ThinEngine.prototype.createStorageBuffer = function (data: DataArray | number, creationFlags: number): DataBuffer {
     throw new Error("createStorageBuffer: Unsupported method in this engine!");
 };
 
