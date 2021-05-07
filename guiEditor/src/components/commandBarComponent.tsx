@@ -62,11 +62,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             onClick: () => { this.props.globalState.onSnippetLoadObservable.notifyObservers(); }
                         },
                     ]} />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon="pointerIcon" shortcut="Ctrl+S" isActive={this._selecting}
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon="pointerIcon" shortcut="Q" isActive={this._selecting}
                         onClick={() => { this.props.globalState.onSelectionObservable.notifyObservers(); }} />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon="handIcon" shortcut="Ctrl" isActive={this._panning}
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon="handIcon" shortcut="W" isActive={this._panning}
                         onClick={() => { this.props.globalState.onPanObservable.notifyObservers(); }} />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" icon="zoomIcon" isActive={this._zooming}
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" shortcut="E" icon="zoomIcon" isActive={this._zooming}
                         onClick={() => { this.props.globalState.onZoomObservable.notifyObservers(); }} />
                     <CommandDropdownComponent globalState={this.props.globalState} icon="guidesIcon" tooltip="Create" items={[
                         {
