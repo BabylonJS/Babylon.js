@@ -117,29 +117,38 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.props.globalState.hostDocument!.addEventListener(
             "keyup",
-            (evt) => {
-                this._ctrlKeyIsPressed = evt.ctrlKey;
-            },
+            this.ctrlEvent,
             false
         );
 
         // Hotkey shortcuts
         this.props.globalState.hostDocument!.addEventListener(
             "keydown",
-            (evt) => {
-                this._ctrlKeyIsPressed = evt.ctrlKey;
-            },
+            this.ctrlEvent,
             false
         );
         this.props.globalState.hostDocument!.defaultView!.addEventListener(
             "blur",
-            () => {
-                this._ctrlKeyIsPressed = false;
-            },
+            this.ctrlFalseEvent,
             false
         );
 
         this.props.globalState.workbench = this;
+    }
+
+    ctrlEvent = (evt: KeyboardEvent) => {
+        this._ctrlKeyIsPressed = evt.ctrlKey;
+
+    };
+
+    ctrlFalseEvent = () => {
+        this._ctrlKeyIsPressed = false;
+    };
+
+    componentWillUnmount() {
+        this.props.globalState.hostDocument!.removeEventListener("keyup", this.ctrlEvent);
+        this.props.globalState.hostDocument!.removeEventListener("keydown", this.ctrlEvent);
+        this.props.globalState.hostDocument!.defaultView!
     }
 
     loadFromJson(serializationObject: any) {
