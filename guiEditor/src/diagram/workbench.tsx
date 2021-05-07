@@ -84,10 +84,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         props.globalState.onPanObservable.add(() => {
-            this._forcePanning = ! this._forcePanning;
+            this._forcePanning = !this._forcePanning;
             this._forceSelecting = false;
             this._forceZooming = false;
-            if(!this._forcePanning) {
+            if (!this._forcePanning) {
                 this.globalState.onSelectionObservable.notifyObservers();
             }
             else {
@@ -109,7 +109,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceZooming = !this._forceZooming;
             this._forcePanning = false;
             this._forceSelecting = false;
-            if(!this._forceZooming) {
+            if (!this._forceZooming) {
                 this.globalState.onSelectionObservable.notifyObservers();
             }
             else {
@@ -404,7 +404,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const zoomFnMouse = (p: PointerInfo, e: EventState) => {
             const newPos = this.getPosition(scene, camera, plane);
             const deltaVector = initialPos.subtract(newPos);
-            this.zooming(deltaVector.x > 0? -15: 15, scene, camera, plane, inertialPanning);
+            this.zooming(deltaVector.x > 0 ? -15 : 15, scene, camera, plane, inertialPanning);
         };
 
         const removeObservers = () => {
