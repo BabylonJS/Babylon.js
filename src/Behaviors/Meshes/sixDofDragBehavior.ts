@@ -277,18 +277,14 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     Quaternion.RotationYawPitchRollToRef(tmpQuaternion.toEulerAngles("xyz").y, 0, 0, tmpQuaternion);
                     tmpQuaternion.multiplyToRef(this._startingOrientation, tmpQuaternion);
                     // Slowly move mesh to avoid jitter
-                    var oldParent = pickedMesh.parent;
+                    var oldParent = this.ancestorToDrag ? this.ancestorToDrag.parent : pickedMesh.parent;
 
                     // Only rotate the mesh if it's parent has uniform scaling
                     if (!oldParent || ((oldParent as Mesh).scaling && !(oldParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
                         if (this.ancestorToDrag) {
-                            // TODO : transform to this.draggedMesh or smth like that and perform a setParent(null) on this node
-                            Quaternion.SlerpToRef(
-                                (pickedMesh.parent as TransformNode).rotationQuaternion!,
-                                tmpQuaternion,
-                                this.dragDeltaRatio,
-                                (pickedMesh.parent as TransformNode).rotationQuaternion!
-                            );
+                            this.ancestorToDrag.setParent(null);
+                            Quaternion.SlerpToRef(this.ancestorToDrag.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, this.ancestorToDrag.rotationQuaternion!);
+                            this.ancestorToDrag.setParent(oldParent);
                         } else {
                             pickedMesh.setParent(null);
                             Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);

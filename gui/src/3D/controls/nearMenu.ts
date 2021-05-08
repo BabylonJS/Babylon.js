@@ -19,6 +19,7 @@ import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
  * NearMenu that displays buttons and follows the camera
  */
 export class NearMenu extends VolumeBasedPanel {
+    private _pinButton: TouchHolographicButton;
     private _backPlate: Mesh;
     private _backPlateMaterial: FluentMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
@@ -27,12 +28,32 @@ export class NearMenu extends VolumeBasedPanel {
     private _currentMin: Nullable<Vector3>;
     private _currentMax: Nullable<Vector3>;
 
+    private _createPinButton(parent: TransformNode) {
+        const control = new TouchHolographicButton("pin" + this.name, false);
+        control.imageUrl = "./textures/IconPin.png";
+        control.parent = this;
+        control._host = this._host;
+
+        if (this._host.utilityLayer) {
+            control._prepareNode(this._host.utilityLayer.utilityLayerScene);
+
+            if (control.node) {
+                control.node.parent = parent;
+            }
+        }
+
+        return control;
+    }
+
     protected _createNode(scene: Scene): Nullable<TransformNode> {
-        // TODO : create backplate and pin button
         const node = new Mesh("nearMenu" + this.name);
 
         this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
         this._backPlate.parent = node;
+
+        this._pinButton = this._createPinButton(node);
+
+        // this._arrangeChildren();
 
         this._followBehavior.attach(node);
 
@@ -95,6 +116,8 @@ export class NearMenu extends VolumeBasedPanel {
         this._currentMin = null;
         this._currentMax = null;
 
+        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
+
         this._followBehavior.minimumDistance = extendSize.length() * 0.5 * this.scaling.length();
         this._followBehavior.maximumDistance = extendSize.length() * 1.5 * this.scaling.length();
         this._followBehavior.defaultDistance = extendSize.length() * this.scaling.length();
@@ -110,7 +133,7 @@ export class NearMenu extends VolumeBasedPanel {
     /**
      * Adds a button to the near menu.
      * Please note that the back material of the button will be set to transparent as it is attached to the near menu.
-     * 
+     *
      * @param button Button to add
      * @returns This near menu
      */
