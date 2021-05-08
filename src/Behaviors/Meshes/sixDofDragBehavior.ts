@@ -84,6 +84,13 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
     }
 
     /**
+     *  Returns true if the attached mesh is currently moving with this behavior
+     */
+    public get isMoving(): boolean {
+        return this._moving;
+    }
+
+    /**
      *  Initializes the behavior
      */
     public init() {}

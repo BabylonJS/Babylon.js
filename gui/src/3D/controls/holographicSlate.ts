@@ -14,8 +14,7 @@ import { ContentDisplay3D } from "./contentDisplay3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Image } from "../../2D/controls/image";
 import { SlateGizmo } from "../gizmos/slateGizmo";
-import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
-import { SixDofDragBehavior } from "babylonjs/Behaviors/Meshes/sixDofDragBehavior";
+import { DefaultBehavior } from "../behaviors/defaultBehavior";
 
 /**
  * Class used to create a holographic slate
@@ -65,9 +64,7 @@ export class HolographicSlate extends ContentDisplay3D {
     private _imageUrl: string;
 
     /** @hidden */
-    public _followBehavior: FollowBehavior;
-    /** @hidden */
-    public _sixDofDragBehavior: SixDofDragBehavior;
+    public _defaultBehavior: DefaultBehavior;
     /** @hidden */
     public _gizmo: SlateGizmo;
 
@@ -233,11 +230,9 @@ export class HolographicSlate extends ContentDisplay3D {
         this._closeButton.backMaterial.alpha = 0;
 
         this._followButton.onPointerClickObservable.add(() => {
-            if (this._followBehavior.attachedNode) {
-                this._followBehavior.detach();
-            } else {
-                this._followBehavior.attach(node);
-                this._followBehavior.recenter();
+            this._defaultBehavior.followBehaviorEnabled = !this._defaultBehavior.followBehaviorEnabled;
+            if (this._defaultBehavior.followBehaviorEnabled) {
+                this._defaultBehavior.followBehavior.recenter();
             }
         });
 
@@ -247,16 +242,6 @@ export class HolographicSlate extends ContentDisplay3D {
 
         // Creates a collision mesh that shares position with the backplate of the slate
         node.rotationQuaternion = Quaternion.Identity();
-
-        // const collisionBox = BoxBuilder.CreateBox("collisionBox" + "this.name", { size: 1 }, scene);
-        // collisionBox.scaling = this._backPlate.scaling;
-        // collisionBox.position = this._backPlate.position;
-        // collisionBox.parent = node;
-
-        this._sixDofDragBehavior = new SixDofDragBehavior();
-        this._sixDofDragBehavior.attach(this._backPlate);
-        this._sixDofDragBehavior.ancestorToDrag = node;
-
         node.isVisible = false;
 
         return node;
@@ -292,7 +277,9 @@ export class HolographicSlate extends ContentDisplay3D {
         super._prepareNode(scene);
         this._gizmo = new SlateGizmo(this._host.utilityLayer!);
         this._gizmo.attachedSlate = this;
-        this._followBehavior = new FollowBehavior();
+        this._defaultBehavior = new DefaultBehavior();
+        this._defaultBehavior.attach(this.node as Mesh, this._backPlate);
+
         this._updatePivot();
     }
 
@@ -315,7 +302,7 @@ export class HolographicSlate extends ContentDisplay3D {
             this._pickedPointObserver = null;
         }
 
-        this._followBehavior.detach();
+        this._defaultBehavior.detach();
         this._gizmo.dispose();
     }
 }

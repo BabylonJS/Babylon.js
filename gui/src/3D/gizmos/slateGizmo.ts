@@ -235,6 +235,7 @@ export class SlateGizmo extends Gizmo {
         let dragOrigin = new Vector3();
         let toObjectFrame = new Matrix();
 
+        let previousFollowState = false;
         this._dragStartObserver = dragBehavior.onDragStartObservable.add((event) => {
             if (this.attachedSlate && this.attachedMesh) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
@@ -242,7 +243,8 @@ export class SlateGizmo extends Gizmo {
                 dragOrigin.copyFrom(event.dragPlanePoint);
                 toObjectFrame.copyFrom(this.attachedMesh.computeWorldMatrix(true));
                 toObjectFrame.invert();
-                this.attachedSlate._followBehavior._enabled = false;
+                previousFollowState = this.attachedSlate._defaultBehavior.followBehaviorEnabled;
+                this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
             }
         });
 
@@ -261,7 +263,7 @@ export class SlateGizmo extends Gizmo {
         this._dragEndObserver = dragBehavior.onDragEndObservable.add(() => {
             if (this.attachedSlate && this.attachedNode) {
                 this.attachedSlate._updatePivot();
-                this.attachedSlate._followBehavior._enabled = true;
+                this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
             }
         });
 
