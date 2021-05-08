@@ -144,7 +144,7 @@ export class SlateGizmo extends Gizmo {
             node.parent = this._handlesParent;
             this._assignDragBehavior(
                 node,
-                (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => this._moveCorner(originStart, dimensionsStart, offset, masks),
+                (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => this._moveHandle(originStart, dimensionsStart, offset, masks, true),
                 masksCorners[i]
             );
         }
@@ -157,7 +157,7 @@ export class SlateGizmo extends Gizmo {
             node.parent = this._handlesParent;
             this._assignDragBehavior(
                 node,
-                (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => this._moveSide(originStart, dimensionsStart, offset, masks),
+                (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => this._moveHandle(originStart, dimensionsStart, offset, masks, false),
                 masksSides[i]
             );
         }
@@ -166,7 +166,8 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _keepAspectRatio(vector: Vector3, aspectRatio: number, invertDiagonal: boolean = false) {
-        const axis = new Vector3(aspectRatio, 1, 0).normalize();
+        const axis = TmpVectors.Vector3[0];
+        axis.copyFromFloats(aspectRatio, 1, 0).normalize();
         if (invertDiagonal) {
             axis.y *= -1;
         }
@@ -175,9 +176,11 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _clampDimensions(vector: Vector3, dimensions: Vector3, mask: Vector3, keepAspectRatio: boolean = false) {
-        const impact = vector.multiply(mask);
+        const impact = TmpVectors.Vector3[0];
+        impact.copyFrom(vector).multiplyInPlace(mask);
 
-        const clampedDimensions = new Vector3(
+        const clampedDimensions = TmpVectors.Vector3[1];
+        clampedDimensions.copyFromFloats(
             Math.max(this._attachedSlate!.minDimensions.x, impact.x + dimensions.x),
             Math.max(this._attachedSlate!.minDimensions.y, impact.y + dimensions.y),
             0
@@ -186,7 +189,8 @@ export class SlateGizmo extends Gizmo {
         // Calculating the real impact of vector on clamped dimensions
         impact.copyFrom(clampedDimensions).subtractInPlace(dimensions);
 
-        let factor = impact.clone();
+        let factor = TmpVectors.Vector3[2];
+        factor.copyFrom(impact);
         if (keepAspectRatio) {
             // We want to keep aspect ratio of vector while clamping so we move by the minimum of the 2 dimensions
             factor.x = Math.min(Math.abs(clampedDimensions.x - dimensions.x), Math.abs(clampedDimensions.y - dimensions.y));
@@ -197,31 +201,24 @@ export class SlateGizmo extends Gizmo {
         vector.y = Math.sign(vector.y) * Math.abs(factor.y);
     }
 
-    private _moveCorner(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) {
+    private _moveHandle(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks, isCorner: boolean) {
         if (!this._attachedSlate) {
             return;
         }
 
-        const aspectRatio = dimensionsStart.x / dimensionsStart.y;
-        this._keepAspectRatio(offset, aspectRatio, masks.dimensions.x * masks.dimensions.y < 0);
-        this._clampDimensions(offset, dimensionsStart, masks.dimensions, true);
-
-        this._attachedSlate.origin.copyFrom(originStart).addInPlace(offset.multiply(masks.origin));
-        this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offset.multiply(masks.dimensions));
-        this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
-    }
-
-    private _moveSide(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) {
-        if (!this._attachedSlate) {
-            return;
+        if (isCorner) {
+            const aspectRatio = dimensionsStart.x / dimensionsStart.y;
+            this._keepAspectRatio(offset, aspectRatio, masks.dimensions.x * masks.dimensions.y < 0);
         }
+        this._clampDimensions(offset, dimensionsStart, masks.dimensions, isCorner);
 
-        this._clampDimensions(offset, dimensionsStart, masks.dimensions, false);
+        const offsetOriginMasked = TmpVectors.Vector3[0];
+        const offsetDimensionsMasked = TmpVectors.Vector3[1];
+        offsetOriginMasked.copyFrom(offset).multiplyInPlace(masks.origin);
+        offsetDimensionsMasked.copyFrom(offset).multiplyInPlace(masks.dimensions);
 
-        offset.multiplyToRef(masks.origin, TmpVectors.Vector3[0]);
-        this._attachedSlate.origin.copyFrom(originStart).addInPlace(TmpVectors.Vector3[0]);
-
-        this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offset.multiply(masks.dimensions));
+        this._attachedSlate.origin.copyFrom(originStart).addInPlace(offsetOriginMasked);
+        this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offsetDimensionsMasked);
         this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
     }
 
