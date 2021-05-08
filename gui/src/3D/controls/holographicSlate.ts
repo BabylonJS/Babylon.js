@@ -22,6 +22,19 @@ import { SixDofDragBehavior } from "babylonjs/Behaviors/Meshes/sixDofDragBehavio
  */
 export class HolographicSlate extends ContentDisplay3D {
     /**
+     * Base Url for the assets.
+     */
+    public static ASSETS_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+    /**
+     * File name for the close icon.
+     */
+    public static CLOSE_ICON_FILENAME: string = "IconClose.png";
+    /**
+     * File name for the close icon.
+     */
+    public static FOLLOW_ICON_FILENAME: string = "IconFollowMe.png";
+
+    /**
      * Dimensions of the slate
      */
     public dimensions = new Vector3(5, 3, 0.04);
@@ -213,8 +226,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._positionElements();
 
-        this._followButton.imageUrl = "textures/IconFollowMe.png";
-        this._closeButton.imageUrl = "textures/IconClose.png";
+        this._followButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.FOLLOW_ICON_FILENAME;
+        this._closeButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.CLOSE_ICON_FILENAME;
 
         this._followButton.backMaterial.alpha = 0;
         this._closeButton.backMaterial.alpha = 0;
