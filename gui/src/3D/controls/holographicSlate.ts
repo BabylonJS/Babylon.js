@@ -255,7 +255,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._sixDofDragBehavior = new SixDofDragBehavior();
         this._sixDofDragBehavior.attach(this._backPlate);
-        this._sixDofDragBehavior.dragParentInstead = true;
+        this._sixDofDragBehavior.ancestorToDrag = node;
 
         node.isVisible = false;
 
