@@ -175,7 +175,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
 
                     // Detach camera controls
                     if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                        if (this._pointerCamera.inputs.attachedToElement) {
+                        if (this._pointerCamera.inputs && this._pointerCamera.inputs.attachedToElement) {
                             this._pointerCamera.detachControl();
                             this._attachedToElement = true;
                         } else {
