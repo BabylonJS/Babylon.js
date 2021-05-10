@@ -13,7 +13,8 @@ import { Observer } from "babylonjs/Misc/observable";
 import { Logger } from "babylonjs/Misc/logger";
 import { Container3D } from "./container3D";
 import { TouchHolographicButton } from "./touchHolographicButton";
-import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
+import { DefaultBehavior } from "../behaviors/defaultBehavior";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 
 /**
  * NearMenu that displays buttons and follows the camera
@@ -22,21 +23,45 @@ export class NearMenu extends VolumeBasedPanel {
     private _pinButton: TouchHolographicButton;
     private _backPlate: Mesh;
     private _backPlateMaterial: FluentMaterial;
+    private _pinMaterial: StandardMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
-    private _followBehavior: FollowBehavior;
+    private _defaultBehavior: DefaultBehavior;
 
     private _currentMin: Nullable<Vector3>;
     private _currentMax: Nullable<Vector3>;
+
+    private _isPinned: boolean = false;
+    /**
+     * Indicates if the near menu is world-pinned
+     */
+    public get isPinned(): boolean {
+        return this._isPinned;
+    }
+
+    public set isPinned(value: boolean) {
+        this._isPinned = value;
+
+        if (this._isPinned) {
+            this._pinMaterial.emissiveColor.copyFromFloats(0.25, 0.40, 0.95);
+            this._defaultBehavior.followBehaviorEnabled = false;
+        } else {
+            this._pinMaterial.emissiveColor.copyFromFloats(0.08, 0.15, 0.55);
+            this._defaultBehavior.followBehaviorEnabled = true;
+        }
+    }
 
     private _createPinButton(parent: TransformNode) {
         const control = new TouchHolographicButton("pin" + this.name, false);
         control.imageUrl = "./textures/IconPin.png";
         control.parent = this;
         control._host = this._host;
+        control.onPointerClickObservable.add(() => this.isPinned = !this.isPinned);
 
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
-
+            this._pinMaterial = control.backMaterial;
+            this._pinMaterial.diffuseColor.copyFromFloats(0, 0, 0);
+            
             if (control.node) {
                 control.node.parent = parent;
             }
@@ -52,10 +77,9 @@ export class NearMenu extends VolumeBasedPanel {
         this._backPlate.parent = node;
 
         this._pinButton = this._createPinButton(node);
+        this.isPinned = false;
 
-        // this._arrangeChildren();
-
-        this._followBehavior.attach(node);
+        this._defaultBehavior.attach(node, this._backPlate);
 
         return node;
     }
@@ -118,16 +142,19 @@ export class NearMenu extends VolumeBasedPanel {
 
         this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
 
-        this._followBehavior.minimumDistance = extendSize.length() * 0.5 * this.scaling.length();
-        this._followBehavior.maximumDistance = extendSize.length() * 1.5 * this.scaling.length();
-        this._followBehavior.defaultDistance = extendSize.length() * this.scaling.length();
+        this._defaultBehavior.followBehavior.minimumDistance = extendSize.length() * 0.5 * this.scaling.length();
+        this._defaultBehavior.followBehavior.maximumDistance = extendSize.length() * 1.5 * this.scaling.length();
+        this._defaultBehavior.followBehavior.defaultDistance = extendSize.length() * this.scaling.length();
     }
 
     constructor(name: string) {
         super();
 
         this.name = name;
-        this._followBehavior = new FollowBehavior();
+        this._defaultBehavior = new DefaultBehavior();
+        this._defaultBehavior.sixDofDragBehavior.onDragObservable.add(() => {
+            this.isPinned = true;
+        });
     }
 
     /**
@@ -162,7 +189,7 @@ export class NearMenu extends VolumeBasedPanel {
     public dispose() {
         super.dispose();
 
-        this._followBehavior.detach();
+        this._defaultBehavior.detach();
         this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
     }
 }
