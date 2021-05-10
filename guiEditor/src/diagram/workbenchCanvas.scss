@@ -3,10 +3,11 @@
     height: 100%;
     margin: 0;
     padding: 0;            
-    font: 14px "acumin-pro";  
+    font: 14px "acumin-pro";
+    cursor: default;
     user-select: none;
     overflow: hidden;
-    cursor: move;   
+
     background-image:
         linear-gradient(to right, #4F4E4F 1px, transparent 1px),
         linear-gradient(to bottom, #4F4E4F 1px, transparent 1px);  
