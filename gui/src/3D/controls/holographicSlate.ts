@@ -8,7 +8,7 @@ import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
+import { Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
 import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
@@ -243,6 +243,16 @@ export class HolographicSlate extends ContentDisplay3D {
         // Creates a collision mesh that shares position with the backplate of the slate
         node.rotationQuaternion = Quaternion.Identity();
         node.isVisible = false;
+
+        // By default the slate spawns in front of the camera
+        // TODO : add a parameter
+        if (scene.activeCamera) {
+            const invView = scene.activeCamera.getViewMatrix().clone().invert();
+            const backward = Vector3.TransformNormal(new Vector3(0, 0, -1), invView);
+            node.rotationQuaternion = Quaternion.FromLookDirectionLH(backward, new Vector3(0, 1, 0));
+            node.position.copyFrom(scene.activeCamera.position).subtractInPlace(backward.scale(0.7));
+            node.scaling.setAll(0.1);
+        }
 
         return node;
     }
