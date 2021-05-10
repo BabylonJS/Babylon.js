@@ -80,6 +80,7 @@ export class SlateGizmo extends Gizmo {
         this._attachedSlate = control;
         if (this._attachedSlate) {
             this.attachedMesh = this._attachedSlate.mesh;
+            this.updateBoundingBox();
         }
     }
 
