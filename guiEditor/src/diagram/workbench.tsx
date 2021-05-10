@@ -148,7 +148,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     componentWillUnmount() {
         this.props.globalState.hostDocument!.removeEventListener("keyup", this.ctrlEvent);
         this.props.globalState.hostDocument!.removeEventListener("keydown", this.ctrlEvent);
-        this.props.globalState.hostDocument!.defaultView!
+        this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.ctrlFalseEvent);
     }
 
     loadFromJson(serializationObject: any) {
@@ -444,14 +444,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
             switch (k.event.key) {
                 case "q": //select?
+                case "Q":
                     if (!this._forceSelecting)
                         this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
                 case "w": //pan?
+                case "W":
                     if (!this._forcePanning)
                         this.globalState.onPanObservable.notifyObservers();
                     break;
                 case "e": //zoom?
+                case "E":
                     if (!this._forceZooming)
                         this.globalState.onZoomObservable.notifyObservers();
                     break;

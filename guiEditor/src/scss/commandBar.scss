@@ -1,5 +1,5 @@
 :root {
-    --selectioGrey: #666666;
+    --selectionGrey: #666666;
 }
 
 .ge-commands {
@@ -76,12 +76,12 @@
         
         .active {
             transform-origin: center;
-            background-color: #666666;
+            background-color: var(--selectionGrey);
         }
 
         img {
             &.active {
-                background-color: #666666;
+                background-color: var(--selectionGrey);
             }
         }
     }
