@@ -8,13 +8,17 @@ import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
+import { Matrix, Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Image } from "../../2D/controls/image";
 import { SlateGizmo } from "../gizmos/slateGizmo";
 import { DefaultBehavior } from "../behaviors/defaultBehavior";
+import { Viewport } from "babylonjs/Maths/math.viewport";
+import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
+import { Scalar } from "babylonjs/Maths/math.scalar";
+import { Texture } from "babylonjs/Materials/Textures/texture";
 
 /**
  * Class used to create a holographic slate
@@ -63,6 +67,9 @@ export class HolographicSlate extends ContentDisplay3D {
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
     private _imageUrl: string;
 
+    private _contentViewport: Viewport;
+    private _contentDragBehavior: PointerDragBehavior;
+
     /** @hidden */
     public _defaultBehavior: DefaultBehavior;
     /** @hidden */
@@ -99,6 +106,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._imageUrl = value;
         this._rebuildContent();
+        this._resetContentPositionAndZoom();
+        this._applyContentViewport();
     }
 
     /**
@@ -110,6 +119,11 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._followButton = new TouchHolographicButton("followButton" + this.name);
         this._closeButton = new TouchHolographicButton("closeButton" + this.name);
+
+        this._contentViewport = new Viewport(0, 0, 1, 1);
+        this._contentDragBehavior = new PointerDragBehavior({
+            dragPlaneNormal: new Vector3(0, 0, -1),
+        });
     }
 
     /**
@@ -177,7 +191,29 @@ export class HolographicSlate extends ContentDisplay3D {
             contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, this.dimensions.z);
             backPlate.position.copyFromFloats(this.backplateDimensions.x / 2, -(this.backplateDimensions.y / 2), 0).addInPlace(this.origin);
             contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.backplateDimensions.y + this.backPlateMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
+
+            const aspectRatio = this.dimensions.x / contentPlateHeight;
+            this._contentViewport.width = this._contentScaleRatio;
+            this._contentViewport.height = this._contentScaleRatio / aspectRatio;
+
+            this._applyContentViewport();
         }
+    }
+
+    private _applyContentViewport() {
+        if (this._contentPlate.material && (this._contentPlate.material as FluentMaterial).albedoTexture) {
+            const tex = (this._contentPlate.material as FluentMaterial).albedoTexture as Texture;
+            tex.uScale = this._contentScaleRatio;
+            tex.vScale = this._contentScaleRatio / this._contentViewport.width * this._contentViewport.height;
+            tex.uOffset = this._contentViewport.x;
+            tex.vOffset = this._contentViewport.y;
+        }
+    }
+
+    private _resetContentPositionAndZoom() {
+        this._contentViewport.x = 0;
+        this._contentViewport.y = 1 - this._contentViewport.height / this._contentViewport.width;
+        this._contentScaleRatio = 1;
     }
 
     /**
@@ -212,6 +248,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._backPlate.parent = node;
         this._contentPlate.parent = node;
+        this._attachContentPlateBehavior();
 
         this._addControl(this._followButton);
         this._addControl(this._closeButton);
@@ -257,6 +294,54 @@ export class HolographicSlate extends ContentDisplay3D {
         return node;
     }
 
+    private _attachContentPlateBehavior() {
+        this._contentDragBehavior.attach(this._contentPlate);
+        this._contentDragBehavior.moveAttached = false;
+        this._contentDragBehavior.useObjectOrientationForDragging = true;
+        this._contentDragBehavior.updateDragPlane = false;
+
+        let origin = new Vector3();
+        let startViewport: Viewport;
+        let worldDimensions = new Vector3();
+        let upWorld = new Vector3();
+        let rightWorld = new Vector3();
+        let projectedOffset = new Vector2();
+        let worldMatrix: Matrix;
+
+        this._contentDragBehavior.onDragStartObservable.add((event) => {
+            if (!this.node) {
+                return;
+            }
+            startViewport = this._contentViewport.clone();
+            worldMatrix = this.node.computeWorldMatrix(true);
+
+            origin.copyFrom(event.dragPlanePoint);
+            worldDimensions.copyFrom(this.dimensions);
+            worldDimensions.y -= this.backplateDimensions.y + this.backPlateMargin;
+            Vector3.TransformNormalToRef(worldDimensions, worldMatrix, worldDimensions);
+            upWorld.copyFromFloats(0, 1, 0);
+            Vector3.TransformNormalToRef(upWorld, worldMatrix, upWorld);
+            rightWorld.copyFromFloats(1, 0, 0);
+            Vector3.TransformNormalToRef(rightWorld, worldMatrix, rightWorld);
+            upWorld.normalize();
+            upWorld.scaleInPlace(1 / Vector3.Dot(upWorld, worldDimensions));
+            rightWorld.normalize();
+            rightWorld.scaleInPlace(1 / Vector3.Dot(rightWorld, worldDimensions))
+        });
+
+        let offset = new Vector3();
+        this._contentDragBehavior.onDragObservable.add((event) => {
+            offset.copyFrom(event.dragPlanePoint);
+            offset.subtractInPlace(origin);
+            projectedOffset.copyFromFloats(Vector3.Dot(offset, rightWorld), Vector3.Dot(offset, upWorld));
+
+            // By default, content takes full width available and height is cropped to keep aspect ratio
+            this._contentViewport.x = Scalar.Clamp(startViewport.x - offset.x, 0, 1 - this._contentViewport.width * this._contentScaleRatio);
+            this._contentViewport.y = Scalar.Clamp(startViewport.y - offset.y, 0, 1 - this._contentViewport.height * this._contentScaleRatio);
+            this._applyContentViewport();
+        });
+    }
+
     protected _affectMaterial(mesh: AbstractMesh) {
         // TODO share materials
         this._backPlateMaterial = new FluentMaterial(this.name + "plateMaterial", mesh.getScene());
@@ -280,6 +365,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._contentPlate.material = this._contentMaterial;
 
         this._rebuildContent();
+        this._applyContentViewport();
     }
 
     /** @hidden **/
@@ -314,5 +400,6 @@ export class HolographicSlate extends ContentDisplay3D {
 
         this._defaultBehavior.detach();
         this._gizmo.dispose();
+        this._contentDragBehavior.detach();
     }
 }
