@@ -33,6 +33,7 @@
 
 - Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
 - Added NativeEngine configuration object parameter. ([drigax](https://github.com/drigax))
+- Added NativeEngine support for signed byte and unsigned short vertex buffer attribute types ([Alex-MSFT](https://github.com/Alex-MSFT))
 
 ### Loaders
 
