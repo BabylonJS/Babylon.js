@@ -1,7 +1,7 @@
 import { Behavior } from "../behavior";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
-import { Observable, Observer } from "../../Misc/observable";
+import { Observer } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
@@ -87,15 +87,15 @@ export class FollowBehavior implements Behavior<TransformNode> {
     /**
      *  Default distance from eye to attached node, i.e. the sphere radius
      */
-    public defaultDistance = 5;
+    public defaultDistance = 0.8;
     /**
      *  Max distance from eye to attached node, i.e. the sphere radius
      */
-    public maximumDistance = 10;
+    public maximumDistance = 2;
     /**
      *  Min distance from eye to attached node, i.e. the sphere radius
      */
-    public minimumDistance = 3;
+    public minimumDistance = 0.3;
 
     /**
      * Ignore vertical movement and lock the Y position of the object.

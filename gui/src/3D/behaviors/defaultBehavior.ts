@@ -51,7 +51,7 @@ export class DefaultBehavior implements Behavior<Mesh> {
     /**
      * Enables the follow behavior
      */
-    public followBehaviorEnabled: boolean = true;
+    public followBehaviorEnabled: boolean = false;
 
     /**
      * Enables the six DoF drag behavior
