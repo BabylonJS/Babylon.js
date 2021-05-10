@@ -21,10 +21,12 @@ export class DefaultBehavior implements Behavior<Mesh> {
         this._followBehavior = new FollowBehavior();
         this._sixDofDragBehavior = new SixDofDragBehavior();
     }
+
     /**
      * Attached node of this behavior
      */
     public attachedNode: Nullable<Mesh>;
+
     /**
      *  The name of the behavior
      */
@@ -62,19 +64,19 @@ export class DefaultBehavior implements Behavior<Mesh> {
     public init() {}
 
     /**
-     * Attaches the follow behavior
-     * @param ownerNode The mesh that will be following once attached
-     * @param followedCamera The camera that should be followed by the node
+     * Attaches the default behavior
+     * @param ownerMesh The top level mesh
+     * @param sixDofAnchorMesh A mesh that should behave as an anchor for the sixDof interaction. If unset, the top level mesh will be used
      */
-    public attach(ownerNode: Mesh, sixDofAnchorMesh?: Mesh): void {
-        this._scene = ownerNode.getScene();
-        this.attachedNode = ownerNode;
+    public attach(ownerMesh: Mesh, sixDofAnchorMesh?: Mesh): void {
+        this._scene = ownerMesh.getScene();
+        this.attachedNode = ownerMesh;
 
         this._addObservables();
         // Since our observables are bound before the child behaviors', ours are called first
-        this._followBehavior.attach(ownerNode);
-        this._sixDofDragBehavior.attach(sixDofAnchorMesh || ownerNode);
-        this._sixDofDragBehavior.ancestorToDrag = sixDofAnchorMesh ? ownerNode : null;
+        this._followBehavior.attach(ownerMesh);
+        this._sixDofDragBehavior.attach(sixDofAnchorMesh || ownerMesh);
+        this._sixDofDragBehavior.ancestorToDrag = sixDofAnchorMesh ? ownerMesh : null;
     }
 
     /**
