@@ -4,6 +4,12 @@ import { GUINodeTools } from "../guiNodeTools";
 import { CommandButtonComponent } from './commandButtonComponent';
 import { CommandDropdownComponent } from './commandDropdownComponent';
 
+const hamburgerIcon: string = require("./svgs/hamburgerIcon.svg");
+const pointerIcon: string = require("./svgs/pointerIcon.svg");
+const handIcon: string = require("./svgs/handIcon.svg");
+const zoomIcon: string = require("./svgs/zoomIcon.svg");
+const guidesIcon: string = require("./svgs/guidesIcon.svg");
+
 require("../scss/commandBar.scss");
 
 declare var Versions: any;
@@ -25,7 +31,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             <div className={"ge-commands"}>
                 <div className="commands-left">
                     <img src={"../imgs/babylonLogo.svg"} color="white" className={"active"} />
-                    <CommandDropdownComponent globalState={this.props.globalState} icon="hamburgerIcon" tooltip="Options" items={[
+                    <CommandDropdownComponent globalState={this.props.globalState} icon={hamburgerIcon} tooltip="Options" items={[
                         {
                             label: "Save",
                             onClick: () => { this.props.globalState.onSaveObservable.notifyObservers(); }
@@ -39,13 +45,13 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             onClick: () => { this.props.globalState.onSnippetLoadObservable.notifyObservers(); }
                         },
                     ]} />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon="pointerIcon" shortcut="Ctrl+S" isActive={false}
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon={pointerIcon} shortcut="Ctrl+S" isActive={false}
                         onClick={() => { this.props.globalState.onSelectionObservable.notifyObservers(); }} />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon="handIcon" shortcut="Ctrl" isActive={false}
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon={handIcon} shortcut="Ctrl" isActive={false}
                         onClick={() => { this.props.globalState.onPanObservable.notifyObservers(); }} />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" icon="zoomIcon" isActive={false}
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" icon={zoomIcon} isActive={false}
                         onClick={() => { this.props.globalState.onZoomObservable.notifyObservers(); }} />
-                    <CommandDropdownComponent globalState={this.props.globalState} icon="guidesIcon" tooltip="Create" items={[
+                    <CommandDropdownComponent globalState={this.props.globalState} icon={guidesIcon} tooltip="Create" items={[
                         {
                             label: "Image",
                             icon: "zoomIcon",
