@@ -5,9 +5,9 @@ import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
 import { GlobalState } from "../../../../globalState";
 
-const visibilityNotActiveIcon: string = require("../../public/imgs/visibilityNotActiveIcon.svg");
-const visibilityActiveIcon: string = require("../../public/imgs/visibilityActiveIcon.svg");
-const makeComponentIcon: string = require("../../public/imgs/makeComponentIcon.svg");
+const visibilityNotActiveIcon: string = require("../../../../../public/imgs/visibilityNotActiveIcon.svg");
+const visibilityActiveIcon: string = require("../../../../../public/imgs/visibilityActiveIcon.svg");
+const makeComponentIcon: string = require("../../../../../public/imgs/makeComponentIcon.svg");
 
 interface IControlTreeItemComponentProps {
     control: Control;

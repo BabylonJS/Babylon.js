@@ -69,11 +69,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         },
                     ]} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Select" icon={pointerIcon} shortcut="Q" isActive={this._selecting}
-                        onClick={() => { this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />
+                        onClick={() => { if(!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Pan" icon={handIcon} shortcut="W" isActive={this._panning}
-                        onClick={() => { this.props.globalState.onPanObservable.notifyObservers(); }} />
+                        onClick={() => { if(!this._panning) this.props.globalState.onPanObservable.notifyObservers(); }} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" shortcut="E" icon={zoomIcon} isActive={this._zooming}
-                        onClick={() => { this.props.globalState.onZoomObservable.notifyObservers(); }} />
+                        onClick={() => { if(!this._zooming) this.props.globalState.onZoomObservable.notifyObservers(); }} />
                     <CommandDropdownComponent globalState={this.props.globalState} icon={guidesIcon} tooltip="Create" items={[
                         {
                             label: "Image",
