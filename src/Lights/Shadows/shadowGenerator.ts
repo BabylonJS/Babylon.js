@@ -3,7 +3,7 @@ import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
-import { VertexBuffer } from "../../Meshes/buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
@@ -726,10 +726,16 @@ export class ShadowGenerator implements IShadowGenerator {
             this._shadowMap.renderList = [];
         }
 
-        this._shadowMap.renderList.push(mesh);
+        if (this._shadowMap.renderList.indexOf(mesh) === -1) {
+            this._shadowMap.renderList.push(mesh);
+        }
 
         if (includeDescendants) {
-            this._shadowMap.renderList.push(...mesh.getChildMeshes());
+            for (var childMesh of mesh.getChildMeshes()) {
+                if (this._shadowMap.renderList.indexOf(childMesh) === -1) {
+                    this._shadowMap.renderList.push(childMesh);
+                }
+            }
         }
 
         return this;

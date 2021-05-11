@@ -1,6 +1,6 @@
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
@@ -8,7 +8,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { VideoTexture } from "../Materials/Textures/videoTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Effect } from "../Materials/effect";
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
@@ -68,8 +68,10 @@ interface INativeEngine {
     readonly TEXTURE_FORMAT_RGBA8: number;
     readonly TEXTURE_FORMAT_RGBA32F: number;
 
+    readonly ATTRIB_TYPE_INT8: number;
     readonly ATTRIB_TYPE_UINT8: number;
     readonly ATTRIB_TYPE_INT16: number;
+    readonly ATTRIB_TYPE_UINT16: number;
     readonly ATTRIB_TYPE_FLOAT: number;
 
     readonly ALPHA_DISABLE: number;
@@ -817,7 +819,8 @@ export class NativeEngine extends Engine {
             blendMinMax: false,
             maxMSAASamples: 1,
             canUseGLInstanceID: true,
-            canUseGLVertexID: true
+            canUseGLVertexID: true,
+            supportComputeShaders: false,
         };
 
         this._features = {
@@ -2323,10 +2326,14 @@ export class NativeEngine extends Engine {
 
     private _getNativeAttribType(type: number): number {
         switch (type) {
+            case VertexBuffer.BYTE:
+                return this._native.ATTRIB_TYPE_INT8;
             case VertexBuffer.UNSIGNED_BYTE:
                 return this._native.ATTRIB_TYPE_UINT8;
             case VertexBuffer.SHORT:
                 return this._native.ATTRIB_TYPE_INT16;
+            case VertexBuffer.UNSIGNED_SHORT:
+                return this._native.ATTRIB_TYPE_UINT16;
             case VertexBuffer.FLOAT:
                 return this._native.ATTRIB_TYPE_FLOAT;
             default:

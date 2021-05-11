@@ -182,9 +182,9 @@ var generateSharedUiComponents = function(settings, done) {
 };
 
 /**
- * Dynamic module creation In Serie for WebPack leaks.
+ * Dynamic module creation in series for WebPack leaks.
  */
-function buildExternalLibraries(settings, fast) {
+function buildExternalLibraries(name, settings, fast) {
     // Creates the required tasks.
     var tasks = [];
 
@@ -196,9 +196,9 @@ function buildExternalLibraries(settings, fast) {
 
     var buildAMDDTS = function(cb) { return buildAMDDTSFiles(settings.libraries, settings, cb) };
     var processDTS = function(cb) { return processDTSFiles(settings.libraries, settings, cb) };
-    var appendLoseDTS = [function() { return appendLoseDTSFiles(settings, true) }];
+    var appendLoseDTS = [function appendLoseDTS() { return appendLoseDTSFiles(settings, true) }];
     if (!commandLineOptions.noNamespace) {
-        appendLoseDTS.push(function() { return appendLoseDTSFiles(settings, false) });
+        appendLoseDTS.push(function appendLoseDTSNoModule() { return appendLoseDTSFiles(settings, false) });
     }
 
     if (fast) {
@@ -207,7 +207,8 @@ function buildExternalLibraries(settings, fast) {
         tasks.push(sharedUiComponents, cleanup, shaders, buildMin, buildMax, buildAMDDTS, processDTS, ...appendLoseDTS);
     }
 
-    return gulp.series.apply(this, tasks);
+    tasks.map(t => t.displayName = name + ":" + t.name);
+    return gulp.series(...tasks);
 }
 
 /**
@@ -215,7 +216,7 @@ function buildExternalLibraries(settings, fast) {
  */
 config.modules.map(function(module) {
     const settings = config[module];
-    gulp.task(module, buildExternalLibraries(settings));
+    gulp.task(module, buildExternalLibraries(module, settings));
 });
 
 /**
@@ -228,7 +229,7 @@ gulp.task("typescript", gulp.series("core"));
  * Build the releasable files.
  * Back Compat Only, now name core as it is a lib
  */
-gulp.task("core-workers", buildExternalLibraries(config["core"], true));
+gulp.task("core-workers", buildExternalLibraries("core", config["core"], true));
 
 /**
  * Build all libs.

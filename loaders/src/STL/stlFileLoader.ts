@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Tools } from "babylonjs/Misc/tools";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";

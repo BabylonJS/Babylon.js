@@ -17,7 +17,7 @@ import { MaterialDefines } from '../../Materials/materialDefines';
 import { NodeMaterialOptimizer } from './Optimizers/nodeMaterialOptimizer';
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from '../imageProcessingConfiguration';
 import { Nullable } from '../../types';
-import { VertexBuffer } from '../../Meshes/buffer';
+import { VertexBuffer } from '../../Buffers/buffer';
 import { Tools } from '../../Misc/tools';
 import { TransformBlock } from './Blocks/transformBlock';
 import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';

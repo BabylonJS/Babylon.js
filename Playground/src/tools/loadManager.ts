@@ -80,7 +80,7 @@ export class LoadManager {
                         } else {
                             // If we're loading JS content and it's TS page
                             if (this.globalState.language === "TS") {
-                                Utilities.SwitchLanguage("JS", this.globalState);
+                                Utilities.SwitchLanguage("JS", this.globalState, true);
                             }
                         }
 
