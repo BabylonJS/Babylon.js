@@ -4,7 +4,7 @@ import { Vector3, Vector2 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -13,7 +13,7 @@ import { BoundingInfo } from "../Culling/boundingInfo";
 import { Constants } from "../Engines/constants";
 import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
-import { DataBuffer } from "./dataBuffer";
+import { DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMax } from "../Maths/math.functions";
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -263,10 +263,11 @@ export class Geometry implements IGetSetVerticesData {
      * Affect a vertex buffer to the geometry. the vertexBuffer.getKind() function is used to determine where to store the data
      * @param buffer defines the vertex buffer to use
      * @param totalVertices defines the total number of vertices for position kind (could be null)
+     * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
      */
-    public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null): void {
+    public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null, disposeExistingBuffer = true): void {
         var kind = buffer.getKind();
-        if (this._vertexBuffers[kind]) {
+        if (this._vertexBuffers[kind] && disposeExistingBuffer) {
             this._vertexBuffers[kind].dispose();
         }
 

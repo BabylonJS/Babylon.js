@@ -92,4 +92,6 @@ export interface EngineCapabilities {
     canUseGLInstanceID: boolean;
     /** Defines if gl_vertexID is available */
     canUseGLVertexID: boolean;
+    /** Defines if compute shaders are supported by the engine */
+    supportComputeShaders: boolean;
 }

@@ -371,7 +371,7 @@ interface GPUBindGroupEntry {
 interface GPUBufferBinding {
     buffer: GPUBuffer;
     offset?: GPUSize64; /* default=0 */
-    size: GPUSize64;
+    size?: GPUSize64; /* default=size_of_buffer - offset */
 }
 
 declare class GPUPipelineLayout implements GPUObjectBase {

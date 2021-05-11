@@ -2,7 +2,7 @@ import { IndicesArray, FloatArray } from "../types";
 import { Color4, Color3 } from "../Maths/math";
 import { Vector2, Vector3, Vector4, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
 import { EngineStore } from "../Engines/engineStore";
@@ -211,6 +211,7 @@ export class PointsCloudSystem implements IDisposable {
         mesh.computeWorldMatrix();
         var meshMatrix: Matrix = mesh.getWorldMatrix();
         if (!meshMatrix.isIdentity()) {
+            meshPos = meshPos.slice(0);
             for (var p = 0; p < meshPos.length / 3; p++) {
                 Vector3.TransformCoordinatesFromFloatsToRef(meshPos[3 * p], meshPos[3 * p + 1], meshPos[3 * p + 2], meshMatrix, place);
                 meshPos[3 * p] = place.x;

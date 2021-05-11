@@ -32,7 +32,7 @@ export class Buffer {
      * @param useBytes set to true if the stride in in bytes (optional)
      * @param divisor sets an optional divisor for instances (1 by default)
      */
-    constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false, divisor?: number) {
+    constructor(engine: any, data: DataArray | DataBuffer, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false, divisor?: number) {
         if (engine.getScene) { // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
             this._engine = engine.getScene().getEngine();
         }
@@ -44,7 +44,13 @@ export class Buffer {
         this._instanced = instanced;
         this._divisor = divisor || 1;
 
-        this._data = data;
+        if (data instanceof DataBuffer) {
+            this._data = null;
+            this._buffer = data;
+        } else {
+            this._data = data;
+            this._buffer = null;
+        }
 
         this.byteStride = useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT;
 
@@ -206,6 +212,8 @@ export class VertexBuffer {
 
     /** @hidden */
     public _buffer: Buffer;
+    /** @hidden */
+    public _validOffsetRange: boolean; // used internally by the engine
     private _kind: string;
     private _size: number;
     private _ownsBuffer: boolean;
@@ -312,7 +320,7 @@ export class VertexBuffer {
      * @param divisor defines the instance divisor to use (1 by default)
      * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
      */
-    constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
+    constructor(engine: any, data: DataArray | Buffer | DataBuffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
         instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false, divisor = 1, takeBufferOwnership = false) {
         if (data instanceof Buffer) {
             this._buffer = data;
@@ -494,11 +502,12 @@ export class VertexBuffer {
     }
 
     /**
-     * Returns the number of components per vertex attribute (integer)
-     * @returns the size in float
+     * Returns the number of components or the byte size per vertex attribute
+     * @param sizeInBytes If true, returns the size in bytes or else the size in number of components of the vertex attribute (default: false)
+     * @returns the number of components
      */
-    public getSize(): number {
-        return this._size;
+    public getSize(sizeInBytes = false): number {
+        return sizeInBytes ? this._size * VertexBuffer.GetTypeByteLength(this.type) : this._size;
     }
 
     /**
