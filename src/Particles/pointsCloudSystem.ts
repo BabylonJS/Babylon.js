@@ -211,6 +211,7 @@ export class PointsCloudSystem implements IDisposable {
         mesh.computeWorldMatrix();
         var meshMatrix: Matrix = mesh.getWorldMatrix();
         if (!meshMatrix.isIdentity()) {
+            meshPos = meshPos.slice(0);
             for (var p = 0; p < meshPos.length / 3; p++) {
                 Vector3.TransformCoordinatesFromFloatsToRef(meshPos[3 * p], meshPos[3 * p + 1], meshPos[3 * p + 2], meshMatrix, place);
                 meshPos[3 * p] = place.x;
