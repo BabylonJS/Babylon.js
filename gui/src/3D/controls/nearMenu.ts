@@ -71,7 +71,7 @@ export class NearMenu extends VolumeBasedPanel {
     }
 
     protected _createNode(scene: Scene): Nullable<TransformNode> {
-        const node = new Mesh("nearMenu" + this.name);
+        const node = new Mesh("nearMenu" + this.name, scene);
 
         this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
         this._backPlate.parent = node;
@@ -80,6 +80,7 @@ export class NearMenu extends VolumeBasedPanel {
         this.isPinned = false;
 
         this._defaultBehavior.attach(node, this._backPlate);
+        node.isVisible = false;
 
         return node;
     }

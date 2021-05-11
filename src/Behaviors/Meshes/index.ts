@@ -3,4 +3,5 @@ export * from "./fadeInOutBehavior";
 export * from "./multiPointerScaleBehavior";
 export * from "./pointerDragBehavior";
 export * from "./sixDofDragBehavior";
+export * from "./surfaceMagnetismBehavior";
 export * from "./followBehavior";
