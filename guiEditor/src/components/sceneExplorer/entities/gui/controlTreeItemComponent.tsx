@@ -5,6 +5,10 @@ import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
 import { GlobalState } from "../../../../globalState";
 
+const visibilityNotActiveIcon: string = require("../../public/imgs/visibilityNotActiveIcon.svg");
+const visibilityActiveIcon: string = require("../../public/imgs/visibilityActiveIcon.svg");
+const makeComponentIcon: string = require("../../public/imgs/makeComponentIcon.svg");
+
 interface IControlTreeItemComponentProps {
     control: Control;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -48,10 +52,10 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
                 {(this.state.isHovered || this.state.isSelected) && <>
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
-                        <img src={"./imgs/makeComponentIcon.svg"} />
+                        <img src={makeComponentIcon} />
                     </div>
                     <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide control">
-                        <img src={this.state.isVisible ? "./imgs/visibilityActiveIcon.svg" : "./imgs/visibilityNotActiveIcon.svg"} />
+                        <img src={this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon }/>
                     </div>
                 </>}
                 <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
