@@ -7295,7 +7295,8 @@ declare module BABYLON {
          */
         getStrideSize(): number;
         /**
-         * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
+         * Store data into the buffer. Creates the buffer if not used already.
+         * If the buffer was already used, it will be updated only if it is updatable, otherwise it will do nothing.
          * @param data defines the data to store
          */
         create(data?: Nullable<DataArray>): void;
@@ -61763,38 +61764,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export class WebGPUComputePipelineContext implements IComputePipelineContext {
-        engine: WebGPUEngine;
-        sources: {
-            compute: string;
-            rawCompute: string;
-        };
-        stage: Nullable<GPUProgrammableStage>;
-        computePipeline: GPUComputePipeline;
-        get isAsync(): boolean;
-        get isReady(): boolean;
-        /** @hidden */
-        _name: string;
-        constructor(engine: WebGPUEngine);
-        _getComputeShaderCode(): string | null;
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class WebGPUComputeContext implements IComputeContext {
-        private static _Counter;
-        readonly uniqueId: number;
-        private _device;
-        private _cacheSampler;
-        private _bindGroups;
-        getBindGroups(bindings: ComputeBindingList, computePipeline: GPUComputePipeline, bindingsMapping?: ComputeBindingMapping): GPUBindGroup[];
-        constructor(device: GPUDevice, cacheSampler: WebGPUCacheSampler);
-        clear(): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
     export var clearQuadVertexShader: {
         name: string;
         shader: string;
@@ -61916,22 +61885,32 @@ declare module BABYLON {
         private _glslang;
         private _adapter;
         private _adapterSupportedExtensions;
-        private _device;
+        /** @hidden */
+        _device: GPUDevice;
         private _deviceEnabledExtensions;
         private _context;
         private _swapChain;
         private _swapChainTexture;
         private _mainPassSampleCount;
-        private _textureHelper;
-        private _bufferManager;
+        /** @hidden */
+        _textureHelper: WebGPUTextureHelper;
+        /** @hidden */
+        _bufferManager: WebGPUBufferManager;
         private _clearQuad;
-        private _cacheSampler;
-        private _cacheRenderPipeline;
+        /** @hidden */
+        _cacheSampler: WebGPUCacheSampler;
+        /** @hidden */
+        _cacheRenderPipeline: WebGPUCacheRenderPipeline;
         private _cacheBindGroups;
         private _emptyVertexBuffer;
-        private _mrtAttachments;
-        private _timestampQuery;
-        private _compiledComputeEffects;
+        /** @hidden */
+        _mrtAttachments: number[];
+        /** @hidden */
+        _timestampQuery: WebGPUTimestampQuery;
+        /** @hidden */
+        _compiledComputeEffects: {
+            [key: string]: ComputeEffect;
+        };
         /** @hidden */
         _counters: {
             numEnableEffects: number;
@@ -61949,12 +61928,16 @@ declare module BABYLON {
         private _mainTextureExtends;
         private _depthTextureFormat;
         private _colorFormat;
-        private _uploadEncoder;
+        /** @hidden */
+        _uploadEncoder: GPUCommandEncoder;
         private _renderEncoder;
-        private _renderTargetEncoder;
+        /** @hidden */
+        _renderTargetEncoder: GPUCommandEncoder;
         private _commandBuffers;
-        private _currentRenderPass;
-        private _mainRenderPassWrapper;
+        /** @hidden */
+        _currentRenderPass: Nullable<GPURenderPassEncoder>;
+        /** @hidden */
+        _mainRenderPassWrapper: WebGPURenderPassWrapper;
         private _rttRenderPassWrapper;
         private _pendingDebugCommands;
         private _bundleList;
@@ -61964,7 +61947,10 @@ declare module BABYLON {
         private _currentOverrideVertexBuffers;
         private _currentIndexBuffer;
         private __colorWrite;
-        private _uniformsBuffers;
+        /** @hidden */
+        _uniformsBuffers: {
+            [name: string]: WebGPUDataBuffer;
+        };
         private _forceEnableEffect;
         /** @hidden */
         dbgShowShaderCode: boolean;
@@ -62080,16 +62066,6 @@ declare module BABYLON {
         protected _getShaderProcessor(): Nullable<IShaderProcessor>;
         /** @hidden */
         _getShaderProcessingContext(): Nullable<ShaderProcessingContext>;
-        /**
-         * Get the performance counter associated with the frame time computation
-         * @returns the perf counter
-         */
-        getGPUFrameTimeCounter(): PerfCounter;
-        /**
-         * Enable or disable the GPU frame time capture
-         * @param value True to enable, fale to disable
-         */
-        captureGPUFrameTime(value: boolean): void;
         /** @hidden */
         applyStates(): void;
         /**
@@ -62158,52 +62134,14 @@ declare module BABYLON {
          */
         createDynamicVertexBuffer(data: DataArray): DataBuffer;
         /**
-         * Updates a vertex buffer.
-         * @param vertexBuffer the vertex buffer to update
-         * @param data the data used to update the vertex buffer
-         * @param byteOffset the byte offset of the data
-         * @param byteLength the byte length of the data
-         */
-        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
-        /**
          * Creates a new index buffer
          * @param indices defines the content of the index buffer
          * @param updatable defines if the index buffer must be updatable - not used in WebGPU
          * @returns a new buffer
          */
         createIndexBuffer(indices: IndicesArray, updatable?: boolean): DataBuffer;
-        /**
-         * Update an index buffer
-         * @param indexBuffer defines the target index buffer
-         * @param indices defines the data to update
-         * @param offset defines the offset in the target index buffer where update should start
-         */
-        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
-        /**
-         * Creates a storage buffer
-         * @param data the data for the storage buffer or the size of the buffer
-         * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE will be automatically added
-         * @returns the new buffer
-         */
-        createStorageBuffer(data: DataArray | number, creationFlags: number): DataBuffer;
-        private _createBuffer;
-        /**
-         * Updates a storage buffer.
-         * @param buffer the storage buffer to update
-         * @param data the data used to update the storage buffer
-         * @param byteOffset the byte offset of the data
-         * @param byteLength the byte length of the data
-         */
-        updateStorageBuffer(buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
-        /**
-         * Read data from a storage buffer
-         * @param storageBuffer The storage buffer to read from
-         * @param offset The offset in the storage buffer to start reading from (default: 0)
-         * @param size  The number of bytes to read from the storage buffer (default: capacity of the buffer)
-         * @param buffer The buffer to write the data we have read from the storage buffer to (optional)
-         * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
-         */
-        readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView>;
+        /** @hidden */
+        _createBuffer(data: DataArray | number, creationFlags: number): DataBuffer;
         /** @hidden */
         bindBuffersDirectly(vertexBuffer: DataBuffer, indexBuffer: DataBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void;
         /** @hidden */
@@ -62222,82 +62160,6 @@ declare module BABYLON {
         }): void;
         /** @hidden */
         _releaseBuffer(buffer: DataBuffer): boolean;
-        /**
-         * Create an uniform buffer
-         * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
-         * @param elements defines the content of the uniform buffer
-         * @returns the webGL uniform buffer
-         */
-        createUniformBuffer(elements: FloatArray): DataBuffer;
-        /**
-         * Create a dynamic uniform buffer
-         * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
-         * @param elements defines the content of the uniform buffer
-         * @returns the webGL uniform buffer
-         */
-        createDynamicUniformBuffer(elements: FloatArray): DataBuffer;
-        /**
-         * Update an existing uniform buffer
-         * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
-         * @param uniformBuffer defines the target uniform buffer
-         * @param elements defines the content to update
-         * @param offset defines the offset in the uniform buffer where update should start
-         * @param count defines the size of the data to update
-         */
-        updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void;
-        /**
-         * Bind a buffer to the current webGL context at a given location
-         * @param buffer defines the buffer to bind
-         * @param location defines the index where to bind the buffer
-         * @param name Name of the uniform variable to bind
-         */
-        bindUniformBufferBase(buffer: DataBuffer, location: number, name: string): void;
-        /**
-         * Creates a new compute context
-         * @returns the new context
-         */
-        createComputeContext(): IComputeContext | undefined;
-        /**
-         * Creates a new compute effect
-         * @param baseName Name of the effect
-         * @param options Options used to create the effect
-         * @returns The new compute effect
-         */
-        createComputeEffect(baseName: any, options: IComputeEffectCreationOptions): ComputeEffect;
-        /**
-         * Creates a new compute pipeline context
-         * @returns the new pipeline
-         */
-        createComputePipelineContext(): IComputePipelineContext;
-        /**
-         * Gets a boolean indicating if all created compute effects are ready
-         * @returns true if all effects are ready
-         */
-        areAllComputeEffectsReady(): boolean;
-        /**
-         * Dispatches a compute shader
-         * @param effect The compute effect
-         * @param context The compute context
-         * @param bindings The list of resources to bind to the shader
-         * @param x The number of workgroups to execute on the X dimension
-         * @param y The number of workgroups to execute on the Y dimension
-         * @param z The number of workgroups to execute on the Z dimension
-         * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
-         */
-        computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void;
-        /**
-         * Forces the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
-         */
-        releaseComputeEffects(): void;
-        /** @hidden */
-        _prepareComputePipelineContext(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>): void;
-        /** @hidden */
-        _releaseComputeEffect(effect: ComputeEffect): void;
-        /** @hidden */
-        _rebuildComputeEffects(): void;
-        /** @hidden */
-        _deleteComputePipelineContext(pipelineContext: IComputePipelineContext): void;
-        private _createComputePipelineStageDescriptor;
         /**
          * Create a new effect (used to store vertex/fragment shaders)
          * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
@@ -62393,103 +62255,6 @@ declare module BABYLON {
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
         createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture;
-        /** @hidden */
-        _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean): void;
-        /**
-         * Creates a cube texture
-         * @param rootUrl defines the url where the files to load is located
-         * @param scene defines the current scene
-         * @param files defines the list of files to load (1 per face)
-         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
-         * @param onLoad defines an optional callback raised when the texture is loaded
-         * @param onError defines an optional callback raised if there is an issue to load the texture
-         * @param format defines the format of the data
-         * @param forcedExtension defines the extension to use to pick the right loader
-         * @param createPolynomials if a polynomial sphere should be created for the cube texture
-         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
-         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
-         * @param loaderOptions options to be passed to the loader
-         * @returns the cube texture as an InternalTexture
-         */
-        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>): InternalTexture;
-        /**
-         * Creates a raw texture
-         * @param data defines the data to store in the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param format defines the format of the data
-         * @param generateMipMaps defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-         * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
-         * @returns the raw texture inside an InternalTexture
-         */
-        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number, creationFlags?: number): InternalTexture;
-        /**
-         * Creates a new raw cube texture
-         * @param data defines the array of data to use to create each face
-         * @param size defines the size of the textures
-         * @param format defines the format of the data
-         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-         * @param generateMipMaps  defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compression used (null by default)
-         * @returns the cube texture as an InternalTexture
-         */
-        createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>): InternalTexture;
-        /**
-         * Creates a new raw cube texture from a specified url
-         * @param url defines the url where the data is located
-         * @param scene defines the current scene
-         * @param size defines the size of the textures
-         * @param format defines the format of the data
-         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-         * @param noMipmap defines if the engine should avoid generating the mip levels
-         * @param callback defines a callback used to extract texture data from loaded data
-         * @param mipmapGenerator defines to provide an optional tool to generate mip levels
-         * @param onLoad defines a callback called when texture is loaded
-         * @param onError defines a callback called if there is an error
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @returns the cube texture as an InternalTexture
-         */
-        createRawCubeTextureFromUrl(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, samplingMode?: number, invertY?: boolean): InternalTexture;
-        /**
-         * Creates a new raw 2D array texture
-         * @param data defines the data used to create the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param format defines the format of the texture
-         * @param generateMipMaps defines if the engine must generate mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compressed used (can be null)
-         * @param textureType defines the compressed used (can be null)
-         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
-         * @returns a new raw 2D array texture (stored in an InternalTexture)
-         */
-        createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number, creationFlags?: number): InternalTexture;
-        /**
-         * Creates a new raw 3D texture
-         * @param data defines the data used to create the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the depth of the texture
-         * @param format defines the format of the texture
-         * @param generateMipMaps defines if the engine must generate mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compressed used (can be null)
-         * @param textureType defines the compressed used (can be null)
-         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
-         * @returns a new raw 3D texture (stored in an InternalTexture)
-         */
-        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number, creationFlags?: number): InternalTexture;
         generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
         /**
          * Update the sampling mode of a given texture
@@ -62536,17 +62301,8 @@ declare module BABYLON {
         _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number): void;
         /** @hidden */
         _bindTexture(channel: number, texture: InternalTexture, name: string): void;
-        private _generateMipmaps;
-        /**
-         * Update the content of a texture
-         * @param texture defines the texture to update
-         * @param canvas defines the source containing the data
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param premulAlpha defines if alpha is stored as premultiplied
-         * @param format defines the format of the data
-         * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
-         */
-        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+        /** @hidden */
+        _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder): void;
         /**
          * Update a portion of an internal texture
          * @param texture defines the texture to update
@@ -62559,13 +62315,6 @@ declare module BABYLON {
          * @param lod defines the lod level to update (0 by default)
          */
         updateTextureData(texture: InternalTexture, imageData: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number, faceIndex?: number, lod?: number): void;
-        /**
-         * Update a video texture
-         * @param texture defines the texture to update
-         * @param video defines the video element to use
-         * @param invertY defines if data must be stored with Y axis inverted
-         */
-        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
         /** @hidden */
         _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
@@ -62574,47 +62323,6 @@ declare module BABYLON {
         _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
-        /**
-         * Update a raw texture
-         * @param texture defines the texture to update
-         * @param bufferView defines the data to store in the texture
-         * @param format defines the format of the data
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         */
-        updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
-        /**
-         * Update a raw cube texture
-         * @param texture defines the texture to update
-         * @param bufferView defines the data to store
-         * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the compression used (null by default)
-         * @param level defines which level of the texture to update
-         */
-        updateRawCubeTexture(texture: InternalTexture, bufferView: ArrayBufferView[], format: number, type: number, invertY: boolean, compression?: Nullable<string>, level?: number): void;
-        /**
-         * Update a raw 2D array texture
-         * @param texture defines the texture to update
-         * @param bufferView defines the data to store
-         * @param format defines the data format
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        updateRawTexture2DArray(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, textureType?: number): void;
-        /**
-         * Update a raw 3D texture
-         * @param texture defines the texture to update
-         * @param bufferView defines the data to store
-         * @param format defines the data format
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        updateRawTexture3D(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, textureType?: number): void;
         /**
          * Reads pixels from the current frame buffer. Please note that this function can be slow
          * @param x defines the x coordinate of the rectangle where pixels must be read
@@ -62626,53 +62334,6 @@ declare module BABYLON {
          * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
          */
         readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean, flushRenderer?: boolean): Promise<ArrayBufferView>;
-        /** @hidden */
-        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Promise<ArrayBufferView>;
-        /** @hidden */
-        _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): ArrayBufferView;
-        /**
-         * Creates a new render target texture
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target texture stored in an InternalTexture
-         */
-        createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture;
-        /**
-         * Create a multi render target texture
-         * @param size defines the size of the texture
-         * @param options defines the creation options
-         * @returns the cube texture as an InternalTexture
-         */
-        createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[];
-        /**
-         * Creates a new render target cube texture
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target cube texture stored in an InternalTexture
-         */
-        createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture;
-        /** @hidden */
-        _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | {
-            width: number;
-            height: number;
-            layers?: number;
-        }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples?: number): void;
-        /** @hidden */
-        _createDepthStencilTexture(size: number | {
-            width: number;
-            height: number;
-            layers?: number;
-        }, options: DepthTextureCreationOptions): InternalTexture;
-        /** @hidden */
-        _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture;
-        updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
-        /**
-         * Update the sample count for a given multiple render target texture
-         * @param textures defines the textures to update
-         * @param samples defines the sample count to set
-         * @returns the effective sample count (could be 0 if multisample render targets are not supported)
-         */
-        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
         /**
          * Begin a new frame
          */
@@ -62687,25 +62348,11 @@ declare module BABYLON {
          */
         flushFramebuffer(reopenPass?: boolean): void;
         private _startRenderTargetRenderPass;
-        private _endRenderTargetRenderPass;
+        /** @hidden */
+        _endRenderTargetRenderPass(): void;
         private _getCurrentRenderPass;
         private _startMainRenderPass;
         private _endMainRenderPass;
-        /**
-         * Restores the WebGPU state to only draw on the main color attachment
-         */
-        restoreSingleAttachment(): void;
-        /**
-         * Creates a layout object to draw/clear on specific textures in a MRT
-         * @param textureStatus textureStatus[i] indicates if the i-th is active
-         * @returns A layout to be fed to the engine, calling `bindAttachments`.
-         */
-        buildTextureLayout(textureStatus: boolean[]): number[];
-        /**
-         * Select a subsets of attachments to draw to.
-         * @param attachments index of attachments
-         */
-        bindAttachments(attachments: number[]): void;
         /**
          * Binds the frame buffer to the specified texture.
          * @param texture The texture to render to or null for the default canvas
@@ -62725,18 +62372,13 @@ declare module BABYLON {
          */
         unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
         /**
-         * Unbind a list of render target textures from the WebGPU context
-         * @param textures defines the render target textures to unbind
-         * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
-         * @param onBeforeUnbind defines a function which will be called before the effective unbind
-         */
-        unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
-        /**
          * Unbind the current render target and bind the default framebuffer
          */
         restoreDefaultFramebuffer(): void;
-        private _setColorFormat;
-        private _setDepthTextureFormat;
+        /** @hidden */
+        _setColorFormat(wrapper: WebGPURenderPassWrapper): void;
+        /** @hidden */
+        _setDepthTextureFormat(wrapper: WebGPURenderPassWrapper): void;
         setDitheringState(value: boolean): void;
         setRasterizerState(value: boolean): void;
         /**
@@ -62749,18 +62391,6 @@ declare module BABYLON {
          * @param stencil stencil states to set
          */
         setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
-        /**
-         * Sets the current alpha mode
-         * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
-         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-         */
-        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        /**
-         * Sets the current alpha equation
-         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
-         */
-        setAlphaEquation(equation: number): void;
         private _draw;
         /**
          * Draw a list of indexed primitives
@@ -62836,8 +62466,6 @@ declare module BABYLON {
             mag: number;
         };
         /** @hidden */
-        bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
-        /** @hidden */
         getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[];
         /** @hidden */
         setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean;
@@ -62870,6 +62498,44 @@ declare module BABYLON {
         /** @hidden */
         setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean;
     }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUComputeContext implements IComputeContext {
+        private static _Counter;
+        readonly uniqueId: number;
+        private _device;
+        private _cacheSampler;
+        private _bindGroups;
+        getBindGroups(bindings: ComputeBindingList, computePipeline: GPUComputePipeline, bindingsMapping?: ComputeBindingMapping): GPUBindGroup[];
+        constructor(device: GPUDevice, cacheSampler: WebGPUCacheSampler);
+        clear(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUComputePipelineContext implements IComputePipelineContext {
+        engine: WebGPUEngine;
+        sources: {
+            compute: string;
+            rawCompute: string;
+        };
+        stage: Nullable<GPUProgrammableStage>;
+        computePipeline: GPUComputePipeline;
+        get isAsync(): boolean;
+        get isReady(): boolean;
+        /** @hidden */
+        _name: string;
+        constructor(engine: WebGPUEngine);
+        _getComputeShaderCode(): string | null;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+        interface WebGPUEngine {
+            /** @hidden */
+            _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>): GPUProgrammableStage;
+        }
 }
 declare module BABYLON {
     /** @hidden */
