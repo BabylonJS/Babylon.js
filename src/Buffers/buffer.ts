@@ -117,7 +117,8 @@ export class Buffer {
     // Methods
 
     /**
-     * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
+     * Store data into the buffer. Creates the buffer if not used already.
+     * If the buffer was already used, it will be updated only if it is updatable, otherwise it will do nothing.
      * @param data defines the data to store
      */
     public create(data: Nullable<DataArray> = null): void {
