@@ -4,7 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Vector3, Quaternion, Matrix } from "../../Maths/math.vector";
+import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Observer, Observable } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { PivotTools } from "../../Misc/pivotTools";
@@ -58,6 +58,10 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
      * If camera controls should be detached during the drag
      */
     public detachCameraControls = true;
+    /**
+     * Should the object rotate towards the camera when we start dragging it
+     */
+    public faceCameraOnDragStart = false;
     /**
      * Fires each time a drag starts
      */
@@ -163,7 +167,13 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                         referenceMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(referenceMesh.rotation.y, referenceMesh.rotation.x, referenceMesh.rotation.z);
                     }
                     referenceMesh.setParent(null);
-                    this._virtualDragMesh.rotationQuaternion!.copyFrom(referenceMesh.rotationQuaternion);
+                    if (this.faceCameraOnDragStart) {
+                        const quat = Quaternion.FromLookDirectionLH(pointerInfo.pickInfo.ray.direction.scale(-1), new Vector3(0, 1, 0));
+                        quat.normalize();
+                        this._virtualDragMesh.rotationQuaternion!.copyFrom(quat);
+                    } else {
+                        this._virtualDragMesh.rotationQuaternion!.copyFrom(referenceMesh.rotationQuaternion);
+                    }
                     referenceMesh.setParent(oldParent);
 
                     this._virtualOriginMesh.addChild(this._virtualDragMesh);
