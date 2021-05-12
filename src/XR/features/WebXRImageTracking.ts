@@ -150,18 +150,13 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
         return typeof XRImageTrackingResult !== "undefined";
     }
 
-    /** @deprecated Please use getTrackedImageById instead */
-    public getTrackedImageByID(id: number): Nullable<IWebXRTrackedImage> {
-        return this.getTrackedImageById(id);
-    }
-
     /**
      * Get a tracked image by its ID.
      *
      * @param id the id of the image to load (position in the init array)
      * @returns a trackable image, if exists in this location
      */
-    public getTrackedImageById(id: number): Nullable<IWebXRTrackedImage> {
+    public getTrackedImageByID(id: number): Nullable<IWebXRTrackedImage> {
         return this._trackedImages[id] || null;
     }
 
