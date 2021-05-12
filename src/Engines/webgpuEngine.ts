@@ -98,6 +98,12 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
     timeStep?: number;
 
     /**
+     * Defines that engine should ignore context lost events
+     * If this event happens when this parameter is true, you will have to reload the page to restore rendering
+     */
+    doNotHandleContextLost?: boolean;
+
+    /**
      * Defines that engine should ignore modifying touch action attribute and style
      * If not handle, you might need to set it up on your side for expected touch devices behavior.
      */
@@ -186,7 +192,8 @@ export class WebGPUEngine extends Engine {
 
     // Engine Life Cycle
     private _canvas: HTMLCanvasElement;
-    private _options: WebGPUEngineOptions;
+    /** @hidden */
+    public _options: WebGPUEngineOptions;
     private _glslang: any = null;
     private _adapter: GPUAdapter;
     private _adapterSupportedExtensions: GPUFeatureName[];
@@ -245,7 +252,8 @@ export class WebGPUEngine extends Engine {
     // Frame Life Cycle (recreated each frame)
     /** @hidden */
     public _uploadEncoder: GPUCommandEncoder;
-    private _renderEncoder: GPUCommandEncoder;
+    /** @hidden */
+    public _renderEncoder: GPUCommandEncoder;
     /** @hidden */
     public _renderTargetEncoder: GPUCommandEncoder;
 
@@ -257,7 +265,8 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _mainRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
     private _rttRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
-    private _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
+    /** @hidden */
+    public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
     private _bundleList: WebGPUBundleList;
 
     // DrawCall Life Cycle
@@ -478,7 +487,7 @@ export class WebGPUEngine extends Engine {
         this._lockstepMaxSteps = options.lockstepMaxSteps;
         this._timeStep = options.timeStep || 1 / 60;
 
-        this._doNotHandleContextLost = false;
+        this._doNotHandleContextLost = !!options.doNotHandleContextLost;
 
         this._canvas = canvas;
         this._options = options;
@@ -541,6 +550,17 @@ export class WebGPUEngine extends Engine {
                 this._device = device!;
                 this._deviceEnabledExtensions = [];
                 this._device.features.forEach((feature) => this._deviceEnabledExtensions.push(feature));
+                this._device.addEventListener('uncapturederror', (event) => {
+                    Logger.Warn("WebGPU uncaptured error: " + (<GPUUncapturedErrorEvent>event).error);
+                });
+                if (!this._doNotHandleContextLost) {
+                    this._device.lost.then((info) => {
+                        this._contextWasLost = true;
+                        Logger.Warn("WebGPU context lost. " + info);
+                        this.onContextLostObservable.notifyObservers(this);
+                        this._restoreEngineAfterContextLost(this.initAsync);
+                    });
+                }
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
