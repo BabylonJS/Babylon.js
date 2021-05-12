@@ -1,6 +1,7 @@
 import "./engine.alpha";
 import "./engine.computeShader";
 import "./engine.cubeTexture";
+import "./engine.debugging";
 import "./engine.dynamicBuffer";
 import "./engine.dynamicTexture";
 import "./engine.multiRender";
