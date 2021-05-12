@@ -220,7 +220,7 @@ export class SceneRecorder {
             if (Array.isArray(property) || prop === "shadowGenerators") { // Restore array
                 switch (prop) {
                     case "cameras":
-                        this._ApplyDeltaForEntity(source, scene, scene.getCameraByI.bind(scene), (data) => Camera.Parse(data, scene));
+                        this._ApplyDeltaForEntity(source, scene, scene.getCameraById.bind(scene), (data) => Camera.Parse(data, scene));
                         break;
                     case "lights":
                         this._ApplyDeltaForEntity(source, scene, scene.getLightById.bind(scene), (data) => Light.Parse(data, scene));

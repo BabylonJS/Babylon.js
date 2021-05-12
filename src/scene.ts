@@ -2626,7 +2626,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @return the new active camera or null if none found.
      */
     public setActiveCameraById(id: string): Nullable<Camera> {
-        var camera = this.getCameraByI(id);
+        var camera = this.getCameraById(id);
 
         if (camera) {
             this.activeCamera = camera;
@@ -2759,7 +2759,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @deprecated Please use getCameraById instead */
     public getCameraByID(id: string): Nullable<Camera> {
-        return this.getCameraByI(id);
+        return this.getCameraById(id);
     }
 
     /**
@@ -2767,7 +2767,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the id to look for
      * @returns the camera or null if not found
      */
-    public getCameraByI(id: string): Nullable<Camera> {
+    public getCameraById(id: string): Nullable<Camera> {
         for (var index = 0; index < this.cameras.length; index++) {
             if (this.cameras[index].id === id) {
                 return this.cameras[index];
@@ -2779,7 +2779,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @deprecated Please use getCameraByUniqueId instead */
     public getCameraByUniqueID(uniqueId: number): Nullable<Camera> {
-        return this.getCameraByUniqueI(uniqueId);
+        return this.getCameraByUniqueId(uniqueId);
     }
 
     /**
@@ -2787,7 +2787,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param uniqueId defines the unique id to look for
      * @returns the camera or null if not found
      */
-    public getCameraByUniqueI(uniqueId: number): Nullable<Camera> {
+    public getCameraByUniqueId(uniqueId: number): Nullable<Camera> {
         for (var index = 0; index < this.cameras.length; index++) {
             if (this.cameras[index].uniqueId === uniqueId) {
                 return this.cameras[index];
@@ -3226,7 +3226,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return light;
         }
 
-        const camera = this.getCameraByI(id);
+        const camera = this.getCameraById(id);
         if (camera) {
             return camera;
         }
