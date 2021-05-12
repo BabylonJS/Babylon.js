@@ -198,11 +198,19 @@ export class CloudPoint {
  *  * PCS internal tool, don't use it manually.
  */
 export class PointsGroup {
+    /** @deprecated Please use groupId instead */
+    public get groupID(): number {
+        return this.groupId;
+    }
+    /** @deprecated Please use groupId instead */
+    public set groupID(groupID: number) {
+        this.groupId = groupID;
+    }
     /**
      * The group id
      * @hidden
      */
-    public groupID: number;
+    public groupId: number;
     /**
      * image data for group (internal use)
      * @hidden
@@ -240,7 +248,7 @@ export class PointsGroup {
      * @hidden
      */
     constructor(id: number, posFunction: Nullable<(particle: CloudPoint, i?: number, s?: number) => void>) {
-        this.groupID = id;
+        this.groupId = id;
         this._positionFunction = posFunction;
     }
 }

@@ -2615,13 +2615,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
+    /** @deprecated Please use setActiveCameraById instead */
+    public setActiveCameraByID(id: string): Nullable<Camera> {
+        return this.setActiveCameraById(id);
+    }
+
     /**
      * sets the active camera of the scene using its ID
      * @param id defines the camera's ID
      * @return the new active camera or null if none found.
      */
-    public setActiveCameraByID(id: string): Nullable<Camera> {
-        var camera = this.getCameraByID(id);
+    public setActiveCameraById(id: string): Nullable<Camera> {
+        var camera = this.getCameraById(id);
 
         if (camera) {
             this.activeCamera = camera;
@@ -2677,12 +2682,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getNodeById instead */
+    public getMaterialByID(id: string): Nullable<Material> {
+        return this.getMaterialById(id);
+    }
+
     /**
      * get a material using its id
      * @param id defines the material's ID
      * @return the material or null if none found.
      */
-    public getMaterialByID(id: string): Nullable<Material> {
+    public getMaterialById(id: string): Nullable<Material> {
         for (var index = 0; index < this.materials.length; index++) {
             if (this.materials[index].id === id) {
                 return this.materials[index];
@@ -2692,12 +2702,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getLastMaterialById instead */
+    public getLastMaterialByID(id: string): Nullable<Material> {
+        return this.getLastMaterialById(id);
+    }
+
     /**
      * Gets a the last added material using a given id
      * @param id defines the material's ID
      * @return the last material with the given id or null if none found.
      */
-    public getLastMaterialByID(id: string): Nullable<Material> {
+    public getLastMaterialById(id: string): Nullable<Material> {
         for (var index = this.materials.length - 1; index >= 0; index--) {
             if (this.materials[index].id === id) {
                 return this.materials[index];
@@ -2722,12 +2737,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getTextureByUniqueId instead */
+    public getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture> {
+        return this.getTextureByUniqueId(uniqueId);
+    }
+
     /**
      * Get a texture using its unique id
      * @param uniqueId defines the texture's unique id
      * @return the texture or null if none found.
      */
-    public getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture> {
+    public getTextureByUniqueId(uniqueId: number): Nullable<BaseTexture> {
         for (var index = 0; index < this.textures.length; index++) {
             if (this.textures[index].uniqueId === uniqueId) {
                 return this.textures[index];
@@ -2737,12 +2757,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getCameraById instead */
+    public getCameraByID(id: string): Nullable<Camera> {
+        return this.getCameraById(id);
+    }
+
     /**
      * Gets a camera using its id
      * @param id defines the id to look for
      * @returns the camera or null if not found
      */
-    public getCameraByID(id: string): Nullable<Camera> {
+    public getCameraById(id: string): Nullable<Camera> {
         for (var index = 0; index < this.cameras.length; index++) {
             if (this.cameras[index].id === id) {
                 return this.cameras[index];
@@ -2752,12 +2777,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getCameraByUniqueId instead */
+    public getCameraByUniqueID(uniqueId: number): Nullable<Camera> {
+        return this.getCameraByUniqueId(uniqueId);
+    }
+
     /**
      * Gets a camera using its unique id
      * @param uniqueId defines the unique id to look for
      * @returns the camera or null if not found
      */
-    public getCameraByUniqueID(uniqueId: number): Nullable<Camera> {
+    public getCameraByUniqueId(uniqueId: number): Nullable<Camera> {
         for (var index = 0; index < this.cameras.length; index++) {
             if (this.cameras[index].uniqueId === uniqueId) {
                 return this.cameras[index];
@@ -2782,12 +2812,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getBoneById instead */
+    public getBoneByID(id: string): Nullable<Bone> {
+        return this.getBoneById(id);
+    }
+
     /**
      * Gets a bone using its id
      * @param id defines the bone's id
      * @return the bone or null if not found
      */
-    public getBoneByID(id: string): Nullable<Bone> {
+    public getBoneById(id: string): Nullable<Bone> {
         for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
             var skeleton = this.skeletons[skeletonIndex];
             for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
@@ -2833,12 +2868,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getLightById instead */
+    public getLightByID(id: string): Nullable<Light> {
+        return this.getLightById(id);
+    }
+
     /**
      * Gets a light node using its id
      * @param id defines the light's id
      * @return the light or null if none found.
      */
-    public getLightByID(id: string): Nullable<Light> {
+    public getLightById(id: string): Nullable<Light> {
         for (var index = 0; index < this.lights.length; index++) {
             if (this.lights[index].id === id) {
                 return this.lights[index];
@@ -2848,12 +2888,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getLightByUniqueId instead */
+    public getLightByUniqueID(uniqueId: number): Nullable<Light> {
+        return this.getLightByUniqueId(uniqueId);
+    }
+
     /**
      * Gets a light node using its scene-generated unique ID
      * @param uniqueId defines the light's unique id
      * @return the light or null if none found.
      */
-    public getLightByUniqueID(uniqueId: number): Nullable<Light> {
+    public getLightByUniqueId(uniqueId: number): Nullable<Light> {
         for (var index = 0; index < this.lights.length; index++) {
             if (this.lights[index].uniqueId === uniqueId) {
                 return this.lights[index];
@@ -2863,12 +2908,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getParticleSystemById instead */
+    public getParticleSystemByID(id: string): Nullable<IParticleSystem> {
+        return this.getParticleSystemById(id);
+    }
+
     /**
      * Gets a particle system by id
      * @param id defines the particle system id
      * @return the corresponding system or null if none found
      */
-    public getParticleSystemByID(id: string): Nullable<IParticleSystem> {
+    public getParticleSystemById(id: string): Nullable<IParticleSystem> {
         for (var index = 0; index < this.particleSystems.length; index++) {
             if (this.particleSystems[index].id === id) {
                 return this.particleSystems[index];
@@ -2878,12 +2928,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getGeometryById instead */
+    public getGeometryByID(id: string): Nullable<Geometry> {
+        return this.getGeometryById(id);
+    }
+
     /**
      * Gets a geometry using its ID
      * @param id defines the geometry's id
      * @return the geometry or null if none found.
      */
-    public getGeometryByID(id: string): Nullable<Geometry> {
+    public getGeometryById(id: string): Nullable<Geometry> {
         for (var index = 0; index < this.geometries.length; index++) {
             if (this.geometries[index].id === id) {
                 return this.geometries[index];
@@ -2893,7 +2948,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    private _getGeometryByUniqueID(uniqueId: number): Nullable<Geometry> {
+    private _getGeometryByUniqueId(uniqueId: number): Nullable<Geometry> {
         if (this.geometriesByUniqueId) {
             const index = this.geometriesByUniqueId[uniqueId];
             if (index !== undefined) {
@@ -2918,7 +2973,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @return a boolean defining if the geometry was added or not
      */
     public pushGeometry(geometry: Geometry, force?: boolean): boolean {
-        if (!force && this._getGeometryByUniqueID(geometry.uniqueId)) {
+        if (!force && this._getGeometryByUniqueId(geometry.uniqueId)) {
             return false;
         }
 
@@ -2974,12 +3029,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this.geometries;
     }
 
+    /** @deprecated Please use getMeshById instead */
+    public getMeshByID(id: string): Nullable<AbstractMesh> {
+        return this.getMeshById(id);
+    }
+
     /**
      * Gets the first added mesh found of a given ID
      * @param id defines the id to search for
      * @return the mesh found or null if not found at all
      */
-    public getMeshByID(id: string): Nullable<AbstractMesh> {
+    public getMeshById(id: string): Nullable<AbstractMesh> {
         for (var index = 0; index < this.meshes.length; index++) {
             if (this.meshes[index].id === id) {
                 return this.meshes[index];
@@ -2989,15 +3049,25 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getMeshesById instead */
+    public getMeshesByID(id: string): Array<AbstractMesh> {
+        return this.getMeshesById(id);
+    }
+
     /**
      * Gets a list of meshes using their id
      * @param id defines the id to search for
      * @returns a list of meshes
      */
-    public getMeshesByID(id: string): Array<AbstractMesh> {
+    public getMeshesById(id: string): Array<AbstractMesh> {
         return this.meshes.filter(function(m) {
             return m.id === id;
         });
+    }
+
+    /** @deprecated Please use getTransformNodeById instead */
+    public getTransformNodeByID(id: string): Nullable<TransformNode> {
+        return this.getTransformNodeById(id);
     }
 
     /**
@@ -3005,7 +3075,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the id to search for
      * @return the found transform node or null if not found at all.
      */
-    public getTransformNodeByID(id: string): Nullable<TransformNode> {
+    public getTransformNodeById(id: string): Nullable<TransformNode> {
         for (var index = 0; index < this.transformNodes.length; index++) {
             if (this.transformNodes[index].id === id) {
                 return this.transformNodes[index];
@@ -3015,12 +3085,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getTransformNodeByUniqueId instead */
+    public getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode> {
+        return this.getTransformNodeByUniqueId(uniqueId);
+    }
+
     /**
      * Gets a transform node with its auto-generated unique id
      * @param uniqueId efines the unique id to search for
      * @return the found transform node or null if not found at all.
      */
-    public getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode> {
+    public getTransformNodeByUniqueId(uniqueId: number): Nullable<TransformNode> {
         for (var index = 0; index < this.transformNodes.length; index++) {
             if (this.transformNodes[index].uniqueId === uniqueId) {
                 return this.transformNodes[index];
@@ -3030,15 +3105,25 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getTransformNodesById instead */
+    public getTransformNodesByID(id: string): Array<TransformNode> {
+        return this.getTransformNodesById(id);
+    }
+
     /**
      * Gets a list of transform nodes using their id
      * @param id defines the id to search for
      * @returns a list of transform nodes
      */
-    public getTransformNodesByID(id: string): Array<TransformNode> {
+    public getTransformNodesById(id: string): Array<TransformNode> {
         return this.transformNodes.filter(function(m) {
             return m.id === id;
         });
+    }
+
+    /** @deprecated Please use getMeshByUniqueId instead */
+    public getMeshByUniqueID(uniqueId: number): Nullable<AbstractMesh> {
+        return this.getMeshByUniqueId(uniqueId);
     }
 
     /**
@@ -3046,7 +3131,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param uniqueId defines the unique id to search for
      * @return the found mesh or null if not found at all.
      */
-    public getMeshByUniqueID(uniqueId: number): Nullable<AbstractMesh> {
+    public getMeshByUniqueId(uniqueId: number): Nullable<AbstractMesh> {
         for (var index = 0; index < this.meshes.length; index++) {
             if (this.meshes[index].uniqueId === uniqueId) {
                 return this.meshes[index];
@@ -3056,12 +3141,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getLastMeshById instead */
+    public getLastMeshByID(id: string): Nullable<AbstractMesh> {
+        return this.getLastMeshById(id);
+    }
+
     /**
      * Gets a the last added mesh using a given id
      * @param id defines the id to search for
      * @return the found mesh or null if not found at all.
      */
-    public getLastMeshByID(id: string): Nullable<AbstractMesh> {
+    public getLastMeshById(id: string): Nullable<AbstractMesh> {
         for (var index = this.meshes.length - 1; index >= 0; index--) {
             if (this.meshes[index].id === id) {
                 return this.meshes[index];
@@ -3071,12 +3161,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getLastEntryById instead */
+    public getLastEntryByID(id: string): Nullable<Node> {
+        return this.getLastEntryById(id);
+    }
+
     /**
      * Gets a the last added node (Mesh, Camera, Light) using a given id
      * @param id defines the id to search for
      * @return the found node or null if not found at all
      */
-    public getLastEntryByID(id: string): Nullable<Node> {
+    public getLastEntryById(id: string): Nullable<Node> {
         var index: number;
         for (index = this.meshes.length - 1; index >= 0; index--) {
             if (this.meshes[index].id === id) {
@@ -3105,33 +3200,38 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getNodeById instead */
+    public getNodeByID(id: string): Nullable<Node> {
+        return this.getNodeById(id);
+    }
+
     /**
      * Gets a node (Mesh, Camera, Light) using a given id
      * @param id defines the id to search for
      * @return the found node or null if not found at all
      */
-    public getNodeByID(id: string): Nullable<Node> {
-        const mesh = this.getMeshByID(id);
+    public getNodeById(id: string): Nullable<Node> {
+        const mesh = this.getMeshById(id);
         if (mesh) {
             return mesh;
         }
 
-        const transformNode = this.getTransformNodeByID(id);
+        const transformNode = this.getTransformNodeById(id);
         if (transformNode) {
             return transformNode;
         }
 
-        const light = this.getLightByID(id);
+        const light = this.getLightById(id);
         if (light) {
             return light;
         }
 
-        const camera = this.getCameraByID(id);
+        const camera = this.getCameraById(id);
         if (camera) {
             return camera;
         }
 
-        const bone = this.getBoneByID(id);
+        const bone = this.getBoneById(id);
         if (bone) {
             return bone;
         }
@@ -3203,12 +3303,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
+    /** @deprecated Please use getLastSkeletonById instead */
+    public getLastSkeletonByID(id: string): Nullable<Skeleton> {
+        return this.getLastSkeletonById(id);
+    }
+
     /**
      * Gets a skeleton using a given id (if many are found, this function will pick the last one)
      * @param id defines the id to search for
      * @return the found skeleton or null if not found at all.
      */
-    public getLastSkeletonByID(id: string): Nullable<Skeleton> {
+    public getLastSkeletonById(id: string): Nullable<Skeleton> {
         for (var index = this.skeletons.length - 1; index >= 0; index--) {
             if (this.skeletons[index].id === id) {
                 return this.skeletons[index];
