@@ -49,13 +49,18 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     /**
      * Set to false if the node should strictly follow the camera without any interpolation time
      */
-     public interpolatePose = true;
+    public interpolatePose = true;
 
-     /**
-      * Rate of interpolation of position and rotation of the attached node.
-      * Higher values will give a slower interpolation.
-      */
-     public lerpTime = 250;
+    /**
+     * Rate of interpolation of position and rotation of the attached node.
+     * Higher values will give a slower interpolation.
+     */
+    public lerpTime = 250;
+
+    /**
+     * If true, pitch and roll are omitted.
+     */
+    public keepOrientationVertical = true;
 
     /**
      * Attaches the behavior to a transform node
@@ -75,7 +80,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         }
         this._addObservables();
     }
-    
+
     /**
      * Detaches the behavior
      */
@@ -85,7 +90,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         this._utilityLayer.pickingEnabled = true;
     }
 
-    private _getTargetPose(pickingInfo: PickingInfo): Nullable<{ position: Vector3, quaternion: Quaternion }> {
+    private _getTargetPose(pickingInfo: PickingInfo): Nullable<{ position: Vector3; quaternion: Quaternion }> {
         if (!this._attachedMesh) {
             return null;
         }
@@ -112,11 +117,14 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
                 Vector3.TransformNormalToRef(worldOffset, TmpVectors.Matrix[0], worldOffset);
             }
 
-            // this._attachedMesh.position.copyFrom(worldTarget).subtractInPlace(worldOffset);
             return {
                 position: worldTarget.subtractInPlace(worldOffset),
-                quaternion: Quaternion.RotationYawPitchRoll(-Math.atan2(pickedNormal.x, -pickedNormal.z), Math.atan2(pickedNormal.y, Math.sqrt(pickedNormal.z * pickedNormal.z + pickedNormal.x * pickedNormal.x)), 0)
-            }
+                quaternion: Quaternion.RotationYawPitchRoll(
+                    -Math.atan2(pickedNormal.x, -pickedNormal.z),
+                    this.keepOrientationVertical ? 0 : Math.atan2(pickedNormal.y, Math.sqrt(pickedNormal.z * pickedNormal.z + pickedNormal.x * pickedNormal.x)),
+                    0
+                ),
+            };
         }
 
         return null;
@@ -164,7 +172,6 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
 
         // position
         const interpolatedPosition = new Vector3();
-        // currentDirection.copyFrom(this._attachedMesh.position).subtractInPlace(this._workingPosition);
         SmoothingTools.SmoothToRefVec3(this._attachedMesh.position, this._workingPosition, elapsed, this.lerpTime, interpolatedPosition);
         this._attachedMesh.position.copyFrom(interpolatedPosition);
 
@@ -195,11 +202,6 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
                     if (pose) {
                         this._workingPosition.copyFrom(pose.position);
                         this._workingQuaternion.copyFrom(pose.quaternion);
-                        // this._attachedMesh.position.copyFrom(pose.position);
-                        // const oldParent = this._attachedMesh.parent;
-                        // this._attachedMesh.setParent(null);
-                        // this._attachedMesh.rotationQuaternion!.copyFrom(pose.quaternion);
-                        // this._attachedMesh.setParent(oldParent);
                     }
                 }
             }
