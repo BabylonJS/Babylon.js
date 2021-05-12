@@ -156,7 +156,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
      * @param id the id of the image to load (position in the init array)
      * @returns a trackable image, if exists in this location
      */
-    public getTrackedImageByID(id: number): Nullable<IWebXRTrackedImage> {
+    public getTrackedImageById(id: number): Nullable<IWebXRTrackedImage> {
         return this._trackedImages[id] || null;
     }
 
