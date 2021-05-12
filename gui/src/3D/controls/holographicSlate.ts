@@ -163,13 +163,21 @@ export class HolographicSlate extends ContentDisplay3D {
             // Buttons take full backPlate on Y axis
             const backPlateYScale = this.backplateDimensions.y / buttonBaseSize;
 
-            closeButtonMesh.scaling.copyFromFloats(backPlateYScale, backPlateYScale, backPlateYScale);
-            followButtonMesh.scaling.copyFromFloats(backPlateYScale, backPlateYScale, backPlateYScale);
+            closeButtonMesh.scaling.setAll(backPlateYScale);
+            followButtonMesh.scaling.setAll(backPlateYScale);
             closeButtonMesh.position
-                .copyFromFloats(this.backplateDimensions.x - backPlateYScale / 2, -this.backplateDimensions.y / 2, -this.backplateDimensions.z / 2)
+                .copyFromFloats(
+                    this.backplateDimensions.x - backPlateYScale / 2,
+                    -this.backplateDimensions.y / 2,
+                    (-this.backplateDimensions.z / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1)
+                )
                 .addInPlace(this.origin);
             followButtonMesh.position
-                .copyFromFloats(this.backplateDimensions.x - (3 * backPlateYScale) / 2, -this.backplateDimensions.y / 2, -this.backplateDimensions.z / 2)
+                .copyFromFloats(
+                    this.backplateDimensions.x - (3 * backPlateYScale) / 2,
+                    -this.backplateDimensions.y / 2,
+                    (-this.backplateDimensions.z / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1)
+                )
                 .addInPlace(this.origin);
 
             const contentPlateHeight = this.dimensions.y - this.backplateDimensions.y - this.backPlateMargin;
