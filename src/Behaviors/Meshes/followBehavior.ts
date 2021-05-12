@@ -258,7 +258,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     private _applyPitchOffset(invertView: Matrix) {
         const forward = this._tmpVectors[0];
         const right = this._tmpVectors[1];
-        forward.copyFromFloats(0, 0, 1);
+        forward.copyFromFloats(0, 0, this._scene.useRightHandedSystem ? -1 : 1);
         right.copyFromFloats(1, 0, 0);
         Vector3.TransformNormalToRef(forward, invertView, forward);
         forward.y = 0;
@@ -277,7 +277,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
     private _angularClamp(invertView: Matrix, currentToTarget: Vector3): boolean {
         const forward = this._tmpVectors[5];
-        forward.copyFromFloats(0, 0, 1);
+        forward.copyFromFloats(0, 0, this._scene.useRightHandedSystem ? -1 : 1);
         const right = this._tmpVectors[6];
         right.copyFromFloats(1, 0, 0);
 
@@ -317,7 +317,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         }
 
         // Y-axis leashing
-        const angle = this._angleBetweenVectorAndPlane(currentToTarget, right);
+        const angle = this._angleBetweenVectorAndPlane(currentToTarget, right) * (this._scene.useRightHandedSystem ? -1 : 1);
         const minMaxAngle = ((this.maxViewHorizontalDegrees * Math.PI) / 180) * 0.5;
         if (angle < -minMaxAngle) {
             Quaternion.RotationAxisToRef(up, -angle - minMaxAngle, rotationQuat);
@@ -353,7 +353,11 @@ export class FollowBehavior implements Behavior<TransformNode> {
         right.normalizeFromLength(length);
 
         Vector3.CrossToRef(right, toFollowed, up);
-        Quaternion.FromLookDirectionLHToRef(toFollowed, up, rotationQuaternion);
+        if (this.attachedNode?.getScene().useRightHandedSystem) {
+            Quaternion.FromLookDirectionRHToRef(toFollowed, up, rotationQuaternion);
+        } else {
+            Quaternion.FromLookDirectionLHToRef(toFollowed, up, rotationQuaternion);
+        }
     }
 
     private _passedOrientationDeadzone(currentToTarget: Vector3, forward: Vector3) {
@@ -391,11 +395,11 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
             let angularClamped = false;
             const forward = this._tmpForward;
-            forward.copyFromFloats(0, 0, 1);
+            forward.copyFromFloats(0, 0, this._scene.useRightHandedSystem ? -1 : 1);
             Vector3.TransformNormalToRef(forward, invertView, forward);
 
             const nodeForward = this._tmpNodeForward;
-            nodeForward.copyFromFloats(0, 0, 1);
+            nodeForward.copyFromFloats(0, 0, this._scene.useRightHandedSystem ? -1 : 1);
             Vector3.TransformNormalToRef(nodeForward, worldMatrix, nodeForward);
 
             if (this._recenterNextUpdate) {
