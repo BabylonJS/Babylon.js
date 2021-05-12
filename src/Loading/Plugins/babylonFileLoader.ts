@@ -90,7 +90,7 @@ var loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
                     mastermesh.setEnabled(false);
                     for (let index = 0; index < lodmeshes.length; index++) {
                         const lodid: string = lodmeshes[index];
-                        const lodmesh: Mesh = scene.getMeshByID(lodid) as Mesh;
+                        const lodmesh: Mesh = scene.getMeshById(lodid) as Mesh;
                         if (lodmesh != null) {
                             mastermesh.addLODLevel(distances[index], lodmesh);
                         }
@@ -349,7 +349,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
             var camera = scene.cameras[index];
             if (camera._waitingParentId) {
-                camera.parent = scene.getLastEntryByID(camera._waitingParentId);
+                camera.parent = scene.getLastEntryById(camera._waitingParentId);
                 camera._waitingParentId = null;
             }
         }
@@ -357,7 +357,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         for (index = 0, cache = scene.lights.length; index < cache; index++) {
             let light = scene.lights[index];
             if (light && light._waitingParentId) {
-                light.parent = scene.getLastEntryByID(light._waitingParentId);
+                light.parent = scene.getLastEntryById(light._waitingParentId);
                 light._waitingParentId = null;
             }
         }
@@ -366,14 +366,14 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             var transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId) {
-                transformNode.parent = scene.getLastEntryByID(transformNode._waitingParentId);
+                transformNode.parent = scene.getLastEntryById(transformNode._waitingParentId);
                 transformNode._waitingParentId = null;
             }
         }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var mesh = scene.meshes[index];
             if (mesh._waitingParentId) {
-                mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
+                mesh.parent = scene.getLastEntryById(mesh._waitingParentId);
                 mesh._waitingParentId = null;
             }
             if (mesh._waitingData.lods) {
@@ -388,7 +388,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 if (skeleton.bones != null) {
                     skeleton.bones.forEach((bone) => {
                         if (bone._waitingTransformNodeId) {
-                            var linkTransformNode = scene.getLastEntryByID(bone._waitingTransformNodeId) as TransformNode;
+                            var linkTransformNode = scene.getLastEntryById(bone._waitingTransformNodeId) as TransformNode;
                             if (linkTransformNode) {
                                 bone.linkTransformNode(linkTransformNode);
                             }
@@ -398,7 +398,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 }
 
                 if (skeleton._waitingOverrideMeshId) {
-                    skeleton.overrideMesh = scene.getMeshByID(skeleton._waitingOverrideMeshId);
+                    skeleton.overrideMesh = scene.getMeshById(skeleton._waitingOverrideMeshId);
                     skeleton._waitingOverrideMeshId = null;
                 }
                 skeleton._hasWaitingData = null;
@@ -422,7 +422,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             // Excluded check
             if (light._excludedMeshesIds.length > 0) {
                 for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                    var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
+                    var excludedMesh = scene.getMeshById(light._excludedMeshesIds[excludedIndex]);
 
                     if (excludedMesh) {
                         light.excludedMeshes.push(excludedMesh);
@@ -435,7 +435,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             // Included check
             if (light._includedOnlyMeshesIds.length > 0) {
                 for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                    var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
+                    var includedOnlyMesh = scene.getMeshById(light._includedOnlyMeshesIds[includedOnlyIndex]);
 
                     if (includedOnlyMesh) {
                         light.includedOnlyMeshes.push(includedOnlyMesh);
@@ -620,7 +620,7 @@ SceneLoader.RegisterPlugin({
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
-                        currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
+                        currentMesh.parent = scene.getLastEntryById(currentMesh._waitingParentId);
                         currentMesh._waitingParentId = null;
                     }
                     if (currentMesh._waitingData.lods) {
@@ -635,7 +635,7 @@ SceneLoader.RegisterPlugin({
                         if (skeleton.bones != null) {
                             skeleton.bones.forEach((bone) => {
                                 if (bone._waitingTransformNodeId) {
-                                    var linkTransformNode = scene.getLastEntryByID(bone._waitingTransformNodeId) as TransformNode;
+                                    var linkTransformNode = scene.getLastEntryById(bone._waitingTransformNodeId) as TransformNode;
                                     if (linkTransformNode) {
                                         bone.linkTransformNode(linkTransformNode);
                                     }
@@ -645,7 +645,7 @@ SceneLoader.RegisterPlugin({
                         }
 
                         if (skeleton._waitingOverrideMeshId) {
-                            skeleton.overrideMesh = scene.getMeshByID(skeleton._waitingOverrideMeshId);
+                            skeleton.overrideMesh = scene.getMeshById(skeleton._waitingOverrideMeshId);
                             skeleton._waitingOverrideMeshId = null;
                         }
 
@@ -775,7 +775,7 @@ SceneLoader.RegisterPlugin({
             }
 
             if (parsedData.activeCameraID !== undefined && parsedData.activeCameraID !== null) {
-                scene.setActiveCameraByID(parsedData.activeCameraID);
+                scene.setActiveCameraById(parsedData.activeCameraID);
             }
 
             // Finish
