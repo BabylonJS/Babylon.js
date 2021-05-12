@@ -199,7 +199,7 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
             var bufferOutput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
 
             var targetID = channel.target.id;
-            var targetNode: any = gltfRuntime.scene.getNodeByID(targetID);
+            var targetNode: any = gltfRuntime.scene.getNodeById(targetID);
 
             if (targetNode === null) {
                 targetNode = gltfRuntime.scene.getNodeByName(targetID);
@@ -513,7 +513,7 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
         var id = jointNode.id;
 
         // Optimize, if the bone already exists...
-        var existingBone = gltfRuntime.scene.getBoneByID(id);
+        var existingBone = gltfRuntime.scene.getBoneById(id);
         if (existingBone) {
             newSkeleton.bones.push(existingBone);
             continue;
@@ -725,7 +725,7 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
             }
 
             // Sub material
-            let material = gltfRuntime.scene.getMaterialByID(primitive.material);
+            let material = gltfRuntime.scene.getMaterialById(primitive.material);
 
             subMaterials.push(material === null ? GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
 
@@ -838,7 +838,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
             var skin: IGLTFSkins = gltfRuntime.skins[node.skin];
 
             var newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
-            newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(node.skin);
+            newMesh.skeleton = gltfRuntime.scene.getLastSkeletonById(node.skin);
 
             if (newMesh.skeleton === null) {
                 newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton, node.skin);
@@ -1071,7 +1071,7 @@ var onBindShaderMaterial = (mesh: AbstractMesh, gltfRuntime: IGLTFRuntime, unTre
             else if (uniform.semantic && (uniform.source || uniform.node)) {
                 var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node || "");
                 if (source === null) {
-                    source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node || "");
+                    source = gltfRuntime.scene.getNodeById(uniform.source || uniform.node || "");
                 }
                 if (source === null) {
                     continue;

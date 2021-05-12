@@ -1841,12 +1841,12 @@ export class ShadowGenerator implements IShadowGenerator {
      * @returns The parsed shadow generator
      */
     public static Parse(parsedShadowGenerator: any, scene: Scene, constr?: (mapSize: number, light: IShadowLight) => ShadowGenerator): ShadowGenerator {
-        var light = <IShadowLight>scene.getLightByID(parsedShadowGenerator.lightId);
+        var light = <IShadowLight>scene.getLightById(parsedShadowGenerator.lightId);
         var shadowGenerator = constr ? constr(parsedShadowGenerator.mapSize, light) : new ShadowGenerator(parsedShadowGenerator.mapSize, light);
         var shadowMap = shadowGenerator.getShadowMap();
 
         for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
-            var meshes = scene.getMeshesByID(parsedShadowGenerator.renderList[meshIndex]);
+            var meshes = scene.getMeshesById(parsedShadowGenerator.renderList[meshIndex]);
             meshes.forEach(function(mesh) {
                 if (!shadowMap) {
                     return;

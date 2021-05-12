@@ -188,7 +188,7 @@ export class SceneRecorder {
         }
     }
 
-    private static GetShadowGeneratorByID(scene: Scene, id: string) {
+    private static GetShadowGeneratorById(scene: Scene, id: string) {
         var generators = scene.lights.map((l) => l.getShadowGenerator());
 
         for (var generator of generators) {
@@ -220,34 +220,34 @@ export class SceneRecorder {
             if (Array.isArray(property) || prop === "shadowGenerators") { // Restore array
                 switch (prop) {
                     case "cameras":
-                        this._ApplyDeltaForEntity(source, scene, scene.getCameraByID.bind(scene), (data) => Camera.Parse(data, scene));
+                        this._ApplyDeltaForEntity(source, scene, scene.getCameraByI.bind(scene), (data) => Camera.Parse(data, scene));
                         break;
                     case "lights":
-                        this._ApplyDeltaForEntity(source, scene, scene.getLightByID.bind(scene), (data) => Light.Parse(data, scene));
+                        this._ApplyDeltaForEntity(source, scene, scene.getLightById.bind(scene), (data) => Light.Parse(data, scene));
                         break;
                     case "shadowGenerators":
-                        this._ApplyDeltaForEntity(source, scene, (id) => this.GetShadowGeneratorByID(scene, id), (data) => ShadowGenerator.Parse(data, scene));
+                        this._ApplyDeltaForEntity(source, scene, (id) => this.GetShadowGeneratorById(scene, id), (data) => ShadowGenerator.Parse(data, scene));
                         break;
                     case "meshes":
-                        this._ApplyDeltaForEntity(source, scene, scene.getMeshByID.bind(scene), (data) => Mesh.Parse(data, scene, ""));
+                        this._ApplyDeltaForEntity(source, scene, scene.getMeshById.bind(scene), (data) => Mesh.Parse(data, scene, ""));
                         break;
                     case "skeletons":
-                        this._ApplyDeltaForEntity(source, scene, scene.getSkeletonByID.bind(scene), (data) => Skeleton.Parse(data, scene));
+                        this._ApplyDeltaForEntity(source, scene, scene.getSkeletonById.bind(scene), (data) => Skeleton.Parse(data, scene));
                         break;
                     case "materials":
-                        this._ApplyDeltaForEntity(source, scene, scene.getMaterialByID.bind(scene), (data) => Material.Parse(data, scene, ""));
+                        this._ApplyDeltaForEntity(source, scene, scene.getMaterialById.bind(scene), (data) => Material.Parse(data, scene, ""));
                         break;
                     case "multiMaterials":
-                        this._ApplyDeltaForEntity(source, scene, scene.getMaterialByID.bind(scene), (data) => MultiMaterial.Parse(data, scene, ""));
+                        this._ApplyDeltaForEntity(source, scene, scene.getMaterialById.bind(scene), (data) => MultiMaterial.Parse(data, scene, ""));
                         break;
                     case "transformNodes":
-                        this._ApplyDeltaForEntity(source, scene, scene.getTransformNodeByID.bind(scene), (data) => TransformNode.Parse(data, scene, ""));
+                        this._ApplyDeltaForEntity(source, scene, scene.getTransformNodeById.bind(scene), (data) => TransformNode.Parse(data, scene, ""));
                         break;
                     case "particleSystems":
-                        this._ApplyDeltaForEntity(source, scene, scene.getParticleSystemByID.bind(scene), (data) => ParticleSystem.Parse(data, scene, ""));
+                        this._ApplyDeltaForEntity(source, scene, scene.getParticleSystemById.bind(scene), (data) => ParticleSystem.Parse(data, scene, ""));
                         break;
                     case "morphTargetManagers":
-                        this._ApplyDeltaForEntity(source, scene, scene.getMorphTargetByID.bind(scene), (data) => MorphTargetManager.Parse(data, scene));
+                        this._ApplyDeltaForEntity(source, scene, scene.getMorphTargetById.bind(scene), (data) => MorphTargetManager.Parse(data, scene));
                         break;
                     case "postProcesses":
                         this._ApplyDeltaForEntity(source, scene, scene.getPostProcessByName.bind(scene), (data) => PostProcess.Parse(data, scene, ""));

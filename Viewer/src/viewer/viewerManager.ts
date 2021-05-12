@@ -47,11 +47,16 @@ export class ViewerManager {
         this.onViewerRemovedObservable.notifyObservers(id);
     }
 
+    /** @deprecated Please use getViewerById instead */
+    public getViewerByID(id: string): AbstractViewer {
+        return this.getViewerById(id)
+    }
+
     /**
      * Get a viewer by its baseId (if the container element has an ID, it is the this is. if not, a random id was assigned)
      * @param id the id of the HTMl element (or the viewer's, if none provided)
      */
-    public getViewerByID(id: string): AbstractViewer {
+    public getViewerById(id: string): AbstractViewer {
         return this._viewers[id];
     }
 
@@ -62,9 +67,15 @@ export class ViewerManager {
     public getViewerByHTMLElement(element: HTMLElement) {
         for (let id in this._viewers) {
             if (this._viewers[id].containerElement === element) {
-                return this.getViewerByID(id);
+                return this.getViewerById(id);
             }
         }
+    }
+
+
+    /** @deprecated Please use getViewerPromiseById instead */
+    public getViewerPromiseByID(id: string): Promise<AbstractViewer> {
+        return this.getViewerPromiseById(id)
     }
 
     /**
@@ -73,9 +84,9 @@ export class ViewerManager {
      * you will get the viewer after everything was already configured.
      * @param id the viewer id to find
      */
-    public getViewerPromiseByID(id: string): Promise<AbstractViewer> {
+    public getViewerPromiseById(id: string): Promise<AbstractViewer> {
         return new Promise((resolve, reject) => {
-            let localViewer = this.getViewerByID(id);
+            let localViewer = this.getViewerById(id);
             if (localViewer) {
                 return resolve(localViewer);
             }

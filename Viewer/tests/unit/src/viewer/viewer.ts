@@ -25,7 +25,7 @@ describe('Viewer', function() {
     it('should be added to the viewer manager', (done) => {
         let viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
-            assert.isDefined(viewerManager.getViewerByID(viewer.baseId), "Viewer was not added to the viewer manager.");
+            assert.isDefined(viewerManager.getViewerById(viewer.baseId), "Viewer was not added to the viewer manager.");
             viewer.dispose();
             done();
         });

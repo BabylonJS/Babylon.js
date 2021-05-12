@@ -201,15 +201,15 @@ declare module BABYLON {
         /** Gets the specified mesh by name from scene. */
         static GetMesh(scene: BABYLON.Scene, name: string): BABYLON.Mesh;
         /** Gets the specified mesh by id from scene. */
-        static GetMeshByID(scene: BABYLON.Scene, id: string): BABYLON.Mesh;
+        static GetMeshById(scene: BABYLON.Scene, id: string): BABYLON.Mesh;
         /** Gets the specified abstract mesh by name from scene. */
         static GetAbstractMesh(scene: BABYLON.Scene, name: string): BABYLON.AbstractMesh;
         /** Gets the specified abstract mesh by id from scene. */
-        static GetAbstractMeshByID(scene: BABYLON.Scene, id: string): BABYLON.AbstractMesh;
+        static GetAbstractMeshById(scene: BABYLON.Scene, id: string): BABYLON.AbstractMesh;
         /** Gets the specified transform node by name from scene. */
         static GetTransformNode(scene: BABYLON.Scene, name: string): BABYLON.TransformNode;
         /** Gets the specified transform node by id from scene. */
-        static GetTransformNodeByID(scene: BABYLON.Scene, id: string): BABYLON.TransformNode;
+        static GetTransformNodeById(scene: BABYLON.Scene, id: string): BABYLON.TransformNode;
         /** Gets the transform node child detail mesh. */
         static GetTransformDetailMesh(transform: TransformNode): BABYLON.AbstractMesh;
         /** Gets the transform node primitive meshes. */
