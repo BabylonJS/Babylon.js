@@ -47,11 +47,6 @@ export class ViewerManager {
         this.onViewerRemovedObservable.notifyObservers(id);
     }
 
-    /** @deprecated Please use getViewerById instead */
-    public getViewerByID(id: string): AbstractViewer {
-        return this.getViewerById(id)
-    }
-
     /**
      * Get a viewer by its baseId (if the container element has an ID, it is the this is. if not, a random id was assigned)
      * @param id the id of the HTMl element (or the viewer's, if none provided)
@@ -70,12 +65,6 @@ export class ViewerManager {
                 return this.getViewerById(id);
             }
         }
-    }
-
-
-    /** @deprecated Please use getViewerPromiseById instead */
-    public getViewerPromiseByID(id: string): Promise<AbstractViewer> {
-        return this.getViewerPromiseById(id)
     }
 
     /**
