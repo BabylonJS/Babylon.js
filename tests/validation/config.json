@@ -141,7 +141,8 @@
             "title": "GUI Slate",
             "renderCount": 30,
             "playgroundId": "#2YZFA0#182",
-            "referenceImage": "guiSlate.png"
+            "referenceImage": "guiSlate.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Camera rig",
