@@ -797,7 +797,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     protected _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     protected _cachedDefines: string;
-    protected _currentRenderID: number;
+    protected _currentRenderId: number;
     protected _boxBlurPostprocess: Nullable<PostProcess>;
     protected _kernelBlurXPostprocess: Nullable<PostProcess>;
     protected _kernelBlurYPostprocess: Nullable<PostProcess>;
@@ -1669,11 +1669,11 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public getTransformMatrix(): Matrix {
         var scene = this._scene;
-        if (this._currentRenderID === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
+        if (this._currentRenderId === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
             return this._transformMatrix;
         }
 
-        this._currentRenderID = scene.getRenderId();
+        this._currentRenderId = scene.getRenderId();
         this._currentFaceIndexCache = this._currentFaceIndex;
 
         var lightPosition = this._light.position;

@@ -501,7 +501,7 @@ export class SolidParticleSystem implements IDisposable {
         const storeApart = (options && options.storage) ? true : false;
         copy.idx = idx;
         copy.idxInShape = idxInShape;
-        copy.shapeId = model.shapeID;
+        copy.shapeId = model.shapeId;
         if (this._useModelMaterial) {
             var materialId = model._material!.uniqueId;
             const materialIndexesById = this._materialIndexesById;

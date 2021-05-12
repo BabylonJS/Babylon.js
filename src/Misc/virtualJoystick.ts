@@ -112,7 +112,7 @@ export class VirtualJoystick {
     private _axisTargetedByUpAndDown: JoystickAxis;
     private _joystickSensibility: number;
     private _inversedSensibility: number;
-    private _joystickPointerID: number;
+    private _joystickPointerId: number;
     private _joystickColor: string;
     private _joystickPointerPos: Vector2;
     private _joystickPreviousPointerPos: Vector2;
@@ -240,7 +240,7 @@ export class VirtualJoystick {
         // must come after position potentially set
         this.alwaysVisible = options.alwaysVisible;
 
-        this._joystickPointerID = -1;
+        this._joystickPointerId = -1;
         // current joystick position
         this._joystickPointerPos = new Vector2(0, 0);
         this._joystickPreviousPointerPos = new Vector2(0, 0);
@@ -289,9 +289,9 @@ export class VirtualJoystick {
             positionOnScreenCondition = (e.clientX > VirtualJoystick.halfWidth);
         }
 
-        if (positionOnScreenCondition && this._joystickPointerID < 0) {
+        if (positionOnScreenCondition && this._joystickPointerId < 0) {
             // First contact will be dedicated to the virtual joystick
-            this._joystickPointerID = e.pointerId;
+            this._joystickPointerId = e.pointerId;
 
             if (this._joystickPosition) {
                 this._joystickPointerStartPos = this._joystickPosition.clone();
@@ -324,7 +324,7 @@ export class VirtualJoystick {
 
     private _onPointerMove(e: PointerEvent) {
         // If the current pointer is the one associated to the joystick (first touch contact)
-        if (this._joystickPointerID == e.pointerId) {
+        if (this._joystickPointerId == e.pointerId) {
             // limit to container if need be
             if (this.limitToContainer) {
                 let vector = new Vector2(e.clientX - this._joystickPointerStartPos.x, e.clientY - this._joystickPointerStartPos.y);
@@ -392,10 +392,10 @@ export class VirtualJoystick {
     }
 
     private _onPointerUp(e: PointerEvent) {
-        if (this._joystickPointerID == e.pointerId) {
+        if (this._joystickPointerId == e.pointerId) {
             this._clearPreviousDraw();
 
-            this._joystickPointerID = -1;
+            this._joystickPointerId = -1;
             this.pressed = false;
         }
         else {
@@ -638,7 +638,7 @@ export class VirtualJoystick {
 
         if (this.pressed) {
             this._touches.forEach((key, touch) => {
-                if ((<PointerEvent>touch).pointerId === this._joystickPointerID) {
+                if ((<PointerEvent>touch).pointerId === this._joystickPointerId) {
                     if (! this.alwaysVisible) {
                         this._drawContainer();
                     }

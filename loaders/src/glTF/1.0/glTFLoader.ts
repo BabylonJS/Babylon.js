@@ -198,15 +198,15 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
             var bufferInput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[inputData]);
             var bufferOutput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
 
-            var targetID = channel.target.id;
-            var targetNode: any = gltfRuntime.scene.getNodeById(targetID);
+            var targetId = channel.target.id;
+            var targetNode: any = gltfRuntime.scene.getNodeById(targetId);
 
             if (targetNode === null) {
-                targetNode = gltfRuntime.scene.getNodeByName(targetID);
+                targetNode = gltfRuntime.scene.getNodeByName(targetId);
             }
 
             if (targetNode === null) {
-                Tools.Warn("Creating animation named " + anim + ". But cannot find node named " + targetID + " to attach to");
+                Tools.Warn("Creating animation named " + anim + ". But cannot find node named " + targetId + " to attach to");
                 continue;
             }
 
@@ -626,8 +626,8 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
     var indexCounts = new Array<number>();
 
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshID = meshes[meshIndex];
-        var mesh: IGLTFMesh = gltfRuntime.meshes[meshID];
+        var meshId = meshes[meshIndex];
+        var mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
 
         if (!mesh) {
             continue;
@@ -762,8 +762,8 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
     newMesh.subMeshes = [];
     var index = 0;
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshID = meshes[meshIndex];
-        var mesh: IGLTFMesh = gltfRuntime.meshes[meshID];
+        var meshId = meshes[meshIndex];
+        var mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
 
         if (!mesh) {
             continue;
