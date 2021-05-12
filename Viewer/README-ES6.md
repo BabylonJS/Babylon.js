@@ -22,7 +22,7 @@ Add a babylon element in an html file:
 
 And used to load models
 ```
-BabylonViewer.viewerManager.getViewerPromiseById('babylon-viewer').then(function (viewer) {
+BabylonViewer.viewerManager.getViewerPromiseByID('babylon-viewer').then(function (viewer) {
     // this will resolve only after the viewer with this specific ID is initialized
     viewer.onEngineInitObservable.add(function (scene) {
         viewer.loadModel({
