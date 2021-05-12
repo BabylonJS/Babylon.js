@@ -1,10 +1,11 @@
-import { PickingInfo } from "../../Collisions";
+import { PickingInfo } from "../../Collisions/pickingInfo";
 import { PointerEventTypes, PointerInfo } from "../../Events/pointerEvents";
-import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
-import { AbstractMesh } from "../../Meshes";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
+import { SmoothingTools } from "../../Misc/smoothingTools";
 import { Observer } from "../../Misc/observable";
-import { UtilityLayerRenderer } from "../../Rendering";
+import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Behavior } from "../behavior";
@@ -18,11 +19,15 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     private _attachPointLocalOffset: Vector3;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _utilityLayer: UtilityLayerRenderer;
+    private _workingPosition: Vector3 = new Vector3();
+    private _workingQuaternion: Quaternion = new Quaternion();
+    private _lastTick: number = -1;
+    private _onBeforeRender: Nullable<Observer<Scene>>;
 
     /**
      * Distance offset from the hit point to place the target at, along the hit normal.
      */
-    public hitNormalOffset: number = 0;
+    public hitNormalOffset: number = 0.2;
 
     /**
      * Name of the behavior
@@ -42,6 +47,17 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     public init(): void {}
 
     /**
+     * Set to false if the node should strictly follow the camera without any interpolation time
+     */
+     public interpolatePose = true;
+
+     /**
+      * Rate of interpolation of position and rotation of the attached node.
+      * Higher values will give a slower interpolation.
+      */
+     public lerpTime = 250;
+
+    /**
      * Attaches the behavior to a transform node
      * @param target defines the target where the behavior is attached to
      */
@@ -49,6 +65,10 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         this._attachedMesh = target;
         this._scene = scene || target.getScene();
         this.updateAttachPoint();
+        if (!this._attachedMesh.rotationQuaternion) {
+            this._attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._attachedMesh.rotation.y, this._attachedMesh.rotation.x, this._attachedMesh.rotation.z);
+        }
+
         if (utilityLayer) {
             this._utilityLayer = utilityLayer;
             utilityLayer.pickingEnabled = false;
@@ -65,11 +85,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         this._utilityLayer.pickingEnabled = true;
     }
 
-    /**
-     * Collide the attached mesh with meshes of spatial mapping
-     * @param ray The ray to collide meshes with
-     */
-    public collide(pickingInfo: PickingInfo): Nullable<Vector3> {
+    private _getTargetPose(pickingInfo: PickingInfo): Nullable<{ position: Vector3, quaternion: Quaternion }> {
         if (!this._attachedMesh) {
             return null;
         }
@@ -97,7 +113,10 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
             }
 
             // this._attachedMesh.position.copyFrom(worldTarget).subtractInPlace(worldOffset);
-            return worldTarget.subtractInPlace(worldOffset);
+            return {
+                position: worldTarget.subtractInPlace(worldOffset),
+                quaternion: Quaternion.RotationYawPitchRoll(-Math.atan2(pickedNormal.x, -pickedNormal.z), Math.atan2(pickedNormal.y, Math.sqrt(pickedNormal.z * pickedNormal.z + pickedNormal.x * pickedNormal.x)), 0)
+            }
         }
 
         return null;
@@ -115,13 +134,46 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
             return Vector3.Zero();
         }
 
+        const storedQuat = TmpVectors.Quaternion[0];
+        storedQuat.copyFrom(this._attachedMesh.rotationQuaternion!);
+        this._attachedMesh.rotationQuaternion!.copyFromFloats(0, 0, 0, 1);
+        this._attachedMesh.computeWorldMatrix();
         const boundingMinMax = this._attachedMesh.getHierarchyBoundingVectors();
         const center = boundingMinMax.max.add(boundingMinMax.min).scaleInPlace(0.5);
-        // We max the z coordinate because we want the attach point to be on the back of the mesh
         center.z = boundingMinMax.max.z;
-        const centerOffset = Vector3.TransformCoordinates(center, Matrix.Invert(this._attachedMesh.getWorldMatrix()));
-
+        // We max the z coordinate because we want the attach point to be on the back of the mesh
+        const invWorld = Matrix.Invert(this._attachedMesh.getWorldMatrix());
+        const centerOffset = Vector3.TransformCoordinates(center, invWorld);
+        this._attachedMesh.rotationQuaternion!.copyFrom(storedQuat);
         return centerOffset;
+    }
+
+    private _updateTransformToGoal(elapsed: number) {
+        if (!this._attachedMesh) {
+            return;
+        }
+
+        const oldParent = this._attachedMesh.parent;
+        this._attachedMesh.setParent(null);
+
+        if (!this.interpolatePose) {
+            this._attachedMesh.position.copyFrom(this._workingPosition);
+            this._attachedMesh.rotationQuaternion!.copyFrom(this._workingQuaternion);
+            return;
+        }
+
+        // position
+        const interpolatedPosition = new Vector3();
+        // currentDirection.copyFrom(this._attachedMesh.position).subtractInPlace(this._workingPosition);
+        SmoothingTools.SmoothToRefVec3(this._attachedMesh.position, this._workingPosition, elapsed, this.lerpTime, interpolatedPosition);
+        this._attachedMesh.position.copyFrom(interpolatedPosition);
+
+        // rotation
+        const currentRotation = new Quaternion();
+        currentRotation.copyFrom(this._attachedMesh.rotationQuaternion!);
+        SmoothingTools.SmoothToRefQuaternion(currentRotation, this._workingQuaternion, elapsed, this.lerpTime, this._attachedMesh.rotationQuaternion!);
+
+        this._attachedMesh.setParent(oldParent);
     }
 
     private _addObservables() {
@@ -139,9 +191,15 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo.ray &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
-                    const pos = this.collide(pointerInfo.pickInfo);
-                    if (pos) {
-                        this._attachedMesh.position.copyFrom(pos);
+                    const pose = this._getTargetPose(pointerInfo.pickInfo);
+                    if (pose) {
+                        this._workingPosition.copyFrom(pose.position);
+                        this._workingQuaternion.copyFrom(pose.quaternion);
+                        // this._attachedMesh.position.copyFrom(pose.position);
+                        // const oldParent = this._attachedMesh.parent;
+                        // this._attachedMesh.setParent(null);
+                        // this._attachedMesh.rotationQuaternion!.copyFrom(pose.quaternion);
+                        // this._attachedMesh.setParent(oldParent);
                     }
                 }
             }
@@ -151,10 +209,18 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
                 this.detach();
             }
         });
+
+        this._lastTick = Date.now();
+        this._onBeforeRender = this._scene.onBeforeRenderObservable.add(() => {
+            const tick = Date.now();
+            this._updateTransformToGoal(tick - this._lastTick);
+            this._lastTick = tick;
+        });
     }
 
     private _removeObservables() {
         this._scene.onPointerObservable.remove(this._pointerObserver);
+        this._scene.onBeforeRenderObservable.remove(this._onBeforeRender);
         this._pointerObserver = null;
     }
 }
