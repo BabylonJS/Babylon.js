@@ -611,7 +611,7 @@ export class AnimationGroup implements IDisposable {
             var animation = Animation.Parse(targetedAnimation.animation);
             var id = targetedAnimation.targetId;
             if (targetedAnimation.animation.property === "influence") { // morph target animation
-                let morphTarget = scene.getMorphTargetById(id);
+                let morphTarget = scene.getMorphTargetByID(id);
                 if (morphTarget) {
                     animationGroup.addTargetedAnimation(animation, morphTarget);
                 }

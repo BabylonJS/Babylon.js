@@ -46,7 +46,7 @@ export class BabylonFileLoaderConfiguration {
     public static LoaderInjectedPhysicsEngine: any = undefined;
 }
 
-var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
+var parseMaterialByID = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
     for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
         var parsedMaterial = parsedData.materials[index];
         if (parsedMaterial.id === id) {
@@ -559,7 +559,7 @@ SceneLoader.RegisterPlugin({
                                         for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
                                             var subMatId = parsedMultiMaterial.materials[matIndex];
                                             loadedMaterialsIds.push(subMatId);
-                                            var mat = parseMaterialById(subMatId, parsedData, scene, rootUrl);
+                                            var mat = parseMaterialByID(subMatId, parsedData, scene, rootUrl);
                                             if (mat) {
                                                 log += "\n\tMaterial " + mat.toString(fullDetails);
                                             }
@@ -577,7 +577,7 @@ SceneLoader.RegisterPlugin({
 
                             if (materialFound === false) {
                                 loadedMaterialsIds.push(parsedMesh.materialId);
-                                var mat = parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
+                                var mat = parseMaterialByID(parsedMesh.materialId, parsedData, scene, rootUrl);
                                 if (!mat) {
                                     Logger.Warn("Material not found for mesh " + parsedMesh.id);
                                 } else {

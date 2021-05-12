@@ -16,13 +16,13 @@ describe('Viewer Manager', function() {
         element.id = randomString;
 
         assert.isUndefined(viewerManager.getViewerByHTMLElement(element));
-        assert.isUndefined(viewerManager.getViewerById(randomString));
+        assert.isUndefined(viewerManager.getViewerByID(randomString));
         let viewer = Helper.getNewViewerInstance(element);
         assert.isDefined(viewerManager.getViewerByHTMLElement(element));
-        assert.isDefined(viewerManager.getViewerById(randomString));
+        assert.isDefined(viewerManager.getViewerByID(randomString));
         viewer.dispose();
         assert.isUndefined(viewerManager.getViewerByHTMLElement(element));
-        assert.isUndefined(viewerManager.getViewerById(randomString));
+        assert.isUndefined(viewerManager.getViewerByID(randomString));
         done();
     });
 
@@ -32,7 +32,7 @@ describe('Viewer Manager', function() {
         element.id = randomString;
 
         let viewer = Helper.getNewViewerInstance(element);
-        viewerManager.getViewerPromiseById(randomString).then(() => {
+        viewerManager.getViewerPromiseByID(randomString).then(() => {
             viewer.dispose();
             done();
         }, (error) => {

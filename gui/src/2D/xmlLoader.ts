@@ -294,7 +294,7 @@ export class XmlLoader {
      * @param id the Controls id set in the xml
      * @returns element of type Control
     */
-    public getNodeById(id: string): any {
+    public getNodeByID(id: string): any {
         return this._nodes[id];
     }
 

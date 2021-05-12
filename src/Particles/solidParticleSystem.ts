@@ -146,7 +146,7 @@ export class SolidParticleSystem implements IDisposable {
     private _materialSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p1.materialIndex - p2.materialIndex;
     private _materials: Material[];
     private _multimaterial: MultiMaterial;
-    private _materialIndexesById: any;
+    private _materialIndexesByID: any;
     private _defaultMaterial: Material;
     private _autoUpdateSubMeshes: boolean = false;
     private _tmpVertex: SolidParticleVertex;
@@ -196,7 +196,7 @@ export class SolidParticleSystem implements IDisposable {
         if (this._multimaterialEnabled) {
             this._multimaterial = new MultiMaterial(this.name + "MultiMaterial", this._scene);
             this._materials = [];
-            this._materialIndexesById = {};
+            this._materialIndexesByID = {};
         }
         this._tmpVertex = new SolidParticleVertex();
     }
@@ -504,12 +504,12 @@ export class SolidParticleSystem implements IDisposable {
         copy.shapeId = model.shapeID;
         if (this._useModelMaterial) {
             var materialId = model._material!.uniqueId;
-            const materialIndexesById = this._materialIndexesById;
-            if (!materialIndexesById.hasOwnProperty(materialId)) {
-                materialIndexesById[materialId] = this._materials.length;
+            const materialIndexesByID = this._materialIndexesByID;
+            if (!materialIndexesByID.hasOwnProperty(materialId)) {
+                materialIndexesByID[materialId] = this._materials.length;
                 this._materials.push(model._material!);
             }
-            var matIdx = materialIndexesById[materialId];
+            var matIdx = materialIndexesByID[materialId];
             copy.materialIndex = matIdx;
         }
 
@@ -1070,7 +1070,7 @@ export class SolidParticleSystem implements IDisposable {
 
                 const particleHasParent = (particle.parentId !== null);
                 if (particleHasParent) {
-                    const parent = this.getParticleById(particle.parentId!);
+                    const parent = this.getParticleByID(particle.parentId!);
                     if (parent) {
                         const parentRotationMatrix = parent._rotationMatrix;
                         const parentGlobalPosition = parent._globalPosition;
@@ -1384,7 +1384,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param id (integer) the particle Id
      * @returns the searched particle or null if not found in the SPS.
      */
-    public getParticleById(id: number): Nullable<SolidParticle> {
+    public getParticleByID(id: number): Nullable<SolidParticle> {
         const p = this.particles[id];
         if (p && p.id == id) {
             return p;
@@ -1541,14 +1541,14 @@ export class SolidParticleSystem implements IDisposable {
         return this;
     }
     /**
-     * Sets the material indexes by id materialIndexesById[id] = materialIndex
+     * Sets the material indexes by id materialIndexesByID[id] = materialIndex
      * @hidden
      */
-    private _setMaterialIndexesById() {
-        this._materialIndexesById = {};
+    private _setMaterialIndexesByID() {
+        this._materialIndexesByID = {};
         for (var i = 0; i < this._materials.length; i++) {
             var id = this._materials[i].uniqueId;
-            this._materialIndexesById[id] = i;
+            this._materialIndexesByID[id] = i;
         }
     }
     /**
@@ -1760,7 +1760,7 @@ export class SolidParticleSystem implements IDisposable {
      */
     public setMultiMaterial(materials: Material[]) {
         this._materials = this._filterUniqueMaterialId(materials);
-        this._setMaterialIndexesById();
+        this._setMaterialIndexesByID();
         if (this._multimaterial) {
             this._multimaterial.dispose();
         }

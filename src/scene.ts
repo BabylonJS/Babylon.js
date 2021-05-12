@@ -3238,7 +3238,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the id to search for
      * @return the found skeleton or null if not found at all.
      */
-    public getSkeletonById(id: string): Nullable<Skeleton> {
+    public getSkeletonByID(id: string): Nullable<Skeleton> {
         for (var index = 0; index < this.skeletons.length; index++) {
             if (this.skeletons[index].id === id) {
                 return this.skeletons[index];
@@ -3268,7 +3268,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the id to search for
      * @return the found morph target manager or null if not found at all.
      */
-    public getMorphTargetManagerById(id: number): Nullable<MorphTargetManager> {
+    public getMorphTargetManagerByID(id: number): Nullable<MorphTargetManager> {
         for (var index = 0; index < this.morphTargetManagers.length; index++) {
             if (this.morphTargetManagers[index].uniqueId === id) {
                 return this.morphTargetManagers[index];
@@ -3283,7 +3283,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the id to search for
      * @return the found morph target or null if not found at all.
      */
-    public getMorphTargetById(id: string): Nullable<MorphTarget> {
+    public getMorphTargetByID(id: string): Nullable<MorphTarget> {
         for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
             const morphTargetManager = this.morphTargetManagers[managerIndex];
             for (let index = 0; index < morphTargetManager.numTargets; ++index) {
