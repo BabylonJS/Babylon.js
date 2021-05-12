@@ -316,7 +316,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         }
 
         // Y-axis leashing
-        const angle = this._angleBetweenVectorAndPlane(currentToTarget, right)  * (this._scene.useRightHandedSystem ? -1 : 1);
+        const angle = this._angleBetweenVectorAndPlane(currentToTarget, right) * (this._scene.useRightHandedSystem ? -1 : 1);
         const minMaxAngle = ((this.maxViewHorizontalDegrees * Math.PI) / 180) * 0.5;
         if (angle < -minMaxAngle) {
             Quaternion.RotationAxisToRef(up, -angle - minMaxAngle, rotationQuat);
