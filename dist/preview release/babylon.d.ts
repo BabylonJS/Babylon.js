@@ -41626,18 +41626,7 @@ declare module BABYLON {
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
-        /**
-         * @hidden
-         */
-        _debugPushGroup(groupName: string, targetObject?: number): void;
-        /**
-         * @hidden
-         */
-        _debugPopGroup(targetObject?: number): void;
-        /**
-         * @hidden
-         */
-        _debugInsertMarker(text: string, targetObject?: number): void;
+        protected _restoreEngineAfterContextLost(initEngine: () => void): void;
         /**
          * Shared initialization across engines types.
          * @param canvas The canvas associated with this instance of the engine.
@@ -60394,6 +60383,18 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /** @hidden */
+            _debugPushGroup(groupName: string, targetObject?: number): void;
+            /** @hidden */
+            _debugPopGroup(targetObject?: number): void;
+            /** @hidden */
+            _debugInsertMarker(text: string, targetObject?: number): void;
+            /** @hidden */
+            _debugFlushPendingCommands(): void;
+        }
+}
+declare module BABYLON {
     /**
      * @hidden
      **/
@@ -61949,6 +61950,11 @@ declare module BABYLON {
          */
         timeStep?: number;
         /**
+         * Defines that engine should ignore context lost events
+         * If this event happens when this parameter is true, you will have to reload the page to restore rendering
+         */
+        doNotHandleContextLost?: boolean;
+        /**
          * Defines that engine should ignore modifying touch action attribute and style
          * If not handle, you might need to set it up on your side for expected touch devices behavior.
          */
@@ -62017,7 +62023,8 @@ declare module BABYLON {
         readonly _clearStencilValue: number;
         private readonly _defaultSampleCount;
         private _canvas;
-        private _options;
+        /** @hidden */
+        _options: WebGPUEngineOptions;
         private _glslang;
         private _adapter;
         private _adapterSupportedExtensions;
@@ -62066,7 +62073,8 @@ declare module BABYLON {
         private _colorFormat;
         /** @hidden */
         _uploadEncoder: GPUCommandEncoder;
-        private _renderEncoder;
+        /** @hidden */
+        _renderEncoder: GPUCommandEncoder;
         /** @hidden */
         _renderTargetEncoder: GPUCommandEncoder;
         private _commandBuffers;
@@ -62075,7 +62083,8 @@ declare module BABYLON {
         /** @hidden */
         _mainRenderPassWrapper: WebGPURenderPassWrapper;
         private _rttRenderPassWrapper;
-        private _pendingDebugCommands;
+        /** @hidden */
+        _pendingDebugCommands: Array<[string, Nullable<string>]>;
         private _bundleList;
         private _defaultMaterialContext;
         private _currentMaterialContext;
@@ -62565,13 +62574,6 @@ declare module BABYLON {
          * @returns a HTML canvas
          */
         getRenderingCanvas(): Nullable<HTMLCanvasElement>;
-        /** @hidden */
-        _debugPushGroup(groupName: string, targetObject?: number): void;
-        /** @hidden */
-        _debugPopGroup(targetObject?: number): void;
-        /** @hidden */
-        _debugInsertMarker(text: string, targetObject?: number): void;
-        private _debugFlushPendingCommands;
         /**
          * Get the current error code of the WebGPU context
          * @returns the error code
