@@ -131,7 +131,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         };
 
         if (this._attachedController) {
-            if (!this._options.enablePointerSelectionOnAllControllers && this._options.preferredHandedness && xrController.inputSource.handedness === this._options.preferredHandedness) {
+            if (
+                !this._options.enablePointerSelectionOnAllControllers &&
+                this._options.preferredHandedness &&
+                xrController.inputSource.handedness === this._options.preferredHandedness
+            ) {
                 this._attachedController = xrController.uniqueId;
             }
         } else {
@@ -366,7 +370,29 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     scene.pointerY = this._screenCoordinatesRef.y;
                 }
             }
-            controllerData.pick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
+            // Pick utility layer  first with ray
+            let utilityScenePick = null;
+            if (this._scene._utilityLayerRenderer) {
+                utilityScenePick = this._scene._utilityLayerRenderer.utilityLayerScene.pickWithRay(
+                    controllerData.tmpRay,
+                    this._scene._utilityLayerRenderer.utilityLayerScene.pointerMovePredicate || this.raySelectionPredicate
+                );
+            }
+
+            let originalScenePick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
+            if (!utilityScenePick || utilityScenePick.distance === 0) {
+                // No hit in utility scene
+                controllerData.pick = originalScenePick;
+            } else if (!originalScenePick || originalScenePick.distance === 0) {
+                // No hit in original scene
+                controllerData.pick = utilityScenePick;
+            } else if (utilityScenePick.distance < originalScenePick.distance) {
+                // Hit is closer in utility scene
+                controllerData.pick = utilityScenePick;
+            } else {
+                // Hit is closer in original scene
+                controllerData.pick = originalScenePick;
+            }
 
             const pick = controllerData.pick;
 
