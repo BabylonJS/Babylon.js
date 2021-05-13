@@ -343,6 +343,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             if (this._currentPluginName === "gltf") {
                 let loader = plugin as GLTFFileLoader;
 
+                loader.validate = true;
+
                 loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {       
                     this.props.globalState.glTFLoaderExtensions[extension.name] = extension;
                 });
