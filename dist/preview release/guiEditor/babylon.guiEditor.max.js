@@ -42233,6 +42233,94 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "../public/imgs/guidesIcon.svg":
+/*!*************************************!*\
+  !*** ../public/imgs/guidesIcon.svg ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M21.6,13.38a.6.6,0,0,1-.6.6H19a.6.6,0,1,1,0-1.2h2A.6.6,0,0,1,21.6,13.38Z' style='fill:%23fff'/%3E%3Cpath d='M14,19a.6.6,0,0,0-1.2,0v2A.6.6,0,0,0,14,21Z' style='fill:%23fff'/%3E%3Cpath d='M26,19a.6.6,0,0,1,1.2,0v2A.6.6,0,0,1,26,21Z' style='fill:%23fff'/%3E%3Cpath d='M21,27.22A.6.6,0,0,0,21,26H19a.6.6,0,1,0,0,1.2Z' style='fill:%23fff'/%3E%3Cpath d='M16,13.38a.6.6,0,0,0-.6-.6H15a2.21,2.21,0,0,0-2.2,2.2v.41a.6.6,0,0,0,1.2,0V15a1,1,0,0,1,1-1h.41A.6.6,0,0,0,16,13.38Z' style='fill:%23fff'/%3E%3Cpath d='M24.61,12.78a.6.6,0,1,0,0,1.2H25a1,1,0,0,1,1,1v.41a.6.6,0,1,0,1.2,0V15a2.21,2.21,0,0,0-2.2-2.2Z' style='fill:%23fff'/%3E%3Cpath d='M16,26.62a.6.6,0,0,1-.6.6H15a2.21,2.21,0,0,1-2.2-2.2v-.41a.6.6,0,0,1,1.2,0V25a1,1,0,0,0,1,1h.41A.6.6,0,0,1,16,26.62Z' style='fill:%23fff'/%3E%3Cpath d='M24.61,27.22a.6.6,0,0,1,0-1.2H25a1,1,0,0,0,1-1v-.41a.6.6,0,0,1,1.2,0V25a2.21,2.21,0,0,1-2.2,2.2Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/hamburgerIcon.svg":
+/*!****************************************!*\
+  !*** ../public/imgs/hamburgerIcon.svg ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M12.46,15.31H27.62a.62.62,0,0,0,.53-.61.61.61,0,0,0-.61-.61H12.38a.61.61,0,0,0,.08,1.21Z' style='fill:%23fff'/%3E%3Cpath d='M27.54,19.39H12.38a.61.61,0,0,0,.08,1.21H27.62a.62.62,0,0,0,.53-.61A.61.61,0,0,0,27.54,19.39Z' style='fill:%23fff'/%3E%3Cpath d='M27.54,24.69H12.38a.62.62,0,0,0-.53.61.61.61,0,0,0,.61.61H27.62a.61.61,0,0,0-.08-1.21Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/handIcon.svg":
+/*!***********************************!*\
+  !*** ../public/imgs/handIcon.svg ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M19.39,13.51v5.07a.61.61,0,0,0,.61.61.61.61,0,0,0,.61-.61V14.51a.39.39,0,0,1,.4-.39.43.43,0,0,1,.41.41v6.08a.61.61,0,0,0,1,.42h0l0,0,.08-.07c.08-.07.19-.16.33-.26A2.66,2.66,0,0,1,24,20.2a1.86,1.86,0,0,1,1.13.11.68.68,0,0,1,.36.43l-1.35,1L24,21.8l-1.76,1.76a10,10,0,0,0-1.87,2.59,1.35,1.35,0,0,1-1.2.74H17a1.21,1.21,0,0,1-1.07-.58,9,9,0,0,1-1.39-4.08V16a.41.41,0,1,1,.81,0v2.83a.61.61,0,0,0,.61.61.61.61,0,0,0,.61-.61V14.53a.4.4,0,0,1,.4-.41.41.41,0,0,1,.41.41v4a.61.61,0,1,0,1.21,0V13.51a.41.41,0,0,1,.81,0ZM20.52,13A1.63,1.63,0,0,0,19,11.89,1.6,1.6,0,0,0,17.46,13a1.63,1.63,0,0,0-.5-.07,1.61,1.61,0,0,0-1.61,1.47,1.84,1.84,0,0,0-.41-.05A1.62,1.62,0,0,0,13.31,16v6.28a10.2,10.2,0,0,0,1.56,4.7A2.44,2.44,0,0,0,17,28.11H19.2a2.58,2.58,0,0,0,2.29-1.41,8.79,8.79,0,0,1,1.63-2.28l1.74-1.73,1.58-1.19a.61.61,0,0,0,.25-.49,1.9,1.9,0,0,0-1.06-1.78A3,3,0,0,0,23.74,19a3.64,3.64,0,0,0-1.11.4V14.53A1.63,1.63,0,0,0,21,12.91,1.51,1.51,0,0,0,20.52,13Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/makeComponentIcon.svg":
+/*!********************************************!*\
+  !*** ../public/imgs/makeComponentIcon.svg ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,11a.61.61,0,0,1,.61.61v2.83h2.83a.61.61,0,0,1,0,1.22H15.61v2.83a.61.61,0,0,1-1.22,0V15.61H11.56a.61.61,0,1,1,0-1.22h2.83V11.56A.61.61,0,0,1,15,11Z' style='fill:%23333'/%3E%3Cpath d='M7.71,10.34a2.63,2.63,0,0,1,2.63-2.63h9.32a2.63,2.63,0,0,1,2.63,2.63v9.32a2.63,2.63,0,0,1-2.63,2.63H10.34a2.63,2.63,0,0,1-2.63-2.63Zm2.63-1.41a1.41,1.41,0,0,0-1.41,1.41v9.32a1.41,1.41,0,0,0,1.41,1.41h9.32a1.41,1.41,0,0,0,1.41-1.41V10.34a1.41,1.41,0,0,0-1.41-1.41Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/pointerIcon.svg":
+/*!**************************************!*\
+  !*** ../public/imgs/pointerIcon.svg ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.09,20.65,15.37,12.31a1.19,1.19,0,0,0-1.92.94v13.5a1.19,1.19,0,0,0,2.12.74l3.33-4.21a1.3,1.3,0,0,1,1-.5h5.44A1.19,1.19,0,0,0,26.09,20.65Zm-6.17.94a2.51,2.51,0,0,0-2,.95l-3.32,4.21V13.25l10.72,8.34Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/visibilityActiveIcon.svg":
+/*!***********************************************!*\
+  !*** ../public/imgs/visibilityActiveIcon.svg ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,13.19a3.23,3.23,0,1,1-3.22,3.22A3.22,3.22,0,0,1,15,13.19Zm0,1.21a2,2,0,1,0,2,2A2,2,0,0,0,15,14.4Zm0-4a8.06,8.06,0,0,1,7.82,6.1.61.61,0,0,1-1.18.29,6.84,6.84,0,0,0-13.28,0,.61.61,0,0,1-1.18-.3A8.07,8.07,0,0,1,15,10.36Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/visibilityNotActiveIcon.svg":
+/*!**************************************************!*\
+  !*** ../public/imgs/visibilityNotActiveIcon.svg ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,13.19a3.23,3.23,0,1,1-3.22,3.22A3.22,3.22,0,0,1,15,13.19Zm0,1.21a2,2,0,1,0,2,2A2,2,0,0,0,15,14.4Zm0-4a8.06,8.06,0,0,1,7.82,6.1.61.61,0,0,1-1.18.29,6.84,6.84,0,0,0-13.28,0,.61.61,0,0,1-1.18-.3A8.07,8.07,0,0,1,15,10.36Z' style='fill:%23888'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/zoomIcon.svg":
+/*!***********************************!*\
+  !*** ../public/imgs/zoomIcon.svg ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M27.1,26.24l-4-4a5.86,5.86,0,1,0-.86.86l4,4,.07.06a.62.62,0,0,0,.79-.06A.6.6,0,0,0,27.1,26.24Zm-8.51-3a4.65,4.65,0,1,1,4.64-4.64A4.65,4.65,0,0,1,18.59,23.23Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./components/commandBarComponent.tsx":
 /*!********************************************!*\
   !*** ./components/commandBarComponent.tsx ***!
@@ -42254,6 +42342,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var hamburgerIcon = __webpack_require__(/*! ../../public/imgs/hamburgerIcon.svg */ "../public/imgs/hamburgerIcon.svg");
+var pointerIcon = __webpack_require__(/*! ../../public/imgs/pointerIcon.svg */ "../public/imgs/pointerIcon.svg");
+var handIcon = __webpack_require__(/*! ../../public/imgs/handIcon.svg */ "../public/imgs/handIcon.svg");
+var zoomIcon = __webpack_require__(/*! ../../public/imgs/zoomIcon.svg */ "../public/imgs/zoomIcon.svg");
+var guidesIcon = __webpack_require__(/*! ../../public/imgs/guidesIcon.svg */ "../public/imgs/guidesIcon.svg");
 __webpack_require__(/*! ../scss/commandBar.scss */ "./scss/commandBar.scss");
 var CommandBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommandBarComponent, _super);
@@ -42284,7 +42377,7 @@ var CommandBarComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-commands" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-left" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: "./imgs/babylonLogo.svg", color: "white", className: "active" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: "hamburgerIcon", tooltip: "Options", items: [
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: hamburgerIcon, tooltip: "Options", items: [
                         {
                             label: "Save",
                             onClick: function () { _this.props.globalState.onSaveObservable.notifyObservers(); }
@@ -42300,10 +42393,13 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             onClick: function () { _this.props.globalState.onSnippetLoadObservable.notifyObservers(); }
                         },
                     ] }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Select", icon: "pointerIcon", shortcut: "Q", isActive: this._selecting, onClick: function () { _this.props.globalState.onSelectionButtonObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Pan", icon: "handIcon", shortcut: "W", isActive: this._panning, onClick: function () { _this.props.globalState.onPanObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Zoom", shortcut: "E", icon: "zoomIcon", isActive: this._zooming, onClick: function () { _this.props.globalState.onZoomObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: "guidesIcon", tooltip: "Create", items: [
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Select", icon: pointerIcon, shortcut: "Q", isActive: this._selecting, onClick: function () { if (!_this._selecting)
+                        _this.props.globalState.onSelectionButtonObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Pan", icon: handIcon, shortcut: "W", isActive: this._panning, onClick: function () { if (!_this._panning)
+                        _this.props.globalState.onPanObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Zoom", shortcut: "E", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
+                        _this.props.globalState.onZoomObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: guidesIcon, tooltip: "Create", items: [
                         {
                             label: "Image",
                             icon: "zoomIcon",
@@ -42407,7 +42503,7 @@ var CommandButtonComponent = /** @class */ (function (_super) {
     CommandButtonComponent.prototype.render = function () {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-button " + (this.props.isActive ? "active" : ""), onClick: this.props.onClick, title: this.props.tooltip + " " + (this.props.shortcut ? "\n" + this.props.shortcut : "") },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-button-icon " + (this.props.isActive ? "active" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: "./imgs/" + this.props.icon + ".svg", color: "white", className: this.props.isActive ? "active" : "" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "white", className: this.props.isActive ? "active" : "" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-label" }, this.props.tooltip)));
     };
     return CommandButtonComponent;
@@ -42461,7 +42557,7 @@ var CommandDropdownComponent = /** @class */ (function (_super) {
                     } },
                     this.props.icon &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-icon" },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: "./imgs/" + this.props.icon + ".svg" })),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon })),
                     !this.props.icon &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-active" })),
                 this.state.isExpanded &&
@@ -43103,6 +43199,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var visibilityNotActiveIcon = __webpack_require__(/*! ../../../../../public/imgs/visibilityNotActiveIcon.svg */ "../public/imgs/visibilityNotActiveIcon.svg");
+var visibilityActiveIcon = __webpack_require__(/*! ../../../../../public/imgs/visibilityActiveIcon.svg */ "../public/imgs/visibilityActiveIcon.svg");
+var makeComponentIcon = __webpack_require__(/*! ../../../../../public/imgs/makeComponentIcon.svg */ "../public/imgs/makeComponentIcon.svg");
 var ControlTreeItemComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ControlTreeItemComponent, _super);
     function ControlTreeItemComponent(props) {
@@ -43132,9 +43231,9 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemLabelComponent"], { label: name, onClick: function () { return _this.props.onClick(); }, color: "greenyellow" }),
             (this.state.isHovered || this.state.isSelected) && react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "addComponent icon", onClick: function () { return _this.highlight(); }, title: "Add component (Not Implemented)" },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: "./imgs/makeComponentIcon.svg" })),
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: makeComponentIcon })),
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchVisibility(); }, title: "Show/Hide control" },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: this.state.isVisible ? "./imgs/visibilityActiveIcon.svg" : "./imgs/visibilityNotActiveIcon.svg" }))),
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon }))),
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_2__["ExtensionsComponent"], { target: control, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return ControlTreeItemComponent;
@@ -44554,28 +44653,29 @@ var GUINodeTools = /** @class */ (function () {
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Ellipse"]("Ellipse");
                 element.color = "#cccccc";
                 element.isPointerBlocker = true;
+                element.thickness = 1;
                 return element;
             case "Rectangle":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Rectangle"]("Rectangle");
                 element.color = "#cccccc";
                 element.isPointerBlocker = true;
+                element.thickness = 1;
                 return element;
             case "Line":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Line"]();
                 element.x1 = 0;
-                element.y1 = 0;
-                element.y2 = 100;
-                element.x2 = 100;
-                element.lineWidth = 5;
-                element.dash = [50, 10];
+                element.y1 = 1024;
+                element.y2 = 512;
+                element.x2 = 512;
+                element.lineWidth = 2;
                 element.isPointerBlocker = true;
                 element.isHitTestVisible = true;
-                element.color = "#0";
+                element.color = "#000000";
                 return element;
             case "Text":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]("Textblock");
-                element.text = "My Text";
-                element.color = "#0";
+                element.text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sed.";
+                element.color = "#000000";
                 element.fontSize = 20;
                 element.resizeToFit = true;
                 element.isPointerBlocker = true;
@@ -44589,11 +44689,13 @@ var GUINodeTools = /** @class */ (function () {
                 element.height = "40px";
                 return element;
             case "VirtualKeyboard":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"]();
+                element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"].CreateDefaultLayout();
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
                 return element;
             case "Image":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Image"]("Image", "https://playground.babylonjs.com/textures/grass.png");
+                element.width = "512px";
+                element.height = "512px";
                 element.autoScale = true;
                 element.isPointerBlocker = true;
                 return element;
@@ -44604,14 +44706,18 @@ var GUINodeTools = /** @class */ (function () {
                 element.background = "#333333";
                 element.color = "#ffffff";
                 element.isPointerBlocker = true;
+                element.width = "160px";
+                element.height = "40px";
                 return element;
             case "InputPassword":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]("InputPassword");
                 element.maxWidth = 0.6;
-                element.text = "Input Text";
+                element.text = "Password";
                 element.background = "#333333";
                 element.color = "#ffffff";
                 element.isPointerBlocker = true;
+                element.width = "160px";
+                element.height = "40px";
                 return element;
             case "Grid":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]("Grid");
