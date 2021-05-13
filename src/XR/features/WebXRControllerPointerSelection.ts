@@ -370,7 +370,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     scene.pointerY = this._screenCoordinatesRef.y;
                 }
             }
-            // Pick utility layer  first with ray
+
             let utilityScenePick = null;
             if (this._scene._utilityLayerRenderer) {
                 utilityScenePick = this._scene._utilityLayerRenderer.utilityLayerScene.pickWithRay(
