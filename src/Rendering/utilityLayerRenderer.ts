@@ -10,6 +10,12 @@ import { Vector3 } from '../Maths/math.vector';
 import { Camera } from '../Cameras/camera';
 import { Color3 } from '../Maths/math.color';
 
+declare module "../scene" {
+    export interface Scene {
+        _utilityLayerRenderer: UtilityLayerRenderer;
+    }
+}
+
 /**
  * Renders a layer on top of an existing scene
  */
@@ -136,6 +142,7 @@ export class UtilityLayerRenderer implements IDisposable {
         handleEvents: boolean = true) {
         // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
         this.utilityLayerScene = new Scene(originalScene.getEngine(), { virtual: true });
+        originalScene._utilityLayerRenderer = this;
         this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
         this.utilityLayerScene._allowPostProcessClearColor = false;
 
