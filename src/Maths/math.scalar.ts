@@ -1,3 +1,5 @@
+import { backgroundVertexShader } from '../Shaders/background.vertex';
+
 /**
  * Scalar computation library
  */
@@ -363,5 +365,19 @@ export class Scalar {
         angle -= (Scalar.TwoPi * Math.floor((angle + Math.PI) / Scalar.TwoPi));
 
         return angle;
+    }
+
+    /**
+     * Returns the highest common factor of two integers.
+     * @param a first parameter
+     * @param b second parameter
+     * @return HCF of a and b
+     */
+    public static HCF(a: number, b: number): number {
+        const r: number = a % b;
+        if (r === 0) {
+            return b;
+        }
+        return Scalar.HCF(b, r);
     }
 }

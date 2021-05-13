@@ -1,8 +1,7 @@
 import { Logger } from "../Misc/logger";
 import { Vector3} from "./math.vector";
-import { Scalar } from "./math.scalar";
-import { PHI, THIRDR3, IsoGridSize, Epsilon } from './math.constants';
-import { DeepImmutable, FloatArray} from "../types";
+import { THIRDR3, IsoGridSize} from './math.constants';
+import { DeepImmutable} from "../types";
 import { ArrayTools } from '../Misc/arrayTools';
 import { _TypeStore } from '../Misc/typeStore';
 
@@ -24,11 +23,11 @@ export class IsoVector {
         public y: number = 0) {
             if (x !== Math.floor(x)) {
                 x === Math.floor(x);
-                Logger.Warn("x not an integer only floor(x) used");
+                Logger.Warn("x is not an integer, floor(x) used");
             }
             if (y !== Math.floor(y)) {
                 y === Math.floor(y);
-                Logger.Warn("y not an integer only floor(y) used");
+                Logger.Warn("y is not an integer, floor(y) used");
             }
     }
 
@@ -230,11 +229,11 @@ export class IsoVector {
     public rotateNeg120(m: number, n: number) { //m, n integers
         if (m !== Math.floor(m)) {
             m === Math.floor(m);
-            Logger.Warn("m not an integer only floor(m) used");
+            Logger.Warn("m is not an integer, floor(m) used");
         }
         if (n !== Math.floor(n)) {
             n === Math.floor(n);
-            Logger.Warn("n not an integer only floor(n) used");
+            Logger.Warn("n is not an integer,   floor(n) used");
         }
         let x = this.x
         this.x = this.y - n;
@@ -243,10 +242,10 @@ export class IsoVector {
     };
     
     /**
-     * Transforms an IsoVector to one in Cartesian 3D space based on a vector3 origin
+     * Transforms an IsoVector to one in Cartesian 3D space based on an isovector
      * @returns Point as a Vector3 
      */
-    public toCartesianOrigin(origin: Vector3) { // origin Vector3
+    public toCartesianOrigin(origin: IsoVector) {
         const point = Vector3.Zero();
         point.x = origin.x + 2 * this.x * IsoGridSize + this.y * IsoGridSize;
         point.y = origin.y + 3 * THIRDR3 * this.y * IsoGridSize;
@@ -276,7 +275,7 @@ export class IsoVector {
  * @hidden
  */
  export class TmpIsoVectors {
-    public static IsoVector: IsoVector[] = ArrayTools.BuildArray(6, IsoVector.Zero); // 6 temp IsoVector at once should be enough
+    public static IsoVector: IsoVector[] = ArrayTools.BuildArray(6, IsoVector.Zero); // 6 temp IsoVectors at once should be enough
 }
 
 _TypeStore.RegisteredTypes["BABYLON.IsoVector"] = IsoVector;
