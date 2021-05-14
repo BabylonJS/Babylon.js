@@ -55868,6 +55868,7 @@ declare module BABYLON {
          * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
          */
         static get DefaultUtilityLayer(): UtilityLayerRenderer;
+        static CreateDefaultUtilityLayerFromScene(scene: Scene): UtilityLayerRenderer;
         /**
          * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
          */
@@ -55878,7 +55879,7 @@ declare module BABYLON {
         utilityLayerScene: Scene;
         /**
          *  If the utility layer should automatically be rendered on top of existing scene
-        */
+         */
         shouldRender: boolean;
         /**
          * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
@@ -56091,6 +56092,7 @@ declare module BABYLON {
         private _screenCoordinatesRef;
         private _viewportRef;
         protected _onXRFrame(_xrFrame: XRFrame): void;
+        private get _utilityLayerScene();
         private _attachGazeMode;
         private _attachScreenRayMode;
         private _attachTrackedPointerRayMode;
