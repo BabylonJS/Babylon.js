@@ -74,7 +74,7 @@ export class UtilityLayerRenderer implements IDisposable {
      */
     public static get DefaultUtilityLayer(): UtilityLayerRenderer {
         if (UtilityLayerRenderer._DefaultUtilityLayer == null) {
-            return UtilityLayerRenderer.CreateDefaultUtilityLayerFromScene(EngineStore.LastCreatedScene!);
+            return UtilityLayerRenderer._CreateDefaultUtilityLayerFromScene(EngineStore.LastCreatedScene!);
         }
 
         return UtilityLayerRenderer._DefaultUtilityLayer;
