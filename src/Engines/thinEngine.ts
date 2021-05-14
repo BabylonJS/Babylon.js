@@ -714,7 +714,7 @@ export class ThinEngine {
                 };
 
                 this._onContextRestored = () => {
-                    this._restoreEngineAfterContextLost(this._initGLContext);
+                    this._restoreEngineAfterContextLost(this._initGLContext.bind(this));
                 };
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
