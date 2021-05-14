@@ -128,12 +128,13 @@ export class DepthRenderer {
 
             var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
 
-            var camera = this._camera || scene.activeCamera;
+            let camera = this._camera || scene.activeCamera;
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
                 const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
                 const effect = DrawWrapper.GetEffect(drawWrapper)!;
+                const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
 
                 engine.enableEffect(drawWrapper);
 
@@ -144,7 +145,7 @@ export class DepthRenderer {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
-                effect.setFloat2("depthValues", camera.minZ, camera.minZ + camera.maxZ);
+                effect.setFloat2("depthValues", cameraIsOrtho ? 1 : camera.minZ, cameraIsOrtho ? 2 : camera.minZ + camera.maxZ);
 
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
