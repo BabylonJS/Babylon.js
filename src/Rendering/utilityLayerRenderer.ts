@@ -12,6 +12,10 @@ import { Color3 } from '../Maths/math.color';
 
 declare module "../scene" {
     export interface Scene {
+        /**
+         * Associated utility layer renderer
+         * @hidden
+         */
         _utilityLayerRenderer: UtilityLayerRenderer;
     }
 }
