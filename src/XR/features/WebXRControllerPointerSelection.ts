@@ -372,18 +372,18 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             }
 
             let utilityScenePick = null;
-            if (this._scene._utilityLayerRenderer) {
-                utilityScenePick = this._scene._utilityLayerRenderer.utilityLayerScene.pickWithRay(
+            if (this._utilityLayerScene) {
+                utilityScenePick = this._utilityLayerScene.pickWithRay(
                     controllerData.tmpRay,
-                    this._scene._utilityLayerRenderer.utilityLayerScene.pointerMovePredicate || this.raySelectionPredicate
+                    this._utilityLayerScene.pointerMovePredicate || this.raySelectionPredicate
                 );
             }
 
             let originalScenePick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
-            if (!utilityScenePick || utilityScenePick.distance === 0) {
+            if (!utilityScenePick || !utilityScenePick.hit) {
                 // No hit in utility scene
                 controllerData.pick = originalScenePick;
-            } else if (!originalScenePick || originalScenePick.distance === 0) {
+            } else if (!originalScenePick || !originalScenePick.hit) {
                 // No hit in original scene
                 controllerData.pick = utilityScenePick;
             } else if (utilityScenePick.distance < originalScenePick.distance) {
@@ -426,11 +426,15 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         });
     }
 
+    private get _utilityLayerScene() {
+        return this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene;
+    }
+
     private _attachGazeMode(xrController?: WebXRInputSource) {
         const controllerData = this._controllers[(xrController && xrController.uniqueId) || "camera"];
         // attached when touched, detaches when raised
         const timeToSelect = this._options.timeToSelect || 3000;
-        const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
+        const sceneToRenderTo = this._options.useUtilityLayer ? this._utilityLayerScene : this._scene;
         let oldPick = new PickingInfo();
         let discMesh = TorusBuilder.CreateTorus(
             "selection",
