@@ -44,21 +44,25 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
         private _forcePanning;
+        private _forceZooming;
+        private _forceSelecting;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
         private _panning;
-        private _forceZooming;
+        private _canvas;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
+        ctrlEvent: (evt: KeyboardEvent) => void;
+        ctrlFalseEvent: () => void;
+        componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: Vector2): void;
-        onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
@@ -127,7 +131,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
         onZoomObservable: Observable<void>;
         onPanObservable: Observable<void>;
-        onSelectionObservable: Observable<void>;
+        onSelectionButtonObservable: Observable<void>;
         onLoadObservable: Observable<void>;
         onSaveObservable: Observable<void>;
         onSnippetLoadObservable: Observable<void>;
@@ -971,14 +975,18 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/contr
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import * as React from 'react';
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
     interface IControlTreeItemComponentProps {
         control: Control;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
         onClick: () => void;
+        globalState: GlobalState;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
+        isHovered: boolean;
+        isSelected: boolean;
     }> {
         constructor(props: IControlTreeItemComponentProps);
         highlight(): void;
@@ -1199,6 +1207,9 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
         globalState: GlobalState;
     }
     export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
+        private _panning;
+        private _zooming;
+        private _selecting;
         constructor(props: ICommandBarComponentProps);
         render(): JSX.Element;
         onCreate(value: string): void;
@@ -1791,21 +1802,25 @@ declare module GUIEDITOR {
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
         private _forcePanning;
+        private _forceZooming;
+        private _forceSelecting;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
         private _panning;
-        private _forceZooming;
+        private _canvas;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
+        ctrlEvent: (evt: KeyboardEvent) => void;
+        ctrlFalseEvent: () => void;
+        componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
-        onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
@@ -1864,7 +1879,7 @@ declare module GUIEDITOR {
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
-        onSelectionObservable: BABYLON.Observable<void>;
+        onSelectionButtonObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<void>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
@@ -2565,10 +2580,13 @@ declare module GUIEDITOR {
         control: Control;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
+        globalState: GlobalState;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
+        isHovered: boolean;
+        isSelected: boolean;
     }> {
         constructor(props: IControlTreeItemComponentProps);
         highlight(): void;
@@ -2763,6 +2781,9 @@ declare module GUIEDITOR {
         globalState: GlobalState;
     }
     export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
+        private _panning;
+        private _zooming;
+        private _selecting;
         constructor(props: ICommandBarComponentProps);
         render(): JSX.Element;
         onCreate(value: string): void;

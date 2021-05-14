@@ -172,14 +172,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.19";
+        return "babylonjs@5.0.0-alpha.22";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.19";
+        return "5.0.0-alpha.22";
     }
 
     /**
@@ -714,36 +714,7 @@ export class ThinEngine {
                 };
 
                 this._onContextRestored = () => {
-                    // Adding a timeout to avoid race condition at browser level
-                    setTimeout(() => {
-                        this._dummyFramebuffer = null;
-
-                        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to _initGLContext / wipeCaches will reset them
-                        const depthFunc = this._depthCullingState.depthFunc;
-                        const depthMask = this._depthCullingState.depthMask;
-                        const stencilTest = this._stencilState.stencilTest;
-
-                        // Rebuild gl context
-                        this._initGLContext();
-                        // Rebuild effects
-                        this._rebuildEffects();
-                        this._rebuildComputeEffects();
-                        // Rebuild textures
-                        this._rebuildInternalTextures();
-                        // Rebuild buffers
-                        this._rebuildBuffers();
-                        // Cache
-                        this.wipeCaches(true);
-
-                        this._depthCullingState.depthTest = depthTest;
-                        this._depthCullingState.depthFunc = depthFunc;
-                        this._depthCullingState.depthMask = depthMask;
-                        this._stencilState.stencilTest = stencilTest;
-
-                        Logger.Warn("WebGL context successfully restored.");
-                        this.onContextRestoredObservable.notifyObservers(this);
-                        this._contextWasLost = false;
-                    }, 0);
+                    this._restoreEngineAfterContextLost(this._initGLContext);
                 };
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
@@ -848,22 +819,38 @@ export class ThinEngine {
         console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
     }
 
-    /**
-     * @hidden
-     */
-    public _debugPushGroup(groupName: string, targetObject?: number): void {
-    }
+    protected _restoreEngineAfterContextLost(initEngine: () => void): void {
+        // Adding a timeout to avoid race condition at browser level
+        setTimeout(async () => {
+            this._dummyFramebuffer = null;
 
-    /**
-     * @hidden
-     */
-    public _debugPopGroup(targetObject?: number): void {
-    }
+            const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
+            const depthFunc = this._depthCullingState.depthFunc;
+            const depthMask = this._depthCullingState.depthMask;
+            const stencilTest = this._stencilState.stencilTest;
 
-    /**
-     * @hidden
-     */
-    public _debugInsertMarker(text: string, targetObject?: number): void {
+            // Rebuild context
+            await initEngine();
+            // Rebuild effects
+            this._rebuildEffects();
+            this._rebuildComputeEffects();
+            // Rebuild textures
+            this._rebuildInternalTextures();
+            // Rebuild buffers
+            this._rebuildBuffers();
+            // Cache
+            this.wipeCaches(true);
+
+            this._depthCullingState.depthTest = depthTest;
+            this._depthCullingState.depthFunc = depthFunc;
+            this._depthCullingState.depthMask = depthMask;
+            this._stencilState.stencilTest = stencilTest;
+
+            Logger.Warn(this.name + " context successfully restored.");
+            this.onContextRestoredObservable.notifyObservers(this);
+            this._contextWasLost = false;
+        }, 0);
+
     }
 
     /**
@@ -982,7 +969,7 @@ export class ThinEngine {
             multiview: this._gl.getExtension('OVR_multiview2'),
             oculusMultiview: this._gl.getExtension('OCULUS_multiview'),
             depthTextureExtension: false,
-            canUseGLInstanceID: !(this._badOS && this._webGLVersion <= 1),
+            canUseGLInstanceID: this._webGLVersion > 1,
             canUseGLVertexID: this._webGLVersion > 1,
             supportComputeShaders: false,
         };

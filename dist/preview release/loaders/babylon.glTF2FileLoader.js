@@ -1597,7 +1597,7 @@ var TransmissionHelper = /** @class */ (function () {
             samples: 4,
             lodGenerationScale: 1,
             lodGenerationOffset: -4,
-            renderTargetTextureType: babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTURETYPE_UNSIGNED_INT
+            renderTargetTextureType: babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTURETYPE_HALF_FLOAT,
         };
     };
     /**
@@ -1704,14 +1704,29 @@ var TransmissionHelper = /** @class */ (function () {
      */
     TransmissionHelper.prototype._setupRenderTargets = function () {
         var _this = this;
+        var _a, _b;
         this._opaqueRenderTarget = new babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["RenderTargetTexture"]("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
-        // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
-        this._opaqueRenderTarget.gammaSpace = true;
+        this._opaqueRenderTarget.clearColor = (_b = (_a = this._options.clearColor) === null || _a === void 0 ? void 0 : _a.clone()) !== null && _b !== void 0 ? _b : this._scene.clearColor.clone();
+        this._opaqueRenderTarget.gammaSpace = false;
         this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
         this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
         this._opaqueRenderTarget.samples = this._options.samples;
+        var sceneImageProcessingapplyByPostProcess;
+        this._opaqueRenderTarget.onBeforeBindObservable.add(function (opaqueRenderTarget) {
+            sceneImageProcessingapplyByPostProcess = _this._scene.imageProcessingConfiguration.applyByPostProcess;
+            if (!_this._options.clearColor) {
+                _this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor);
+            }
+            else {
+                opaqueRenderTarget.clearColor.copyFrom(_this._options.clearColor);
+            }
+            _this._scene.imageProcessingConfiguration.applyByPostProcess = true;
+        });
+        this._opaqueRenderTarget.onAfterUnbindObservable.add(function () {
+            _this._scene.imageProcessingConfiguration.applyByPostProcess = sceneImageProcessingapplyByPostProcess;
+        });
         this._transparentMeshesCache.forEach(function (mesh) {
             if (_this.shouldRenderAsTransmission(mesh.material)) {
                 mesh.material.refractionTexture = _this._opaqueRenderTarget;

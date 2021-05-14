@@ -3803,35 +3803,13 @@ declare module BABYLON.GUI {
     export class Button3D extends AbstractButton3D {
         /** @hidden */
         protected _currentMaterial: BABYLON.Material;
-        private _facadeTexture;
-        private _content;
-        private _contentResolution;
-        private _contentScaleRatio;
-        /**
-         * Gets or sets the texture resolution used to render content (512 by default)
-         */
-        get contentResolution(): BABYLON.int;
-        set contentResolution(value: BABYLON.int);
-        /**
-         * Gets or sets the texture scale ratio used to render content (2 by default)
-         */
-        get contentScaleRatio(): number;
-        set contentScaleRatio(value: number);
-        protected _disposeFacadeTexture(): void;
-        protected _resetContent(): void;
         /**
          * Creates a new button
          * @param name defines the control name
          */
         constructor(name?: string);
         /**
-         * Gets or sets the GUI 2D content used to display the button's facade
-         */
-        get content(): Control;
-        set content(value: Control);
-        /**
          * Apply the facade texture (created from the content property).
-         * This function can be overloaded by child classes
          * @param facadeTexture defines the AdvancedDynamicTexture to use
          */
         protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
@@ -4031,8 +4009,8 @@ declare module BABYLON.GUI {
         /** Callback used to start pointer up animation */
         pointerUpAnimation: () => void;
         /**
-        * An event triggered when the pointer move over the control
-        */
+         * An event triggered when the pointer move over the control
+         */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector3>;
         /**
          * An event triggered when the pointer move out of the control
@@ -4158,9 +4136,38 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * The base class for controls that display content
+     */
+    export class ContentDisplay3D extends Control3D {
+        private _content;
+        private _facadeTexture;
+        protected _contentResolution: number;
+        protected _contentScaleRatio: number;
+        /**
+         * Gets or sets the GUI 2D content used to display the button's facade
+         */
+        get content(): Control;
+        set content(value: Control);
+        /**
+         * Gets or sets the texture resolution used to render content (512 by default)
+         */
+        get contentResolution(): number;
+        set contentResolution(value: number);
+        protected _disposeFacadeTexture(): void;
+        protected _resetContent(): void;
+        /**
+         * Apply the facade texture (created from the content property).
+         * This function can be overloaded by child classes
+         * @param facadeTexture defines the AdvancedDynamicTexture to use
+         */
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used as a root to all buttons
      */
-    export class AbstractButton3D extends Control3D {
+    export class AbstractButton3D extends ContentDisplay3D {
         /**
          * Creates a new button
          * @param name defines the control name
@@ -4404,165 +4411,6 @@ declare module BABYLON.GUI {
          * Releases all associated resources
          */
         dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
-     */
-    export class MeshButton3D extends Button3D {
-        /** @hidden */
-        protected _currentMesh: BABYLON.Mesh;
-        /**
-         * Creates a new 3D button based on a mesh
-         * @param mesh mesh to become a 3D button
-         * @param name defines the control name
-         */
-        constructor(mesh: BABYLON.Mesh, name?: string);
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a container panel deployed on the surface of a plane
-     */
-    export class PlanePanel extends VolumeBasedPanel {
-        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a container panel where items get randomized planar mapping
-     */
-    export class ScatterPanel extends VolumeBasedPanel {
-        private _iteration;
-        /**
-         * Gets or sets the number of iteration to use to scatter the controls (100 by default)
-         */
-        get iteration(): BABYLON.float;
-        set iteration(value: BABYLON.float);
-        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
-        private _scatterMapping;
-        protected _finalProcessing(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a slider in 3D
-     */
-    export class Slider3D extends Control3D {
-        private _sliderBarMaterial;
-        private _sliderThumbMaterial;
-        private _sliderThumb;
-        private _sliderBar;
-        private _minimum;
-        private _maximum;
-        private _value;
-        private _step;
-        /** BABYLON.Observable raised when the sldier value changes */
-        onValueChangedObservable: BABYLON.Observable<number>;
-        /**
-         * Creates a new slider
-         * @param name defines the control name
-         */
-        constructor(name?: string);
-        /**
-         * Gets the mesh used to render this control
-         */
-        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
-        /** Gets or sets minimum value */
-        get minimum(): number;
-        set minimum(value: number);
-        /** Gets or sets maximum value */
-        get maximum(): number;
-        set maximum(value: number);
-        /** Gets or sets step value */
-        get step(): number;
-        set step(value: number);
-        /** Gets or sets current value */
-        get value(): number;
-        set value(value: number);
-        protected get start(): number;
-        protected get end(): number;
-        /**
-         * Gets the slider bar material used by this control
-         */
-        get sliderBarMaterial(): BABYLON.StandardMaterial;
-        /**
-         * Gets the slider thumb material used by this control
-         */
-        get sliderThumbMaterial(): BABYLON.StandardMaterial;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        private _createBehavior;
-        private _convertToPosition;
-        private _convertToValue;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a container panel deployed on the surface of a sphere
-     */
-    export class SpherePanel extends VolumeBasedPanel {
-        private _radius;
-        /**
-         * Gets or sets the radius of the sphere where to project controls (5 by default)
-         */
-        get radius(): BABYLON.float;
-        set radius(value: BABYLON.float);
-        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
-        private _sphericalMapping;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a stack panel in 3D on XY plane
-     */
-    export class StackPanel3D extends Container3D {
-        private _isVertical;
-        /**
-         * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
-         */
-        get isVertical(): boolean;
-        set isVertical(value: boolean);
-        /**
-         * Gets or sets the distance between elements
-         */
-        margin: number;
-        /**
-         * Creates new StackPanel
-         * @param isVertical
-         */
-        constructor(isVertical?: boolean);
-        protected _arrangeChildren(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create an interactable object. It's a touchable 3D button using a mesh coming from the current scene
-     */
-    export class TouchMeshButton3D extends TouchButton3D {
-        /** @hidden */
-        protected _currentMesh: BABYLON.Mesh;
-        /**
-         * Creates a new 3D button based on a mesh
-         * @param mesh mesh to become a 3D button
-         * @param collisionMesh mesh to track collisions with
-         * @param name defines the control name
-         */
-        constructor(mesh: BABYLON.Mesh, options: {
-            collisionMesh: BABYLON.Mesh;
-            useDynamicMesh?: boolean;
-        }, name?: string);
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
     }
 }
 declare module BABYLON.GUI {
@@ -4841,6 +4689,314 @@ declare module BABYLON.GUI {
          * Releases all associated resources
          */
         dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * BABYLON.Gizmo to resize 2D slates
+     */
+    export class SlateGizmo extends BABYLON.Gizmo {
+        private _boundingDimensions;
+        private _dragPlaneNormal;
+        private _tmpQuaternion;
+        private _tmpVector;
+        private _corners;
+        private _sides;
+        private _handlesParent;
+        private _boundingBoxGizmo;
+        private _dragStartObserver;
+        private _draggingObserver;
+        private _dragEndObserver;
+        private _dragBehavior;
+        /**
+         * Value we use to offset handles from mesh
+         */
+        private _margin;
+        private _attachedSlate;
+        /**
+         * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
+         */
+        fixedScreenSize: boolean;
+        /**
+         * The distance away from the object which the draggable meshes should appear world sized when fixedScreenSize is set to true (default: 10)
+         */
+        fixedScreenSizeDistanceFactor: number;
+        /**
+         * Size of the handles
+         */
+        handleSize: number;
+        /**
+         * The slate attached to this gizmo
+         */
+        set attachedSlate(control: BABYLON.Nullable<HolographicSlate>);
+        get attachedSlate(): BABYLON.Nullable<HolographicSlate>;
+        constructor(utilityLayer?: BABYLON.UtilityLayerRenderer);
+        private _createNode;
+        private _keepAspectRatio;
+        private _clampDimensions;
+        private _moveHandle;
+        private _assignDragBehavior;
+        private _createAngleMesh;
+        private _createSideMesh;
+        protected _attachedNodeChanged(value: BABYLON.Nullable<BABYLON.AbstractMesh>): void;
+        /**
+         * Updates the bounding box information for the gizmo
+         */
+        updateBoundingBox(): void;
+        private _updateHandlesPosition;
+        protected _update(): void;
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a holographic slate
+     */
+    export class HolographicSlate extends ContentDisplay3D {
+        /**
+         * Base Url for the assets.
+         */
+        static ASSETS_BASE_URL: string;
+        /**
+         * File name for the close icon.
+         */
+        static CLOSE_ICON_FILENAME: string;
+        /**
+         * File name for the close icon.
+         */
+        static FOLLOW_ICON_FILENAME: string;
+        /**
+         * Dimensions of the slate
+         */
+        dimensions: BABYLON.Vector3;
+        /**
+         * Minimum dimensions of the slate
+         */
+        minDimensions: BABYLON.Vector3;
+        /**
+         * Dimensions of the backplate
+         */
+        backplateDimensions: BABYLON.Vector3;
+        /**
+         * Margin between backplate and contentplate
+         */
+        backPlateMargin: number;
+        /**
+         * Origin in local coordinates (top left corner)
+         */
+        origin: BABYLON.Vector3;
+        private _backPlateMaterial;
+        private _contentMaterial;
+        private _pickedPointObserver;
+        private _imageUrl;
+        /** @hidden */
+        _followBehavior: BABYLON.FollowBehavior;
+        /** @hidden */
+        _gizmo: SlateGizmo;
+        protected _backPlate: BABYLON.Mesh;
+        protected _contentPlate: BABYLON.Mesh;
+        protected _followButton: TouchHolographicButton;
+        protected _closeButton: TouchHolographicButton;
+        protected _contentScaleRatio: number;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        set renderingGroupId(id: number);
+        get renderingGroupId(): number;
+        /**
+         * Gets or sets the image url for the button
+         */
+        get imageUrl(): string;
+        set imageUrl(value: string);
+        /**
+         * Creates a new slate
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Apply the facade texture (created from the content property).
+         * This function can be overloaded by child classes
+         * @param facadeTexture defines the AdvancedDynamicTexture to use
+         */
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+        private _rebuildContent;
+        private _addControl;
+        protected _getTypeName(): string;
+        /**
+         * @hidden
+         */
+        _positionElements(): void;
+        /**
+         * @hidden
+         */
+        _updatePivot(): void;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        /** @hidden **/
+        _prepareNode(scene: BABYLON.Scene): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
+     */
+    export class MeshButton3D extends Button3D {
+        /** @hidden */
+        protected _currentMesh: BABYLON.Mesh;
+        /**
+         * Creates a new 3D button based on a mesh
+         * @param mesh mesh to become a 3D button
+         * @param name defines the control name
+         */
+        constructor(mesh: BABYLON.Mesh, name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel deployed on the surface of a plane
+     */
+    export class PlanePanel extends VolumeBasedPanel {
+        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel where items get randomized planar mapping
+     */
+    export class ScatterPanel extends VolumeBasedPanel {
+        private _iteration;
+        /**
+         * Gets or sets the number of iteration to use to scatter the controls (100 by default)
+         */
+        get iteration(): BABYLON.float;
+        set iteration(value: BABYLON.float);
+        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
+        private _scatterMapping;
+        protected _finalProcessing(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a slider in 3D
+     */
+    export class Slider3D extends Control3D {
+        private _sliderBarMaterial;
+        private _sliderThumbMaterial;
+        private _sliderThumb;
+        private _sliderBar;
+        private _minimum;
+        private _maximum;
+        private _value;
+        private _step;
+        /** BABYLON.Observable raised when the sldier value changes */
+        onValueChangedObservable: BABYLON.Observable<number>;
+        /**
+         * Creates a new slider
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        /** Gets or sets minimum value */
+        get minimum(): number;
+        set minimum(value: number);
+        /** Gets or sets maximum value */
+        get maximum(): number;
+        set maximum(value: number);
+        /** Gets or sets step value */
+        get step(): number;
+        set step(value: number);
+        /** Gets or sets current value */
+        get value(): number;
+        set value(value: number);
+        protected get start(): number;
+        protected get end(): number;
+        /**
+         * Gets the slider bar material used by this control
+         */
+        get sliderBarMaterial(): BABYLON.StandardMaterial;
+        /**
+         * Gets the slider thumb material used by this control
+         */
+        get sliderThumbMaterial(): BABYLON.StandardMaterial;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        private _createBehavior;
+        private _convertToPosition;
+        private _convertToValue;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel deployed on the surface of a sphere
+     */
+    export class SpherePanel extends VolumeBasedPanel {
+        private _radius;
+        /**
+         * Gets or sets the radius of the sphere where to project controls (5 by default)
+         */
+        get radius(): BABYLON.float;
+        set radius(value: BABYLON.float);
+        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
+        private _sphericalMapping;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a stack panel in 3D on XY plane
+     */
+    export class StackPanel3D extends Container3D {
+        private _isVertical;
+        /**
+         * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
+         */
+        get isVertical(): boolean;
+        set isVertical(value: boolean);
+        /**
+         * Gets or sets the distance between elements
+         */
+        margin: number;
+        /**
+         * Creates new StackPanel
+         * @param isVertical
+         */
+        constructor(isVertical?: boolean);
+        protected _arrangeChildren(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create an interactable object. It's a touchable 3D button using a mesh coming from the current scene
+     */
+    export class TouchMeshButton3D extends TouchButton3D {
+        /** @hidden */
+        protected _currentMesh: BABYLON.Mesh;
+        /**
+         * Creates a new 3D button based on a mesh
+         * @param mesh mesh to become a 3D button
+         * @param collisionMesh mesh to track collisions with
+         * @param name defines the control name
+         */
+        constructor(mesh: BABYLON.Mesh, options: {
+            collisionMesh: BABYLON.Mesh;
+            useDynamicMesh?: boolean;
+        }, name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
     }
 }
 declare module BABYLON.GUI {
