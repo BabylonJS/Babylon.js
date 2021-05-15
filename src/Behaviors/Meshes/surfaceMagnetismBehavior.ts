@@ -60,7 +60,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     /**
      * If true, pitch and roll are omitted.
      */
-    public keepOrientationVertical = true;
+    public keepOrientationVertical = false;
 
     /**
      * Attaches the behavior to a transform node
