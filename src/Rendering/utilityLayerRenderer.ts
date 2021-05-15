@@ -231,6 +231,8 @@ export class UtilityLayerRenderer implements IDisposable {
                                 // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
                                 this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
                                 delete this._lastPointerEvents[pointerEvent.pointerId];
+                            } else if (prePointerInfo.type === PointerEventTypes.POINTERMOVE) {
+                                this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
                             }
                         } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)) {
                             // We pick something in utility scene or the pick in utility is closer than the one in main scene

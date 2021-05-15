@@ -292,11 +292,11 @@ export class HolographicSlate extends ContentDisplay3D {
         // By default the slate spawns in front of the camera
         // TODO : add a parameter
         if (scene.activeCamera) {
-            const invView = scene.activeCamera.getViewMatrix().clone().invert();
-            const backward = Vector3.TransformNormal(new Vector3(0, 0, -1), invView);
+            const worldMatrix = scene.activeCamera.getWorldMatrix();
+            const backward = Vector3.TransformNormal(new Vector3(0, 0, -1), worldMatrix);
+            node.position.copyFrom(scene.activeCamera.position).subtractInPlace(backward.scale(2));
             node.rotationQuaternion = Quaternion.FromLookDirectionLH(backward, new Vector3(0, 1, 0));
-            node.position.copyFrom(scene.activeCamera.position).subtractInPlace(backward.scale(0.7));
-            node.scaling.setAll(0.1);
+            node.scaling.setAll(0.2);
         }
 
         return node;
