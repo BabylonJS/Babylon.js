@@ -249,29 +249,6 @@ export class SlateGizmo extends Gizmo {
         this._dragBehavior = dragBehavior;
     }
 
-    private _angleBetweenOnPlane(from: Vector3, to: Vector3, normal: Vector3) {
-        // Work on copies
-        TmpVectors.Vector3[0].copyFrom(from);
-        from = TmpVectors.Vector3[0];
-        TmpVectors.Vector3[1].copyFrom(to);
-        to = TmpVectors.Vector3[1];
-        TmpVectors.Vector3[2].copyFrom(normal);
-        normal = TmpVectors.Vector3[2];
-        const right = TmpVectors.Vector3[3];
-        const forward = TmpVectors.Vector3[4];
-
-        from.normalize();
-        to.normalize();
-        normal.normalize();
-
-        Vector3.CrossToRef(normal, from, right);
-        Vector3.CrossToRef(right, normal, forward);
-
-        const angle = Math.atan2(Vector3.Dot(to, right), Vector3.Dot(to, forward));
-
-        return Scalar.NormalizeRadians(angle);
-    }
-
     private _assignDragBehavior2(node: Node, dragPlaneNormal: Vector3) {
         var dragBehavior = new PointerDragBehavior({
             dragPlaneNormal,
@@ -309,7 +286,7 @@ export class SlateGizmo extends Gizmo {
                 this._tmpVector.subtractInPlace(worldPivot);
                 this._tmpVector.normalize();
                 // Vector3.CrossToRef(this._tmpVector, directionOrigin, TmpVectors.Vector3[0]);
-                let angle = -this._angleBetweenOnPlane(this._tmpVector, directionOrigin, worldPlaneNormal);
+                let angle = -Vector3.GetAngleBetweenVectorsOnPlane(this._tmpVector, directionOrigin, worldPlaneNormal);
 
                 Quaternion.RotationAxisToRef(dragPlaneNormal, angle, this._tmpQuaternion);
                 quaternionOrigin.multiplyToRef(this._tmpQuaternion, this.attachedMesh.rotationQuaternion!);

@@ -167,29 +167,6 @@ export class FollowBehavior implements Behavior<TransformNode> {
         this._recenterNextUpdate = true;
     }
 
-    private _angleBetweenOnPlane(from: Vector3, to: Vector3, normal: Vector3) {
-        // Work on copies
-        this._tmpVectors[0].copyFrom(from);
-        from = this._tmpVectors[0];
-        this._tmpVectors[1].copyFrom(to);
-        to = this._tmpVectors[1];
-        this._tmpVectors[2].copyFrom(normal);
-        normal = this._tmpVectors[2];
-        const right = this._tmpVectors[3];
-        const forward = this._tmpVectors[4];
-
-        from.normalize();
-        to.normalize();
-        normal.normalize();
-
-        Vector3.CrossToRef(normal, from, right);
-        Vector3.CrossToRef(right, normal, forward);
-
-        const angle = Math.atan2(Vector3.Dot(to, right), Vector3.Dot(to, forward));
-
-        return Scalar.NormalizeRadians(angle);
-    }
-
     private _angleBetweenVectorAndPlane(vector: Vector3, normal: Vector3) {
         // Work on copies
         this._tmpVectors[0].copyFrom(vector);
@@ -296,11 +273,11 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
         // X-axis leashing
         if (this.ignoreCameraPitchAndRoll) {
-            const angle = this._angleBetweenOnPlane(currentToTarget, forward, right);
+            const angle = Vector3.GetAngleBetweenVectorsOnPlane(currentToTarget, forward, right);
             Quaternion.RotationAxisToRef(right, angle, rotationQuat);
             currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
         } else {
-            const angle = -this._angleBetweenOnPlane(currentToTarget, forward, right);
+            const angle = -Vector3.GetAngleBetweenVectorsOnPlane(currentToTarget, forward, right);
             const minMaxAngle = ((this.maxViewVerticalDegrees * Math.PI) / 180) * 0.5;
             if (angle < -minMaxAngle) {
                 Quaternion.RotationAxisToRef(right, -angle - minMaxAngle, rotationQuat);
@@ -362,7 +339,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         leashToFollow.copyFrom(currentToTarget);
         leashToFollow.normalize();
 
-        const angle = Math.abs(this._angleBetweenOnPlane(forward, leashToFollow, Vector3.UpReadOnly));
+        const angle = Math.abs(Vector3.GetAngleBetweenVectorsOnPlane(forward, leashToFollow, Vector3.UpReadOnly));
         return (angle * 180) / Math.PI > this.orientToCameraDeadzoneDegrees;
     }
 
