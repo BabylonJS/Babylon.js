@@ -61,7 +61,7 @@ export class NearMenu extends VolumeBasedPanel {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
             this._pinMaterial = control.backMaterial;
             this._pinMaterial.diffuseColor.copyFromFloats(0, 0, 0);
-            
+
             if (control.node) {
                 control.node.parent = parent;
             }
@@ -85,7 +85,6 @@ export class NearMenu extends VolumeBasedPanel {
     }
 
     protected _affectMaterial(mesh: AbstractMesh) {
-        // TODO share materials
         this._backPlateMaterial = new FluentMaterial(this.name + "backPlateMaterial", mesh.getScene());
         this._backPlateMaterial.albedoColor = new Color3(0.08, 0.15, 0.55);
         this._backPlateMaterial.renderBorders = true;
