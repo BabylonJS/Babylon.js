@@ -32,6 +32,14 @@ type XREye = "none" | "left" | "right";
  */
 type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
 
+/**
+ * Type of overlay (provided by UA and remains unchanged for duration of session)
+ * - screen: covers the entire physical screen for a screen-based device, for example handheld AR
+ * - floating: appears as a floating rectangle in space
+ * - head-locked: follows the user’s head movement consistently, appearing similar to a HUD
+ */
+type XRDOMOverlayType = "screen" | "floating" | "head-locked";
+
 type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => void;
 
 type XRPlaneSet = Set<XRPlane>;
@@ -41,10 +49,21 @@ type XREventHandler = (callback: any) => void;
 
 interface XRLayer extends EventTarget {}
 
+type XRDOMOverlayInit = {
+    /**
+     * The root attribute specifies the overlay element that will be displayed to the user as the content of the DOM overlay. This is a required attribute, there is no default.
+     */
+    root: Element;
+};
+
 interface XRSessionInit {
     optionalFeatures?: string[];
     requiredFeatures?: string[];
     trackedImages?: XRTrackedImageInit[];
+    /**
+     * When 'dom-overly' is (optionally) requested the application MUST provide configuration for the DOM overlay
+     */
+    domOverlay?: XRDOMOverlayInit;
 }
 
 interface XRSessionEvent extends Event {
@@ -158,6 +177,13 @@ interface XRInputSourceEvent extends Event {
 
 type XRInputSourceArray = XRInputSource[];
 
+type XRDOMOverlayState = {
+    /**
+     * set if supported, or is null if the feature is not supported
+     */
+    type: XRDOMOverlayType | null
+};
+
 interface XRSession {
     addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
     removeEventListener(type: XREventType, listener: XREventHandler, options?: boolean | EventListenerOptions): void;
@@ -223,6 +249,11 @@ interface XRSession {
 
     // image tracking
     getTrackedImageScores?(): XRImageTrackingScore[];
+
+    /**
+     * Provided when the optional 'dom-overlay' feature is requested.
+     */
+    readonly domOverlayState?: XRDOMOverlayState;
 }
 
 interface XRViewerPose extends XRPose {
