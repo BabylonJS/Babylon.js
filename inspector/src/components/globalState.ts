@@ -63,7 +63,6 @@ export class GlobalState {
         loggingEnabled: false,
         transparencyAsCoverage: false,
         useClipPlane: false,
-        validate: true,
     };
 
     public glTFLoaderExtensions: { [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension } = {};

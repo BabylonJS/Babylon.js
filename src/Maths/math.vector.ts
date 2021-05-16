@@ -5016,16 +5016,26 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void {
-        const v = Vector3.Cross(to, from);
         const c = Vector3.Dot(to, from);
-        const k = 1 / (1 + c);
-
         const m = result._m;
-        m[0] = v._x * v._x * k + c; m[1] = v._y * v._x * k - v._z; m[2] = v._z * v._x * k + v._y; m[3] = 0;
-        m[4] = v._x * v._y * k + v._z; m[5] = v._y * v._y * k + c; m[6] = v._z * v._y * k - v._x; m[7] = 0;
-        m[8] = v._x * v._z * k - v._y; m[9] = v._y * v._z * k + v._x; m[10] = v._z * v._z * k + c; m[11] = 0;
-        m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
+        if (c < (-1 + Epsilon))
+        {
+            // from and to are colinear and opposite direction.
+            // compute a PI rotation on Z axis
+            m[0] = -1; m[1] =  0; m[2] =  0; m[3] =  0;
+            m[4] =  0; m[5] = -1; m[6] =  0; m[7] =  0;
+            m[8] =  0; m[9] =  0; m[10] = 1; m[11] = 0;
+        }
+        else
+        {
+            const v = Vector3.Cross(to, from);
+            const k = 1 / (1 + c);
 
+            m[0] = v._x * v._x * k + c; m[1] = v._y * v._x * k - v._z; m[2] = v._z * v._x * k + v._y; m[3] = 0;
+            m[4] = v._x * v._y * k + v._z; m[5] = v._y * v._y * k + c; m[6] = v._z * v._y * k - v._x; m[7] = 0;
+            m[8] = v._x * v._z * k - v._y; m[9] = v._y * v._z * k + v._x; m[10] = v._z * v._z * k + c; m[11] = 0;
+        }
+        m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
         result._markAsUpdated();
     }
 

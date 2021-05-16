@@ -201,8 +201,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @param ratio The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
      * @param cameras The array of cameras that the rendering pipeline will be attached to
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
+     * @param textureType The texture type used by the different post processes created by SSAO (default: Constants.TEXTURETYPE_UNSIGNED_INT)
      */
-    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false) {
+    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(scene.getEngine(), name);
 
         this._scene = scene;
@@ -226,11 +227,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         this._createRandomTexture();
 
-        this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+        this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), undefined, textureType);
         this._originalColorPostProcess.samples = this.textureSamples;
-        this._createSSAOPostProcess(1.0);
-        this._createBlurPostProcess(ssaoRatio, blurRatio);
-        this._createSSAOCombinePostProcess(blurRatio);
+        this._createSSAOPostProcess(1.0, textureType);
+        this._createBlurPostProcess(ssaoRatio, blurRatio, textureType);
+        this._createSSAOCombinePostProcess(blurRatio, textureType);
 
         // Set up pipeline
         this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
@@ -282,7 +283,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     // Private Methods
-    private _createBlurPostProcess(ssaoRatio: number, blurRatio: number): void {
+    private _createBlurPostProcess(ssaoRatio: number, blurRatio: number, textureType: number): void {
         this._samplerOffsets = [];
         var expensive = this.expensiveBlur;
 
@@ -290,7 +291,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._samplerOffsets.push(i * 2 + 0.5);
         }
 
-        this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+        this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n", textureType);
         this._blurHPostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
                 return;
@@ -308,7 +309,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setArray("samplerOffsets", this._samplerOffsets);
         };
 
-        this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+        this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n", textureType);
         this._blurVPostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
                 return;
@@ -398,7 +399,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         0, 0, 0,
         1, 1, 1];
 
-    private _createSSAOPostProcess(ratio: number): void {
+    private _createSSAOPostProcess(ratio: number, textureType: number): void {
         this._sampleSphere = this._generateHemisphere();
 
         const defines = this._getDefinesForSSAO();
@@ -413,7 +414,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             samplers,
             ratio, null, Texture.BILINEAR_SAMPLINGMODE,
             this._scene.getEngine(), false,
-            defines);
+            defines,
+            textureType);
 
         this._ssaoPostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
@@ -460,10 +462,10 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._ssaoPostProcess.samples = this.textureSamples;
     }
 
-    private _createSSAOCombinePostProcess(ratio: number): void {
+    private _createSSAOCombinePostProcess(ratio: number, textureType: number): void {
         this._ssaoCombinePostProcess = new PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor", "viewport"],
             ratio, null, Texture.BILINEAR_SAMPLINGMODE,
-            this._scene.getEngine(), false);
+            this._scene.getEngine(), false, undefined, textureType);
 
         this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
             let viewport = this._scene.activeCamera!.viewport;
