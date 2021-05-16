@@ -140,8 +140,9 @@
         {
             "title": "GUI Slate",
             "renderCount": 30,
-            "playgroundId": "#2YZFA0#182",
-            "referenceImage": "guiSlate.png"
+            "playgroundId": "#2YZFA0#200",
+            "referenceImage": "guiSlate.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Camera rig",
@@ -695,7 +696,8 @@
         {
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
-            "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
+            "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
+            "renderCount": 5
         },
         {
             "title": "GLTF Extension KHR_materials_specular",

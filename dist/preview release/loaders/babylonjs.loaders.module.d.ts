@@ -1013,7 +1013,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces" {
     import { Skeleton } from "babylonjs/Bones/skeleton";
     import { Material } from "babylonjs/Materials/material";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
-    import { Buffer, VertexBuffer } from "babylonjs/Meshes/buffer";
+    import { Buffer, VertexBuffer } from "babylonjs/Buffers/buffer";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import * as GLTF2 from "babylonjs-gltf2interface";

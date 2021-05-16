@@ -272,6 +272,7 @@ export class PhysicsViewer {
                         mesh.parent = m;
                     });
                 }
+                mesh = null;
                 break;
             case PhysicsImpostor.CylinderImpostor:
                 mesh = this._getDebugCylinderMesh(utilityLayerScene);

@@ -233,7 +233,7 @@ declare module BABYLON {
         /** Get all materials with name. (Uses starts with text searching) */
         static GetAllMaterialsWithName(scene: BABYLON.Scene, name: string): BABYLON.Material[];
         /** Instantiate the specified prefab asset hierarchy into the scene. (Cloned Hierarchy) */
-        static InstantiatePrefab(container: BABYLON.AssetContainer, prefabName: string, newName: string, makeNewMaterials?: boolean, cloneAnimations?: boolean, assetsManager?: BABYLON.AssetsManager): BABYLON.TransformNode;
+        static InstantiatePrefab(container: BABYLON.AssetContainer, prefabName: string, newName: string, makeNewMaterials?: boolean, cloneAnimations?: boolean): BABYLON.TransformNode;
         /** Clones the specified transform node asset into the scene. (Transform Node) */
         static CloneTransformNode(container: BABYLON.AssetContainer, nodeName: string, cloneName: string): BABYLON.TransformNode;
         /** Clones the specified abstract mesh asset into the scene. (Abtract Mesh) */
@@ -621,7 +621,7 @@ declare module BABYLON {
         /** Parse the scene component metadata. Note: Internal use only */
         parseSceneComponents(entity: BABYLON.TransformNode): void;
         /** Post process pending scene components. Note: Internal use only */
-        postProcessSceneComponents(preloadList: Array<BABYLON.ScriptComponent>): void;
+        postProcessSceneComponents(preloadList: Array<BABYLON.ScriptComponent>, readyList: Array<BABYLON.ScriptComponent>): void;
         private static DoParseSceneComponents;
         private static DoProcessPendingScripts;
         private static DoProcessPendingShadows;
@@ -734,6 +734,7 @@ declare module BABYLON {
         registerTriggerVolume(volume: BABYLON.AbstractMesh): void;
         unregisterTriggerVolume(volume: BABYLON.AbstractMesh): void;
         private registerComponentInstance;
+        private delayComponentInstance;
         private destroyComponentInstance;
         private static RegisterInstance;
         private static UpdateInstance;
@@ -1311,8 +1312,6 @@ declare module BABYLON {
         private static LoadingState;
         static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
         static OnPreloaderComplete: (tasks: BABYLON.AbstractAssetTask[]) => void;
-        static IsLastSceneExecuteReady: boolean;
-        static OnLastSceneExecuteReady: BABYLON.Observable<BABYLON.Scene>;
         static IsLayerMasked(mask: number, layer: number): boolean;
         static GetLoadingState(): number;
         static Approximately(a: number, b: number): boolean;
@@ -1550,7 +1549,7 @@ declare module BABYLON {
         /** Get all loaded scene transform nodes. */
         static GetSceneTransforms(scene: BABYLON.Scene): BABYLON.TransformNode[];
         /** Parse scene component metadata. */
-        static PostParseSceneComponents(scene: BABYLON.Scene, transforms: BABYLON.TransformNode[], preloadList: Array<BABYLON.ScriptComponent>): void;
+        static PostParseSceneComponents(scene: BABYLON.Scene, transforms: BABYLON.TransformNode[], preloadList: Array<BABYLON.ScriptComponent>, readyList: Array<BABYLON.ScriptComponent>): void;
         /**
          * Gets the specified asset container mesh.
          * @param container defines the asset container
@@ -1643,14 +1642,15 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     readonly name = "CVTOOLS_unity_metadata";
     /** Defines whether this extension is enabled. */
     enabled: boolean;
-    private static LastLoaderScene;
-    private static LastBabylonScene;
-    private static LastAssetsManager;
     private _loader;
+    private _babylonScene;
+    private _loaderScene;
+    private _assetsManager;
     private _parserList;
     private _masterList;
     private _detailList;
     private _shaderList;
+    private _readyList;
     private _preloadList;
     private _materialMap;
     private _lightmapMap;

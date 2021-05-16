@@ -33,6 +33,7 @@
 
 - Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
 - Added NativeEngine configuration object parameter. ([drigax](https://github.com/drigax))
+- Added NativeEngine support for signed byte and unsigned short vertex buffer attribute types ([Alex-MSFT](https://github.com/Alex-MSFT))
 
 ### Loaders
 
@@ -97,6 +98,7 @@
 - Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
 - Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
 - Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
+- Added navigation hotkeys ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -108,6 +110,11 @@
 - Added `imageWidth()` and `imageHeight()` to access the source image dimensions of `Image` ([Queatz](https://github.com/Queatz))
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
 - Added property `renderToIntermediateTexture` to `Container` which when set to true, will render children to an intermediate texture rather than direct to host allowing for DOM style alpha blending ([BlindingHues](https://github.com/blindinghues))
+- Added `HolographicSlate` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
+
+### Behaviors
+
+- Added `FollowBehavior`, a behavior that makes the assigned mesh hover around a camera, while facing it ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### WebXR
 
@@ -209,6 +216,7 @@
 - Fix glTF loader promise stuck when runs on non-json data ([mrlika](https://github.com/mrlika))
 - Fix for namepsace sharing in .scss files; PropertyTab, SceneExplorer ([msDestiny14](https://github.com/msDestiny14))
 - Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
+- Fix undefined camera pose in WebXR in Babylon Native ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ## Breaking changes
 
@@ -222,3 +230,5 @@
 - Fixed spelling of EventState.initialize() ([seritools](https://github.com/seritools))
 - `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
 - `BindEyePosition` has been moved from `Material` to `Scene` to avoid a circular dependency problem and is now a non-static method (`bindEyePosition`) ([Popov72](https://github.com/Popov72))
+- The depth renderer was not generating correct values for orthographic cameras when **storeNonLinearDepth = false** ([Popov72](https://github.com/Popov72))
+- `dataBuffer.ts` and `buffer.ts` have been moved from `Meshes/` to `Buffers/` ([Popov72](https://github.com/Popov72))
