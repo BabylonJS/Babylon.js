@@ -117,7 +117,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
      * The camera that should be followed by this behavior
      */
     public get followedCamera(): Nullable<Camera> {
-        return this._followedCamera;
+        return this._followedCamera || this._scene.activeCamera;
     }
 
     public set followedCamera(camera: Nullable<Camera>) {
@@ -147,9 +147,6 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
         if (followedCamera) {
             this.followedCamera = followedCamera;
-        }
-        if (!this.followedCamera) {
-            this.followedCamera = this._scene.activeCamera;
         }
 
         this._addObservables();
