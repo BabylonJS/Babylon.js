@@ -25,6 +25,8 @@ import { UniformBuffer } from "../Materials/uniformBuffer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
+import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
+import { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -52,6 +54,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _currentActiveCount: number;
     private _accumulatedCount = 0;
     private _updateEffect: Effect;
+    private _updateBuffer: UniformBufferEffectCommonAccessor;
 
     private _buffer0: Buffer;
     private _buffer1: Buffer;
@@ -1123,9 +1126,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         let bufferData2: DataArray | DataBuffer = data;
 
         if (this._useComputeShaders) {
-            this._simParamsComputeShader = new UniformBuffer(engine);
-            this._simParamsComputeShader.addUniform("numParticles", 1);
-
             this._buffer0ComputeShader = new StorageBuffer(engine, data.length * 4, Constants.BUFFER_CREATIONFLAG_READWRITE | Constants.BUFFER_CREATIONFLAG_VERTEX);
             this._buffer0ComputeShader.update(data);
 
@@ -1212,11 +1212,68 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._updateEffectOptions.defines = defines;
 
         if (this._useComputeShaders) {
-            this._updateComputeShader = new ComputeShader("updateParticles", this._engine, "gpuUpdateParticles", { bindingsMapping : {
+            const bindingsMapping: ComputeBindingMapping = {
                 "params": { group: 0, binding: 0},
                 "particlesIn": { group: 0, binding: 1},
                 "particlesOut": { group: 0, binding: 2},
-            }, defines: defines.split("\n") });
+                "randomTexture": { group: 0, binding: 4},
+                "randomTexture2": { group: 0, binding: 6},
+            };
+            if (this._sizeGradientsTexture) {
+                bindingsMapping["sizeGradientTexture"] = { group: 1, binding: 1 };
+            }
+            if (this._angularSpeedGradientsTexture) {
+                bindingsMapping["angularSpeedGradientTexture"] = { group: 1, binding: 3 };
+            }
+            if (this._velocityGradientsTexture) {
+                bindingsMapping["velocityGradientTexture"] = { group: 1, binding: 5 };
+            }
+            if (this._limitVelocityGradientsTexture) {
+                bindingsMapping["limitVelocityGradientTexture"] = { group: 1, binding: 7 };
+            }
+            if (this._dragGradientsTexture) {
+                bindingsMapping["dragGradientTexture"] = { group: 1, binding: 9 };
+            }
+            if (this.noiseTexture) {
+                bindingsMapping["noiseTexture"] = { group: 1, binding: 11 };
+            }
+
+            this._updateComputeShader = new ComputeShader("updateParticles", this._engine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
+
+            this._simParamsComputeShader?.dispose();
+            this._simParamsComputeShader = new UniformBuffer(this._engine);
+
+            this._simParamsComputeShader.addUniform("currentCount", 1);
+            this._simParamsComputeShader.addUniform("timeDelta", 1);
+            this._simParamsComputeShader.addUniform("stopFactor", 1);
+            this._simParamsComputeShader.addUniform("lifeTime", 2);
+            this._simParamsComputeShader.addUniform("emitPower", 2);
+            if (!this._colorGradientsTexture) {
+                this._simParamsComputeShader.addUniform("color1", 4);
+                this._simParamsComputeShader.addUniform("color2", 4);
+            }
+            this._simParamsComputeShader.addUniform("sizeRange", 2);
+            this._simParamsComputeShader.addUniform("scaleRange", 4);
+            this._simParamsComputeShader.addUniform("angleRange", 4);
+            this._simParamsComputeShader.addUniform("gravity", 3);
+            if (this._limitVelocityGradientsTexture) {
+                this._simParamsComputeShader.addUniform("limitVelocityDamping", 1);
+            }
+            if (this.isAnimationSheetEnabled) {
+                this._simParamsComputeShader.addUniform("cellInfos", 3);
+            }
+            if (this.noiseTexture) {
+                this._simParamsComputeShader.addUniform("noiseStrength", 3);
+            }
+            if (!this.isLocal) {
+                this._simParamsComputeShader.addUniform("emitterWM", 16);
+            }
+            if (this.particleEmitterType) {
+                this.particleEmitterType.buildUniformLayout(this._simParamsComputeShader);
+            }
+
+            this._updateComputeShader.setUniformBuffer("params", this._simParamsComputeShader);
+            this._updateBuffer = new UniformBufferEffectCommonAccessor(this._simParamsComputeShader);
             return;
         }
 
@@ -1256,6 +1313,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
+        this._updateBuffer = new UniformBufferEffectCommonAccessor(this._updateEffect);
     }
 
     private _getWrapper(blendMode: number): DrawWrapper {
@@ -1557,38 +1615,75 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         const engine = this._engine as Engine;
 
-        if (this._useComputeShaders) {
-            this._updateComputeShader.setUniformBuffer("params", this._simParamsComputeShader);
+        if (!this._useComputeShaders) {
+            this._engine.enableEffect(this._updateEffect);
+            if (!engine.setState) {
+                throw new Error("GPU particles cannot work with a full Engine. ThinEngine is not supported");
+            }
+        }
 
-            this._simParamsComputeShader.updateInt("numParticles", this._currentActiveCount);
+        this._updateBuffer.setFloat("currentCount", this._currentActiveCount);
+        this._updateBuffer.setFloat("timeDelta", this._timeDelta);
+        this._updateBuffer.setFloat("stopFactor", this._stopped ? 0 : 1);
+        this._updateBuffer.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
+        this._updateBuffer.setFloat2("emitPower", this.minEmitPower, this.maxEmitPower);
+        if (!this._colorGradientsTexture) {
+            this._updateBuffer.setDirectColor4("color1", this.color1);
+            this._updateBuffer.setDirectColor4("color2", this.color2);
+        }
+        this._updateBuffer.setFloat2("sizeRange", this.minSize, this.maxSize);
+        this._updateBuffer.setFloat4("scaleRange", this.minScaleX, this.maxScaleX, this.minScaleY, this.maxScaleY);
+        this._updateBuffer.setFloat4("angleRange", this.minAngularSpeed, this.maxAngularSpeed, this.minInitialRotation, this.maxInitialRotation);
+        this._updateBuffer.setVector3("gravity", this.gravity);
+        if (this._limitVelocityGradientsTexture) {
+            this._updateBuffer.setFloat("limitVelocityDamping", this.limitVelocityDamping);
+        }
+        if (this.particleEmitterType) {
+            this.particleEmitterType.applyToShader(this._updateBuffer);
+        }
+        if (this._isAnimationSheetEnabled) {
+            this._updateBuffer.setFloat3("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed);
+        }
+        if (this.noiseTexture) {
+            this._updateBuffer.setVector3("noiseStrength", this.noiseStrength);
+        }
+        if (!this.isLocal) {
+            this._updateBuffer.setMatrix("emitterWM", emitterWM);
+        }
+
+        if (this._useComputeShaders) {
             this._simParamsComputeShader.update();
+
+            this._updateComputeShader.setTexture("randomTexture", this._randomTexture);
+            this._updateComputeShader.setTexture("randomTexture2", this._randomTexture2);
+            if (this._sizeGradientsTexture) {
+                this._updateComputeShader.setTexture("sizeGradientSampler", this._sizeGradientsTexture);
+            }
+
+            if (this._angularSpeedGradientsTexture) {
+                this._updateComputeShader.setTexture("angularSpeedGradientSampler", this._angularSpeedGradientsTexture);
+            }
+
+            if (this._velocityGradientsTexture) {
+                this._updateComputeShader.setTexture("velocityGradientSampler", this._velocityGradientsTexture);
+            }
+
+            if (this._limitVelocityGradientsTexture) {
+                this._updateComputeShader.setTexture("limitVelocityGradientSampler", this._limitVelocityGradientsTexture);
+            }
+
+            if (this._dragGradientsTexture) {
+                this._updateComputeShader.setTexture("dragGradientSampler", this._dragGradientsTexture);
+            }
 
             this._updateComputeShader.setStorageBuffer("particlesIn", this._targetIndex === 0 ? this._buffer0ComputeShader : this._buffer1ComputeShader);
             this._updateComputeShader.setStorageBuffer("particlesOut", this._targetIndex === 0 ? this._buffer1ComputeShader : this._buffer0ComputeShader);
 
             this._updateComputeShader.dispatch(Math.ceil(this._currentActiveCount / 64));
         } else {
-            this._engine.enableEffect(this._updateEffect);
-            if (!engine.setState) {
-                throw new Error("GPU particles cannot work with a full Engine. ThinEngine is not supported");
-            }
-
-            this._updateEffect.setFloat("currentCount", this._currentActiveCount);
-            this._updateEffect.setFloat("timeDelta", this._timeDelta);
-            this._updateEffect.setFloat("stopFactor", this._stopped ? 0 : 1);
             this._updateEffect.setTexture("randomSampler", this._randomTexture);
             this._updateEffect.setTexture("randomSampler2", this._randomTexture2);
-            this._updateEffect.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
-            this._updateEffect.setFloat2("emitPower", this.minEmitPower, this.maxEmitPower);
-            if (!this._colorGradientsTexture) {
-                this._updateEffect.setDirectColor4("color1", this.color1);
-                this._updateEffect.setDirectColor4("color2", this.color2);
-            }
-            this._updateEffect.setFloat2("sizeRange", this.minSize, this.maxSize);
-            this._updateEffect.setFloat4("scaleRange", this.minScaleX, this.maxScaleX, this.minScaleY, this.maxScaleY);
-            this._updateEffect.setFloat4("angleRange", this.minAngularSpeed, this.maxAngularSpeed, this.minInitialRotation, this.maxInitialRotation);
-            this._updateEffect.setVector3("gravity", this.gravity);
-
+    
             if (this._sizeGradientsTexture) {
                 this._updateEffect.setTexture("sizeGradientSampler", this._sizeGradientsTexture);
             }
@@ -1603,27 +1698,14 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             if (this._limitVelocityGradientsTexture) {
                 this._updateEffect.setTexture("limitVelocityGradientSampler", this._limitVelocityGradientsTexture);
-                this._updateEffect.setFloat("limitVelocityDamping", this.limitVelocityDamping);
             }
 
             if (this._dragGradientsTexture) {
                 this._updateEffect.setTexture("dragGradientSampler", this._dragGradientsTexture);
             }
 
-            if (this.particleEmitterType) {
-                this.particleEmitterType.applyToShader(this._updateEffect);
-            }
-            if (this._isAnimationSheetEnabled) {
-                this._updateEffect.setFloat3("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed);
-            }
-
             if (this.noiseTexture) {
                 this._updateEffect.setTexture("noiseSampler", this.noiseTexture);
-                this._updateEffect.setVector3("noiseStrength", this.noiseStrength);
-            }
-
-            if (!this.isLocal) {
-                this._updateEffect.setMatrix("emitterWM", emitterWM);
             }
 
             // Bind source VAO
