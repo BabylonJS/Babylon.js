@@ -2042,10 +2042,21 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the cloned particle system
      */
     public clone(name: string, newEmitter: any): GPUParticleSystem {
+        const custom = { ...this._customWrappers };
+        let program: any = null;
+        const engine = this._engine as any;
+        if (engine.createEffectForParticles) {
+            if (this.customShader != null) {
+                program = this.customShader;
+                const defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom[0] = engine.createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines, undefined, undefined, undefined, this);
+            }
+        }
+
         let serialization = this.serialize();
         var result = GPUParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
-        const custom = { ...this._customWrappers };
         result.name = name;
+        result.customShader = program;
         result._customWrappers = custom;
 
         if (newEmitter === undefined) {
@@ -2070,8 +2081,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         var serializationObject: any = {};
 
         ParticleSystem._Serialize(serializationObject, this, serializeTexture);
+
         serializationObject.activeParticleCount = this.activeParticleCount;
         serializationObject.randomTextureSize = this._randomTextureSize;
+        serializationObject.customShader = this.customShader;
 
         return serializationObject;
     }
@@ -2085,13 +2098,36 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the parsed GPU particle system
      */
     public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): GPUParticleSystem {
-        var name = parsedParticleSystem.name;
-        var particleSystem = new GPUParticleSystem(name, { capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize }, sceneOrEngine);
+        const name = parsedParticleSystem.name;
+        let engine: ThinEngine;
+        let scene: Nullable<Scene>;
+
+        if (sceneOrEngine instanceof ThinEngine) {
+            engine = sceneOrEngine;
+        } else {
+            scene = sceneOrEngine as Scene;
+            engine = scene.getEngine();
+        }
+
+        const particleSystem = new GPUParticleSystem(name, { capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize }, sceneOrEngine, null, parsedParticleSystem.isAnimationSheetEnabled);
         particleSystem._rootUrl = rootUrl;
+
+        if (parsedParticleSystem.customShader && (engine as any).createEffectForParticles) {
+            const program = parsedParticleSystem.customShader;
+            const defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+            const custom: Nullable<Effect> = (engine as any).createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines, undefined, undefined, undefined, particleSystem);
+            particleSystem.setCustomEffect(custom, 0);
+            particleSystem.customShader = program;
+        }
+
+        if (parsedParticleSystem.id) {
+            particleSystem.id = parsedParticleSystem.id;
+        }
 
         if (parsedParticleSystem.activeParticleCount) {
             particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
         }
+
         ParticleSystem._Parse(parsedParticleSystem, particleSystem, sceneOrEngine, rootUrl);
 
         // Auto start
