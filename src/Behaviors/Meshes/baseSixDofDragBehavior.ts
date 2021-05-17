@@ -4,10 +4,9 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Vector3, Quaternion, Matrix } from "../../Maths/math.vector";
+import { Vector3, Quaternion } from "../../Maths/math.vector";
 import { Observer, Observable } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
-import { PivotTools } from "../../Misc/pivotTools";
 import { TransformNode } from "../../Meshes";
 
 /**
@@ -19,15 +18,17 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     private static _virtualScene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
+    private _virtualDragMesh: AbstractMesh;
+    private _virtualOriginMesh: AbstractMesh;
+    private _virtualDragMeshStartingPosition: Vector3 = new Vector3();
+    private _virtualDragMeshStartingOrientation: Quaternion = new Quaternion();
+    private _tmpVector: Vector3 = new Vector3();
+    private _tmpQuaternion: Quaternion = new Quaternion();
 
     protected _scene: Scene;
     protected _moving = false;
     protected _ownerNode: Mesh;
-    protected _startingOrientation = new Quaternion();
-    protected _targetPosition = new Vector3(0, 0, 0);
     protected _draggedMesh: Nullable<AbstractMesh>;
-    protected _virtualOriginMesh: AbstractMesh;
-    protected _virtualDragMesh: AbstractMesh;
 
     // TODO
     protected _draggableMeshes: Nullable<AbstractMesh[]> = null;
@@ -57,10 +58,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
      * If camera controls should be detached during the drag
      */
     public detachCameraControls = true;
-    /**
-     * Should the object rotate towards the camera when we start dragging it
-     */
-    public faceCameraOnDragStart = false;
+
     /**
      * Fires each time a drag starts
      */
@@ -134,6 +132,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo &&
                     pointerInfo.pickInfo.hit &&
                     pointerInfo.pickInfo.pickedMesh &&
+                    pointerInfo.pickInfo.pickedPoint &&
                     pointerInfo.pickInfo.ray &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
@@ -143,7 +142,6 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                     const pickedMesh = this._ownerNode;
                     this._draggedMesh = pickedMesh;
-                    PivotTools._RemoveAndStorePivotPoint(pickedMesh);
                     lastSixDofOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 
                     // Set position and orientation of the controller
@@ -152,30 +150,12 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                     // Attach the virtual drag mesh to the virtual origin mesh so it can be dragged
                     this._virtualOriginMesh.removeChild(this._virtualDragMesh);
-                    pickedMesh.computeWorldMatrix();
-                    this._virtualDragMesh.position.copyFrom(pickedMesh.absolutePosition);
-                    // TODO - orientation on dragstart ?
-
-                    var referenceMesh = this.ancestorToDrag ? this.ancestorToDrag : pickedMesh;
-                    var oldParent = referenceMesh.parent;
-
-                    if (!referenceMesh.rotationQuaternion) {
-                        referenceMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(referenceMesh.rotation.y, referenceMesh.rotation.x, referenceMesh.rotation.z);
-                    }
-                    referenceMesh.setParent(null);
-                    if (this.faceCameraOnDragStart) {
-                        const quat = Quaternion.FromLookDirectionLH(pointerInfo.pickInfo.ray.direction.scale(-1), new Vector3(0, 1, 0));
-                        quat.normalize();
-                        this._virtualDragMesh.rotationQuaternion!.copyFrom(quat);
-                    } else {
-                        this._virtualDragMesh.rotationQuaternion!.copyFrom(referenceMesh.rotationQuaternion);
-                    }
-                    referenceMesh.setParent(oldParent);
-
+                    this._virtualDragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                    this._virtualDragMeshStartingPosition.copyFrom(this._virtualDragMesh.position);
+                    this._virtualDragMeshStartingOrientation.copyFrom(this._virtualDragMesh.rotationQuaternion!);
                     this._virtualOriginMesh.addChild(this._virtualDragMesh);
 
                     // Update state
-                    this._targetPosition.copyFrom(this._virtualDragMesh.absolutePosition);
                     this.dragging = true;
                     this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
 
@@ -188,7 +168,8 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                             this._attachedToElement = false;
                         }
                     }
-                    PivotTools._RestorePivotPoint(pickedMesh);
+
+                    this._targetDragStart(this._virtualDragMesh.absolutePosition, this._virtualDragMesh.rotationQuaternion!);
                     this.onDragStartObservable.notifyObservers({});
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
@@ -240,20 +221,28 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
                     this._virtualOriginMesh.removeChild(this._virtualDragMesh);
 
-                    // Move the virtualObjectsPosition into the picked mesh's space if needed
-                    this._targetPosition.copyFrom(this._virtualDragMesh.absolutePosition);
+                    // Get change in rotation
+                    this._tmpQuaternion.copyFrom(this._virtualDragMeshStartingOrientation);
+                    this._tmpQuaternion.x = -this._tmpQuaternion.x;
+                    this._tmpQuaternion.y = -this._tmpQuaternion.y;
+                    this._tmpQuaternion.z = -this._tmpQuaternion.z;
+                    this._virtualDragMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
+                    this._virtualDragMesh.position.subtractToRef(this._virtualDragMeshStartingPosition, this._tmpVector);
 
-                    if (this._draggedMesh.parent && !this.ancestorToDrag) {
-                        Vector3.TransformCoordinatesToRef(this._targetPosition, Matrix.Invert(this._draggedMesh.parent.getWorldMatrix()), this._targetPosition);
-                    }
+                    this._targetUpdated(this._tmpVector, this._tmpQuaternion);
 
-                    if (!this._moving) {
-                        this._startingOrientation.copyFrom(this._virtualDragMesh.rotationQuaternion!);
-                    }
                     this._moving = true;
                 }
             }
         });
+    }
+
+    protected _targetDragStart(worldPosition: Vector3, worldRotation: Quaternion) {
+        // Herited classes can override that
+    }
+
+    protected _targetUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
+        // Herited classes can override that
     }
 
     /**
