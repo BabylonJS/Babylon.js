@@ -675,7 +675,7 @@
         {
             "title": "Test test to test test testing",
             "playgroundId": "#9N6CLU#23",
-            "referenceImage": "testTestToTestTestTesting.png"
+            "referenceImage": "glTFSerializerKHRMaterialsClearcoat.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
