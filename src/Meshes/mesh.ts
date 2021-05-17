@@ -2505,7 +2505,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return true;
     }
 
-    /** @deprecated Please use setMaterialById instead */
+    /**
+     * @deprecated Please use setMaterialById instead
+     * Sets the mesh material by the material or multiMaterial `id` property
+     * @param id is a string identifying the material or the multiMaterial
+     * @returns the current mesh
+     */
     public setMaterialByID(id: string): Mesh {
         return this.setMaterialById(id);
     }

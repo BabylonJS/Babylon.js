@@ -198,11 +198,13 @@ export class CloudPoint {
  *  * PCS internal tool, don't use it manually.
  */
 export class PointsGroup {
-    /** @deprecated Please use groupId instead */
+    /**
+     * @deprecated Please use groupId instead
+     * Get or set the groupId
+     */
     public get groupID(): number {
         return this.groupId;
     }
-    /** @deprecated Please use groupId instead */
     public set groupID(groupID: number) {
         this.groupId = groupID;
     }
