@@ -337,6 +337,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             }
 
             controllerData.laserPointer.isVisible = this.displayLaserPointer;
+
             let controllerGlobalPosition: Vector3;
 
             // Every frame check collisions/input
@@ -471,6 +472,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             controllerData.pick = pick;
 
             if (pick && pick.pickedPoint && pick.hit) {
+                // Update laser state
+                this._updatePointerDistance(controllerData.laserPointer, pick.distance);
+
                 // Update cursor state
                 controllerData.selectionMesh.position.copyFrom(pick.pickedPoint);
                 controllerData.selectionMesh.scaling.x = Math.sqrt(pick.distance);
@@ -487,8 +491,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, controllerData.selectionMesh.rotation);
                     controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                 }
-                // Update laser state
-                this._updatePointerDistance(controllerData.laserPointer, pick.distance);
                 controllerData.selectionMesh.isVisible = this.displaySelectionMesh;
                 controllerData.meshUnderPointer = pick.pickedMesh;
             } else {
@@ -759,7 +761,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
         controllerData.selectionMesh.dispose();
         controllerData.laserPointer.dispose();
-
         // remove from the map
         delete this._controllers[xrControllerUniqueId];
         if (this._attachedController === xrControllerUniqueId) {
