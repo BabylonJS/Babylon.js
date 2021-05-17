@@ -1934,6 +1934,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         this._simParamsComputeShader?.dispose();
         (<any>this._simParamsComputeShader) = null;
+
+        (<any>this._updateComputeShader) = null;
     }
 
     private _releaseVAOs() {
