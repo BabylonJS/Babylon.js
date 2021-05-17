@@ -744,8 +744,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param name The name of the particle system
      * @param options The options used to create the system
      * @param sceneOrEngine The scene the particle system belongs to or the engine to use if no scene
-     * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
      * @param customEffect a custom effect used to change the way particles are rendered by default
+     * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
      */
     constructor(
         name: string,
@@ -754,8 +754,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             randomTextureSize: number;
         }>,
         sceneOrEngine: Scene | ThinEngine,
-        isAnimationSheetEnabled: boolean = false,
-        customEffect: Nullable<Effect> = null
+        customEffect: Nullable<Effect> = null,
+        isAnimationSheetEnabled: boolean = false
     ) {
         super(name);
 
@@ -778,6 +778,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
+
+        options = options ?? {};
 
         if (!options.randomTextureSize) {
             delete options.randomTextureSize;
