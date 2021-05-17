@@ -118,6 +118,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
 
         const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController.pointer);
+
         // get two new meshes
         this._controllers[xrController.uniqueId] = {
             xrController,
@@ -130,11 +131,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         };
 
         if (this._attachedController) {
-            if (
-                !this._options.enablePointerSelectionOnAllControllers &&
-                this._options.preferredHandedness &&
-                xrController.inputSource.handedness === this._options.preferredHandedness
-            ) {
+            if (!this._options.enablePointerSelectionOnAllControllers && this._options.preferredHandedness && xrController.inputSource.handedness === this._options.preferredHandedness) {
                 this._attachedController = xrController.uniqueId;
             }
         } else {
@@ -257,7 +254,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
         if (this._options.gazeCamera) {
             const webXRCamera = this._options.gazeCamera;
+
             const { laserPointer, selectionMesh } = this._generateNewMeshPair(webXRCamera);
+
             this._controllers["camera"] = {
                 webXRCamera,
                 laserPointer,
