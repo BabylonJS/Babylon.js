@@ -380,37 +380,4 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             particlesOut.particles[index].cellIndex = f32(i32(params.cellInfos.x + ratio * dist));
         #endif
     }
-
-    if (false) {
-        particlesOut.particles[index].position = particlesIn.particles[index].position;
-        #ifdef CUSTOMEMITTER
-            particlesOut.particles[index].initialPosition = particlesIn.particles[index].initialPosition;
-        #endif
-        particlesOut.particles[index].age = particlesIn.particles[index].age;
-        particlesOut.particles[index].life = particlesIn.particles[index].life;
-        particlesOut.particles[index].seed = particlesIn.particles[index].seed;
-        particlesOut.particles[index].size = particlesIn.particles[index].size;
-        #ifndef COLORGRADIENTS
-            particlesOut.particles[index].color = particlesIn.particles[index].color;
-        #endif
-        particlesOut.particles[index].direction = particlesIn.particles[index].direction;
-        #ifndef BILLBOARD
-            particlesOut.particles[index].initialDirection = particlesIn.particles[index].initialDirection;
-        #endif
-        #ifdef ANGULARSPEEDGRADIENTS
-            particlesOut.particles[index].angle = particlesIn.particles[index].angle;
-        #else
-            particlesOut.particles[index].angle = particlesIn.particles[index].angle;
-        #endif
-        #ifdef ANIMATESHEET
-            particlesOut.particles[index].cellIndex = particlesIn.particles[index].cellIndex;
-            #ifdef ANIMATESHEETRANDOMSTART
-                particlesOut.particles[index].cellStartOffset = particlesIn.particles[index].cellStartOffset;
-            #endif
-        #endif
-        #ifdef NOISE
-            particlesOut.particles[index].noiseCoordinates1 = particlesIn.particles[index].noiseCoordinates1;
-            particlesOut.particles[index].noiseCoordinates2 = particlesIn.particles[index].noiseCoordinates2;
-        #endif
-    }
 }

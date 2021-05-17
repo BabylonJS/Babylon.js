@@ -1418,7 +1418,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             const attributes: Array<string> = [];
             const uniforms: Array<string> = [];
             const samplers: Array<string> = [];
-    
+
             this.fillUniformsAttributesAndSamplerNames(uniforms, attributes, samplers);
 
             this._drawWrapper.effect = this._engine.createEffect(
@@ -1768,7 +1768,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         } else {
             this._updateEffect.setTexture("randomSampler", this._randomTexture);
             this._updateEffect.setTexture("randomSampler2", this._randomTexture2);
-    
+
             if (this._sizeGradientsTexture) {
                 this._updateEffect.setTexture("sizeGradientSampler", this._sizeGradientsTexture);
             }
