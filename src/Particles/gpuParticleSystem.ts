@@ -83,7 +83,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _actualFrame = 0;
     private _drawWrapper: DrawWrapper;
     private _customWrappers: { [blendMode: number] : Nullable<DrawWrapper> };
-    private _cachedDefines: string;
 
     private readonly _rawTextureWidth = 256;
 
@@ -1412,8 +1411,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Effect
         const join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
+        if (this._drawWrapper.defines !== join) {
+            this._drawWrapper.defines = join;
 
             const attributes: Array<string> = [];
             const uniforms: Array<string> = [];

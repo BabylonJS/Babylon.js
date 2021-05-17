@@ -113,7 +113,6 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _indexBuffer: Nullable<DataBuffer>;
     private _drawWrapper: DrawWrapper;
     private _customWrappers: { [blendMode: number] : Nullable<DrawWrapper> };
-    private _cachedDefines: string;
     private _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
     private _scaledDirection = Vector3.Zero();
@@ -1746,8 +1745,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Effect
         var join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
+        if (this._drawWrapper.defines !== join) {
+            this._drawWrapper.defines = join;
 
             var attributesNamesOrOptions: Array<string> = [];
             var effectCreationOption: Array<string> = [];
