@@ -35,8 +35,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public _useAlternatePickedPointAboveMaxDragAngle = false;
     /**
-     * @deprecated Please use currentDraggingPointerId instead
      * Get or set the currentDraggingPointerId
+     * @deprecated Please use currentDraggingPointerId instead
      */
     public get currentDraggingPointerID(): number {
         return this.currentDraggingPointerId;

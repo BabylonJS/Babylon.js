@@ -41,8 +41,8 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
      */
     public dragDeltaRatio = 0.2;
     /**
-     * @deprecated Please use currentDraggingPointerId instead
      * Get or set the currentDraggingPointerId
+     * @deprecated Please use currentDraggingPointerId instead
      */
     public get currentDraggingPointerID(): number {
         return this.currentDraggingPointerId;
