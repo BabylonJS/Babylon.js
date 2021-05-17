@@ -9,32 +9,38 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
  */
 export interface IWebXRDOMOverlayOptions {
     /**
-     * Fail the Web XR Session if DOM overlay isn't available (TODO: would like to mark optional as a feature parameter)
-     */
-    // required?: boolean;
-
-    /**
      * DOM Element for overlay into WebXR scene.
      *
      * NOTE: UA may make this element background transparent in XR.
      */
-    element: Element;
+    element: Element | string;
     /**
      * Supress XR Select events on container element (DOM blocks interaction to scene).
      */
-    supressXRSelectEvents?: boolean
+    supressXRSelectEvents?: boolean;
 }
 
 /**
  * DOM Overlay Feature
- * 
+ *
  * @since 5.0.0
  */
 export class WebXRDOMOverlay extends WebXRAbstractFeature {
 
-    private xrDOMOverlayType: XRDOMOverlayType | null;
+    /**
+     * Type of overlay - non-null when available
+     */
+    private _xrDOMOverlayType: Nullable<XRDOMOverlayType> = null;
 
-    private beforeXRSelectListener: Nullable<EventListenerOrEventListenerObject> = null;
+    /**
+     * Event Listener to supress "beforexrselect" events.
+     */
+    private _beforeXRSelectListener: Nullable<EventListenerOrEventListenerObject> = null;
+
+    /**
+     * Element used for overlay
+     */
+    private _element: Nullable<Element> = null;
 
     /**
      * The module's name
@@ -77,19 +83,18 @@ export class WebXRDOMOverlay extends WebXRAbstractFeature {
             return false;
         }
 
-        // Feature enabled, but not available
+        // Feature not available
         if (!this._xrSessionManager.session.domOverlayState || this._xrSessionManager.session.domOverlayState.type === null) {
-            Tools.Warn(`DOM overlay state not found on session (dom-overlay unavailable)`);
             return false;
         }
 
-        this.xrDOMOverlayType = this._xrSessionManager.session.domOverlayState.type;
+        this._xrDOMOverlayType = this._xrSessionManager.session.domOverlayState.type;
 
-        if (this.options.supressXRSelectEvents === true) {
-            this.beforeXRSelectListener = (ev) => {
+        if (this._element !== null && this.options.supressXRSelectEvents === true) {
+            this._beforeXRSelectListener = (ev) => {
                 ev.preventDefault();
             };
-            this.options.element.addEventListener('beforexrselect', this.beforeXRSelectListener);
+            this._element.addEventListener('beforexrselect', this._beforeXRSelectListener);
         }
 
         return true;
@@ -98,8 +103,8 @@ export class WebXRDOMOverlay extends WebXRAbstractFeature {
     /**
      * The type of DOM overlay (null when not supported)
      */
-    public get XRDOMOverlayType() : Nullable<XRDOMOverlayType> {
-        return this.xrDOMOverlayType;
+    public get XRDOMOverlayType(): Nullable<XRDOMOverlayType> {
+        return this._xrDOMOverlayType;
     }
 
     /**
@@ -107,8 +112,8 @@ export class WebXRDOMOverlay extends WebXRAbstractFeature {
      */
     public dispose(): void {
         super.dispose();
-        if (this.beforeXRSelectListener) {
-            this.options.element.removeEventListener('beforexrselect', this.beforeXRSelectListener);
+        if (this._element !== null && this._beforeXRSelectListener) {
+            this._element.removeEventListener('beforexrselect', this._beforeXRSelectListener);
         }
     }
 
@@ -119,10 +124,23 @@ export class WebXRDOMOverlay extends WebXRAbstractFeature {
      * @returns augmentation object for the xr session init object.
      */
     public async getXRSessionInitExtension(): Promise<Partial<XRSessionInit>> {
+        if (this.options.element === undefined) {
+            Tools.Warn('"element" option must be provided to attach xr-dom-overlay feature.');
+            return {};
+        } else if (typeof this.options.element === 'string') {
+            const selectedElement = document.querySelector(this.options.element);
+            if (selectedElement === null) {
+                Tools.Warn(`element not found '${this.options.element}' (not requesting xr-dom-overlay)`);
+                return {};
+            }
+            this._element = selectedElement;
+        } else {
+            this._element = this.options.element;
+        }
         // TODO: consider elementById or other selector options (ie: document.getElementById(this.options.element) when typeof === string)
         return {
             domOverlay: {
-                root: this.options.element
+                root: this._element
             }
         };
     }
