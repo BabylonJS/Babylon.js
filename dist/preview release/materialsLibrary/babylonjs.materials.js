@@ -7189,7 +7189,7 @@ var WaterMaterial = /** @class */ (function (_super) {
         this._mesh = mesh;
         if (this._waitingRenderList) {
             for (var i = 0; i < this._waitingRenderList.length; i++) {
-                this.addToRenderList(scene.getNodeByID(this._waitingRenderList[i]));
+                this.addToRenderList(scene.getNodeById(this._waitingRenderList[i]));
             }
             this._waitingRenderList = null;
         }

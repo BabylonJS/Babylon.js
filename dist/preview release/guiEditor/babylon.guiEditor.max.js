@@ -42980,11 +42980,11 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         xmlHttp.send(JSON.stringify(dataToSend));
     };
     PropertyTabComponent.prototype.loadFromSnippet = function () {
-        var snippedID = window.prompt("Please enter the snippet ID to use");
-        if (!snippedID) {
+        var snippedId = window.prompt("Please enter the snippet ID to use");
+        if (!snippedId) {
             return;
         }
-        this.props.globalState.workbench.loadFromSnippet(snippedID);
+        this.props.globalState.workbench.loadFromSnippet(snippedId);
     };
     PropertyTabComponent.prototype.renderProperties = function () {
         var _a;
@@ -44058,13 +44058,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.globalState.guiTexture.parseContent(serializationObject);
         this.loadToEditor();
     };
-    WorkbenchComponent.prototype.loadFromSnippet = function (snippedID) {
+    WorkbenchComponent.prototype.loadFromSnippet = function (snippedId) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedID)];
+                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedId)];
                     case 1:
                         _a.sent();
                         this.loadToEditor();
