@@ -9,7 +9,7 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
  */
 export interface IWebXRDOMOverlayOptions {
     /**
-     * DOM Element for overlay into WebXR scene.
+     * DOM Element or document query selector for overlay.
      *
      * NOTE: UA may make this element background transparent in XR.
      */
