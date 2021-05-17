@@ -15,12 +15,13 @@ varying vec4 vColor;
 
 void main() {
 	#include<clipPlaneFragment> 
+
 	vec4 textureColor = texture(diffuseSampler, vUV);
   	gl_FragColor = textureColor * vColor;
 
 	#ifdef BLENDMULTIPLYMODE
-	float alpha = vColor.a * textureColor.a;
-	gl_FragColor.rgb = gl_FragColor.rgb * alpha + vec3(1.0) * (1.0 - alpha);	
+	    float alpha = vColor.a * textureColor.a;
+	    gl_FragColor.rgb = gl_FragColor.rgb * alpha + vec3(1.0) * (1.0 - alpha);
 	#endif	  
 
 // Apply image processing if relevant. As this applies in linear space, 
