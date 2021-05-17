@@ -50,12 +50,17 @@ declare module "../abstractScene" {
          */
         getLensFlareSystemByName(name: string): Nullable<LensFlareSystem>;
 
-        /** @deprecated Please use getLensFlareSystemById instead */
+        /**
+         * @deprecated Please use getLensFlareSystemById instead
+         * Gets a lens flare system using its Id
+         * @param id defines the Id to look for
+         * @returns the lens flare system or null if not found
+         */
         getLensFlareSystemByID(id: string): Nullable<LensFlareSystem>;
 
         /**
-         * Gets a lens flare system using its id
-         * @param id defines the id to look for
+         * Gets a lens flare system using its Id
+         * @param id defines the Id to look for
          * @returns the lens flare system or null if not found
          */
         getLensFlareSystemById(id: string): Nullable<LensFlareSystem>;

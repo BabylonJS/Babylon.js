@@ -40,11 +40,13 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
      * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
      */
     public dragDeltaRatio = 0.2;
-    /** @deprecated Please use currentDraggingPointerId instead */
+    /**
+     * @deprecated Please use currentDraggingPointerId instead
+     * Get or set the currentDraggingPointerId
+     */
     public get currentDraggingPointerID(): number {
         return this.currentDraggingPointerId;
     }
-    /** @deprecated Please use currentDraggingPointerId instead */
     public set currentDraggingPointerID(currentDraggingPointerID: number) {
         this.currentDraggingPointerId = currentDraggingPointerID;
     }

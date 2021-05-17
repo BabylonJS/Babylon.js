@@ -284,11 +284,13 @@ export class SolidParticle {
  * SPS internal tool, don't use it manually.
  */
 export class ModelShape {
-    /** @deprecated Please use shapeId instead */
+    /**
+     * @deprecated Please use shapeId instead
+     * Get or set the shapeId
+     */
     public get shapeID(): number {
         return this.shapeId;
     }
-    /** @deprecated Please use shapeId instead */
     public set shapeID(shapeID: number) {
         this.shapeId = shapeID;
     }

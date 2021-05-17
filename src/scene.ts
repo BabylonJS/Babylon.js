@@ -2615,14 +2615,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    /** @deprecated Please use setActiveCameraById instead */
+    /**
+     * @deprecated Please use setActiveCameraById instead
+     * @param id defines the camera's Id
+     * @return the new active camera or null if none found.
+     */
     public setActiveCameraByID(id: string): Nullable<Camera> {
         return this.setActiveCameraById(id);
     }
 
     /**
      * sets the active camera of the scene using its ID
-     * @param id defines the camera's ID
+     * @param id defines the camera's Id
      * @return the new active camera or null if none found.
      */
     public setActiveCameraById(id: string): Nullable<Camera> {
@@ -2682,14 +2686,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getNodeById instead */
+    /**
+     * @deprecated Please use getMaterialById instead
+     * get a material using its id
+     * @param id defines the material's Id
+     * @return the material or null if none found.
+     */
     public getMaterialByID(id: string): Nullable<Material> {
         return this.getMaterialById(id);
     }
 
     /**
      * get a material using its id
-     * @param id defines the material's ID
+     * @param id defines the material's Id
      * @return the material or null if none found.
      */
     public getMaterialById(id: string): Nullable<Material> {
@@ -2702,14 +2711,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getLastMaterialById instead */
+    /**
+     * @deprecated Please use getLastMaterialById instead
+     * Gets a the last added material using a given id
+     * @param id defines the material's Id
+     * @return the last material with the given id or null if none found.
+     */
     public getLastMaterialByID(id: string): Nullable<Material> {
         return this.getLastMaterialById(id);
     }
 
     /**
      * Gets a the last added material using a given id
-     * @param id defines the material's ID
+     * @param id defines the material's Id
      * @return the last material with the given id or null if none found.
      */
     public getLastMaterialById(id: string): Nullable<Material> {
@@ -2737,7 +2751,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getTextureByUniqueId instead */
+    /**
+     * @deprecated Please use getTextureByUniqueId instead
+     * Get a texture using its unique id
+     * @param uniqueId defines the texture's unique id
+     * @return the texture or null if none found.
+     */
     public getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture> {
         return this.getTextureByUniqueId(uniqueId);
     }
@@ -2757,14 +2776,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getCameraById instead */
+    /**
+     * @deprecated Please use getCameraById instead
+     * Gets a camera using its Id
+     * @param id defines the Id to look for
+     * @returns the camera or null if not found
+     */
     public getCameraByID(id: string): Nullable<Camera> {
         return this.getCameraById(id);
     }
 
     /**
-     * Gets a camera using its id
-     * @param id defines the id to look for
+     * Gets a camera using its Id
+     * @param id defines the Id to look for
      * @returns the camera or null if not found
      */
     public getCameraById(id: string): Nullable<Camera> {
@@ -2777,14 +2801,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getCameraByUniqueId instead */
+    /**
+     * @deprecated Please use getCameraByUniqueId instead
+     * Gets a camera using its unique Id
+     * @param uniqueId defines the unique Id to look for
+     * @returns the camera or null if not found
+     */
     public getCameraByUniqueID(uniqueId: number): Nullable<Camera> {
         return this.getCameraByUniqueId(uniqueId);
     }
 
     /**
-     * Gets a camera using its unique id
-     * @param uniqueId defines the unique id to look for
+     * Gets a camera using its unique Id
+     * @param uniqueId defines the unique Id to look for
      * @returns the camera or null if not found
      */
     public getCameraByUniqueId(uniqueId: number): Nullable<Camera> {
@@ -2812,14 +2841,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getBoneById instead */
+    /**
+     * @deprecated Please use getBoneById instead
+     * Gets a bone using its Id
+     * @param id defines the bone's Id
+     * @return the bone or null if not found
+     */
     public getBoneByID(id: string): Nullable<Bone> {
         return this.getBoneById(id);
     }
 
     /**
-     * Gets a bone using its id
-     * @param id defines the bone's id
+     * Gets a bone using its Id
+     * @param id defines the bone's Id
      * @return the bone or null if not found
      */
     public getBoneById(id: string): Nullable<Bone> {
@@ -2868,14 +2902,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getLightById instead */
+    /**
+     * @deprecated Please use getLightById instead
+     * Gets a light node using its Id
+     * @param id defines the light's Id
+     * @return the light or null if none found.
+     */
     public getLightByID(id: string): Nullable<Light> {
         return this.getLightById(id);
     }
 
     /**
-     * Gets a light node using its id
-     * @param id defines the light's id
+     * Gets a light node using its Id
+     * @param id defines the light's Id
      * @return the light or null if none found.
      */
     public getLightById(id: string): Nullable<Light> {
@@ -2888,14 +2927,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getLightByUniqueId instead */
+    /**
+     * @deprecated Please use getLightByUniqueId instead
+     * Gets a light node using its scene-generated unique Id
+     * @param uniqueId defines the light's unique Id
+     * @return the light or null if none found.
+     */
     public getLightByUniqueID(uniqueId: number): Nullable<Light> {
         return this.getLightByUniqueId(uniqueId);
     }
 
     /**
-     * Gets a light node using its scene-generated unique ID
-     * @param uniqueId defines the light's unique id
+     * Gets a light node using its scene-generated unique Id
+     * @param uniqueId defines the light's unique Id
      * @return the light or null if none found.
      */
     public getLightByUniqueId(uniqueId: number): Nullable<Light> {
@@ -2908,14 +2952,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getParticleSystemById instead */
+    /**
+     * @deprecated Please use getParticleSystemById instead
+     * Gets a particle system by Id
+     * @param id defines the particle system Id
+     * @return the corresponding system or null if none found
+     */
     public getParticleSystemByID(id: string): Nullable<IParticleSystem> {
         return this.getParticleSystemById(id);
     }
 
     /**
-     * Gets a particle system by id
-     * @param id defines the particle system id
+     * Gets a particle system by Id
+     * @param id defines the particle system Id
      * @return the corresponding system or null if none found
      */
     public getParticleSystemById(id: string): Nullable<IParticleSystem> {
@@ -2928,14 +2977,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getGeometryById instead */
+    /**
+     * @deprecated Please use getGeometryById instead
+     * Gets a geometry using its Id
+     * @param id defines the geometry's Id
+     * @return the geometry or null if none found.
+     */
     public getGeometryByID(id: string): Nullable<Geometry> {
         return this.getGeometryById(id);
     }
 
     /**
-     * Gets a geometry using its ID
-     * @param id defines the geometry's id
+     * Gets a geometry using its Id
+     * @param id defines the geometry's Id
      * @return the geometry or null if none found.
      */
     public getGeometryById(id: string): Nullable<Geometry> {
@@ -3029,14 +3083,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this.geometries;
     }
 
-    /** @deprecated Please use getMeshById instead */
+    /**
+     * @deprecated Please use getMeshById instead
+     * Gets the first added mesh found of a given Id
+     * @param id defines the Id to search for
+     * @return the mesh found or null if not found at all
+     */
     public getMeshByID(id: string): Nullable<AbstractMesh> {
         return this.getMeshById(id);
     }
 
     /**
-     * Gets the first added mesh found of a given ID
-     * @param id defines the id to search for
+     * Gets the first added mesh found of a given Id
+     * @param id defines the Id to search for
      * @return the mesh found or null if not found at all
      */
     public getMeshById(id: string): Nullable<AbstractMesh> {
@@ -3049,14 +3108,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getMeshesById instead */
+    /**
+     * @deprecated Please use getMeshesById instead
+     * Gets a list of meshes using their Id
+     * @param id defines the Id to search for
+     * @returns a list of meshes
+     */
     public getMeshesByID(id: string): Array<AbstractMesh> {
         return this.getMeshesById(id);
     }
 
     /**
-     * Gets a list of meshes using their id
-     * @param id defines the id to search for
+     * Gets a list of meshes using their Id
+     * @param id defines the Id to search for
      * @returns a list of meshes
      */
     public getMeshesById(id: string): Array<AbstractMesh> {
@@ -3065,14 +3129,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         });
     }
 
-    /** @deprecated Please use getTransformNodeById instead */
+    /**
+     * @deprecated Please use getTransformNodeById instead
+     * Gets the first added transform node found of a given Id
+     * @param id defines the Id to search for
+     * @return the found transform node or null if not found at all.
+     */
     public getTransformNodeByID(id: string): Nullable<TransformNode> {
         return this.getTransformNodeById(id);
     }
 
     /**
-     * Gets the first added transform node found of a given ID
-     * @param id defines the id to search for
+     * Gets the first added transform node found of a given Id
+     * @param id defines the Id to search for
      * @return the found transform node or null if not found at all.
      */
     public getTransformNodeById(id: string): Nullable<TransformNode> {
@@ -3085,14 +3154,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getTransformNodeByUniqueId instead */
+    /**
+     * @deprecated Please use getTransformNodeByUniqueId instead
+     * Gets a transform node with its auto-generated unique Id
+     * @param uniqueId efines the unique Id to search for
+     * @return the found transform node or null if not found at all.
+     */
     public getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode> {
         return this.getTransformNodeByUniqueId(uniqueId);
     }
 
     /**
-     * Gets a transform node with its auto-generated unique id
-     * @param uniqueId efines the unique id to search for
+     * Gets a transform node with its auto-generated unique Id
+     * @param uniqueId efines the unique Id to search for
      * @return the found transform node or null if not found at all.
      */
     public getTransformNodeByUniqueId(uniqueId: number): Nullable<TransformNode> {
@@ -3105,14 +3179,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getTransformNodesById instead */
+    /**
+     * @deprecated Please use getTransformNodesById instead
+     * Gets a list of transform nodes using their Id
+     * @param id defines the Id to search for
+     * @returns a list of transform nodes
+     */
     public getTransformNodesByID(id: string): Array<TransformNode> {
         return this.getTransformNodesById(id);
     }
 
     /**
-     * Gets a list of transform nodes using their id
-     * @param id defines the id to search for
+     * Gets a list of transform nodes using their Id
+     * @param id defines the Id to search for
      * @returns a list of transform nodes
      */
     public getTransformNodesById(id: string): Array<TransformNode> {
@@ -3121,14 +3200,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         });
     }
 
-    /** @deprecated Please use getMeshByUniqueId instead */
+    /**
+     * @deprecated Please use getMeshByUniqueId instead
+     * Gets a mesh with its auto-generated unique Id
+     * @param uniqueId defines the unique Id to search for
+     * @return the found mesh or null if not found at all.
+     */
     public getMeshByUniqueID(uniqueId: number): Nullable<AbstractMesh> {
         return this.getMeshByUniqueId(uniqueId);
     }
 
     /**
-     * Gets a mesh with its auto-generated unique id
-     * @param uniqueId defines the unique id to search for
+     * Gets a mesh with its auto-generated unique Id
+     * @param uniqueId defines the unique Id to search for
      * @return the found mesh or null if not found at all.
      */
     public getMeshByUniqueId(uniqueId: number): Nullable<AbstractMesh> {
@@ -3141,14 +3225,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getLastMeshById instead */
+    /**
+     * @deprecated Please use getLastMeshById instead
+     * Gets a the last added mesh using a given Id
+     * @param id defines the Id to search for
+     * @return the found mesh or null if not found at all.
+     */
     public getLastMeshByID(id: string): Nullable<AbstractMesh> {
         return this.getLastMeshById(id);
     }
 
     /**
-     * Gets a the last added mesh using a given id
-     * @param id defines the id to search for
+     * Gets a the last added mesh using a given Id
+     * @param id defines the Id to search for
      * @return the found mesh or null if not found at all.
      */
     public getLastMeshById(id: string): Nullable<AbstractMesh> {
@@ -3161,14 +3250,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getLastEntryById instead */
+    /**
+     * @deprecated Please use getLastEntryById instead
+     * Gets a the last added node (Mesh, Camera, Light) using a given Id
+     * @param id defines the Id to search for
+     * @return the found node or null if not found at all
+     */
     public getLastEntryByID(id: string): Nullable<Node> {
         return this.getLastEntryById(id);
     }
 
     /**
-     * Gets a the last added node (Mesh, Camera, Light) using a given id
-     * @param id defines the id to search for
+     * Gets a the last added node (Mesh, Camera, Light) using a given Id
+     * @param id defines the Id to search for
      * @return the found node or null if not found at all
      */
     public getLastEntryById(id: string): Nullable<Node> {
@@ -3200,14 +3294,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getNodeById instead */
+    /**
+     * @deprecated Please use getNodeById instead
+     * Gets a node (Mesh, Camera, Light) using a given Id
+     * @param id defines the Id to search for
+     * @return the found node or null if not found at all
+     */
     public getNodeByID(id: string): Nullable<Node> {
         return this.getNodeById(id);
     }
 
     /**
-     * Gets a node (Mesh, Camera, Light) using a given id
-     * @param id defines the id to search for
+     * Gets a node (Mesh, Camera, Light) using a given Id
+     * @param id defines the Id to search for
      * @return the found node or null if not found at all
      */
     public getNodeById(id: string): Nullable<Node> {
@@ -3303,14 +3402,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /** @deprecated Please use getLastSkeletonById instead */
+    /**
+     * @deprecated Please use getLastSkeletonById instead
+     * Gets a skeleton using a given Id (if many are found, this function will pick the last one)
+     * @param id defines the Id to search for
+     * @return the found skeleton or null if not found at all.
+     */
     public getLastSkeletonByID(id: string): Nullable<Skeleton> {
         return this.getLastSkeletonById(id);
     }
 
     /**
-     * Gets a skeleton using a given id (if many are found, this function will pick the last one)
-     * @param id defines the id to search for
+     * Gets a skeleton using a given Id (if many are found, this function will pick the last one)
+     * @param id defines the Id to search for
      * @return the found skeleton or null if not found at all.
      */
     public getLastSkeletonById(id: string): Nullable<Skeleton> {
