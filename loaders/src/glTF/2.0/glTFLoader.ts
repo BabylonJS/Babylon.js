@@ -283,6 +283,12 @@ export class GLTFLoader implements IGLTFLoader {
             this._uniqueRootUrl = (!StringTools.StartsWith(rootUrl, "file:") && fileName) ? rootUrl : `${rootUrl}${Date.now()}/`;
             this._fileName = fileName;
 
+            this._parent.onExtensionLoadedObservable.add((extension) => {
+                if (extension.name === "KHR_materials_volume") {
+                    this._parent.createInstances = false;
+                }
+            });
+
             this._loadExtensions();
             this._checkExtensions();
 
