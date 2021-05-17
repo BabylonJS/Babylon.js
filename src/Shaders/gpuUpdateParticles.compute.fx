@@ -462,7 +462,7 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             #ifdef ANIMATESHEETRANDOMSTART
                 let cellStartOffset : f32 = particlesIn.particles[index].cellStartOffset;
                 particlesOut.particles[index].cellStartOffset = cellStartOffset;
-                offsetAge += cellStartOffset;
+                offsetAge = offsetAge + cellStartOffset;
             #else
                 let cellStartOffset : f32 = 0.;
             #endif    
