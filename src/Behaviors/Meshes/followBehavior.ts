@@ -1,7 +1,7 @@
 import { Behavior } from "../behavior";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
-import { Observable, Observer } from "../../Misc/observable";
+import { Observer } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";

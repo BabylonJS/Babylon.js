@@ -1,6 +1,6 @@
 import { Epsilon } from "../Maths/math.constants";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
-import { Scalar } from "../Maths/math.scalar"
+import { Scalar } from "../Maths/math.scalar";
 
 export class SmoothingTools {
     private static _TmpVectors: Vector3[] = [new Vector3(), new Vector3()];
