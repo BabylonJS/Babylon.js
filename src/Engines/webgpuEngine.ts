@@ -551,7 +551,7 @@ export class WebGPUEngine extends Engine {
                 this._deviceEnabledExtensions = [];
                 this._device.features.forEach((feature) => this._deviceEnabledExtensions.push(feature));
                 this._device.addEventListener('uncapturederror', (event) => {
-                    Logger.Warn("WebGPU uncaptured error: " + (<GPUUncapturedErrorEvent>event).error);
+                    Logger.Warn("WebGPU uncaptured error: " + (<GPUUncapturedErrorEvent>event).error + "-" + (<any>event).error.message);
                 });
                 if (!this._doNotHandleContextLost) {
                     this._device.lost.then((info) => {
