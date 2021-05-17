@@ -58118,7 +58118,7 @@ var GLTFComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_sRGBFactors", isSelected: function () { return extensionStates["MSFT_sRGBFactors"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_sRGBFactors"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_audio_emitter", isSelected: function () { return extensionStates["MSFT_audio_emitter"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_audio_emitter"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_6__["MessageLineComponent"], { text: "You need to reload your file to see these changes" })),
-            loaderState["validate"] && this.props.globalState.validationResults && this.renderValidation()));
+            this.props.globalState.validationResults && this.renderValidation()));
     };
     return GLTFComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -58691,7 +58691,6 @@ var GlobalState = /** @class */ (function () {
             loggingEnabled: false,
             transparencyAsCoverage: false,
             useClipPlane: false,
-            validate: true,
         };
         this.glTFLoaderExtensions = {};
         this.blockMutationUpdates = false;

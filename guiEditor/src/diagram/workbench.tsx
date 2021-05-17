@@ -157,9 +157,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.loadToEditor();
     }
 
-    async loadFromSnippet(snippedID: string) {
+    async loadFromSnippet(snippedId: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
+        await this.globalState.guiTexture.parseFromSnippetAsync(snippedId);
         this.loadToEditor();
     }
 

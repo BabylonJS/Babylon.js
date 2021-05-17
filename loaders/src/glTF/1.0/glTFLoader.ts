@@ -198,15 +198,15 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
             var bufferInput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[inputData]);
             var bufferOutput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
 
-            var targetID = channel.target.id;
-            var targetNode: any = gltfRuntime.scene.getNodeByID(targetID);
+            var targetId = channel.target.id;
+            var targetNode: any = gltfRuntime.scene.getNodeById(targetId);
 
             if (targetNode === null) {
-                targetNode = gltfRuntime.scene.getNodeByName(targetID);
+                targetNode = gltfRuntime.scene.getNodeByName(targetId);
             }
 
             if (targetNode === null) {
-                Tools.Warn("Creating animation named " + anim + ". But cannot find node named " + targetID + " to attach to");
+                Tools.Warn("Creating animation named " + anim + ". But cannot find node named " + targetId + " to attach to");
                 continue;
             }
 
@@ -513,7 +513,7 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
         var id = jointNode.id;
 
         // Optimize, if the bone already exists...
-        var existingBone = gltfRuntime.scene.getBoneByID(id);
+        var existingBone = gltfRuntime.scene.getBoneById(id);
         if (existingBone) {
             newSkeleton.bones.push(existingBone);
             continue;
@@ -626,8 +626,8 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
     var indexCounts = new Array<number>();
 
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshID = meshes[meshIndex];
-        var mesh: IGLTFMesh = gltfRuntime.meshes[meshID];
+        var meshId = meshes[meshIndex];
+        var mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
 
         if (!mesh) {
             continue;
@@ -725,7 +725,7 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
             }
 
             // Sub material
-            let material = gltfRuntime.scene.getMaterialByID(primitive.material);
+            let material = gltfRuntime.scene.getMaterialById(primitive.material);
 
             subMaterials.push(material === null ? GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
 
@@ -762,8 +762,8 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
     newMesh.subMeshes = [];
     var index = 0;
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshID = meshes[meshIndex];
-        var mesh: IGLTFMesh = gltfRuntime.meshes[meshID];
+        var meshId = meshes[meshIndex];
+        var mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
 
         if (!mesh) {
             continue;
@@ -838,7 +838,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
             var skin: IGLTFSkins = gltfRuntime.skins[node.skin];
 
             var newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
-            newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(node.skin);
+            newMesh.skeleton = gltfRuntime.scene.getLastSkeletonById(node.skin);
 
             if (newMesh.skeleton === null) {
                 newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton, node.skin);
@@ -1071,7 +1071,7 @@ var onBindShaderMaterial = (mesh: AbstractMesh, gltfRuntime: IGLTFRuntime, unTre
             else if (uniform.semantic && (uniform.source || uniform.node)) {
                 var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node || "");
                 if (source === null) {
-                    source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node || "");
+                    source = gltfRuntime.scene.getNodeById(uniform.source || uniform.node || "");
                 }
                 if (source === null) {
                     continue;

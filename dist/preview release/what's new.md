@@ -28,11 +28,13 @@
 - Added support for clip planes to the edge renderer ([#10053](https://github.com/BabylonJS/Babylon.js/issues/10053)) ([Popov72](https://github.com/Popov72))
 - Added support for [cannon-es](https://github.com/pmndrs/cannon-es) to the cannonJSPlugin. ([frankieali](https://github.com/frankieali))
 - Added check for duplicates in addShadowCaster ([ivankoleda](https://github.com/ivankoleda))
+- spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the correspondgin `xxxById` ([barroij](https://github.com/barroij))
 
 ### Engine
 
 - Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
 - Added NativeEngine configuration object parameter. ([drigax](https://github.com/drigax))
+- Added NativeEngine support for signed byte and unsigned short vertex buffer attribute types ([Alex-MSFT](https://github.com/Alex-MSFT))
 
 ### Loaders
 
@@ -109,6 +111,11 @@
 - Added `imageWidth()` and `imageHeight()` to access the source image dimensions of `Image` ([Queatz](https://github.com/Queatz))
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
 - Added property `renderToIntermediateTexture` to `Container` which when set to true, will render children to an intermediate texture rather than direct to host allowing for DOM style alpha blending ([BlindingHues](https://github.com/blindinghues))
+- Added `HolographicSlate` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
+
+### Behaviors
+
+- Added `FollowBehavior`, a behavior that makes the assigned mesh hover around a camera, while facing it ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### WebXR
 
@@ -210,6 +217,7 @@
 - Fix glTF loader promise stuck when runs on non-json data ([mrlika](https://github.com/mrlika))
 - Fix for namepsace sharing in .scss files; PropertyTab, SceneExplorer ([msDestiny14](https://github.com/msDestiny14))
 - Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
+- Fix undefined camera pose in WebXR in Babylon Native ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ## Breaking changes
 
