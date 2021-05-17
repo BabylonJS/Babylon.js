@@ -9,7 +9,7 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
  */
 export interface IWebXRDOMOverlayOptions {
     /**
-     * DOM Element or document query selector for overlay.
+     * DOM Element or document query selector string for overlay.
      *
      * NOTE: UA may make this element background transparent in XR.
      */
@@ -137,7 +137,7 @@ export class WebXRDOMOverlay extends WebXRAbstractFeature {
         } else {
             this._element = this.options.element;
         }
-        // TODO: consider elementById or other selector options (ie: document.getElementById(this.options.element) when typeof === string)
+
         return {
             domOverlay: {
                 root: this._element
