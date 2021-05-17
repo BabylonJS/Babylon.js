@@ -32,12 +32,6 @@ type XREye = "none" | "left" | "right";
  */
 type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
 
-/**
- * Type of overlay (provided by UA and remains unchanged for duration of session)
- * - screen: covers the entire physical screen for a screen-based device, for example handheld AR
- * - floating: appears as a floating rectangle in space
- * - head-locked: follows the user’s head movement consistently, appearing similar to a HUD
- */
 type XRDOMOverlayType = "screen" | "floating" | "head-locked";
 
 type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => void;

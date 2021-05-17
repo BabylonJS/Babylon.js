@@ -7,7 +7,7 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 /**
  * Options for DOM Overlay feature
  */
-export interface IWebXRDOMOverlayOptions {
+export interface IWebXRDomOverlayOptions {
     /**
      * DOM Element or document query selector string for overlay.
      *
@@ -21,16 +21,33 @@ export interface IWebXRDOMOverlayOptions {
 }
 
 /**
+ * Type of DOM overlay provided by UA.
+ */
+type WebXRDomOverlayType =
+    /**
+     * Covers the entire physical screen for a screen-based device, for example handheld AR
+     */
+    'screen' |
+    /**
+     * Appears as a floating rectangle in space
+     */
+     'floating' |
+     /**
+      * Follows the user’s head movement consistently, appearing similar to a HUD
+      */
+     'head-locked';
+
+/**
  * DOM Overlay Feature
  *
  * @since 5.0.0
  */
-export class WebXRDOMOverlay extends WebXRAbstractFeature {
+export class WebXRDomOverlay extends WebXRAbstractFeature {
 
     /**
      * Type of overlay - non-null when available
      */
-    private _xrDOMOverlayType: Nullable<XRDOMOverlayType> = null;
+    private _domOverlayType: Nullable<WebXRDomOverlayType> = null;
 
     /**
      * Event Listener to supress "beforexrselect" events.
@@ -63,7 +80,7 @@ export class WebXRDOMOverlay extends WebXRAbstractFeature {
         /**
          * options to use when constructing this feature
          */
-        public readonly options: IWebXRDOMOverlayOptions
+        public readonly options: IWebXRDomOverlayOptions
     ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "dom-overlay";
@@ -88,7 +105,7 @@ export class WebXRDOMOverlay extends WebXRAbstractFeature {
             return false;
         }
 
-        this._xrDOMOverlayType = this._xrSessionManager.session.domOverlayState.type;
+        this._domOverlayType = this._xrSessionManager.session.domOverlayState.type;
 
         if (this._element !== null && this.options.supressXRSelectEvents === true) {
             this._beforeXRSelectListener = (ev) => {
@@ -101,10 +118,10 @@ export class WebXRDOMOverlay extends WebXRAbstractFeature {
     }
 
     /**
-     * The type of DOM overlay (null when not supported)
+     * The type of DOM overlay (null when not supported).  Provided by UA and remains unchanged for duration of session.
      */
-    public get XRDOMOverlayType(): Nullable<XRDOMOverlayType> {
-        return this._xrDOMOverlayType;
+    public get domOverlayType(): Nullable<WebXRDomOverlayType> {
+        return this._domOverlayType;
     }
 
     /**
@@ -148,10 +165,10 @@ export class WebXRDOMOverlay extends WebXRAbstractFeature {
 
 //register the plugin
 WebXRFeaturesManager.AddWebXRFeature(
-    WebXRDOMOverlay.Name,
+    WebXRDomOverlay.Name,
     (xrSessionManager, options) => {
-        return () => new WebXRDOMOverlay(xrSessionManager, options);
+        return () => new WebXRDomOverlay(xrSessionManager, options);
     },
-    WebXRDOMOverlay.Version,
+    WebXRDomOverlay.Version,
     false
 );
