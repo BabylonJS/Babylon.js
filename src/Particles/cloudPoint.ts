@@ -199,8 +199,8 @@ export class CloudPoint {
  */
 export class PointsGroup {
     /**
-     * @deprecated Please use groupId instead
      * Get or set the groupId
+     * @deprecated Please use groupId instead
      */
     public get groupID(): number {
         return this.groupId;

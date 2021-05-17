@@ -285,8 +285,8 @@ export class SolidParticle {
  */
 export class ModelShape {
     /**
-     * @deprecated Please use shapeId instead
      * Get or set the shapeId
+     * @deprecated Please use shapeId instead
      */
     public get shapeID(): number {
         return this.shapeId;
