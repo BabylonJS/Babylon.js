@@ -671,7 +671,7 @@ export class RenderTargetTexture extends Texture {
             this.renderList = [];
             for (var index = 0; index < this._waitingRenderList.length; index++) {
                 var id = this._waitingRenderList[index];
-                let mesh = scene.getMeshByID(id);
+                let mesh = scene.getMeshById(id);
                 if (mesh) {
                     this.renderList.push(mesh);
                 }

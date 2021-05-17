@@ -183,12 +183,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     loadFromSnippet() {
-        const snippedID = window.prompt("Please enter the snippet ID to use");
+        const snippedId = window.prompt("Please enter the snippet ID to use");
 
-        if (!snippedID) {
+        if (!snippedId) {
             return;
         }
-        this.props.globalState.workbench.loadFromSnippet(snippedID);
+        this.props.globalState.workbench.loadFromSnippet(snippedId);
     }
 
     renderProperties() {

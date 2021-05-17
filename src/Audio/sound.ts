@@ -1148,7 +1148,7 @@ export class Sound {
             }
         }
         if (parsedSound.connectedMeshId) {
-            var connectedMesh = scene.getMeshByID(parsedSound.connectedMeshId);
+            var connectedMesh = scene.getMeshById(parsedSound.connectedMeshId);
             if (connectedMesh) {
                 newSound.attachToMesh(connectedMesh);
             }
