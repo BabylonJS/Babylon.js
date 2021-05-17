@@ -108,6 +108,10 @@ export class WebXRFeatureName {
      * The name of the image tracking feature
      */
     public static readonly IMAGE_TRACKING = "xr-image-tracking";
+    /**
+     * The name of the near interaction feature
+     */
+    public static readonly NEAR_INTERACTION = "xr-near-interaction";
 }
 
 /**

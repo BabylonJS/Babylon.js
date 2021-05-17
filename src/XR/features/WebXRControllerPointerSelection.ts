@@ -1,14 +1,13 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
 import { Observer } from "../../Misc/observable";
 import { WebXRInput } from "../webXRInput";
 import { WebXRInputSource } from "../webXRInputSource";
 import { Scene } from "../../scene";
 import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
 import { Nullable } from "../../types";
-import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
 import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial";
@@ -104,11 +103,6 @@ export interface IWebXRControllerPointerSelectionOptions {
      * The maximum distance of the pointer selection feature. Defaults to 100.
      */
     maxPointerDistance?: number;
-
-    /**
-     * Disable near interaction if not used, to improve performance.
-     */
-    disableNearInteraction?: boolean;
 }
 
 /**
@@ -122,10 +116,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // already attached
             return;
         }
-        const disableNearInteraction = !!this._options.disableNearInteraction;
-        const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController.pointer);
-        const { hoverIndexMeshTip, pickIndexMeshTip } = this._generateNewHandTipMeshes(disableNearInteraction);
 
+        const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController.pointer);
         // get two new meshes
         this._controllers[xrController.uniqueId] = {
             xrController,
@@ -134,12 +126,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             meshUnderPointer: null,
             pick: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
-            pickIndexMeshTip,
-            hoverIndexMeshTip,
-            grabRay: new Ray(new Vector3(), new Vector3()),
-            nearPick: false,
-            nearHover: false,
-            nearGrab: false,
             id: WebXRControllerPointerSelection._idCounter++,
         };
 
@@ -173,8 +159,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             webXRCamera?: WebXRCamera;
             selectionComponent?: WebXRControllerComponent;
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
-            squeezeComponent?: WebXRControllerComponent;
-            onSqueezeButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
             onFrameObserver?: Nullable<Observer<XRFrame>>;
             laserPointer: AbstractMesh;
             selectionMesh: AbstractMesh;
@@ -182,12 +166,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             pick: Nullable<PickingInfo>;
             id: number;
             tmpRay: Ray;
-            pickIndexMeshTip: Nullable<AbstractMesh>;
-            hoverIndexMeshTip: Nullable<AbstractMesh>;
-            grabRay: Ray;
-            nearPick: boolean;
-            nearHover: boolean;
-            nearGrab: boolean;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
         };
@@ -279,11 +257,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
         if (this._options.gazeCamera) {
             const webXRCamera = this._options.gazeCamera;
-            const disableNearInteraction = !!this._options.disableNearInteraction;
-
             const { laserPointer, selectionMesh } = this._generateNewMeshPair(webXRCamera);
-            const { hoverIndexMeshTip, pickIndexMeshTip } = this._generateNewHandTipMeshes(disableNearInteraction);
-
             this._controllers["camera"] = {
                 webXRCamera,
                 laserPointer,
@@ -291,12 +265,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 meshUnderPointer: null,
                 pick: null,
                 tmpRay: new Ray(new Vector3(), new Vector3()),
-                pickIndexMeshTip,
-                hoverIndexMeshTip,
-                grabRay: new Ray(new Vector3(), new Vector3()),
-                nearPick: false,
-                nearHover: false,
-                nearGrab: false,
                 id: WebXRControllerPointerSelection._idCounter++,
             };
             this._attachGazeMode();
@@ -354,27 +322,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return null;
     }
 
-    /**
-     * Filter used for near interaction pick and hover
-     */
-    private nearPickPredicate(mesh: AbstractMesh): boolean {
-        return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearPickable;
-    }
-
-    /**
-     * Filter used for near interaction garb
-     */
-    private nearGrabPredicate(mesh: AbstractMesh): boolean {
-        return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearGrabbable;
-    }
-
     private _identityMatrix = Matrix.Identity();
     private _screenCoordinatesRef = Vector3.Zero();
     private _viewportRef = new Viewport(0, 0, 0, 0);
-    private readonly _hoverRadius = 0.1;
-    private readonly _pickRadius = 0.03;
-    private _indexTipQuaternion = new Quaternion();
-    private _indexTipOrientationVector = Vector3.Zero();
 
     protected _onXRFrame(_xrFrame: XRFrame) {
         Object.keys(this._controllers).forEach((id) => {
@@ -389,9 +339,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
             controllerData.laserPointer.isVisible = this.displayLaserPointer;
             let controllerGlobalPosition: Vector3;
-            controllerData.nearPick = false;
-            controllerData.nearHover = false;
-            controllerData.nearGrab = false;
 
             // Every frame check collisions/input
             if (controllerData.xrController) {
@@ -541,15 +488,13 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, controllerData.selectionMesh.rotation);
                     controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                 }
-                if (!controllerData.nearGrab) {
-                    controllerData.selectionMesh.isVisible = this.displaySelectionMesh;
-                }
+                // Update laser state
+                this._updatePointerDistance(controllerData.laserPointer, pick.distance);
+                controllerData.selectionMesh.isVisible = this.displaySelectionMesh;
                 controllerData.meshUnderPointer = pick.pickedMesh;
             } else {
                 controllerData.selectionMesh.isVisible = false;
-                if (!controllerData.nearGrab) {
-                    this._updatePointerDistance(controllerData.laserPointer, 1);
-                }
+                this._updatePointerDistance(controllerData.laserPointer, 1);
                 controllerData.meshUnderPointer = null;
             }
         });
@@ -697,7 +642,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
                     if (component.changes.pressed) {
                         const pressed = component.changes.pressed.current;
-                        if (controllerData.pick && !controllerData.nearPick && !controllerData.nearHover && !controllerData.nearGrab) {
+                        if (controllerData.pick) {
                             if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
                                 if (pressed) {
                                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
@@ -717,29 +662,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         }
                     }
                 });
-
-                // squeezeComponent is a new member on the controllerData
-                controllerData.squeezeComponent = motionController.getComponent("grasp");
-                if (controllerData.squeezeComponent) {
-                    controllerData.onSqueezeButtonChangedObserver = controllerData.squeezeComponent.onButtonStateChangedObservable.add((component) => {
-                        if (component.changes.pressed) {
-                            const pressed = component.changes.pressed.current;
-                            if (controllerData.pick && controllerData.nearGrab) {
-                                if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
-                                    if (pressed) {
-                                        this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                                    } else {
-                                        this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                                    }
-                                }
-                            } else {
-                                if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {
-                                    this._attachedController = xrController.uniqueId;
-                                }
-                            }
-                        }
-                    });
-                }
             };
             if (xrController.motionController) {
                 init(xrController.motionController);
@@ -838,8 +760,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
         controllerData.selectionMesh.dispose();
         controllerData.laserPointer.dispose();
-        controllerData.pickIndexMeshTip?.dispose();
-        controllerData.hoverIndexMeshTip?.dispose();
 
         // remove from the map
         delete this._controllers[xrControllerUniqueId];
