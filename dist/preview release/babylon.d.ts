@@ -9614,7 +9614,7 @@ declare module BABYLON {
      */
     export interface IShadowLight extends Light {
         /**
-         * The light id in the scene (used in scene.findLightById for instance)
+         * The light id in the scene (used in scene.getLightById for instance)
          */
         id: string;
         /**
@@ -30877,7 +30877,7 @@ declare module BABYLON {
         protected _cachedPosition: Vector3;
         protected _cachedDirection: Vector3;
         protected _cachedDefines: string;
-        protected _currentRenderID: number;
+        protected _currentRenderId: number;
         protected _boxBlurPostprocess: Nullable<PostProcess>;
         protected _kernelBlurXPostprocess: Nullable<PostProcess>;
         protected _kernelBlurYPostprocess: Nullable<PostProcess>;
@@ -34896,8 +34896,15 @@ declare module BABYLON {
          * Sets the mesh material by the material or multiMaterial `id` property
          * @param id is a string identifying the material or the multiMaterial
          * @returns the current mesh
+         * @deprecated Please use setMaterialById instead
          */
         setMaterialByID(id: string): Mesh;
+        /**
+         * Sets the mesh material by the material or multiMaterial `id` property
+         * @param id is a string identifying the material or the multiMaterial
+         * @returns the current mesh
+         */
+        setMaterialById(id: string): Mesh;
         /**
          * Returns as a new array populated with the mesh material and/or skeleton, if any.
          * @returns an array of IAnimatable
@@ -36976,10 +36983,16 @@ declare module BABYLON {
      */
     export class ModelShape {
         /**
+         * Get or set the shapeId
+         * @deprecated Please use shapeId instead
+         */
+        get shapeID(): number;
+        set shapeID(shapeID: number);
+        /**
          * The shape id
          * @hidden
          */
-        shapeID: number;
+        shapeId: number;
         /**
          * flat array of model positions (internal use)
          * @hidden
@@ -45424,6 +45437,7 @@ declare module BABYLON {
         private _pointerWheelEvent;
         private _pointerBlurEvent;
         private _wheelEventName;
+        private _mouseId;
         private _pointerWheelClearObserver;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
@@ -47288,11 +47302,18 @@ declare module BABYLON {
          */
         switchActiveCamera(newCamera: Camera, attachControl?: boolean): void;
         /**
-         * sets the active camera of the scene using its ID
-         * @param id defines the camera's ID
+         * sets the active camera of the scene using its Id
+         * @param id defines the camera's Id
          * @return the new active camera or null if none found.
+         * @deprecated Please use setActiveCameraById instead
          */
         setActiveCameraByID(id: string): Nullable<Camera>;
+        /**
+         * sets the active camera of the scene using its Id
+         * @param id defines the camera's Id
+         * @return the new active camera or null if none found.
+         */
+        setActiveCameraById(id: string): Nullable<Camera>;
         /**
          * sets the active camera of the scene using its name
          * @param name defines the camera's name
@@ -47313,16 +47334,30 @@ declare module BABYLON {
         getMaterialByUniqueID(uniqueId: number): Nullable<Material>;
         /**
          * get a material using its id
-         * @param id defines the material's ID
+         * @param id defines the material's Id
          * @return the material or null if none found.
+         * @deprecated Please use getMaterialById instead
          */
         getMaterialByID(id: string): Nullable<Material>;
         /**
+         * get a material using its id
+         * @param id defines the material's Id
+         * @return the material or null if none found.
+         */
+        getMaterialById(id: string): Nullable<Material>;
+        /**
          * Gets a the last added material using a given id
-         * @param id defines the material's ID
+         * @param id defines the material's Id
          * @return the last material with the given id or null if none found.
+         * @deprecated Please use getLastMaterialById instead
          */
         getLastMaterialByID(id: string): Nullable<Material>;
+        /**
+         * Gets a the last added material using a given id
+         * @param id defines the material's Id
+         * @return the last material with the given id or null if none found.
+         */
+        getLastMaterialById(id: string): Nullable<Material>;
         /**
          * Gets a material using its name
          * @param name defines the material's name
@@ -47333,20 +47368,41 @@ declare module BABYLON {
          * Get a texture using its unique id
          * @param uniqueId defines the texture's unique id
          * @return the texture or null if none found.
+         * @deprecated Please use getTextureByUniqueId instead
          */
         getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture>;
         /**
-         * Gets a camera using its id
-         * @param id defines the id to look for
+         * Get a texture using its unique id
+         * @param uniqueId defines the texture's unique id
+         * @return the texture or null if none found.
+         */
+        getTextureByUniqueId(uniqueId: number): Nullable<BaseTexture>;
+        /**
+         * Gets a camera using its Id
+         * @param id defines the Id to look for
          * @returns the camera or null if not found
+         * @deprecated Please use getCameraById instead
          */
         getCameraByID(id: string): Nullable<Camera>;
         /**
-         * Gets a camera using its unique id
-         * @param uniqueId defines the unique id to look for
+         * Gets a camera using its Id
+         * @param id defines the Id to look for
          * @returns the camera or null if not found
          */
+        getCameraById(id: string): Nullable<Camera>;
+        /**
+         * Gets a camera using its unique Id
+         * @param uniqueId defines the unique Id to look for
+         * @returns the camera or null if not found
+         * @deprecated Please use getCameraByUniqueId instead
+         */
         getCameraByUniqueID(uniqueId: number): Nullable<Camera>;
+        /**
+         * Gets a camera using its unique Id
+         * @param uniqueId defines the unique Id to look for
+         * @returns the camera or null if not found
+         */
+        getCameraByUniqueId(uniqueId: number): Nullable<Camera>;
         /**
          * Gets a camera using its name
          * @param name defines the camera's name
@@ -47354,11 +47410,18 @@ declare module BABYLON {
          */
         getCameraByName(name: string): Nullable<Camera>;
         /**
-         * Gets a bone using its id
-         * @param id defines the bone's id
+         * Gets a bone using its Id
+         * @param id defines the bone's Id
          * @return the bone or null if not found
+         * @deprecated Please use getBoneById instead
          */
         getBoneByID(id: string): Nullable<Bone>;
+        /**
+         * Gets a bone using its Id
+         * @param id defines the bone's Id
+         * @return the bone or null if not found
+         */
+        getBoneById(id: string): Nullable<Bone>;
         /**
         * Gets a bone using its id
         * @param name defines the bone's name
@@ -47372,30 +47435,58 @@ declare module BABYLON {
          */
         getLightByName(name: string): Nullable<Light>;
         /**
-         * Gets a light node using its id
-         * @param id defines the light's id
+         * Gets a light node using its Id
+         * @param id defines the light's Id
          * @return the light or null if none found.
+         * @deprecated Please use getLightById instead
          */
         getLightByID(id: string): Nullable<Light>;
         /**
-         * Gets a light node using its scene-generated unique ID
-         * @param uniqueId defines the light's unique id
+         * Gets a light node using its Id
+         * @param id defines the light's Id
          * @return the light or null if none found.
+         */
+        getLightById(id: string): Nullable<Light>;
+        /**
+         * Gets a light node using its scene-generated unique Id
+         * @param uniqueId defines the light's unique Id
+         * @return the light or null if none found.
+         * @deprecated Please use getLightByUniqueId instead
          */
         getLightByUniqueID(uniqueId: number): Nullable<Light>;
         /**
-         * Gets a particle system by id
-         * @param id defines the particle system id
+         * Gets a light node using its scene-generated unique Id
+         * @param uniqueId defines the light's unique Id
+         * @return the light or null if none found.
+         */
+        getLightByUniqueId(uniqueId: number): Nullable<Light>;
+        /**
+         * Gets a particle system by Id
+         * @param id defines the particle system Id
          * @return the corresponding system or null if none found
+         * @deprecated Please use getParticleSystemById instead
          */
         getParticleSystemByID(id: string): Nullable<IParticleSystem>;
         /**
-         * Gets a geometry using its ID
-         * @param id defines the geometry's id
+         * Gets a particle system by Id
+         * @param id defines the particle system Id
+         * @return the corresponding system or null if none found
+         */
+        getParticleSystemById(id: string): Nullable<IParticleSystem>;
+        /**
+         * Gets a geometry using its Id
+         * @param id defines the geometry's Id
          * @return the geometry or null if none found.
+         * @deprecated Please use getGeometryById instead
          */
         getGeometryByID(id: string): Nullable<Geometry>;
-        private _getGeometryByUniqueID;
+        /**
+         * Gets a geometry using its Id
+         * @param id defines the geometry's Id
+         * @return the geometry or null if none found.
+         */
+        getGeometryById(id: string): Nullable<Geometry>;
+        private _getGeometryByUniqueId;
         /**
          * Add a new geometry to this scene
          * @param geometry defines the geometry to be added to the scene.
@@ -47415,59 +47506,122 @@ declare module BABYLON {
          */
         getGeometries(): Geometry[];
         /**
-         * Gets the first added mesh found of a given ID
-         * @param id defines the id to search for
+         * Gets the first added mesh found of a given Id
+         * @param id defines the Id to search for
          * @return the mesh found or null if not found at all
+         * @deprecated Please use getMeshById instead
          */
         getMeshByID(id: string): Nullable<AbstractMesh>;
         /**
-         * Gets a list of meshes using their id
-         * @param id defines the id to search for
+         * Gets the first added mesh found of a given Id
+         * @param id defines the Id to search for
+         * @return the mesh found or null if not found at all
+         */
+        getMeshById(id: string): Nullable<AbstractMesh>;
+        /**
+         * Gets a list of meshes using their Id
+         * @param id defines the Id to search for
          * @returns a list of meshes
+         * @deprecated Please use getMeshesById instead
          */
         getMeshesByID(id: string): Array<AbstractMesh>;
         /**
-         * Gets the first added transform node found of a given ID
-         * @param id defines the id to search for
+         * Gets a list of meshes using their Id
+         * @param id defines the Id to search for
+         * @returns a list of meshes
+         */
+        getMeshesById(id: string): Array<AbstractMesh>;
+        /**
+         * Gets the first added transform node found of a given Id
+         * @param id defines the Id to search for
          * @return the found transform node or null if not found at all.
+         * @deprecated Please use getTransformNodeById instead
          */
         getTransformNodeByID(id: string): Nullable<TransformNode>;
         /**
-         * Gets a transform node with its auto-generated unique id
-         * @param uniqueId efines the unique id to search for
+         * Gets the first added transform node found of a given Id
+         * @param id defines the Id to search for
          * @return the found transform node or null if not found at all.
+         */
+        getTransformNodeById(id: string): Nullable<TransformNode>;
+        /**
+         * Gets a transform node with its auto-generated unique Id
+         * @param uniqueId efines the unique Id to search for
+         * @return the found transform node or null if not found at all.
+         * @deprecated Please use getTransformNodeByUniqueId instead
          */
         getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode>;
         /**
-         * Gets a list of transform nodes using their id
-         * @param id defines the id to search for
+         * Gets a transform node with its auto-generated unique Id
+         * @param uniqueId efines the unique Id to search for
+         * @return the found transform node or null if not found at all.
+         */
+        getTransformNodeByUniqueId(uniqueId: number): Nullable<TransformNode>;
+        /**
+         * Gets a list of transform nodes using their Id
+         * @param id defines the Id to search for
          * @returns a list of transform nodes
+         * @deprecated Please use getTransformNodesById instead
          */
         getTransformNodesByID(id: string): Array<TransformNode>;
         /**
-         * Gets a mesh with its auto-generated unique id
-         * @param uniqueId defines the unique id to search for
+         * Gets a list of transform nodes using their Id
+         * @param id defines the Id to search for
+         * @returns a list of transform nodes
+         */
+        getTransformNodesById(id: string): Array<TransformNode>;
+        /**
+         * Gets a mesh with its auto-generated unique Id
+         * @param uniqueId defines the unique Id to search for
          * @return the found mesh or null if not found at all.
+         * @deprecated Please use getMeshByUniqueId instead
          */
         getMeshByUniqueID(uniqueId: number): Nullable<AbstractMesh>;
         /**
-         * Gets a the last added mesh using a given id
-         * @param id defines the id to search for
+         * Gets a mesh with its auto-generated unique Id
+         * @param uniqueId defines the unique Id to search for
          * @return the found mesh or null if not found at all.
+         */
+        getMeshByUniqueId(uniqueId: number): Nullable<AbstractMesh>;
+        /**
+         * Gets a the last added mesh using a given Id
+         * @param id defines the Id to search for
+         * @return the found mesh or null if not found at all.
+         * @deprecated Please use getLastMeshById instead
          */
         getLastMeshByID(id: string): Nullable<AbstractMesh>;
         /**
-         * Gets a the last added node (Mesh, Camera, Light) using a given id
-         * @param id defines the id to search for
+         * Gets a the last added mesh using a given Id
+         * @param id defines the Id to search for
+         * @return the found mesh or null if not found at all.
+         */
+        getLastMeshById(id: string): Nullable<AbstractMesh>;
+        /**
+         * Gets a the last added node (Mesh, Camera, Light) using a given Id
+         * @param id defines the Id to search for
          * @return the found node or null if not found at all
+         * @deprecated Please use getLastEntryById instead
          */
         getLastEntryByID(id: string): Nullable<Node>;
         /**
-         * Gets a node (Mesh, Camera, Light) using a given id
-         * @param id defines the id to search for
+         * Gets a the last added node (Mesh, Camera, Light) using a given Id
+         * @param id defines the Id to search for
          * @return the found node or null if not found at all
          */
+        getLastEntryById(id: string): Nullable<Node>;
+        /**
+         * Gets a node (Mesh, Camera, Light) using a given Id
+         * @param id defines the Id to search for
+         * @return the found node or null if not found at all
+         * @deprecated Please use getNodeById instead
+         */
         getNodeByID(id: string): Nullable<Node>;
+        /**
+         * Gets a node (Mesh, Camera, Light) using a given Id
+         * @param id defines the Id to search for
+         * @return the found node or null if not found at all
+         */
+        getNodeById(id: string): Nullable<Node>;
         /**
          * Gets a node (Mesh, Camera, Light) using a given name
          * @param name defines the name to search for
@@ -47487,11 +47641,18 @@ declare module BABYLON {
          */
         getTransformNodeByName(name: string): Nullable<TransformNode>;
         /**
-         * Gets a skeleton using a given id (if many are found, this function will pick the last one)
-         * @param id defines the id to search for
+         * Gets a skeleton using a given Id (if many are found, this function will pick the last one)
+         * @param id defines the Id to search for
          * @return the found skeleton or null if not found at all.
+         * @deprecated Please use getLastSkeletonById instead
          */
         getLastSkeletonByID(id: string): Nullable<Skeleton>;
+        /**
+         * Gets a skeleton using a given Id (if many are found, this function will pick the last one)
+         * @param id defines the Id to search for
+         * @return the found skeleton or null if not found at all.
+         */
+        getLastSkeletonById(id: string): Nullable<Skeleton>;
         /**
          * Gets a skeleton using a given auto generated unique id
          * @param  uniqueId defines the unique id to search for
@@ -50353,7 +50514,7 @@ declare module BABYLON {
      * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
      */
     export class PointerDragBehavior implements Behavior<AbstractMesh> {
-        private static _AnyMouseID;
+        private static _AnyMouseId;
         /**
          * Abstract mesh the behavior is set on
          */
@@ -50373,9 +50534,15 @@ declare module BABYLON {
          */
         _useAlternatePickedPointAboveMaxDragAngle: boolean;
         /**
+         * Get or set the currentDraggingPointerId
+         * @deprecated Please use currentDraggingPointerId instead
+         */
+        get currentDraggingPointerID(): number;
+        set currentDraggingPointerID(currentDraggingPointerID: number);
+        /**
          * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
          */
-        currentDraggingPointerID: number;
+        currentDraggingPointerId: number;
         /**
          * The last position where the pointer hit the drag plane in world space
          */
@@ -50585,9 +50752,15 @@ declare module BABYLON {
          */
         dragDeltaRatio: number;
         /**
+         * Get or set the currentDraggingPointerId
+         * @deprecated Please use currentDraggingPointerId instead
+         */
+        get currentDraggingPointerID(): number;
+        set currentDraggingPointerID(currentDraggingPointerID: number);
+        /**
          * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
          */
-        currentDraggingPointerID: number;
+        currentDraggingPointerId: number;
         /**
          * If camera controls should be detached during the drag
          */
@@ -52128,7 +52301,7 @@ declare module BABYLON {
         private _axisTargetedByUpAndDown;
         private _joystickSensibility;
         private _inversedSensibility;
-        private _joystickPointerID;
+        private _joystickPointerId;
         private _joystickColor;
         private _joystickPointerPos;
         private _joystickPreviousPointerPos;
@@ -55869,6 +56042,12 @@ declare module BABYLON {
          */
         static get DefaultUtilityLayer(): UtilityLayerRenderer;
         /**
+         * Creates an utility layer, and set it as a default utility layer
+         * @param scene associated scene
+         * @hidden
+         */
+        static _CreateDefaultUtilityLayerFromScene(scene: Scene): UtilityLayerRenderer;
+        /**
          * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
          */
         static get DefaultKeepDepthUtilityLayer(): UtilityLayerRenderer;
@@ -55878,7 +56057,7 @@ declare module BABYLON {
         utilityLayerScene: Scene;
         /**
          *  If the utility layer should automatically be rendered on top of existing scene
-        */
+         */
         shouldRender: boolean;
         /**
          * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
@@ -56091,6 +56270,7 @@ declare module BABYLON {
         private _screenCoordinatesRef;
         private _viewportRef;
         protected _onXRFrame(_xrFrame: XRFrame): void;
+        private get _utilityLayerScene();
         private _attachGazeMode;
         private _attachScreenRayMode;
         private _attachTrackedPointerRayMode;
@@ -66776,11 +66956,18 @@ declare module BABYLON {
              */
             getLensFlareSystemByName(name: string): Nullable<LensFlareSystem>;
             /**
-             * Gets a lens flare system using its id
-             * @param id defines the id to look for
+             * Gets a lens flare system using its Id
+             * @param id defines the Id to look for
              * @returns the lens flare system or null if not found
+             * @deprecated Please use getLensFlareSystemById instead
              */
             getLensFlareSystemByID(id: string): Nullable<LensFlareSystem>;
+            /**
+             * Gets a lens flare system using its Id
+             * @param id defines the Id to look for
+             * @returns the lens flare system or null if not found
+             */
+            getLensFlareSystemById(id: string): Nullable<LensFlareSystem>;
         }
     /**
      * Defines the lens flare scene component responsible to manage any lens flares
@@ -75833,10 +76020,16 @@ declare module BABYLON {
      */
     export class PointsGroup {
         /**
+         * Get or set the groupId
+         * @deprecated Please use groupId instead
+         */
+        get groupID(): number;
+        set groupID(groupID: number);
+        /**
          * The group id
          * @hidden
          */
-        groupID: number;
+        groupId: number;
         /**
          * image data for group (internal use)
          * @hidden

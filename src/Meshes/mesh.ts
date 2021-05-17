@@ -2509,8 +2509,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Sets the mesh material by the material or multiMaterial `id` property
      * @param id is a string identifying the material or the multiMaterial
      * @returns the current mesh
+     * @deprecated Please use setMaterialById instead
      */
     public setMaterialByID(id: string): Mesh {
+        return this.setMaterialById(id);
+    }
+
+    /**
+     * Sets the mesh material by the material or multiMaterial `id` property
+     * @param id is a string identifying the material or the multiMaterial
+     * @returns the current mesh
+     */
+    public setMaterialById(id: string): Mesh {
         var materials = this.getScene().materials;
         var index: number;
         for (index = materials.length - 1; index > -1; index--) {
@@ -3821,7 +3831,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Material
         if (parsedMesh.materialId) {
-            mesh.setMaterialByID(parsedMesh.materialId);
+            mesh.setMaterialById(parsedMesh.materialId);
         } else {
             mesh.material = null;
         }
@@ -3833,7 +3843,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Skeleton
         if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
-            mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
+            mesh.skeleton = scene.getLastSkeletonById(parsedMesh.skeletonId);
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
             }

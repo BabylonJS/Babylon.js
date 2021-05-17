@@ -41,9 +41,19 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
      */
     public dragDeltaRatio = 0.2;
     /**
+     * Get or set the currentDraggingPointerId
+     * @deprecated Please use currentDraggingPointerId instead
+     */
+    public get currentDraggingPointerID(): number {
+        return this.currentDraggingPointerId;
+    }
+    public set currentDraggingPointerID(currentDraggingPointerID: number) {
+        this.currentDraggingPointerId = currentDraggingPointerID;
+    }
+    /**
      * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
      */
-    public currentDraggingPointerID = -1;
+    public currentDraggingPointerId = -1;
     /**
      * If camera controls should be detached during the drag
      */
@@ -145,7 +155,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     // Update state
                     this._targetPosition.copyFrom(this._virtualDragMesh.absolutePosition);
                     this.dragging = true;
-                    this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
+                    this.currentDraggingPointerId = (<PointerEvent>pointerInfo.event).pointerId;
 
                     // Detach camera controls
                     if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
@@ -160,10 +170,10 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     this.onDragStartObservable.notifyObservers({});
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
-                if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
+                if (this.currentDraggingPointerId == (<PointerEvent>pointerInfo.event).pointerId) {
                     this.dragging = false;
                     this._moving = false;
-                    this.currentDraggingPointerID = -1;
+                    this.currentDraggingPointerId = -1;
                     pickedMesh = null;
                     this._virtualOriginMesh.removeChild(this._virtualDragMesh);
 
@@ -175,7 +185,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     this.onDragEndObservable.notifyObservers({});
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
-                if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh) {
+                if (this.currentDraggingPointerId == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh) {
                     var zDragFactor = this.zDragFactor;
                     if (this._pointerCamera && this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
