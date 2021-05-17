@@ -60,11 +60,6 @@ export class WebXRDefaultExperienceOptions {
     public renderingGroupId?: number;
 
     /**
-     * An optional element for the DOM overlay feature to use.
-     */
-    public domOverlayRootElement?: Element;
-
-    /**
      * A list of optional features to init the session with
      * If set to true, all features we support will be added
      */
