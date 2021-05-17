@@ -551,9 +551,9 @@ export class SubMesh implements ICullable {
         var intersectInfo: Nullable<IntersectionInfo> = null;
 
         // Triangles test
-        let faceID = -1;
+        let faceId = -1;
         for (var index = this.indexStart; index < this.indexStart + this.indexCount - (3 - step); index += step) {
-            faceID++;
+            faceId++;
             const indexA = indices[index];
             const indexB = indices[index + 1];
             const indexC = indices[index + 2];
@@ -585,7 +585,7 @@ export class SubMesh implements ICullable {
 
                 if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                     intersectInfo = currentIntersectInfo;
-                    intersectInfo.faceId = faceID;
+                    intersectInfo.faceId = faceId;
 
                     if (fastCheck) {
                         break;
