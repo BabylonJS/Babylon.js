@@ -666,6 +666,11 @@
             "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
         },
         {
+            "title": "Test test to test test testing",
+            "playgroundId": "#QGBJAP",
+            "referenceImage": "testTestToTestTestTesting.png"
+        },
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"
