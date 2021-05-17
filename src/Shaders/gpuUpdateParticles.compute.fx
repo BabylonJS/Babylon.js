@@ -203,13 +203,16 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
         particlesOut.particles[index].seed = seed;
 
         // Size
+        var sizex : f32;
         #ifdef SIZEGRADIENTS    
-            particlesOut.particles[index].size.x = textureSampleLevel(sizeGradientTexture, sizeGradientSampler, vec2<f32>(0., 0.), 0.).r;
+            sizex = textureSampleLevel(sizeGradientTexture, sizeGradientSampler, vec2<f32>(0., 0.), 0.).r;
         #else
-            particlesOut.particles[index].size.x = params.sizeRange.x + (params.sizeRange.y - params.sizeRange.x) * randoms.g;
+            sizex = params.sizeRange.x + (params.sizeRange.y - params.sizeRange.x) * randoms.g;
         #endif
-        particlesOut.particles[index].size.y = params.scaleRange.x + (params.scaleRange.y - params.scaleRange.x) * randoms.b;
-        particlesOut.particles[index].size.z = params.scaleRange.z + (params.scaleRange.w - params.scaleRange.z) * randoms.a; 
+        particlesOut.particles[index].size = vec3<f32>(
+            sizex,
+            params.scaleRange.x + (params.scaleRange.y - params.scaleRange.x) * randoms.b,
+            params.scaleRange.z + (params.scaleRange.w - params.scaleRange.z) * randoms.a);
 
         // Color
         #ifndef COLORGRADIENTS
@@ -218,14 +221,41 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
 
         // Angular speed
         #ifndef ANGULARSPEEDGRADIENTS    
-            particlesOut.particles[index].angle.y = params.angleRange.x + (params.angleRange.y - params.angleRange.x) * randoms.a;
-            particlesOut.particles[index].angle.x = params.angleRange.z + (params.angleRange.w - params.angleRange.z) * randoms.r;
+            particlesOut.particles[index].angle = vec2<f32>(
+                params.angleRange.z + (params.angleRange.w - params.angleRange.z) * randoms.r,
+                params.angleRange.x + (params.angleRange.y - params.angleRange.x) * randoms.a);
         #else
             particlesOut.particles[index].angle = params.angleRange.z + (params.angleRange.w - params.angleRange.z) * randoms.r;
         #endif        
 
         // Position / Direction (based on emitter type)
-        #if defined(SPHEREEMITTER)
+        #if defined(POINTEMITTER)
+            let randoms2 : vec3<f32> = getRandomVec3(seed.y, vertexID);
+            let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
+
+            newPosition = vec3<f32>(0., 0., 0.);
+
+            newDirection = params.direction1 + (params.direction2 - params.direction1) * randoms3;
+        #elif defined(BOXEMITTER)
+            let randoms2 : vec3<f32> = getRandomVec3(seed.y, vertexID);
+            let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
+
+            newPosition = params.minEmitBox + (params.maxEmitBox - params.minEmitBox) * randoms2;
+            newDirection = params.direction1 + (params.direction2 - params.direction1) * randoms3;    
+        #elif defined(HEMISPHERICEMITTER)
+            let randoms2 : vec3<f32> = getRandomVec3(seed.y, vertexID);
+            let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
+
+            // Position on the sphere surface
+            let phi : f32 = 2.0 * PI * randoms2.x;
+            let theta : f32 = acos(-1.0 + 2.0 * randoms2.y);
+            let randX : f32 = cos(phi) * sin(theta);
+            let randY : f32 = cos(theta);
+            let randZ : f32 = sin(phi) * sin(theta);
+
+            newPosition = (params.radius - (params.radius * params.radiusRange * randoms2.z)) * vec3<f32>(randX, abs(randY), randZ);
+            newDirection = normalize(newPosition + params.directionRandomizer * randoms3);
+        #elif defined(SPHEREEMITTER)
             let randoms2 : vec3<f32> = getRandomVec3(seed.y, vertexID);
             let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
 
@@ -240,10 +270,71 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
 
             // Direction
             #ifdef DIRECTEDSPHEREEMITTER
+                newDirection = normalize(params.direction1 + (params.direction2 - params.direction1) * randoms3);
+            #else
+                newDirection = normalize(newPosition + params.directionRandomizer * randoms3);
+            #endif
+        #elif defined(CYLINDEREMITTER)
+            let randoms2 : vec3<f32> = getRandomVec3(seed.y, vertexID);
+            let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
+
+            // Position on the cylinder
+            let yPos : f32 = (-0.5 + randoms2.x) * params.height;
+            var angle : f32 = randoms2.y * PI * 2.;
+            let inverseRadiusRangeSquared : f32 = (1. - params.radiusRange) * (1. - params.radiusRange);
+            let positionRadius : f32 = params.radius * sqrt(inverseRadiusRangeSquared + randoms2.z * (1. - inverseRadiusRangeSquared));
+            let xPos : f32 = positionRadius * cos(angle);
+            let zPos : f32 = positionRadius * sin(angle);
+
+            newPosition = vec3<f32>(xPos, yPos, zPos);
+
+            #ifdef DIRECTEDCYLINDEREMITTER
                 newDirection = params.direction1 + (params.direction2 - params.direction1) * randoms3;
             #else
-                newDirection = newPosition + params.directionRandomizer * randoms3;
+                // Direction
+                angle = angle + (-0.5 + randoms3.x) * PI * params.directionRandomizer;
+                newDirection = vec3<f32>(cos(angle), (-0.5 + randoms3.y) * params.directionRandomizer, sin(angle));
+                newDirection = normalize(newDirection);
             #endif
+        #elif defined(CONEEMITTER)
+            let randoms2 : vec3<f32> = getRandomVec3(seed.y, vertexID);
+
+            let s : f32 = 2.0 * PI * randoms2.x;
+
+            #ifdef CONEEMITTERSPAWNPOINT
+                let h : f32 = 0.0001;
+            #else
+                var h : f32 = randoms2.y * params.height.y;
+                
+                // Better distribution in a cone at normal angles.
+                h = 1. - h * h;        
+            #endif
+
+            var lRadius : f32 = params.radius.x - params.radius.x * randoms2.z * params.radius.y;
+            lRadius = lRadius * h;
+
+            let randX : f32 = lRadius * sin(s);
+            let randZ : f32 = lRadius * cos(s);
+            let randY : f32 = h  * params.height.x;
+
+            newPosition = vec3<f32>(randX, randY, randZ); 
+
+            // Direction
+            if (abs(cos(params.coneAngle)) == 1.0) {
+                newDirection = vec3<f32>(0., 1.0, 0.);
+            } else {
+                let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
+                newDirection = normalize(newPosition + params.directionRandomizer * randoms3);        
+            }
+        #elif defined(CUSTOMEMITTER)
+            newPosition = particlesIn.particles[index].initialPosition;
+            particlesOut.particles[index].initialPosition = newPosition;
+        #else    
+            // Create the particle at origin
+            newPosition = vec3<f32>(0., 0., 0.);
+
+            // Spread in all directions
+            newDirection = 2.0 * (getRandomVec3(seed.w, vertexID) - vec3<f32>(0.5, 0.5, 0.5));
         #endif
 
         let power : f32 = params.emitPower.x + (params.emitPower.y - params.emitPower.x) * randoms.a;
@@ -289,11 +380,11 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
         let ageGradient : f32 = newAge / life;
 
         #ifdef VELOCITYGRADIENTS
-            directionScale *= textureSampleLevel(velocityGradientTexture, velocityGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r;
+            directionScale = directionScale * textureSampleLevel(velocityGradientTexture, velocityGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r;
         #endif
 
         #ifdef DRAGGRADIENTS
-            directionScale *= 1.0 - textureSampleLevel(dragGradientTexture, dragGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r;
+            directionScale = directionScale * (1.0 - textureSampleLevel(dragGradientTexture, dragGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r);
         #endif
 
         let position : vec3<f32> = particlesIn.particles[index].position;
@@ -311,8 +402,9 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
         #endif
 
         #ifdef SIZEGRADIENTS
-            particlesOut.particles[index].size.x = textureSampleLevel(sizeGradientTexture, sizeGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r;
-            particlesOut.particles[index].size.yz = particlesIn.particles[index].size.yz;
+            particlesOut.particles[index].size = vec3<f32>(
+                textureSampleLevel(sizeGradientTexture, sizeGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r,
+                particlesIn.particles[index].size.yz);
         #else
             particlesOut.particles[index].size = particlesIn.particles[index].size;
         #endif 
@@ -342,11 +434,11 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
                 let noiseCoordinates1 : vec3<f32> = particlesIn.particles[index].noiseCoordinates1;
                 let noiseCoordinates2 : vec3<f32> = particlesIn.particles[index].noiseCoordinates2;
                 
-                let fetchedR : f32 = textureSampleLevel(noiseTexture, noiseSampler, vec2<f32>(noiseCoordinates1.x, noiseCoordinates1.y) * vec2<f32>(0.5, 0.5) + vec2<f32>(0.5, 0.5)).r;
-                let fetchedG : f32 = textureSampleLevel(noiseTexture, noiseSampler, vec2<f32>(noiseCoordinates1.z, noiseCoordinates2.x) * vec2<f32>(0.5, 0.5) + vec2<f32>(0.5, 0.5)).r;
-                let fetchedB : f32 = textureSampleLevel(noiseTexture, noiseSampler, vec2<f32>(noiseCoordinates2.y, noiseCoordinates2.z) * vec2<f32>(0.5, 0.5) + vec2<f32>(0.5, 0.5)).r;
+                let fetchedR : f32 = textureSampleLevel(noiseTexture, noiseSampler, vec2<f32>(noiseCoordinates1.x, noiseCoordinates1.y) * vec2<f32>(0.5, 0.5) + vec2<f32>(0.5, 0.5), 0.).r;
+                let fetchedG : f32 = textureSampleLevel(noiseTexture, noiseSampler, vec2<f32>(noiseCoordinates1.z, noiseCoordinates2.x) * vec2<f32>(0.5, 0.5) + vec2<f32>(0.5, 0.5), 0.).r;
+                let fetchedB : f32 = textureSampleLevel(noiseTexture, noiseSampler, vec2<f32>(noiseCoordinates2.y, noiseCoordinates2.z) * vec2<f32>(0.5, 0.5) + vec2<f32>(0.5, 0.5), 0.).r;
 
-                let force : vec3<f32> = vec3<f32>(2. * fetchedR - 1., 2. * fetchedG - 1., 2. * fetchedB - 1.) * params.noiseStrength;
+                let force : vec3<f32> = vec3<f32>(-1. + 2. * fetchedR, -1. + 2. * fetchedG, -1. + 2. * fetchedB) * params.noiseStrength;
 
                 particlesOut.particles[index].direction = particlesOut.particles[index].direction + force * timeDelta;
 
@@ -375,7 +467,7 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
                 let cellStartOffset : f32 = 0.;
             #endif    
 
-            let ratio : f32 = clamp(mod(cellStartOffset + params.cellInfos.z * offsetAge, life) / life, 0., 1.0);
+            let ratio : f32 = clamp(((cellStartOffset + params.cellInfos.z * offsetAge) % life) / life, 0., 1.0);
 
             particlesOut.particles[index].cellIndex = f32(i32(params.cellInfos.x + ratio * dist));
         #endif
