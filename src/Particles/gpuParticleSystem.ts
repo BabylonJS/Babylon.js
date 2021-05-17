@@ -1743,23 +1743,27 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._updateComputeShader.setTexture("randomTexture", this._randomTexture);
             this._updateComputeShader.setTexture("randomTexture2", this._randomTexture2);
             if (this._sizeGradientsTexture) {
-                this._updateComputeShader.setTexture("sizeGradientSampler", this._sizeGradientsTexture);
+                this._updateComputeShader.setTexture("sizeGradientTexture", this._sizeGradientsTexture);
             }
 
             if (this._angularSpeedGradientsTexture) {
-                this._updateComputeShader.setTexture("angularSpeedGradientSampler", this._angularSpeedGradientsTexture);
+                this._updateComputeShader.setTexture("angularSpeedGradientTexture", this._angularSpeedGradientsTexture);
             }
 
             if (this._velocityGradientsTexture) {
-                this._updateComputeShader.setTexture("velocityGradientSampler", this._velocityGradientsTexture);
+                this._updateComputeShader.setTexture("velocityGradientTexture", this._velocityGradientsTexture);
             }
 
             if (this._limitVelocityGradientsTexture) {
-                this._updateComputeShader.setTexture("limitVelocityGradientSampler", this._limitVelocityGradientsTexture);
+                this._updateComputeShader.setTexture("limitVelocityGradientTexture", this._limitVelocityGradientsTexture);
             }
 
             if (this._dragGradientsTexture) {
-                this._updateComputeShader.setTexture("dragGradientSampler", this._dragGradientsTexture);
+                this._updateComputeShader.setTexture("dragGradientTexture", this._dragGradientsTexture);
+            }
+
+            if (this.noiseTexture) {
+                this._updateComputeShader.setTexture("noiseTexture", this.noiseTexture);
             }
 
             this._updateComputeShader.setStorageBuffer("particlesIn", this._targetIndex === 0 ? this._buffer0ComputeShader : this._buffer1ComputeShader);
@@ -1872,6 +1876,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                     this._engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
                     break;
             }
+
+            engine.setState(false);
 
             if (this.forceDepthWrite) {
                 engine.setDepthWrite(true);
