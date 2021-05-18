@@ -2459,7 +2459,7 @@ declare module BABYLON.GUI {
         private _h;
         private _s;
         private _v;
-        private _lastPointerDownID;
+        private _lastPointerDownId;
         /**
          * BABYLON.Observable raised when the value changes
          */
@@ -2839,7 +2839,7 @@ declare module BABYLON.GUI {
         private _isThumbClamped;
         protected _displayThumb: boolean;
         private _step;
-        private _lastPointerDownID;
+        private _lastPointerDownId;
         protected _effectiveBarOffset: number;
         protected _renderLeft: number;
         protected _renderTop: number;

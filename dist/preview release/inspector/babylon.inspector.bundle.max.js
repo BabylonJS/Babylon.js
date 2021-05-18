@@ -52793,7 +52793,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                             var scene = texture.getScene();
                             texture.scale(2);
                             setTimeout(function () {
-                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueID(texture.uniqueId));
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));
                             });
                         } }),
                 texture.isRenderTarget &&
@@ -52801,7 +52801,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                             var scene = texture.getScene();
                             texture.scale(0.5);
                             setTimeout(function () {
-                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueID(texture.uniqueId));
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));
                             });
                         } }),
                 extension &&
@@ -56109,13 +56109,13 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
         var system = this.props.system;
         var scene = system.getScene();
         var isGpu = system instanceof babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["GPUParticleSystem"];
-        var snippedID = window.prompt("Please enter the snippet ID to use");
-        if (!snippedID || !scene) {
+        var snippedId = window.prompt("Please enter the snippet ID to use");
+        if (!snippedId || !scene) {
             return;
         }
         system.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleHelper"].CreateFromSnippetAsync(snippedID, scene, isGpu).then(function (newSystem) {
+        babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleHelper"].CreateFromSnippetAsync(snippedId, scene, isGpu).then(function (newSystem) {
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
         }).catch(function (err) {
             alert("Unable to load your particle system: " + err);
@@ -57449,13 +57449,13 @@ var SpriteManagerPropertyGridComponent = /** @class */ (function (_super) {
         var _this = this;
         var spriteManager = this.props.spriteManager;
         var scene = spriteManager.scene;
-        var snippedID = window.prompt("Please enter the snippet ID to use");
-        if (!snippedID) {
+        var snippedId = window.prompt("Please enter the snippet ID to use");
+        if (!snippedId) {
             return;
         }
         spriteManager.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["SpriteManager"].CreateFromSnippetAsync(snippedID, scene).then(function (newManager) {
+        babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["SpriteManager"].CreateFromSnippetAsync(snippedId, scene).then(function (newManager) {
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
         }).catch(function (err) {
             alert("Unable to load your sprite manager: " + err);
@@ -60764,7 +60764,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         });
         var getUniqueName = function (name) {
             var idSubscript = 1;
-            while (scene.getMaterialByID(name)) {
+            while (scene.getMaterialById(name)) {
                 name = name + " " + idSubscript++;
             }
             return name;

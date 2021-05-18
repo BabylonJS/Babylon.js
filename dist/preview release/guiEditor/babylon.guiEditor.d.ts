@@ -47,7 +47,7 @@ declare module GUIEDITOR {
         ctrlFalseEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
-        loadFromSnippet(snippedID: string): Promise<void>;
+        loadFromSnippet(snippedId: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
