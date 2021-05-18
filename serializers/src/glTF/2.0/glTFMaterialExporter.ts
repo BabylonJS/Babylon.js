@@ -131,7 +131,7 @@ export class _GLTFMaterialExporter {
             if (babylonMaterial.getClassName() === "StandardMaterial") {
                 promises.push(this._convertStandardMaterialAsync(babylonMaterial as StandardMaterial, mimeType, hasTextureCoords));
             }
-            else if (babylonMaterial.getClassName() === "PBRBaseMaterial") {
+            else if (babylonMaterial.getClassName().indexOf("PBR") !== -1) {
                 promises.push(this._convertPBRMaterialAsync(babylonMaterial as PBRMaterial, mimeType, hasTextureCoords));
             }
             else {
