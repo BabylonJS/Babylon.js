@@ -41,10 +41,17 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
+        if (this.enabled) {
+            // We need to disable instance usage because the attenuation factor depends on the node scale of each individual mesh
+            this._loader._disableInstancedMesh++;
+        }
     }
 
     /** @hidden */
     public dispose() {
+        if (this.enabled) {
+            this._loader._disableInstancedMesh--;
+        }
         (this._loader as any) = null;
     }
 
