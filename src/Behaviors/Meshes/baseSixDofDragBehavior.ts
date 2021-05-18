@@ -150,7 +150,8 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                     // Attach the virtual drag mesh to the virtual origin mesh so it can be dragged
                     this._virtualOriginMesh.removeChild(this._virtualDragMesh);
-                    this._virtualDragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                    // this._virtualDragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                    this._virtualDragMesh.position.copyFrom(pickedMesh.absolutePosition);
                     this._virtualDragMeshStartingPosition.copyFrom(this._virtualDragMesh.position);
                     this._virtualDragMeshStartingOrientation.copyFrom(this._virtualDragMesh.rotationQuaternion!);
                     this._virtualOriginMesh.addChild(this._virtualDragMesh);
