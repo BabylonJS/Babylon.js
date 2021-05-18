@@ -283,13 +283,6 @@ export class GLTFLoader implements IGLTFLoader {
             this._uniqueRootUrl = (!StringTools.StartsWith(rootUrl, "file:") && fileName) ? rootUrl : `${rootUrl}${Date.now()}/`;
             this._fileName = fileName;
 
-            this._parent.onExtensionLoadedObservable.add((extension) => {
-                if (extension.name === "KHR_materials_volume") {
-                    // We need to disable instance usage because the attenuation factor depends on the node scale of each individual mesh
-                    this._parent.createInstances = false;
-                }
-            });
-
             this._loadExtensions();
             this._checkExtensions();
 
