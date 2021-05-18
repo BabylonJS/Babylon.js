@@ -1,3 +1,5 @@
+import { Container } from "babylonjs-gui/2D/controls/container";
+import { Control } from "babylonjs-gui/2D/controls/control";
 import * as React from "react";
 import { GlobalState } from '../globalState';
 import { GUINodeTools } from "../guiNodeTools";
@@ -9,6 +11,8 @@ const pointerIcon: string = require("../../public/imgs/pointerIcon.svg");
 const handIcon: string = require("../../public/imgs/handIcon.svg");
 const zoomIcon: string = require("../../public/imgs/zoomIcon.svg");
 const guidesIcon: string = require("../../public/imgs/guidesIcon.svg");
+const controlsIcon: string = require("../../public/imgs/sliderIcon.svg");
+const logoIcon: string = require("../../public/imgs/babylonLogo.svg");
 
 require("../scss/commandBar.scss");
 
@@ -22,6 +26,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     private _panning: boolean;
     private _zooming: boolean;
     private _selecting: boolean;
+    private _outlines: boolean;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
@@ -46,6 +51,24 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this.forceUpdate();
         });
 
+        props.globalState.onOutlinesObservable.add(() => {
+            this._outlines = !this._outlines;
+            const nodes = this.props.globalState.workbench.nodes;
+            nodes.forEach(node => {
+                this.updateNodeOutline(node);
+            });
+            this.forceUpdate();
+        });
+    }
+
+    private updateNodeOutline(guiControl : Control) {
+        guiControl.isHighlighted = this._outlines;
+        guiControl.highlightLineWidth = 5;
+        if (this.props.globalState.workbench.isContainer(guiControl)) {
+            (guiControl as Container).children.forEach(child => {
+                this.updateNodeOutline(child);
+            });
+        }
     }
 
     public render() {
@@ -53,7 +76,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         return (
             <div className={"ge-commands"}>
                 <div className="commands-left">
-                    <img src={"./imgs/babylonLogo.svg"} color="white" className={"active"} />
+                    <img src={logoIcon} color="white" className={"active"} />
                     <CommandDropdownComponent globalState={this.props.globalState} icon={hamburgerIcon} tooltip="Options" items={[
                         {
                             label: "Save",
@@ -74,7 +97,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         onClick={() => { if(!this._panning) this.props.globalState.onPanObservable.notifyObservers(); }} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Zoom" shortcut="E" icon={zoomIcon} isActive={this._zooming}
                         onClick={() => { if(!this._zooming) this.props.globalState.onZoomObservable.notifyObservers(); }} />
-                    <CommandDropdownComponent globalState={this.props.globalState} icon={guidesIcon} tooltip="Create" items={[
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Toggle Guides" shortcut="R" icon={guidesIcon} isActive={this._outlines}
+                        onClick={() => { this.props.globalState.onOutlinesObservable.notifyObservers(); }} />
+                    <CommandDropdownComponent globalState={this.props.globalState} icon={controlsIcon} tooltip="Create" items={[
                         {
                             label: "Image",
                             icon: "zoomIcon",
