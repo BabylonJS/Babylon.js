@@ -673,7 +673,7 @@
             "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
         },
         {
-            "title": "Test test to test test testing",
+            "title": "GLTF Serializer KHR_materials_clearcoat",
             "playgroundId": "#9N6CLU#23",
             "referenceImage": "glTFSerializerKHRMaterialsClearcoat.png"
         },
