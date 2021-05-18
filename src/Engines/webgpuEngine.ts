@@ -557,7 +557,7 @@ export class WebGPUEngine extends Engine {
                 this._device = device!;
                 this._deviceEnabledExtensions = [];
                 this._device.features.forEach((feature) => this._deviceEnabledExtensions.push(feature));
-                
+
                 let numUncapturedErrors = -1;
                 this._device.addEventListener('uncapturederror', (event) => {
                     if (++numUncapturedErrors < this.numMaxUncapturedErrors) {
