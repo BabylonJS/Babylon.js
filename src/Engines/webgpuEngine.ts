@@ -43,6 +43,7 @@ import { IStencilState } from "../States/IStencilState";
 import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 import { ComputeEffect } from "../Compute/computeEffect";
+import { Observable } from "../Misc/observable";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -239,6 +240,10 @@ export class WebGPUEngine extends Engine {
         numEnableEffects: 0,
         numEnableDrawWrapper: 0,
     };
+    /**
+     * Max number of uncaptured error messages to log
+     */
+    public numMaxUncapturedErrors = 20;
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
@@ -268,6 +273,8 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
     private _bundleList: WebGPUBundleList;
+    /** @hidden */
+    public _onAfterUnbindFrameBufferObservable = new Observable<WebGPUEngine>();
 
     // DrawCall Life Cycle
     // Effect is on the parent class
@@ -550,9 +557,16 @@ export class WebGPUEngine extends Engine {
                 this._device = device!;
                 this._deviceEnabledExtensions = [];
                 this._device.features.forEach((feature) => this._deviceEnabledExtensions.push(feature));
+                
+                let numUncapturedErrors = -1;
                 this._device.addEventListener('uncapturederror', (event) => {
-                    Logger.Warn("WebGPU uncaptured error: " + (<GPUUncapturedErrorEvent>event).error + "-" + (<any>event).error.message);
+                    if (++numUncapturedErrors < this.numMaxUncapturedErrors) {
+                        Logger.Warn(`WebGPU uncaptured error (${numUncapturedErrors + 1}): ${(<GPUUncapturedErrorEvent>event).error} - ${(<any>event).error.message}`);
+                    } else if (numUncapturedErrors++ === this.numMaxUncapturedErrors) {
+                        Logger.Warn(`WebGPU uncaptured error: too many warnings (${this.numMaxUncapturedErrors}), no more warnings will be reported to the console for this engine.`);
+                    }
                 });
+
                 if (!this._doNotHandleContextLost) {
                     this._device.lost.then((info) => {
                         this._contextWasLost = true;
@@ -2402,7 +2416,7 @@ export class WebGPUEngine extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - bindFramebuffer called - face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._rttRenderPassWrapper.colorAttachmentViewDescriptor, this._rttRenderPassWrapper.depthAttachmentViewDescriptor);
+                console.log("frame #" + (this as any)._count + " - bindFramebuffer called - internalTexture.uniqueId=", texture.uniqueId, "face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._rttRenderPassWrapper.colorAttachmentViewDescriptor, this._rttRenderPassWrapper.depthAttachmentViewDescriptor);
             }
         }
 
@@ -2464,6 +2478,15 @@ export class WebGPUEngine extends Engine {
         }
 
         this._currentRenderTarget = null;
+
+        this._onAfterUnbindFrameBufferObservable.notifyObservers(this);
+
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
+                console.log("frame #" + (this as any)._count + " - unBindFramebuffer called - internalTexture.uniqueId=", texture.uniqueId);
+            }
+        }
 
         this._mrtAttachments = [];
         this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments, []);
