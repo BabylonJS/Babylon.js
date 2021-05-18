@@ -3,12 +3,21 @@ import { Logger } from "./logger";
 import { SceneSerializer } from "./sceneSerializer";
 import { StringTools } from "./stringTools";
 
+/**
+ * Class used to connect with the reflector zone of the sandbox via the reflector bridge
+ */
 export class Reflector {
     private static readonly SERVER_PREFIX = "$$";
 
     private _scene: Scene;
     private _webSocket: WebSocket;
 
+    /**
+     * Constructs a reflector object.
+     * @param scene The scene to use
+     * @param hostname The hostname of the reflector bridge
+     * @param port The port of the reflector bridge
+     */
     public constructor(scene: Scene, hostname: string, port: number) {
         this._scene = scene;
 
@@ -33,6 +42,9 @@ export class Reflector {
         };
     }
 
+    /**
+     * Closes the reflector connection
+     */
     public close(): void {
         this._webSocket.close();
     }
