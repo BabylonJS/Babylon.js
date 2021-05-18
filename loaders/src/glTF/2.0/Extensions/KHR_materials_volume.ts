@@ -49,6 +49,9 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
+        if (this.enabled) {
+            this._loader._disableInstancedMesh--;
+        }
         (this._loader as any) = null;
     }
 
