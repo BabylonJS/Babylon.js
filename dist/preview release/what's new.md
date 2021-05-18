@@ -29,6 +29,7 @@
 - Added support for [cannon-es](https://github.com/pmndrs/cannon-es) to the cannonJSPlugin. ([frankieali](https://github.com/frankieali))
 - Added check for duplicates in addShadowCaster ([ivankoleda](https://github.com/ivankoleda))
 - spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the correspondgin `xxxById` ([barroij](https://github.com/barroij))
+- Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
 
 ### Engine
 
