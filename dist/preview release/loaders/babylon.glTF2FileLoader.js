@@ -2139,9 +2139,16 @@ var KHR_materials_volume = /** @class */ (function () {
         this.order = 173;
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
+        if (this.enabled) {
+            // We need to disable instance usage because the attenuation factor depends on the node scale of each individual mesh
+            this._loader._disableInstancedMesh++;
+        }
     }
     /** @hidden */
     KHR_materials_volume.prototype.dispose = function () {
+        if (this.enabled) {
+            this._loader._disableInstancedMesh--;
+        }
         this._loader = null;
     };
     /** @hidden */

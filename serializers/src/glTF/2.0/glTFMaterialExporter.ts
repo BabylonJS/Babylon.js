@@ -9,17 +9,18 @@ import { TextureTools } from "babylonjs/Misc/textureTools";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { RawTexture } from "babylonjs/Materials/Textures/rawTexture";
-import { Material } from "babylonjs/Materials/material";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-import { PBRBaseMaterial } from "babylonjs/Materials/PBR/pbrBaseMaterial";
-import { PBRBaseSimpleMaterial } from "babylonjs/Materials/PBR/pbrBaseSimpleMaterial";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
-import { PBRSpecularGlossinessMaterial } from "babylonjs/Materials/PBR/pbrSpecularGlossinessMaterial";
 import { Scene } from "babylonjs/scene";
 
 import { _Exporter } from "./glTFExporter";
 import { Constants } from 'babylonjs/Engines/constants';
+
+declare type Material = import("babylonjs/Materials/material").Material;
+declare type StandardMaterial = import("babylonjs/Materials/standardMaterial").StandardMaterial;
+declare type PBRBaseMaterial = import("babylonjs/Materials/PBR/pbrBaseMaterial").PBRBaseMaterial;
+declare type PBRMaterial = import("babylonjs/Materials/PBR/pbrMaterial").PBRMaterial;
+declare type PBRBaseSimpleMaterial = import("babylonjs/Materials/PBR/pbrBaseSimpleMaterial").PBRBaseSimpleMaterial;
+declare type PBRMetallicRoughnessMaterial = import("babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial").PBRMetallicRoughnessMaterial;
+declare type PBRSpecularGlossinessMaterial = import("babylonjs/Materials/PBR/pbrSpecularGlossinessMaterial").PBRSpecularGlossinessMaterial;
 
 /**
  * Interface for storing specular glossiness factors
@@ -127,11 +128,11 @@ export class _GLTFMaterialExporter {
     public _convertMaterialsToGLTFAsync(babylonMaterials: Material[], mimeType: ImageMimeType, hasTextureCoords: boolean) {
         let promises: Promise<IMaterial>[] = [];
         for (let babylonMaterial of babylonMaterials) {
-            if (babylonMaterial instanceof StandardMaterial) {
-                promises.push(this._convertStandardMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
+            if (babylonMaterial.getClassName() === "StandardMaterial") {
+                promises.push(this._convertStandardMaterialAsync(babylonMaterial as StandardMaterial, mimeType, hasTextureCoords));
             }
-            else if (babylonMaterial instanceof PBRBaseMaterial) {
-                promises.push(this._convertPBRMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
+            else if (babylonMaterial.getClassName().indexOf("PBR") !== -1) {
+                promises.push(this._convertPBRMaterialAsync(babylonMaterial as PBRMaterial, mimeType, hasTextureCoords));
             }
             else {
                 Tools.Warn(`Unsupported material type: ${babylonMaterial.name}`);

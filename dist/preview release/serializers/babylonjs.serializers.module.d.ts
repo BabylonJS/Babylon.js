@@ -126,11 +126,11 @@ declare module "babylonjs-serializers/glTF/2.0/glTFMaterialExporter" {
     import { ITextureInfo, ImageMimeType, IMaterial, IMaterialPbrMetallicRoughness } from "babylonjs-gltf2interface";
     import { Nullable } from "babylonjs/types";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+    import { _Exporter } from "babylonjs-serializers/glTF/2.0/glTFExporter";
     import { Material } from "babylonjs/Materials/material";
     import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
     import { PBRBaseMaterial } from "babylonjs/Materials/PBR/pbrBaseMaterial";
     import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
-    import { _Exporter } from "babylonjs-serializers/glTF/2.0/glTFExporter";
     /**
      * Utility methods for working with glTF material conversion properties.  This class should only be used internally
      * @hidden
