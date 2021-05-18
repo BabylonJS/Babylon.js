@@ -1,6 +1,5 @@
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { Scalar } from "babylonjs/Maths/math.scalar";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
@@ -302,6 +301,10 @@ export class SlateGizmo extends Gizmo {
         });
 
         this._dragBehavior = dragBehavior;
+    }
+
+    private _createHandleMaterial() {
+        const mat = new HandleMaterial(this.gizmoLayer.utilityLayerScene);
     }
 
     private _createAngleMesh(): TransformNode {

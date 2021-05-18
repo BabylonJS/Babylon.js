@@ -35,11 +35,11 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     /**
      * Should the object rotate towards the camera when we start dragging it
      */
-    public faceCameraOnDragStart = false;
+    public faceCameraOnDragStart = true;
 
     /**
-     * Attaches the scale behavior the passed in mesh
-     * @param ownerNode The mesh that will be scaled around once attached
+     * Attaches the six DoF drag behavior
+     * @param ownerNode The mesh that will be dragged around once attached
      */
     public attach(ownerNode: Mesh): void {
         super.attach(ownerNode);
@@ -107,15 +107,12 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     }
 
     protected _targetUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
-        // TODO if parent
-        // if (this._draggedMesh!.parent && !this.ancestorToDrag) {
-        //     Vector3.TransformCoordinatesToRef(this._targetPosition, Matrix.Invert(this._draggedMesh!.parent.getWorldMatrix()), this._targetPosition);
-        // }
         this._targetPosition.copyFrom(this._startingPosition).addInPlace(worldDeltaPosition);
+        if (this._ownerNode.parent && !this.ancestorToDrag) {
+            Vector3.TransformCoordinatesToRef(this._targetPosition, Matrix.Invert(this._ownerNode.parent.getWorldMatrix()), this._targetPosition);
+        }
 
         if (this.rotateDraggedObject) {
-            // Get change in rotation
-            // this._startingRotation.multiplyToRef(worldDeltaRotation, TmpVectors.Quaternion[0]);
             // Convert change in rotation to only y axis rotation
             Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
             TmpVectors.Quaternion[0].multiplyToRef(this._startingOrientation, this._targetOrientation);
