@@ -1911,8 +1911,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @hidden
@@ -2435,7 +2433,7 @@ var _Exporter = /** @class */ (function () {
             }
             case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind: {
                 var meshMaterial = babylonTransformNode.material;
-                var convertToLinear = meshMaterial ? (meshMaterial instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]) : true;
+                var convertToLinear = meshMaterial ? (meshMaterial.getClassName() === "StandardMaterial") : true;
                 var vertexData = stride === 3 ? new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"]() : new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color4"]();
                 for (var k = 0, length_5 = meshAttributeArray.length / stride; k < length_5; ++k) {
                     index = k * stride;
@@ -3133,7 +3131,7 @@ var _Exporter = /** @class */ (function () {
                             this._materials.push(material);
                             materialIndex = this._materials.length - 1;
                         }
-                        else if (babylonMaterial instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["MultiMaterial"]) {
+                        else if (babylonMaterial.getClassName() === "MultiMaterial") {
                             var subMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
                             if (subMaterial) {
                                 babylonMaterial = subMaterial;
@@ -3786,8 +3784,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
 /**
  * Utility methods for working with glTF material conversion properties.  This class should only be used internally
  * @hidden
@@ -3826,10 +3822,10 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var promises = [];
         for (var _i = 0, babylonMaterials_1 = babylonMaterials; _i < babylonMaterials_1.length; _i++) {
             var babylonMaterial = babylonMaterials_1[_i];
-            if (babylonMaterial instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]) {
+            if (babylonMaterial.getClassName() === "StandardMaterial") {
                 promises.push(this._convertStandardMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
             }
-            else if (babylonMaterial instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PBRBaseMaterial"]) {
+            else if (babylonMaterial.getClassName() === "PBRBaseMaterial") {
                 promises.push(this._convertPBRMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
             }
             else {

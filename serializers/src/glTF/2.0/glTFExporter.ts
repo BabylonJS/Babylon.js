@@ -1505,7 +1505,7 @@ export class _Exporter {
                             materialIndex = this._materials.length - 1;
                         }
                         else if (babylonMaterial.getClassName() === "MultiMaterial") {
-                            const subMaterial:Material = (babylonMaterial as any).subMaterials[submesh.materialIndex];
+                            const subMaterial: Material = (babylonMaterial as any).subMaterials[submesh.materialIndex];
                             if (subMaterial) {
                                 babylonMaterial = subMaterial;
                                 materialIndex = this._materialMap[babylonMaterial.uniqueId];
