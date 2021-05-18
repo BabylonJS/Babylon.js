@@ -133,30 +133,16 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
     }
 
     public render() {
-        let renderingZone: JSX.Element;
-        if (this._globalState.reflector) {
-            renderingZone = (
-                <span>
-                    <p id="droptext" ref={this._dropTextRef} />
-                    <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />
-                </span>
-            );
-        } else {
-            renderingZone = (
-                <span>
-                    <p id="droptext" ref={this._dropTextRef}>Drag and drop gltf, glb, obj or babylon files to view them</p>
-                    <RenderingZone globalState={this._globalState}
-                        assetUrl={this._assetUrl}
-                        autoRotate={this._autoRotate}
-                        cameraPosition={this._cameraPosition}
-                        expanded={!this.state.isFooterVisible} />
-                </span>
-            );
-        }
-
         return (
             <div id="root">
-                {renderingZone}
+                <span>
+                    <p id="droptext" ref={this._dropTextRef}>{this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj or babylon files to view them"}</p>
+                    {
+                        this._globalState.reflector
+                            ? <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />
+                            : <RenderingZone globalState={this._globalState} assetUrl={this._assetUrl} autoRotate={this._autoRotate} cameraPosition={this._cameraPosition} expanded={!this.state.isFooterVisible} />
+                    }
+                </span>
                 <div ref={this._clickInterceptorRef}
                     onClick={() => {
                         this._globalState.onClickInterceptorClicked.notifyObservers();
