@@ -62,4 +62,5 @@ class Server {
 }
 
 const server = new Server();
-server.start(1234);
+const port = process.env.npm_config_port ? +process.env.npm_config_port : 1234;
+server.start(port);
