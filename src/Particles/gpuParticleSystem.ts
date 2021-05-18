@@ -1632,6 +1632,90 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._colorGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
     }
 
+    private _render(blendMode: number, emitterWM: Matrix): number {
+        // Enable render effect
+        const drawWrapper = this._getWrapper(blendMode);
+        const effect = drawWrapper.effect!;
+
+        this._engine.enableEffect(drawWrapper);
+        let viewMatrix = this._scene?.getViewMatrix() || Matrix.IdentityReadOnly;
+        effect.setMatrix("view", viewMatrix);
+        effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
+        effect.setTexture("diffuseSampler", this.particleTexture);
+        effect.setVector2("translationPivot", this.translationPivot);
+        effect.setVector3("worldOffset", this.worldOffset);
+        if (this.isLocal) {
+            effect.setMatrix("emitterWM", emitterWM);
+        }
+        if (this._colorGradientsTexture) {
+            effect.setTexture("colorGradientSampler", this._colorGradientsTexture);
+        } else {
+            effect.setDirectColor4("colorDead", this.colorDead);
+        }
+
+        if (this._isAnimationSheetEnabled && this.particleTexture) {
+            let baseSize = this.particleTexture.getBaseSize();
+            effect.setFloat3("sheetInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
+        }
+
+        if (this._isBillboardBased && this._scene) {
+            var camera = this._scene.activeCamera!;
+            effect.setVector3("eyePosition", camera.globalPosition);
+        }
+
+        const defines = effect.defines;
+
+        if (this._scene) {
+            if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
+                MaterialHelper.BindClipPlane(effect, this._scene);
+            }
+        }
+
+        if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
+            var invView = viewMatrix.clone();
+            invView.invert();
+            effect.setMatrix("invView", invView);
+        }
+
+        // image processing
+        if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
+            this._imageProcessingConfiguration.bind(effect);
+        }
+
+        // Draw order
+        switch (blendMode) {
+            case ParticleSystem.BLENDMODE_ADD:
+                this._engine.setAlphaMode(Constants.ALPHA_ADD);
+                break;
+            case ParticleSystem.BLENDMODE_ONEONE:
+                this._engine.setAlphaMode(Constants.ALPHA_ONEONE);
+                break;
+            case ParticleSystem.BLENDMODE_STANDARD:
+                this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
+                break;
+            case ParticleSystem.BLENDMODE_MULTIPLY:
+                this._engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
+                break;
+        }
+
+        // Bind source VAO
+        if (this._useComputeShaders) {
+            this._engine.bindBuffers(this._renderVAO[this._targetIndex] as { [key: string]: VertexBuffer }, null, effect);
+        } else {
+            this._engine.bindVertexArrayObject(this._renderVAO[this._targetIndex], null);
+        }
+
+        if (this._onBeforeDrawParticlesObservable) {
+            this._onBeforeDrawParticlesObservable.notifyObservers(effect);
+        }
+
+        // Render
+        this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._currentActiveCount);
+        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        return this._currentActiveCount;
+    }
+
     /**
      * Renders the particle system in its current state
      * @param preWarm defines if the system should only update the particles but not render them
@@ -1811,93 +1895,24 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             engine.bindTransformFeedbackBuffer(null);
         }
 
+        let outparticles = 0;
         if (!preWarm) {
-            // Enable render effect
-            const drawWrapper = this._getWrapper(this.blendMode);
-            const effect = drawWrapper.effect!;
-
-            this._engine.enableEffect(drawWrapper);
-            let viewMatrix = this._scene?.getViewMatrix() || Matrix.IdentityReadOnly;
-            effect.setMatrix("view", viewMatrix);
-            effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
-            effect.setTexture("diffuseSampler", this.particleTexture);
-            effect.setVector2("translationPivot", this.translationPivot);
-            effect.setVector3("worldOffset", this.worldOffset);
-            if (this.isLocal) {
-                effect.setMatrix("emitterWM", emitterWM);
-            }
-            if (this._colorGradientsTexture) {
-                effect.setTexture("colorGradientSampler", this._colorGradientsTexture);
-            } else {
-                effect.setDirectColor4("colorDead", this.colorDead);
-            }
-
-            if (this._isAnimationSheetEnabled && this.particleTexture) {
-                let baseSize = this.particleTexture.getBaseSize();
-                effect.setFloat3("sheetInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
-            }
-
-            if (this._isBillboardBased && this._scene) {
-                var camera = this._scene.activeCamera!;
-                effect.setVector3("eyePosition", camera.globalPosition);
-            }
-
-            const defines = effect.defines;
-
-            if (this._scene) {
-                if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
-                    MaterialHelper.BindClipPlane(effect, this._scene);
-                }
-            }
-
-            if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
-                var invView = viewMatrix.clone();
-                invView.invert();
-                effect.setMatrix("invView", invView);
-            }
-
-            // image processing
-            if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
-                this._imageProcessingConfiguration.bind(effect);
-            }
-
-            // Draw order
-            switch (this.blendMode) {
-                case ParticleSystem.BLENDMODE_ADD:
-                    this._engine.setAlphaMode(Constants.ALPHA_ADD);
-                    break;
-                case ParticleSystem.BLENDMODE_ONEONE:
-                    this._engine.setAlphaMode(Constants.ALPHA_ONEONE);
-                    break;
-                case ParticleSystem.BLENDMODE_STANDARD:
-                    this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
-                    break;
-                case ParticleSystem.BLENDMODE_MULTIPLY:
-                    this._engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
-                    break;
-            }
-
             engine.setState(false);
 
             if (this.forceDepthWrite) {
                 engine.setDepthWrite(true);
             }
 
-            // Bind source VAO
-            if (this._useComputeShaders) {
-                this._engine.bindBuffers(this._renderVAO[this._targetIndex] as { [key: string]: VertexBuffer }, null, effect);
-            } else {
-                this._engine.bindVertexArrayObject(this._renderVAO[this._targetIndex], null);
+            if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLYADD) {
+                outparticles = this._render(ParticleSystem.BLENDMODE_MULTIPLY, emitterWM) + this._render(ParticleSystem.BLENDMODE_ADD, emitterWM);
+            }
+            else {
+                outparticles = this._render(this.blendMode, emitterWM);
             }
 
-            if (this._onBeforeDrawParticlesObservable) {
-                this._onBeforeDrawParticlesObservable.notifyObservers(effect);
-            }
-
-            // Render
-            this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._currentActiveCount);
             this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
+
         // Switch VAOs
         this._targetIndex++;
         if (this._targetIndex === 2) {
@@ -1909,7 +1924,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._sourceBuffer = this._targetBuffer;
         this._targetBuffer = tmpBuffer;
 
-        return this._currentActiveCount;
+        return outparticles;
     }
 
     /**
