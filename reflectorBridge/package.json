@@ -4,8 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode=development",
-    "start": "node ./dist/bundle.js",
-    "debug": "node ./dist/bundle.js"
+    "start": "node ./dist/bundle.js"
   },
   "devDependencies": {
     "@types/ws": "^7.4.0",
