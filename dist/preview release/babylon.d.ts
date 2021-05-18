@@ -54399,6 +54399,10 @@ declare module BABYLON {
          * The name of the image tracking feature
          */
         static readonly IMAGE_TRACKING: string;
+        /**
+         * The name of the DOM overlay feature
+         */
+        static readonly DOM_OVERLAY: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -83434,6 +83438,103 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options for DOM Overlay feature
+     */
+    export interface IWebXRDomOverlayOptions {
+        /**
+         * DOM Element or document query selector string for overlay.
+         *
+         * NOTE: UA may make this element background transparent in XR.
+         */
+        element: Element | string;
+        /**
+         * Supress XR Select events on container element (DOM blocks interaction to scene).
+         */
+        supressXRSelectEvents?: boolean;
+    }
+    /**
+     * Type of DOM overlay provided by UA.
+     */
+    type WebXRDomOverlayType = 
+    /**
+     * Covers the entire physical screen for a screen-based device, for example handheld AR
+     */
+    'screen' | 
+    /**
+     * Appears as a floating rectangle in space
+     */
+    'floating' | 
+    /**
+     * Follows the user’s head movement consistently, appearing similar to a HUD
+     */
+    'head-locked';
+    /**
+     * DOM Overlay Feature
+     *
+     * @since 5.0.0
+     */
+    export class WebXRDomOverlay extends WebXRAbstractFeature {
+        /**
+         * options to use when constructing this feature
+         */
+        readonly options: IWebXRDomOverlayOptions;
+        /**
+         * Type of overlay - non-null when available
+         */
+        private _domOverlayType;
+        /**
+         * Event Listener to supress "beforexrselect" events.
+         */
+        private _beforeXRSelectListener;
+        /**
+         * Element used for overlay
+         */
+        private _element;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+        * Creates a new instance of the dom-overlay feature
+        * @param _xrSessionManager an instance of WebXRSessionManager
+        * @param options options to use when constructing this feature
+        */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * options to use when constructing this feature
+         */
+        options: IWebXRDomOverlayOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * The type of DOM overlay (null when not supported).  Provided by UA and remains unchanged for duration of session.
+         */
+        get domOverlayType(): Nullable<WebXRDomOverlayType>;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        /**
+         * Extends the session init object if needed
+         * @returns augmentation object for the xr session init object.
+         */
+        getXRSessionInitExtension(): Promise<Partial<XRSessionInit>>;
+    }
+}
+declare module BABYLON {
+    /**
      * A generic hand controller class that supports select and a secondary grasp
      */
     export class WebXRGenericHandController extends WebXRAbstractMotionController {
@@ -85254,6 +85355,8 @@ type XREye = "none" | "left" | "right";
  */
 type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
 
+type XRDOMOverlayType = "screen" | "floating" | "head-locked";
+
 type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => void;
 
 type XRPlaneSet = Set<XRPlane>;
@@ -85263,10 +85366,21 @@ type XREventHandler = (callback: any) => void;
 
 interface XRLayer extends EventTarget {}
 
+type XRDOMOverlayInit = {
+    /**
+     * The root attribute specifies the overlay element that will be displayed to the user as the content of the DOM overlay. This is a required attribute, there is no default.
+     */
+    root: Element;
+};
+
 interface XRSessionInit {
     optionalFeatures?: string[];
     requiredFeatures?: string[];
     trackedImages?: XRTrackedImageInit[];
+    /**
+     * When 'dom-overly' is (optionally) requested the application MUST provide configuration for the DOM overlay
+     */
+    domOverlay?: XRDOMOverlayInit;
 }
 
 interface XRSessionEvent extends Event {
@@ -85380,6 +85494,13 @@ interface XRInputSourceEvent extends Event {
 
 type XRInputSourceArray = XRInputSource[];
 
+type XRDOMOverlayState = {
+    /**
+     * set if supported, or is null if the feature is not supported
+     */
+    type: XRDOMOverlayType | null
+};
+
 interface XRSession {
     addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
     removeEventListener(type: XREventType, listener: XREventHandler, options?: boolean | EventListenerOptions): void;
@@ -85445,6 +85566,11 @@ interface XRSession {
 
     // image tracking
     getTrackedImageScores?(): XRImageTrackingScore[];
+
+    /**
+     * Provided when the optional 'dom-overlay' feature is requested.
+     */
+    readonly domOverlayState?: XRDOMOverlayState;
 }
 
 interface XRViewerPose extends XRPose {
