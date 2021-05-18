@@ -113,7 +113,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
-                ;
                 this._canvas.style.cursor = "zoom-in";
             }
         });
