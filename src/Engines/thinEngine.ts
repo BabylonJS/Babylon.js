@@ -833,7 +833,7 @@ export class ThinEngine {
             await initEngine();
             // Rebuild effects
             this._rebuildEffects();
-            this._rebuildComputeEffects();
+            this._rebuildComputeEffects?.();
             // Rebuild textures
             this._rebuildInternalTextures();
             // Rebuild buffers
@@ -4198,7 +4198,7 @@ export class ThinEngine {
 
         // Release effects
         this.releaseEffects();
-        this.releaseComputeEffects();
+        this.releaseComputeEffects?.();
 
         // Unbind
         this.unbindAllAttributes();
