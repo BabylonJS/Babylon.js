@@ -29740,6 +29740,7 @@ declare module BABYLON {
          * This will make creation of children, recursive.
          * @param useVertexColor defines if this LinesMesh supports vertex color
          * @param useVertexAlpha defines if this LinesMesh supports vertex alpha
+         * @param material material to use to draw the line. If not provided, will create a new one
          */
         constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: Nullable<LinesMesh>, doNotCloneChildren?: boolean, 
         /**
@@ -29749,7 +29750,7 @@ declare module BABYLON {
         /**
          * If vertex alpha should be applied to the mesh
          */
-        useVertexAlpha?: boolean | undefined);
+        useVertexAlpha?: boolean | undefined, material?: Material);
         private _addClipPlaneDefine;
         private _removeClipPlaneDefine;
         isReady(): boolean;
@@ -56429,6 +56430,7 @@ declare module BABYLON {
          * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
          * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
          * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+         * * The optional parameter `material` is the material to use to draw the lines if provided. If not, a default material will be created
          * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
          * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
@@ -56444,6 +56446,7 @@ declare module BABYLON {
             instance?: Nullable<LinesMesh>;
             colors?: Nullable<Color4[][]>;
             useVertexAlpha?: boolean;
+            material?: Material;
         }, scene: Nullable<Scene>): LinesMesh;
         /**
          * Creates a line mesh
@@ -56453,6 +56456,7 @@ declare module BABYLON {
          * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
          * * The optional parameter `colors` is an array of successive Color4, one per line point
          * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
+         * * The optional parameter `material` is the material to use to draw the lines if provided. If not, a default material will be created
          * * When updating an instance, remember that only point positions can change, not the number of points
          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
          * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
@@ -56467,6 +56471,7 @@ declare module BABYLON {
             instance?: Nullable<LinesMesh>;
             colors?: Color4[];
             useVertexAlpha?: boolean;
+            material?: Material;
         }, scene?: Nullable<Scene>): LinesMesh;
         /**
          * Creates a dashed line mesh
@@ -56478,6 +56483,7 @@ declare module BABYLON {
          * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
          * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
          * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+         * * The optional parameter `material` is the material to use to draw the lines if provided. If not, a default material will be created
          * * When updating an instance, remember that only point positions can change, not the number of points
          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
          * @param name defines the name of the mesh
@@ -56494,6 +56500,7 @@ declare module BABYLON {
             updatable?: boolean;
             instance?: LinesMesh;
             useVertexAlpha?: boolean;
+            material?: Material;
         }, scene?: Nullable<Scene>): LinesMesh;
     }
 }
@@ -75736,9 +75743,10 @@ declare module BABYLON {
         /**
          * Builds the PCS underlying mesh. Returns a standard Mesh.
          * If no points were added to the PCS, the returned mesh is just a single point.
+         * @param material The material to use to render the mesh. If not provided, will create a default one
          * @returns a promise for the created mesh
          */
-        buildMeshAsync(): Promise<Mesh>;
+        buildMeshAsync(material?: Material): Promise<Mesh>;
         /**
          * @hidden
          */
