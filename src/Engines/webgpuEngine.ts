@@ -534,7 +534,7 @@ export class WebGPUEngine extends Engine {
             .then((adapter: GPUAdapter | null) => {
                 this._adapter = adapter!;
                 this._adapterSupportedExtensions = [];
-                this._adapter.features.forEach((feature) => this._adapterSupportedExtensions.push(feature));
+                this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature));
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
@@ -556,7 +556,7 @@ export class WebGPUEngine extends Engine {
             .then((device: GPUDevice | null) => {
                 this._device = device!;
                 this._deviceEnabledExtensions = [];
-                this._device.features.forEach((feature) => this._deviceEnabledExtensions.push(feature));
+                this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature));
 
                 let numUncapturedErrors = -1;
                 this._device.addEventListener('uncapturederror', (event) => {
@@ -568,7 +568,7 @@ export class WebGPUEngine extends Engine {
                 });
 
                 if (!this._doNotHandleContextLost) {
-                    this._device.lost.then((info) => {
+                    this._device.lost?.then((info) => {
                         this._contextWasLost = true;
                         Logger.Warn("WebGPU context lost. " + info);
                         this.onContextLostObservable.notifyObservers(this);
