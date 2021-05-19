@@ -8,7 +8,7 @@ import { Vector3, Quaternion, Matrix } from "../../Maths/math.vector";
 import { Observer, Observable } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { PivotTools } from "../../Misc/pivotTools";
-import { TransformNode } from "../../Meshes";
+import { TransformNode } from "../../Meshes/transformNode";
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
  */
