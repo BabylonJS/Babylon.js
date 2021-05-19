@@ -20,6 +20,8 @@ import { Button } from "babylonjs-gui/2D/controls/button";
 import { Container } from "babylonjs-gui/2D/controls/container";
 import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 import { KeyboardEventTypes, KeyboardInfo } from "babylonjs/Events/keyboardEvents";
+import { Line } from "babylonjs-gui/2D/controls/line";
+import { DataStorage } from "babylonjs/Misc/dataStorage";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -51,6 +53,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public isOverGUINode = false;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
+    private _responsive: boolean;
 
     public get globalState() {
         return this.props.globalState;
@@ -66,6 +69,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     constructor(props: IWorkbenchComponentProps) {
         super(props);
+        this._responsive = DataStorage.ReadBoolean("Responsive", true);
+
         props.globalState.onSelectionChangedObservable.add((selection) => {
             if (!selection) {
                 this.changeSelectionHighlight(false);
@@ -105,7 +110,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         props.globalState.onZoomObservable.add(() => {
-
             this._forceZooming = !this._forceZooming;
             this._forcePanning = false;
             this._forceSelecting = false;
@@ -119,6 +123,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         props.globalState.onOutlinesObservable.add(() => {
             this._outlines = !this._outlines;
+        });
+
+        props.globalState.onResponsiveChangeObservable.add((value) => {
+            this._responsive = value;
         });
 
         this.props.globalState.hostDocument!.addEventListener(
@@ -274,9 +282,29 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
+        if (guiControl.typeName === "Line") {
+            let line = (guiControl as Line);
+            let x1 = (line.x1 as string).substr(0, (line.x1 as string).length - 2); //removing the 'px'
+            let x2 = (line.x2 as string).substr(0, (line.x2 as string).length - 2);
+            let y1 = (line.y1 as string).substr(0, (line.y1 as string).length - 2);
+            let y2 = (line.y2 as string).substr(0, (line.y2 as string).length - 2);
+            line.x1 = Number(x1) + newX;
+            line.x2 = Number(x2) + newX;
+            line.y1 = Number(y1) + newY;
+            line.y2 = Number(y2) + newY;
+            return true;
+        }
+
         guiControl.leftInPixels += newX;
         guiControl.topInPixels += newY;
 
+        //convert to percentage
+        if (this._responsive) {
+            let left = (guiControl.leftInPixels * 100) / (this._textureMesh.scaling.x);
+            let top = (guiControl.topInPixels * 100) / (this._textureMesh.scaling.z);
+            guiControl.left = `${left}%`;
+            guiControl.top = `${top}%`;
+        }
         return true;
     }
 
