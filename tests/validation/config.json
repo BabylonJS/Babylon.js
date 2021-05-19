@@ -145,6 +145,13 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GUI Near Menu",
+            "renderCount": 30,
+            "playgroundId":"#2YZFA0#180",
+            "referenceImage": "guiNearMenu.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Camera rig",
             "playgroundId": "#ATL1CS#12",
             "referenceImage": "cameraRig.png"
@@ -697,6 +704,13 @@
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
             "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
+            "renderCount": 5
+        },
+        {
+            "title": "GLTF Extension KHR_materials_volume with attenuation",
+            "playgroundId": "#YG3BBF#18",
+            "referenceImage": "gltfExtensionKhrMaterialsVolumeAttenuation.png",
+            "errorRatio": 1.2,
             "renderCount": 5
         },
         {

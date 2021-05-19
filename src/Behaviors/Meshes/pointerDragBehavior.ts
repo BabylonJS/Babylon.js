@@ -15,7 +15,7 @@ import "../../Meshes/Builders/planeBuilder";
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
  */
 export class PointerDragBehavior implements Behavior<AbstractMesh> {
-    private static _AnyMouseID = -2;
+    private static _AnyMouseId = -2;
     /**
      * Abstract mesh the behavior is set on
      */
@@ -35,9 +35,19 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public _useAlternatePickedPointAboveMaxDragAngle = false;
     /**
+     * Get or set the currentDraggingPointerId
+     * @deprecated Please use currentDraggingPointerId instead
+     */
+    public get currentDraggingPointerID(): number {
+        return this.currentDraggingPointerId;
+    }
+    public set currentDraggingPointerID(currentDraggingPointerID: number) {
+        this.currentDraggingPointerId = currentDraggingPointerID;
+    }
+    /**
      * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
      */
-    public currentDraggingPointerID = -1;
+    public currentDraggingPointerId = -1;
     /**
      * The last position where the pointer hit the drag plane in world space
      */
@@ -201,22 +211,22 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     this._startDrag((<PointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
-                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
+                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerId == (<PointerEvent>pointerInfo.event).pointerId) {
                     this.releaseDrag();
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 var pointerId = (<PointerEvent>pointerInfo.event).pointerId;
 
                 // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
-                if (this.currentDraggingPointerID === PointerDragBehavior._AnyMouseID && pointerId !== PointerDragBehavior._AnyMouseID) {
+                if (this.currentDraggingPointerId === PointerDragBehavior._AnyMouseId && pointerId !== PointerDragBehavior._AnyMouseId) {
                     const evt = <PointerEvent>pointerInfo.event;
                     const isMouseEvent = evt.pointerType === "mouse" || (!this._scene.getEngine().hostInformation.isMobile && evt instanceof MouseEvent);
                     if (isMouseEvent) {
-                        if (this._lastPointerRay[this.currentDraggingPointerID]) {
-                            this._lastPointerRay[pointerId] = this._lastPointerRay[this.currentDraggingPointerID];
-                            delete this._lastPointerRay[this.currentDraggingPointerID];
+                        if (this._lastPointerRay[this.currentDraggingPointerId]) {
+                            this._lastPointerRay[pointerId] = this._lastPointerRay[this.currentDraggingPointerId];
+                            delete this._lastPointerRay[this.currentDraggingPointerId];
                         }
-                        this.currentDraggingPointerID = pointerId;
+                        this.currentDraggingPointerId = pointerId;
                     }
                 }
 
@@ -228,7 +238,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     this._lastPointerRay[pointerId].origin.copyFrom(pointerInfo.pickInfo.ray.origin);
                     this._lastPointerRay[pointerId].direction.copyFrom(pointerInfo.pickInfo.ray.direction);
 
-                    if (this.currentDraggingPointerID == pointerId && this.dragging) {
+                    if (this.currentDraggingPointerId == pointerId && this.dragging) {
                         this._moveDrag(pointerInfo.pickInfo.ray);
                     }
                 }
@@ -256,10 +266,10 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     public releaseDrag() {
         if (this.dragging) {
             this.dragging = false;
-            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
+            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerId });
         }
 
-        this.currentDraggingPointerID = -1;
+        this.currentDraggingPointerId = -1;
         this._moving = false;
 
         // Reattach camera controls
@@ -282,11 +292,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * @param fromRay initial ray of the pointer to be simulated (Default: Ray from camera to attached mesh)
      * @param startPickedPoint picked point of the pointer to be simulated (Default: attached mesh position)
      */
-    public startDrag(pointerId: number = PointerDragBehavior._AnyMouseID, fromRay?: Ray, startPickedPoint?: Vector3) {
+    public startDrag(pointerId: number = PointerDragBehavior._AnyMouseId, fromRay?: Ray, startPickedPoint?: Vector3) {
         this._startDrag(pointerId, fromRay, startPickedPoint);
 
         var lastRay = this._lastPointerRay[pointerId];
-        if (pointerId === PointerDragBehavior._AnyMouseID) {
+        if (pointerId === PointerDragBehavior._AnyMouseId) {
             lastRay = this._lastPointerRay[<any>Object.keys(this._lastPointerRay)[0]];
         }
 
@@ -317,9 +327,9 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         var pickedPoint = this._pickWithRayOnDragPlane(this._startDragRay);
         if (pickedPoint) {
             this.dragging = true;
-            this.currentDraggingPointerID = pointerId;
+            this.currentDraggingPointerId = pointerId;
             this.lastDragPosition.copyFrom(pickedPoint);
-            this.onDragStartObservable.notifyObservers({ dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerID });
+            this.onDragStartObservable.notifyObservers({ dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerId });
             this._targetPosition.copyFrom((this.attachedNode).getAbsolutePosition());
 
             // Detatch camera controls
@@ -360,7 +370,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 pickedPoint.subtractToRef(this.lastDragPosition, this._dragDelta);
             }
             this._targetPosition.addInPlace(this._dragDelta);
-            this.onDragObservable.notifyObservers({ dragDistance: dragLength, delta: this._dragDelta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerID });
+            this.onDragObservable.notifyObservers({ dragDistance: dragLength, delta: this._dragDelta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerId });
             this.lastDragPosition.copyFrom(pickedPoint);
         }
     }

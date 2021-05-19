@@ -884,7 +884,7 @@ export class PostProcess {
             return null;
         }
 
-        var camera = scene ? scene.getCameraByID(parsedPostProcess.cameraId) : null;
+        var camera = scene ? scene.getCameraById(parsedPostProcess.cameraId) : null;
         return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl);
     }
 

@@ -2102,7 +2102,7 @@ var ColorPicker = /** @class */ (function (_super) {
         _this._h = 360;
         _this._s = 1;
         _this._v = 1;
-        _this._lastPointerDownID = -1;
+        _this._lastPointerDownId = -1;
         /**
          * Observable raised when the value changes
          */
@@ -2405,12 +2405,12 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         this._updateValueFromPointer(x, y);
         this._host._capturingControl[pointerId] = this;
-        this._lastPointerDownID = pointerId;
+        this._lastPointerDownId = pointerId;
         return true;
     };
     ColorPicker.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
-        if (pointerId != this._lastPointerDownID) {
+        if (pointerId != this._lastPointerDownId) {
             return;
         }
         // Invert transform
@@ -11842,7 +11842,7 @@ var BaseSlider = /** @class */ (function (_super) {
         _this._isThumbClamped = false;
         _this._displayThumb = true;
         _this._step = 0;
-        _this._lastPointerDownID = -1;
+        _this._lastPointerDownId = -1;
         // Shared rendering info
         _this._effectiveBarOffset = 0;
         /** Observable raised when the sldier value changes */
@@ -12104,12 +12104,12 @@ var BaseSlider = /** @class */ (function (_super) {
         this._pointerIsDown = true;
         this._updateValueFromPointer(coordinates.x, coordinates.y);
         this._host._capturingControl[pointerId] = this;
-        this._lastPointerDownID = pointerId;
+        this._lastPointerDownId = pointerId;
         return true;
     };
     BaseSlider.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
-        if (pointerId != this._lastPointerDownID) {
+        if (pointerId != this._lastPointerDownId) {
             return;
         }
         if (this._pointerIsDown) {
@@ -19660,7 +19660,7 @@ var GUI3DManager = /** @class */ (function () {
             _this._utilityLayer = null;
             _this.dispose();
         });
-        this._utilityLayer = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["UtilityLayerRenderer"](this._scene);
+        this._utilityLayer = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["UtilityLayerRenderer"]._CreateDefaultUtilityLayerFromScene(this._scene);
         this._utilityLayer.onlyCheckPointerDownEvents = false;
         this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.mainSceneTrackerPredicate = function (mesh) {

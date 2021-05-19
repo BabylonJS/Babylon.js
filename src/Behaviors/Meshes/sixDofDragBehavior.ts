@@ -19,6 +19,16 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
      * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
      */
     public dragDeltaRatio = 0.2;
+     * Get or set the currentDraggingPointerId
+     * @deprecated Please use currentDraggingPointerId instead
+     */
+    public get currentDraggingPointerID(): number {
+        return this.currentDraggingPointerId;
+    }
+    public set currentDraggingPointerID(currentDraggingPointerID: number) {
+        this.currentDraggingPointerId = currentDraggingPointerID;
+    }
+    /**
 
     /**
      * If the object should rotate to face the drag origin
