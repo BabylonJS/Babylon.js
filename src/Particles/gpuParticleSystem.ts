@@ -1719,9 +1719,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * Renders the particle system in its current state
      * @param preWarm defines if the system should only update the particles but not render them
+     * @param forceUpdateOnly if true, force to only update the particles and never display them (meaning, even if preWarm=false, when forceUpdateOnly=true the particles won't be displayed)
      * @returns the current number of particles
      */
-    public render(preWarm = false): number {
+    public render(preWarm = false, forceUpdateOnly = false): number {
         if (!this._started) {
             return 0;
         }
@@ -1743,7 +1744,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             if (!this._preWarmDone && this.preWarmCycles) {
                 for (var index = 0; index < this.preWarmCycles; index++) {
                     this.animate(true);
-                    this.render(true);
+                    this.render(true, true);
                 }
 
                 this._preWarmDone = true;
@@ -1896,7 +1897,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         let outparticles = 0;
-        if (!preWarm) {
+        if (!preWarm && !forceUpdateOnly) {
             engine.setState(false);
 
             if (this.forceDepthWrite) {
