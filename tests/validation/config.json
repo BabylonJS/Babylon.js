@@ -700,6 +700,13 @@
             "renderCount": 5
         },
         {
+            "title": "GLTF Extension KHR_materials_volume with attenuation",
+            "playgroundId": "#YG3BBF#18",
+            "referenceImage": "gltfExtensionKhrMaterialsVolumeAttenuation.png",
+            "errorRatio": 1.2,
+            "renderCount": 5
+        },
+        {
             "title": "GLTF Extension KHR_materials_specular",
             "playgroundId": "#RNT7K4#8",
             "referenceImage": "gltfExtensionKhrMaterialsSpecular.png"
