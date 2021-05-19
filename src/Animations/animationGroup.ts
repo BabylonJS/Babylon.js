@@ -617,7 +617,7 @@ export class AnimationGroup implements IDisposable {
                 }
             }
             else {
-                var targetNode = scene.getNodeByID(id);
+                var targetNode = scene.getNodeById(id);
 
                 if (targetNode != null) {
                     animationGroup.addTargetedAnimation(animation, targetNode);
