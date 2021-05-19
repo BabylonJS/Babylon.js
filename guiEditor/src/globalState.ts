@@ -35,11 +35,12 @@ export class GlobalState {
 
     onZoomObservable = new Observable<void>();
     onPanObservable = new Observable<void>();
-    onSelectionObservable = new Observable<void>();
+    onSelectionButtonObservable = new Observable<void>();
     onLoadObservable = new Observable<void>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
     onSnippetSaveObservable = new Observable<void>();
+    onOutlinesObservable = new Observable<void>();
 
     storeEditorData: (serializationObject: any) => void;
 

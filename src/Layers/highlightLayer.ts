@@ -845,7 +845,7 @@ export class HighlightLayer extends EffectLayer {
 
         // Excluded meshes
         for (index = 0; index < parsedHightlightLayer.excludedMeshes.length; index++) {
-            var mesh = scene.getMeshByID(parsedHightlightLayer.excludedMeshes[index]);
+            var mesh = scene.getMeshById(parsedHightlightLayer.excludedMeshes[index]);
             if (mesh) {
                 hl.addExcludedMesh(<Mesh>mesh);
             }
@@ -854,7 +854,7 @@ export class HighlightLayer extends EffectLayer {
         // Included meshes
         for (index = 0; index < parsedHightlightLayer.meshes.length; index++) {
             var highlightedMesh = parsedHightlightLayer.meshes[index];
-            var mesh = scene.getMeshByID(highlightedMesh.meshId);
+            var mesh = scene.getMeshById(highlightedMesh.meshId);
 
             if (mesh) {
                 hl.addMesh(<Mesh>mesh, Color3.FromArray(highlightedMesh.color), highlightedMesh.glowEmissiveOnly);

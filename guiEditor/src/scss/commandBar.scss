@@ -1,3 +1,6 @@
+:root {
+    --selectionGrey: #666666;
+}
 
 .ge-commands {
     grid-row: 1;
@@ -68,17 +71,17 @@
         }
 
         &:hover {
-            background-color: #666666;
+            background-color: var(--selectionGrey);
         } 
         
-        &:active {
+        .active {
             transform-origin: center;
-            transform: scale(0.95);
+            background-color: var(--selectionGrey);
         }
 
         img {
             &.active {
-                filter: invert(100%);
+                background-color: var(--selectionGrey);
             }
         }
     }
@@ -186,7 +189,7 @@
             }
 
             &:hover {
-                background: #666666;
+                background: var(--selectionGrey);
                 .sub-items {
                     display: block;
                 }

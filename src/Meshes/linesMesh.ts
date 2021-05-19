@@ -59,6 +59,7 @@ export class LinesMesh extends Mesh {
      * This will make creation of children, recursive.
      * @param useVertexColor defines if this LinesMesh supports vertex color
      * @param useVertexAlpha defines if this LinesMesh supports vertex alpha
+     * @param material material to use to draw the line. If not provided, will create a new one
      */
     constructor(
         name: string,
@@ -73,7 +74,8 @@ export class LinesMesh extends Mesh {
         /**
          * If vertex alpha should be applied to the mesh
          */
-        public readonly useVertexAlpha?: boolean
+        public readonly useVertexAlpha?: boolean,
+        material?: Material
     ) {
         super(name, scene, parent, source, doNotCloneChildren);
 
@@ -107,7 +109,11 @@ export class LinesMesh extends Mesh {
             options.attributes.push(VertexBuffer.ColorKind);
         }
 
-        this._lineMaterial = new ShaderMaterial("colorShader", this.getScene(), "color", options);
+        if (material) {
+            this.material = material;
+        } else {
+            this._lineMaterial = new ShaderMaterial("colorShader", this.getScene(), "color", options);
+        }
     }
 
     private _addClipPlaneDefine(label: string) {

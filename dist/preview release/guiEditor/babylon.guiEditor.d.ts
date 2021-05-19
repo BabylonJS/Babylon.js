@@ -32,21 +32,26 @@ declare module GUIEDITOR {
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
         private _forcePanning;
+        private _forceZooming;
+        private _forceSelecting;
+        private _outlines;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
         private _panning;
-        private _forceZooming;
+        private _canvas;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
+        ctrlEvent: (evt: KeyboardEvent) => void;
+        ctrlFalseEvent: () => void;
+        componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
-        loadFromSnippet(snippedID: string): Promise<void>;
+        loadFromSnippet(snippedId: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
-        onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
@@ -105,11 +110,12 @@ declare module GUIEDITOR {
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
-        onSelectionObservable: BABYLON.Observable<void>;
+        onSelectionButtonObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<void>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
         onSnippetSaveObservable: BABYLON.Observable<void>;
+        onOutlinesObservable: BABYLON.Observable<void>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -1007,7 +1013,12 @@ declare module GUIEDITOR {
         globalState: GlobalState;
     }
     export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
+        private _panning;
+        private _zooming;
+        private _selecting;
+        private _outlines;
         constructor(props: ICommandBarComponentProps);
+        private updateNodeOutline;
         render(): JSX.Element;
         onCreate(value: string): void;
     }

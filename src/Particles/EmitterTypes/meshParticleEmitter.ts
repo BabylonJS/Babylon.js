@@ -202,7 +202,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
         Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
 
         if (serializationObject.meshId && scene) {
-            this.mesh = scene.getLastMeshByID(serializationObject.meshId);
+            this.mesh = scene.getLastMeshById(serializationObject.meshId);
         }
 
         this.useMeshNormalsForDirection = serializationObject.useMeshNormalsForDirection;

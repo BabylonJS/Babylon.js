@@ -68,8 +68,10 @@ interface INativeEngine {
     readonly TEXTURE_FORMAT_RGBA8: number;
     readonly TEXTURE_FORMAT_RGBA32F: number;
 
+    readonly ATTRIB_TYPE_INT8: number;
     readonly ATTRIB_TYPE_UINT8: number;
     readonly ATTRIB_TYPE_INT16: number;
+    readonly ATTRIB_TYPE_UINT16: number;
     readonly ATTRIB_TYPE_FLOAT: number;
 
     readonly ALPHA_DISABLE: number;
@@ -2324,10 +2326,14 @@ export class NativeEngine extends Engine {
 
     private _getNativeAttribType(type: number): number {
         switch (type) {
+            case VertexBuffer.BYTE:
+                return this._native.ATTRIB_TYPE_INT8;
             case VertexBuffer.UNSIGNED_BYTE:
                 return this._native.ATTRIB_TYPE_UINT8;
             case VertexBuffer.SHORT:
                 return this._native.ATTRIB_TYPE_INT16;
+            case VertexBuffer.UNSIGNED_SHORT:
+                return this._native.ATTRIB_TYPE_UINT16;
             case VertexBuffer.FLOAT:
                 return this._native.ATTRIB_TYPE_FLOAT;
             default:

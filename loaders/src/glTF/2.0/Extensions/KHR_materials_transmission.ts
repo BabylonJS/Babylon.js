@@ -157,7 +157,8 @@ class TransmissionHelper {
     }
 
     private _addMesh(mesh: AbstractMesh): void {
-        this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+        this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this._onMeshMaterialChanged.bind(this));
+
         // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         Tools.SetImmediate(() => {
@@ -192,7 +193,7 @@ class TransmissionHelper {
     }
 
     // When one of the meshes in the scene has its material changed, make sure that it's in the correct cache list.
-    private onMeshMaterialChanged(mesh: AbstractMesh) {
+    private _onMeshMaterialChanged(mesh: AbstractMesh) {
         const transparentIdx = this._transparentMeshesCache.indexOf(mesh);
         const opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
 
