@@ -145,6 +145,13 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GUI Near Menu",
+            "renderCount": 30,
+            "playgroundId":"#2YZFA0#180",
+            "referenceImage": "guiNearMenu.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Camera rig",
             "playgroundId": "#ATL1CS#12",
             "referenceImage": "cameraRig.png"
