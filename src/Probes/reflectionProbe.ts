@@ -303,7 +303,7 @@ export class ReflectionProbe {
         reflectionProbe.cubeTexture._waitingRenderList = parsedReflectionProbe.renderList;
 
         if (parsedReflectionProbe._attachedMesh) {
-            reflectionProbe.attachToMesh(scene.getMeshByID(parsedReflectionProbe._attachedMesh));
+            reflectionProbe.attachToMesh(scene.getMeshById(parsedReflectionProbe._attachedMesh));
         }
 
         return reflectionProbe;

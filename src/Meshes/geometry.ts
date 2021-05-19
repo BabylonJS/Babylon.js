@@ -1143,7 +1143,7 @@ export class Geometry implements IGetSetVerticesData {
         // Geometry
         var geometryId = parsedGeometry.geometryId;
         if (geometryId) {
-            var geometry = scene.getGeometryByID(geometryId);
+            var geometry = scene.getGeometryById(geometryId);
             if (geometry) {
                 geometry.applyToMesh(mesh);
             }
@@ -1368,7 +1368,7 @@ export class Geometry implements IGetSetVerticesData {
         }
         let noInfluenceBoneIndex = 0.0;
         if (parsedGeometry.skeletonId > -1) {
-            let skeleton = mesh.getScene().getLastSkeletonByID(parsedGeometry.skeletonId);
+            let skeleton = mesh.getScene().getLastSkeletonById(parsedGeometry.skeletonId);
 
             if (!skeleton) {
                 return;
@@ -1441,7 +1441,7 @@ export class Geometry implements IGetSetVerticesData {
      * @returns the new geometry object
      */
     public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Nullable<Geometry> {
-        if (scene.getGeometryByID(parsedVertexData.id)) {
+        if (scene.getGeometryById(parsedVertexData.id)) {
             return null; // null since geometry could be something else than a box...
         }
 

@@ -54,7 +54,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
         // Create 2 drag behaviors such that each will only be triggered by a separate pointer
         this._dragBehaviorA.onDragStartObservable.add((e) => {
             if (this._dragBehaviorA.dragging && this._dragBehaviorB.dragging) {
-                if (this._dragBehaviorA.currentDraggingPointerID == this._dragBehaviorB.currentDraggingPointerID) {
+                if (this._dragBehaviorA.currentDraggingPointerId == this._dragBehaviorB.currentDraggingPointerId) {
                     this._dragBehaviorA.releaseDrag();
                 } else {
                     this._initialScale.copyFrom(ownerNode.scaling);
@@ -64,7 +64,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
         });
         this._dragBehaviorB.onDragStartObservable.add((e) => {
             if (this._dragBehaviorA.dragging && this._dragBehaviorB.dragging) {
-                if (this._dragBehaviorA.currentDraggingPointerID == this._dragBehaviorB.currentDraggingPointerID) {
+                if (this._dragBehaviorA.currentDraggingPointerId == this._dragBehaviorB.currentDraggingPointerId) {
                     this._dragBehaviorB.releaseDrag();
                 } else {
                     this._initialScale.copyFrom(ownerNode.scaling);

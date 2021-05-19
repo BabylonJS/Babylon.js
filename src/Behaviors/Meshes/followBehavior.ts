@@ -7,7 +7,6 @@ import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Epsilon } from "../../Maths/math.constants";
-import { SmoothingTools } from "../../Misc/smoothingTools";
 
 /**
  * A behavior that when attached to a mesh will follow a camera
@@ -429,14 +428,14 @@ export class FollowBehavior implements Behavior<TransformNode> {
         // position
         const currentDirection = new Vector3();
         currentDirection.copyFrom(this.attachedNode.position).subtractInPlace(this.followedCamera.globalPosition);
-        SmoothingTools.SmoothToRefVec3(currentDirection, this._workingPosition, elapsed, this.lerpTime, currentDirection);
+        Vector3.SmoothToRef(currentDirection, this._workingPosition, elapsed, this.lerpTime, currentDirection);
         currentDirection.addInPlace(this.followedCamera.globalPosition);
         this.attachedNode.position.copyFrom(currentDirection);
 
         // rotation
         const currentRotation = new Quaternion();
         currentRotation.copyFrom(this.attachedNode.rotationQuaternion);
-        SmoothingTools.SmoothToRefQuaternion(currentRotation, this._workingQuaternion, elapsed, this.lerpTime, this.attachedNode.rotationQuaternion);
+        Quaternion.SmoothToRef(currentRotation, this._workingQuaternion, elapsed, this.lerpTime, this.attachedNode.rotationQuaternion);
 
         this.attachedNode.setParent(oldParent);
     }

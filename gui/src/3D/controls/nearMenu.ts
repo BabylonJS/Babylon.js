@@ -20,6 +20,15 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
  * NearMenu that displays buttons and follows the camera
  */
 export class NearMenu extends VolumeBasedPanel {
+    /**
+     * Base Url for the assets.
+     */
+    private static ASSETS_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+    /**
+     * File name for the close icon.
+     */
+    private static PIN_ICON_FILENAME: string = "IconPin.png";
+
     private _pinButton: TouchHolographicButton;
     private _backPlate: Mesh;
     private _backPlateMaterial: FluentMaterial;
@@ -42,7 +51,7 @@ export class NearMenu extends VolumeBasedPanel {
         this._isPinned = value;
 
         if (this._isPinned) {
-            this._pinMaterial.emissiveColor.copyFromFloats(0.25, 0.40, 0.95);
+            this._pinMaterial.emissiveColor.copyFromFloats(0.25, 0.4, 0.95);
             this._defaultBehavior.followBehaviorEnabled = false;
         } else {
             this._pinMaterial.emissiveColor.copyFromFloats(0.08, 0.15, 0.55);
@@ -52,10 +61,10 @@ export class NearMenu extends VolumeBasedPanel {
 
     private _createPinButton(parent: TransformNode) {
         const control = new TouchHolographicButton("pin" + this.name, false);
-        control.imageUrl = "./textures/IconPin.png";
+        control.imageUrl = NearMenu.ASSETS_BASE_URL + NearMenu.PIN_ICON_FILENAME;
         control.parent = this;
         control._host = this._host;
-        control.onPointerClickObservable.add(() => this.isPinned = !this.isPinned);
+        control.onPointerClickObservable.add(() => (this.isPinned = !this.isPinned));
 
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
