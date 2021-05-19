@@ -281,7 +281,7 @@ export class TextureCanvasManager {
                     this._isPanning = true;
                 }
             }
-            else if (!leftButtonPressed && !middleButtonPressed) {
+            else if ((!leftButtonPressed || !this._keyMap[this.PAN_KEY]) && !middleButtonPressed) {
                 this._isPanning = false;
             }
             switch (pointerInfo.type) {
