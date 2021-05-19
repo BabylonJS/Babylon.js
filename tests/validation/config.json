@@ -666,9 +666,9 @@
             "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
         },
         {
-            "title": "GLTF Serializer KHR_materials_clearcoat",
+            "title": "GLTF Serializer KHR materials clearcoat",
             "playgroundId": "#9N6CLU#23",
-            "referenceImage": "gltfSerializerKHRMaterialsClearcoat.png"
+            "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
