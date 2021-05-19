@@ -63,7 +63,7 @@ class paintbrushTool implements IToolType {
         this.pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
             const {startPainting, stopPainting, metadata} = this.getParameters();
             if (!this.isPainting) {
-                if (pointerInfo.event.buttons & 1 && this.getParameters().interactionEnabled() && pointerInfo.pickInfo?.hit) {
+                if (pointerInfo.type == PointerEventTypes.POINTERDOWN && pointerInfo.event.buttons & 1 && this.getParameters().interactionEnabled() && pointerInfo.pickInfo?.hit) {
                     this.isPainting = true;
                     const circleCanvas = document.createElement('canvas');
                     circleCanvas.width = this.width;
