@@ -2545,7 +2545,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             particleSystem.emitter = Vector3.Zero();
         }
         else if (parsedParticleSystem.emitterId && scene) {
-            particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            particleSystem.emitter = scene.getLastMeshById(parsedParticleSystem.emitterId);
         } else {
             particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
         }

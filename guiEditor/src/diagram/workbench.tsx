@@ -45,11 +45,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _forcePanning = false;
     private _forceZooming = false;
     private _forceSelecting = false;
+    private _outlines = false;
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
     private _panning: boolean;
-    private _canvas : HTMLCanvasElement;
+    private _canvas: HTMLCanvasElement;
 
     public get globalState() {
         return this.props.globalState;
@@ -76,6 +77,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                             this._selectedGuiNodes.push(selection);
                         }
                     } else {
+                        this.changeSelectionHighlight(false);
                         this._selectedGuiNodes = [selection];
                     }
                     this.changeSelectionHighlight(true);
@@ -110,9 +112,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (!this._forceZooming) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
             }
-            else {;
+            else {
                 this._canvas.style.cursor = "zoom-in";
             }
+        });
+
+        props.globalState.onOutlinesObservable.add(() => {
+            this._outlines = !this._outlines;
         });
 
         this.props.globalState.hostDocument!.addEventListener(
@@ -157,9 +163,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.loadToEditor();
     }
 
-    async loadFromSnippet(snippedID: string) {
+    async loadFromSnippet(snippedId: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
+        await this.globalState.guiTexture.parseFromSnippetAsync(snippedId);
         this.loadToEditor();
     }
 
@@ -172,7 +178,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     changeSelectionHighlight(value: boolean) {
         this.selectedGuiNodes.forEach(node => {
-            node.isHighlighted = value;
+            if (this._outlines) {
+                node.isHighlighted = true;
+                node.highlightLineWidth = value ? 10 : 5;
+            }
+            else {
+                node.isHighlighted = value;
+                node.highlightLineWidth = 10;
+            }
         });
     }
 
@@ -208,7 +221,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     createNewGuiNode(guiControl: Control) {
         this.enableEditorProperties(guiControl);
-
         guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
         });
@@ -232,6 +244,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.createNewGuiNode(child);
             });
         }
+
         return guiControl;
     }
 
@@ -443,20 +456,24 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
             switch (k.event.key) {
-                case "q": //select?
+                case "q": //select
                 case "Q":
                     if (!this._forceSelecting)
                         this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
-                case "w": //pan?
+                case "w": //pan
                 case "W":
                     if (!this._forcePanning)
                         this.globalState.onPanObservable.notifyObservers();
                     break;
-                case "e": //zoom?
+                case "e": //zoom
                 case "E":
                     if (!this._forceZooming)
                         this.globalState.onZoomObservable.notifyObservers();
+                    break;
+                case "r": //outlines
+                case "R":
+                    this.globalState.onOutlinesObservable.notifyObservers();
                     break;
                 default:
                     break;
