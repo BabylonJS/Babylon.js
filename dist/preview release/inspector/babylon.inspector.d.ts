@@ -3051,6 +3051,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class ToolsTabComponent extends PaneComponent {
+        private _lockObject;
         private _videoRecorder;
         private _screenShotSize;
         private _gifOptions;
@@ -3060,6 +3061,9 @@ declare module INSPECTOR {
         private _gifRecorder;
         private _previousRenderingScale;
         private _crunchingGIF;
+        private _reflectorHostname;
+        private _reflectorPort;
+        private _reflector;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -3076,6 +3080,7 @@ declare module INSPECTOR {
         exportReplay(): void;
         startRecording(): void;
         applyDelta(file: File): void;
+        connectReflector(): void;
         render(): JSX.Element | null;
     }
 }

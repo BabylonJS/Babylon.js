@@ -3825,7 +3825,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             if (babylonMaterial.getClassName() === "StandardMaterial") {
                 promises.push(this._convertStandardMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
             }
-            else if (babylonMaterial.getClassName() === "PBRBaseMaterial") {
+            else if (babylonMaterial.getClassName().indexOf("PBR") !== -1) {
                 promises.push(this._convertPBRMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
             }
             else {
