@@ -5,6 +5,7 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { PerfCounter } from "../../Misc/perfCounter";
 import { Observer } from "../../Misc/observable";
 
+/** @hidden */
 export type OcclusionQuery = WebGLQuery | number;
 
 /** @hidden */
