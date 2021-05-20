@@ -43,6 +43,7 @@ import { IStencilState } from "../States/IStencilState";
 import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 import { ComputeEffect } from "../Compute/computeEffect";
+import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -220,6 +221,8 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _timestampQuery: WebGPUTimestampQuery;
     /** @hidden */
+    public _occlusionQuery: WebGPUOcclusionQuery;
+    /** @hidden */
     public _compiledComputeEffects: { [key: string]: ComputeEffect } = {};
     /** @hidden */
     public _counters: {
@@ -264,7 +267,8 @@ export class WebGPUEngine extends Engine {
     public _currentRenderPass: Nullable<GPURenderPassEncoder> = null;
     /** @hidden */
     public _mainRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
-    private _rttRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
+    /** @hidden */
+    public _rttRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
     /** @hidden */
     public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
     private _bundleList: WebGPUBundleList;
@@ -568,6 +572,7 @@ export class WebGPUEngine extends Engine {
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
+                this._occlusionQuery = new WebGPUOcclusionQuery(this, this._device, this._bufferManager);
                 this._bundleList = new WebGPUBundleList(this._device);
 
                 if (this.dbgVerboseLogsForFirstFrames) {
@@ -678,6 +683,7 @@ export class WebGPUEngine extends Engine {
             vertexArrayObject: false,
             instancedArrays: true,
             timerQuery: typeof(BigUint64Array) !== "undefined" && this.enabledExtensions.indexOf(WebGPUConstants.FeatureName.TimestampQuery) !== -1 ? true as any : undefined,
+            supportOcclusionQuery: typeof(BigUint64Array) !== "undefined",
             canUseTimestampForTimerQuery: true,
             multiview: false,
             oculusMultiview: false,
@@ -2200,7 +2206,8 @@ export class WebGPUEngine extends Engine {
                 depthStoreOp: WebGPUConstants.StoreOp.Store,
                 stencilLoadValue: depthStencilTexture._generateStencilBuffer ? stencilClearValue : WebGPUConstants.LoadOp.Load,
                 stencilStoreOp: WebGPUConstants.StoreOp.Store,
-            } : undefined
+            } : undefined,
+            occlusionQuerySet: this._occlusionQuery.hasQueries ? this._occlusionQuery.querySet : undefined,
         };
         this._rttRenderPassWrapper.renderPass = this._renderTargetEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
@@ -2269,6 +2276,11 @@ export class WebGPUEngine extends Engine {
         return this._currentRenderPass!;
     }
 
+    /** @hidden */
+    public _getCurrentRenderPassIndex(): number {
+        return this._currentRenderPass === null ? -1 : this._currentRenderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
+    }
+
     private _startMainRenderPass(setClearStates: boolean, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
         if (this._mainRenderPassWrapper.renderPass) {
             this._endMainRenderPass();
@@ -2285,6 +2297,7 @@ export class WebGPUEngine extends Engine {
         this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].loadValue = colorClearValue;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadValue = depthClearValue;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadValue = stencilClearValue;
+        this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery.hasQueries ? this._occlusionQuery.querySet : undefined;
 
         this._swapChainTexture = this._swapChain.getCurrentTexture();
         this._mainRenderPassWrapper.colorAttachmentGPUTextures![0].set(this._swapChainTexture);
