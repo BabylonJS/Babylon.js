@@ -661,7 +661,7 @@ export class PostProcess {
             this._engine.bindFramebuffer(target, 0, undefined, undefined, this.forceFullscreenViewport);
         }
 
-        this._engine._debugInsertMarker(`post process ${this.name} input`);
+        this._engine._debugInsertMarker?.(`post process ${this.name} input`);
 
         this.onActivateObservable.notifyObservers(camera);
 
