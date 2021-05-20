@@ -578,7 +578,7 @@ export class ProceduralTexture extends Texture {
             return;
         }
 
-        engine._debugPushGroup(`procedural texture generation for ${this.name}`, 1);
+        engine._debugPushGroup?.(`procedural texture generation for ${this.name}`, 1);
 
         if (this.isCube) {
             for (var face = 0; face < 6; face++) {
@@ -620,7 +620,7 @@ export class ProceduralTexture extends Texture {
             engine.generateMipMapsForCubemap(this._texture);
         }
 
-        engine._debugPopGroup(1);
+        engine._debugPopGroup?.(1);
 
         if (this.onGenerated) {
             this.onGenerated();
