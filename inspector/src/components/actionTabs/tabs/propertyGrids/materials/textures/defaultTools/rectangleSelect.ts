@@ -19,7 +19,7 @@ export const RectangleSelect : IToolData = {
             this.pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
                 const {getMouseCoordinates, setMetadata, metadata} = this.getParameters();
                 if (!this.isSelecting) {
-                    if (pointerInfo.type == PointerEventTypes.POINTERDOWN && pointerInfo && pointerInfo.event.buttons & 1 && this.getParameters().interactionEnabled() && pointerInfo.pickInfo?.hit) {
+                    if (pointerInfo.type == PointerEventTypes.POINTERDOWN && pointerInfo && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled() && pointerInfo.pickInfo?.hit) {
                         this.isSelecting = true;
                         const {x, y} = {x: this.xStart, y: this.yStart} = getMouseCoordinates(pointerInfo);
                         setMetadata({
@@ -32,7 +32,7 @@ export const RectangleSelect : IToolData = {
                         });
                     }
                 } else {
-                    if (!(pointerInfo.event.buttons & 1) || !this.getParameters().interactionEnabled()) {
+                    if (pointerInfo.event.buttons !== 1 || !this.getParameters().interactionEnabled()) {
                         this.isSelecting = false;
                         if (metadata.select.x1 === metadata.select.x2 || metadata.select.y1 === metadata.select.y2) {
                             setMetadata({
