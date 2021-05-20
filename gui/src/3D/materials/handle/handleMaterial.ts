@@ -55,7 +55,12 @@ export class HandleMaterial extends ShaderMaterial {
     /**
      * Scale of the handle when hovered
      */
-    public hoverScale: number = 3;
+    public hoverScale: number = 0.75;
+
+    /**
+     * Scale of the handle when hovered
+     */
+    public baseScale: number = 0.35;
 
     /**
      * @hidden
@@ -89,11 +94,11 @@ export class HandleMaterial extends ShaderMaterial {
             TmpColors.Color3[0].copyFrom(this.hoverColor).scaleToRef(alpha, TmpColors.Color3[0]);
             TmpColors.Color3[1].copyFrom(this.baseColor).scaleToRef(1 - alpha, TmpColors.Color3[1]);
             this._color.copyFrom(TmpColors.Color3[0]).addToRef(TmpColors.Color3[1], this._color);
-            this._scale = 1 - alpha + alpha * this.hoverScale;
+            this._scale = (1 - alpha) * this.baseScale + alpha * this.hoverScale;
 
             this.setColor3("color", this._color);
             this.setFloat("scale", this._scale);
-            this.setVector3("positionOffset", this._positionOffset)
+            this.setVector3("positionOffset", this._positionOffset);
 
             this._lastTick = tick;
         });

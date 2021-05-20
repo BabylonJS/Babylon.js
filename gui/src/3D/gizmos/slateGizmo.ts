@@ -60,7 +60,7 @@ export class SlateGizmo extends Gizmo {
     /**
      * Value we use to offset handles from mesh
      */
-    private _margin = 1;
+    private _margin = 0.35;
     private _attachedSlate: Nullable<HolographicSlate> = null;
     /**
      * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
@@ -74,7 +74,7 @@ export class SlateGizmo extends Gizmo {
     /**
      * Size of the handles (meters in XR)
      */
-    public handleSize = 0.01;
+    public handleSize = 0.04;
 
     /**
      * The slate attached to this gizmo
