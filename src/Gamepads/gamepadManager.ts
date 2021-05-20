@@ -7,6 +7,7 @@ import { Xbox360Pad } from "./xboxGamepad";
 import { Gamepad, GenericPad } from "./gamepad";
 import { Engine } from '../Engines/engine';
 import { DualShockPad } from './dualShockGamepad';
+import { Tools } from "../Misc/tools";
 /**
  * Manager for handling gamepads
  */
@@ -172,7 +173,9 @@ export class GamepadManager {
         var newGamepad;
         var dualShock: boolean = ((<string>gamepad.id).search("054c") !== -1 && (<string>gamepad.id).search("0ce6") === -1);
         var xboxOne: boolean = ((<string>gamepad.id).search("Xbox One") !== -1);
-        if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1 || (<string>gamepad.id).search("045e") !== -1) {
+        if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1
+            || (<string>gamepad.id).search("xinput") !== -1
+            || ((<string>gamepad.id).search("045e") !== -1 && (<string>gamepad.id).search("Surface Dock") === -1)) { // make sure the Surface Dock Extender is not detected as an xbox controller
             newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
         }
         else if (dualShock) {
@@ -203,6 +206,8 @@ export class GamepadManager {
         this._isMonitoring = false;
     }
 
+    private _loggedErrors: number[];
+
     /** @hidden */
     public _checkGamepadsStatus() {
         // Hack to be compatible Chrome
@@ -213,7 +218,14 @@ export class GamepadManager {
             if (!gamepad || !gamepad.isConnected) {
                 continue;
             }
-            gamepad.update();
+            try {
+                gamepad.update();
+            } catch {
+                if (this._loggedErrors.indexOf(gamepad.index) === -1) {
+                    Tools.Warn(`Error updating gamepad ${gamepad.id}`);
+                    this._loggedErrors.push(gamepad.index);
+                }
+            }
         }
 
         if (this._isMonitoring && !this._scene) {
