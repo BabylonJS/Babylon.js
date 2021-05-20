@@ -63,7 +63,7 @@ class paintbrushTool implements IToolType {
         this.pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
             const {startPainting, stopPainting, metadata} = this.getParameters();
             if (!this.isPainting) {
-                if (pointerInfo.type == PointerEventTypes.POINTERDOWN && pointerInfo.event.buttons & 1 && this.getParameters().interactionEnabled() && pointerInfo.pickInfo?.hit) {
+                if (pointerInfo.type === PointerEventTypes.POINTERDOWN && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled() && pointerInfo.pickInfo?.hit) {
                     this.isPainting = true;
                     const circleCanvas = document.createElement('canvas');
                     circleCanvas.width = this.width;
@@ -77,8 +77,10 @@ class paintbrushTool implements IToolType {
                     const g = Math.floor(rgb.g * 255);
                     const b = Math.floor(rgb.b * 255);
                     let idx = 0;
-                    for(let y = -Math.floor(this.width / 2); y < Math.ceil(this.width / 2); y++) {
-                        for (let x = -Math.floor(this.width / 2); x < Math.ceil(this.width / 2); x++) {
+                    const x1 = -Math.floor(this.width / 2), x2 = Math.ceil(this.width / 2);
+                    const y1 = -Math.floor(this.width / 2), y2 = Math.ceil(this.width / 2);
+                    for(let y = y1; y < y2; y++) {
+                        for (let x = x1; x < x2; x++) {
                             pixels[idx++] = r;
                             pixels[idx++] = g;
                             pixels[idx++] = b;
@@ -91,7 +93,7 @@ class paintbrushTool implements IToolType {
                     this.paint(pointerInfo);
                   }
             } else {
-                if (!(pointerInfo.event.buttons & 1) || !this.getParameters().interactionEnabled()) {
+                if (pointerInfo.event.buttons !== 1 || !this.getParameters().interactionEnabled()) {
                     this.isPainting = false;
                     this.circleCanvas.parentNode?.removeChild(this.circleCanvas);
                     stopPainting();
