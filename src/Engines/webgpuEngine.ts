@@ -2190,7 +2190,7 @@ export class WebGPUEngine extends Engine {
             });
         }
 
-        this._debugPushGroup("render target pass", 1);
+        this._debugPushGroup?.("render target pass", 1);
 
         this._rttRenderPassWrapper.renderPassDescriptor = {
             colorAttachments,
@@ -2213,7 +2213,7 @@ export class WebGPUEngine extends Engine {
 
         this._currentRenderPass = this._rttRenderPassWrapper.renderPass;
 
-        this._debugFlushPendingCommands();
+        this._debugFlushPendingCommands?.();
 
         this._resetCurrentViewport(1);
         this._resetCurrentScissor(1);
@@ -2248,7 +2248,7 @@ export class WebGPUEngine extends Engine {
                     console.log("frame #" + (this as any)._count + " - render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId);
                 }
             }
-            this._debugPopGroup(1);
+            this._debugPopGroup?.(1);
             this._resetCurrentViewport(1);
             this._resetCurrentScissor(1);
             this._resetCurrentStencilRef(1);
@@ -2304,13 +2304,13 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._debugPushGroup("main pass", 0);
+        this._debugPushGroup?.("main pass", 0);
 
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._mainRenderPassWrapper.renderPassDescriptor!);
 
         this._mainRenderPassWrapper.renderPass = this._currentRenderPass;
 
-        this._debugFlushPendingCommands();
+        this._debugFlushPendingCommands?.();
 
         this._resetCurrentViewport(0);
         this._resetCurrentScissor(0);
@@ -2334,7 +2334,7 @@ export class WebGPUEngine extends Engine {
                     console.log("frame #" + (this as any)._count + " - main end pass");
                 }
             }
-            this._debugPopGroup(0);
+            this._debugPopGroup?.(0);
             this._resetCurrentViewport(0);
             this._resetCurrentScissor(0);
             this._resetCurrentStencilRef(0);

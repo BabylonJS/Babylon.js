@@ -158,11 +158,11 @@ export class MirrorTexture extends RenderTargetTexture {
         const engine = this.getScene()!.getEngine();
 
         this.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup(`mirror generation for ${name}`, 1);
+            engine._debugPushGroup?.(`mirror generation for ${name}`, 1);
         });
 
         this.onAfterUnbindObservable.add(() => {
-            engine._debugPopGroup(1);
+            engine._debugPopGroup?.(1);
         });
 
         let saveClipPlane: Nullable<Plane>;
