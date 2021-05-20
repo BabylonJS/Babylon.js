@@ -139,14 +139,14 @@
         },
         {
             "title": "GUI Slate",
-            "renderCount": 30,
+            "renderCount": 60,
             "playgroundId": "#2YZFA0#200",
             "referenceImage": "guiSlate.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GUI Near Menu",
-            "renderCount": 30,
+            "renderCount": 60,
             "playgroundId":"#2YZFA0#180",
             "referenceImage": "guiNearMenu.png",
             "excludedEngines": ["webgl1"]
