@@ -1,5 +1,7 @@
 import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
 import { Scene } from "babylonjs/index";
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
 
 import "./shaders/handle.vertex";
 import "./shaders/handle.fragment";
@@ -9,6 +11,8 @@ import "./shaders/handle.fragment";
  */
 export class HandleMaterial extends ShaderMaterial {
     private _hover: boolean = false;
+    private _onBeforeRender: Nullable<Observer<Scene>>;
+    private _lastTick: number;
     public get hover(): boolean {
         return this._hover;
     }
@@ -28,6 +32,12 @@ export class HandleMaterial extends ShaderMaterial {
         });
 
         // Register callback for scene after render
+        this._lastTick = Date.now();
+        this._onBeforeRender = this.getScene().onBeforeRenderObservable.add(() => {
+            const tick = Date.now();
+
+            this._lastTick = tick;
+        });
     }
 
     private _interpolateTo(value: boolean) {
