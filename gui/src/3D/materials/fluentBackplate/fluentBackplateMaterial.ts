@@ -43,7 +43,7 @@ export class FluentBackplateMaterial extends PushMaterial {
      * URL pointing to the texture used to define the coloring for the fluent blob effect.
      */
     public static BLOB_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/mrtk-fluent-backplate-blob.png";
-    
+
     /**
      * URL pointing to the texture used to define iridescent map.
      */
@@ -53,7 +53,7 @@ export class FluentBackplateMaterial extends PushMaterial {
     private _iridescentMap: Texture;
 
     /**
-     * Gets or sets the corner radius on the backplate. Best to keep this value between 0.05 and 0.5.
+     * Gets or sets the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
      */
     @serialize()
     public radius = 0.03;
@@ -72,7 +72,7 @@ export class FluentBackplateMaterial extends PushMaterial {
     public absoluteSizes = false;
 
     /** @hidden */
-    public filterWidth = 1;
+    public _filterWidth = 1;
 
     /**
      * Gets or sets the base color of the backplate.
@@ -367,13 +367,13 @@ export class FluentBackplateMaterial extends PushMaterial {
         // Matrices
         this.bindOnlyWorldMatrix(world);
         this._activeEffect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
-        this._activeEffect.setVector3("cameraPosition", this.getScene().activeCamera!.position);
+        this._activeEffect.setVector3("cameraPosition", this.getScene().activeCamera?.position ?? Vector3.ZeroReadOnly);
 
         // "Round Rect"
         this._activeEffect.setFloat("_Radius_", this.radius);
         this._activeEffect.setFloat("_Line_Width_", this.lineWidth);
         this._activeEffect.setFloat("_Absolute_Sizes_", this.absoluteSizes ? 1.0 : 0.0);
-        this._activeEffect.setFloat("_Filter_Width_", this.filterWidth);
+        this._activeEffect.setFloat("_Filter_Width_", this._filterWidth);
         this._activeEffect.setDirectColor4("_Base_Color_", this.baseColor);
         this._activeEffect.setDirectColor4("_Line_Color_", this.lineColor);
 
@@ -463,6 +463,9 @@ export class FluentBackplateMaterial extends PushMaterial {
 
     public dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
+
+        this._blobTexture.dispose();
+        this._iridescentMap.dispose();
     }
 
     public clone(name: string): FluentBackplateMaterial {

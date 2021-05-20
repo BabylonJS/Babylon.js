@@ -1,6 +1,3 @@
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
@@ -25,9 +22,6 @@ export class HolographicBackplate extends Control3D {
 
     private _model: AbstractMesh;
     private _material: FluentBackplateMaterial;
-    private _shareMaterials = true;
-    private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
-    private _pointerHoverObserver: Nullable<Observer<Vector3>>;
 
     /**
      * Rendering ground id of the backplate mesh.
@@ -57,18 +51,12 @@ export class HolographicBackplate extends Control3D {
      * Creates a new holographic backplate
      * @param name defines the control name
      */
-    constructor(name?: string, shareMaterials = true) {
+    constructor(name?: string, private _shareMaterials = true) {
         super(name);
-
-        this._shareMaterials = shareMaterials;
     }
 
     protected _getTypeName(): string {
         return "HolographicBackplate";
-    }
-
-    private _rebuildContent(): void {
-
     }
 
     // Mesh association
@@ -116,8 +104,6 @@ export class HolographicBackplate extends Control3D {
         } else {
             this._createMaterial(mesh);
         }
-
-        this._rebuildContent();
     }
 
     /**
@@ -126,15 +112,10 @@ export class HolographicBackplate extends Control3D {
     public dispose() {
         super.dispose(); // will dispose main mesh ie. back plate
 
-        this.onPointerMoveObservable.remove(this._pointerHoverObserver);
-
         if (!this.shareMaterials) {
             this._material.dispose();
-
-            if (this._pickedPointObserver) {
-                this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
-                this._pickedPointObserver = null;
-            }
         }
+
+        this._model.dispose();
     }
 }
