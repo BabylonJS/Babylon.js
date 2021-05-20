@@ -9,7 +9,6 @@ import { Nullable } from "babylonjs/types";
 /**
  * Default behavior for 3D UI elements.
  * Handles a FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
- *
  */
 export class DefaultBehavior implements Behavior<Mesh> {
     private _scene: Scene;
@@ -17,6 +16,9 @@ export class DefaultBehavior implements Behavior<Mesh> {
     private _sixDofDragBehavior: SixDofDragBehavior;
     private _onBeforeRender: Nullable<Observer<Scene>>;
 
+    /**
+     * Instantiates the default behavior
+     */
     constructor() {
         this._followBehavior = new FollowBehavior();
         this._sixDofDragBehavior = new SixDofDragBehavior();
