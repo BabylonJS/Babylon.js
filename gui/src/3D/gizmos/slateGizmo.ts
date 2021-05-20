@@ -11,6 +11,7 @@ import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { Nullable } from "babylonjs/types";
 
 import { HolographicSlate } from "../controls/holographicSlate";
+import { HandleMaterial } from "../materials";
 
 // Mask contains the influence of the drag offset vectors on dimensions or origin of the slate
 // Mask vector is multiplied to the offset vector
@@ -25,6 +26,7 @@ type HandleMasks = {
 export class SlateGizmo extends Gizmo {
     private _boundingDimensions = new Vector3(0, 0, 0);
     private _dragPlaneNormal = new Vector3(0, 0, 1);
+    private _pickedPointObserver: Nullable<Observer<Nullable<AbstractMesh>>>;
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
@@ -34,6 +36,7 @@ export class SlateGizmo extends Gizmo {
     // Ordered left, bottom, right, top
     private _sides: TransformNode[] = [];
     private _handlesParent: TransformNode;
+    private _handleHovered: Nullable<AbstractMesh>;
 
     private _boundingBoxGizmo = {
         min: new Vector3(),
@@ -52,6 +55,7 @@ export class SlateGizmo extends Gizmo {
     >;
     private _dragEndObserver: Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
     private _dragBehavior: PointerDragBehavior;
+    private _handleMeshes: AbstractMesh[] = [];
 
     /**
      * Value we use to offset handles from mesh
@@ -76,11 +80,31 @@ export class SlateGizmo extends Gizmo {
      * The slate attached to this gizmo
      */
     public set attachedSlate(control: Nullable<HolographicSlate>) {
-        this._attachedSlate = control;
-        if (this._attachedSlate) {
-            this.attachedMesh = this._attachedSlate.mesh;
+        if (control) {
+            this.attachedMesh = control.mesh;
             this.updateBoundingBox();
+
+            this._pickedPointObserver = control._host.onPickedMeshChangedObservable.add((pickedMesh) => {
+                if (pickedMesh && this._handleMeshes.includes(pickedMesh)) {
+                    this._handleHovered = (pickedMesh.parent! as AbstractMesh);
+                    const children = this._handleHovered!.getChildren();
+                    for (let i = 0; i < children.length; i++) {
+                        ((children[i] as AbstractMesh).material as HandleMaterial).hover = true;
+                    }
+                } else {
+                    if (this._handleHovered) {
+                        const children = this._handleHovered!.getChildren();
+                        for (let i = 0; i < children.length; i++) {
+                            ((children[i] as AbstractMesh).material as HandleMaterial).hover = false;
+                        }
+                    }
+                    this._handleHovered = null;
+                }
+            });
+        } else if (this._attachedSlate) {
+            this._attachedSlate._host.onPickedMeshChangedObservable.remove(this._pickedPointObserver);
         }
+        this._attachedSlate = control;
     }
 
     public get attachedSlate(): Nullable<HolographicSlate> {
@@ -303,8 +327,12 @@ export class SlateGizmo extends Gizmo {
         this._dragBehavior = dragBehavior;
     }
 
-    private _createHandleMaterial() {
-        const mat = new HandleMaterial(this.gizmoLayer.utilityLayerScene);
+    private _createHandleMaterial(positionOffset?: Vector3) {
+        const mat = new HandleMaterial("handle", this.gizmoLayer.utilityLayerScene);
+        if (positionOffset) {
+            mat._positionOffset = positionOffset;
+        }
+        return mat;
     }
 
     private _createAngleMesh(): TransformNode {
@@ -316,9 +344,11 @@ export class SlateGizmo extends Gizmo {
         horizontalBox.parent = angleNode;
         verticalBox.parent = angleNode;
 
-        horizontalBox.position.x = 1;
-        verticalBox.position.y = 1;
+        horizontalBox.material = this._createHandleMaterial(new Vector3(1, 0, 0));
+        verticalBox.material = this._createHandleMaterial(new Vector3(0, 1, 0));
 
+        this._handleMeshes.push(horizontalBox);
+        this._handleMeshes.push(verticalBox);
         return angleNode;
     }
 
@@ -327,6 +357,10 @@ export class SlateGizmo extends Gizmo {
         const verticalBox = BoxBuilder.CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
         const sideNode = new TransformNode("side", this.gizmoLayer.utilityLayerScene);
         verticalBox.parent = sideNode;
+
+        const mat = this._createHandleMaterial();
+        verticalBox.material = mat;
+        this._handleMeshes.push(verticalBox);
 
         return sideNode;
     }
@@ -422,6 +456,7 @@ export class SlateGizmo extends Gizmo {
             this._updateHandlesPosition();
         }
     }
+
 
     public dispose() {
         // Will dispose rootMesh and all descendants
