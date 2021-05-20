@@ -775,7 +775,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
             this._platform = new (_TypeStore.RegisteredTypes["BABYLON.WebGL2ParticleSystem"] as any)(this, this._engine);
         }
-        
+
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
         this._customWrappers[0]!.effect = customEffect;
 
