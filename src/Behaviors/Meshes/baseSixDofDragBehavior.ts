@@ -53,7 +53,19 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
      */
-    public currentDraggingPointerID = -1;
+    public currentDraggingPointerId = -1;
+
+    /**
+     * Get or set the currentDraggingPointerId
+     * @deprecated Please use currentDraggingPointerId instead
+     */
+    public get currentDraggingPointerID(): number {
+        return this.currentDraggingPointerId;
+    }
+    public set currentDraggingPointerID(currentDraggingPointerID: number) {
+        this.currentDraggingPointerId = currentDraggingPointerID;
+    }
+    /**
     /**
      * If camera controls should be detached during the drag
      */
@@ -158,7 +170,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                     // Update state
                     this.dragging = true;
-                    this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
+                    this.currentDraggingPointerId = (<PointerEvent>pointerInfo.event).pointerId;
 
                     // Detach camera controls
                     if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
@@ -174,10 +186,10 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this.onDragStartObservable.notifyObservers({});
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
-                if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
+                if (this.currentDraggingPointerId == (<PointerEvent>pointerInfo.event).pointerId) {
                     this.dragging = false;
                     this._moving = false;
-                    this.currentDraggingPointerID = -1;
+                    this.currentDraggingPointerId = -1;
                     this._draggedMesh = null;
                     this._virtualOriginMesh.removeChild(this._virtualDragMesh);
 
@@ -190,7 +202,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 if (
-                    this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId &&
+                    this.currentDraggingPointerId == (<PointerEvent>pointerInfo.event).pointerId &&
                     this.dragging &&
                     pointerInfo.pickInfo &&
                     pointerInfo.pickInfo.ray &&
