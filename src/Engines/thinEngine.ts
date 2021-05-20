@@ -952,6 +952,7 @@ export class ThinEngine {
             fragmentDepthSupported: this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null,
             highPrecisionShaderSupported: false,
             timerQuery: this._gl.getExtension('EXT_disjoint_timer_query_webgl2') || this._gl.getExtension("EXT_disjoint_timer_query"),
+            supportOcclusionQuery: this._webGLVersion > 1,
             canUseTimestampForTimerQuery: false,
             drawBuffersExtension: false,
             maxMSAASamples: 1,

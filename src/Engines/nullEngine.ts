@@ -139,6 +139,7 @@ export class NullEngine extends Engine {
             depthTextureExtension: false,
             vertexArrayObject: false,
             instancedArrays: false,
+            supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             maxMSAASamples: 1,
             blendMinMax: false,

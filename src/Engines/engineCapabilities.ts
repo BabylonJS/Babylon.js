@@ -76,6 +76,8 @@ export interface EngineCapabilities {
     timerQuery?: EXT_disjoint_timer_query;
     /** Defines if timestamp can be used with timer query */
     canUseTimestampForTimerQuery: boolean;
+    /** Defines if occlusion queries are supported by the engine */
+    supportOcclusionQuery: boolean;
     /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
     multiview?: any;
     /** Defines if oculus multiview is supported (https://developer.oculus.com/documentation/oculus-browser/latest/concepts/browser-multiview/) */
