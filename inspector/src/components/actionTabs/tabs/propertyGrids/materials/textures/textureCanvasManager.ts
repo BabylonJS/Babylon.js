@@ -673,10 +673,7 @@ export class TextureCanvasManager {
     }
 
     public toolInteractionEnabled() {
-        if (this._keyMap[this.PAN_KEY] || this._isPanning) {
-            return false;
-        }
-        return true;
+        return !(this._keyMap[this.PAN_KEY] || this._isPanning);
     }
 
     public dispose() {
