@@ -221,7 +221,7 @@
 - Fix for namepsace sharing in .scss files; PropertyTab, SceneExplorer ([msDestiny14](https://github.com/msDestiny14))
 - Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
 - Fix undefined camera pose in WebXR in Babylon Native ([CraigFeldspar](https://github.com/CraigFeldspar))
-- Fix some different behaviours between `ParticleSystem` and `GPUParticleSystem` when using the cylinder emitter ([Popov72](https://github.com/Popov72))
+- Fix some different behaviours between `ParticleSystem` and `GPUParticleSystem` when using the cylinder emitter. Also added `WebGL2ParticleSystem` (for WebGL2 support) and `ComputeShaderParticleSystem` (for WebGPU support) ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

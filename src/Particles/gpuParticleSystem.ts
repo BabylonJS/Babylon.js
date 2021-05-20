@@ -24,8 +24,7 @@ import { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
-import { ComputeShaderParticleSystem } from "./computeShaderParticleSystem";
-import { WebGL2ParticleSystem } from "./webgl2ParticleSystem";
+import { _TypeStore } from "../Misc/typeStore";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -765,8 +764,18 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100);
         }
 
-        this._platform = this._engine.getCaps().supportComputeShaders ? new ComputeShaderParticleSystem(this, this._engine) : new WebGL2ParticleSystem(this, this._engine);
-
+        if (this._engine.getCaps().supportComputeShaders) {
+            if (_TypeStore.RegisteredTypes["BABYLON.ComputeShaderParticleSystem"] === undefined) {
+                throw new Error("The ComputeShaderParticleSystem class is not available! Make sure you have imported it.");
+            }
+            this._platform = new (_TypeStore.RegisteredTypes["BABYLON.ComputeShaderParticleSystem"] as any)(this, this._engine);
+        } else {
+            if (_TypeStore.RegisteredTypes["BABYLON.WebGL2ParticleSystem"] === undefined) {
+                throw new Error("The WebGL2ParticleSystem class is not available! Make sure you have imported it.");
+            }
+            this._platform = new (_TypeStore.RegisteredTypes["BABYLON.WebGL2ParticleSystem"] as any)(this, this._engine);
+        }
+        
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
         this._customWrappers[0]!.effect = customEffect;
 

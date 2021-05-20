@@ -9,6 +9,7 @@ import { DataArray } from "../types";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { Constants } from "../Engines/constants";
+import { _TypeStore } from "../Misc/typeStore";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -260,3 +261,5 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         return vao;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.WebGL2ParticleSystem"] = WebGL2ParticleSystem;
