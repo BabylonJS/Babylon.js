@@ -2,23 +2,24 @@ import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
 import { Scene } from "babylonjs/index";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
+import { Color3, TmpColors } from "babylonjs/Maths/math.color";
+import { CubicEase } from "babylonjs/Animations/easing";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 
 import "./shaders/handle.vertex";
 import "./shaders/handle.fragment";
-import { Color3, TmpColors } from "babylonjs/Maths/math.color";
-import { CubicEase } from "babylonjs/Animations/easing";
-import { Scalar } from "babylonjs/Maths/math.scalar";
-import { Vector3 } from "babylonjs/Maths/math.vector";
 
 /**
  * Class used to render gizmo handles with fluent design
  */
 export class HandleMaterial extends ShaderMaterial {
     private _hover: boolean = false;
+    private _drag: boolean = false;
     private _onBeforeRender: Nullable<Observer<Scene>>;
     private _color: Color3 = new Color3();
     private _scale: number = 1;
-    private _currentGradient = 0;
+    private _targetColor: Color3;
+    private _targetScale: number;
     private _lastTick = -1;
 
     /**
@@ -26,21 +27,36 @@ export class HandleMaterial extends ShaderMaterial {
      */
     public easingFunction = new CubicEase();
 
+    /**
+     * Is the material indicating hovering state
+     */
     public get hover(): boolean {
         return this._hover;
     }
 
     public set hover(b: boolean) {
-        if (this.hover !== b) {
-            this._interpolateTo(b);
-        }
         this._hover = b;
+
+        this._updateInterpolationTarget();
     }
 
     /**
-     * Length of hovering in/out animation
+     * Is the material indicating drag state
      */
-    public animationLength: number = 250;
+    public get drag(): boolean {
+        return this._drag;
+    }
+
+    public set drag(b: boolean) {
+        this._drag = b;
+
+        this._updateInterpolationTarget();
+    }
+
+    /**
+     * Length of animation
+     */
+    public animationLength: number = 100;
 
     /**
      * Color of the handle when hovered
@@ -63,6 +79,11 @@ export class HandleMaterial extends ShaderMaterial {
     public baseScale: number = 0.35;
 
     /**
+     * Scale of the handle when hovered
+     */
+    public dragScale: number = 0.55;
+
+    /**
      * @hidden
      */
     public _positionOffset: Vector3 = Vector3.Zero();
@@ -80,21 +101,20 @@ export class HandleMaterial extends ShaderMaterial {
             needAlphaTesting: false,
         });
 
+        this._updateInterpolationTarget();
+
         // Register callback for scene after render
         this._lastTick = Date.now();
         this._onBeforeRender = this.getScene().onBeforeRenderObservable.add(() => {
             const tick = Date.now();
             const delta = tick - this._lastTick;
 
-            this._currentGradient += this.hover ? delta / this.animationLength : -delta / this.animationLength;
-            this._currentGradient = Scalar.Clamp(this._currentGradient, 0, 1);
+            const scaleDiff = this._targetScale - this._scale;
+            const colorDiff = TmpColors.Color3[0].copyFrom(this._targetColor).subtractToRef(this._color, TmpColors.Color3[0]);
 
-            const alpha = this.easingFunction.ease(this._currentGradient);
-
-            TmpColors.Color3[0].copyFrom(this.hoverColor).scaleToRef(alpha, TmpColors.Color3[0]);
-            TmpColors.Color3[1].copyFrom(this.baseColor).scaleToRef(1 - alpha, TmpColors.Color3[1]);
-            this._color.copyFrom(TmpColors.Color3[0]).addToRef(TmpColors.Color3[1], this._color);
-            this._scale = (1 - alpha) * this.baseScale + alpha * this.hoverScale;
+            this._scale = this._scale + scaleDiff * delta / this.animationLength;
+            colorDiff.scaleToRef(delta / this.animationLength, colorDiff)
+            this._color.addToRef(colorDiff, this._color);
 
             this.setColor3("color", this._color);
             this.setFloat("scale", this._scale);
@@ -102,12 +122,19 @@ export class HandleMaterial extends ShaderMaterial {
 
             this._lastTick = tick;
         });
-
-        this.easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
     }
 
-    private _interpolateTo(value: boolean) {
-        // this._currentGradient = 1 - this._currentGradient;
+    private _updateInterpolationTarget() {
+        if (this.drag) {
+            this._targetColor = this.hoverColor;
+            this._targetScale = this.dragScale;
+        } else if (this.hover) {
+            this._targetColor = this.hoverColor;
+            this._targetScale = this.hoverScale
+        } else {
+            this._targetColor = this.baseColor;
+            this._targetScale = this.baseScale;
+        }
     }
 
     public dispose() {
