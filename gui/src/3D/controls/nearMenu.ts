@@ -113,7 +113,7 @@ export class NearMenu extends VolumeBasedPanel {
 
     protected _mapGridNode(control: Control3D, nodePosition: Vector3) {
         // Simple plane mapping for the menu
-        let mesh = control.mesh;
+        const mesh = control.mesh;
 
         if (!mesh) {
             return;
@@ -155,6 +155,10 @@ export class NearMenu extends VolumeBasedPanel {
         this._defaultBehavior.followBehavior.defaultDistance = extendSize.length() * this.scaling.length();
     }
 
+    /**
+     * Creates a near menu GUI 3D control
+     * @param name name of the near menu
+     */
     constructor(name: string) {
         super();
 
@@ -194,6 +198,9 @@ export class NearMenu extends VolumeBasedPanel {
         return this;
     }
 
+    /**
+     * Disposes the near menu
+     */
     public dispose() {
         super.dispose();
 

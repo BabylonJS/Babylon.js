@@ -166,8 +166,8 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     this._virtualOriginMesh.removeChild(this._virtualDragMesh);
                     pickedMesh.computeWorldMatrix();
                     this._virtualDragMesh.position.copyFrom(pickedMesh.absolutePosition);
-                    var referenceMesh = this.ancestorToDrag ? this.ancestorToDrag : pickedMesh;
-                    var oldParent = referenceMesh.parent;
+                    const referenceMesh = this.ancestorToDrag ? this.ancestorToDrag : pickedMesh;
+                    const oldParent = referenceMesh.parent;
 
                     if (!referenceMesh.rotationQuaternion) {
                         referenceMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(referenceMesh.rotation.y, referenceMesh.rotation.x, referenceMesh.rotation.z);
