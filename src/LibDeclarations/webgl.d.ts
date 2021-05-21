@@ -49,7 +49,7 @@ interface WebGLRenderingContext {
     COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT: number;
     COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT: number;
     COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT: number;
-    
+
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
 
