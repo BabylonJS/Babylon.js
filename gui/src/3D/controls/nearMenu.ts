@@ -6,8 +6,8 @@ import { Control3D } from "./control3D";
 import { VolumeBasedPanel } from "./volumeBasedPanel";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
-import { AbstractMesh } from "babylonjs/Meshes/index";
-import { FluentMaterial } from "../materials";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { Observer } from "babylonjs/Misc/observable";
 import { Logger } from "babylonjs/Misc/logger";
@@ -20,6 +20,15 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
  * NearMenu that displays buttons and follows the camera
  */
 export class NearMenu extends VolumeBasedPanel {
+    /**
+     * Base Url for the assets.
+     */
+    private static ASSETS_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+    /**
+     * File name for the close icon.
+     */
+    private static PIN_ICON_FILENAME: string = "IconPin.png";
+
     private _pinButton: TouchHolographicButton;
     private _backPlate: Mesh;
     private _backPlateMaterial: FluentMaterial;
@@ -42,7 +51,7 @@ export class NearMenu extends VolumeBasedPanel {
         this._isPinned = value;
 
         if (this._isPinned) {
-            this._pinMaterial.emissiveColor.copyFromFloats(0.25, 0.40, 0.95);
+            this._pinMaterial.emissiveColor.copyFromFloats(0.25, 0.4, 0.95);
             this._defaultBehavior.followBehaviorEnabled = false;
         } else {
             this._pinMaterial.emissiveColor.copyFromFloats(0.08, 0.15, 0.55);
@@ -52,16 +61,16 @@ export class NearMenu extends VolumeBasedPanel {
 
     private _createPinButton(parent: TransformNode) {
         const control = new TouchHolographicButton("pin" + this.name, false);
-        control.imageUrl = "./textures/IconPin.png";
+        control.imageUrl = NearMenu.ASSETS_BASE_URL + NearMenu.PIN_ICON_FILENAME;
         control.parent = this;
         control._host = this._host;
-        control.onPointerClickObservable.add(() => this.isPinned = !this.isPinned);
+        control.onPointerClickObservable.add(() => (this.isPinned = !this.isPinned));
 
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
             this._pinMaterial = control.backMaterial;
             this._pinMaterial.diffuseColor.copyFromFloats(0, 0, 0);
-            
+
             if (control.node) {
                 control.node.parent = parent;
             }
@@ -86,7 +95,6 @@ export class NearMenu extends VolumeBasedPanel {
     }
 
     protected _affectMaterial(mesh: AbstractMesh) {
-        // TODO share materials
         this._backPlateMaterial = new FluentMaterial(this.name + "backPlateMaterial", mesh.getScene());
         this._backPlateMaterial.albedoColor = new Color3(0.08, 0.15, 0.55);
         this._backPlateMaterial.renderBorders = true;
@@ -106,7 +114,7 @@ export class NearMenu extends VolumeBasedPanel {
 
     protected _mapGridNode(control: Control3D, nodePosition: Vector3) {
         // Simple plane mapping for the menu
-        let mesh = control.mesh;
+        const mesh = control.mesh;
 
         if (!mesh) {
             return;
@@ -148,6 +156,10 @@ export class NearMenu extends VolumeBasedPanel {
         this._defaultBehavior.followBehavior.defaultDistance = extendSize.length() * this.scaling.length();
     }
 
+    /**
+     * Creates a near menu GUI 3D control
+     * @param name name of the near menu
+     */
     constructor(name: string) {
         super();
 
@@ -187,6 +199,9 @@ export class NearMenu extends VolumeBasedPanel {
         return this;
     }
 
+    /**
+     * Disposes the near menu
+     */
     public dispose() {
         super.dispose();
 

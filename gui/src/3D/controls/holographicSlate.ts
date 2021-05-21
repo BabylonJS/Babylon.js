@@ -285,7 +285,6 @@ export class HolographicSlate extends ContentDisplay3D {
             this.dispose();
         });
 
-        // Creates a collision mesh that shares position with the backplate of the slate
         node.rotationQuaternion = Quaternion.Identity();
         node.isVisible = false;
 

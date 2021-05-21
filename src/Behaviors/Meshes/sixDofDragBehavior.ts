@@ -8,7 +8,7 @@ import { Vector3, Quaternion, Matrix } from "../../Maths/math.vector";
 import { Observer, Observable } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { PivotTools } from "../../Misc/pivotTools";
-import { TransformNode } from "../../Meshes";
+import { TransformNode } from "../../Meshes/transformNode";
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
  */
@@ -170,8 +170,8 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     this._virtualOriginMesh.removeChild(this._virtualDragMesh);
                     pickedMesh.computeWorldMatrix();
                     this._virtualDragMesh.position.copyFrom(pickedMesh.absolutePosition);
-                    var referenceMesh = this.ancestorToDrag ? this.ancestorToDrag : pickedMesh;
-                    var oldParent = referenceMesh.parent;
+                    const referenceMesh = this.ancestorToDrag ? this.ancestorToDrag : pickedMesh;
+                    const oldParent = referenceMesh.parent;
 
                     if (!referenceMesh.rotationQuaternion) {
                         referenceMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(referenceMesh.rotation.y, referenceMesh.rotation.x, referenceMesh.rotation.z);
