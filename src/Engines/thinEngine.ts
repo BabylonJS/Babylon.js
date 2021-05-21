@@ -972,6 +972,7 @@ export class ThinEngine {
             canUseGLInstanceID: this._webGLVersion > 1,
             canUseGLVertexID: this._webGLVersion > 1,
             supportComputeShaders: false,
+            supportSRGBBuffers: this._webGLVersion > 1 || this._gl.getExtension('EXT_sRGB') !== null,
         };
 
         // Infos
@@ -3154,7 +3155,7 @@ export class ThinEngine {
         processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => void,
         prepareTextureProcessFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture {
         url = url || "";
         const fromData = url.substr(0, 5) === "data:";
         const fromBlob = url.substr(0, 5) === "blob:";
@@ -3197,6 +3198,7 @@ export class ThinEngine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
+        texture._useSRGBBuffer = !!useSRGBBuffer;
 
         if (!this._doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
@@ -3231,7 +3233,7 @@ export class ThinEngine {
             else {
                 // fall back to the original url if the transformed url fails to load
                 Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
-                this._createTextureBase(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture, format, forcedExtension, mimeType, loaderOptions);
+                this._createTextureBase(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture, format, forcedExtension, mimeType, loaderOptions, useSRGBBuffer);
             }
         };
 
@@ -3316,12 +3318,13 @@ export class ThinEngine {
      * @param mimeType defines an optional mime type
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture {
 
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
@@ -3329,6 +3332,7 @@ export class ThinEngine {
             (potWidth, potHeight, img, extension, texture, continuationCallback) => {
                 let gl = this._gl;
                 var isPot = (img.width === potWidth && img.height === potHeight);
+                console.log(img.width, img.height, format);
                 let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
 
                 if (isPot) {
@@ -3370,7 +3374,7 @@ export class ThinEngine {
 
                 return true;
             },
-            buffer, fallback, format, forcedExtension, mimeType, loaderOptions
+            buffer, fallback, format, forcedExtension, mimeType, loaderOptions, useSRGBBuffer
         );
     }
 

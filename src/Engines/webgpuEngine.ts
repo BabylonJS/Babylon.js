@@ -687,6 +687,7 @@ export class WebGPUEngine extends Engine {
             canUseGLInstanceID: true,
             canUseGLVertexID: true,
             supportComputeShaders: true,
+            supportSRGBBuffers: true,
         };
 
         this._caps.parallelShaderCompile = null as any;
@@ -1601,12 +1602,13 @@ export class WebGPUEngine extends Engine {
      * @param mimeType defines an optional mime type
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture {
 
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
@@ -1623,7 +1625,7 @@ export class WebGPUEngine extends Engine {
                     processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
                     if (!texture._hardwareTexture?.underlyingResource) { // the texture could have been created before reaching this point so don't recreate it if already existing
-                        const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height, undefined, creationFlags);
+                        const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height, undefined, creationFlags, useSRGBBuffer);
 
                         if (WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
                             this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
@@ -1645,7 +1647,7 @@ export class WebGPUEngine extends Engine {
                     texture.onLoadedObservable.clear();
             },
             () => false,
-            buffer, fallback, format, forcedExtension, mimeType, loaderOptions
+            buffer, fallback, format, forcedExtension, mimeType, loaderOptions, useSRGBBuffer
         );
     }
 
@@ -1716,7 +1718,7 @@ export class WebGPUEngine extends Engine {
 
         texture._hardwareTexture.release(); // don't defer the releasing! Else we will release at the end of this frame the gpu texture we are about to create in the next line...
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages, texture._useSRGBBuffer);
     }
 
     private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
@@ -1896,7 +1898,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, undefined, undefined, undefined, undefined, texture._useSRGBBuffer);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
@@ -1910,7 +1912,7 @@ export class WebGPUEngine extends Engine {
 
         if (!texture._hardwareTexture?.underlyingResource) {
             texture.format = internalFormat;
-            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, undefined, texture._useSRGBBuffer);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
@@ -1931,7 +1933,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, undefined, texture._useSRGBBuffer);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
@@ -1949,7 +1951,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, undefined, undefined, undefined, undefined, texture._useSRGBBuffer);
         }
 
         const bitmap = image as ImageBitmap; // in WebGPU we will always get an ImageBitmap, not an HTMLImageElement
