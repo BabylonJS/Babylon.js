@@ -381,7 +381,7 @@ export class SerializationHelper {
                         break;
                     case 6:     // Mesh reference
                         if (scene) {
-                            dest[property] = scene.getLastMeshByID(sourceProperty);
+                            dest[property] = scene.getLastMeshById(sourceProperty);
                         }
                         break;
                     case 7:     // Color Curves
@@ -398,7 +398,7 @@ export class SerializationHelper {
                         break;
                     case 11:    // Camera reference
                         if (scene) {
-                            dest[property] = scene.getCameraByID(sourceProperty);
+                            dest[property] = scene.getCameraById(sourceProperty);
                         }
                     case 12:    // Matrix
                         dest[property] = Matrix.FromArray(sourceProperty);

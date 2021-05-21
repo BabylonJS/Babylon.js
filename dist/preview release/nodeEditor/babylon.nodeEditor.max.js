@@ -57374,12 +57374,12 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         var material = this.props.globalState.nodeMaterial;
         var scene = material.getScene();
-        var snippedID = window.prompt("Please enter the snippet ID to use");
-        if (!snippedID) {
+        var snippedId = window.prompt("Please enter the snippet ID to use");
+        if (!snippedId) {
             return;
         }
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedID, scene, "", material).then(function () {
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedId, scene, "", material).then(function () {
             material.build();
             if (!_this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false)) {
                 _this.props.globalState.onResetRequiredObservable.notifyObservers();

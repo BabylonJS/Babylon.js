@@ -1,10 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { GlobalState } from './globalState';
-import { RenderingZone } from './components/renderingZone';
-import { Footer } from './components/footer';
-import { EnvironmentTools } from './tools/environmentTools';
-import { Vector3 } from 'babylonjs/Maths/math.vector';
+import { GlobalState } from "./globalState";
+import { RenderingZone } from "./components/renderingZone";
+import { ReflectorZone } from "./components/reflectorZone";
+import { Footer } from "./components/footer";
+import { EnvironmentTools } from "./tools/environmentTools";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 
 require("./scss/main.scss");
 var fullScreenLogo = require("./img/logo-fullscreen.svg");
@@ -104,6 +105,23 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                         this.state = { isFooterVisible: value === "true" ? false : true, errorMessage: "" };
                         break;
                     }
+                    case "reflector": {
+                        document.title = "Babylon.js Reflector";
+                        this._globalState.reflector = { hostname: "localhost", port: 1234 };
+                        break;
+                    }
+                    case "hostname": {
+                        if (this._globalState.reflector) {
+                            this._globalState.reflector.hostname = value;
+                        }
+                        break;
+                    }
+                    case "port": {
+                        if (this._globalState.reflector) {
+                            this._globalState.reflector.port = +value;
+                        }
+                        break;
+                    }
                 }
             }
         }
@@ -115,15 +133,16 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
     }
 
     public render() {
-
         return (
             <div id="root">
-                <p id="droptext" ref={this._dropTextRef}>Drag and drop gltf, glb, obj or babylon files to view them</p>
-                <RenderingZone globalState={this._globalState}
-                    assetUrl={this._assetUrl}
-                    autoRotate={this._autoRotate}
-                    cameraPosition={this._cameraPosition}
-                    expanded={!this.state.isFooterVisible} />
+                <span>
+                    <p id="droptext" ref={this._dropTextRef}>{this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj or babylon files to view them"}</p>
+                    {
+                        this._globalState.reflector
+                            ? <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />
+                            : <RenderingZone globalState={this._globalState} assetUrl={this._assetUrl} autoRotate={this._autoRotate} cameraPosition={this._cameraPosition} expanded={!this.state.isFooterVisible} />
+                    }
+                </span>
                 <div ref={this._clickInterceptorRef}
                     onClick={() => {
                         this._globalState.onClickInterceptorClicked.notifyObservers();

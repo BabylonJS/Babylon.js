@@ -28,11 +28,14 @@
 - Added support for clip planes to the edge renderer ([#10053](https://github.com/BabylonJS/Babylon.js/issues/10053)) ([Popov72](https://github.com/Popov72))
 - Added support for [cannon-es](https://github.com/pmndrs/cannon-es) to the cannonJSPlugin. ([frankieali](https://github.com/frankieali))
 - Added check for duplicates in addShadowCaster ([ivankoleda](https://github.com/ivankoleda))
+- spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the correspondgin `xxxById` ([barroij](https://github.com/barroij))
+- Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
 
 ### Engine
 
 - Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
 - Added NativeEngine configuration object parameter. ([drigax](https://github.com/drigax))
+- Added NativeEngine support for signed byte and unsigned short vertex buffer attribute types ([Alex-MSFT](https://github.com/Alex-MSFT))
 
 ### Loaders
 
@@ -75,6 +78,7 @@
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
+- Added space + LMB panning to texture inspector to improve accessibility ([darraghjburke](https://github.com/darraghjburke))
 
 ### NME
 
@@ -97,6 +101,7 @@
 - Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
 - Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
 - Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
+- Added navigation hotkeys ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -130,6 +135,7 @@
 - Prevent the XR render target texture from rescaling when using the scene optimizer ([#10135](https://github.com/BabylonJS/Babylon.js/issues/10135)) ([RaananW](https://github.com/RaananW))
 - Force https when using WebXR except for when hostname is localhost ([#10154](https://github.com/BabylonJS/Babylon.js/issues/10154)) ([RaananW](https://github.com/RaananW))
 - Use the newly-introduced physics velocities of controllers/headset where available ([#10118](https://github.com/BabylonJS/Babylon.js/issues/10118)) ([RaananW](https://github.com/RaananW))
+- Added support for `xr-dom-overlay` ([#8996](https://github.com/BabylonJS/Babylon.js/issues/8996)) ([brianzinn](https://github.com/brianzinn))
 
 ### Gizmos
 
@@ -150,6 +156,7 @@
 ### Serializers
 
 - Added the `exportUnusedUVs` property to the `IExportOptions` interface that will prevent any unused vertex uv attributes from being stripped during the glTF export. ([ericbroberic](https://github.com/ericbroberic))
+- glTF serializer now supports KHR_materials_clearcoat ([drigax](https://github.com/drigax))
 
 ## Bugs
 
@@ -215,6 +222,7 @@
 - Fix for namepsace sharing in .scss files; PropertyTab, SceneExplorer ([msDestiny14](https://github.com/msDestiny14))
 - Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
 - Fix undefined camera pose in WebXR in Babylon Native ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix the `StandardMaterial` not using the tangent attribute when available ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
@@ -228,3 +236,5 @@
 - Fixed spelling of EventState.initialize() ([seritools](https://github.com/seritools))
 - `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
 - `BindEyePosition` has been moved from `Material` to `Scene` to avoid a circular dependency problem and is now a non-static method (`bindEyePosition`) ([Popov72](https://github.com/Popov72))
+- The depth renderer was not generating correct values for orthographic cameras when **storeNonLinearDepth = false** ([Popov72](https://github.com/Popov72))
+- `dataBuffer.ts` and `buffer.ts` have been moved from `Meshes/` to `Buffers/` ([Popov72](https://github.com/Popov72))

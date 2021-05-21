@@ -74,11 +74,23 @@ export class UtilityLayerRenderer implements IDisposable {
      */
     public static get DefaultUtilityLayer(): UtilityLayerRenderer {
         if (UtilityLayerRenderer._DefaultUtilityLayer == null) {
-            UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(EngineStore.LastCreatedScene!);
-            UtilityLayerRenderer._DefaultUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
-                UtilityLayerRenderer._DefaultUtilityLayer = null;
-            });
+            return UtilityLayerRenderer._CreateDefaultUtilityLayerFromScene(EngineStore.LastCreatedScene!);
         }
+
+        return UtilityLayerRenderer._DefaultUtilityLayer;
+    }
+
+    /**
+     * Creates an utility layer, and set it as a default utility layer
+     * @param scene associated scene
+     * @hidden
+     */
+    public static _CreateDefaultUtilityLayerFromScene(scene: Scene): UtilityLayerRenderer {
+        UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(scene);
+        UtilityLayerRenderer._DefaultUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
+            UtilityLayerRenderer._DefaultUtilityLayer = null;
+        });
+
         return UtilityLayerRenderer._DefaultUtilityLayer;
     }
     /**

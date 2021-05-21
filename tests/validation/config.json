@@ -673,6 +673,11 @@
             "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
         },
         {
+            "title": "GLTF Serializer KHR materials clearcoat",
+            "playgroundId": "#9N6CLU#23",
+            "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png"
+        },
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"
@@ -696,7 +701,15 @@
         {
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
-            "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
+            "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
+            "renderCount": 5
+        },
+        {
+            "title": "GLTF Extension KHR_materials_volume with attenuation",
+            "playgroundId": "#YG3BBF#18",
+            "referenceImage": "gltfExtensionKhrMaterialsVolumeAttenuation.png",
+            "errorRatio": 1.2,
+            "renderCount": 5
         },
         {
             "title": "GLTF Extension KHR_materials_specular",

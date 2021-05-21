@@ -263,10 +263,11 @@ export class Geometry implements IGetSetVerticesData {
      * Affect a vertex buffer to the geometry. the vertexBuffer.getKind() function is used to determine where to store the data
      * @param buffer defines the vertex buffer to use
      * @param totalVertices defines the total number of vertices for position kind (could be null)
+     * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
      */
-    public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null): void {
+    public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null, disposeExistingBuffer = true): void {
         var kind = buffer.getKind();
-        if (this._vertexBuffers[kind]) {
+        if (this._vertexBuffers[kind] && disposeExistingBuffer) {
             this._vertexBuffers[kind].dispose();
         }
 
@@ -1142,7 +1143,7 @@ export class Geometry implements IGetSetVerticesData {
         // Geometry
         var geometryId = parsedGeometry.geometryId;
         if (geometryId) {
-            var geometry = scene.getGeometryByID(geometryId);
+            var geometry = scene.getGeometryById(geometryId);
             if (geometry) {
                 geometry.applyToMesh(mesh);
             }
@@ -1367,7 +1368,7 @@ export class Geometry implements IGetSetVerticesData {
         }
         let noInfluenceBoneIndex = 0.0;
         if (parsedGeometry.skeletonId > -1) {
-            let skeleton = mesh.getScene().getLastSkeletonByID(parsedGeometry.skeletonId);
+            let skeleton = mesh.getScene().getLastSkeletonById(parsedGeometry.skeletonId);
 
             if (!skeleton) {
                 return;
@@ -1440,7 +1441,7 @@ export class Geometry implements IGetSetVerticesData {
      * @returns the new geometry object
      */
     public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Nullable<Geometry> {
-        if (scene.getGeometryByID(parsedVertexData.id)) {
+        if (scene.getGeometryById(parsedVertexData.id)) {
             return null; // null since geometry could be something else than a box...
         }
 
