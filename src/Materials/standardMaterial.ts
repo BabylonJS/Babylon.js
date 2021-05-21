@@ -80,6 +80,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public EMISSIVEFRESNEL = false;
     public FRESNEL = false;
     public NORMAL = false;
+    public TANGENT = false;
     public UV1 = false;
     public UV2 = false;
     public VERTEXCOLOR = false;
@@ -1191,6 +1192,10 @@ export class StandardMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.NormalKind);
             }
 
+            if (defines.TANGENT) {
+                attribs.push(VertexBuffer.TangentKind);
+            }
+    
             if (defines.UV1) {
                 attribs.push(VertexBuffer.UVKind);
             }
