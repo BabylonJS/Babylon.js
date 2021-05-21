@@ -28,6 +28,8 @@ export interface EngineCapabilities {
     standardDerivatives: boolean;
     /** Defines if s3tc texture compression is supported */
     s3tc?: WEBGL_compressed_texture_s3tc;
+    /** Defines if s3tc sRGB texture compression is supported */
+    s3tc_srgb?: WEBGL_compressed_texture_s3tc_srgb;
     /** Defines if pvrtc texture compression is supported */
     pvrtc: any; //WEBGL_compressed_texture_pvrtc;
     /** Defines if etc1 texture compression is supported */
