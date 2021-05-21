@@ -420,17 +420,19 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
             }
 
-            if (deviceType === DeviceType.Mouse && this._mouseId === -1) {
-                this._mouseId = evt.pointerId;
-            }
-
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
                 const previousVertical = pointer[PointerInput.Vertical];
                 const previousButton = pointer[evt.button + 2];
 
-                this._elementToAttachTo.setPointerCapture(evt.pointerId);
+                if (evt.pointerId && evt.pointerId >= 0) {
+                    if (deviceType === DeviceType.Mouse && this._mouseId === -1) {
+                        this._mouseId = evt.pointerId;
+                    }
+
+                    this._elementToAttachTo.setPointerCapture(evt.pointerId);
+                }
 
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
@@ -499,7 +501,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.previousState = previousButton;
                 deviceEvent.currentState = pointer[evt.button + 2];
 
-                this._elementToAttachTo.releasePointerCapture(evt.pointerId);
+                if (this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture(evt.pointerId)) {
+                    this._elementToAttachTo.releasePointerCapture(evt.pointerId);
+                }
 
                 this.onInputChangedObservable.notifyObservers(deviceEvent);
 
@@ -543,7 +547,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             if (this.isDeviceAvailable(DeviceType.Mouse)) {
                 const pointer = this._inputs[DeviceType.Mouse][0];
 
-                if (this._elementToAttachTo.hasPointerCapture(this._mouseId)) {
+                if (this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture(this._mouseId)) {
                     this._elementToAttachTo.releasePointerCapture(this._mouseId);
                 }
 
