@@ -56,7 +56,7 @@ export interface ITextureCreationOptions {
     /** Specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg) (default: undefined) */
     creationFlags?: number;
 
-    /** Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU). The texture will be automatically flagged as gammaSpace = true if useSRGBBuffer = true (default: false) */
+    /** Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false) */
     useSRGBBuffer?: boolean;
 }
 
