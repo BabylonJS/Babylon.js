@@ -1625,7 +1625,7 @@ export class WebGPUEngine extends Engine {
                     processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
                     if (!texture._hardwareTexture?.underlyingResource) { // the texture could have been created before reaching this point so don't recreate it if already existing
-                        const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height, undefined, creationFlags, useSRGBBuffer);
+                        const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height, undefined, creationFlags);
 
                         if (WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
                             this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
@@ -1718,7 +1718,7 @@ export class WebGPUEngine extends Engine {
 
         texture._hardwareTexture.release(); // don't defer the releasing! Else we will release at the end of this frame the gpu texture we are about to create in the next line...
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages, texture._useSRGBBuffer);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
     }
 
     private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
@@ -1898,7 +1898,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, undefined, undefined, undefined, undefined, texture._useSRGBBuffer);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
@@ -1912,7 +1912,7 @@ export class WebGPUEngine extends Engine {
 
         if (!texture._hardwareTexture?.underlyingResource) {
             texture.format = internalFormat;
-            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, undefined, texture._useSRGBBuffer);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
@@ -1933,7 +1933,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, undefined, texture._useSRGBBuffer);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
@@ -1951,7 +1951,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, undefined, undefined, undefined, undefined, texture._useSRGBBuffer);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
         }
 
         const bitmap = image as ImageBitmap; // in WebGPU we will always get an ImageBitmap, not an HTMLImageElement
