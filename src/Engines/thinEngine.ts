@@ -1131,8 +1131,8 @@ export class ThinEngine {
             if (sRGBExtension != null) {
                 this._caps.supportSRGBBuffers = true;
                 this._gl.SRGB = sRGBExtension.SRGB_EXT;
-                this._gl.SRGB8 = sRGBExtension.SRGB_EXT;
-                this._gl.SRGB8_ALPHA8 = sRGBExtension.SRGB8_ALPHA8_EXT;
+                this._gl.SRGB8 = sRGBExtension.SRGB_ALPHA_EXT;
+                this._gl.SRGB8_ALPHA8 = sRGBExtension.SRGB_ALPHA_EXT;
             }
         }
 
@@ -3225,7 +3225,7 @@ export class ThinEngine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
-        texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers;
+        texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || noMipmap); // it seems generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
 
         if (!this._doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
@@ -3360,8 +3360,14 @@ export class ThinEngine {
                 let gl = this._gl;
                 var isPot = (img.width === potWidth && img.height === potHeight);
 
-                let internalFormat = format ? this._getInternalFormat(format, texture._useSRGBBuffer) : ((extension === ".jpg" && !texture._useSRGBBuffer) ? gl.RGB : (texture._useSRGBBuffer ? gl.SRGB8_ALPHA8 : gl.RGBA));
+                let internalFormat = format ?
+                    this._getInternalFormat(format, texture._useSRGBBuffer) :
+                    ((extension === ".jpg" && !texture._useSRGBBuffer) ? gl.RGB : (texture._useSRGBBuffer ? gl.SRGB8_ALPHA8 : gl.RGBA));
                 let texelFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg" && !texture._useSRGBBuffer) ? gl.RGB : gl.RGBA);
+
+                if (texture._useSRGBBuffer && this.webGLVersion === 1) {
+                    texelFormat = internalFormat;
+                }
 
                 if (isPot) {
                     gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, img as any);

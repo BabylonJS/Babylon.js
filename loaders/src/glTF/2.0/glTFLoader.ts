@@ -2029,8 +2029,8 @@ export class GLTFLoader implements IGLTFLoader {
 
         const deferred = new Deferred<void>();
         this._babylonScene._blockEntityCollection = this._forAssetContainer;
-        const textureCreationOptions = {
-            noMipMaps: samplerData.noMipMaps,
+        const textureCreationOptions: ITextureCreationOptions = {
+            noMipmap: samplerData.noMipMaps,
             invertY: false,
             samplingMode: samplerData.samplingMode,
             onLoad: () => {
