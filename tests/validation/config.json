@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Texture cache",
+            "playgroundId": "#3TFH5I#0",
+            "referenceImage": "texture cache.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Sprites",
             "playgroundId": "#ZX8DJ3#1",
             "referenceImage": "Sprites.png"
@@ -717,6 +723,11 @@
             "referenceImage": "gltfExtensionKhrMaterialsSpecular.png"
         },
         {
+            "title": "GLTF Texture Linear Interpolation Test",
+            "playgroundId": "#WGZLGJ#3009",
+            "referenceImage": "gltfTextureLinearInterpolation.png"
+        },
+        {
             "title": "Asset Containers",
             "playgroundId": "#P3U079#19",
             "referenceImage": "assetContainer.png"
@@ -818,12 +829,6 @@
             "title": "PBR shader code coverage 3",
             "playgroundId": "#QI7TL3#18",
             "referenceImage": "pbr_codecoverage3.png"
-        },
-        {
-            "title": "Texture cache",
-            "playgroundId": "#3TFH5I#0",
-            "referenceImage": "texture cache.png",
-            "excludedEngines": ["webgl1"]
         },
         {
             "title": "MultiSample render targets",
