@@ -41,6 +41,7 @@ interface WebGLRenderingContext {
     RG: number;
     R8: number;
     RG8: number;
+    SRGB: number;
     SRGB8: number;
     SRGB8_ALPHA8: number;
 
