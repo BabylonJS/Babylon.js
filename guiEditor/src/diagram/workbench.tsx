@@ -284,10 +284,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (guiControl.typeName === "Line") {
             let line = (guiControl as Line);
-            let x1 = (line.x1 as string).substr(0, (line.x1 as string).length - 2); //removing the 'px'
-            let x2 = (line.x2 as string).substr(0, (line.x2 as string).length - 2);
-            let y1 = (line.y1 as string).substr(0, (line.y1 as string).length - 2);
-            let y2 = (line.y2 as string).substr(0, (line.y2 as string).length - 2);
+            const x1 = (line.x1 as string).substr(0, (line.x1 as string).length - 2); //removing the 'px'
+            const x2 = (line.x2 as string).substr(0, (line.x2 as string).length - 2);
+            const y1 = (line.y1 as string).substr(0, (line.y1 as string).length - 2);
+            const y2 = (line.y2 as string).substr(0, (line.y2 as string).length - 2);
             line.x1 = Number(x1) + newX;
             line.x2 = Number(x2) + newX;
             line.y1 = Number(y1) + newY;
@@ -300,8 +300,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         //convert to percentage
         if (this._responsive) {
-            let left = (guiControl.leftInPixels * 100) / (this._textureMesh.scaling.x);
-            let top = (guiControl.topInPixels * 100) / (this._textureMesh.scaling.z);
+            const left = (guiControl.leftInPixels * 100) / (this._textureMesh.scaling.x);
+            const top = (guiControl.topInPixels * 100) / (this._textureMesh.scaling.z);
             guiControl.left = `${left}%`;
             guiControl.top = `${top}%`;
         }
