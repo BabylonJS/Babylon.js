@@ -3359,7 +3359,7 @@ export class ThinEngine {
                 let gl = this._gl;
                 var isPot = (img.width === potWidth && img.height === potHeight);
 
-                let internalFormat = format ? this._getInternalFormat(format, useSRGBBuffer) : ((extension === ".jpg") ? (useSRGBBuffer ? gl.SRGB8 : gl.RGB) : (useSRGBBuffer ? gl.SRGB8_ALPHA8 : gl.RGBA));
+                let internalFormat = format ? this._getInternalFormat(format, texture._useSRGBBuffer) : ((extension === ".jpg") ? (texture._useSRGBBuffer ? gl.SRGB8 : gl.RGB) : (texture._useSRGBBuffer ? gl.SRGB8_ALPHA8 : gl.RGBA));
                 let texelFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
 
                 if (isPot) {
