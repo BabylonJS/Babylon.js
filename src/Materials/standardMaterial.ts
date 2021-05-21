@@ -1195,7 +1195,7 @@ export class StandardMaterial extends PushMaterial {
             if (defines.TANGENT) {
                 attribs.push(VertexBuffer.TangentKind);
             }
-    
+
             if (defines.UV1) {
                 attribs.push(VertexBuffer.UVKind);
             }
