@@ -22,10 +22,15 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
 
         const control = this.props.control;
 
-        props.globalState.onSelectionChangedObservable.add((selection) => {
+        /*props.globalState.onSelectionChangedObservable.add((selection) => {
                 this.setState({ isSelected: selection === this.props.control });
-        });
+        });*/
         this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
+    }
+
+    componentWillUnmount()
+    {
+        //this.props.globalState.onSelectionChangedObservable.remove((selection));
     }
 
     highlight() {
@@ -47,8 +52,11 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         const name = (control.name || "No name") + ` [${control.getClassName()}]`;
 
         return (
-            <div className="controlTools" onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}>
-
+            <div className="controlTools" onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}
+            draggable={true}
+            onDragStart={event => {
+                //event.dataTransfer.setData("babylonjs-material-node", this.props.data);
+            }}>
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
                 {(this.state.isHovered || this.state.isSelected) && <>
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
