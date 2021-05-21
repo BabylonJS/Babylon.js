@@ -16,3 +16,4 @@ export * from "./touchMeshButton3D";
 export * from "./touchHolographicButton";
 export * from "./touchToggleButton3D";
 export * from "./volumeBasedPanel";
+export * from "./holographicBackplate";
