@@ -321,6 +321,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 DataStorage.WriteBoolean("ShowGrid", value);
                             }}
                         />
+                        <CheckBoxLineComponent
+                            label="Responsive"
+                            isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
+                            onSelect={(value: boolean) => {
+                                this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
+                                DataStorage.WriteBoolean("Responsive", value);
+                            }}
+                        />
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
