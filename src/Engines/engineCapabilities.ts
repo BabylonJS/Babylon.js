@@ -94,4 +94,6 @@ export interface EngineCapabilities {
     canUseGLVertexID: boolean;
     /** Defines if compute shaders are supported by the engine */
     supportComputeShaders: boolean;
+    /** Defines if sRGB texture formats are supported */
+    supportSRGBBuffers: boolean;
 }
