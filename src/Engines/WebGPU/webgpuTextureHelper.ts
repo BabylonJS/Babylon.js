@@ -874,7 +874,7 @@ export class WebGPUTextureHelper {
         }
     }
 
-    public createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number, useSRGBBuffer?: boolean): WebGPUHardwareTexture {
+    public createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture {
         if (!texture._hardwareTexture) {
             texture._hardwareTexture = new WebGPUHardwareTexture();
         }
@@ -891,7 +891,7 @@ export class WebGPUTextureHelper {
 
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
-        gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, useSRGBBuffer);
+        gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
 
         gpuTextureWrapper.textureUsages =
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :
