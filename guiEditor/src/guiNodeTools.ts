@@ -40,28 +40,29 @@ export class GUINodeTools {
                 element = new Ellipse("Ellipse");
                 element.color = "#cccccc";
                 element.isPointerBlocker = true;
+                element.thickness = 1;
                 return element;
             case "Rectangle":
                 element = new Rectangle("Rectangle");
                 element.color = "#cccccc";
                 element.isPointerBlocker = true;
+                element.thickness = 1;
                 return element;
             case "Line":
                 element = new Line();
                 element.x1 = 0;
-                element.y1 = 0;
-                element.y2 = 100;
-                element.x2 = 100;
-                element.lineWidth = 5;
-                element.dash = [50, 10];
+                element.y1 = 1024;
+                element.y2 = 512;
+                element.x2 = 512;
+                element.lineWidth = 2;
                 element.isPointerBlocker = true;
                 element.isHitTestVisible = true;
-                element.color = "#0";
+                element.color = "#000000";
                 return element;
             case "Text":
                 element = new TextBlock("Textblock");
-                element.text = "My Text";
-                element.color = "#0";
+                element.text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sed.";
+                element.color = "#000000";
                 element.fontSize = 20;
                 element.resizeToFit = true;
                 element.isPointerBlocker = true;
@@ -75,11 +76,13 @@ export class GUINodeTools {
                 element.height = "40px";
                 return element;
             case "VirtualKeyboard":
-                element = new VirtualKeyboard();
+                element = VirtualKeyboard.CreateDefaultLayout();
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
                 return element;
             case "Image":
                 element = new Image("Image", "https://playground.babylonjs.com/textures/grass.png");
+                element.width = "512px";
+                element.height = "512px";
                 element.autoScale = true;
                 element.isPointerBlocker = true;
                 return element;
@@ -90,14 +93,18 @@ export class GUINodeTools {
                 element.background = "#333333";
                 element.color = "#ffffff";
                 element.isPointerBlocker = true;
+                element.width = "160px";
+                element.height = "40px";
                 return element;
             case "InputPassword":
                 element = new InputPassword("InputPassword");
                 element.maxWidth = 0.6;
-                element.text = "Input Text";
+                element.text = "Password";
                 element.background = "#333333";
                 element.color = "#ffffff";
                 element.isPointerBlocker = true;
+                element.width = "160px";
+                element.height = "40px";
                 return element;
             case "Grid":
                 element = new Grid("Grid");
@@ -120,7 +127,5 @@ export class GUINodeTools {
                 element.height = "40px";
                 return element;
         }
-
-
     }
 }

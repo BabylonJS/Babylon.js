@@ -195,7 +195,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
 
         return (
-            <div id="tree" onContextMenu={(e) => e.preventDefault()}>
+            <div id="tree">
                 {guiElements && guiElements.length > 0 && <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />}
             </div>
         );
