@@ -73,6 +73,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             grabRay: new Ray(new Vector3(), new Vector3()),
             nearInteraction: false,
             nearGrab: false,
+            nearGrabInProcess: false,
+            farInteractionDisplayRay: false,
             id: WebXRNearInteraction._idCounter++,
         };
 
@@ -114,6 +116,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             grabRay: Ray;
             nearInteraction: boolean;
             nearGrab: boolean;
+            nearGrabInProcess: boolean;
+            farInteractionDisplayRay: boolean;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
         };
@@ -241,9 +245,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 controllerData.pick = null;
                 return;
             }
-            controllerData.nearInteraction = false;
-            controllerData.nearGrab = false;
-
+            if(!controllerData.nearGrabInProcess) {
+                controllerData.nearInteraction = false;
+                controllerData.nearGrab = false;
+            }
             // Every frame check collisions/input
             if (controllerData.xrController) {
                 const hand = controllerData.xrController.inputSource.hand;
@@ -283,6 +288,23 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 return;
             }
 
+            let accuratePickInfo = (originalScenePick:Nullable <PickingInfo>, utilityScenePick: Nullable<PickingInfo>) : Nullable<PickingInfo> => {
+                let pick = null;
+                if (!utilityScenePick || !utilityScenePick.hit) {
+                    // No hit in utility scene
+                    pick = originalScenePick;
+                } else if (!originalScenePick || !originalScenePick.hit) {
+                    // No hit in original scene
+                    pick = utilityScenePick;
+                } else if (utilityScenePick.distance < originalScenePick.distance) {
+                    // Hit is closer in utility scene
+                    pick = utilityScenePick;
+                } else {
+                    // Hit is closer in original scene
+                    pick = originalScenePick;
+                }
+                return pick;
+            }
             let populateNearInteractionInfo = (nearInteractionInfo: Nullable<PickingInfo>): Nullable<PickingInfo> => {
                 let result = null;
                 let nearInteractionAtOrigin = false;
@@ -298,17 +320,29 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             };
 
             let pick = null;
-            let farDisplayLaserPointer = false;
+            let hoverRange = false;
             // near interaction hover
             if (controllerData.hoverIndexMeshTip) {
-                let hoverPickInfo = this._pickWithMesh(controllerData.hoverIndexMeshTip, false, this.nearPickPredicate);
-                let hoverGrabInfo = this._pickWithMesh(controllerData.hoverIndexMeshTip, false, this.nearGrabPredicate);
+                let utilitySceneHoverPick = null;
+                let utilitySceneHoverGrab = null;
+                if (this._options.useUtilityLayer && this._utilityLayerScene) {
+                    utilitySceneHoverPick = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._utilityLayerScene, false, this.nearPickPredicate);
+                }
+                let originalSceneHoverPick = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._scene, false, this.nearPickPredicate);
+                if (this._options.useUtilityLayer && this._utilityLayerScene) {
+                    utilitySceneHoverGrab = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._utilityLayerScene, false, this.nearGrabPredicate);
+                }
+                let originalSceneHoverGrab = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._scene, false, this.nearGrabPredicate);
+
+                let hoverPickInfo = accuratePickInfo(originalSceneHoverPick, utilitySceneHoverPick);
+                let hoverGrabInfo = accuratePickInfo(originalSceneHoverGrab, utilitySceneHoverGrab);
                 if ((hoverPickInfo && hoverPickInfo.hit) || (hoverGrabInfo && hoverGrabInfo.hit)) {
-                    //TODO: turn off laser pointer visibility in far interaction
+                    // turn off far interaction if in the hover range
                     if (this._options.farInteractionFeature) {
-                        farDisplayLaserPointer = this._options.farInteractionFeature.displayLaserPointer;
+                        controllerData.farInteractionDisplayRay = this._options.farInteractionFeature.displayLaserPointer;
                         this._options.farInteractionFeature.displayLaserPointer = false;
                         this._options.farInteractionFeature.detach();
+                        hoverRange = true;
                     }
                 }
                 pick = populateNearInteractionInfo(hoverPickInfo);
@@ -316,29 +350,35 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
             // near interaction pick
             if (controllerData.pickIndexMeshTip) {
-                let pickInfo = this._pickWithMesh(controllerData.pickIndexMeshTip, false, this.nearPickPredicate);
+                let utilitySceneNearPick = null;
+                if (this._options.useUtilityLayer && this._utilityLayerScene) {
+                    utilitySceneNearPick = this._pickWithMesh(controllerData.pickIndexMeshTip, this._utilityLayerScene, false, this.nearPickPredicate);
+                }
+                let originalSceneNearPick = this._pickWithMesh(controllerData.pickIndexMeshTip, this._scene, false, this.nearPickPredicate);
+                let pickInfo = accuratePickInfo(originalSceneNearPick, utilitySceneNearPick);
                 pick = populateNearInteractionInfo(pickInfo);
             }
 
             // near interaction grab
             if (controllerData.grabRay) {
-                const sceneToUse = this._options.useUtilityLayer
-                    ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene
-                    : this._scene;
-                let pinchInfo = sceneToUse.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
-                if (pinchInfo && pinchInfo.pickedPoint && pinchInfo.hit) {
+                let utilitySceneNearGrab = null;
+                if (this._utilityLayerScene) {
+                    utilitySceneNearGrab = this._utilityLayerScene.pickWithRay(controllerData.grabRay,this.nearGrabPredicate);
+                }   
+                let originalSceneNearGrab = this._scene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
+                pick = accuratePickInfo(originalSceneNearGrab, utilitySceneNearGrab);
+                if (pick && pick.pickedPoint && pick.hit) {
                     controllerData.nearGrab = true;
                     controllerData.nearInteraction = true;
-                    pinchInfo.ray = controllerData.grabRay;
-                    pick = pinchInfo;
+                    pick.ray = controllerData.grabRay;
                 }
             }
 
-            // Turn off far interaction if near interaction is successful
-            if (!controllerData.nearInteraction) {
+            // Turn on far interaction if near interaction is unsuccessful
+            if (!controllerData.nearInteraction && !hoverRange && !controllerData.nearGrabInProcess) {
                 if (this._options.farInteractionFeature) {
                     this._options.farInteractionFeature.attach();
-                    this._options.farInteractionFeature.displayLaserPointer = farDisplayLaserPointer;
+                    this._options.farInteractionFeature.displayLaserPointer = controllerData.farInteractionDisplayRay;
                 }
             }
             controllerData.pick = pick;
@@ -349,6 +389,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 controllerData.meshUnderPointer = null;
             }
         });
+    }
+
+    private get _utilityLayerScene() {
+        return this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene;
     }
 
     private _attachTrackedPointerRayMode(xrController: WebXRInputSource) {
@@ -373,9 +417,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                             if (controllerData.pick && controllerData.nearGrab) {
                                 if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
                                     if (pressed) {
+                                        controllerData.nearGrabInProcess = true;
                                         this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                                     } else {
                                         this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                                        controllerData.nearGrabInProcess = false;
                                     }
                                 }
                             } else {
@@ -452,9 +498,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         };
     }
 
-    private _pickWithMesh(indexTipMesh: AbstractMesh, precise: boolean, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
+    private _pickWithMesh(indexTipMesh: AbstractMesh, sceneToUse: Scene, precise: boolean, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
         let pickingInfo = null;
-        const sceneToUse = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
         if (indexTipMesh) {
             for (let meshIndex = 0; meshIndex < sceneToUse.meshes.length; meshIndex++) {
                 let mesh = sceneToUse.meshes[meshIndex];
