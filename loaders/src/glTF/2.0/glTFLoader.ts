@@ -2045,7 +2045,7 @@ export class GLTFLoader implements IGLTFLoader {
             },
             mimeType: image.mimeType,
             loaderOptions: textureLoaderOptions,
-            useSRGBBuffer: !!useSRGBBuffer,
+            useSRGBBuffer: !!useSRGBBuffer && this._parent.useSRGBBuffers,
         };
         const babylonTexture = new Texture(null, this._babylonScene, textureCreationOptions);
         this._babylonScene._blockEntityCollection = false;
