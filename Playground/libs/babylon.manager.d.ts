@@ -36,10 +36,14 @@ declare module BABYLON {
         static LoadSceneFile(sceneFile: string, queryString?: string): void;
         /** Shows the top page scene loader (engine.html) */
         static ShowParentLoader(show: boolean, duration?: number): void;
-        /** Get the system render quality setting. */
+        /** Get the system render quality local storage setting. */
         static GetRenderQuality(): BABYLON.RenderQuality;
-        /** Set the system render quality setting. */
+        /** Set the system render quality local storage setting. */
         static SetRenderQuality(quality: BABYLON.RenderQuality): void;
+        /** Get the system virtual reality local storage setting. */
+        static GetVirtualRealityEnabled(): boolean;
+        /** Set the system virtual reality local storage setting. */
+        static SetVirtualRealityEnabled(enabled: boolean): void;
         /** Get an item from top window local storage. */
         static GetLocalStorageItem(key: string): string;
         /** Set an item to top window local storage. */
@@ -325,7 +329,7 @@ declare module BABYLON {
         private static NavigationMesh;
         private static CrowdInterface;
         private static PluginInstance;
-        /** Register handler that is triggered when the audio clip is ready */
+        /** Register handler that is triggered when the navigation mesh is ready */
         static OnNavMeshReadyObservable: Observable<Mesh>;
         /** Get recast total memory heap size */
         static GetRecastHeapSize(): number;
@@ -1396,8 +1400,18 @@ declare module BABYLON {
         static ValidateTransformRotation(transform: BABYLON.TransformNode): void;
         /** Validate and switch Euler rotation to Quaternion rotation. */
         static ValidateTransformQuaternion(transform: BABYLON.TransformNode): void;
-        /** Get the smoothed keyboard input value  */
+        /** Get the smoothed keyboard input value. */
         static GetKeyboardInputValue(scene: BABYLON.Scene, currentValue: number, targetValue: number): number;
+        /** Generate a randome number. */
+        static GenerateRandonNumber(min: number, max: number, decimals?: number): number;
+        /** Projects a vector onto another vector */
+        static ProjectVector(vector: BABYLON.Vector3, onnormal: BABYLON.Vector3): BABYLON.Vector3;
+        /** Projects a vector onto another vector and sets result */
+        static ProjectVectorToRef(vector: BABYLON.Vector3, onnormal: BABYLON.Vector3, result: BABYLON.Vector3): void;
+        /** Projects a vector onto a plane defined by a normal orthogonal to the plane */
+        static ProjectVectorOnPlane(vector: BABYLON.Vector3, planenormal: BABYLON.Vector3): BABYLON.Vector3;
+        /** Projects a vector onto a plane defined by a normal orthogonal to the plane and sets result */
+        static ProjectVectorOnPlaneToRef(vector: BABYLON.Vector3, planenormal: BABYLON.Vector3, result: BABYLON.Vector3): void;
         /** TODO */
         static DownloadEnvironment(cubemap: BABYLON.CubeTexture, success?: () => void, failure?: () => void): void;
         static HasOwnProperty(object: any, property: string): boolean;
