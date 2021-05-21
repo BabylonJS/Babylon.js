@@ -29,15 +29,16 @@ export const Eyedropper : IToolData = {
         setup () {
             this.pointerObserver = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
-                    if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
+                    if (pointerInfo.type === PointerEventTypes.POINTERDOWN && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled()) {
                         this.isPicking = true;
                         this.pick(pointerInfo);
                     }
-                    if (pointerInfo.type === PointerEventTypes.POINTERMOVE && this.isPicking) {
-                        this.pick(pointerInfo);
-                    }
-                    if (pointerInfo.type === PointerEventTypes.POINTERUP) {
-                        this.isPicking = false;
+                    if (this.isPicking) {
+                        if (pointerInfo.event.buttons !== 1 || !this.getParameters().interactionEnabled()) {
+                            this.isPicking = false;
+                        } else {
+                            this.pick(pointerInfo);
+                        }
                     }
                 }
             });
