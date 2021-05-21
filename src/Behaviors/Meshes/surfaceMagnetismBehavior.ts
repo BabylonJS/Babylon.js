@@ -3,7 +3,6 @@ import { PointerEventTypes, PointerInfo } from "../../Events/pointerEvents";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { SmoothingTools } from "../../Misc/smoothingTools";
 import { Observer } from "../../Misc/observable";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { Scene } from "../../scene";
@@ -172,13 +171,13 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
 
         // position
         const interpolatedPosition = new Vector3();
-        SmoothingTools.SmoothToRefVec3(this._attachedMesh.position, this._workingPosition, elapsed, this.lerpTime, interpolatedPosition);
+        Vector3.SmoothToRef(this._attachedMesh.position, this._workingPosition, elapsed, this.lerpTime, interpolatedPosition);
         this._attachedMesh.position.copyFrom(interpolatedPosition);
 
         // rotation
         const currentRotation = new Quaternion();
         currentRotation.copyFrom(this._attachedMesh.rotationQuaternion!);
-        SmoothingTools.SmoothToRefQuaternion(currentRotation, this._workingQuaternion, elapsed, this.lerpTime, this._attachedMesh.rotationQuaternion!);
+        Quaternion.SmoothToRef(currentRotation, this._workingQuaternion, elapsed, this.lerpTime, this._attachedMesh.rotationQuaternion!);
 
         this._attachedMesh.setParent(oldParent);
     }
