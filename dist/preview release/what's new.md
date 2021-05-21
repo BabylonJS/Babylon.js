@@ -78,6 +78,7 @@
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
+- Added space + LMB panning to texture inspector to improve accessibility ([darraghjburke](https://github.com/darraghjburke))
 
 ### NME
 
@@ -155,6 +156,7 @@
 ### Serializers
 
 - Added the `exportUnusedUVs` property to the `IExportOptions` interface that will prevent any unused vertex uv attributes from being stripped during the glTF export. ([ericbroberic](https://github.com/ericbroberic))
+- glTF serializer now supports KHR_materials_clearcoat ([drigax](https://github.com/drigax))
 
 ## Bugs
 
@@ -220,6 +222,7 @@
 - Fix for namepsace sharing in .scss files; PropertyTab, SceneExplorer ([msDestiny14](https://github.com/msDestiny14))
 - Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
 - Fix undefined camera pose in WebXR in Babylon Native ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix the `StandardMaterial` not using the tangent attribute when available ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
