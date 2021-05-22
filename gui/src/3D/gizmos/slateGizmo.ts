@@ -36,6 +36,7 @@ export class SlateGizmo extends Gizmo {
     private _sides: SideHandle[] = [];
     private _handlesParent: TransformNode;
     private _handleHovered: Nullable<GizmoHandle>;
+    private _handleDragged: Nullable<GizmoHandle>;
 
     private _boundingBoxGizmo = {
         min: new Vector3(),
@@ -244,7 +245,8 @@ export class SlateGizmo extends Gizmo {
                 this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
 
                 if (this._handleHovered) {
-                    this._handleHovered.drag = true;
+                    this._handleDragged = this._handleHovered;
+                    this._handleDragged.drag = true;
                 }
             }
         });
@@ -266,8 +268,9 @@ export class SlateGizmo extends Gizmo {
                 this.attachedSlate._updatePivot();
                 this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
 
-                if (this._handleHovered) {
-                    this._handleHovered.drag = false;
+                if (this._handleDragged) {
+                    this._handleDragged.drag = false;
+                    this._handleDragged = null;
                 }
             }
         });
@@ -305,7 +308,8 @@ export class SlateGizmo extends Gizmo {
                 dragBehavior.options.dragPlaneNormal = worldPlaneNormal;
 
                 if (this._handleHovered) {
-                    this._handleHovered.drag = true;
+                    this._handleDragged = this._handleHovered;
+                    this._handleDragged.drag = true;
                 }
             }
         });
@@ -329,8 +333,9 @@ export class SlateGizmo extends Gizmo {
                 this.attachedSlate._updatePivot();
                 this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
 
-                if (this._handleHovered) {
-                    this._handleHovered.drag = false;
+                if (this._handleDragged) {
+                    this._handleDragged.drag = false;
+                    this._handleDragged = null;
                 }
             }
         });
