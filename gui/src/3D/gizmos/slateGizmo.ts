@@ -1,5 +1,6 @@
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
@@ -282,6 +283,13 @@ export class SlateGizmo extends Gizmo {
         horizontalBox.position.x = 1;
         verticalBox.position.y = 1;
 
+        const mat = new StandardMaterial("slategizmo", this.gizmoLayer.utilityLayerScene);
+        mat.diffuseColor.copyFromFloats(0, 0, 0);
+        mat.emissiveColor.copyFromFloats(1, 1, 1);
+
+        horizontalBox.material = mat;
+        verticalBox.material = mat;
+
         return angleNode;
     }
 
@@ -290,6 +298,12 @@ export class SlateGizmo extends Gizmo {
         const verticalBox = BoxBuilder.CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
         const sideNode = new TransformNode("side", this.gizmoLayer.utilityLayerScene);
         verticalBox.parent = sideNode;
+
+        const mat = new StandardMaterial("slategizmo", this.gizmoLayer.utilityLayerScene);
+        mat.diffuseColor.copyFromFloats(0, 0, 0);
+        mat.emissiveColor.copyFromFloats(1, 1, 1);
+
+        verticalBox.material = mat;
 
         return sideNode;
     }
