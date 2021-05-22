@@ -6,8 +6,8 @@ import { Control3D } from "./control3D";
 import { VolumeBasedPanel } from "./volumeBasedPanel";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
-import { AbstractMesh } from "babylonjs/Meshes/index";
-import { FluentMaterial } from "../materials";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { Observer } from "babylonjs/Misc/observable";
 import { Logger } from "babylonjs/Misc/logger";
@@ -113,7 +113,7 @@ export class NearMenu extends VolumeBasedPanel {
 
     protected _mapGridNode(control: Control3D, nodePosition: Vector3) {
         // Simple plane mapping for the menu
-        let mesh = control.mesh;
+        const mesh = control.mesh;
 
         if (!mesh) {
             return;
@@ -155,6 +155,10 @@ export class NearMenu extends VolumeBasedPanel {
         this._defaultBehavior.followBehavior.defaultDistance = extendSize.length() * this.scaling.length();
     }
 
+    /**
+     * Creates a near menu GUI 3D control
+     * @param name name of the near menu
+     */
     constructor(name: string) {
         super();
 
@@ -194,6 +198,9 @@ export class NearMenu extends VolumeBasedPanel {
         return this;
     }
 
+    /**
+     * Disposes the near menu
+     */
     public dispose() {
         super.dispose();
 
