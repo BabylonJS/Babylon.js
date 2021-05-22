@@ -80,6 +80,10 @@ export abstract class GizmoHandle {
 
     private _updateMaterial() {
         const state = this._state;
+        for (const mat of this._materials) {
+            mat.hover = false;
+            mat.drag = false;
+        }
 
         if (state & HandleState.DRAG) {
             for (const mat of this._materials) {
@@ -88,11 +92,6 @@ export abstract class GizmoHandle {
         } else if (state & HandleState.HOVER) {
             for (const mat of this._materials) {
                 mat.hover = true;
-            }
-        } else {
-            for (const mat of this._materials) {
-                mat.hover = false;
-                mat.drag = false;
             }
         }
     }
