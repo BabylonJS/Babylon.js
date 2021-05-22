@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
@@ -74,7 +74,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             nearInteraction: false,
             nearGrab: false,
             nearGrabInProcess: false,
-            farInteractionDisplayRay: false,
             id: WebXRNearInteraction._idCounter++,
         };
 
@@ -117,7 +116,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             nearInteraction: boolean;
             nearGrab: boolean;
             nearGrabInProcess: boolean;
-            farInteractionDisplayRay: boolean;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
         };
@@ -125,6 +123,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     private _scene: Scene;
 
     private _attachedController: string;
+
+    private _farInteractionFeature: Nullable<IWebXRFeature>;
 
     /**
      * The module's name
@@ -216,6 +216,16 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             }
         }
         return null;
+    }
+
+    /**
+     * This function sets webXRControllerPointer Selection feature that will be disabled when
+     * the hover range is reached for a mesh and will be reattached when not in hover range.
+     * This is used to remove the selection rays when moving.
+     * @param farInteractionFeature the feature to disable when finger is in hover range for a mesh
+     */
+    public setfarInteractionFeature(farInteractionFeature: Nullable<IWebXRFeature>) {
+        this._farInteractionFeature = farInteractionFeature;
     }
 
     /**
@@ -338,10 +348,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 let hoverGrabInfo = accuratePickInfo(originalSceneHoverGrab, utilitySceneHoverGrab);
                 if ((hoverPickInfo && hoverPickInfo.hit) || (hoverGrabInfo && hoverGrabInfo.hit)) {
                     // turn off far interaction if in the hover range
-                    if (this._options.farInteractionFeature) {
-                        controllerData.farInteractionDisplayRay = this._options.farInteractionFeature.displayLaserPointer;
-                        this._options.farInteractionFeature.displayLaserPointer = false;
-                        this._options.farInteractionFeature.detach();
+                    if (this._farInteractionFeature) {
+                        this._farInteractionFeature.detach();
                         hoverRange = true;
                     }
                 }
@@ -376,9 +384,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
             // Turn on far interaction if near interaction is unsuccessful
             if (!controllerData.nearInteraction && !hoverRange && !controllerData.nearGrabInProcess) {
-                if (this._options.farInteractionFeature) {
-                    this._options.farInteractionFeature.attach();
-                    this._options.farInteractionFeature.displayLaserPointer = controllerData.farInteractionDisplayRay;
+                if (this._farInteractionFeature) {
+                    this._farInteractionFeature.attach();
                 }
             }
             controllerData.pick = pick;
