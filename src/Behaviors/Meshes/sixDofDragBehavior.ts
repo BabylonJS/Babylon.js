@@ -35,7 +35,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     /**
      * Should the object rotate towards the camera when we start dragging it
      */
-    public faceCameraOnDragStart = true;
+    public faceCameraOnDragStart = false;
 
     /**
      * Attaches the six DoF drag behavior
