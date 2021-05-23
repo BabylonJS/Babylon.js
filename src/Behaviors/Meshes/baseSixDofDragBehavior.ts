@@ -14,7 +14,7 @@ import { TransformNode } from "../../Meshes";
  * Creates virtual meshes that are dragged around
  * And observables for position/rotation changes
  */
-export class BaseSixDofDragBehavior implements Behavior<Mesh> {
+export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
     private static _virtualScene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
@@ -74,11 +74,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      * Fires each time a drag starts
      */
-    public onDragStartObservable = new Observable<{}>();
+    public onDragStartObservable = new Observable<{ position: Vector3 }>();
     /**
      * Fires each time a drag happens
      */
-    public onDragObservable = new Observable<void>();
+    public onDragObservable = new Observable<{ position: Vector3 }>();
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
      */
@@ -183,7 +183,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     }
 
                     this._targetDragStart(this._virtualDragMesh.absolutePosition, this._virtualDragMesh.rotationQuaternion!);
-                    this.onDragStartObservable.notifyObservers({});
+                    this.onDragStartObservable.notifyObservers({ position: this._virtualDragMesh.absolutePosition });
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
                 if (this.currentDraggingPointerId == (<PointerEvent>pointerInfo.event).pointerId) {

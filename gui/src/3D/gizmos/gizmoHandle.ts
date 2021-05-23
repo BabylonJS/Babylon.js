@@ -4,6 +4,9 @@ import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { HandleMaterial } from "../materials";
 import { SlateGizmo } from "./slateGizmo";
+import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
 
 /**
  * State of the handle regarding user interaction
@@ -18,6 +21,22 @@ export abstract class GizmoHandle {
     protected _scene: Scene;
     protected _state: HandleState = HandleState.IDLE;
     protected _materials: HandleMaterial[] = [];
+
+    private _dragStartObserver: Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
+    private _draggingObserver: Nullable<
+        Observer<{
+            delta: Vector3;
+            dragPlanePoint: Vector3;
+            dragPlaneNormal: Vector3;
+            dragDistance: number;
+            pointerId: number;
+        }>
+    >;
+    private _dragEndObserver: Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
+    /**
+     * @hidden
+     */
+    public _dragBehavior: PointerDragBehavior;
 
     /**
      * The current state of the handle
@@ -96,12 +115,38 @@ export abstract class GizmoHandle {
         }
     }
 
+    public setDragBehavior(
+        dragStartObservable: (eventData: { dragPlanePoint: Vector3; pointerId: number }) => void,
+        dragObservable: (eventData: { delta: Vector3; dragPlanePoint: Vector3; dragPlaneNormal: Vector3; dragDistance: number; pointerId: number }) => void,
+        dragEndObservable: (eventData: { dragPlanePoint: Vector3; pointerId: number }) => void
+    ) {
+        const dragBehavior = new PointerDragBehavior({
+            dragPlaneNormal: Vector3.Forward(),
+        });
+        dragBehavior.moveAttached = false;
+        dragBehavior.updateDragPlane = false;
+        dragBehavior.useObjectOrientationForDragging = false;
+
+        this.node.addBehavior(dragBehavior);
+
+        this._dragBehavior = dragBehavior;
+
+        this._dragStartObserver = dragBehavior.onDragStartObservable.add(dragStartObservable);
+        this._draggingObserver = dragBehavior.onDragObservable.add(dragObservable);
+        this._dragEndObserver = dragBehavior.onDragEndObservable.add(dragEndObservable);
+    }
+
     public abstract createNode(): TransformNode;
 
     /**
      * Disposes the handle
      */
     public dispose() {
+        this._dragBehavior.onDragStartObservable.remove(this._dragStartObserver);
+        this._dragBehavior.onDragObservable.remove(this._draggingObserver);
+        this._dragBehavior.onDragEndObservable.remove(this._dragEndObserver);
+
+        this._dragBehavior.detach();
         this.node.dispose();
     }
 }
