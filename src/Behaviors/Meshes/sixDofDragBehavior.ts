@@ -57,8 +57,10 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                         Vector3.TransformNormalToRef(delta, Matrix.Invert(this.ancestorToDrag.parent.getWorldMatrix()), delta);
                     }
                     this.ancestorToDrag.position.addInPlace(delta);
+                    this.onDragObservable.notifyObservers({ position: this.ancestorToDrag.absolutePosition });
                 } else {
                     pickedMesh.position.addInPlace(this._targetPosition.subtract(pickedMesh.position).scale(this.dragDeltaRatio));
+                    this.onDragObservable.notifyObservers({ position: pickedMesh.absolutePosition });
                 }
 
                 var oldParent = this.ancestorToDrag ? this.ancestorToDrag.parent : this._ownerNode.parent;
@@ -78,7 +80,6 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
                 PivotTools._RestorePivotPoint(pickedMesh);
 
-                this.onDragObservable.notifyObservers();
             }
         });
     }
