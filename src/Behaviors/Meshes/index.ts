@@ -3,4 +3,6 @@ export * from "./fadeInOutBehavior";
 export * from "./multiPointerScaleBehavior";
 export * from "./pointerDragBehavior";
 export * from "./sixDofDragBehavior";
+export * from "./constrainedSixDofDragBehavior";
+export * from "./baseSixDofDragBehavior";
 export * from "./followBehavior";
