@@ -6,6 +6,7 @@ export * from "./cylinderPanel";
 export * from "./holographicButton";
 export * from "./holographicSlate";
 export * from "./meshButton3D";
+export * from "./nearMenu";
 export * from "./planePanel";
 export * from "./scatterPanel";
 export * from "./slider3D";
