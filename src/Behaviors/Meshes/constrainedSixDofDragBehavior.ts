@@ -1,5 +1,6 @@
-import { Quaternion, TmpVectors, Vector3 } from "../../Maths";
-import { Mesh } from "../../Meshes";
+import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { Mesh } from "../../Meshes/mesh";
+import { PivotTools } from "../../Misc/pivotTools";
 import { Observer } from "../../Misc/observable";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
@@ -8,7 +9,7 @@ import { BaseSixDofDragBehavior } from "./baseSixDofDragBehavior";
  * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
  *
  */
-export class ConstraintedSixDofDragBehavior extends BaseSixDofDragBehavior {
+export class ConstrainedSixDofDragBehavior extends BaseSixDofDragBehavior {
     private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
     private _projectedPosition: Vector3 = new Vector3();
     private _origin: Vector3 = new Vector3();
@@ -22,7 +23,7 @@ export class ConstraintedSixDofDragBehavior extends BaseSixDofDragBehavior {
     /**
      * Normal of the drag plane
      */
-    public dragPlaneNormal: Vector3 = Vector3.Forward();
+    public dragPlaneNormal: Vector3 = Vector3.Right();
 
     /**
      * Attaches the scale behavior the passed in mesh
@@ -37,9 +38,8 @@ export class ConstraintedSixDofDragBehavior extends BaseSixDofDragBehavior {
             if (this.dragging && this._moving && draggedMesh) {
                 // PivotTools._RemoveAndStorePivotPoint(draggedMesh);
 
-                // PivotTools._RestorePivotPoint(draggedMesh);
-
                 this.onDragObservable.notifyObservers({ position: this._projectedPosition });
+                // PivotTools._RestorePivotPoint(draggedMesh);
             }
         });
     }
@@ -53,8 +53,12 @@ export class ConstraintedSixDofDragBehavior extends BaseSixDofDragBehavior {
         const toOrigin = TmpVectors.Vector3[0];
         toOrigin.copyFrom(worldPosition).subtractInPlace(this._origin);
 
-        TmpVectors.Vector3[1].copyFrom(this.dragPlaneNormal).scaleInPlace(Vector3.Dot(toOrigin, this.dragPlaneNormal));
+        Vector3.TransformCoordinatesToRef(this.dragPlaneNormal, this._ownerNode.getWorldMatrix().getRotationMatrix(), TmpVectors.Vector3[1]);
+        TmpVectors.Vector3[1].scaleInPlace(Vector3.Dot(toOrigin, this.dragPlaneNormal));
         toOrigin.subtractToRef(TmpVectors.Vector3[1], this._projectedPosition);
+        // TO FIX
+        console.log(toOrigin);
+        this._projectedPosition.addInPlace(this._origin);
     }
 
     /**
