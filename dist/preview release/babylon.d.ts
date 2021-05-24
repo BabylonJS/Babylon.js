@@ -1140,6 +1140,8 @@ declare module BABYLON {
         static readonly BUFFER_CREATIONFLAG_READ: number;
         /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
         static readonly BUFFER_CREATIONFLAG_WRITE: number;
+        /** Flag to create a readable and writable buffer */
+        static readonly BUFFER_CREATIONFLAG_READWRITE: number;
         /** Flag to create a buffer suitable to be used as a uniform buffer */
         static readonly BUFFER_CREATIONFLAG_UNIFORM: number;
         /** Flag to create a buffer suitable to be used as a vertex buffer */
@@ -8601,10 +8603,16 @@ declare module BABYLON {
          */
         updateColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
         /**
-         * Lambda to Update a int a uniform buffer.
+         * Lambda to Update vec4 of float from a Color in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
+        updateDirectColor4: (name: string, color: IColor4Like, suffix?: string) => void;
+        /**
+        * Lambda to Update a int a uniform buffer.
+        * This is dynamic to allow compat with webgl 1 and 2.
+        * You will need to pass the name of the uniform as well as the value.
+        */
         updateInt: (name: string, x: number, suffix?: string) => void;
         /**
          * Lambda to Update a vec2 of int in a uniform buffer.
@@ -8798,7 +8806,9 @@ declare module BABYLON {
         private _updateColor3ForEffect;
         private _updateColor3ForUniform;
         private _updateColor4ForEffect;
+        private _updateDirectColor4ForEffect;
         private _updateColor4ForUniform;
+        private _updateDirectColor4ForUniform;
         private _updateIntForEffect;
         private _updateIntForUniform;
         private _updateInt2ForEffect;
@@ -16287,7 +16297,7 @@ declare module BABYLON {
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         translationPivot: Vector2;
         /** @hidden */
-        protected _isAnimationSheetEnabled: boolean;
+        _isAnimationSheetEnabled: boolean;
         /**
          * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
          */
@@ -16459,7 +16469,8 @@ declare module BABYLON {
          * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
         billboardMode: number;
-        protected _isBillboardBased: boolean;
+        /** @hidden */
+        _isBillboardBased: boolean;
         /**
          * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
          */
@@ -16762,7 +16773,6 @@ declare module BABYLON {
         private _indexBuffer;
         private _drawWrapper;
         private _customWrappers;
-        private _cachedDefines;
         private _scaledColorStep;
         private _colorDiff;
         private _scaledDirection;
@@ -17317,6 +17327,33 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class UniformBufferEffectCommonAccessor {
+        setMatrix3x3: (name: string, matrix: Float32Array) => void;
+        setMatrix2x2: (name: string, matrix: Float32Array) => void;
+        setFloat: (name: string, x: number) => void;
+        setFloat2: (name: string, x: number, y: number, suffix?: string) => void;
+        setFloat3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+        setFloat4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+        setFloatArray: (name: string, array: Float32Array) => void;
+        setArray: (name: string, array: number[]) => void;
+        setIntArray: (name: string, array: Int32Array) => void;
+        setMatrix: (name: string, mat: IMatrixLike) => void;
+        setMatrices: (name: string, mat: Float32Array) => void;
+        setVector3: (name: string, vector: IVector3Like) => void;
+        setVector4: (name: string, vector: IVector4Like) => void;
+        setColor3: (name: string, color: IColor3Like, suffix?: string) => void;
+        setColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
+        setDirectColor4: (name: string, color: IColor4Like) => void;
+        setInt: (name: string, x: number, suffix?: string) => void;
+        setInt2: (name: string, x: number, y: number, suffix?: string) => void;
+        setInt3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+        setInt4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+        private _isUbo;
+        constructor(uboOrEffect: UniformBuffer | Effect);
+    }
+}
+declare module BABYLON {
     /**
      * Particle emitter represents a volume emitting particles.
      * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.
@@ -17345,9 +17382,14 @@ declare module BABYLON {
         clone(): IParticleEmitterType;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns the effect defines string
@@ -17420,9 +17462,14 @@ declare module BABYLON {
         clone(): BoxParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17512,9 +17559,14 @@ declare module BABYLON {
         clone(): ConeParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17606,9 +17658,14 @@ declare module BABYLON {
         clone(): CylinderParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17674,9 +17731,14 @@ declare module BABYLON {
         clone(): CylinderDirectedParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17759,9 +17821,14 @@ declare module BABYLON {
         clone(): HemisphericParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17825,9 +17892,14 @@ declare module BABYLON {
         clone(): PointParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17910,9 +17982,14 @@ declare module BABYLON {
         clone(): SphereParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17976,9 +18053,14 @@ declare module BABYLON {
         clone(): SphereDirectedParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -18043,9 +18125,14 @@ declare module BABYLON {
         clone(): CustomParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -18122,9 +18209,14 @@ declare module BABYLON {
         clone(): MeshParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -59680,6 +59772,10 @@ declare module BABYLON {
             numEnableEffects: number;
             numEnableDrawWrapper: number;
         };
+        /**
+         * Max number of uncaptured error messages to log
+         */
+        numMaxUncapturedErrors: number;
         private _mainTexture;
         private _depthTexture;
         private _mainTextureExtends;
@@ -59700,6 +59796,8 @@ declare module BABYLON {
         /** @hidden */
         _pendingDebugCommands: Array<[string, Nullable<string>]>;
         private _bundleList;
+        /** @hidden */
+        _onAfterUnbindFrameBufferObservable: Observable<WebGPUEngine>;
         private _defaultMaterialContext;
         private _currentMaterialContext;
         private _currentDrawContext;
@@ -75160,6 +75258,24 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export interface IGPUParticleSystemPlatform {
+        alignDataInBuffer: boolean;
+        isUpdateBufferCreated: () => boolean;
+        isUpdateBufferReady: () => boolean;
+        createUpdateBuffer: (defines: string) => UniformBufferEffectCommonAccessor;
+        createVertexBuffers: (updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }) => void;
+        createParticleBuffer: (data: number[]) => DataArray | DataBuffer;
+        bindDrawBuffers: (index: number, effect: Effect) => void;
+        preUpdateParticleBuffer: () => void;
+        updateParticleBuffer: (index: number, targetBuffer: Buffer, currentActiveCount: number) => void;
+        releaseBuffers: () => void;
+        releaseVertexBuffers: () => void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var gpuUpdateParticlesPixelShader: {
         name: string;
         shader: string;
@@ -75168,6 +75284,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var gpuUpdateParticlesVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var gpuUpdateParticlesComputeShader: {
         name: string;
         shader: string;
     };
@@ -75215,13 +75338,10 @@ declare module BABYLON {
         private _activeCount;
         private _currentActiveCount;
         private _accumulatedCount;
-        private _renderEffect;
-        private _updateEffect;
+        private _updateBuffer;
         private _buffer0;
         private _buffer1;
         private _spriteBuffer;
-        private _updateVAO;
-        private _renderVAO;
         private _targetIndex;
         private _sourceBuffer;
         private _targetBuffer;
@@ -75230,14 +75350,18 @@ declare module BABYLON {
         private _started;
         private _stopped;
         private _timeDelta;
-        private _randomTexture;
-        private _randomTexture2;
+        /** @hidden */
+        _randomTexture: RawTexture;
+        /** @hidden */
+        _randomTexture2: RawTexture;
         private _attributesStrideSize;
-        private _updateEffectOptions;
+        private _cachedUpdateDefines;
         private _randomTextureSize;
         private _actualFrame;
-        private _customEffect;
+        private _drawWrapper;
+        private _customWrappers;
         private readonly _rawTextureWidth;
+        private _platform;
         /**
          * Gets a boolean indicating if the GPU particles can be rendered on current browser
          */
@@ -75321,6 +75445,7 @@ declare module BABYLON {
          * @returns The effect
          */
         getCustomEffect(blendMode?: number): Nullable<Effect>;
+        private _getCustomDrawWrapper;
         /**
          * Sets the custom effect used to render the particles
          * @param effect The effect to set
@@ -75337,7 +75462,8 @@ declare module BABYLON {
          * Gets the name of the particle vertex shader
          */
         get vertexShaderName(): string;
-        private _colorGradientsTexture;
+        /** @hidden */
+        _colorGradientsTexture: RawTexture;
         protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem;
         /**
          * Adds a new color gradient
@@ -75356,11 +75482,16 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeColorGradient(gradient: number): GPUParticleSystem;
-        private _angularSpeedGradientsTexture;
-        private _sizeGradientsTexture;
-        private _velocityGradientsTexture;
-        private _limitVelocityGradientsTexture;
-        private _dragGradientsTexture;
+        /** @hidden */
+        _angularSpeedGradientsTexture: RawTexture;
+        /** @hidden */
+        _sizeGradientsTexture: RawTexture;
+        /** @hidden */
+        _velocityGradientsTexture: RawTexture;
+        /** @hidden */
+        _limitVelocityGradientsTexture: RawTexture;
+        /** @hidden */
+        _dragGradientsTexture: RawTexture;
         private _addFactorGradient;
         /**
          * Adds a new size gradient
@@ -75529,20 +75660,24 @@ declare module BABYLON {
          * @param name The name of the particle system
          * @param options The options used to create the system
          * @param sceneOrEngine The scene the particle system belongs to or the engine to use if no scene
-         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          * @param customEffect a custom effect used to change the way particles are rendered by default
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          */
         constructor(name: string, options: Partial<{
             capacity: number;
             randomTextureSize: number;
-        }>, sceneOrEngine: Scene | ThinEngine, isAnimationSheetEnabled?: boolean, customEffect?: Nullable<Effect>);
+        }>, sceneOrEngine: Scene | ThinEngine, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean);
         protected _reset(): void;
-        private _createUpdateVAO;
-        private _createRenderVAO;
+        private _createVertexBuffers;
         private _initialize;
         /** @hidden */
         _recreateUpdateEffect(): void;
-        private _getEffect;
+        /** @hidden */
+        _getWrapper(blendMode: number): DrawWrapper;
+        /** @hidden */
+        static _GetAttributeNamesOrOptions(hasColorGradients?: boolean, isAnimationSheetEnabled?: boolean, isBillboardBased?: boolean, isBillboardStretched?: boolean): string[];
+        /** @hidden */
+        static _GetEffectCreationOptions(isAnimationSheetEnabled?: boolean): string[];
         /**
          * Fill the defines array according to the current settings of the particle system
          * @param defines Array to be updated
@@ -75556,8 +75691,6 @@ declare module BABYLON {
          * @param samplers Samplers array to fill
          */
         fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>): void;
-        /** @hidden */
-        _recreateRenderEffect(): Effect;
         /**
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
          * @param preWarm defines if we are in the pre-warmimg phase
@@ -75570,18 +75703,19 @@ declare module BABYLON {
         private _createLimitVelocityGradientTexture;
         private _createDragGradientTexture;
         private _createColorGradientTexture;
+        private _render;
         /**
          * Renders the particle system in its current state
          * @param preWarm defines if the system should only update the particles but not render them
+         * @param forceUpdateOnly if true, force to only update the particles and never display them (meaning, even if preWarm=false, when forceUpdateOnly=true the particles won't be displayed)
          * @returns the current number of particles
          */
-        render(preWarm?: boolean): number;
+        render(preWarm?: boolean, forceUpdateOnly?: boolean): number;
         /**
          * Rebuilds the particle system
          */
         rebuild(): void;
         private _releaseBuffers;
-        private _releaseVAOs;
         /**
          * Disposes the particle system and free the associated resources
          * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
@@ -75609,6 +75743,57 @@ declare module BABYLON {
          * @returns the parsed GPU particle system
          */
         static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): GPUParticleSystem;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
+        private _parent;
+        private _engine;
+        private _updateEffect;
+        private _updateEffectOptions;
+        private _renderVAO;
+        private _updateVAO;
+        readonly alignDataInBuffer: boolean;
+        constructor(parent: GPUParticleSystem, engine: ThinEngine);
+        isUpdateBufferCreated(): boolean;
+        isUpdateBufferReady(): boolean;
+        createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor;
+        createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }): void;
+        createParticleBuffer(data: number[]): DataArray | DataBuffer;
+        bindDrawBuffers(index: number, effect: Effect): void;
+        preUpdateParticleBuffer(): void;
+        updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void;
+        releaseBuffers(): void;
+        releaseVertexBuffers(): void;
+        private _createUpdateVAO;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
+        private _parent;
+        private _engine;
+        private _updateComputeShader;
+        private _simParamsComputeShader;
+        private _bufferComputeShader;
+        private _renderVertexBuffers;
+        readonly alignDataInBuffer: boolean;
+        constructor(parent: GPUParticleSystem, engine: ThinEngine);
+        isUpdateBufferCreated(): boolean;
+        isUpdateBufferReady(): boolean;
+        createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor;
+        createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }): void;
+        createParticleBuffer(data: number[]): DataArray | DataBuffer;
+        bindDrawBuffers(index: number, effect: Effect): void;
+        preUpdateParticleBuffer(): void;
+        updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void;
+        releaseBuffers(): void;
+        releaseVertexBuffers(): void;
     }
 }
 declare module BABYLON {
