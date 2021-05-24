@@ -465,7 +465,7 @@
             "renderCount": 2,
             "playgroundId": "#EYAUPC#2",
             "replace": "__folder__, Animation_NodeMisc, __page__, 0",
-            "referenceImage": "gltfAnimationNodeMisc2.png"
+            "referenceImage": "gltfAnimationNode2.png"
         },
         {
             "title": "GLTF Animation Skin (0)",
