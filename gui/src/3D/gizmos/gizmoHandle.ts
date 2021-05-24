@@ -5,7 +5,7 @@ import { Vector3 } from "babylonjs/Maths/math.vector";
 import { HandleMaterial } from "../materials";
 import { SlateGizmo } from "./slateGizmo";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
-import { ConstrainedSixDofDragBehavior } from "babylonjs/Behaviors/Meshes/constrainedSixDofDragBehavior";
+import { VirtualSixDofDragBehavior } from "babylonjs/Behaviors/Meshes/virtualSixDofDragBehavior";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 
@@ -121,7 +121,7 @@ export abstract class GizmoHandle {
         dragObservable: (eventData: any) => void,
         dragEndObservable: (eventData: any) => void
     ) {
-        const dragBehavior = new ConstrainedSixDofDragBehavior();
+        const dragBehavior = new VirtualSixDofDragBehavior();
         // dragBehavior.moveAttached = false;
         // dragBehavior.updateDragPlane = false;
         // dragBehavior.useObjectOrientationForDragging = false;
