@@ -255,7 +255,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 controllerData.pick = null;
                 return;
             }
-            if(!controllerData.nearGrabInProcess) {
+            if (!controllerData.nearGrabInProcess) {
                 controllerData.nearInteraction = false;
                 controllerData.nearGrab = false;
             }
@@ -298,7 +298,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 return;
             }
 
-            let accuratePickInfo = (originalScenePick:Nullable <PickingInfo>, utilityScenePick: Nullable<PickingInfo>) : Nullable<PickingInfo> => {
+            let accuratePickInfo = (originalScenePick: Nullable<PickingInfo>, utilityScenePick: Nullable<PickingInfo>): Nullable<PickingInfo> => {
                 let pick = null;
                 if (!utilityScenePick || !utilityScenePick.hit) {
                     // No hit in utility scene
@@ -314,7 +314,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     pick = originalScenePick;
                 }
                 return pick;
-            }
+            };
             let populateNearInteractionInfo = (nearInteractionInfo: Nullable<PickingInfo>): Nullable<PickingInfo> => {
                 let result = null;
                 let nearInteractionAtOrigin = false;
@@ -371,8 +371,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             if (controllerData.grabRay) {
                 let utilitySceneNearGrab = null;
                 if (this._utilityLayerScene) {
-                    utilitySceneNearGrab = this._utilityLayerScene.pickWithRay(controllerData.grabRay,this.nearGrabPredicate);
-                }   
+                    utilitySceneNearGrab = this._utilityLayerScene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
+                }
                 let originalSceneNearGrab = this._scene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
                 pick = accuratePickInfo(originalSceneNearGrab, utilitySceneNearGrab);
                 if (pick && pick.pickedPoint && pick.hit) {
