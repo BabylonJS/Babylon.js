@@ -537,66 +537,56 @@ export class Engine extends ThinEngine {
 
         options = this._creationOptions;
 
-        if ((<any>canvasOrContext).getContext) {
-            let canvas = <HTMLCanvasElement>canvasOrContext;
+        let canvas = <HTMLCanvasElement>canvasOrContext;
 
-            this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
+        this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
 
-            if (DomManagement.IsWindowObjectExist()) {
-                const anyDoc = document as any;
+        const anyDoc = document as any;
 
-                // Fullscreen
-                this._onFullscreenChange = () => {
-                    if (anyDoc.fullscreen !== undefined) {
-                        this.isFullscreen = anyDoc.fullscreen;
-                    } else if (anyDoc.mozFullScreen !== undefined) {
-                        this.isFullscreen = anyDoc.mozFullScreen;
-                    } else if (anyDoc.webkitIsFullScreen !== undefined) {
-                        this.isFullscreen = anyDoc.webkitIsFullScreen;
-                    } else if (anyDoc.msIsFullScreen !== undefined) {
-                        this.isFullscreen = anyDoc.msIsFullScreen;
-                    }
-
-                    // Pointer lock
-                    if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                        Engine._RequestPointerlock(canvas);
-                    }
-                };
-
-                document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-                document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
-                document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-                document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
-
-                // Pointer lock
-                this._onPointerLockChange = () => {
-                    this.isPointerLock = (anyDoc.mozPointerLockElement === canvas ||
-                        anyDoc.webkitPointerLockElement === canvas ||
-                        anyDoc.msPointerLockElement === canvas ||
-                        anyDoc.pointerLockElement === canvas
-                    );
-                };
-
-                document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-                document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
-                document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
-                document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
-
-                // Create Audio Engine if needed.
-                if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
-                    Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
-                }
+        // Fullscreen
+        this._onFullscreenChange = () => {
+            if (anyDoc?.fullscreen !== undefined) {
+                this.isFullscreen = anyDoc?.fullscreen;
+            } else if (anyDoc?.mozFullScreen !== undefined) {
+                this.isFullscreen = anyDoc?.mozFullScreen;
+            } else if (anyDoc?.webkitIsFullScreen !== undefined) {
+                this.isFullscreen = anyDoc?.webkitIsFullScreen;
+            } else if (anyDoc?.msIsFullScreen !== undefined) {
+                this.isFullscreen = anyDoc?.msIsFullScreen;
             }
 
-            this._connectVREvents();
+            // Pointer lock
+            if (this.isFullscreen && this._pointerLockRequested && canvas) {
+                Engine._RequestPointerlock(canvas);
+            }
+        };
 
-            this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
+        document?.addEventListener("fullscreenchange", this._onFullscreenChange, false);
+        document?.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
+        document?.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
+        document?.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
 
-            this._deterministicLockstep = !!options.deterministicLockstep;
-            this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
-            this._timeStep = options.timeStep || 1 / 60;
+        // Pointer lock
+        this._onPointerLockChange = () => {
+            this.isPointerLock = (anyDoc?.mozPointerLockElement === canvas ||
+                anyDoc?.webkitPointerLockElement === canvas ||
+                anyDoc?.msPointerLockElement === canvas ||
+                anyDoc?.pointerLockElement === canvas
+            );
+        };
 
-        }
+        document?.addEventListener("pointerlockchange", this._onPointerLockChange, false);
+        document?.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
+        document?.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
+        document?.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+
+        this._connectVREvents();
+
+        this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
+
+        this._deterministicLockstep = !!options.deterministicLockstep;
+        this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
+        this._timeStep = options.timeStep || 1 / 60;
 
         // Load WebVR Devices
         this._prepareVRComponent();
@@ -622,8 +612,9 @@ export class Engine extends ThinEngine {
             this.onCanvasBlurObservable.notifyObservers(this);
         };
 
-        canvas.addEventListener("focus", this._onCanvasFocus);
-        canvas.addEventListener("blur", this._onCanvasBlur);
+        this._onCanvasPointerOut = (ev) => {
+            this.onCanvasPointerOutObservable.notifyObservers(ev);
+        };
 
         this._onBlur = () => {
             if (this.disablePerformanceMonitorInBackground) {
@@ -639,19 +630,17 @@ export class Engine extends ThinEngine {
             this._windowIsBackground = false;
         };
 
-        this._onCanvasPointerOut = (ev) => {
-            this.onCanvasPointerOutObservable.notifyObservers(ev);
-        };
+        canvas?.addEventListener("focus", this._onCanvasFocus);
+        canvas?.addEventListener("blur", this._onCanvasBlur);
+        canvas?.addEventListener("pointerout", this._onCanvasPointerOut);
 
-        if (DomManagement.IsWindowObjectExist()) {
+        if (DomManagement?.IsWindowObjectExist()) {
             const hostWindow = this.getHostWindow();
             if (hostWindow) {
                 hostWindow.addEventListener("blur", this._onBlur);
                 hostWindow.addEventListener("focus", this._onFocus);
             }
         }
-
-        canvas.addEventListener("pointerout", this._onCanvasPointerOut);
 
         if (!doNotHandleTouchAction) {
             this._disableTouchAction();

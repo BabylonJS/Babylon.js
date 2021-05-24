@@ -884,6 +884,17 @@ export class NativeEngine extends Engine {
         this._shaderProcessor = new NativeShaderProcessor();
     }
 
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+     * @param audioEngine Defines if an audio engine should be created by default
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
+        Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new NativeAudioEngine(hostElement); };
+        super._sharedInit(canvas, doNotHandleTouchAction, audioEngine);
+    }
+
     public dispose(): void {
         super.dispose();
         if (this._boundBuffersVertexArray) {
