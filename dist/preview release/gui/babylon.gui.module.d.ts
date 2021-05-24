@@ -5058,6 +5058,67 @@ declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
         dispose(): void;
     }
 }
+declare module "babylonjs-gui/3D/behaviors/defaultBehavior" {
+    import { Behavior } from "babylonjs/Behaviors/behavior";
+    import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
+    import { SixDofDragBehavior } from "babylonjs/Behaviors/Meshes/sixDofDragBehavior";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Nullable } from "babylonjs/types";
+    /**
+     * Default behavior for 3D UI elements.
+     * Handles a FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+     */
+    export class DefaultBehavior implements Behavior<Mesh> {
+        private _scene;
+        private _followBehavior;
+        private _sixDofDragBehavior;
+        private _onBeforeRender;
+        /**
+         * Instantiates the default behavior
+         */
+        constructor();
+        /**
+         * Attached node of this behavior
+         */
+        attachedNode: Nullable<Mesh>;
+        /**
+         *  The name of the behavior
+         */
+        get name(): string;
+        /**
+         *  The follow behavior
+         */
+        get followBehavior(): FollowBehavior;
+        /**
+         *  The six DoF drag behavior
+         */
+        get sixDofDragBehavior(): SixDofDragBehavior;
+        /**
+         * Enables the follow behavior
+         */
+        followBehaviorEnabled: boolean;
+        /**
+         * Enables the six DoF drag behavior
+         */
+        sixDofDragBehaviorEnabled: boolean;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        /**
+         * Attaches the default behavior
+         * @param ownerMesh The top level mesh
+         * @param sixDofAnchorMesh A mesh that should behave as an anchor for the sixDof interaction. If unset, the top level mesh will be used
+         */
+        attach(ownerMesh: Mesh, sixDofAnchorMesh?: Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+        private _addObservables;
+        private _removeObservables;
+    }
+}
 declare module "babylonjs-gui/3D/controls/holographicSlate" {
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { Scene } from "babylonjs/scene";
@@ -5068,7 +5129,7 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
     import { ContentDisplay3D } from "babylonjs-gui/3D/controls/contentDisplay3D";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { SlateGizmo } from "babylonjs-gui/3D/gizmos/slateGizmo";
-    import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
+    import { DefaultBehavior } from "babylonjs-gui/3D/behaviors/defaultBehavior";
     /**
      * Class used to create a holographic slate
      */
@@ -5110,7 +5171,7 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
         private _pickedPointObserver;
         private _imageUrl;
         /** @hidden */
-        _followBehavior: FollowBehavior;
+        _defaultBehavior: DefaultBehavior;
         /** @hidden */
         _gizmo: SlateGizmo;
         protected _backPlate: Mesh;
@@ -5181,6 +5242,73 @@ declare module "babylonjs-gui/3D/controls/meshButton3D" {
         protected _getTypeName(): string;
         protected _createNode(scene: Scene): TransformNode;
         protected _affectMaterial(mesh: AbstractMesh): void;
+    }
+}
+declare module "babylonjs-gui/3D/controls/nearMenu" {
+    import { Scene } from "babylonjs/scene";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Nullable } from "babylonjs/types";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
+    import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { Container3D } from "babylonjs-gui/3D/controls/container3D";
+    import { TouchHolographicButton } from "babylonjs-gui/3D/controls/touchHolographicButton";
+    /**
+     * NearMenu that displays buttons and follows the camera
+     */
+    export class NearMenu extends VolumeBasedPanel {
+        /**
+         * Base Url for the assets.
+         */
+        private static ASSETS_BASE_URL;
+        /**
+         * File name for the close icon.
+         */
+        private static PIN_ICON_FILENAME;
+        private _pinButton;
+        private _backPlate;
+        private _backPlateMaterial;
+        private _pinMaterial;
+        private _pickedPointObserver;
+        private _defaultBehavior;
+        private _currentMin;
+        private _currentMax;
+        private _isPinned;
+        /**
+         * Indicates if the near menu is world-pinned
+         */
+        get isPinned(): boolean;
+        set isPinned(value: boolean);
+        private _createPinButton;
+        protected _createNode(scene: Scene): Nullable<TransformNode>;
+        protected _affectMaterial(mesh: AbstractMesh): void;
+        protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
+        protected _finalProcessing(): void;
+        /**
+         * Creates a near menu GUI 3D control
+         * @param name name of the near menu
+         */
+        constructor(name: string);
+        /**
+         * Adds a button to the near menu.
+         * Please note that the back material of the button will be set to transparent as it is attached to the near menu.
+         *
+         * @param button Button to add
+         * @returns This near menu
+         */
+        addButton(button: TouchHolographicButton): NearMenu;
+        /**
+         * This method should not be used directly. It is inherited from `Container3D`.
+         * Please use `addButton` instead.
+         * @param _control
+         * @returns
+         */
+        addControl(_control: Control3D): Container3D;
+        /**
+         * Disposes the near menu
+         */
+        dispose(): void;
     }
 }
 declare module "babylonjs-gui/3D/controls/planePanel" {
@@ -5385,6 +5513,225 @@ declare module "babylonjs-gui/3D/controls/touchToggleButton3D" {
         dispose(): void;
     }
 }
+declare module "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.fragment" {
+    /** @hidden */
+    export var fluentBackplatePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.vertex" {
+    /** @hidden */
+    export var fluentBackplateVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/fluentBackplate/fluentBackplateMaterial" {
+    import { Nullable } from "babylonjs/types";
+    import { Matrix, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
+    import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+    import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { SubMesh } from "babylonjs/Meshes/subMesh";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Scene } from "babylonjs/scene";
+    import { Color4 } from "babylonjs/Maths/math.color";
+    import "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.fragment";
+    import "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.vertex";
+    /**
+     * Class used to render square buttons with fluent desgin
+     */
+    export class FluentBackplateMaterial extends PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the fluent blob effect.
+         */
+        static BLOB_TEXTURE_URL: string;
+        /**
+         * URL pointing to the texture used to define iridescent map.
+         */
+        static IM_TEXTURE_URL: string;
+        private _blobTexture;
+        private _iridescentMap;
+        /**
+         * Gets or sets the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
+         */
+        radius: number;
+        /**
+         * Gets or sets the line width of the backplate.
+         */
+        lineWidth: number;
+        /**
+         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
+         */
+        absoluteSizes: boolean;
+        /** @hidden */
+        _filterWidth: number;
+        /**
+         * Gets or sets the base color of the backplate.
+         */
+        baseColor: Color4;
+        /**
+         * Gets or sets the line color of the backplate.
+         */
+        lineColor: Color4;
+        /**
+         * Gets or sets the intensity of the fluent hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the far size of the fluent hover glow effect.
+         */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the backplate, which controls the size of the fluent hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the backplate, which controls the size of the fluent hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the fluent hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the left pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        blobNearSize: number;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the right pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade2: number;
+        /** @hidden */
+        _rate: number;
+        /**
+         * Gets or sets the color of the highlights on the backplate line.
+         */
+        highlightColor: Color4;
+        /**
+         * Gets or sets the width of the highlights on the backplate line.
+         */
+        highlightWidth: number;
+        /** @hidden */
+        _highlightTransform: Vector4;
+        /** @hidden */
+        _highlight: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect on the backplate edges.
+         */
+        iridescenceEdgeIntensity: number;
+        /** @hidden */
+        _angle: number;
+        /**
+         * Gets or sets the opacity of the backplate (0.0 - 1.0).
+         */
+        fadeOut: number;
+        /** @hidden */
+        _reflected: boolean;
+        /** @hidden */
+        _frequency: number;
+        /** @hidden */
+        _verticalOffset: number;
+        /**
+         * Gets or sets the world-space position of the tip of the left index finger.
+         */
+        globalLeftIndexTipPosition: Vector3;
+        private _globalLeftIndexTipPosition4;
+        /**
+         * Gets or sets the world-space position of the tip of the right index finger.
+         */
+        globalRightIndexTipPosition: Vector3;
+        private _globalRightIndexTipPosition4;
+        constructor(name: string, scene: Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): FluentBackplateMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: Scene, rootUrl: string): FluentBackplateMaterial;
+    }
+}
+declare module "babylonjs-gui/3D/controls/holographicBackplate" {
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Scene } from "babylonjs/scene";
+    import { FluentBackplateMaterial } from "babylonjs-gui/3D/materials/fluentBackplate/fluentBackplateMaterial";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
+    /**
+     * Class used to create a holographic backplate in 3D
+     */
+    export class HolographicBackplate extends Control3D {
+        private _shareMaterials;
+        /**
+         * Base Url for the button model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the button model.
+         */
+        static MODEL_FILENAME: string;
+        private _model;
+        private _material;
+        /**
+         * Rendering ground id of the backplate mesh.
+         */
+        set renderingGroupId(id: number);
+        get renderingGroupId(): number;
+        /**
+         * Gets the material used by the backplate
+         */
+        get material(): FluentBackplateMaterial;
+        /**
+         * Gets a boolean indicating if this backplate shares its material with other HolographicBackplates
+         */
+        get shareMaterials(): boolean;
+        /**
+         * Creates a new holographic backplate
+         * @param name defines the control name
+         */
+        constructor(name?: string, _shareMaterials?: boolean);
+        protected _getTypeName(): string;
+        protected _createNode(scene: Scene): TransformNode;
+        private _createMaterial;
+        protected _affectMaterial(mesh: Mesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
 declare module "babylonjs-gui/3D/controls/index" {
     export * from "babylonjs-gui/3D/controls/abstractButton3D";
     export * from "babylonjs-gui/3D/controls/button3D";
@@ -5394,6 +5741,7 @@ declare module "babylonjs-gui/3D/controls/index" {
     export * from "babylonjs-gui/3D/controls/holographicButton";
     export * from "babylonjs-gui/3D/controls/holographicSlate";
     export * from "babylonjs-gui/3D/controls/meshButton3D";
+    export * from "babylonjs-gui/3D/controls/nearMenu";
     export * from "babylonjs-gui/3D/controls/planePanel";
     export * from "babylonjs-gui/3D/controls/scatterPanel";
     export * from "babylonjs-gui/3D/controls/slider3D";
@@ -5404,6 +5752,7 @@ declare module "babylonjs-gui/3D/controls/index" {
     export * from "babylonjs-gui/3D/controls/touchHolographicButton";
     export * from "babylonjs-gui/3D/controls/touchToggleButton3D";
     export * from "babylonjs-gui/3D/controls/volumeBasedPanel";
+    export * from "babylonjs-gui/3D/controls/holographicBackplate";
 }
 declare module "babylonjs-gui/3D/materials/fluent/index" {
     export * from "babylonjs-gui/3D/materials/fluent/fluentMaterial";
@@ -5411,9 +5760,13 @@ declare module "babylonjs-gui/3D/materials/fluent/index" {
 declare module "babylonjs-gui/3D/materials/fluentButton/index" {
     export * from "babylonjs-gui/3D/materials/fluentButton/fluentButtonMaterial";
 }
+declare module "babylonjs-gui/3D/materials/fluentBackplate/index" {
+    export * from "babylonjs-gui/3D/materials/fluentBackplate/fluentBackplateMaterial";
+}
 declare module "babylonjs-gui/3D/materials/index" {
     export * from "babylonjs-gui/3D/materials/fluent/index";
     export * from "babylonjs-gui/3D/materials/fluentButton/index";
+    export * from "babylonjs-gui/3D/materials/fluentBackplate/index";
 }
 declare module "babylonjs-gui/3D/gizmos/index" {
     export * from "babylonjs-gui/3D/gizmos/slateGizmo";
@@ -10187,6 +10540,62 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Default behavior for 3D UI elements.
+     * Handles a BABYLON.FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+     */
+    export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
+        private _scene;
+        private _followBehavior;
+        private _sixDofDragBehavior;
+        private _onBeforeRender;
+        /**
+         * Instantiates the default behavior
+         */
+        constructor();
+        /**
+         * Attached node of this behavior
+         */
+        attachedNode: BABYLON.Nullable<BABYLON.Mesh>;
+        /**
+         *  The name of the behavior
+         */
+        get name(): string;
+        /**
+         *  The follow behavior
+         */
+        get followBehavior(): BABYLON.FollowBehavior;
+        /**
+         *  The six DoF drag behavior
+         */
+        get sixDofDragBehavior(): BABYLON.SixDofDragBehavior;
+        /**
+         * Enables the follow behavior
+         */
+        followBehaviorEnabled: boolean;
+        /**
+         * Enables the six DoF drag behavior
+         */
+        sixDofDragBehaviorEnabled: boolean;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        /**
+         * Attaches the default behavior
+         * @param ownerMesh The top level mesh
+         * @param sixDofAnchorMesh A mesh that should behave as an anchor for the sixDof interaction. If unset, the top level mesh will be used
+         */
+        attach(ownerMesh: BABYLON.Mesh, sixDofAnchorMesh?: BABYLON.Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+        private _addObservables;
+        private _removeObservables;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to create a holographic slate
      */
     export class HolographicSlate extends ContentDisplay3D {
@@ -10227,7 +10636,7 @@ declare module BABYLON.GUI {
         private _pickedPointObserver;
         private _imageUrl;
         /** @hidden */
-        _followBehavior: BABYLON.FollowBehavior;
+        _defaultBehavior: DefaultBehavior;
         /** @hidden */
         _gizmo: SlateGizmo;
         protected _backPlate: BABYLON.Mesh;
@@ -10293,6 +10702,64 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * NearMenu that displays buttons and follows the camera
+     */
+    export class NearMenu extends VolumeBasedPanel {
+        /**
+         * Base Url for the assets.
+         */
+        private static ASSETS_BASE_URL;
+        /**
+         * File name for the close icon.
+         */
+        private static PIN_ICON_FILENAME;
+        private _pinButton;
+        private _backPlate;
+        private _backPlateMaterial;
+        private _pinMaterial;
+        private _pickedPointObserver;
+        private _defaultBehavior;
+        private _currentMin;
+        private _currentMax;
+        private _isPinned;
+        /**
+         * Indicates if the near menu is world-pinned
+         */
+        get isPinned(): boolean;
+        set isPinned(value: boolean);
+        private _createPinButton;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
+        protected _finalProcessing(): void;
+        /**
+         * Creates a near menu GUI 3D control
+         * @param name name of the near menu
+         */
+        constructor(name: string);
+        /**
+         * Adds a button to the near menu.
+         * Please note that the back material of the button will be set to transparent as it is attached to the near menu.
+         *
+         * @param button Button to add
+         * @returns This near menu
+         */
+        addButton(button: TouchHolographicButton): NearMenu;
+        /**
+         * This method should not be used directly. It is inherited from `Container3D`.
+         * Please use `addButton` instead.
+         * @param _control
+         * @returns
+         */
+        addControl(_control: Control3D): Container3D;
+        /**
+         * Disposes the near menu
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -10460,6 +10927,208 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var fluentBackplatePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var fluentBackplateVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render square buttons with fluent desgin
+     */
+    export class FluentBackplateMaterial extends BABYLON.PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the fluent blob effect.
+         */
+        static BLOB_TEXTURE_URL: string;
+        /**
+         * URL pointing to the texture used to define iridescent map.
+         */
+        static IM_TEXTURE_URL: string;
+        private _blobTexture;
+        private _iridescentMap;
+        /**
+         * Gets or sets the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
+         */
+        radius: number;
+        /**
+         * Gets or sets the line width of the backplate.
+         */
+        lineWidth: number;
+        /**
+         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
+         */
+        absoluteSizes: boolean;
+        /** @hidden */
+        _filterWidth: number;
+        /**
+         * Gets or sets the base color of the backplate.
+         */
+        baseColor: BABYLON.Color4;
+        /**
+         * Gets or sets the line color of the backplate.
+         */
+        lineColor: BABYLON.Color4;
+        /**
+         * Gets or sets the intensity of the fluent hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the far size of the fluent hover glow effect.
+         */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the backplate, which controls the size of the fluent hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the backplate, which controls the size of the fluent hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the fluent hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the left pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        blobNearSize: number;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the right pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade2: number;
+        /** @hidden */
+        _rate: number;
+        /**
+         * Gets or sets the color of the highlights on the backplate line.
+         */
+        highlightColor: BABYLON.Color4;
+        /**
+         * Gets or sets the width of the highlights on the backplate line.
+         */
+        highlightWidth: number;
+        /** @hidden */
+        _highlightTransform: BABYLON.Vector4;
+        /** @hidden */
+        _highlight: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect on the backplate edges.
+         */
+        iridescenceEdgeIntensity: number;
+        /** @hidden */
+        _angle: number;
+        /**
+         * Gets or sets the opacity of the backplate (0.0 - 1.0).
+         */
+        fadeOut: number;
+        /** @hidden */
+        _reflected: boolean;
+        /** @hidden */
+        _frequency: number;
+        /** @hidden */
+        _verticalOffset: number;
+        /**
+         * Gets or sets the world-space position of the tip of the left index finger.
+         */
+        globalLeftIndexTipPosition: BABYLON.Vector3;
+        private _globalLeftIndexTipPosition4;
+        /**
+         * Gets or sets the world-space position of the tip of the right index finger.
+         */
+        globalRightIndexTipPosition: BABYLON.Vector3;
+        private _globalRightIndexTipPosition4;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): BABYLON.IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): FluentBackplateMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentBackplateMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a holographic backplate in 3D
+     */
+    export class HolographicBackplate extends Control3D {
+        private _shareMaterials;
+        /**
+         * Base Url for the button model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the button model.
+         */
+        static MODEL_FILENAME: string;
+        private _model;
+        private _material;
+        /**
+         * Rendering ground id of the backplate mesh.
+         */
+        set renderingGroupId(id: number);
+        get renderingGroupId(): number;
+        /**
+         * Gets the material used by the backplate
+         */
+        get material(): FluentBackplateMaterial;
+        /**
+         * Gets a boolean indicating if this backplate shares its material with other HolographicBackplates
+         */
+        get shareMaterials(): boolean;
+        /**
+         * Creates a new holographic backplate
+         * @param name defines the control name
+         */
+        constructor(name?: string, _shareMaterials?: boolean);
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        private _createMaterial;
+        protected _affectMaterial(mesh: BABYLON.Mesh): void;
         /**
          * Releases all associated resources
          */
