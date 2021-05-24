@@ -205,21 +205,33 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _assignDragBehaviorCorners(handle: GizmoHandle, moveFn: (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => void, masks: HandleMasks) {
-        let dimensionsStart = new Vector3();
-        let originStart = new Vector3();
-        let dragOrigin = new Vector3();
-        let toObjectFrame = new Matrix();
+        const dimensionsStart = new Vector3();
+        const originStart = new Vector3();
+        const dragOrigin = new Vector3();
+        const toObjectFrame = new Matrix();
+        const dragPlaneNormal = new Vector3();
 
         let previousFollowState = false;
+        const projectToRef = (position: Vector3, normal: Vector3, origin: Vector3, ref: Vector3) => {
+            // Projects on the plane with its normal and origin
+            position.subtractToRef(origin, TmpVectors.Vector3[0]);
+            const dot = Vector3.Dot(TmpVectors.Vector3[0], normal);
+            TmpVectors.Vector3[1].copyFrom(normal).scaleInPlace(dot);
+            TmpVectors.Vector3[0].subtractInPlace(TmpVectors.Vector3[1]);
+            TmpVectors.Vector3[0].addToRef(origin, ref);
+        }
+
         const dragStart = (event: any) => {
             if (this.attachedSlate && this.attachedMesh) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
                 originStart.copyFrom(this.attachedSlate.origin);
-                dragOrigin.copyFrom(event.dragPlanePoint);
+                dragOrigin.copyFrom(event.position);
                 toObjectFrame.copyFrom(this.attachedMesh.computeWorldMatrix(true));
                 toObjectFrame.invert();
                 previousFollowState = this.attachedSlate._defaultBehavior.followBehaviorEnabled;
                 this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
+                Vector3.TransformNormalToRef(Vector3.Forward(), this.attachedMesh.getWorldMatrix(), dragPlaneNormal);
+                dragPlaneNormal.normalize();
 
                 if (this._handleHovered) {
                     this._handleDragged = this._handleHovered;
@@ -230,7 +242,7 @@ export class SlateGizmo extends Gizmo {
 
         const dragging = (event: any) => {
             if (this.attachedSlate && this.attachedMesh) {
-                this._tmpVector.copyFrom(event.dragPlanePoint);
+                projectToRef(event.position, dragPlaneNormal, dragOrigin, this._tmpVector)
                 this._tmpVector.subtractInPlace(dragOrigin);
                 Vector3.TransformNormalToRef(this._tmpVector, toObjectFrame, this._tmpVector);
 
@@ -274,8 +286,6 @@ export class SlateGizmo extends Gizmo {
                 Vector3.TransformNormalToRef(dragPlaneNormal, this.attachedMesh.getWorldMatrix(), worldPlaneNormal);
                 worldPlaneNormal.normalize();
 
-                // handle._dragBehavior.options.dragPlaneNormal = worldPlaneNormal;
-
                 if (this._handleHovered) {
                     this._handleDragged = this._handleHovered;
                     this._handleDragged.drag = true;
@@ -292,7 +302,6 @@ export class SlateGizmo extends Gizmo {
                 let angle = -Vector3.GetAngleBetweenVectorsOnPlane(this._tmpVector, directionOrigin, worldPlaneNormal);
                 Quaternion.RotationAxisToRef(dragPlaneNormal, angle, this._tmpQuaternion);
                 quaternionOrigin.multiplyToRef(this._tmpQuaternion, this.attachedMesh.rotationQuaternion!);
-                // this.updateBoundingBox();
             }
         };
 
@@ -358,6 +367,7 @@ export class SlateGizmo extends Gizmo {
 
             // Restore original parent
             this.attachedMesh.setParent(originalParent);
+            this.attachedMesh.computeWorldMatrix(true);
         }
     }
 

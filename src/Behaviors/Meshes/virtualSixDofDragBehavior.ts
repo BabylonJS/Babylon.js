@@ -1,6 +1,5 @@
-import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
-import { PivotTools } from "../../Misc/pivotTools";
 import { Observer } from "../../Misc/observable";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
