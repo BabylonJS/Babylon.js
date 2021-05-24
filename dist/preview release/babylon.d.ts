@@ -3653,6 +3653,23 @@ declare module BABYLON {
          */
         static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number;
         /**
+         * Slerp between two vectors. See also `SmoothToRef`
+         * @param vector0 Start vector
+         * @param vector1 End vector
+         * @param slerp amount (will be clamped between 0 and 1)
+         * @param result The slerped vector
+         */
+        static SlerpToRef(vector0: Vector3, vector1: Vector3, slerp: number, result: Vector3): void;
+        /**
+         * Smooth interpolation between two vectors using Slerp
+         * @param source source vector
+         * @param goal goal vector
+         * @param deltaTime current interpolation frame
+         * @param lerpTime total interpolation time
+         * @param result the smoothed vector
+         */
+        static SmoothToRef(source: Vector3, goal: Vector3, deltaTime: number, lerpTime: number, result: Vector3): void;
+        /**
          * Returns a new Vector3 set from the index "offset" of the given array
          * @param array defines the source array
          * @param offset defines the offset in the source array
@@ -4716,6 +4733,16 @@ declare module BABYLON {
          * @returns true if the two quaternions are close to each other
          */
         static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): boolean;
+        /**
+         * Smooth interpolation between two quaternions using Slerp
+         *
+         * @param source source quaternion
+         * @param goal goal quaternion
+         * @param deltaTime current interpolation frame
+         * @param lerpTime total interpolation time
+         * @param result the smoothed quaternion
+         */
+        static SmoothToRef(source: Quaternion, goal: Quaternion, deltaTime: number, lerpTime: number, result: Quaternion): void;
         /**
          * Creates an empty quaternion
          * @returns a new quaternion set to (0.0, 0.0, 0.0)
@@ -32761,6 +32788,7 @@ declare module BABYLON {
         EMISSIVEFRESNEL: boolean;
         FRESNEL: boolean;
         NORMAL: boolean;
+        TANGENT: boolean;
         UV1: boolean;
         UV2: boolean;
         VERTEXCOLOR: boolean;
@@ -48054,6 +48082,14 @@ declare module BABYLON {
          */
         rotateDraggedObject: boolean;
         /**
+         * Sets an ancestor node to drag instead of the attached node.
+         * All dragging induced by this behavior will happen on the ancestor node, while the relative position/orientation/scaling
+         * between the ancestor node and child node will be kept the same.
+         * This is useful if the attached node is acting as an anchor to move its hierarchy, and you don't want the ancestor node to be the one to receive the pointer inputs.
+         * NB : This property must be set to an actual ancestor of the attached node, or else the dragging behavior will have an undefined result.
+         */
+        ancestorToDrag: Nullable<TransformNode>;
+        /**
          * If the behavior is currently in a dragging state
          */
         dragging: boolean;
@@ -48095,6 +48131,10 @@ declare module BABYLON {
          *  The name of the behavior
          */
         get name(): string;
+        /**
+         *  Returns true if the attached mesh is currently moving with this behavior
+         */
+        get isMoving(): boolean;
         /**
          *  Initializes the behavior
          */
@@ -48240,9 +48280,6 @@ declare module BABYLON {
         private _applyPitchOffset;
         private _angularClamp;
         private _orientationClamp;
-        private _vectorSlerpToRef;
-        private _vectorSmoothToRef;
-        private _quaternionSmoothToRef;
         private _passedOrientationDeadzone;
         private _updateLeashing;
         private _updateTransformToGoal;

@@ -78,6 +78,7 @@
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
+- Added space + LMB panning to texture inspector to improve accessibility ([darraghjburke](https://github.com/darraghjburke))
 
 ### NME
 
@@ -113,10 +114,14 @@
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
 - Added property `renderToIntermediateTexture` to `Container` which when set to true, will render children to an intermediate texture rather than direct to host allowing for DOM style alpha blending ([BlindingHues](https://github.com/blindinghues))
 - Added `HolographicSlate` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Added `HolographicBackplate` to serve as a flexible panel in GUI controls using the MRTK design language ([rgerd](https://github.com/rgerd))
+- Added `NearMenu` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### Behaviors
 
 - Added `FollowBehavior`, a behavior that makes the assigned mesh hover around a camera, while facing it ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Added `DefaultBehavior`, a behavior that will be common to several 3D GUI controls, orchestrating `SixDoFDragBehavior` and `FollowBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
+- `SixDoFDragBehavior` can now specify an ancestor to drag instead of the attached mesh ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### WebXR
 
@@ -222,6 +227,7 @@
 - Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
 - Fix undefined camera pose in WebXR in Babylon Native ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix some different behaviours between `ParticleSystem` and `GPUParticleSystem` when using the cylinder emitter. Also added `WebGL2ParticleSystem` (for WebGL2 support) and `ComputeShaderParticleSystem` (for WebGPU support) ([Popov72](https://github.com/Popov72))
+- Fix the `StandardMaterial` not using the tangent attribute when available ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
