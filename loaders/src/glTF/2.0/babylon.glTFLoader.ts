@@ -1361,7 +1361,7 @@ module BABYLON.GLTF2 {
                 });
             }
             // HACK: If byte offset is not a multiple of component type byte length then load as a float array instead of using Babylon buffers.
-            else if (accessor.byteOffset && accessor.byteOffset % VertexBuffer.GetTypeByteLength(accessor.componentType) !== 0) {
+            else if (accessor.byteOffset != undefined && accessor.byteOffset % VertexBuffer.GetTypeByteLength(accessor.componentType) !== 0) {
                 Tools.Warn("Accessor byte offset is not a multiple of component type byte length");
                 accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`#/accessors/${accessor.index}`, accessor).then(data => {
                     return new VertexBuffer(this.babylonScene.getEngine(), data, kind, false);
