@@ -9,15 +9,15 @@ import { BaseSixDofDragBehavior } from "./baseSixDofDragBehavior";
  * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
  *
  */
-export class ConstrainedSixDofDragBehavior extends BaseSixDofDragBehavior {
+export class VirtualSixDofDragBehavior extends BaseSixDofDragBehavior {
     private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
-    private _projectedPosition: Vector3 = new Vector3();
+    private _virtualPosition: Vector3 = new Vector3();
     private _origin: Vector3 = new Vector3();
     /**
      *  The name of the behavior
      */
     public get name(): string {
-        return "ConstrainedSixDofDrag";
+        return "VirtualSixDofDrag";
     }
 
     /**
@@ -36,10 +36,7 @@ export class ConstrainedSixDofDragBehavior extends BaseSixDofDragBehavior {
         this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(() => {
             var draggedMesh = this._draggedMesh;
             if (this.dragging && this._moving && draggedMesh) {
-                // PivotTools._RemoveAndStorePivotPoint(draggedMesh);
-
-                this.onDragObservable.notifyObservers({ position: this._projectedPosition });
-                // PivotTools._RestorePivotPoint(draggedMesh);
+                this.onDragObservable.notifyObservers({ position: this._virtualPosition });
             }
         });
     }
@@ -48,17 +45,8 @@ export class ConstrainedSixDofDragBehavior extends BaseSixDofDragBehavior {
         this._origin.copyFrom(worldPosition);
     }
 
-    protected _targetUpdated(worldPosition: Vector3, worldRotation: Quaternion) {
-        // Project current position on plane
-        const toOrigin = TmpVectors.Vector3[0];
-        toOrigin.copyFrom(worldPosition).subtractInPlace(this._origin);
-
-        Vector3.TransformCoordinatesToRef(this.dragPlaneNormal, this._ownerNode.getWorldMatrix().getRotationMatrix(), TmpVectors.Vector3[1]);
-        TmpVectors.Vector3[1].scaleInPlace(Vector3.Dot(toOrigin, this.dragPlaneNormal));
-        toOrigin.subtractToRef(TmpVectors.Vector3[1], this._projectedPosition);
-        // TO FIX
-        console.log(toOrigin);
-        this._projectedPosition.addInPlace(this._origin);
+    protected _targetUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
+        this._virtualPosition.copyFrom(this._origin).addInPlace(worldDeltaPosition);
     }
 
     /**

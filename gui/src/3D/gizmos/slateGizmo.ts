@@ -290,10 +290,9 @@ export class SlateGizmo extends Gizmo {
                 this._tmpVector.normalize();
 
                 let angle = -Vector3.GetAngleBetweenVectorsOnPlane(this._tmpVector, directionOrigin, worldPlaneNormal);
-
                 Quaternion.RotationAxisToRef(dragPlaneNormal, angle, this._tmpQuaternion);
                 quaternionOrigin.multiplyToRef(this._tmpQuaternion, this.attachedMesh.rotationQuaternion!);
-                this.updateBoundingBox();
+                // this.updateBoundingBox();
             }
         };
 
