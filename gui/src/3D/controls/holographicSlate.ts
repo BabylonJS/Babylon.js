@@ -1,7 +1,7 @@
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Scene } from "babylonjs/scene";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Color3 } from "babylonjs/Maths/math.color";
+// import { Color3 } from "babylonjs/Maths/math.color";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
@@ -19,6 +19,7 @@ import { Viewport } from "babylonjs/Maths/math.viewport";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { Texture } from "babylonjs/Materials/Textures/texture";
+import { FluentBackplateMaterial } from "../materials";
 
 /**
  * Class used to create a holographic slate
@@ -62,7 +63,7 @@ export class HolographicSlate extends ContentDisplay3D {
      */
     public origin = new Vector3(0, 0, 0);
 
-    private _backPlateMaterial: FluentMaterial;
+    private _backPlateMaterial: FluentBackplateMaterial;
     private _contentMaterial: FluentMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
     private _imageUrl: string;
@@ -351,18 +352,15 @@ export class HolographicSlate extends ContentDisplay3D {
 
     protected _affectMaterial(mesh: AbstractMesh) {
         // TODO share materials
-        this._backPlateMaterial = new FluentMaterial(this.name + "plateMaterial", mesh.getScene());
-        this._backPlateMaterial.albedoColor = new Color3(0.08, 0.15, 0.55);
-        this._backPlateMaterial.renderBorders = true;
-        this._backPlateMaterial.renderHoverLight = true;
+        this._backPlateMaterial = new FluentBackplateMaterial(this.name + "plateMaterial", mesh.getScene());
 
         this._pickedPointObserver = this._host.onPickedPointChangedObservable.add((pickedPoint) => {
-            if (pickedPoint) {
-                this._backPlateMaterial.hoverPosition = pickedPoint;
-                this._backPlateMaterial.hoverColor.a = 1.0;
-            } else {
-                this._backPlateMaterial.hoverColor.a = 0;
-            }
+            // if (pickedPoint) {
+            //     this._backPlateMaterial. = pickedPoint;
+            //     this._backPlateMaterial.hoverColor.a = 1.0;
+            // } else {
+            //     this._backPlateMaterial.hoverColor.a = 0;
+            // }
         });
 
         this._contentMaterial = new FluentMaterial(this.name + "contentMaterial", mesh.getScene());

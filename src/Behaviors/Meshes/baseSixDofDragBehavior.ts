@@ -6,7 +6,6 @@ import { Nullable } from "../../types";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Vector3, Quaternion } from "../../Maths/math.vector";
 import { Observer, Observable } from "../../Misc/observable";
-import { Camera } from "../../Cameras/camera";
 import { TransformNode } from "../../Meshes";
 
 /**
