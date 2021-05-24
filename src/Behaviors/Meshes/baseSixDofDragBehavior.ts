@@ -148,7 +148,7 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo.ray &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
-                    if (this._pointerCamera && this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE) {
+                    if (this._pointerCamera && !this._pointerCamera.isLeftCamera && !this._pointerCamera.isRightCamera) {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera.globalPosition);
                     }
 
@@ -209,7 +209,7 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._draggedMesh
                 ) {
                     var zDragFactor = this.zDragFactor;
-                    if (this._pointerCamera && this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE) {
+                    if (this._pointerCamera && !this._pointerCamera.isLeftCamera && !this._pointerCamera.isRightCamera) {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera.globalPosition);
                         zDragFactor = 0;
                     }
