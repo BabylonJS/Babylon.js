@@ -4,7 +4,6 @@ import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { HandleMaterial } from "../materials";
 import { SlateGizmo } from "./slateGizmo";
-import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { VirtualSixDofDragBehavior } from "babylonjs/Behaviors/Meshes/virtualSixDofDragBehavior";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
@@ -23,21 +22,16 @@ export abstract class GizmoHandle {
     protected _state: HandleState = HandleState.IDLE;
     protected _materials: HandleMaterial[] = [];
 
-    private _dragStartObserver: Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
+
+    private _dragStartObserver: Nullable<Observer<any>>;
     private _draggingObserver: Nullable<
-        Observer<{
-            delta: Vector3;
-            dragPlanePoint: Vector3;
-            dragPlaneNormal: Vector3;
-            dragDistance: number;
-            pointerId: number;
-        }>
+        Observer<any>
     >;
-    private _dragEndObserver: Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
+    private _dragEndObserver: Nullable<Observer<any>>;
     /**
      * @hidden
      */
-    public _dragBehavior: PointerDragBehavior;
+    public _dragBehavior: VirtualSixDofDragBehavior;
 
     /**
      * The current state of the handle
