@@ -456,7 +456,7 @@
         {
             "title": "GLTF Animation Node Misc",
             "renderCount": 2,
-            "playgroundId": "#DS8AA7#18",
+            "playgroundId": "#EYAUPC#2",
             "replace": "__folder__, Animation_NodeMisc, __page__, 0",
             "referenceImage": "gltfAnimationNodeMisc.png"
         },
@@ -719,7 +719,7 @@
         },
         {
             "title": "GLTF Extension KHR_materials_specular",
-            "playgroundId": "#RNT7K4#8",
+            "playgroundId": "#RNT7K4#9",
             "referenceImage": "gltfExtensionKhrMaterialsSpecular.png"
         },
         {
