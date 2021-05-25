@@ -256,7 +256,6 @@ export class PhysicsViewer {
                     // Handle compound impostors
                     var childMeshes = targetMesh.getChildMeshes().filter((c) => { return c.physicsImpostor ? 1 : 0; });
                     childMeshes.forEach((m) => {
-                        
                         if (m.physicsImpostor && m.getClassName() === "Mesh") {
                             const boundingInfo = m.getBoundingInfo();
                             const min = boundingInfo.boundingBox.minimum;
