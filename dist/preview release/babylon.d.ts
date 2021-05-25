@@ -776,8 +776,12 @@ declare module BABYLON {
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5: number;
         /** Compressed BC2 */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3: number;
-        /** Compressed BC1 */
+        /** Compressed BC1 (RGBA) */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1: number;
+        /** Compressed BC1 (RGB) */
+        static readonly TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1: number;
+        /** Compressed ASTC 4x4 */
+        static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4: number;
         /** UNSIGNED_BYTE */
         static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
         /** UNSIGNED_BYTE (2nd reference) */
@@ -24980,6 +24984,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the available options when creating a texture
+     */
+    export interface ITextureCreationOptions {
+        /** Defines if the texture will require mip maps or not (default: false) */
+        noMipmap?: boolean;
+        /** Defines if the texture needs to be inverted on the y axis during loading (default: true) */
+        invertY?: boolean;
+        /** Defines the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...) (default: Texture.TRILINEAR_SAMPLINGMODE) */
+        samplingMode?: number;
+        /** Ddefines a callback triggered when the texture has been loaded (default: null) */
+        onLoad?: Nullable<() => void>;
+        /** Defines a callback triggered when an error occurred during the loading session (default: null) */
+        onError?: Nullable<(message?: string, exception?: any) => void>;
+        /** Defines the buffer to load the texture from in case the texture is loaded from a buffer representation (default: null) */
+        buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>;
+        /** Defines if the buffer we are loading the texture from should be deleted after load (default: false) */
+        deleteBuffer?: boolean;
+        /** Defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...) (default: ) */
+        format?: number;
+        /** Defines an optional mime type information (default: undefined) */
+        mimeType?: string;
+        /** Options to be passed to the loader (default: undefined) */
+        loaderOptions?: any;
+        /** Specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg) (default: undefined) */
+        creationFlags?: number;
+        /** Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false) */
+        useSRGBBuffer?: boolean;
+    }
+    /**
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see https://doc.babylonjs.com/babylon101/materials#texture
      */
@@ -25156,6 +25189,7 @@ declare module BABYLON {
         private _mimeType?;
         private _loaderOptions?;
         private _creationFlags?;
+        private _useSRGBBuffer?;
         /** Returns the texture mime type if it was defined by a loader (undefined else) */
         get mimeType(): string | undefined;
         /**
@@ -25183,7 +25217,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/babylon101/materials#texture
          * @param url defines the url of the picture to load as a texture
          * @param sceneOrEngine defines the scene or engine the texture will belong to
-         * @param noMipmap defines if the texture will require mip maps or not
+         * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
          * @param invertY defines if the texture needs to be inverted on the y axis during loading
          * @param samplingMode defines the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
          * @param onLoad defines a callback triggered when the texture has been loaded
@@ -25195,7 +25229,7 @@ declare module BABYLON {
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -25257,7 +25291,7 @@ declare module BABYLON {
          * @param data Define the base64 payload without the data: prefix
          * @param name Define the name of the texture in the scene useful fo caching purpose for instance
          * @param scene Define the scene the texture should belong to
-         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
          * @param invertY define if the texture needs to be inverted on the y axis during loading
          * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
          * @param onLoad define a callback triggered when the texture has been loaded
@@ -25266,7 +25300,7 @@ declare module BABYLON {
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns the created texture
          */
-        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, format?: number, creationFlags?: number): Texture;
+        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, format?: number, creationFlags?: number): Texture;
         /**
          * Creates a texture from its data: representation. (data: will be added in case only the payload has been passed in)
          * @param data Define the base64 payload without the data: prefix
@@ -25274,7 +25308,7 @@ declare module BABYLON {
          * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
          * @param scene Define the scene the texture should belong to
          * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
-         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
          * @param invertY define if the texture needs to be inverted on the y axis during loading
          * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
          * @param onLoad define a callback triggered when the texture has been loaded
@@ -25283,7 +25317,7 @@ declare module BABYLON {
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns the created texture
          */
-        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, creationFlags?: number): Texture;
+        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, creationFlags?: number): Texture;
     }
 }
 declare module BABYLON {
@@ -34584,7 +34618,7 @@ declare module BABYLON {
          */
         definedFacingForward: boolean;
         /** @hidden */
-        _occlusionQuery: Nullable<WebGLQuery>;
+        _occlusionQuery: Nullable<WebGLQuery | number>;
         /** @hidden */
         _renderingGroup: Nullable<RenderingGroup>;
         /**
@@ -37960,6 +37994,8 @@ declare module BABYLON {
         standardDerivatives: boolean;
         /** Defines if s3tc texture compression is supported */
         s3tc?: WEBGL_compressed_texture_s3tc;
+        /** Defines if s3tc sRGB texture compression is supported */
+        s3tc_srgb?: WEBGL_compressed_texture_s3tc_srgb;
         /** Defines if pvrtc texture compression is supported */
         pvrtc: any;
         /** Defines if etc1 texture compression is supported */
@@ -38008,6 +38044,8 @@ declare module BABYLON {
         timerQuery?: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         canUseTimestampForTimerQuery: boolean;
+        /** Defines if occlusion queries are supported by the engine */
+        supportOcclusionQuery: boolean;
         /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
         multiview?: any;
         /** Defines if oculus multiview is supported (https://developer.oculus.com/documentation/oculus-browser/latest/concepts/browser-multiview/) */
@@ -38026,6 +38064,8 @@ declare module BABYLON {
         canUseGLVertexID: boolean;
         /** Defines if compute shaders are supported by the engine */
         supportComputeShaders: boolean;
+        /** Defines if sRGB texture formats are supported */
+        supportSRGBBuffers: boolean;
     }
 }
 declare module BABYLON {
@@ -39546,7 +39586,7 @@ declare module BABYLON {
         }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => void, prepareTextureProcessFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | {
             width: number;
             height: number;
-        }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any): InternalTexture;
+        }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture;
         /**
          * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
@@ -39567,9 +39607,10 @@ declare module BABYLON {
          * @param mimeType defines an optional mime type
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -39729,9 +39770,9 @@ declare module BABYLON {
         /** @hidden */
         _getWebGLTextureType(type: number): number;
         /** @hidden */
-        _getInternalFormat(format: number): number;
+        _getInternalFormat(format: number, useSRGBBuffer?: boolean): number;
         /** @hidden */
-        _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
+        _getRGBABufferInternalSizedFormat(type: number, format?: number, useSRGBBuffer?: boolean): number;
         /** @hidden */
         _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */
@@ -40199,6 +40240,8 @@ declare module BABYLON {
         _lodGenerationOffset: number;
         /** @hidden */
         _depthStencilTexture: Nullable<InternalTexture>;
+        /** @hidden */
+        _useSRGBBuffer: boolean;
         /** @hidden */
         _colorTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
@@ -58113,6 +58156,8 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export type OcclusionQuery = WebGLQuery | number;
+    /** @hidden */
     export class _OcclusionDataStorage {
         /** @hidden */
         occlusionInternalRetryCounter: number;
@@ -58132,25 +58177,25 @@ declare module BABYLON {
              * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
              * @return the new query
              */
-            createQuery(): WebGLQuery;
+            createQuery(): OcclusionQuery;
             /**
              * Delete and release a webGL query
              * @param query defines the query to delete
              * @return the current engine
              */
-            deleteQuery(query: WebGLQuery): Engine;
+            deleteQuery(query: OcclusionQuery): Engine;
             /**
              * Check if a given query has resolved and got its value
              * @param query defines the query to check
              * @returns true if the query got its value
              */
-            isQueryResultAvailable(query: WebGLQuery): boolean;
+            isQueryResultAvailable(query: OcclusionQuery): boolean;
             /**
              * Gets the value of a given query
              * @param query defines the query to check
              * @returns the value of the query
              */
-            getQueryResult(query: WebGLQuery): number;
+            getQueryResult(query: OcclusionQuery): number;
             /**
              * Initiates an occlusion query
              * @param algorithmType defines the algorithm to use
@@ -58158,7 +58203,7 @@ declare module BABYLON {
              * @returns the current engine
              * @see https://doc.babylonjs.com/features/occlusionquery
              */
-            beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine;
+            beginOcclusionQuery(algorithmType: number, query: OcclusionQuery): boolean;
             /**
              * Ends an occlusion query
              * @see https://doc.babylonjs.com/features/occlusionquery
@@ -58515,7 +58560,7 @@ declare module BABYLON {
         Depth24Plus = "depth24plus",
         Depth24PlusStencil8 = "depth24plus-stencil8",
         Depth32Float = "depth32float",
-        BC1RGBAUNorm = "bc1-rgba-unorm",
+        BC1RGBAUnorm = "bc1-rgba-unorm",
         BC1RGBAUnormSRGB = "bc1-rgba-unorm-srgb",
         BC2RGBAUnorm = "bc2-rgba-unorm",
         BC2RGBAUnormSRGB = "bc2-rgba-unorm-srgb",
@@ -59241,7 +59286,7 @@ declare module BABYLON {
         }): imageBitmap is ImageBitmap[];
         setCommandEncoder(encoder: GPUCommandEncoder): void;
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
-        static GetWebGPUTextureFormat(type: number, format: number): GPUTextureFormat;
+        static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -59578,6 +59623,25 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export class WebGPUQuerySet {
+        private _device;
+        private _bufferManager;
+        private _count;
+        private _canUseMultipleBuffers;
+        private _querySet;
+        private _queryBuffer;
+        private _dstBuffers;
+        get querySet(): GPUQuerySet;
+        constructor(count: number, type: QueryType, device: GPUDevice, bufferManager: WebGPUBufferManager, canUseMultipleBuffers?: boolean);
+        private _getBuffer;
+        readValues(firstQuery?: number, queryCount?: number): Promise<BigUint64Array | null>;
+        readValue(firstQuery?: number): Promise<number | null>;
+        readTwoValuesAndSubtract(firstQuery?: number): Promise<number | null>;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export class WebGPUTimestampQuery {
         private _device;
         private _bufferManager;
@@ -59594,14 +59658,36 @@ declare module BABYLON {
     }
     /** @hidden */
     export class WebGPUDurationMeasure {
-        private _device;
-        private _bufferManager;
         private _querySet;
-        private _queryBuffer;
-        private _dstBuffer;
         constructor(device: GPUDevice, bufferManager: WebGPUBufferManager);
         start(encoder: GPUCommandEncoder): void;
-        stop(encoder: GPUCommandEncoder): Promise<number>;
+        stop(encoder: GPUCommandEncoder): Promise<number | null>;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUOcclusionQuery {
+        private _engine;
+        private _device;
+        private _bufferManager;
+        private _currentTotalIndices;
+        private _countIncrement;
+        private _querySet;
+        private _availableIndices;
+        private _lastBuffer;
+        private _frameLastBuffer;
+        get querySet(): GPUQuerySet;
+        get hasQueries(): boolean;
+        get canBeginQuery(): boolean;
+        constructor(engine: WebGPUEngine, device: GPUDevice, bufferManager: WebGPUBufferManager, startCount?: number, incrementCount?: number);
+        createQuery(): number;
+        deleteQuery(index: number): void;
+        isQueryResultAvailable(index: number): boolean;
+        getQueryResult(index: number): number;
+        private _retrieveQueryBuffer;
+        private _allocateNewIndices;
+        private _delayQuerySetDispose;
         dispose(): void;
     }
 }
@@ -59757,6 +59843,8 @@ declare module BABYLON {
         /** @hidden */
         _timestampQuery: WebGPUTimestampQuery;
         /** @hidden */
+        _occlusionQuery: WebGPUOcclusionQuery;
+        /** @hidden */
         _compiledComputeEffects: {
             [key: string]: ComputeEffect;
         };
@@ -59792,7 +59880,8 @@ declare module BABYLON {
         _currentRenderPass: Nullable<GPURenderPassEncoder>;
         /** @hidden */
         _mainRenderPassWrapper: WebGPURenderPassWrapper;
-        private _rttRenderPassWrapper;
+        /** @hidden */
+        _rttRenderPassWrapper: WebGPURenderPassWrapper;
         /** @hidden */
         _pendingDebugCommands: Array<[string, Nullable<string>]>;
         private _bundleList;
@@ -60109,9 +60198,10 @@ declare module BABYLON {
          * @param mimeType defines an optional mime type
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
         generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
         /**
          * Update the sampling mode of a given texture
@@ -60208,6 +60298,8 @@ declare module BABYLON {
         /** @hidden */
         _endRenderTargetRenderPass(): void;
         private _getCurrentRenderPass;
+        /** @hidden */
+        _getCurrentRenderPassIndex(): number;
         private _startMainRenderPass;
         private _endMainRenderPass;
         /**
@@ -63897,6 +63989,7 @@ declare module BABYLON {
         PREMULTIPLYALPHA: boolean;
         EMISSIVE: boolean;
         EMISSIVEDIRECTUV: number;
+        GAMMAEMISSIVE: boolean;
         REFLECTIVITY: boolean;
         REFLECTIVITYDIRECTUV: number;
         SPECULARTERM: boolean;
@@ -84182,6 +84275,14 @@ interface WebGLRenderingContext {
     RG: number;
     R8: number;
     RG8: number;
+    SRGB: number;
+    SRGB8: number;
+    SRGB8_ALPHA8: number;
+
+    COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR: number;
+    COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT: number;
+    COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT: number;
+    COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT: number;
 
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
