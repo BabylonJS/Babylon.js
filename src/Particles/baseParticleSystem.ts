@@ -263,7 +263,7 @@ export class BaseParticleSystem {
     public translationPivot = new Vector2(0, 0);
 
     /** @hidden */
-    protected _isAnimationSheetEnabled: boolean;
+    public _isAnimationSheetEnabled: boolean;
 
     /**
      * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
@@ -551,7 +551,8 @@ export class BaseParticleSystem {
      */
     public billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
 
-    protected _isBillboardBased = true;
+    /** @hidden */
+    public _isBillboardBased = true;
     /**
      * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
      */

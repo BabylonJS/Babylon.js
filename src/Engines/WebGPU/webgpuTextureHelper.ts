@@ -248,7 +248,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC4RUnorm:
             case WebGPUConstants.TextureFormat.BC4RSnorm:
-            case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
                 return Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
@@ -378,7 +378,7 @@ export class WebGPUTextureHelper {
 
             case WebGPUConstants.TextureFormat.BC4RUnorm:
             case WebGPUConstants.TextureFormat.BC4RSnorm:
-            case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
                 return { width: 4, height: 4, length: 8 };
         }
@@ -444,14 +444,14 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
-            case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
                 return true;
         }
 
         return false;
     }
 
-    public static GetWebGPUTextureFormat(type: number, format: number): GPUTextureFormat {
+    public static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer = false): GPUTextureFormat {
         switch (format) {
             case Constants.TEXTUREFORMAT_DEPTH24_STENCIL8:
                 return WebGPUConstants.TextureFormat.Depth24PlusStencil8;
@@ -459,17 +459,17 @@ export class WebGPUTextureHelper {
                 return WebGPUConstants.TextureFormat.Depth32Float;
 
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
-                return WebGPUConstants.TextureFormat.BC7RGBAUnorm;
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC7RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
                 return WebGPUConstants.TextureFormat.BC6HRGBUFloat;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
                 return WebGPUConstants.TextureFormat.BC6HRGBFloat;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
-                return WebGPUConstants.TextureFormat.BC3RGBAUnorm;
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC3RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC3RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
-                return WebGPUConstants.TextureFormat.BC2RGBAUnorm;
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC2RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
-                return WebGPUConstants.TextureFormat.BC1RGBAUNorm;
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC1RGBAUnorm;
         }
 
         switch (type) {
@@ -501,9 +501,9 @@ export class WebGPUTextureHelper {
                     case Constants.TEXTUREFORMAT_RGB:
                         throw "TEXTUREFORMAT_RGB format not supported in WebGPU";
                     case Constants.TEXTUREFORMAT_RGBA:
-                        return WebGPUConstants.TextureFormat.RGBA8Unorm;
+                        return useSRGBBuffer ? WebGPUConstants.TextureFormat.RGBA8UnormSRGB : WebGPUConstants.TextureFormat.RGBA8Unorm;
                     case Constants.TEXTUREFORMAT_BGRA:
-                        return WebGPUConstants.TextureFormat.BGRA8Unorm;
+                        return useSRGBBuffer ? WebGPUConstants.TextureFormat.BGRA8UnormSRGB : WebGPUConstants.TextureFormat.BGRA8Unorm;
                     case Constants.TEXTUREFORMAT_RED_INTEGER:
                         return WebGPUConstants.TextureFormat.R8Uint;
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
@@ -620,7 +620,7 @@ export class WebGPUTextureHelper {
                 }
         }
 
-        return WebGPUConstants.TextureFormat.RGBA8Unorm;
+        return useSRGBBuffer ? WebGPUConstants.TextureFormat.RGBA8UnormSRGB : WebGPUConstants.TextureFormat.RGBA8Unorm;
     }
 
     public invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex= 0, commandEncoder?: GPUCommandEncoder): void {
@@ -891,7 +891,7 @@ export class WebGPUTextureHelper {
 
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
-        gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format);
+        gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
 
         gpuTextureWrapper.textureUsages =
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :

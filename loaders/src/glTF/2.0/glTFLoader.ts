@@ -12,7 +12,7 @@ import { Skeleton } from "babylonjs/Bones/skeleton";
 import { Material } from "babylonjs/Materials/material";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Texture, ITextureCreationOptions } from "babylonjs/Materials/Textures/texture";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Buffer, VertexBuffer } from "babylonjs/Buffers/buffer";
 import { Geometry } from "babylonjs/Meshes/geometry";
@@ -2014,7 +2014,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         const sampler = (texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(`${context}/sampler`, this._gltf.samplers, texture.sampler));
         const image = ArrayItem.Get(`${context}/source`, this._gltf.images, texture.source);
-        const promise = this._createTextureAsync(context, sampler, image, assign);
+        const promise = this._createTextureAsync(context, sampler, image, assign, undefined, !texture._textureInfo.nonColorData);
 
         this.logClose();
 
@@ -2022,22 +2022,32 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign: (babylonTexture: BaseTexture) => void = () => { }, textureLoaderOptions?: any): Promise<BaseTexture> {
+    public _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign: (babylonTexture: BaseTexture) => void = () => { }, textureLoaderOptions?: any, useSRGBBuffer?: boolean): Promise<BaseTexture> {
         const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
         const promises = new Array<Promise<any>>();
 
         const deferred = new Deferred<void>();
         this._babylonScene._blockEntityCollection = this._forAssetContainer;
-        const babylonTexture = new Texture(null, this._babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
-            if (!this._disposed) {
-                deferred.resolve();
-            }
-        }, (message, exception) => {
-            if (!this._disposed) {
-                deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
-            }
-        }, undefined, undefined, undefined, image.mimeType, textureLoaderOptions);
+        const textureCreationOptions: ITextureCreationOptions = {
+            noMipmap: samplerData.noMipMaps,
+            invertY: false,
+            samplingMode: samplerData.samplingMode,
+            onLoad: () => {
+                if (!this._disposed) {
+                    deferred.resolve();
+                }
+            },
+            onError: (message?: string, exception?: any) => {
+                if (!this._disposed) {
+                    deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
+                }
+            },
+            mimeType: image.mimeType,
+            loaderOptions: textureLoaderOptions,
+            useSRGBBuffer: !!useSRGBBuffer && this._parent.useSRGBBuffers,
+        };
+        const babylonTexture = new Texture(null, this._babylonScene, textureCreationOptions);
         this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
 

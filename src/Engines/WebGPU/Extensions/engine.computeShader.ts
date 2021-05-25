@@ -53,6 +53,15 @@ WebGPUEngine.prototype.areAllComputeEffectsReady = function(): boolean {
 };
 
 WebGPUEngine.prototype.computeDispatch = function(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void {
+    if (this._currentRenderTarget) {
+        // A render target pass is currently in effect (meaning beingRenderPass has been called on the command encoder this._renderTargetEncoder): we are not allowed to open
+        // another pass on this command encoder (even if it's a compute pass) until endPass has been called, so we need to defer the compute pass for after the current render target pass is closed
+        this._onAfterUnbindFrameBufferObservable.addOnce(() => {
+            this.computeDispatch(effect, context, bindings, x, y, z, bindingsMapping);
+        });
+        return;
+    }
+
     const contextPipeline = effect._pipelineContext as WebGPUComputePipelineContext;
     const computeContext = context as WebGPUComputeContext;
 

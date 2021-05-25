@@ -899,7 +899,7 @@ export class RenderTargetTexture extends Texture {
             return;
         }
 
-        engine._debugPushGroup(`render to face #${faceIndex} layer #${layer}`, 1);
+        engine._debugPushGroup?.(`render to face #${faceIndex} layer #${layer}`, 1);
 
         // Bind
         this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
@@ -997,7 +997,7 @@ export class RenderTargetTexture extends Texture {
             engine.generateMipMapsForCubemap(this._texture);
         }
 
-        engine._debugPopGroup(1);
+        engine._debugPopGroup?.(1);
     }
 
     /**
