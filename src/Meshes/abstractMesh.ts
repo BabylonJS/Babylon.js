@@ -311,7 +311,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public definedFacingForward = true;
 
     /** @hidden */
-    public _occlusionQuery: Nullable<WebGLQuery> = null;
+    public _occlusionQuery: Nullable<WebGLQuery | number> = null;
 
     /** @hidden */
     public _renderingGroup: Nullable<RenderingGroup> = null;
@@ -822,7 +822,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _rebuild(dispose = false): void {
         this.onRebuildObservable.notifyObservers(this);
 
-        if (this._occlusionQuery) {
+        if (this._occlusionQuery !== null) {
             this._occlusionQuery = null;
         }
 
@@ -1775,7 +1775,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         // Query
         let engine = this.getScene().getEngine();
-        if (this._occlusionQuery) {
+        if (this._occlusionQuery !== null) {
             this.isOcclusionQueryInProgress = false;
             engine.deleteQuery(this._occlusionQuery);
             this._occlusionQuery = null;
