@@ -14,16 +14,19 @@ import { TransformNode } from "../../Meshes";
  * And observables for position/rotation changes
  */
 export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
-    private static _virtualScene: Scene;
+    protected static _virtualScene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
-    private _virtualMeshesInfo: {
+    protected _virtualMeshesInfo: {
         [id: number]: {
+            dragging: boolean,
+            moving: boolean,
             dragMesh: AbstractMesh;
             originMesh: AbstractMesh;
             startingPosition: Vector3;
             startingOrientation: Quaternion;
             lastOriginPosition: Vector3;
+            lastDragPosition: Vector3;
         };
     } = {};
 
@@ -51,10 +54,6 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
      * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
      */
     public zDragFactor = 3;
-    /**
-     * If the behavior is currently in a dragging state
-     */
-    public dragging = false;
     /**
      * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
      */
@@ -106,7 +105,7 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      * Should the behavior allow simultaneous pointers to interact with the owner node.
      */
-    public allowMultiPointer: boolean = false;
+    public allowMultiPointer: boolean = true;
 
     /**
      *  The name of the behavior
@@ -147,11 +146,14 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
         originMesh.rotationQuaternion = new Quaternion();
 
         return {
+            dragging: false,
+            moving: false,
             dragMesh,
             originMesh,
             startingPosition: new Vector3(),
             startingOrientation: new Quaternion(),
             lastOriginPosition: new Vector3(),
+            lastDragPosition: new Vector3(),
         };
     }
 
@@ -172,10 +174,14 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
         };
         this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
             const pointerId = (<PointerEvent>pointerInfo.event).pointerId;
+            if (!this._virtualMeshesInfo[pointerId]) {
+                this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
+            }
+            const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
 
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (
-                    !this.dragging &&
+                    !virtualMeshesInfo.dragging &&
                     pointerInfo.pickInfo &&
                     pointerInfo.pickInfo.hit &&
                     pointerInfo.pickInfo.pickedMesh &&
@@ -190,10 +196,6 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     if (this._pointerCamera && !this._pointerCamera.isLeftCamera && !this._pointerCamera.isRightCamera) {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera.globalPosition);
                     }
-                    if (!this._virtualMeshesInfo[pointerId]) {
-                        this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
-                    }
-                    const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
 
                     const pickedMesh = this._ownerNode;
                     this._draggedMesh = pickedMesh;
@@ -205,14 +207,16 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                     // Attach the virtual drag mesh to the virtual origin mesh so it can be dragged
                     virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
-                    // virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
-                    virtualMeshesInfo.dragMesh.position.copyFrom(pickedMesh.absolutePosition);
+                    virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                    // virtualMeshesInfo.dragMesh.position.copyFrom(pickedMesh.absolutePosition);
+                    virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.pickedPoint);
+
                     virtualMeshesInfo.startingPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
                     virtualMeshesInfo.startingOrientation.copyFrom(virtualMeshesInfo.dragMesh.rotationQuaternion!);
                     virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
 
                     // Update state
-                    this.dragging = true;
+                    virtualMeshesInfo.dragging = true;
 
                     if (this.currentDraggingPointerIds.indexOf(pointerId) === -1) {
                         this.currentDraggingPointerIds.push(pointerId);
@@ -228,7 +232,7 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         }
                     }
 
-                    this._targetDragStart(virtualMeshesInfo.dragMesh.absolutePosition, virtualMeshesInfo.dragMesh.rotationQuaternion!);
+                    this._targetDragStart(virtualMeshesInfo.dragMesh.absolutePosition, virtualMeshesInfo.dragMesh.rotationQuaternion!, pointerId);
                     this.onDragStartObservable.notifyObservers({ position: virtualMeshesInfo.dragMesh.absolutePosition });
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
@@ -236,7 +240,7 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                 if (registeredPointerIndex !== -1) {
                     this.currentDraggingPointerIds.splice(registeredPointerIndex, 1);
                     if (this.currentDraggingPointerIds.length === 0) {
-                        this.dragging = false;
+                        virtualMeshesInfo.dragging = false;
                         this._moving = false;
                         this._draggedMesh = null;
 
@@ -247,14 +251,8 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         }
                     }
 
-                    if (!this._virtualMeshesInfo[pointerId]) {
-                        this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
-                        return;
-                    }
-                    const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-
                     virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
-
+                    this._targetDragEnd(pointerId);
                     this.onDragEndObservable.notifyObservers({});
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
@@ -262,7 +260,7 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                 if (
                     registeredPointerIndex !== -1 &&
-                    this.dragging &&
+                    virtualMeshesInfo.dragging &&
                     pointerInfo.pickInfo &&
                     pointerInfo.pickInfo.ray &&
                     this._draggedMesh
@@ -273,32 +271,26 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         zDragFactor = 0;
                     }
 
-                    if (!this._virtualMeshesInfo[pointerId]) {
-                        this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
-                        return;
-                    }
-                    const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-
                     // Calculate controller drag distance in controller space
                     var originDragDifference = pointerInfo.pickInfo.ray.origin.subtract(virtualMeshesInfo.lastOriginPosition);
                     virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
                     var localOriginDragDifference = -Vector3.Dot(originDragDifference, pointerInfo.pickInfo.ray.direction);
-
+                    
                     virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
                     // Determine how much the controller moved to/away towards the dragged object and use this to move the object further when its further away
                     virtualMeshesInfo.dragMesh.position.z -=
-                        virtualMeshesInfo.dragMesh.position.z < 1
-                            ? localOriginDragDifference * this.zDragFactor
-                            : localOriginDragDifference * zDragFactor * virtualMeshesInfo.dragMesh.position.z;
+                    virtualMeshesInfo.dragMesh.position.z < 1
+                    ? localOriginDragDifference * this.zDragFactor
+                    : localOriginDragDifference * zDragFactor * virtualMeshesInfo.dragMesh.position.z;
                     if (virtualMeshesInfo.dragMesh.position.z < 0) {
                         virtualMeshesInfo.dragMesh.position.z = 0;
                     }
-
+                    
                     // Update the controller position
                     virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
                     virtualMeshesInfo.originMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
                     virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
-
+                    
                     // Get change in rotation
                     this._tmpQuaternion.copyFrom(virtualMeshesInfo.startingOrientation);
                     this._tmpQuaternion.x = -this._tmpQuaternion.x;
@@ -306,8 +298,9 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._tmpQuaternion.z = -this._tmpQuaternion.z;
                     virtualMeshesInfo.dragMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
                     virtualMeshesInfo.dragMesh.position.subtractToRef(virtualMeshesInfo.startingPosition, this._tmpVector);
-
-                    this._targetUpdated(this._tmpVector, this._tmpQuaternion);
+                    
+                    this._targetUpdated(this._tmpVector, this._tmpQuaternion, pointerId);
+                    virtualMeshesInfo.lastDragPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
 
                     this._moving = true;
                 }
@@ -315,11 +308,15 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
         });
     }
 
-    protected _targetDragStart(worldPosition: Vector3, worldRotation: Quaternion) {
+    protected _targetDragStart(worldPosition: Vector3, worldRotation: Quaternion, pointerId: number) {
         // Herited classes can override that
     }
 
-    protected _targetUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
+    protected _targetUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion, pointerId: number) {
+        // Herited classes can override that
+    }
+    
+    protected _targetDragEnd(pointerId: number) {
         // Herited classes can override that
     }
 
