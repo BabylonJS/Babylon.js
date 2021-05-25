@@ -222,6 +222,7 @@
 - Fix for namepsace sharing in .scss files; PropertyTab, SceneExplorer ([msDestiny14](https://github.com/msDestiny14))
 - Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
 - Fix undefined camera pose in WebXR in Babylon Native ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix code for handling getting DeviceType/DeviceSlot in DeviceInputSystem to work better with MouseEvents ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 

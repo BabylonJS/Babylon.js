@@ -225,10 +225,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      * @param numberOfInputs Number of input entries to create for given device
      */
     private _registerDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number) {
-        if (deviceType === undefined) {
-            throw "Unable to register undefined device";
-        }
-
         if (deviceSlot === undefined) {
             throw `Unable to register device ${DeviceType[deviceType]} to undefined slot.`;
         }
