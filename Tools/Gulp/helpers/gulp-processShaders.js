@@ -24,7 +24,7 @@ Effect.##SHADERSTORE_PLACEHOLDER##[name] = shader;
 function getShaderName(filename) {
     let parts = filename.split('.');
     if (parts[1] !== 'fx') {
-        return parts[0] + (parts[1] === 'fragment' ? 'Pixel' : 'Vertex') + "Shader";
+        return parts[0] + (parts[1] === 'fragment' ? 'Pixel' : parts[1] === 'compute' ? 'Compute' : 'Vertex') + "Shader";
     } else {
         return parts[0];
     }
@@ -82,7 +82,7 @@ function main(isCore) {
             const normalized = path.normalize(file.path);
             const directory = path.dirname(normalized);
             const shaderName = getShaderName(filename);
-            const tsFilename = filename.replace('.fx', '.ts');
+            const tsFilename = filename.replace('.fx', '.ts').replace('.wgsl', '.ts');
             let fxData = file.contents.toString();
 
             // Remove Trailing whitespace...
