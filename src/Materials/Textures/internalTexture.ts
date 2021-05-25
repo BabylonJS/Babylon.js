@@ -231,6 +231,8 @@ export class InternalTexture {
     public _lodGenerationOffset: number = 0;
     /** @hidden */
     public _depthStencilTexture: Nullable<InternalTexture>;
+    /** @hidden */
+    public _useSRGBBuffer: boolean = false;
 
     // Multiview
     /** @hidden */
@@ -362,7 +364,7 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
                     rebuildSamples();
                     this.isReady = true;
-                }, null, this._buffer, undefined, this.format);
+                }, null, this._buffer, undefined, this.format, undefined, undefined, undefined, undefined, this._useSRGBBuffer);
                 return;
 
             case InternalTextureSource.Raw:

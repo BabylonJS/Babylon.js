@@ -145,6 +145,7 @@ export class NullEngine extends Engine {
             canUseGLInstanceID: false,
             canUseGLVertexID: false,
             supportComputeShaders: false,
+            supportSRGBBuffers: false,
         };
 
         this._features = {

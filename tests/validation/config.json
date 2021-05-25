@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Texture cache",
+            "playgroundId": "#3TFH5I#0",
+            "referenceImage": "texture cache.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Sprites",
             "playgroundId": "#ZX8DJ3#1",
             "referenceImage": "Sprites.png"
@@ -457,9 +463,9 @@
         {
             "title": "GLTF Animation Node Misc",
             "renderCount": 2,
-            "playgroundId": "#DS8AA7#18",
+            "playgroundId": "#EYAUPC#2",
             "replace": "__folder__, Animation_NodeMisc, __page__, 0",
-            "referenceImage": "gltfAnimationNodeMisc.png"
+            "referenceImage": "gltfAnimationNode2.png"
         },
         {
             "title": "GLTF Animation Skin (0)",
@@ -720,8 +726,13 @@
         },
         {
             "title": "GLTF Extension KHR_materials_specular",
-            "playgroundId": "#RNT7K4#8",
+            "playgroundId": "#RNT7K4#9",
             "referenceImage": "gltfExtensionKhrMaterialsSpecular.png"
+        },
+        {
+            "title": "GLTF Texture Linear Interpolation Test",
+            "playgroundId": "#WGZLGJ#3009",
+            "referenceImage": "gltfTextureLinearInterpolation.png"
         },
         {
             "title": "Asset Containers",
@@ -825,12 +836,6 @@
             "title": "PBR shader code coverage 3",
             "playgroundId": "#QI7TL3#18",
             "referenceImage": "pbr_codecoverage3.png"
-        },
-        {
-            "title": "Texture cache",
-            "playgroundId": "#3TFH5I#0",
-            "referenceImage": "texture cache.png",
-            "excludedEngines": ["webgl1"]
         },
         {
             "title": "MultiSample render targets",
