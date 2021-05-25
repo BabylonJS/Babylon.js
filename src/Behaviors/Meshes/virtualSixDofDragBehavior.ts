@@ -34,7 +34,7 @@ export class VirtualSixDofDragBehavior extends BaseSixDofDragBehavior {
         // On every frame move towards target scaling to avoid jitter caused by vr controllers
         this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(() => {
             var draggedMesh = this._draggedMesh;
-            if (this.dragging && this._moving && draggedMesh) {
+            if (this._moving && draggedMesh) {
                 this.onDragObservable.notifyObservers({ position: this._virtualPosition });
             }
         });

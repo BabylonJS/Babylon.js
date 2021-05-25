@@ -79,7 +79,7 @@ export class DefaultBehavior implements Behavior<Mesh> {
         this._followBehavior.attach(ownerMesh);
         this._sixDofDragBehavior.attach(sixDofAnchorMesh || ownerMesh);
         this._sixDofDragBehavior.ancestorToDrag = sixDofAnchorMesh ? ownerMesh : null;
-        this._sixDofDragBehavior.faceCameraOnDragStart = true;
+        this._sixDofDragBehavior.faceCameraOnDragStart = false;
     }
 
     /**
