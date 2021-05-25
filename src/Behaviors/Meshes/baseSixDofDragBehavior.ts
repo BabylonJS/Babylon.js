@@ -321,7 +321,7 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
     }
 
     /**
-     *  Detaches the behavior from the mesh
+     * Detaches the behavior from the mesh
      */
     public detach(): void {
         if (this._scene) {
