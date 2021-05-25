@@ -52,6 +52,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         isOverGUINode: boolean;
         private _panning;
         private _canvas;
+        private _responsive;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -138,6 +139,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onSnippetLoadObservable: Observable<void>;
         onSnippetSaveObservable: Observable<void>;
         onOutlinesObservable: Observable<void>;
+        onResponsiveChangeObservable: Observable<boolean>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -924,7 +926,7 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | Slider | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
@@ -1814,6 +1816,7 @@ declare module GUIEDITOR {
         isOverGUINode: boolean;
         private _panning;
         private _canvas;
+        private _responsive;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -1890,6 +1893,7 @@ declare module GUIEDITOR {
         onSnippetLoadObservable: BABYLON.Observable<void>;
         onSnippetSaveObservable: BABYLON.Observable<void>;
         onOutlinesObservable: BABYLON.Observable<void>;
+        onResponsiveChangeObservable: BABYLON.Observable<boolean>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -2537,7 +2541,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | Slider | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
