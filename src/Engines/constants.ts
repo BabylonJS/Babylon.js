@@ -173,8 +173,12 @@ export class Constants {
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
     /** Compressed BC2 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
-    /** Compressed BC1 */
+    /** Compressed BC1 (RGBA) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
+    /** Compressed BC1 (RGB) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 = 33776;
+    /** Compressed ASTC 4x4 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = 37808;
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
@@ -559,6 +563,8 @@ export class Constants {
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
     /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
     public static readonly BUFFER_CREATIONFLAG_WRITE = 2;
+    /** Flag to create a readable and writable buffer */
+    public static readonly BUFFER_CREATIONFLAG_READWRITE = 3;
     /** Flag to create a buffer suitable to be used as a uniform buffer */
     public static readonly BUFFER_CREATIONFLAG_UNIFORM = 4;
     /** Flag to create a buffer suitable to be used as a vertex buffer */
