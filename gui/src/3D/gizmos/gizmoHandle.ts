@@ -116,10 +116,6 @@ export abstract class GizmoHandle {
         dragEndObservable: (eventData: any) => void
     ) {
         const dragBehavior = new VirtualSixDofDragBehavior();
-        // dragBehavior.moveAttached = false;
-        // dragBehavior.updateDragPlane = false;
-        // dragBehavior.useObjectOrientationForDragging = false;
-
         this.node.addBehavior(dragBehavior);
 
         this._dragBehavior = dragBehavior;
