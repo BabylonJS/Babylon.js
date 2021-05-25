@@ -815,6 +815,7 @@ export class NativeEngine extends Engine {
             depthTextureExtension: false,
             vertexArrayObject: true,
             instancedArrays: false,
+            supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
             maxMSAASamples: 1,
