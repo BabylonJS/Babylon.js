@@ -1140,6 +1140,8 @@ declare module BABYLON {
         static readonly BUFFER_CREATIONFLAG_READ: number;
         /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
         static readonly BUFFER_CREATIONFLAG_WRITE: number;
+        /** Flag to create a readable and writable buffer */
+        static readonly BUFFER_CREATIONFLAG_READWRITE: number;
         /** Flag to create a buffer suitable to be used as a uniform buffer */
         static readonly BUFFER_CREATIONFLAG_UNIFORM: number;
         /** Flag to create a buffer suitable to be used as a vertex buffer */
@@ -3653,6 +3655,23 @@ declare module BABYLON {
          */
         static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number;
         /**
+         * Slerp between two vectors. See also `SmoothToRef`
+         * @param vector0 Start vector
+         * @param vector1 End vector
+         * @param slerp amount (will be clamped between 0 and 1)
+         * @param result The slerped vector
+         */
+        static SlerpToRef(vector0: Vector3, vector1: Vector3, slerp: number, result: Vector3): void;
+        /**
+         * Smooth interpolation between two vectors using Slerp
+         * @param source source vector
+         * @param goal goal vector
+         * @param deltaTime current interpolation frame
+         * @param lerpTime total interpolation time
+         * @param result the smoothed vector
+         */
+        static SmoothToRef(source: Vector3, goal: Vector3, deltaTime: number, lerpTime: number, result: Vector3): void;
+        /**
          * Returns a new Vector3 set from the index "offset" of the given array
          * @param array defines the source array
          * @param offset defines the offset in the source array
@@ -4716,6 +4735,16 @@ declare module BABYLON {
          * @returns true if the two quaternions are close to each other
          */
         static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): boolean;
+        /**
+         * Smooth interpolation between two quaternions using Slerp
+         *
+         * @param source source quaternion
+         * @param goal goal quaternion
+         * @param deltaTime current interpolation frame
+         * @param lerpTime total interpolation time
+         * @param result the smoothed quaternion
+         */
+        static SmoothToRef(source: Quaternion, goal: Quaternion, deltaTime: number, lerpTime: number, result: Quaternion): void;
         /**
          * Creates an empty quaternion
          * @returns a new quaternion set to (0.0, 0.0, 0.0)
@@ -8574,10 +8603,16 @@ declare module BABYLON {
          */
         updateColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
         /**
-         * Lambda to Update a int a uniform buffer.
+         * Lambda to Update vec4 of float from a Color in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
+        updateDirectColor4: (name: string, color: IColor4Like, suffix?: string) => void;
+        /**
+        * Lambda to Update a int a uniform buffer.
+        * This is dynamic to allow compat with webgl 1 and 2.
+        * You will need to pass the name of the uniform as well as the value.
+        */
         updateInt: (name: string, x: number, suffix?: string) => void;
         /**
          * Lambda to Update a vec2 of int in a uniform buffer.
@@ -8771,7 +8806,9 @@ declare module BABYLON {
         private _updateColor3ForEffect;
         private _updateColor3ForUniform;
         private _updateColor4ForEffect;
+        private _updateDirectColor4ForEffect;
         private _updateColor4ForUniform;
+        private _updateDirectColor4ForUniform;
         private _updateIntForEffect;
         private _updateIntForUniform;
         private _updateInt2ForEffect;
@@ -16260,7 +16297,7 @@ declare module BABYLON {
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         translationPivot: Vector2;
         /** @hidden */
-        protected _isAnimationSheetEnabled: boolean;
+        _isAnimationSheetEnabled: boolean;
         /**
          * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
          */
@@ -16432,7 +16469,8 @@ declare module BABYLON {
          * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
         billboardMode: number;
-        protected _isBillboardBased: boolean;
+        /** @hidden */
+        _isBillboardBased: boolean;
         /**
          * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
          */
@@ -16735,7 +16773,6 @@ declare module BABYLON {
         private _indexBuffer;
         private _drawWrapper;
         private _customWrappers;
-        private _cachedDefines;
         private _scaledColorStep;
         private _colorDiff;
         private _scaledDirection;
@@ -17290,6 +17327,33 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class UniformBufferEffectCommonAccessor {
+        setMatrix3x3: (name: string, matrix: Float32Array) => void;
+        setMatrix2x2: (name: string, matrix: Float32Array) => void;
+        setFloat: (name: string, x: number) => void;
+        setFloat2: (name: string, x: number, y: number, suffix?: string) => void;
+        setFloat3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+        setFloat4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+        setFloatArray: (name: string, array: Float32Array) => void;
+        setArray: (name: string, array: number[]) => void;
+        setIntArray: (name: string, array: Int32Array) => void;
+        setMatrix: (name: string, mat: IMatrixLike) => void;
+        setMatrices: (name: string, mat: Float32Array) => void;
+        setVector3: (name: string, vector: IVector3Like) => void;
+        setVector4: (name: string, vector: IVector4Like) => void;
+        setColor3: (name: string, color: IColor3Like, suffix?: string) => void;
+        setColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
+        setDirectColor4: (name: string, color: IColor4Like) => void;
+        setInt: (name: string, x: number, suffix?: string) => void;
+        setInt2: (name: string, x: number, y: number, suffix?: string) => void;
+        setInt3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+        setInt4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+        private _isUbo;
+        constructor(uboOrEffect: UniformBuffer | Effect);
+    }
+}
+declare module BABYLON {
     /**
      * Particle emitter represents a volume emitting particles.
      * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.
@@ -17318,9 +17382,14 @@ declare module BABYLON {
         clone(): IParticleEmitterType;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns the effect defines string
@@ -17393,9 +17462,14 @@ declare module BABYLON {
         clone(): BoxParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17485,9 +17559,14 @@ declare module BABYLON {
         clone(): ConeParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17579,9 +17658,14 @@ declare module BABYLON {
         clone(): CylinderParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17647,9 +17731,14 @@ declare module BABYLON {
         clone(): CylinderDirectedParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17732,9 +17821,14 @@ declare module BABYLON {
         clone(): HemisphericParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17798,9 +17892,14 @@ declare module BABYLON {
         clone(): PointParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17883,9 +17982,14 @@ declare module BABYLON {
         clone(): SphereParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17949,9 +18053,14 @@ declare module BABYLON {
         clone(): SphereDirectedParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -18016,9 +18125,14 @@ declare module BABYLON {
         clone(): CustomParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -18095,9 +18209,14 @@ declare module BABYLON {
         clone(): MeshParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -32761,6 +32880,7 @@ declare module BABYLON {
         EMISSIVEFRESNEL: boolean;
         FRESNEL: boolean;
         NORMAL: boolean;
+        TANGENT: boolean;
         UV1: boolean;
         UV2: boolean;
         VERTEXCOLOR: boolean;
@@ -48054,6 +48174,14 @@ declare module BABYLON {
          */
         rotateDraggedObject: boolean;
         /**
+         * Sets an ancestor node to drag instead of the attached node.
+         * All dragging induced by this behavior will happen on the ancestor node, while the relative position/orientation/scaling
+         * between the ancestor node and child node will be kept the same.
+         * This is useful if the attached node is acting as an anchor to move its hierarchy, and you don't want the ancestor node to be the one to receive the pointer inputs.
+         * NB : This property must be set to an actual ancestor of the attached node, or else the dragging behavior will have an undefined result.
+         */
+        ancestorToDrag: Nullable<TransformNode>;
+        /**
          * If the behavior is currently in a dragging state
          */
         dragging: boolean;
@@ -48095,6 +48223,10 @@ declare module BABYLON {
          *  The name of the behavior
          */
         get name(): string;
+        /**
+         *  Returns true if the attached mesh is currently moving with this behavior
+         */
+        get isMoving(): boolean;
         /**
          *  Initializes the behavior
          */
@@ -48240,9 +48372,6 @@ declare module BABYLON {
         private _applyPitchOffset;
         private _angularClamp;
         private _orientationClamp;
-        private _vectorSlerpToRef;
-        private _vectorSmoothToRef;
-        private _quaternionSmoothToRef;
         private _passedOrientationDeadzone;
         private _updateLeashing;
         private _updateTransformToGoal;
@@ -50401,6 +50530,7 @@ declare module BABYLON {
         private _addNewGamepad;
         private _startMonitoringGamepads;
         private _stopMonitoringGamepads;
+        private _loggedErrors;
         /** @hidden */
         _checkGamepadsStatus(): void;
         private _updateGamepadObjects;
@@ -59642,6 +59772,10 @@ declare module BABYLON {
             numEnableEffects: number;
             numEnableDrawWrapper: number;
         };
+        /**
+         * Max number of uncaptured error messages to log
+         */
+        numMaxUncapturedErrors: number;
         private _mainTexture;
         private _depthTexture;
         private _mainTextureExtends;
@@ -59662,6 +59796,8 @@ declare module BABYLON {
         /** @hidden */
         _pendingDebugCommands: Array<[string, Nullable<string>]>;
         private _bundleList;
+        /** @hidden */
+        _onAfterUnbindFrameBufferObservable: Observable<WebGPUEngine>;
         private _defaultMaterialContext;
         private _currentMaterialContext;
         private _currentDrawContext;
@@ -63985,79 +64121,95 @@ declare module BABYLON {
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
          * This impacts both the direct diffuse and specular highlights.
+         * @hidden
          */
-        protected _directIntensity: number;
+        _directIntensity: number;
         /**
          * Intensity of the emissive part of the material.
          * This helps controlling the emissive effect without modifying the emissive color.
+         * @hidden
          */
-        protected _emissiveIntensity: number;
+        _emissiveIntensity: number;
         /**
          * Intensity of the environment e.g. how much the environment will light the object
          * either through harmonics for rough material or through the reflection for shiny ones.
+         * @hidden
          */
-        protected _environmentIntensity: number;
+        _environmentIntensity: number;
         /**
          * This is a special control allowing the reduction of the specular highlights coming from the
          * four lights of the scene. Those highlights may not be needed in full environment lighting.
+         * @hidden
          */
-        protected _specularIntensity: number;
+        _specularIntensity: number;
         /**
          * This stores the direct, emissive, environment, and specular light intensities into a Vector4.
          */
         private _lightingInfos;
         /**
          * Debug Control allowing disabling the bump map on this material.
+         * @hidden
          */
-        protected _disableBumpMap: boolean;
+        _disableBumpMap: boolean;
         /**
          * AKA Diffuse Texture in standard nomenclature.
+         * @hidden
          */
-        protected _albedoTexture: Nullable<BaseTexture>;
+        _albedoTexture: Nullable<BaseTexture>;
         /**
          * AKA Occlusion Texture in other nomenclature.
+         * @hidden
          */
-        protected _ambientTexture: Nullable<BaseTexture>;
+        _ambientTexture: Nullable<BaseTexture>;
         /**
          * AKA Occlusion Texture Intensity in other nomenclature.
+         * @hidden
          */
-        protected _ambientTextureStrength: number;
+        _ambientTextureStrength: number;
         /**
          * Defines how much the AO map is occluding the analytical lights (point spot...).
          * 1 means it completely occludes it
          * 0 mean it has no impact
+         * @hidden
          */
-        protected _ambientTextureImpactOnAnalyticalLights: number;
+        _ambientTextureImpactOnAnalyticalLights: number;
         /**
          * Stores the alpha values in a texture.
+         * @hidden
          */
-        protected _opacityTexture: Nullable<BaseTexture>;
+        _opacityTexture: Nullable<BaseTexture>;
         /**
          * Stores the reflection values in a texture.
+         * @hidden
          */
-        protected _reflectionTexture: Nullable<BaseTexture>;
+        _reflectionTexture: Nullable<BaseTexture>;
         /**
          * Stores the emissive values in a texture.
+         * @hidden
          */
-        protected _emissiveTexture: Nullable<BaseTexture>;
+        _emissiveTexture: Nullable<BaseTexture>;
         /**
          * AKA Specular texture in other nomenclature.
+         * @hidden
          */
-        protected _reflectivityTexture: Nullable<BaseTexture>;
+        _reflectivityTexture: Nullable<BaseTexture>;
         /**
          * Used to switch from specular/glossiness to metallic/roughness workflow.
+         * @hidden
          */
-        protected _metallicTexture: Nullable<BaseTexture>;
+        _metallicTexture: Nullable<BaseTexture>;
         /**
          * Specifies the metallic scalar of the metallic/roughness workflow.
          * Can also be used to scale the metalness values of the metallic texture.
+         * @hidden
          */
-        protected _metallic: Nullable<number>;
+        _metallic: Nullable<number>;
         /**
          * Specifies the roughness scalar of the metallic/roughness workflow.
          * Can also be used to scale the roughness values of the metallic texture.
+         * @hidden
          */
-        protected _roughness: Nullable<number>;
+        _roughness: Nullable<number>;
         /**
          * In metallic workflow, specifies an F0 factor to help configuring the material F0.
          * By default the indexOfrefraction is used to compute F0;
@@ -64066,8 +64218,9 @@ declare module BABYLON {
          *
          * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor;
          * F90 = metallicReflectanceColor;
+         * @hidden
          */
-        protected _metallicF0Factor: number;
+        _metallicF0Factor: number;
         /**
          * In metallic workflow, specifies an F90 color to help configuring the material F90.
          * By default the F90 is always 1;
@@ -64076,189 +64229,230 @@ declare module BABYLON {
          *
          * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor
          * F90 = metallicReflectanceColor;
+         * @hidden
          */
-        protected _metallicReflectanceColor: Color3;
+        _metallicReflectanceColor: Color3;
         /**
          * Specifies that only the A channel from _metallicReflectanceTexture should be used.
          * If false, both RGB and A channels will be used
+         * @hidden
          */
-        protected _useOnlyMetallicFromMetallicReflectanceTexture: boolean;
+        _useOnlyMetallicFromMetallicReflectanceTexture: boolean;
         /**
         * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-        * This is multiplied against the scalar values defined in the material.
-        * If _useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
+        * This is multiply against the scalar values defined in the material.
+        * @hidden
         */
-        protected _metallicReflectanceTexture: Nullable<BaseTexture>;
+        _metallicReflectanceTexture: Nullable<BaseTexture>;
         /**
          * Defines to store reflectanceColor in RGB
          * This is multiplied against the scalar values defined in the material.
          * If both _reflectanceTexture and _metallicReflectanceTexture textures are provided and _useOnlyMetallicFromMetallicReflectanceTexture
          * is false, _metallicReflectanceTexture takes precedence and _reflectanceTexture is not used
+         * @hidden
          */
-        protected _reflectanceTexture: Nullable<BaseTexture>;
+        _reflectanceTexture: Nullable<BaseTexture>;
         /**
         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+        * @hidden
         */
-        protected _microSurfaceTexture: Nullable<BaseTexture>;
+        _microSurfaceTexture: Nullable<BaseTexture>;
         /**
          * Stores surface normal data used to displace a mesh in a texture.
+         * @hidden
          */
-        protected _bumpTexture: Nullable<BaseTexture>;
+        _bumpTexture: Nullable<BaseTexture>;
         /**
          * Stores the pre-calculated light information of a mesh in a texture.
+         * @hidden
          */
-        protected _lightmapTexture: Nullable<BaseTexture>;
+        _lightmapTexture: Nullable<BaseTexture>;
         /**
          * The color of a material in ambient lighting.
+         * @hidden
          */
-        protected _ambientColor: Color3;
+        _ambientColor: Color3;
         /**
          * AKA Diffuse Color in other nomenclature.
+         * @hidden
          */
-        protected _albedoColor: Color3;
+        _albedoColor: Color3;
         /**
          * AKA Specular Color in other nomenclature.
+         * @hidden
          */
-        protected _reflectivityColor: Color3;
+        _reflectivityColor: Color3;
         /**
          * The color applied when light is reflected from a material.
+         * @hidden
          */
-        protected _reflectionColor: Color3;
+        _reflectionColor: Color3;
         /**
          * The color applied when light is emitted from a material.
+         * @hidden
          */
-        protected _emissiveColor: Color3;
+        _emissiveColor: Color3;
         /**
          * AKA Glossiness in other nomenclature.
+         * @hidden
          */
-        protected _microSurface: number;
+        _microSurface: number;
         /**
          * Specifies that the material will use the light map as a show map.
+         * @hidden
          */
-        protected _useLightmapAsShadowmap: boolean;
+        _useLightmapAsShadowmap: boolean;
         /**
          * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
          * makes the reflect vector face the model (under horizon).
+         * @hidden
          */
-        protected _useHorizonOcclusion: boolean;
+        _useHorizonOcclusion: boolean;
         /**
          * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
          * too much the area relying on ambient texture to define their ambient occlusion.
+         * @hidden
          */
-        protected _useRadianceOcclusion: boolean;
+        _useRadianceOcclusion: boolean;
         /**
          * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
+         * @hidden
          */
-        protected _useAlphaFromAlbedoTexture: boolean;
+        _useAlphaFromAlbedoTexture: boolean;
         /**
          * Specifies that the material will keeps the specular highlights over a transparent surface (only the most luminous ones).
          * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
+         * @hidden
          */
-        protected _useSpecularOverAlpha: boolean;
+        _useSpecularOverAlpha: boolean;
         /**
          * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+         * @hidden
          */
-        protected _useMicroSurfaceFromReflectivityMapAlpha: boolean;
+        _useMicroSurfaceFromReflectivityMapAlpha: boolean;
         /**
          * Specifies if the metallic texture contains the roughness information in its alpha channel.
+         * @hidden
          */
-        protected _useRoughnessFromMetallicTextureAlpha: boolean;
+        _useRoughnessFromMetallicTextureAlpha: boolean;
         /**
          * Specifies if the metallic texture contains the roughness information in its green channel.
+         * @hidden
          */
-        protected _useRoughnessFromMetallicTextureGreen: boolean;
+        _useRoughnessFromMetallicTextureGreen: boolean;
         /**
          * Specifies if the metallic texture contains the metallness information in its blue channel.
+         * @hidden
          */
-        protected _useMetallnessFromMetallicTextureBlue: boolean;
+        _useMetallnessFromMetallicTextureBlue: boolean;
         /**
          * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
+         * @hidden
          */
-        protected _useAmbientOcclusionFromMetallicTextureRed: boolean;
+        _useAmbientOcclusionFromMetallicTextureRed: boolean;
         /**
          * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
+         * @hidden
          */
-        protected _useAmbientInGrayScale: boolean;
+        _useAmbientInGrayScale: boolean;
         /**
          * In case the reflectivity map does not contain the microsurface information in its alpha channel,
          * The material will try to infer what glossiness each pixel should be.
+         * @hidden
          */
-        protected _useAutoMicroSurfaceFromReflectivityMap: boolean;
+        _useAutoMicroSurfaceFromReflectivityMap: boolean;
         /**
          * Defines the  falloff type used in this material.
          * It by default is Physical.
+         * @hidden
          */
-        protected _lightFalloff: number;
+        _lightFalloff: number;
         /**
          * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
          * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
+         * @hidden
          */
-        protected _useRadianceOverAlpha: boolean;
+        _useRadianceOverAlpha: boolean;
         /**
          * Allows using an object space normal map (instead of tangent space).
+         * @hidden
          */
-        protected _useObjectSpaceNormalMap: boolean;
+        _useObjectSpaceNormalMap: boolean;
         /**
          * Allows using the bump map in parallax mode.
+         * @hidden
          */
-        protected _useParallax: boolean;
+        _useParallax: boolean;
         /**
          * Allows using the bump map in parallax occlusion mode.
+         * @hidden
          */
-        protected _useParallaxOcclusion: boolean;
+        _useParallaxOcclusion: boolean;
         /**
          * Controls the scale bias of the parallax mode.
+         * @hidden
          */
-        protected _parallaxScaleBias: number;
+        _parallaxScaleBias: number;
         /**
          * If sets to true, disables all the lights affecting the material.
+         * @hidden
          */
-        protected _disableLighting: boolean;
+        _disableLighting: boolean;
         /**
          * Number of Simultaneous lights allowed on the material.
+         * @hidden
          */
-        protected _maxSimultaneousLights: number;
+        _maxSimultaneousLights: number;
         /**
          * If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
+         * @hidden
          */
-        protected _invertNormalMapX: boolean;
+        _invertNormalMapX: boolean;
         /**
          * If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
+         * @hidden
          */
-        protected _invertNormalMapY: boolean;
+        _invertNormalMapY: boolean;
         /**
          * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
+         * @hidden
          */
-        protected _twoSidedLighting: boolean;
+        _twoSidedLighting: boolean;
         /**
          * Defines the alpha limits in alpha test mode.
+         * @hidden
          */
-        protected _alphaCutOff: number;
+        _alphaCutOff: number;
         /**
          * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+         * @hidden
          */
-        protected _forceAlphaTest: boolean;
+        _forceAlphaTest: boolean;
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
          * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
+         * @hidden
          */
-        protected _useAlphaFresnel: boolean;
+        _useAlphaFresnel: boolean;
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
          * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
+         * @hidden
          */
-        protected _useLinearAlphaFresnel: boolean;
+        _useLinearAlphaFresnel: boolean;
         /**
          * Specifies the environment BRDF texture used to compute the scale and offset roughness values
          * from cos theta and roughness:
          * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+         * @hidden
          */
-        protected _environmentBRDFTexture: Nullable<BaseTexture>;
+        _environmentBRDFTexture: Nullable<BaseTexture>;
         /**
          * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+         * @hidden
          */
-        protected _forceIrradianceInFragment: boolean;
+        _forceIrradianceInFragment: boolean;
         private _realTimeFiltering;
         /**
          * Enables realtime filtering on the texture.
@@ -64277,14 +64471,16 @@ declare module BABYLON {
         get canRenderToMRT(): boolean;
         /**
          * Force normal to face away from face.
+         * @hidden
          */
-        protected _forceNormalForward: boolean;
+        _forceNormalForward: boolean;
         /**
          * Enables specular anti aliasing in the PBR shader.
          * It will both interacts on the Geometry for analytical and IBL lighting.
          * It also prefilter the roughness map based on the bump values.
+         * @hidden
          */
-        protected _enableSpecularAntiAliasing: boolean;
+        _enableSpecularAntiAliasing: boolean;
         /**
          * Default configuration related to image processing available in the PBR Material.
          */
@@ -75062,6 +75258,24 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export interface IGPUParticleSystemPlatform {
+        alignDataInBuffer: boolean;
+        isUpdateBufferCreated: () => boolean;
+        isUpdateBufferReady: () => boolean;
+        createUpdateBuffer: (defines: string) => UniformBufferEffectCommonAccessor;
+        createVertexBuffers: (updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }) => void;
+        createParticleBuffer: (data: number[]) => DataArray | DataBuffer;
+        bindDrawBuffers: (index: number, effect: Effect) => void;
+        preUpdateParticleBuffer: () => void;
+        updateParticleBuffer: (index: number, targetBuffer: Buffer, currentActiveCount: number) => void;
+        releaseBuffers: () => void;
+        releaseVertexBuffers: () => void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var gpuUpdateParticlesPixelShader: {
         name: string;
         shader: string;
@@ -75070,6 +75284,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var gpuUpdateParticlesVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var gpuUpdateParticlesComputeShader: {
         name: string;
         shader: string;
     };
@@ -75117,13 +75338,10 @@ declare module BABYLON {
         private _activeCount;
         private _currentActiveCount;
         private _accumulatedCount;
-        private _renderEffect;
-        private _updateEffect;
+        private _updateBuffer;
         private _buffer0;
         private _buffer1;
         private _spriteBuffer;
-        private _updateVAO;
-        private _renderVAO;
         private _targetIndex;
         private _sourceBuffer;
         private _targetBuffer;
@@ -75132,14 +75350,18 @@ declare module BABYLON {
         private _started;
         private _stopped;
         private _timeDelta;
-        private _randomTexture;
-        private _randomTexture2;
+        /** @hidden */
+        _randomTexture: RawTexture;
+        /** @hidden */
+        _randomTexture2: RawTexture;
         private _attributesStrideSize;
-        private _updateEffectOptions;
+        private _cachedUpdateDefines;
         private _randomTextureSize;
         private _actualFrame;
-        private _customEffect;
+        private _drawWrapper;
+        private _customWrappers;
         private readonly _rawTextureWidth;
+        private _platform;
         /**
          * Gets a boolean indicating if the GPU particles can be rendered on current browser
          */
@@ -75223,6 +75445,7 @@ declare module BABYLON {
          * @returns The effect
          */
         getCustomEffect(blendMode?: number): Nullable<Effect>;
+        private _getCustomDrawWrapper;
         /**
          * Sets the custom effect used to render the particles
          * @param effect The effect to set
@@ -75239,7 +75462,8 @@ declare module BABYLON {
          * Gets the name of the particle vertex shader
          */
         get vertexShaderName(): string;
-        private _colorGradientsTexture;
+        /** @hidden */
+        _colorGradientsTexture: RawTexture;
         protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem;
         /**
          * Adds a new color gradient
@@ -75258,11 +75482,16 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeColorGradient(gradient: number): GPUParticleSystem;
-        private _angularSpeedGradientsTexture;
-        private _sizeGradientsTexture;
-        private _velocityGradientsTexture;
-        private _limitVelocityGradientsTexture;
-        private _dragGradientsTexture;
+        /** @hidden */
+        _angularSpeedGradientsTexture: RawTexture;
+        /** @hidden */
+        _sizeGradientsTexture: RawTexture;
+        /** @hidden */
+        _velocityGradientsTexture: RawTexture;
+        /** @hidden */
+        _limitVelocityGradientsTexture: RawTexture;
+        /** @hidden */
+        _dragGradientsTexture: RawTexture;
         private _addFactorGradient;
         /**
          * Adds a new size gradient
@@ -75431,20 +75660,24 @@ declare module BABYLON {
          * @param name The name of the particle system
          * @param options The options used to create the system
          * @param sceneOrEngine The scene the particle system belongs to or the engine to use if no scene
-         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          * @param customEffect a custom effect used to change the way particles are rendered by default
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          */
         constructor(name: string, options: Partial<{
             capacity: number;
             randomTextureSize: number;
-        }>, sceneOrEngine: Scene | ThinEngine, isAnimationSheetEnabled?: boolean, customEffect?: Nullable<Effect>);
+        }>, sceneOrEngine: Scene | ThinEngine, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean);
         protected _reset(): void;
-        private _createUpdateVAO;
-        private _createRenderVAO;
+        private _createVertexBuffers;
         private _initialize;
         /** @hidden */
         _recreateUpdateEffect(): void;
-        private _getEffect;
+        /** @hidden */
+        _getWrapper(blendMode: number): DrawWrapper;
+        /** @hidden */
+        static _GetAttributeNamesOrOptions(hasColorGradients?: boolean, isAnimationSheetEnabled?: boolean, isBillboardBased?: boolean, isBillboardStretched?: boolean): string[];
+        /** @hidden */
+        static _GetEffectCreationOptions(isAnimationSheetEnabled?: boolean): string[];
         /**
          * Fill the defines array according to the current settings of the particle system
          * @param defines Array to be updated
@@ -75458,8 +75691,6 @@ declare module BABYLON {
          * @param samplers Samplers array to fill
          */
         fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>): void;
-        /** @hidden */
-        _recreateRenderEffect(): Effect;
         /**
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
          * @param preWarm defines if we are in the pre-warmimg phase
@@ -75472,18 +75703,19 @@ declare module BABYLON {
         private _createLimitVelocityGradientTexture;
         private _createDragGradientTexture;
         private _createColorGradientTexture;
+        private _render;
         /**
          * Renders the particle system in its current state
          * @param preWarm defines if the system should only update the particles but not render them
+         * @param forceUpdateOnly if true, force to only update the particles and never display them (meaning, even if preWarm=false, when forceUpdateOnly=true the particles won't be displayed)
          * @returns the current number of particles
          */
-        render(preWarm?: boolean): number;
+        render(preWarm?: boolean, forceUpdateOnly?: boolean): number;
         /**
          * Rebuilds the particle system
          */
         rebuild(): void;
         private _releaseBuffers;
-        private _releaseVAOs;
         /**
          * Disposes the particle system and free the associated resources
          * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
@@ -75511,6 +75743,57 @@ declare module BABYLON {
          * @returns the parsed GPU particle system
          */
         static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): GPUParticleSystem;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
+        private _parent;
+        private _engine;
+        private _updateEffect;
+        private _updateEffectOptions;
+        private _renderVAO;
+        private _updateVAO;
+        readonly alignDataInBuffer: boolean;
+        constructor(parent: GPUParticleSystem, engine: ThinEngine);
+        isUpdateBufferCreated(): boolean;
+        isUpdateBufferReady(): boolean;
+        createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor;
+        createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }): void;
+        createParticleBuffer(data: number[]): DataArray | DataBuffer;
+        bindDrawBuffers(index: number, effect: Effect): void;
+        preUpdateParticleBuffer(): void;
+        updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void;
+        releaseBuffers(): void;
+        releaseVertexBuffers(): void;
+        private _createUpdateVAO;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
+        private _parent;
+        private _engine;
+        private _updateComputeShader;
+        private _simParamsComputeShader;
+        private _bufferComputeShader;
+        private _renderVertexBuffers;
+        readonly alignDataInBuffer: boolean;
+        constructor(parent: GPUParticleSystem, engine: ThinEngine);
+        isUpdateBufferCreated(): boolean;
+        isUpdateBufferReady(): boolean;
+        createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor;
+        createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }): void;
+        createParticleBuffer(data: number[]): DataArray | DataBuffer;
+        bindDrawBuffers(index: number, effect: Effect): void;
+        preUpdateParticleBuffer(): void;
+        updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void;
+        releaseBuffers(): void;
+        releaseVertexBuffers(): void;
     }
 }
 declare module BABYLON {

@@ -95,11 +95,11 @@ export class DepthRenderer {
         });
 
         this._depthMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup("depth renderer", 1);
+            engine._debugPushGroup?.("depth renderer", 1);
         });
 
         this._depthMap.onAfterUnbindObservable.add(() => {
-            engine._debugPopGroup(1);
+            engine._debugPopGroup?.(1);
         });
 
         // Custom render function
