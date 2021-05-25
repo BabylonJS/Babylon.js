@@ -44,14 +44,9 @@ interface ITransmissionHelperOptions {
     lodGenerationOffset: number;
 
     /**
-     * Type of the refraction render target texture (default: TEXTURETYPE_HALF_FLOAT)
+     * Type of the refraction render target texture (default: TEXTURETYPE_UNSIGNED_INT)
      */
     renderTargetTextureType: number;
-
-    /**
-     * Defines if the mipmaps for the refraction render target texture must be generated (default: true)
-     */
-    generateMipmaps: boolean;
 
     /**
      * Clear color of the opaque texture. If not provided, use the scene clear color (which will be converted to linear space).
@@ -75,7 +70,6 @@ class TransmissionHelper {
             lodGenerationScale: 1,
             lodGenerationOffset: -4,
             renderTargetTextureType: Constants.TEXTURETYPE_HALF_FLOAT,
-            generateMipmaps: true,
         };
     }
 
@@ -139,7 +133,7 @@ class TransmissionHelper {
         this._options = newOptions;
 
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || newOptions.generateMipmaps !== oldOptions.generateMipmaps || !this._opaqueRenderTarget) {
+        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || !this._opaqueRenderTarget) {
             this._setupRenderTargets();
         } else {
             this._opaqueRenderTarget.samples = newOptions.samples;
@@ -230,10 +224,7 @@ class TransmissionHelper {
      * Setup the render targets according to the specified options.
      */
     private _setupRenderTargets(): void {
-        if (this._opaqueRenderTarget) {
-            this._opaqueRenderTarget.dispose();
-        }
-        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, this._options.generateMipmaps, undefined, this._options.renderTargetTextureType);
+        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         this._opaqueRenderTarget.clearColor = this._options.clearColor?.clone() ?? this._scene.clearColor.clone();
