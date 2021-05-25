@@ -43138,6 +43138,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Show grid", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("ShowGrid", true); }, onSelect: function (value) {
                             babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].WriteBoolean("ShowGrid", value);
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Responsive", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("Responsive", true); }, onSelect: function (value) {
+                            _this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
+                            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].WriteBoolean("Responsive", value);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FILE" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_4__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.load(file); }, accept: ".json" }),
@@ -43985,6 +43989,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
 var isFramePortData = function (variableToCheck) {
     if (variableToCheck) {
@@ -44015,6 +44020,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this._ctrlKeyIsPressed = false;
         };
         _this.isUp = true;
+        _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["DataStorage"].ReadBoolean("Responsive", true);
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
                 _this.changeSelectionHighlight(false);
@@ -44065,6 +44071,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         });
         props.globalState.onOutlinesObservable.add(function () {
             _this._outlines = !_this._outlines;
+        });
+        props.globalState.onResponsiveChangeObservable.add(function (value) {
+            _this._responsive = value;
         });
         _this.props.globalState.hostDocument.addEventListener("keyup", _this.ctrlEvent, false);
         // Hotkey shortcuts
@@ -44213,8 +44222,27 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (ignorClick === void 0) { ignorClick = false; }
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
+        if (guiControl.typeName === "Line") {
+            var line = guiControl;
+            var x1 = line.x1.substr(0, line.x1.length - 2); //removing the 'px'
+            var x2 = line.x2.substr(0, line.x2.length - 2);
+            var y1 = line.y1.substr(0, line.y1.length - 2);
+            var y2 = line.y2.substr(0, line.y2.length - 2);
+            line.x1 = Number(x1) + newX;
+            line.x2 = Number(x2) + newX;
+            line.y1 = Number(y1) + newY;
+            line.y2 = Number(y2) + newY;
+            return true;
+        }
         guiControl.leftInPixels += newX;
         guiControl.topInPixels += newY;
+        //convert to percentage
+        if (this._responsive) {
+            var left = (guiControl.leftInPixels * 100) / (this._textureMesh.scaling.x);
+            var top_1 = (guiControl.topInPixels * 100) / (this._textureMesh.scaling.z);
+            guiControl.left = left + "%";
+            guiControl.top = top_1 + "%";
+        }
         return true;
     };
     WorkbenchComponent.prototype.componentDidMount = function () {
@@ -44546,6 +44574,7 @@ var GlobalState = /** @class */ (function () {
         this.onSnippetLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onOutlinesObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onResponsiveChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);

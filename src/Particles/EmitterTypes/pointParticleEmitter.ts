@@ -1,9 +1,10 @@
 import { DeepCopier } from "../../Misc/deepCopier";
 import { Vector3, Matrix } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
-import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
+import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from a point.
  * It emits the particles randomly between 2 given directions.
@@ -75,11 +76,20 @@ export class PointParticleEmitter implements IParticleEmitterType {
 
     /**
      * Called by the GPUParticleSystem to setup the update shader
-     * @param effect defines the update shader
+     * @param uboOrEffect defines the update shader
      */
-    public applyToShader(effect: Effect): void {
-        effect.setVector3("direction1", this.direction1);
-        effect.setVector3("direction2", this.direction2);
+    public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {
+        uboOrEffect.setVector3("direction1", this.direction1);
+        uboOrEffect.setVector3("direction2", this.direction2);
+    }
+
+    /**
+     * Creates the structure of the ubo for this particle emitter
+     * @param ubo ubo to create the structure for
+     */
+    public buildUniformLayout(ubo: UniformBuffer): void {
+        ubo.addUniform("direction1", 3);
+        ubo.addUniform("direction2", 3);
     }
 
     /**
