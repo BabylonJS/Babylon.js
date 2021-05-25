@@ -128,11 +128,7 @@ export class AxisScaleGizmo extends Gizmo {
                 var snapped = false;
                 var dragSteps = 0;
                 if (this.uniformScaling) {
-                    this.attachedNode.getWorldMatrix().decompose(tmpVector);
-                    tmpVector.normalize();
-                    if (tmpVector.y < 0) {
-                        tmpVector.scaleInPlace(-1);
-                    }
+                    tmpVector.setAll(0.57735); // 1 / sqrt(3)
                 } else {
                     tmpVector.copyFrom(dragAxis);
                 }

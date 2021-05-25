@@ -37,7 +37,7 @@ export class EXT_texture_webp implements IGLTFLoaderExtension {
             const image = ArrayItem.Get(`${extensionContext}/source`, this._loader.gltf.images, extension.source);
             return this._loader._createTextureAsync(context, sampler, image, (babylonTexture) => {
                 assign(babylonTexture);
-            });
+            }, undefined, !texture._textureInfo.nonColorData);
         });
     }
 }

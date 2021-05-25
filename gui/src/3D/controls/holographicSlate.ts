@@ -8,13 +8,13 @@ import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Image } from "../../2D/controls/image";
 import { SlateGizmo } from "../gizmos/slateGizmo";
-import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
+import { DefaultBehavior } from "../behaviors/defaultBehavior";
 
 /**
  * Class used to create a holographic slate
@@ -64,7 +64,7 @@ export class HolographicSlate extends ContentDisplay3D {
     private _imageUrl: string;
 
     /** @hidden */
-    public _followBehavior: FollowBehavior;
+    public _defaultBehavior: DefaultBehavior;
     /** @hidden */
     public _gizmo: SlateGizmo;
 
@@ -216,7 +216,7 @@ export class HolographicSlate extends ContentDisplay3D {
         const node = new Mesh("slate" + this.name);
 
         this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
-        this._contentPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
+        this._contentPlate = BoxBuilder.CreateBox("contentPlate" + this.name, { size: 1 }, scene);
 
         this._backPlate.parent = node;
         this._contentPlate.parent = node;
@@ -238,11 +238,9 @@ export class HolographicSlate extends ContentDisplay3D {
         this._closeButton.backMaterial.alpha = 0;
 
         this._followButton.onPointerClickObservable.add(() => {
-            if (this._followBehavior.attachedNode) {
-                this._followBehavior.detach();
-            } else {
-                this._followBehavior.attach(node);
-                this._followBehavior.recenter();
+            this._defaultBehavior.followBehaviorEnabled = !this._defaultBehavior.followBehaviorEnabled;
+            if (this._defaultBehavior.followBehaviorEnabled) {
+                this._defaultBehavior.followBehavior.recenter();
             }
         });
 
@@ -250,6 +248,7 @@ export class HolographicSlate extends ContentDisplay3D {
             this.dispose();
         });
 
+        node.rotationQuaternion = Quaternion.Identity();
         node.isVisible = false;
 
         return node;
@@ -285,7 +284,9 @@ export class HolographicSlate extends ContentDisplay3D {
         super._prepareNode(scene);
         this._gizmo = new SlateGizmo(this._host.utilityLayer!);
         this._gizmo.attachedSlate = this;
-        this._followBehavior = new FollowBehavior();
+        this._defaultBehavior = new DefaultBehavior();
+        this._defaultBehavior.attach(this.node as Mesh, this._backPlate);
+
         this._updatePivot();
     }
 
@@ -308,7 +309,7 @@ export class HolographicSlate extends ContentDisplay3D {
             this._pickedPointObserver = null;
         }
 
-        this._followBehavior.detach();
+        this._defaultBehavior.detach();
         this._gizmo.dispose();
     }
 }

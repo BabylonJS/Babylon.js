@@ -776,8 +776,12 @@ declare module BABYLON {
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5: number;
         /** Compressed BC2 */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3: number;
-        /** Compressed BC1 */
+        /** Compressed BC1 (RGBA) */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1: number;
+        /** Compressed BC1 (RGB) */
+        static readonly TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1: number;
+        /** Compressed ASTC 4x4 */
+        static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4: number;
         /** UNSIGNED_BYTE */
         static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
         /** UNSIGNED_BYTE (2nd reference) */
@@ -1140,6 +1144,8 @@ declare module BABYLON {
         static readonly BUFFER_CREATIONFLAG_READ: number;
         /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
         static readonly BUFFER_CREATIONFLAG_WRITE: number;
+        /** Flag to create a readable and writable buffer */
+        static readonly BUFFER_CREATIONFLAG_READWRITE: number;
         /** Flag to create a buffer suitable to be used as a uniform buffer */
         static readonly BUFFER_CREATIONFLAG_UNIFORM: number;
         /** Flag to create a buffer suitable to be used as a vertex buffer */
@@ -3653,6 +3659,23 @@ declare module BABYLON {
          */
         static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number;
         /**
+         * Slerp between two vectors. See also `SmoothToRef`
+         * @param vector0 Start vector
+         * @param vector1 End vector
+         * @param slerp amount (will be clamped between 0 and 1)
+         * @param result The slerped vector
+         */
+        static SlerpToRef(vector0: Vector3, vector1: Vector3, slerp: number, result: Vector3): void;
+        /**
+         * Smooth interpolation between two vectors using Slerp
+         * @param source source vector
+         * @param goal goal vector
+         * @param deltaTime current interpolation frame
+         * @param lerpTime total interpolation time
+         * @param result the smoothed vector
+         */
+        static SmoothToRef(source: Vector3, goal: Vector3, deltaTime: number, lerpTime: number, result: Vector3): void;
+        /**
          * Returns a new Vector3 set from the index "offset" of the given array
          * @param array defines the source array
          * @param offset defines the offset in the source array
@@ -4716,6 +4739,16 @@ declare module BABYLON {
          * @returns true if the two quaternions are close to each other
          */
         static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): boolean;
+        /**
+         * Smooth interpolation between two quaternions using Slerp
+         *
+         * @param source source quaternion
+         * @param goal goal quaternion
+         * @param deltaTime current interpolation frame
+         * @param lerpTime total interpolation time
+         * @param result the smoothed quaternion
+         */
+        static SmoothToRef(source: Quaternion, goal: Quaternion, deltaTime: number, lerpTime: number, result: Quaternion): void;
         /**
          * Creates an empty quaternion
          * @returns a new quaternion set to (0.0, 0.0, 0.0)
@@ -8574,10 +8607,16 @@ declare module BABYLON {
          */
         updateColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
         /**
-         * Lambda to Update a int a uniform buffer.
+         * Lambda to Update vec4 of float from a Color in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
+        updateDirectColor4: (name: string, color: IColor4Like, suffix?: string) => void;
+        /**
+        * Lambda to Update a int a uniform buffer.
+        * This is dynamic to allow compat with webgl 1 and 2.
+        * You will need to pass the name of the uniform as well as the value.
+        */
         updateInt: (name: string, x: number, suffix?: string) => void;
         /**
          * Lambda to Update a vec2 of int in a uniform buffer.
@@ -8771,7 +8810,9 @@ declare module BABYLON {
         private _updateColor3ForEffect;
         private _updateColor3ForUniform;
         private _updateColor4ForEffect;
+        private _updateDirectColor4ForEffect;
         private _updateColor4ForUniform;
+        private _updateDirectColor4ForUniform;
         private _updateIntForEffect;
         private _updateIntForUniform;
         private _updateInt2ForEffect;
@@ -16260,7 +16301,7 @@ declare module BABYLON {
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         translationPivot: Vector2;
         /** @hidden */
-        protected _isAnimationSheetEnabled: boolean;
+        _isAnimationSheetEnabled: boolean;
         /**
          * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
          */
@@ -16432,7 +16473,8 @@ declare module BABYLON {
          * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
         billboardMode: number;
-        protected _isBillboardBased: boolean;
+        /** @hidden */
+        _isBillboardBased: boolean;
         /**
          * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
          */
@@ -16735,7 +16777,6 @@ declare module BABYLON {
         private _indexBuffer;
         private _drawWrapper;
         private _customWrappers;
-        private _cachedDefines;
         private _scaledColorStep;
         private _colorDiff;
         private _scaledDirection;
@@ -17290,6 +17331,33 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class UniformBufferEffectCommonAccessor {
+        setMatrix3x3: (name: string, matrix: Float32Array) => void;
+        setMatrix2x2: (name: string, matrix: Float32Array) => void;
+        setFloat: (name: string, x: number) => void;
+        setFloat2: (name: string, x: number, y: number, suffix?: string) => void;
+        setFloat3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+        setFloat4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+        setFloatArray: (name: string, array: Float32Array) => void;
+        setArray: (name: string, array: number[]) => void;
+        setIntArray: (name: string, array: Int32Array) => void;
+        setMatrix: (name: string, mat: IMatrixLike) => void;
+        setMatrices: (name: string, mat: Float32Array) => void;
+        setVector3: (name: string, vector: IVector3Like) => void;
+        setVector4: (name: string, vector: IVector4Like) => void;
+        setColor3: (name: string, color: IColor3Like, suffix?: string) => void;
+        setColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
+        setDirectColor4: (name: string, color: IColor4Like) => void;
+        setInt: (name: string, x: number, suffix?: string) => void;
+        setInt2: (name: string, x: number, y: number, suffix?: string) => void;
+        setInt3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+        setInt4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+        private _isUbo;
+        constructor(uboOrEffect: UniformBuffer | Effect);
+    }
+}
+declare module BABYLON {
     /**
      * Particle emitter represents a volume emitting particles.
      * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.
@@ -17318,9 +17386,14 @@ declare module BABYLON {
         clone(): IParticleEmitterType;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns the effect defines string
@@ -17393,9 +17466,14 @@ declare module BABYLON {
         clone(): BoxParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17485,9 +17563,14 @@ declare module BABYLON {
         clone(): ConeParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17579,9 +17662,14 @@ declare module BABYLON {
         clone(): CylinderParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17647,9 +17735,14 @@ declare module BABYLON {
         clone(): CylinderDirectedParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17732,9 +17825,14 @@ declare module BABYLON {
         clone(): HemisphericParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17798,9 +17896,14 @@ declare module BABYLON {
         clone(): PointParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17883,9 +17986,14 @@ declare module BABYLON {
         clone(): SphereParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17949,9 +18057,14 @@ declare module BABYLON {
         clone(): SphereDirectedParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -18016,9 +18129,14 @@ declare module BABYLON {
         clone(): CustomParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -18095,9 +18213,14 @@ declare module BABYLON {
         clone(): MeshParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -24861,6 +24984,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the available options when creating a texture
+     */
+    export interface ITextureCreationOptions {
+        /** Defines if the texture will require mip maps or not (default: false) */
+        noMipmap?: boolean;
+        /** Defines if the texture needs to be inverted on the y axis during loading (default: true) */
+        invertY?: boolean;
+        /** Defines the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...) (default: Texture.TRILINEAR_SAMPLINGMODE) */
+        samplingMode?: number;
+        /** Ddefines a callback triggered when the texture has been loaded (default: null) */
+        onLoad?: Nullable<() => void>;
+        /** Defines a callback triggered when an error occurred during the loading session (default: null) */
+        onError?: Nullable<(message?: string, exception?: any) => void>;
+        /** Defines the buffer to load the texture from in case the texture is loaded from a buffer representation (default: null) */
+        buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>;
+        /** Defines if the buffer we are loading the texture from should be deleted after load (default: false) */
+        deleteBuffer?: boolean;
+        /** Defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...) (default: ) */
+        format?: number;
+        /** Defines an optional mime type information (default: undefined) */
+        mimeType?: string;
+        /** Options to be passed to the loader (default: undefined) */
+        loaderOptions?: any;
+        /** Specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg) (default: undefined) */
+        creationFlags?: number;
+        /** Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false) */
+        useSRGBBuffer?: boolean;
+    }
+    /**
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see https://doc.babylonjs.com/babylon101/materials#texture
      */
@@ -25037,6 +25189,7 @@ declare module BABYLON {
         private _mimeType?;
         private _loaderOptions?;
         private _creationFlags?;
+        private _useSRGBBuffer?;
         /** Returns the texture mime type if it was defined by a loader (undefined else) */
         get mimeType(): string | undefined;
         /**
@@ -25064,7 +25217,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/babylon101/materials#texture
          * @param url defines the url of the picture to load as a texture
          * @param sceneOrEngine defines the scene or engine the texture will belong to
-         * @param noMipmap defines if the texture will require mip maps or not
+         * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
          * @param invertY defines if the texture needs to be inverted on the y axis during loading
          * @param samplingMode defines the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
          * @param onLoad defines a callback triggered when the texture has been loaded
@@ -25076,7 +25229,7 @@ declare module BABYLON {
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -25138,7 +25291,7 @@ declare module BABYLON {
          * @param data Define the base64 payload without the data: prefix
          * @param name Define the name of the texture in the scene useful fo caching purpose for instance
          * @param scene Define the scene the texture should belong to
-         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
          * @param invertY define if the texture needs to be inverted on the y axis during loading
          * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
          * @param onLoad define a callback triggered when the texture has been loaded
@@ -25147,7 +25300,7 @@ declare module BABYLON {
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns the created texture
          */
-        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, format?: number, creationFlags?: number): Texture;
+        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, format?: number, creationFlags?: number): Texture;
         /**
          * Creates a texture from its data: representation. (data: will be added in case only the payload has been passed in)
          * @param data Define the base64 payload without the data: prefix
@@ -25155,7 +25308,7 @@ declare module BABYLON {
          * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
          * @param scene Define the scene the texture should belong to
          * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
-         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
          * @param invertY define if the texture needs to be inverted on the y axis during loading
          * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
          * @param onLoad define a callback triggered when the texture has been loaded
@@ -25164,7 +25317,7 @@ declare module BABYLON {
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns the created texture
          */
-        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, creationFlags?: number): Texture;
+        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, creationFlags?: number): Texture;
     }
 }
 declare module BABYLON {
@@ -32761,6 +32914,7 @@ declare module BABYLON {
         EMISSIVEFRESNEL: boolean;
         FRESNEL: boolean;
         NORMAL: boolean;
+        TANGENT: boolean;
         UV1: boolean;
         UV2: boolean;
         VERTEXCOLOR: boolean;
@@ -34464,7 +34618,7 @@ declare module BABYLON {
          */
         definedFacingForward: boolean;
         /** @hidden */
-        _occlusionQuery: Nullable<WebGLQuery>;
+        _occlusionQuery: Nullable<WebGLQuery | number>;
         /** @hidden */
         _renderingGroup: Nullable<RenderingGroup>;
         /**
@@ -37840,6 +37994,8 @@ declare module BABYLON {
         standardDerivatives: boolean;
         /** Defines if s3tc texture compression is supported */
         s3tc?: WEBGL_compressed_texture_s3tc;
+        /** Defines if s3tc sRGB texture compression is supported */
+        s3tc_srgb?: WEBGL_compressed_texture_s3tc_srgb;
         /** Defines if pvrtc texture compression is supported */
         pvrtc: any;
         /** Defines if etc1 texture compression is supported */
@@ -37888,6 +38044,8 @@ declare module BABYLON {
         timerQuery?: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         canUseTimestampForTimerQuery: boolean;
+        /** Defines if occlusion queries are supported by the engine */
+        supportOcclusionQuery: boolean;
         /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
         multiview?: any;
         /** Defines if oculus multiview is supported (https://developer.oculus.com/documentation/oculus-browser/latest/concepts/browser-multiview/) */
@@ -37906,6 +38064,8 @@ declare module BABYLON {
         canUseGLVertexID: boolean;
         /** Defines if compute shaders are supported by the engine */
         supportComputeShaders: boolean;
+        /** Defines if sRGB texture formats are supported */
+        supportSRGBBuffers: boolean;
     }
 }
 declare module BABYLON {
@@ -39426,7 +39586,7 @@ declare module BABYLON {
         }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => void, prepareTextureProcessFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | {
             width: number;
             height: number;
-        }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any): InternalTexture;
+        }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture;
         /**
          * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
@@ -39447,9 +39607,10 @@ declare module BABYLON {
          * @param mimeType defines an optional mime type
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -39609,9 +39770,9 @@ declare module BABYLON {
         /** @hidden */
         _getWebGLTextureType(type: number): number;
         /** @hidden */
-        _getInternalFormat(format: number): number;
+        _getInternalFormat(format: number, useSRGBBuffer?: boolean): number;
         /** @hidden */
-        _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
+        _getRGBABufferInternalSizedFormat(type: number, format?: number, useSRGBBuffer?: boolean): number;
         /** @hidden */
         _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */
@@ -40079,6 +40240,8 @@ declare module BABYLON {
         _lodGenerationOffset: number;
         /** @hidden */
         _depthStencilTexture: Nullable<InternalTexture>;
+        /** @hidden */
+        _useSRGBBuffer: boolean;
         /** @hidden */
         _colorTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
@@ -48054,6 +48217,14 @@ declare module BABYLON {
          */
         rotateDraggedObject: boolean;
         /**
+         * Sets an ancestor node to drag instead of the attached node.
+         * All dragging induced by this behavior will happen on the ancestor node, while the relative position/orientation/scaling
+         * between the ancestor node and child node will be kept the same.
+         * This is useful if the attached node is acting as an anchor to move its hierarchy, and you don't want the ancestor node to be the one to receive the pointer inputs.
+         * NB : This property must be set to an actual ancestor of the attached node, or else the dragging behavior will have an undefined result.
+         */
+        ancestorToDrag: Nullable<TransformNode>;
+        /**
          * If the behavior is currently in a dragging state
          */
         dragging: boolean;
@@ -48095,6 +48266,10 @@ declare module BABYLON {
          *  The name of the behavior
          */
         get name(): string;
+        /**
+         *  Returns true if the attached mesh is currently moving with this behavior
+         */
+        get isMoving(): boolean;
         /**
          *  Initializes the behavior
          */
@@ -48240,9 +48415,6 @@ declare module BABYLON {
         private _applyPitchOffset;
         private _angularClamp;
         private _orientationClamp;
-        private _vectorSlerpToRef;
-        private _vectorSmoothToRef;
-        private _quaternionSmoothToRef;
         private _passedOrientationDeadzone;
         private _updateLeashing;
         private _updateTransformToGoal;
@@ -57984,6 +58156,8 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export type OcclusionQuery = WebGLQuery | number;
+    /** @hidden */
     export class _OcclusionDataStorage {
         /** @hidden */
         occlusionInternalRetryCounter: number;
@@ -58003,25 +58177,25 @@ declare module BABYLON {
              * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
              * @return the new query
              */
-            createQuery(): WebGLQuery;
+            createQuery(): OcclusionQuery;
             /**
              * Delete and release a webGL query
              * @param query defines the query to delete
              * @return the current engine
              */
-            deleteQuery(query: WebGLQuery): Engine;
+            deleteQuery(query: OcclusionQuery): Engine;
             /**
              * Check if a given query has resolved and got its value
              * @param query defines the query to check
              * @returns true if the query got its value
              */
-            isQueryResultAvailable(query: WebGLQuery): boolean;
+            isQueryResultAvailable(query: OcclusionQuery): boolean;
             /**
              * Gets the value of a given query
              * @param query defines the query to check
              * @returns the value of the query
              */
-            getQueryResult(query: WebGLQuery): number;
+            getQueryResult(query: OcclusionQuery): number;
             /**
              * Initiates an occlusion query
              * @param algorithmType defines the algorithm to use
@@ -58029,7 +58203,7 @@ declare module BABYLON {
              * @returns the current engine
              * @see https://doc.babylonjs.com/features/occlusionquery
              */
-            beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine;
+            beginOcclusionQuery(algorithmType: number, query: OcclusionQuery): boolean;
             /**
              * Ends an occlusion query
              * @see https://doc.babylonjs.com/features/occlusionquery
@@ -58386,7 +58560,7 @@ declare module BABYLON {
         Depth24Plus = "depth24plus",
         Depth24PlusStencil8 = "depth24plus-stencil8",
         Depth32Float = "depth32float",
-        BC1RGBAUNorm = "bc1-rgba-unorm",
+        BC1RGBAUnorm = "bc1-rgba-unorm",
         BC1RGBAUnormSRGB = "bc1-rgba-unorm-srgb",
         BC2RGBAUnorm = "bc2-rgba-unorm",
         BC2RGBAUnormSRGB = "bc2-rgba-unorm-srgb",
@@ -59112,7 +59286,7 @@ declare module BABYLON {
         }): imageBitmap is ImageBitmap[];
         setCommandEncoder(encoder: GPUCommandEncoder): void;
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
-        static GetWebGPUTextureFormat(type: number, format: number): GPUTextureFormat;
+        static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -59449,6 +59623,25 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export class WebGPUQuerySet {
+        private _device;
+        private _bufferManager;
+        private _count;
+        private _canUseMultipleBuffers;
+        private _querySet;
+        private _queryBuffer;
+        private _dstBuffers;
+        get querySet(): GPUQuerySet;
+        constructor(count: number, type: QueryType, device: GPUDevice, bufferManager: WebGPUBufferManager, canUseMultipleBuffers?: boolean);
+        private _getBuffer;
+        readValues(firstQuery?: number, queryCount?: number): Promise<BigUint64Array | null>;
+        readValue(firstQuery?: number): Promise<number | null>;
+        readTwoValuesAndSubtract(firstQuery?: number): Promise<number | null>;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export class WebGPUTimestampQuery {
         private _device;
         private _bufferManager;
@@ -59465,14 +59658,36 @@ declare module BABYLON {
     }
     /** @hidden */
     export class WebGPUDurationMeasure {
-        private _device;
-        private _bufferManager;
         private _querySet;
-        private _queryBuffer;
-        private _dstBuffer;
         constructor(device: GPUDevice, bufferManager: WebGPUBufferManager);
         start(encoder: GPUCommandEncoder): void;
-        stop(encoder: GPUCommandEncoder): Promise<number>;
+        stop(encoder: GPUCommandEncoder): Promise<number | null>;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUOcclusionQuery {
+        private _engine;
+        private _device;
+        private _bufferManager;
+        private _currentTotalIndices;
+        private _countIncrement;
+        private _querySet;
+        private _availableIndices;
+        private _lastBuffer;
+        private _frameLastBuffer;
+        get querySet(): GPUQuerySet;
+        get hasQueries(): boolean;
+        get canBeginQuery(): boolean;
+        constructor(engine: WebGPUEngine, device: GPUDevice, bufferManager: WebGPUBufferManager, startCount?: number, incrementCount?: number);
+        createQuery(): number;
+        deleteQuery(index: number): void;
+        isQueryResultAvailable(index: number): boolean;
+        getQueryResult(index: number): number;
+        private _retrieveQueryBuffer;
+        private _allocateNewIndices;
+        private _delayQuerySetDispose;
         dispose(): void;
     }
 }
@@ -59628,6 +59843,8 @@ declare module BABYLON {
         /** @hidden */
         _timestampQuery: WebGPUTimestampQuery;
         /** @hidden */
+        _occlusionQuery: WebGPUOcclusionQuery;
+        /** @hidden */
         _compiledComputeEffects: {
             [key: string]: ComputeEffect;
         };
@@ -59643,6 +59860,10 @@ declare module BABYLON {
             numEnableEffects: number;
             numEnableDrawWrapper: number;
         };
+        /**
+         * Max number of uncaptured error messages to log
+         */
+        numMaxUncapturedErrors: number;
         private _mainTexture;
         private _depthTexture;
         private _mainTextureExtends;
@@ -59659,10 +59880,13 @@ declare module BABYLON {
         _currentRenderPass: Nullable<GPURenderPassEncoder>;
         /** @hidden */
         _mainRenderPassWrapper: WebGPURenderPassWrapper;
-        private _rttRenderPassWrapper;
+        /** @hidden */
+        _rttRenderPassWrapper: WebGPURenderPassWrapper;
         /** @hidden */
         _pendingDebugCommands: Array<[string, Nullable<string>]>;
         private _bundleList;
+        /** @hidden */
+        _onAfterUnbindFrameBufferObservable: Observable<WebGPUEngine>;
         private _defaultMaterialContext;
         private _currentMaterialContext;
         private _currentDrawContext;
@@ -59974,9 +60198,10 @@ declare module BABYLON {
          * @param mimeType defines an optional mime type
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
         generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
         /**
          * Update the sampling mode of a given texture
@@ -60073,6 +60298,8 @@ declare module BABYLON {
         /** @hidden */
         _endRenderTargetRenderPass(): void;
         private _getCurrentRenderPass;
+        /** @hidden */
+        _getCurrentRenderPassIndex(): number;
         private _startMainRenderPass;
         private _endMainRenderPass;
         /**
@@ -63762,6 +63989,7 @@ declare module BABYLON {
         PREMULTIPLYALPHA: boolean;
         EMISSIVE: boolean;
         EMISSIVEDIRECTUV: number;
+        GAMMAEMISSIVE: boolean;
         REFLECTIVITY: boolean;
         REFLECTIVITYDIRECTUV: number;
         SPECULARTERM: boolean;
@@ -75123,6 +75351,24 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export interface IGPUParticleSystemPlatform {
+        alignDataInBuffer: boolean;
+        isUpdateBufferCreated: () => boolean;
+        isUpdateBufferReady: () => boolean;
+        createUpdateBuffer: (defines: string) => UniformBufferEffectCommonAccessor;
+        createVertexBuffers: (updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }) => void;
+        createParticleBuffer: (data: number[]) => DataArray | DataBuffer;
+        bindDrawBuffers: (index: number, effect: Effect) => void;
+        preUpdateParticleBuffer: () => void;
+        updateParticleBuffer: (index: number, targetBuffer: Buffer, currentActiveCount: number) => void;
+        releaseBuffers: () => void;
+        releaseVertexBuffers: () => void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var gpuUpdateParticlesPixelShader: {
         name: string;
         shader: string;
@@ -75131,6 +75377,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var gpuUpdateParticlesVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var gpuUpdateParticlesComputeShader: {
         name: string;
         shader: string;
     };
@@ -75178,13 +75431,10 @@ declare module BABYLON {
         private _activeCount;
         private _currentActiveCount;
         private _accumulatedCount;
-        private _renderEffect;
-        private _updateEffect;
+        private _updateBuffer;
         private _buffer0;
         private _buffer1;
         private _spriteBuffer;
-        private _updateVAO;
-        private _renderVAO;
         private _targetIndex;
         private _sourceBuffer;
         private _targetBuffer;
@@ -75193,14 +75443,18 @@ declare module BABYLON {
         private _started;
         private _stopped;
         private _timeDelta;
-        private _randomTexture;
-        private _randomTexture2;
+        /** @hidden */
+        _randomTexture: RawTexture;
+        /** @hidden */
+        _randomTexture2: RawTexture;
         private _attributesStrideSize;
-        private _updateEffectOptions;
+        private _cachedUpdateDefines;
         private _randomTextureSize;
         private _actualFrame;
-        private _customEffect;
+        private _drawWrapper;
+        private _customWrappers;
         private readonly _rawTextureWidth;
+        private _platform;
         /**
          * Gets a boolean indicating if the GPU particles can be rendered on current browser
          */
@@ -75284,6 +75538,7 @@ declare module BABYLON {
          * @returns The effect
          */
         getCustomEffect(blendMode?: number): Nullable<Effect>;
+        private _getCustomDrawWrapper;
         /**
          * Sets the custom effect used to render the particles
          * @param effect The effect to set
@@ -75300,7 +75555,8 @@ declare module BABYLON {
          * Gets the name of the particle vertex shader
          */
         get vertexShaderName(): string;
-        private _colorGradientsTexture;
+        /** @hidden */
+        _colorGradientsTexture: RawTexture;
         protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem;
         /**
          * Adds a new color gradient
@@ -75319,11 +75575,16 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeColorGradient(gradient: number): GPUParticleSystem;
-        private _angularSpeedGradientsTexture;
-        private _sizeGradientsTexture;
-        private _velocityGradientsTexture;
-        private _limitVelocityGradientsTexture;
-        private _dragGradientsTexture;
+        /** @hidden */
+        _angularSpeedGradientsTexture: RawTexture;
+        /** @hidden */
+        _sizeGradientsTexture: RawTexture;
+        /** @hidden */
+        _velocityGradientsTexture: RawTexture;
+        /** @hidden */
+        _limitVelocityGradientsTexture: RawTexture;
+        /** @hidden */
+        _dragGradientsTexture: RawTexture;
         private _addFactorGradient;
         /**
          * Adds a new size gradient
@@ -75492,20 +75753,24 @@ declare module BABYLON {
          * @param name The name of the particle system
          * @param options The options used to create the system
          * @param sceneOrEngine The scene the particle system belongs to or the engine to use if no scene
-         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          * @param customEffect a custom effect used to change the way particles are rendered by default
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          */
         constructor(name: string, options: Partial<{
             capacity: number;
             randomTextureSize: number;
-        }>, sceneOrEngine: Scene | ThinEngine, isAnimationSheetEnabled?: boolean, customEffect?: Nullable<Effect>);
+        }>, sceneOrEngine: Scene | ThinEngine, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean);
         protected _reset(): void;
-        private _createUpdateVAO;
-        private _createRenderVAO;
+        private _createVertexBuffers;
         private _initialize;
         /** @hidden */
         _recreateUpdateEffect(): void;
-        private _getEffect;
+        /** @hidden */
+        _getWrapper(blendMode: number): DrawWrapper;
+        /** @hidden */
+        static _GetAttributeNamesOrOptions(hasColorGradients?: boolean, isAnimationSheetEnabled?: boolean, isBillboardBased?: boolean, isBillboardStretched?: boolean): string[];
+        /** @hidden */
+        static _GetEffectCreationOptions(isAnimationSheetEnabled?: boolean): string[];
         /**
          * Fill the defines array according to the current settings of the particle system
          * @param defines Array to be updated
@@ -75519,8 +75784,6 @@ declare module BABYLON {
          * @param samplers Samplers array to fill
          */
         fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>): void;
-        /** @hidden */
-        _recreateRenderEffect(): Effect;
         /**
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
          * @param preWarm defines if we are in the pre-warmimg phase
@@ -75533,18 +75796,19 @@ declare module BABYLON {
         private _createLimitVelocityGradientTexture;
         private _createDragGradientTexture;
         private _createColorGradientTexture;
+        private _render;
         /**
          * Renders the particle system in its current state
          * @param preWarm defines if the system should only update the particles but not render them
+         * @param forceUpdateOnly if true, force to only update the particles and never display them (meaning, even if preWarm=false, when forceUpdateOnly=true the particles won't be displayed)
          * @returns the current number of particles
          */
-        render(preWarm?: boolean): number;
+        render(preWarm?: boolean, forceUpdateOnly?: boolean): number;
         /**
          * Rebuilds the particle system
          */
         rebuild(): void;
         private _releaseBuffers;
-        private _releaseVAOs;
         /**
          * Disposes the particle system and free the associated resources
          * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
@@ -75572,6 +75836,57 @@ declare module BABYLON {
          * @returns the parsed GPU particle system
          */
         static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): GPUParticleSystem;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
+        private _parent;
+        private _engine;
+        private _updateEffect;
+        private _updateEffectOptions;
+        private _renderVAO;
+        private _updateVAO;
+        readonly alignDataInBuffer: boolean;
+        constructor(parent: GPUParticleSystem, engine: ThinEngine);
+        isUpdateBufferCreated(): boolean;
+        isUpdateBufferReady(): boolean;
+        createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor;
+        createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }): void;
+        createParticleBuffer(data: number[]): DataArray | DataBuffer;
+        bindDrawBuffers(index: number, effect: Effect): void;
+        preUpdateParticleBuffer(): void;
+        updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void;
+        releaseBuffers(): void;
+        releaseVertexBuffers(): void;
+        private _createUpdateVAO;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
+        private _parent;
+        private _engine;
+        private _updateComputeShader;
+        private _simParamsComputeShader;
+        private _bufferComputeShader;
+        private _renderVertexBuffers;
+        readonly alignDataInBuffer: boolean;
+        constructor(parent: GPUParticleSystem, engine: ThinEngine);
+        isUpdateBufferCreated(): boolean;
+        isUpdateBufferReady(): boolean;
+        createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor;
+        createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }): void;
+        createParticleBuffer(data: number[]): DataArray | DataBuffer;
+        bindDrawBuffers(index: number, effect: Effect): void;
+        preUpdateParticleBuffer(): void;
+        updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void;
+        releaseBuffers(): void;
+        releaseVertexBuffers(): void;
     }
 }
 declare module BABYLON {
@@ -83960,6 +84275,14 @@ interface WebGLRenderingContext {
     RG: number;
     R8: number;
     RG8: number;
+    SRGB: number;
+    SRGB8: number;
+    SRGB8_ALPHA8: number;
+
+    COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR: number;
+    COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT: number;
+    COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT: number;
+    COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT: number;
 
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
