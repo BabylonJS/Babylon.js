@@ -96,6 +96,7 @@ export class WebGPUComputeContext implements IComputeContext {
                     }
                 }
             }
+            console.log(bindGroupEntries);
 
             for (let i = 0; i < bindGroupEntries.length; ++i) {
                 const entries = bindGroupEntries[i];
