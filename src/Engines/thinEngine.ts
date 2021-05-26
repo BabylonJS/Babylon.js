@@ -3226,7 +3226,7 @@ export class ThinEngine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
-        texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || noMipmap); // it seems generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
+        texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU || noMipmap); // it seems generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
 
         if (!this._doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
