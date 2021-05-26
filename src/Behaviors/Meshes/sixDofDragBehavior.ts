@@ -2,7 +2,7 @@ import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
-import { Observer } from "../../Misc/observable";
+import { Observable, Observer } from "../../Misc/observable";
 import { PivotTools } from "../../Misc/pivotTools";
 import { BaseSixDofDragBehavior } from "./baseSixDofDragBehavior";
 import { TransformNode } from "../../Meshes/transformNode";
@@ -17,8 +17,14 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     protected _targetOrientation = new Quaternion();
     protected _targetScaling = new Vector3(1, 1, 1);
     protected _startingPosition = new Vector3(0, 0, 0);
+    protected _startingPositionPointerOffset = new Vector3(0, 0, 0);
     protected _startingOrientation = new Quaternion();
     protected _startingScaling = new Vector3(1, 1, 1);
+
+    /**
+     * Fires when position is updated
+     */
+    public onPositionChangedObservable = new Observable<{ position: Vector3 }>();
 
     /**
      * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
@@ -64,10 +70,10 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                         Vector3.TransformNormalToRef(delta, Matrix.Invert(this.ancestorToDrag.parent.getWorldMatrix()), delta);
                     }
                     this.ancestorToDrag.position.addInPlace(delta);
-                    this.onDragObservable.notifyObservers({ position: this.ancestorToDrag.absolutePosition });
+                    this.onPositionChangedObservable.notifyObservers({ position: this.ancestorToDrag.absolutePosition });
                 } else {
                     pickedMesh.position.addInPlace(this._targetPosition.subtract(pickedMesh.position).scale(this.dragDeltaRatio));
-                    this.onDragObservable.notifyObservers({ position: pickedMesh.absolutePosition });
+                    this.onPositionChangedObservable.notifyObservers({ position: pickedMesh.absolutePosition });
                 }
 
                 var oldParent = this.ancestorToDrag ? this.ancestorToDrag.parent : this._ownerNode.parent;
@@ -91,15 +97,20 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     }
 
     private _onePointerPositionUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
-        this._targetPosition.copyFrom(this._startingPosition).addInPlace(worldDeltaPosition);
-        if (this._ownerNode.parent && !this.ancestorToDrag) {
-            Vector3.TransformCoordinatesToRef(this._targetPosition, Matrix.Invert(this._ownerNode.parent.getWorldMatrix()), this._targetPosition);
-        }
+        let pointerDelta = TmpVectors.Vector3[0];
+        pointerDelta.setAll(0);
 
         if (this.rotateDraggedObject) {
             // Convert change in rotation to only y axis rotation
             Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
             TmpVectors.Quaternion[0].multiplyToRef(this._startingOrientation, this._targetOrientation);
+            this._startingPositionPointerOffset.rotateByQuaternionToRef(TmpVectors.Quaternion[0], pointerDelta)
+            this._startingPositionPointerOffset.subtractToRef(pointerDelta, pointerDelta);
+        }
+
+        this._targetPosition.copyFrom(this._startingPosition).addInPlace(worldDeltaPosition).subtractInPlace(pointerDelta);
+        if (this._ownerNode.parent && !this.ancestorToDrag) {
+            Vector3.TransformCoordinatesToRef(this._targetPosition, Matrix.Invert(this._ownerNode.parent.getWorldMatrix()), this._targetPosition);
         }
     }
 
@@ -161,6 +172,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         this._startingPosition.copyFrom(this._targetPosition);
         this._startingOrientation.copyFrom(this._targetOrientation);
         this._startingScaling.copyFrom(this._targetScaling);
+        this._startingPositionPointerOffset.copyFrom(this._targetPosition).subtractInPlace(worldPosition);
 
         if (pointerCount === 2) {
             this._virtualTransformNode.position.copyFrom(referenceMesh.absolutePosition);
@@ -172,15 +184,13 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         referenceMesh.setParent(oldParent);
     }
 
-    protected _targetUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion, pointerId: number) {
+    protected _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion, pointerId: number) {
         if (this.currentDraggingPointerIds.length === 1) {
             this._onePointerPositionUpdated(worldDeltaPosition, worldDeltaRotation);
         } else if (this.currentDraggingPointerIds.length === 2) {
             this._twoPointersPositionUpdated(worldDeltaPosition, worldDeltaRotation, pointerId);
         }
     }
-
-    protected _targetDragEnd(pointerId: number) {}
 
     /**
      *  Detaches the behavior from the mesh
