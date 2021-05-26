@@ -13,14 +13,14 @@ import { TransformNode } from "../../Meshes";
  * Creates virtual meshes that are dragged around
  * And observables for position/rotation changes
  */
-export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
+export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     protected static _virtualScene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
     protected _virtualMeshesInfo: {
         [id: number]: {
-            dragging: boolean,
-            moving: boolean,
+            dragging: boolean;
+            moving: boolean;
             dragMesh: AbstractMesh;
             originMesh: AbstractMesh;
             startingPosition: Vector3;
@@ -96,7 +96,7 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      * Fires each time a drag happens
      */
-    public onDragObservable = new Observable<{ position: Vector3 }>();
+    public onDragObservable = new Observable<{ delta: Vector3; position: Vector3 }>();
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
      */
@@ -254,44 +254,40 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
 
-                if (
-                    registeredPointerIndex !== -1 &&
-                    virtualMeshesInfo.dragging &&
-                    pointerInfo.pickInfo &&
-                    pointerInfo.pickInfo.ray &&
-                    this._draggedMesh
-                ) {
+                if (registeredPointerIndex !== -1 && virtualMeshesInfo.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && this._draggedMesh) {
                     var zDragFactor = this.zDragFactor;
 
                     // Calculate controller drag distance in controller space
                     var originDragDifference = pointerInfo.pickInfo.ray.origin.subtract(virtualMeshesInfo.lastOriginPosition);
                     virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
                     var localOriginDragDifference = -Vector3.Dot(originDragDifference, pointerInfo.pickInfo.ray.direction);
-                    
+
                     virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
                     // Determine how much the controller moved to/away towards the dragged object and use this to move the object further when its further away
                     virtualMeshesInfo.dragMesh.position.z -=
-                    virtualMeshesInfo.dragMesh.position.z < 1
-                    ? localOriginDragDifference * this.zDragFactor
-                    : localOriginDragDifference * zDragFactor * virtualMeshesInfo.dragMesh.position.z;
+                        virtualMeshesInfo.dragMesh.position.z < 1
+                            ? localOriginDragDifference * this.zDragFactor
+                            : localOriginDragDifference * zDragFactor * virtualMeshesInfo.dragMesh.position.z;
                     if (virtualMeshesInfo.dragMesh.position.z < 0) {
                         virtualMeshesInfo.dragMesh.position.z = 0;
                     }
-                    
+
                     // Update the controller position
                     virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
                     virtualMeshesInfo.originMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
                     virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
-                    
+
                     // Get change in rotation
                     this._tmpQuaternion.copyFrom(virtualMeshesInfo.startingOrientation);
                     this._tmpQuaternion.x = -this._tmpQuaternion.x;
                     this._tmpQuaternion.y = -this._tmpQuaternion.y;
                     this._tmpQuaternion.z = -this._tmpQuaternion.z;
                     virtualMeshesInfo.dragMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
+                    this.onDragObservable.notifyObservers({ delta: this._tmpVector, position: virtualMeshesInfo.dragMesh.position });
                     virtualMeshesInfo.dragMesh.position.subtractToRef(virtualMeshesInfo.startingPosition, this._tmpVector);
-                    
-                    this._targetUpdated(this._tmpVector, this._tmpQuaternion, pointerId);
+
+                    // Notify herited methods and observables
+                    this._targetDrag(this._tmpVector, this._tmpQuaternion, pointerId);
                     virtualMeshesInfo.lastDragPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
 
                     this._moving = true;
@@ -304,10 +300,10 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
         // Herited classes can override that
     }
 
-    protected _targetUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion, pointerId: number) {
+    protected _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion, pointerId: number) {
         // Herited classes can override that
     }
-    
+
     protected _targetDragEnd(pointerId: number) {
         // Herited classes can override that
     }
