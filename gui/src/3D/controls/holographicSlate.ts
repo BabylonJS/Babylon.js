@@ -41,22 +41,27 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * Dimensions of the slate
      */
-    public dimensions = new Vector3(5, 3, 0.04);
+    public dimensions = new Vector3(0.7, 0.4, 0.001);
 
     /**
      * Minimum dimensions of the slate
      */
-    public minDimensions = new Vector3(3, 1.5, 0.04);
+    public minDimensions = new Vector3(0.5, 0.2, 0.001);
+
+    /**
+     * Default dimensions of the slate
+     */
+    public readonly defaultDimensions = this.dimensions.clone();
 
     /**
      * Dimensions of the backplate
      */
-    public backplateDimensions = new Vector3(5, 0.3, 0.04);
+    public backplateDimensions = new Vector3(0.7, 0.02, 0.001);
 
     /**
      * Margin between backplate and contentplate
      */
-    public backPlateMargin = 0.05;
+    public backPlateMargin = 0.005;
 
     /**
      * Origin in local coordinates (top left corner)
@@ -213,7 +218,7 @@ export class HolographicSlate extends ContentDisplay3D {
         if (this._contentPlate.material && (this._contentPlate.material as FluentMaterial).albedoTexture) {
             const tex = (this._contentPlate.material as FluentMaterial).albedoTexture as Texture;
             tex.uScale = this._contentScaleRatio;
-            tex.vScale = this._contentScaleRatio / this._contentViewport.width * this._contentViewport.height;
+            tex.vScale = (this._contentScaleRatio / this._contentViewport.width) * this._contentViewport.height;
             tex.uOffset = this._contentViewport.x;
             tex.vOffset = this._contentViewport.y;
         }
@@ -289,16 +294,6 @@ export class HolographicSlate extends ContentDisplay3D {
         node.rotationQuaternion = Quaternion.Identity();
         node.isVisible = false;
 
-        // By default the slate spawns in front of the camera
-        // TODO : add a parameter
-        if (scene.activeCamera) {
-            const worldMatrix = scene.activeCamera.getWorldMatrix();
-            const backward = Vector3.TransformNormal(new Vector3(0, 0, -1), worldMatrix);
-            node.position.copyFrom(scene.activeCamera.position).subtractInPlace(backward.scale(2));
-            node.rotationQuaternion = Quaternion.FromLookDirectionLH(backward, new Vector3(0, 1, 0));
-            node.scaling.setAll(0.2);
-        }
-
         return node;
     }
 
@@ -334,7 +329,7 @@ export class HolographicSlate extends ContentDisplay3D {
             upWorld.normalize();
             upWorld.scaleInPlace(1 / Vector3.Dot(upWorld, worldDimensions));
             rightWorld.normalize();
-            rightWorld.scaleInPlace(1 / Vector3.Dot(rightWorld, worldDimensions))
+            rightWorld.scaleInPlace(1 / Vector3.Dot(rightWorld, worldDimensions));
         });
 
         let offset = new Vector3();
@@ -382,6 +377,25 @@ export class HolographicSlate extends ContentDisplay3D {
         this._defaultBehavior.attach(this.node as Mesh, this._backPlate);
 
         this._updatePivot();
+        this.resetDefaultAspectAndPose();
+    }
+
+    public resetDefaultAspectAndPose() {
+        if (!this._host || !this._host.utilityLayer || !this.node) {
+            return;
+        }
+        const scene = this._host.utilityLayer.utilityLayerScene;
+        const camera = scene.activeCamera;
+        if (camera) {
+            const worldMatrix = camera.getWorldMatrix();
+            const backward = Vector3.TransformNormal(Vector3.Backward(), worldMatrix);
+            this.dimensions.copyFrom(this.defaultDimensions);
+            this.origin.setAll(0);
+            this._gizmo.updateBoundingBox();
+            const pivot = this.node.getAbsolutePivotPoint();
+            this.node.position.copyFrom(camera.position).subtractInPlace(backward).subtractInPlace(pivot);
+            this.node.rotationQuaternion = Quaternion.FromLookDirectionLH(backward, new Vector3(0, 1, 0));
+        }
     }
 
     /**
