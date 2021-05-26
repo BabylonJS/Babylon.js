@@ -797,7 +797,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     protected _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     protected _cachedDefines: string;
-    protected _currentRenderID: number;
+    protected _currentRenderId: number;
     protected _boxBlurPostprocess: Nullable<PostProcess>;
     protected _kernelBlurXPostprocess: Nullable<PostProcess>;
     protected _kernelBlurYPostprocess: Nullable<PostProcess>;
@@ -931,7 +931,7 @@ export class ShadowGenerator implements IShadowGenerator {
         let engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup(`shadow map generation for ${this._nameForDrawWrapper}`, 1);
+            engine._debugPushGroup?.(`shadow map generation for ${this._nameForDrawWrapper}`, 1);
         });
 
         // Record Face Index before render.
@@ -956,7 +956,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setColorWrite(true);
             }
             if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
-                engine._debugPopGroup(1);
+                engine._debugPopGroup?.(1);
                 return;
             }
             let shadowMap = this.getShadowMapForRendering();
@@ -965,7 +965,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 const texture = shadowMap.getInternalTexture()!;
                 this._scene.postProcessManager.directRender(this._blurPostProcesses, texture, true);
                 engine.unBindFramebuffer(texture, true);
-                engine._debugPopGroup(1);
+                engine._debugPopGroup?.(1);
             }
         });
 
@@ -1669,11 +1669,11 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public getTransformMatrix(): Matrix {
         var scene = this._scene;
-        if (this._currentRenderID === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
+        if (this._currentRenderId === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
             return this._transformMatrix;
         }
 
-        this._currentRenderID = scene.getRenderId();
+        this._currentRenderId = scene.getRenderId();
         this._currentFaceIndexCache = this._currentFaceIndex;
 
         var lightPosition = this._light.position;
@@ -1841,12 +1841,12 @@ export class ShadowGenerator implements IShadowGenerator {
      * @returns The parsed shadow generator
      */
     public static Parse(parsedShadowGenerator: any, scene: Scene, constr?: (mapSize: number, light: IShadowLight) => ShadowGenerator): ShadowGenerator {
-        var light = <IShadowLight>scene.getLightByID(parsedShadowGenerator.lightId);
+        var light = <IShadowLight>scene.getLightById(parsedShadowGenerator.lightId);
         var shadowGenerator = constr ? constr(parsedShadowGenerator.mapSize, light) : new ShadowGenerator(parsedShadowGenerator.mapSize, light);
         var shadowMap = shadowGenerator.getShadowMap();
 
         for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
-            var meshes = scene.getMeshesByID(parsedShadowGenerator.renderList[meshIndex]);
+            var meshes = scene.getMeshesById(parsedShadowGenerator.renderList[meshIndex]);
             meshes.forEach(function(mesh) {
                 if (!shadowMap) {
                     return;

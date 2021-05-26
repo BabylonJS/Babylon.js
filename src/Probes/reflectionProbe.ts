@@ -157,7 +157,7 @@ export class ReflectionProbe {
         let currentApplyByPostProcess: boolean;
 
         this._renderTargetTexture.onBeforeBindObservable.add(() => {
-            scene.getEngine()._debugPushGroup(`reflection probe generation for ${name}`, 1);
+            scene.getEngine()._debugPushGroup?.(`reflection probe generation for ${name}`, 1);
             currentApplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (linearSpace) {
                 scene.imageProcessingConfiguration.applyByPostProcess = true;
@@ -168,7 +168,7 @@ export class ReflectionProbe {
             scene.imageProcessingConfiguration.applyByPostProcess = currentApplyByPostProcess;
             scene._forcedViewPosition = null;
             scene.updateTransformMatrix(true);
-            scene.getEngine()._debugPopGroup(1);
+            scene.getEngine()._debugPopGroup?.(1);
         });
     }
 
@@ -303,7 +303,7 @@ export class ReflectionProbe {
         reflectionProbe.cubeTexture._waitingRenderList = parsedReflectionProbe.renderList;
 
         if (parsedReflectionProbe._attachedMesh) {
-            reflectionProbe.attachToMesh(scene.getMeshByID(parsedReflectionProbe._attachedMesh));
+            reflectionProbe.attachToMesh(scene.getMeshById(parsedReflectionProbe._attachedMesh));
         }
 
         return reflectionProbe;

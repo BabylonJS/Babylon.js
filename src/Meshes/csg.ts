@@ -7,6 +7,7 @@ import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import { Color4 } from '../Maths/math.color';
+import { Constants } from "../Engines/constants";
 /**
  * Unique ID when we import meshes from Babylon to CSG
  */
@@ -418,9 +419,10 @@ export class CSG {
     /**
      * Convert the Mesh to CSG
      * @param mesh The Mesh to convert to CSG
+     * @param absolute If true, the final (local) matrix transformation is set to the identity and not to that of `mesh`. It can help when dealing with right-handed meshes (default: false)
      * @returns A new CSG from the Mesh
      */
-    public static FromMesh(mesh: Mesh): CSG {
+    public static FromMesh(mesh: Mesh, absolute = false): CSG {
         var vertex: Vertex, normal: Vector3, uv: Vector2 | undefined = undefined, position: Vector3, vertColor: Color4 | undefined = undefined,
             polygon: Polygon,
             polygons = new Array<Polygon>(),
@@ -431,6 +433,7 @@ export class CSG {
             meshRotationQuaternion: Nullable<Quaternion> = null,
             meshScaling: Vector3;
 
+        let invertWinding = false;
         if (mesh instanceof Mesh) {
             mesh.computeWorldMatrix(true);
             matrix = mesh.getWorldMatrix();
@@ -440,6 +443,9 @@ export class CSG {
                 meshRotationQuaternion = mesh.rotationQuaternion.clone();
             }
             meshScaling = mesh.scaling.clone();
+            if (mesh.material && absolute) {
+                invertWinding = mesh.material.sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+            }
         } else {
             throw 'BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh';
         }
@@ -456,14 +462,15 @@ export class CSG {
             for (var i = subMeshes[sm].indexStart, il = subMeshes[sm].indexCount + subMeshes[sm].indexStart; i < il; i += 3) {
                 vertices = [];
                 for (var j = 0; j < 3; j++) {
-                    var sourceNormal = new Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
+                    const indexIndices = j === 0 ? i + j : invertWinding ? i + 3 - j : i + j;
+                    var sourceNormal = new Vector3(normals[indices[indexIndices] * 3], normals[indices[indexIndices] * 3 + 1], normals[indices[indexIndices] * 3 + 2]);
                     if (uvs) {
-                        uv = new Vector2(uvs[indices[i + j] * 2], uvs[indices[i + j] * 2 + 1]);
+                        uv = new Vector2(uvs[indices[indexIndices] * 2], uvs[indices[indexIndices] * 2 + 1]);
                     }
                     if (vertColors) {
-                        vertColor = new Color4(vertColors[indices[i + j] * 4], vertColors[indices[i + j] * 4 + 1], vertColors[indices[i + j] * 4 + 2], vertColors[indices[i + j] * 4 + 3]);
+                        vertColor = new Color4(vertColors[indices[indexIndices] * 4], vertColors[indices[indexIndices] * 4 + 1], vertColors[indices[indexIndices] * 4 + 2], vertColors[indices[indexIndices] * 4 + 3]);
                     }
-                    var sourcePosition = new Vector3(positions[indices[i + j] * 3], positions[indices[i + j] * 3 + 1], positions[indices[i + j] * 3 + 2]);
+                    var sourcePosition = new Vector3(positions[indices[indexIndices] * 3], positions[indices[indexIndices] * 3 + 1], positions[indices[indexIndices] * 3 + 2]);
                     position = Vector3.TransformCoordinates(sourcePosition, matrix);
                     normal = Vector3.TransformNormal(sourceNormal, matrix);
 
@@ -482,11 +489,11 @@ export class CSG {
         }
 
         var csg = CSG.FromPolygons(polygons);
-        csg.matrix = matrix;
-        csg.position = meshPosition;
-        csg.rotation = meshRotation;
-        csg.scaling = meshScaling;
-        csg.rotationQuaternion = meshRotationQuaternion;
+        csg.matrix = absolute ? Matrix.Identity() : matrix;
+        csg.position = absolute ? Vector3.Zero() : meshPosition;
+        csg.rotation = absolute ? Vector3.Zero() : meshRotation;
+        csg.scaling = absolute ? Vector3.One() : meshScaling;
+        csg.rotationQuaternion = absolute && meshRotationQuaternion ? Quaternion.Identity() : meshRotationQuaternion;
         currentCSGMeshId++;
 
         return csg;
