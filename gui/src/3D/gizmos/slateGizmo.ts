@@ -57,7 +57,7 @@ export class SlateGizmo extends Gizmo {
     /**
      * Size of the handles (meters in XR)
      */
-    public handleSize = 0.04;
+    public handleSize = 0.01;
 
     /**
      * The slate attached to this gizmo

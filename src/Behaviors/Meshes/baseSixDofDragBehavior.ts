@@ -193,10 +193,6 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         return;
                     }
 
-                    if (this._pointerCamera && !this._pointerCamera.isLeftCamera && !this._pointerCamera.isRightCamera) {
-                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera.globalPosition);
-                    }
-
                     const pickedMesh = this._ownerNode;
                     this._draggedMesh = pickedMesh;
                     virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
@@ -266,10 +262,6 @@ export abstract class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._draggedMesh
                 ) {
                     var zDragFactor = this.zDragFactor;
-                    if (this._pointerCamera && !this._pointerCamera.isLeftCamera && !this._pointerCamera.isRightCamera) {
-                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera.globalPosition);
-                        zDragFactor = 0;
-                    }
 
                     // Calculate controller drag distance in controller space
                     var originDragDifference = pointerInfo.pickInfo.ray.origin.subtract(virtualMeshesInfo.lastOriginPosition);
