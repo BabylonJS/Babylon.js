@@ -148,14 +148,16 @@
             "renderCount": 60,
             "playgroundId": "#2YZFA0#200",
             "referenceImage": "guiSlate.png",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "GUI Near Menu",
             "renderCount": 60,
             "playgroundId":"#2YZFA0#180",
             "referenceImage": "guiNearMenu.png",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Camera rig",
