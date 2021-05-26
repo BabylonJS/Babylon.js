@@ -15,6 +15,9 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
         if (!isFragment && !(<NativeEngine>engine).homogeneousDepth) {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);
+            if (!(<NativeEngine>engine).originBottomLeft) {
+                code += "gl_Position.y *= -1.;\n";
+            }
             code += "gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0; }";
         }
 
