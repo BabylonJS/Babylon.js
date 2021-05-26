@@ -667,13 +667,13 @@ var loadAnimations = function (gltfRuntime) {
             }
             var bufferInput = _glTFLoaderUtils__WEBPACK_IMPORTED_MODULE_2__["GLTFUtils"].GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[inputData]);
             var bufferOutput = _glTFLoaderUtils__WEBPACK_IMPORTED_MODULE_2__["GLTFUtils"].GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
-            var targetID = channel.target.id;
-            var targetNode = gltfRuntime.scene.getNodeByID(targetID);
+            var targetId = channel.target.id;
+            var targetNode = gltfRuntime.scene.getNodeById(targetId);
             if (targetNode === null) {
-                targetNode = gltfRuntime.scene.getNodeByName(targetID);
+                targetNode = gltfRuntime.scene.getNodeByName(targetId);
             }
             if (targetNode === null) {
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Creating animation named " + anim + ". But cannot find node named " + targetID + " to attach to");
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Creating animation named " + anim + ". But cannot find node named " + targetId + " to attach to");
                 continue;
             }
             var isBone = targetNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Bone"];
@@ -924,7 +924,7 @@ var importSkeleton = function (gltfRuntime, skins, mesh, newSkeleton, id) {
         }
         var id = jointNode.id;
         // Optimize, if the bone already exists...
-        var existingBone = gltfRuntime.scene.getBoneByID(id);
+        var existingBone = gltfRuntime.scene.getBoneById(id);
         if (existingBone) {
             newSkeleton.bones.push(existingBone);
             continue;
@@ -1013,8 +1013,8 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
     var indexStarts = new Array();
     var indexCounts = new Array();
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshID = meshes[meshIndex];
-        var mesh = gltfRuntime.meshes[meshID];
+        var meshId = meshes[meshIndex];
+        var mesh = gltfRuntime.meshes[meshId];
         if (!mesh) {
             continue;
         }
@@ -1098,7 +1098,7 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
                 vertexData.merge(tempVertexData);
             }
             // Sub material
-            var material_1 = gltfRuntime.scene.getMaterialByID(primitive.material);
+            var material_1 = gltfRuntime.scene.getMaterialById(primitive.material);
             subMaterials.push(material_1 === null ? _glTFLoaderUtils__WEBPACK_IMPORTED_MODULE_2__["GLTFUtils"].GetDefaultMaterial(gltfRuntime.scene) : material_1);
             // Update vertices start and index start
             verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
@@ -1128,8 +1128,8 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
     newMesh.subMeshes = [];
     var index = 0;
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshID = meshes[meshIndex];
-        var mesh = gltfRuntime.meshes[meshID];
+        var meshId = meshes[meshIndex];
+        var mesh = gltfRuntime.meshes[meshId];
         if (!mesh) {
             continue;
         }
@@ -1190,7 +1190,7 @@ var importNode = function (gltfRuntime, node, id, parent) {
         if (node.meshes) {
             var skin = gltfRuntime.skins[node.skin];
             var newMesh = importMesh(gltfRuntime, node, node.meshes, id, node.babylonNode);
-            newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(node.skin);
+            newMesh.skeleton = gltfRuntime.scene.getLastSkeletonById(node.skin);
             if (newMesh.skeleton === null) {
                 newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton, node.skin);
                 if (!skin.babylonSkeleton) {
@@ -1384,7 +1384,7 @@ var onBindShaderMaterial = function (mesh, gltfRuntime, unTreatedUniforms, shade
             else if (uniform.semantic && (uniform.source || uniform.node)) {
                 var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node || "");
                 if (source === null) {
-                    source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node || "");
+                    source = gltfRuntime.scene.getNodeById(uniform.source || uniform.node || "");
                 }
                 if (source === null) {
                     continue;
@@ -2887,8 +2887,12 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.loadAllMaterials = false;
         /**
-         * Function called before loading a url referenced by the asset.
+         * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
+        this.useSRGBBuffers = true;
+        /**
+        * Function called before loading a url referenced by the asset.
+        */
         this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.

@@ -44,21 +44,27 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
         private _forcePanning;
+        private _forceZooming;
+        private _forceSelecting;
+        private _outlines;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
         private _panning;
-        private _forceZooming;
+        private _canvas;
+        private _responsive;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
+        ctrlEvent: (evt: KeyboardEvent) => void;
+        ctrlFalseEvent: () => void;
+        componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
-        loadFromSnippet(snippedID: string): Promise<void>;
+        loadFromSnippet(snippedId: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: Vector2): void;
-        onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
@@ -127,11 +133,13 @@ declare module "babylonjs-gui-editor/globalState" {
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
         onZoomObservable: Observable<void>;
         onPanObservable: Observable<void>;
-        onSelectionObservable: Observable<void>;
+        onSelectionButtonObservable: Observable<void>;
         onLoadObservable: Observable<void>;
         onSaveObservable: Observable<void>;
         onSnippetLoadObservable: Observable<void>;
         onSnippetSaveObservable: Observable<void>;
+        onOutlinesObservable: Observable<void>;
+        onResponsiveChangeObservable: Observable<boolean>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -918,7 +926,7 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | Slider | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
@@ -1203,7 +1211,12 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
         globalState: GlobalState;
     }
     export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
+        private _panning;
+        private _zooming;
+        private _selecting;
+        private _outlines;
         constructor(props: ICommandBarComponentProps);
+        private updateNodeOutline;
         render(): JSX.Element;
         onCreate(value: string): void;
     }
@@ -1795,21 +1808,27 @@ declare module GUIEDITOR {
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
         private _forcePanning;
+        private _forceZooming;
+        private _forceSelecting;
+        private _outlines;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
         private _panning;
-        private _forceZooming;
+        private _canvas;
+        private _responsive;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
+        ctrlEvent: (evt: KeyboardEvent) => void;
+        ctrlFalseEvent: () => void;
+        componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
-        loadFromSnippet(snippedID: string): Promise<void>;
+        loadFromSnippet(snippedId: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
-        onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
@@ -1868,11 +1887,13 @@ declare module GUIEDITOR {
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
-        onSelectionObservable: BABYLON.Observable<void>;
+        onSelectionButtonObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<void>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
         onSnippetSaveObservable: BABYLON.Observable<void>;
+        onOutlinesObservable: BABYLON.Observable<void>;
+        onResponsiveChangeObservable: BABYLON.Observable<boolean>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -2520,7 +2541,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | Slider | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -2770,7 +2791,12 @@ declare module GUIEDITOR {
         globalState: GlobalState;
     }
     export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
+        private _panning;
+        private _zooming;
+        private _selecting;
+        private _outlines;
         constructor(props: ICommandBarComponentProps);
+        private updateNodeOutline;
         render(): JSX.Element;
         onCreate(value: string): void;
     }

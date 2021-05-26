@@ -52735,6 +52735,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
     };
     TexturePropertyGridComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         var texture = this.props.texture;
         var samplingMode = [
             { label: "Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_NEAREST },
@@ -52793,7 +52794,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                             var scene = texture.getScene();
                             texture.scale(2);
                             setTimeout(function () {
-                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueID(texture.uniqueId));
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));
                             });
                         } }),
                 texture.isRenderTarget &&
@@ -52801,12 +52802,13 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                             var scene = texture.getScene();
                             texture.scale(0.5);
                             setTimeout(function () {
-                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueID(texture.uniqueId));
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));
                             });
                         } }),
                 extension &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "File format", value: extension }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Unique ID", value: texture.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Internal Unique ID", value: (_a = texture._texture) === null || _a === void 0 ? void 0 : _a.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Class", value: texture.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Has alpha", value: texture.hasAlpha ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is 3D", value: texture.is3D ? "Yes" : "No" }),
@@ -53246,15 +53248,17 @@ var Eyedropper = {
             this.pointerObserver = this.getParameters().scene.onPointerObservable.add(function (pointerInfo) {
                 var _a;
                 if ((_a = pointerInfo.pickInfo) === null || _a === void 0 ? void 0 : _a.hit) {
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN) {
+                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN && (pointerInfo.event.buttons === 1) && _this.getParameters().interactionEnabled()) {
                         _this.isPicking = true;
                         _this.pick(pointerInfo);
                     }
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE && _this.isPicking) {
-                        _this.pick(pointerInfo);
-                    }
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
-                        _this.isPicking = false;
+                    if (_this.isPicking) {
+                        if (pointerInfo.event.buttons !== 1 || !_this.getParameters().interactionEnabled()) {
+                            _this.isPicking = false;
+                        }
+                        else {
+                            _this.pick(pointerInfo);
+                        }
                     }
                 }
             });
@@ -53320,10 +53324,8 @@ var Floodfill = {
             var _this = this;
             this.pointerObserver = this.getParameters().scene.onPointerObservable.add(function (pointerInfo) {
                 var _a;
-                if ((_a = pointerInfo.pickInfo) === null || _a === void 0 ? void 0 : _a.hit) {
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN && pointerInfo.event.button === 0) {
-                        _this.fill();
-                    }
+                if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN && (pointerInfo.event.buttons === 1) && _this.getParameters().interactionEnabled() && ((_a = pointerInfo.pickInfo) === null || _a === void 0 ? void 0 : _a.hit)) {
+                    _this.fill();
                 }
             });
         };
@@ -53407,15 +53409,14 @@ var paintbrushTool = /** @class */ (function () {
         var _this = this;
         var scene = this.getParameters().scene;
         this.pointerObserver = scene.onPointerObservable.add(function (pointerInfo) { return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
-            var _a, startPainting, stopPainting, metadata, circleCanvas, circleCtx, pixels, dis, rgb, r, g, b, idx, y, x, _b;
-            var _c, _d;
-            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_e) {
-                switch (_e.label) {
+            var _a, startPainting, stopPainting, metadata, circleCanvas, circleCtx, pixels, dis, rgb, r, g, b, idx, x1, x2, y1, y2, y, x, _b;
+            var _c, _d, _e;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_f) {
+                switch (_f.label) {
                     case 0:
                         _a = this.getParameters(), startPainting = _a.startPainting, stopPainting = _a.stopPainting, metadata = _a.metadata;
-                        if (!((_c = pointerInfo.pickInfo) === null || _c === void 0 ? void 0 : _c.hit)) return [3 /*break*/, 3];
-                        if (!(pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERDOWN)) return [3 /*break*/, 2];
-                        if (!(pointerInfo.event.button == 0)) return [3 /*break*/, 2];
+                        if (!!this.isPainting) return [3 /*break*/, 3];
+                        if (!(pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERDOWN && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled() && ((_c = pointerInfo.pickInfo) === null || _c === void 0 ? void 0 : _c.hit))) return [3 /*break*/, 2];
                         this.isPainting = true;
                         circleCanvas = document.createElement('canvas');
                         circleCanvas.width = this.width;
@@ -53429,8 +53430,10 @@ var paintbrushTool = /** @class */ (function () {
                         g = Math.floor(rgb.g * 255);
                         b = Math.floor(rgb.b * 255);
                         idx = 0;
-                        for (y = -Math.floor(this.width / 2); y < Math.ceil(this.width / 2); y++) {
-                            for (x = -Math.floor(this.width / 2); x < Math.ceil(this.width / 2); x++) {
+                        x1 = -Math.floor(this.width / 2), x2 = Math.ceil(this.width / 2);
+                        y1 = -Math.floor(this.width / 2), y2 = Math.ceil(this.width / 2);
+                        for (y = y1; y < y2; y++) {
+                            for (x = x1; x < x2; x++) {
                                 pixels[idx++] = r;
                                 pixels[idx++] = g;
                                 pixels[idx++] = b;
@@ -53442,24 +53445,24 @@ var paintbrushTool = /** @class */ (function () {
                         _b = this;
                         return [4 /*yield*/, startPainting()];
                     case 1:
-                        _b.ctx = _e.sent();
+                        _b.ctx = _f.sent();
                         this.paint(pointerInfo);
-                        _e.label = 2;
-                    case 2:
-                        if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERMOVE && this.isPainting) {
-                            this.paint(pointerInfo);
-                        }
-                        _e.label = 3;
+                        _f.label = 2;
+                    case 2: return [3 /*break*/, 4];
                     case 3:
-                        if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERUP) {
-                            if (pointerInfo.event.button == 0) {
-                                this.isPainting = false;
-                                (_d = this.circleCanvas.parentNode) === null || _d === void 0 ? void 0 : _d.removeChild(this.circleCanvas);
-                                stopPainting();
-                                this.mousePos = null;
+                        if (pointerInfo.event.buttons !== 1 || !this.getParameters().interactionEnabled()) {
+                            this.isPainting = false;
+                            (_d = this.circleCanvas.parentNode) === null || _d === void 0 ? void 0 : _d.removeChild(this.circleCanvas);
+                            stopPainting();
+                            this.mousePos = null;
+                        }
+                        else {
+                            if (((_e = pointerInfo.pickInfo) === null || _e === void 0 ? void 0 : _e.hit) && pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERMOVE) {
+                                this.paint(pointerInfo);
                             }
                         }
-                        return [2 /*return*/];
+                        _f.label = 4;
+                    case 4: return [2 /*return*/];
                 }
             });
         }); });
@@ -53528,37 +53531,24 @@ var RectangleSelect = {
             var scene = this.getParameters().scene;
             this.pointerObserver = scene.onPointerObservable.add(function (pointerInfo) {
                 var _a;
-                var _b;
-                var _c = _this.getParameters(), getMouseCoordinates = _c.getMouseCoordinates, setMetadata = _c.setMetadata, metadata = _c.metadata;
-                if ((_b = pointerInfo.pickInfo) === null || _b === void 0 ? void 0 : _b.hit) {
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN) {
-                        if (pointerInfo.event.button == 0) {
-                            _this.isSelecting = true;
-                            var _d = (_a = getMouseCoordinates(pointerInfo), _this.xStart = _a.x, _this.yStart = _a.y, _a), x = _d.x, y = _d.y;
-                            setMetadata({
-                                select: {
-                                    x1: x,
-                                    y1: y,
-                                    x2: x,
-                                    y2: y
-                                }
-                            });
-                        }
-                    }
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE && _this.isSelecting) {
-                        var _e = getMouseCoordinates(pointerInfo), x = _e.x, y = _e.y;
+                var _b, _c;
+                var _d = _this.getParameters(), getMouseCoordinates = _d.getMouseCoordinates, setMetadata = _d.setMetadata, metadata = _d.metadata;
+                if (!_this.isSelecting) {
+                    if (pointerInfo.type == babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN && pointerInfo && (pointerInfo.event.buttons === 1) && _this.getParameters().interactionEnabled() && ((_b = pointerInfo.pickInfo) === null || _b === void 0 ? void 0 : _b.hit)) {
+                        _this.isSelecting = true;
+                        var _e = (_a = getMouseCoordinates(pointerInfo), _this.xStart = _a.x, _this.yStart = _a.y, _a), x = _e.x, y = _e.y;
                         setMetadata({
                             select: {
-                                x1: Math.min(x, _this.xStart),
-                                y1: Math.min(y, _this.yStart),
-                                x2: Math.max(x, _this.xStart),
-                                y2: Math.max(y, _this.yStart)
+                                x1: x,
+                                y1: y,
+                                x2: x,
+                                y2: y
                             }
                         });
                     }
                 }
-                if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
-                    if (pointerInfo.event.button == 0) {
+                else {
+                    if (pointerInfo.event.buttons !== 1 || !_this.getParameters().interactionEnabled()) {
                         _this.isSelecting = false;
                         if (metadata.select.x1 === metadata.select.x2 || metadata.select.y1 === metadata.select.y2) {
                             setMetadata({
@@ -53566,6 +53556,21 @@ var RectangleSelect = {
                                     x1: -1, y1: -1, x2: -1, y2: -1
                                 }
                             });
+                        }
+                    }
+                    else {
+                        if (((_c = pointerInfo.pickInfo) === null || _c === void 0 ? void 0 : _c.hit) && pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE) {
+                            if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE && _this.isSelecting) {
+                                var _f = getMouseCoordinates(pointerInfo), x = _f.x, y = _f.y;
+                                setMetadata({
+                                    select: {
+                                        x1: Math.min(x, _this.xStart),
+                                        y1: Math.min(y, _this.yStart),
+                                        x2: Math.max(x, _this.xStart),
+                                        y2: Math.max(y, _this.yStart)
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -53786,12 +53791,14 @@ var TextureCanvasManager = /** @class */ (function () {
         this._didEdit = false;
         /** Tracks which keys are currently pressed */
         this._keyMap = {};
+        /** Tracks which mouse buttons are currently pressed */
+        this._buttonsPressed = 0;
         this.ZOOM_MOUSE_SPEED = 0.001;
         this.ZOOM_KEYBOARD_SPEED = 0.4;
         this.ZOOM_IN_KEY = '+';
         this.ZOOM_OUT_KEY = '-';
         this.PAN_SPEED = 0.003;
-        this.PAN_MOUSE_BUTTON = 1; // MMB
+        this.PAN_KEY = 'Space';
         this.MIN_SCALE = 0.01;
         this.GRID_SCALE = 0.047;
         this.MAX_SCALE = 10;
@@ -53916,23 +53923,25 @@ var TextureCanvasManager = /** @class */ (function () {
         });
         this._scene.onPointerObservable.add(function (pointerInfo) {
             var _a;
+            var leftButtonPressed = pointerInfo.event.buttons & 1;
+            var middleButtonPressed = pointerInfo.event.buttons & 4;
+            if (!_this._isPanning) {
+                if ((leftButtonPressed && !(_this._buttonsPressed & 1) && _this._keyMap[_this.PAN_KEY]) || middleButtonPressed) {
+                    _this._isPanning = true;
+                    _this._mouseX = pointerInfo.event.x;
+                    _this._mouseY = pointerInfo.event.y;
+                }
+                if (middleButtonPressed) {
+                    _this._isPanning = true;
+                }
+            }
+            else if ((!leftButtonPressed || !_this._keyMap[_this.PAN_KEY]) && !middleButtonPressed) {
+                _this._isPanning = false;
+            }
             switch (pointerInfo.type) {
                 case babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERWHEEL:
                     var event_1 = pointerInfo.event;
                     _this._scale -= (event_1.deltaY * _this.ZOOM_MOUSE_SPEED * _this._scale);
-                    break;
-                case babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN:
-                    if (pointerInfo.event.button === _this.PAN_MOUSE_BUTTON) {
-                        _this._isPanning = true;
-                        _this._mouseX = pointerInfo.event.x;
-                        _this._mouseY = pointerInfo.event.y;
-                        pointerInfo.event.preventDefault();
-                    }
-                    break;
-                case babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP:
-                    if (pointerInfo.event.button === _this.PAN_MOUSE_BUTTON) {
-                        _this._isPanning = false;
-                    }
                     break;
                 case babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE:
                     if (_this._isPanning) {
@@ -53951,6 +53960,7 @@ var TextureCanvasManager = /** @class */ (function () {
                     }
                     break;
             }
+            _this._buttonsPressed = pointerInfo.event.buttons;
         });
         this._scene.onKeyboardObservable.add(function (kbInfo) {
             switch (kbInfo.type) {
@@ -54392,6 +54402,9 @@ var TextureCanvasManager = /** @class */ (function () {
             babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Tools"].Download(blob, _this._originalTexture.name);
         });
     };
+    TextureCanvasManager.prototype.toolInteractionEnabled = function () {
+        return !(this._keyMap[this.PAN_KEY] || this._isPanning);
+    };
     TextureCanvasManager.prototype.dispose = function () {
         var _a, _b;
         if (this._didEdit) {
@@ -54589,6 +54602,7 @@ var TextureEditorComponent = /** @class */ (function (_super) {
             metadata: this.state.metadata,
             setMetadata: function (data) { return _this.setMetadata(data); },
             getMouseCoordinates: function (pointerInfo) { return _this._textureCanvasManager.getMouseCoordinates(pointerInfo); },
+            interactionEnabled: function () { return _this._textureCanvasManager.toolInteractionEnabled(); },
             BABYLON: BABYLON,
         };
     };
@@ -54629,14 +54643,17 @@ var TextureEditorComponent = /** @class */ (function (_super) {
     };
     TextureEditorComponent.prototype.render = function () {
         var _this = this;
-        var _a;
+        var _a, _b;
         var currentTool = this.state.tools[this.state.activeToolIndex];
         var cursor = "initial";
-        if (currentTool && currentTool.cursor) {
+        if (!((_a = this._textureCanvasManager) === null || _a === void 0 ? void 0 : _a.toolInteractionEnabled())) {
+            cursor = "pointer";
+        }
+        else if (currentTool && currentTool.cursor) {
             cursor = "url(data:image/png;base64," + currentTool.cursor + ") 10 10, auto";
         }
         return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "texture-editor", onPointerDown: this.onPointerDown, style: { cursor: cursor } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertiesBar__WEBPACK_IMPORTED_MODULE_4__["PropertiesBar"], { texture: this.props.texture, saveTexture: this.saveTexture, pixelData: this.state.pixelData, face: this.state.face, setFace: function (face) { return _this.setState({ face: face }); }, resetTexture: this.resetTexture, resizeTexture: this.resizeTexture, uploadTexture: this.uploadTexture, mipLevel: this.state.mipLevel, setMipLevel: function (mipLevel) { return _this.setState({ mipLevel: mipLevel }); }, size: ((_a = this._textureCanvasManager) === null || _a === void 0 ? void 0 : _a.size) || this.props.texture.getSize() }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertiesBar__WEBPACK_IMPORTED_MODULE_4__["PropertiesBar"], { texture: this.props.texture, saveTexture: this.saveTexture, pixelData: this.state.pixelData, face: this.state.face, setFace: function (face) { return _this.setState({ face: face }); }, resetTexture: this.resetTexture, resizeTexture: this.resizeTexture, uploadTexture: this.uploadTexture, mipLevel: this.state.mipLevel, setMipLevel: function (mipLevel) { return _this.setState({ mipLevel: mipLevel }); }, size: ((_b = this._textureCanvasManager) === null || _b === void 0 ? void 0 : _b.size) || this.props.texture.getSize() }),
             !this.props.texture.isCube && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_toolBar__WEBPACK_IMPORTED_MODULE_3__["ToolBar"], { tools: this.state.tools, activeToolIndex: this.state.activeToolIndex, addTool: this.loadToolFromURL, changeTool: this.changeTool, metadata: this.state.metadata, setMetadata: this.setMetadata, pickerOpen: this.state.pickerOpen, setPickerOpen: this.setPickerOpen, pickerRef: this._pickerRef, hasAlpha: this.props.texture.textureFormat === -1 || this.props.texture.textureFormat === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_9__["Constants"].TEXTUREFORMAT_RGBA }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_channelsBar__WEBPACK_IMPORTED_MODULE_5__["ChannelsBar"], { channels: this.state.channels, setChannels: function (channels) { _this.setState({ channels: channels }); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textureCanvasComponent__WEBPACK_IMPORTED_MODULE_7__["TextureCanvasComponent"], { canvas2D: this._2DCanvas, canvas3D: this._3DCanvas, canvasUI: this._UICanvas, texture: this.props.texture }),
@@ -56109,13 +56126,13 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
         var system = this.props.system;
         var scene = system.getScene();
         var isGpu = system instanceof babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["GPUParticleSystem"];
-        var snippedID = window.prompt("Please enter the snippet ID to use");
-        if (!snippedID || !scene) {
+        var snippedId = window.prompt("Please enter the snippet ID to use");
+        if (!snippedId || !scene) {
             return;
         }
         system.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleHelper"].CreateFromSnippetAsync(snippedID, scene, isGpu).then(function (newSystem) {
+        babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleHelper"].CreateFromSnippetAsync(snippedId, scene, isGpu).then(function (newSystem) {
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
         }).catch(function (err) {
             alert("Unable to load your particle system: " + err);
@@ -57449,13 +57466,13 @@ var SpriteManagerPropertyGridComponent = /** @class */ (function (_super) {
         var _this = this;
         var spriteManager = this.props.spriteManager;
         var scene = spriteManager.scene;
-        var snippedID = window.prompt("Please enter the snippet ID to use");
-        if (!snippedID) {
+        var snippedId = window.prompt("Please enter the snippet ID to use");
+        if (!snippedId) {
             return;
         }
         spriteManager.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["SpriteManager"].CreateFromSnippetAsync(snippedID, scene).then(function (newManager) {
+        babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["SpriteManager"].CreateFromSnippetAsync(snippedId, scene).then(function (newManager) {
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
         }).catch(function (err) {
             alert("Unable to load your sprite manager: " + err);
@@ -58118,7 +58135,7 @@ var GLTFComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_sRGBFactors", isSelected: function () { return extensionStates["MSFT_sRGBFactors"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_sRGBFactors"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_audio_emitter", isSelected: function () { return extensionStates["MSFT_audio_emitter"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_audio_emitter"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_6__["MessageLineComponent"], { text: "You need to reload your file to see these changes" })),
-            loaderState["validate"] && this.props.globalState.validationResults && this.renderValidation()));
+            this.props.globalState.validationResults && this.renderValidation()));
     };
     return GLTFComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -58157,6 +58174,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/messageLineComponent */ "./sharedUiComponents/lines/messageLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/indentedTextLineComponent */ "./sharedUiComponents/lines/indentedTextLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../../sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
+
+
+
 
 
 
@@ -58186,11 +58208,14 @@ var ToolsTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ToolsTabComponent, _super);
     function ToolsTabComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_18__["LockObject"]();
         _this._screenShotSize = { precision: 1 };
         _this._gifOptions = { width: 512, frequency: 200 };
         _this._useWidthHeight = false;
         _this._isExporting = false;
         _this._crunchingGIF = false;
+        _this._reflectorHostname = "localhost";
+        _this._reflectorPort = 1234;
         _this.state = { tag: "Record video" };
         var sceneImportDefaults = _this.props.globalState.sceneImportDefaults;
         if (sceneImportDefaults["overwriteAnimations"] === undefined) {
@@ -58277,7 +58302,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             }
             _this._gifRecorder.addFrame(engine.getRenderingCanvas(), { delay: 0, copy: true });
         }, this._gifOptions.frequency);
-        this._gifRecorder.on('finished', function (blob) {
+        this._gifRecorder.on("finished", function (blob) {
             _this._crunchingGIF = false;
             babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].Download(blob, "record.gif");
             _this.forceUpdate();
@@ -58301,7 +58326,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
         }
         babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].LoadFileAsync("https://cdn.jsdelivr.net/gh//terikon/gif.js.optimized@0.1.6/dist/gif.worker.js").then(function (value) {
             _this._gifWorkerBlob = new Blob([value], {
-                type: 'application/javascript'
+                type: "application/javascript"
             });
             _this.recordGIFInternal();
         });
@@ -58387,6 +58412,12 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             _this.forceUpdate();
         });
     };
+    ToolsTabComponent.prototype.connectReflector = function () {
+        if (this._reflector) {
+            this._reflector.close();
+        }
+        this._reflector = new babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Reflector"](this.props.scene, this._reflectorHostname, this._reflectorPort);
+    };
     ToolsTabComponent.prototype.render = function () {
         var _this = this;
         var scene = this.props.scene;
@@ -58407,7 +58438,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "CAPTURE WITH RTT", selection: this.props.globalState },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Capture", onClick: function () { return _this.captureRender(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Precision", target: this._screenShotSize, propertyName: 'precision', onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Precision", target: this._screenShotSize, propertyName: "precision", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_10__["CheckBoxLineComponent"], { label: "Use Width/Height", onSelect: function (value) {
                             _this._useWidthHeight = value;
                             _this.forceUpdate();
@@ -58451,7 +58482,11 @@ var ToolsTabComponent = /** @class */ (function (_super) {
                         !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate .env texture", onClick: function () { return _this.createEnvTexture(); } }))),
             BABYLON.GLTFFileLoader &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tools_gltfComponent__WEBPACK_IMPORTED_MODULE_6__["GLTFComponent"], { scene: scene, globalState: this.props.globalState })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tools_gltfComponent__WEBPACK_IMPORTED_MODULE_6__["GLTFComponent"], { scene: scene, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "REFLECTOR", selection: this.props.globalState },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_17__["TextInputLineComponent"], { lockObject: this._lockObject, label: "Hostname", target: this, propertyName: "_reflectorHostname" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this._lockObject, label: "Port", target: this, propertyName: "_reflectorPort", isInteger: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Connect", onClick: function () { return _this.connectReflector(); } }))));
     };
     return ToolsTabComponent;
 }(_paneComponent__WEBPACK_IMPORTED_MODULE_2__["PaneComponent"]));
@@ -58691,7 +58726,6 @@ var GlobalState = /** @class */ (function () {
             loggingEnabled: false,
             transparencyAsCoverage: false,
             useClipPlane: false,
-            validate: true,
         };
         this.glTFLoaderExtensions = {};
         this.blockMutationUpdates = false;
@@ -60765,7 +60799,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         });
         var getUniqueName = function (name) {
             var idSubscript = 1;
-            while (scene.getMaterialByID(name)) {
+            while (scene.getMaterialById(name)) {
                 name = name + " " + idSubscript++;
             }
             return name;
