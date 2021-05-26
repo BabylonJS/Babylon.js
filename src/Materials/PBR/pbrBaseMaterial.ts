@@ -98,6 +98,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public EMISSIVE = false;
     public EMISSIVEDIRECTUV = 0;
+    public GAMMAEMISSIVE = false;
 
     public REFLECTIVITY = false;
     public REFLECTIVITYDIRECTUV = 0;
@@ -1609,6 +1610,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
                     MaterialHelper.PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
+                    defines.GAMMAEMISSIVE = this._emissiveTexture.gammaSpace;
                 } else {
                     defines.EMISSIVE = false;
                 }

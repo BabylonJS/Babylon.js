@@ -36,6 +36,7 @@
 - Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
 - Added NativeEngine configuration object parameter. ([drigax](https://github.com/drigax))
 - Added NativeEngine support for signed byte and unsigned short vertex buffer attribute types ([Alex-MSFT](https://github.com/Alex-MSFT))
+- Added support for sRGB buffers, native in WebGL2 / WebGPU and through the `EXT_sRGB` extension in WebGL1. There's a new parameter to the `Texture` constructor that enables this feature ([Popov72](https://github.com/Popov72))
 
 ### Loaders
 
@@ -78,6 +79,7 @@
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
+- Added space + LMB panning to texture inspector to improve accessibility ([darraghjburke](https://github.com/darraghjburke))
 
 ### NME
 
@@ -113,10 +115,14 @@
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
 - Added property `renderToIntermediateTexture` to `Container` which when set to true, will render children to an intermediate texture rather than direct to host allowing for DOM style alpha blending ([BlindingHues](https://github.com/blindinghues))
 - Added `HolographicSlate` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Added `HolographicBackplate` to serve as a flexible panel in GUI controls using the MRTK design language ([rgerd](https://github.com/rgerd))
+- Added `NearMenu` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### Behaviors
 
 - Added `FollowBehavior`, a behavior that makes the assigned mesh hover around a camera, while facing it ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Added `DefaultBehavior`, a behavior that will be common to several 3D GUI controls, orchestrating `SixDoFDragBehavior` and `FollowBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
+- `SixDoFDragBehavior` can now specify an ancestor to drag instead of the attached mesh ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### WebXR
 
@@ -221,6 +227,9 @@
 - Fix for namepsace sharing in .scss files; PropertyTab, SceneExplorer ([msDestiny14](https://github.com/msDestiny14))
 - Fix sprites not displayed in certain cases ([Popov72](https://github.com/Popov72))
 - Fix undefined camera pose in WebXR in Babylon Native ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix some different behaviours between `ParticleSystem` and `GPUParticleSystem` when using the cylinder emitter. Also added `WebGL2ParticleSystem` (for WebGL2 support) and `ComputeShaderParticleSystem` (for WebGPU support) ([Popov72](https://github.com/Popov72))
+- Fix the `StandardMaterial` not using the tangent attribute when available ([Popov72](https://github.com/Popov72))
+- Fix code for handling getting DeviceType/DeviceSlot in DeviceInputSystem to work better with MouseEvents ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 
@@ -236,3 +245,5 @@
 - `BindEyePosition` has been moved from `Material` to `Scene` to avoid a circular dependency problem and is now a non-static method (`bindEyePosition`) ([Popov72](https://github.com/Popov72))
 - The depth renderer was not generating correct values for orthographic cameras when **storeNonLinearDepth = false** ([Popov72](https://github.com/Popov72))
 - `dataBuffer.ts` and `buffer.ts` have been moved from `Meshes/` to `Buffers/` ([Popov72](https://github.com/Popov72))
+- By default, the glTF loader now uses sRGB buffers for gamma encoded textures (when supported by the GPU), which is more accurate than using regular buffers. However, it can lead to small visual differences. You can disable usage of sRGB buffers by setting `glTFFileLoader.useSRGBBuffers` to `false` ([Popov72](https://github.com/Popov72))
+- 4th (`isAnimationSheetEnabled`) and 5th (`customEffect`) parameters of `GPUParticleSystem` constructor have been inverted to match `ParticleSystem` constructor ([Popov72](https://github.com/Popov72))
