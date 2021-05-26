@@ -138,6 +138,7 @@ export class HandleMaterial extends ShaderMaterial {
     }
 
     public dispose() {
+        super.dispose();
         this.getScene().onBeforeRenderObservable.remove(this._onBeforeRender);
     }
 }

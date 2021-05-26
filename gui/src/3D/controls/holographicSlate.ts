@@ -388,7 +388,7 @@ export class HolographicSlate extends ContentDisplay3D {
         const camera = scene.activeCamera;
         if (camera) {
             const worldMatrix = camera.getWorldMatrix();
-            const backward = Vector3.TransformNormal(Vector3.Backward(), worldMatrix);
+            const backward = Vector3.TransformNormal(Vector3.Backward(scene.useRightHandedSystem), worldMatrix);
             this.dimensions.copyFrom(this.defaultDimensions);
             this.origin.setAll(0);
             this._gizmo.updateBoundingBox();
