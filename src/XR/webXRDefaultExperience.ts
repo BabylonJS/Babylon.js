@@ -164,15 +164,15 @@ export class WebXRDefaultExperience {
                         });
                         result.teleportation.setSelectionFeature(result.pointerSelection);
                     }
+                }
 
-                    if (!options.disableNearInteraction) {
-                        // Add default pointer selection
-                        result.nearInteraction = <WebXRNearInteraction>result.baseExperience.featuresManager.enableFeature(WebXRNearInteraction.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRNearInteractionOptions>{
-                            xrInput: result.input,
-                            farInteractionFeature: result.pointerSelection,
-                            renderingGroupId: options.renderingGroupId,
-                        });
-                    }
+                if (!options.disableNearInteraction) {
+                    // Add default pointer selection
+                    result.nearInteraction = <WebXRNearInteraction>result.baseExperience.featuresManager.enableFeature(WebXRNearInteraction.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRNearInteractionOptions>{
+                        xrInput: result.input,
+                        farInteractionFeature: result.pointerSelection,
+                        renderingGroupId: options.renderingGroupId,
+                    });
                 }
 
                 // Create the WebXR output target

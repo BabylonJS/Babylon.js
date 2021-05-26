@@ -105,6 +105,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         [controllerUniqueId: string]: {
             xrController?: WebXRInputSource;
             squeezeComponent?: WebXRControllerComponent;
+            selectionComponent?: WebXRControllerComponent;
+            onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
             onSqueezeButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
             onFrameObserver?: Nullable<Observer<XRFrame>>;
             meshUnderPointer: Nullable<AbstractMesh>;
@@ -439,6 +441,29 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         }
                     });
                 }
+
+                controllerData.selectionComponent = motionController.getMainComponent();
+                controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
+                    if (component.changes.pressed) {
+                        const pressed = component.changes.pressed.current;
+                        if (controllerData.pick) {
+                            if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
+                                if (pressed) {
+                                    controllerData.nearGrabInProcess = true;
+                                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                                } else {
+                                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                                    controllerData.nearGrabInProcess = false;
+                                }
+                            } else {
+                            }
+                        } else {
+                            if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {
+                                this._attachedController = xrController.uniqueId;
+                            }
+                        }
+                    }
+                });
             };
             if (xrController.motionController) {
                 init(xrController.motionController);
@@ -446,7 +471,28 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 xrController.onMotionControllerInitObservable.add(init);
             }
         } else {
-            // use squeeze events if any
+            // use the select and squeeze events
+            const selectStartListener = (event: XRInputSourceEvent) => {
+                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                    controllerData.nearGrabInProcess = true;
+                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                }
+            };
+
+            const selectEndListener = (event: XRInputSourceEvent) => {
+                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                    controllerData.nearGrabInProcess = false;
+                }
+            };
+
+            controllerData.eventListeners = {
+                selectend: selectEndListener,
+                selectstart: selectStartListener,
+            };
+
+            this._xrSessionManager.session.addEventListener("selectstart", selectStartListener);
+            this._xrSessionManager.session.addEventListener("selectend", selectEndListener);
         }
     }
 
@@ -458,6 +504,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         if (controllerData.squeezeComponent) {
             if (controllerData.onSqueezeButtonChangedObserver) {
                 controllerData.squeezeComponent.onButtonStateChangedObservable.remove(controllerData.onSqueezeButtonChangedObserver);
+            }
+        }
+        if (controllerData.selectionComponent) {
+            if (controllerData.onButtonChangedObserver) {
+                controllerData.selectionComponent.onButtonStateChangedObservable.remove(controllerData.onButtonChangedObserver);
             }
         }
         if (controllerData.onFrameObserver) {
