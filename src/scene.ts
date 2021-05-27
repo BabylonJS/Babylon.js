@@ -7,18 +7,9 @@ import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smart
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
 import { Vector2, Vector3, Matrix, TmpVectors, Vector4 } from "./Maths/math.vector";
-import { Geometry } from "./Meshes/geometry";
-import { TransformNode } from "./Meshes/transformNode";
-import { SubMesh } from "./Meshes/subMesh";
-import { Mesh } from "./Meshes/mesh";
 import { IParticleSystem } from "./Particles/IParticleSystem";
-import { Bone } from "./Bones/bone";
-import { Skeleton } from "./Bones/skeleton";
-import { MorphTargetManager } from "./Morph/morphTargetManager";
 import { AbstractScene } from "./abstractScene";
-import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
-import { Effect } from "./Materials/effect";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
@@ -30,8 +21,6 @@ import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, PreActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
-import { Node } from "./node";
-import { MorphTarget } from "./Morph/morphTarget";
 import { Constants } from "./Engines/constants";
 import { DomManagement } from "./Misc/domManagement";
 import { Logger } from "./Misc/logger";
@@ -49,7 +38,6 @@ import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
-import { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";
 import { LightConstants } from "./Lights/lightConstants";
 
 declare type Ray = import("./Culling/ray").Ray;
@@ -67,6 +55,18 @@ declare type Camera = import("./Cameras/camera").Camera;
 declare type Texture = import("./Materials/Textures/texture").Texture;
 declare type MultiMaterial = import("./Materials/multiMaterial").MultiMaterial;
 declare type BaseTexture = import("./Materials/Textures/baseTexture").BaseTexture;
+declare type TransformNode = import("./Meshes/transformNode").TransformNode;
+declare type Skeleton = import("./Bones/skeleton").Skeleton;
+declare type Bone = import("./Bones/bone").Bone;
+declare type SubMesh = import("./Meshes/subMesh").SubMesh;
+declare type Mesh = import("./Meshes/mesh").Mesh;
+declare type Node = import("./node").Node;
+declare type Geometry = import("./Meshes/geometry").Geometry;
+declare type RenderTargetTexture = import("./Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type MorphTargetManager = import("./Morph/morphTargetManager").MorphTargetManager;
+declare type Effect = import("./Materials/effect").Effect;
+declare type MorphTarget = import("./Morph/morphTarget").MorphTarget;
+declare type WebVRFreeCamera = import("./Cameras/VR/webVRCamera").WebVRFreeCamera;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -3873,7 +3873,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             // Compute world matrix if LOD is billboard
-            if (meshToRender !== mesh && meshToRender.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
+            if (meshToRender !== mesh && meshToRender.billboardMode !== 0) {
                 meshToRender.computeWorldMatrix();
             }
 
