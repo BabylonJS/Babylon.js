@@ -632,7 +632,7 @@ export class WebGPUTextureHelper {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup(`internal process texture - invertY=${invertY} premultiplyAlpha=${premultiplyAlpha}`);
+        commandEncoder!.pushDebugGroup?.(`internal process texture - invertY=${invertY} premultiplyAlpha=${premultiplyAlpha}`);
 
         const outputTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.Sampled);
 
@@ -692,7 +692,7 @@ export class WebGPUTextureHelper {
 
         this._deferredReleaseTextures.push([outputTexture, null, null]);
 
-        commandEncoder!.popDebugGroup();
+        commandEncoder!.popDebugGroup?.();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
@@ -801,13 +801,13 @@ export class WebGPUTextureHelper {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup(`create cube mipmaps - ${mipLevelCount} levels`);
+        commandEncoder!.pushDebugGroup?.(`create cube mipmaps - ${mipLevelCount} levels`);
 
         for (let f = 0; f < 6; ++f) {
             this.generateMipmaps(gpuTexture, format, mipLevelCount, f, commandEncoder);
         }
 
-        commandEncoder!.popDebugGroup();
+        commandEncoder!.popDebugGroup?.();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
@@ -824,7 +824,7 @@ export class WebGPUTextureHelper {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup(`create mipmaps for face #${faceIndex} - ${mipLevelCount} levels`);
+        commandEncoder!.pushDebugGroup?.(`create mipmaps for face #${faceIndex} - ${mipLevelCount} levels`);
 
         for (let i = 1; i < mipLevelCount; ++i) {
             const passEncoder = commandEncoder!.beginRenderPass({
@@ -866,7 +866,7 @@ export class WebGPUTextureHelper {
             passEncoder.endPass();
         }
 
-        commandEncoder!.popDebugGroup();
+        commandEncoder!.popDebugGroup?.();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
