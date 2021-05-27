@@ -42911,6 +42911,7 @@ declare module BABYLON {
         private _pointerBlurEvent;
         private _wheelEventName;
         private _mouseId;
+        private _isUsingFirefox;
         private _pointerWheelClearObserver;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
@@ -42994,6 +42995,12 @@ declare module BABYLON {
          * @returns DeviceType enum value
          */
         private _getGamepadDeviceType;
+        /**
+         * Get DeviceType from a given pointer/mouse/touch event.
+         * @param evt PointerEvent to evaluate
+         * @returns DeviceType interpreted from event
+         */
+        private _getPointerType;
     }
 }
 declare module BABYLON {

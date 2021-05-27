@@ -172,14 +172,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.22";
+        return "babylonjs@5.0.0-alpha.23";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.22";
+        return "5.0.0-alpha.23";
     }
 
     /**
@@ -3226,7 +3226,7 @@ export class ThinEngine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
-        texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || noMipmap); // it seems generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
+        texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU || noMipmap); // it seems generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
 
         if (!this._doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
