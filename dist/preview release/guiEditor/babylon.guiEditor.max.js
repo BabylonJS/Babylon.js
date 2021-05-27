@@ -42423,11 +42423,9 @@ var CommandBarComponent = /** @class */ (function (_super) {
                         {
                             label: "Save",
                             onClick: function () { _this.props.globalState.onSaveObservable.notifyObservers(); }
-                        },
-                        {
+                        }, {
                             label: "Load",
-                        },
-                        {
+                        }, {
                             label: "Save to snippet",
                             onClick: function () { _this.props.globalState.onSnippetSaveObservable.notifyObservers(); }
                         }, {
