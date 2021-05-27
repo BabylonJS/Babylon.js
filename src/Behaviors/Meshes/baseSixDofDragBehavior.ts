@@ -254,7 +254,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                 const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
 
                 if (registeredPointerIndex !== -1 && virtualMeshesInfo.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && this._draggedMesh) {
-                    var zDragFactor = this.zDragFactor;
+                    let zDragFactor = this.zDragFactor;
+
+                    if ( this.currentDraggingPointerIds.length > 1) {
+                        zDragFactor = 0;
+                    }
 
                     // Calculate controller drag distance in controller space
                     var originDragDifference = pointerInfo.pickInfo.ray.origin.subtract(virtualMeshesInfo.lastOriginPosition);
@@ -265,7 +269,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     // Determine how much the controller moved to/away towards the dragged object and use this to move the object further when its further away
                     virtualMeshesInfo.dragMesh.position.z -=
                         virtualMeshesInfo.dragMesh.position.z < 1
-                            ? localOriginDragDifference * this.zDragFactor
+                            ? localOriginDragDifference * zDragFactor
                             : localOriginDragDifference * zDragFactor * virtualMeshesInfo.dragMesh.position.z;
                     if (virtualMeshesInfo.dragMesh.position.z < 0) {
                         virtualMeshesInfo.dragMesh.position.z = 0;
