@@ -17,6 +17,7 @@ import { Material } from "../Materials/material";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { Light } from "../Lights/light";
 import { Skeleton } from "../Bones/skeleton";
+import { MorphTargetManager } from "../Morph/morphTargetManager";
 import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
@@ -91,6 +92,9 @@ class _InternalAbstractMeshDataInfo {
     public _currentLOD: Nullable<AbstractMesh> = null;
     public _currentLODIsUpToDate: boolean = false;
     public _collisionRetryCount: number = 3;
+
+    // Morph
+    public _morphTargetManager: Nullable<MorphTargetManager> = null;
 }
 
 /**
@@ -260,6 +264,25 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public get isFacetDataEnabled(): boolean {
         return this._internalAbstractMeshDataInfo._facetData.facetDataEnabled;
     }
+
+    /**
+     * Gets or sets the morph target manager
+     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    public get morphTargetManager(): Nullable<MorphTargetManager> {
+        return this._internalAbstractMeshDataInfo._morphTargetManager;
+    }
+
+    public set morphTargetManager(value: Nullable<MorphTargetManager>) {
+        if (this._internalAbstractMeshDataInfo._morphTargetManager === value) {
+            return;
+        }
+        this._internalAbstractMeshDataInfo._morphTargetManager = value;
+        this._syncGeometryWithMorphTargetManager();
+    }
+
+    /** @hidden */
+    public _syncGeometryWithMorphTargetManager(): void { }
 
     /** @hidden */
     public _updateNonUniformScalingState(value: boolean): boolean {
@@ -1271,9 +1294,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
         var data = this.getVerticesData(VertexBuffer.PositionKind);
 
-        if (data && applySkeleton && this.skeleton) {
+        if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
             data = Tools.Slice(data);
             this._generatePointsArray();
+        }
+
+        if (data && applySkeleton && this.skeleton) {
 
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
@@ -1317,6 +1343,22 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
                     if (this._positions) {
                         this._positions[index / 3].copyFrom(tempVector);
+                    }
+                }
+            }
+        }
+        if (data && applyMorph && this.morphTargetManager) {
+
+            for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
+
+                for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
+                    const targetMorph = this.morphTargetManager.getTarget(targetCount);
+                    const influence = targetMorph.influence;
+                    if (influence > 0.0) {
+                        const morphTargetPositions = targetMorph.getPositions();
+                        if (morphTargetPositions) {
+                            data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
+                        }
                     }
                 }
             }
