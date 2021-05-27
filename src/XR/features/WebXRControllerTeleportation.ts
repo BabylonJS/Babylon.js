@@ -882,6 +882,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             this._quadraticBezierCurve = this._options.generateRayPathMesh(quadraticBezierVectors.getPoints(), pickInfo);
         }
         this._quadraticBezierCurve.isPickable = false;
+        if (this._options.renderingGroupId !== undefined) {
+            this._quadraticBezierCurve.renderingGroupId = this._options.renderingGroupId;
+        }
     }
 
     private _teleportForward(controllerId: string) {
