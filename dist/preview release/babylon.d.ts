@@ -60010,6 +60010,7 @@ declare module BABYLON {
         private _initializeLimits;
         private _initializeContextAndSwapChain;
         private _initializeMainAttachments;
+        private _createSwapChain;
         /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
