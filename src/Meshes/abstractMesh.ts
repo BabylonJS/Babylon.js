@@ -92,8 +92,6 @@ class _InternalAbstractMeshDataInfo {
     public _currentLOD: Nullable<AbstractMesh> = null;
     public _currentLODIsUpToDate: boolean = false;
     public _collisionRetryCount: number = 3;
-
-    // Morph
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
 }
 
