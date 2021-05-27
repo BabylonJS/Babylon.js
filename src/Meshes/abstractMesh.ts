@@ -1300,7 +1300,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         if (data && applySkeleton && this.skeleton) {
-
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
             if (matricesWeightsData && matricesIndicesData) {
@@ -1348,9 +1347,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             }
         }
         if (data && applyMorph && this.morphTargetManager) {
-
             for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
-
                 for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
                     const targetMorph = this.morphTargetManager.getTarget(targetCount);
                     const influence = targetMorph.influence;
