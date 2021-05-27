@@ -10,22 +10,16 @@ import { Vector2, Vector3, Matrix, TmpVectors, Vector4 } from "./Maths/math.vect
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
-import { AbstractMesh } from "./Meshes/abstractMesh";
 import { Mesh } from "./Meshes/mesh";
 import { IParticleSystem } from "./Particles/IParticleSystem";
 import { Bone } from "./Bones/bone";
 import { Skeleton } from "./Bones/skeleton";
 import { MorphTargetManager } from "./Morph/morphTargetManager";
-import { Camera } from "./Cameras/camera";
 import { AbstractScene } from "./abstractScene";
-import { BaseTexture } from "./Materials/Textures/baseTexture";
-import { Texture } from "./Materials/Textures/texture";
 import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { Effect } from "./Materials/effect";
 import { UniformBuffer } from "./Materials/uniformBuffer";
-import { MultiMaterial } from "./Materials/multiMaterial";
-import { Light } from "./Lights/light";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
@@ -56,6 +50,7 @@ import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Mis
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
 import { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";
+import { LightConstants } from "./Lights/lightConstants";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -66,6 +61,12 @@ declare type AnimationPropertiesOverride = import("./Animations/animationPropert
 declare type Collider = import("./Collisions/collider").Collider;
 declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 declare type Material = import("./Materials/material").Material;
+declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
+declare type Light = import("./Lights/light").Light;
+declare type Camera = import("./Cameras/camera").Camera;
+declare type Texture = import("./Materials/Textures/texture").Texture;
+declare type MultiMaterial = import("./Materials/multiMaterial").MultiMaterial;
+declare type BaseTexture = import("./Materials/Textures/baseTexture").BaseTexture;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -2455,7 +2456,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public sortLightsByPriority(): void {
         if (this.requireLightSorting) {
-            this.lights.sort(Light.CompareLightsPriority);
+            this.lights.sort(LightConstants.CompareLightsPriority);
         }
     }
 
@@ -4120,7 +4121,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _processSubCameras(camera: Camera): void {
-        if (camera.cameraRigMode === Camera.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
+        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
             this._renderForCamera(camera);
             this.onAfterRenderCameraObservable.notifyObservers(camera);
             return;
@@ -4154,7 +4155,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
                 if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                     var parameters = action.getTriggerParameter();
-                    var otherMesh = parameters instanceof AbstractMesh ? parameters : parameters.mesh;
+                    var otherMesh = parameters.mesh ? parameters.mesh : parameters;
 
                     var areIntersecting = otherMesh.intersectsMesh(sourceMesh, parameters.usePreciseIntersection);
                     var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
@@ -4176,7 +4177,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
                         //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
                         if (!sourceMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnIntersectionExitTrigger, (parameter) => {
-                            var parameterMesh = parameter instanceof AbstractMesh ? parameter : parameter.mesh;
+                            var parameterMesh = parameter.mesh ? parameter.mesh : parameter;
                             return otherMesh === parameterMesh;
                         }) || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                             sourceMesh._intersectionsInProgress.splice(currentIntersectionInProgress, 1);
@@ -4315,7 +4316,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     let camera = this.activeCameras[cameraIndex];
                     camera.update();
-                    if (camera.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                    if (camera.cameraRigMode !== Constants.RIG_MODE_NONE) {
                         // rig cameras
                         for (var index = 0; index < camera._rigCameras.length; index++) {
                             camera._rigCameras[index].update();
@@ -4324,7 +4325,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 }
             } else if (this.activeCamera) {
                 this.activeCamera.update();
-                if (this.activeCamera.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                if (this.activeCamera.cameraRigMode !== Constants.RIG_MODE_NONE) {
                     // rig cameras
                     for (var index = 0; index < this.activeCamera._rigCameras.length; index++) {
                         this.activeCamera._rigCameras[index].update();
@@ -4373,7 +4374,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
         let frameBufferBound = false;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM && !this.prePass) {
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
             this._bindFrameBuffer(this._activeCamera);
             frameBufferBound = true;
         }
