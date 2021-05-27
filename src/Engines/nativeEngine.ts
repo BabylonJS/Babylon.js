@@ -194,8 +194,6 @@ interface INativeEngine {
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number) : Uint8Array;
 
     createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
-    getFinalBackbuffer(): WebGLFramebuffer;
-    loadBackbufferTexture(texture: WebGLTexture): void;
     deleteFrameBuffer(framebuffer: WebGLFramebuffer): void;
     bindFrameBuffer(framebuffer: WebGLFramebuffer): void;
     unbindFrameBuffer(framebuffer: WebGLFramebuffer): void;
@@ -811,7 +809,6 @@ export class NativeEngine extends Engine {
     private _stencilOpStencilFail: number = Constants.KEEP;
     private _stencilOpDepthFail: number = Constants.KEEP;
     private _stencilOpStencilDepthPass: number = Constants.KEEP;
-    private _YFlip: any;
 
     public homogeneousDepth: boolean = this._native.homogeneousDepth;
     public originBottomLeft: boolean = this._native.originBottomLeft;
@@ -935,59 +932,6 @@ export class NativeEngine extends Engine {
 
         // Shader processor
         this._shaderProcessor = new NativeShaderProcessor();
-
-        if (!this.originBottomLeft) {
-            // prepare YFlip shader and vertex stream
-            Effect.ShadersStore["fullscreenFlipVertexShader"] = `
-                attribute vec2 position;
-                attribute vec2 uv;
-                varying vec2 vUV;
-                void main(void) {
-                    gl_Position = vec4(position, 0.5, 1.0);
-                    vUV = position * 0.5 + 0.5;
-                    vUV.y = 1.0 - vUV.y;
-                }`;
-            Effect.ShadersStore["fullscreenFlipFragmentShader"] = `
-                varying vec2 vUV;
-                uniform sampler2D backBuffer;
-                void main(void)
-                {
-                    vec3 color = texture2D(backBuffer, vUV).xyz;
-                    gl_FragColor = vec4(color, 1.0);
-                }`;
-
-            this._YFlip = {
-                vertexBuffers: { [VertexBuffer.PositionKind]: new VertexBuffer(this, [3, -1, -1, -1, -1, 3], VertexBuffer.PositionKind, false, false, 2) },
-                finalTextureOutput: new InternalTexture(this, InternalTextureSource.RenderTarget),
-                sourceTexture: new InternalTexture(this, InternalTextureSource.Raw),
-                effect: new Effect(
-                    {
-                        vertex: "fullscreenFlip",
-                        fragment: "fullscreenFlip",
-                    },
-                    ["position", "uv"],
-                    [],
-                    ["backBuffer"],
-                    this
-                )
-            };
-            this._YFlip.finalTextureOutput._framebuffer = this._native.getFinalBackbuffer();
-        }
-    }
-
-    public endFrame(): void {
-        super.endFrame();
-        if (!this.originBottomLeft) {
-            // draw full screen quad to do a Yflip
-            this.bindFramebuffer(this._YFlip.finalTextureOutput);
-            this.clear(null, false, true, true);
-            this._native.loadBackbufferTexture(this._YFlip.sourceTexture._hardwareTexture.underlyingResource);
-            this._YFlip.effect._bindTexture("backBuffer", this._YFlip.sourceTexture);
-            this.bindBuffers(this._YFlip.vertexBuffers, null, this._YFlip.effect);
-            this.bindSamplers(this._YFlip.effect);
-            this.drawArraysType(Constants.MATERIAL_TriangleFillMode, 0, 3);
-            this._bindUnboundFramebuffer(null);
-        }
     }
 
     public dispose(): void {
