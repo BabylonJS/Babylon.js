@@ -144,8 +144,11 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
+        const useParallax = this.viewDirection.isConnected && (this.useParallaxOcclusion && normalSamplerName || !this.useParallaxOcclusion && this.parallaxHeight.isConnected);
+
         defines.setValue("BUMP", true);
-        defines.setValue("PARALLAX", this.viewDirection.isConnected && (this.useParallaxOcclusion || this.parallaxHeight.isConnected), true);
+        defines.setValue("PARALLAX", useParallax, true);
         defines.setValue("PARALLAXOCCLUSION", this.useParallaxOcclusion, true);
     }
 
@@ -191,7 +194,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
 
-        const useParallax = this.viewDirection.isConnected && (this.useParallaxOcclusion || this.parallaxHeight.isConnected);
+        const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
+        const useParallax = this.viewDirection.isConnected && (this.useParallaxOcclusion && normalSamplerName || !this.useParallaxOcclusion && this.parallaxHeight.isConnected);
 
         const replaceForParallaxInfos = !this.parallaxScale.isConnectedToInputBlock ? "0.05" :
             this.parallaxScale.connectInputBlock!.isConstant ? state._emitFloat(this.parallaxScale.connectInputBlock!.value) : this.parallaxScale.associatedVariableName;
@@ -226,8 +230,6 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 { search: /texture2D\(bumpSampler,vBumpUV\)\.w/g, replace: "height_" },
             ]
         });
-
-        const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
 
         const uvForPerturbNormal = !useParallax || !normalSamplerName ? this.normalMapColor.associatedVariableName : `texture2D(${normalSamplerName}, ${uv.associatedVariableName} + uvOffset).xyz`;
 
