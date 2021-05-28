@@ -586,7 +586,7 @@ export class WebGPUEngine extends Engine {
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
-                this._occlusionQuery = new WebGPUOcclusionQuery(this, this._device, this._bufferManager);
+                this._occlusionQuery = (this._device as any).createQuerySet ? new WebGPUOcclusionQuery(this, this._device, this._bufferManager) : undefined as any;
                 this._bundleList = new WebGPUBundleList(this._device);
 
                 if (this.dbgVerboseLogsForFirstFrames) {
@@ -738,12 +738,7 @@ export class WebGPUEngine extends Engine {
 
     private _initializeContextAndSwapChain(): void {
         this._context = this._canvas.getContext('gpupresent') as unknown as GPUCanvasContext;
-        this._swapChain = this._context.configureSwapChain({
-            device: this._device,
-            format: this._options.swapChainFormat!,
-            usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
-            compositingAlphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasCompositingAlphaMode.Premultiplied : WebGPUConstants.CanvasCompositingAlphaMode.Opaque
-        });
+        this._createSwapChain();
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format = this._colorFormat;
@@ -823,6 +818,15 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    private _createSwapChain(): void {
+        this._swapChain = this._context.configureSwapChain({
+            device: this._device,
+            format: this._options.swapChainFormat!,
+            usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
+            compositingAlphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasCompositingAlphaMode.Premultiplied : WebGPUConstants.CanvasCompositingAlphaMode.Opaque
+        });
+    }
+
     /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
@@ -842,6 +846,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
+        this._createSwapChain();
         this._initializeMainAttachments();
         return true;
     }
@@ -2223,7 +2228,7 @@ export class WebGPUEngine extends Engine {
                 stencilLoadValue: depthStencilTexture._generateStencilBuffer ? stencilClearValue : WebGPUConstants.LoadOp.Load,
                 stencilStoreOp: WebGPUConstants.StoreOp.Store,
             } : undefined,
-            occlusionQuerySet: this._occlusionQuery.hasQueries ? this._occlusionQuery.querySet : undefined,
+            occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
         };
         this._rttRenderPassWrapper.renderPass = this._renderTargetEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
@@ -2313,7 +2318,7 @@ export class WebGPUEngine extends Engine {
         this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].loadValue = colorClearValue;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadValue = depthClearValue;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadValue = stencilClearValue;
-        this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery.hasQueries ? this._occlusionQuery.querySet : undefined;
+        this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined;
 
         this._swapChainTexture = this._swapChain.getCurrentTexture();
         this._mainRenderPassWrapper.colorAttachmentGPUTextures![0].set(this._swapChainTexture);
