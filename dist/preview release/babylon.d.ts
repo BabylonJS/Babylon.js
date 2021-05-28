@@ -25470,9 +25470,10 @@ declare module BABYLON {
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
          * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @param applyMorph  defines whether to apply the morph target before computing the bounding info
          * @returns the current mesh
          */
-        refreshBoundingInfo(applySkeleton?: boolean): InstancedMesh;
+        refreshBoundingInfo(applySkeleton?: boolean, applyMorph?: boolean): InstancedMesh;
         /** @hidden */
         _preActivate(): InstancedMesh;
         /** @hidden */
@@ -28797,336 +28798,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines a target to use with MorphTargetManager
-     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    export class MorphTarget implements IAnimatable {
-        /** defines the name of the target */
-        name: string;
-        /**
-         * Gets or sets the list of animations
-         */
-        animations: Animation[];
-        private _scene;
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _uvs;
-        private _influence;
-        private _uniqueId;
-        /**
-         * Observable raised when the influence changes
-         */
-        onInfluenceChanged: Observable<boolean>;
-        /** @hidden */
-        _onDataLayoutChanged: Observable<void>;
-        /**
-         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
-         */
-        get influence(): number;
-        set influence(influence: number);
-        /**
-         * Gets or sets the id of the morph Target
-         */
-        id: string;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride>;
-        set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>);
-        /**
-         * Creates a new MorphTarget
-         * @param name defines the name of the target
-         * @param influence defines the influence to use
-         * @param scene defines the scene the morphtarget belongs to
-         */
-        constructor(
-        /** defines the name of the target */
-        name: string, influence?: number, scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        get uniqueId(): number;
-        /**
-         * Gets a boolean defining if the target contains position data
-         */
-        get hasPositions(): boolean;
-        /**
-         * Gets a boolean defining if the target contains normal data
-         */
-        get hasNormals(): boolean;
-        /**
-         * Gets a boolean defining if the target contains tangent data
-         */
-        get hasTangents(): boolean;
-        /**
-         * Gets a boolean defining if the target contains texture coordinates data
-         */
-        get hasUVs(): boolean;
-        /**
-         * Affects position data to this target
-         * @param data defines the position data to use
-         */
-        setPositions(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the position data stored in this target
-         * @returns a FloatArray containing the position data (or null if not present)
-         */
-        getPositions(): Nullable<FloatArray>;
-        /**
-         * Affects normal data to this target
-         * @param data defines the normal data to use
-         */
-        setNormals(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the normal data stored in this target
-         * @returns a FloatArray containing the normal data (or null if not present)
-         */
-        getNormals(): Nullable<FloatArray>;
-        /**
-         * Affects tangent data to this target
-         * @param data defines the tangent data to use
-         */
-        setTangents(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the tangent data stored in this target
-         * @returns a FloatArray containing the tangent data (or null if not present)
-         */
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Affects texture coordinates data to this target
-         * @param data defines the texture coordinates data to use
-         */
-        setUVs(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the texture coordinates data stored in this target
-         * @returns a FloatArray containing the texture coordinates data (or null if not present)
-         */
-        getUVs(): Nullable<FloatArray>;
-        /**
-         * Clone the current target
-         * @returns a new MorphTarget
-         */
-        clone(): MorphTarget;
-        /**
-         * Serializes the current target into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        /**
-         * Returns the string "MorphTarget"
-         * @returns "MorphTarget"
-         */
-        getClassName(): string;
-        /**
-         * Creates a new target from serialized data
-         * @param serializationObject defines the serialized data to use
-         * @returns a new MorphTarget
-         */
-        static Parse(serializationObject: any): MorphTarget;
-        /**
-         * Creates a MorphTarget from mesh data
-         * @param mesh defines the source mesh
-         * @param name defines the name to use for the new target
-         * @param influence defines the influence to attach to the target
-         * @returns a new MorphTarget
-         */
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store 2D array textures containing user data
-     */
-    export class RawTexture2DArray extends Texture {
-        /** Gets or sets the texture format to use */
-        format: number;
-        private _depth;
-        /**
-         * Gets the number of layers of the texture
-         */
-        get depth(): number;
-        /**
-         * Create a new RawTexture2DArray
-         * @param data defines the data of the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param format defines the texture format to use
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
-         * @param invertY defines if texture must be stored with Y axis inverted
-         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
-        /** Gets or sets the texture format to use */
-        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
-        /**
-         * Update the texture with new data
-         * @param data defines the data to store in the texture
-         */
-        update(data: ArrayBufferView): void;
-        /**
-         * Creates a RGBA texture from some data.
-         * @param data Define the texture data
-         * @param width Define the width of the texture
-         * @param height Define the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param scene defines the scene the texture will belong to
-         * @param generateMipMaps Define whether or not to create mip maps for the texture
-         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
-         * @returns the RGBA texture
-         */
-        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, depth: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture2DArray;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class is used to deform meshes using morphing between different targets
-     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    export class MorphTargetManager implements IDisposable {
-        private _targets;
-        private _targetInfluenceChangedObservers;
-        private _targetDataLayoutChangedObservers;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _morphTargetTextureIndices;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _supportsUVs;
-        private _vertexCount;
-        private _textureVertexStride;
-        private _textureWidth;
-        private _textureHeight;
-        private _uniqueId;
-        private _tempInfluences;
-        private _canUseTextureForTargets;
-        /** @hidden */
-        _targetStoreTexture: Nullable<RawTexture2DArray>;
-        /**
-         * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
-         */
-        optimizeInfluencers: boolean;
-        /**
-         * Gets or sets a boolean indicating if normals must be morphed
-         */
-        enableNormalMorphing: boolean;
-        /**
-         * Gets or sets a boolean indicating if tangents must be morphed
-         */
-        enableTangentMorphing: boolean;
-        /**
-         * Gets or sets a boolean indicating if UV must be morphed
-         */
-        enableUVMorphing: boolean;
-        /**
-         * Creates a new MorphTargetManager
-         * @param scene defines the current scene
-         */
-        constructor(scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        get uniqueId(): number;
-        /**
-         * Gets the number of vertices handled by this manager
-         */
-        get vertexCount(): number;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of normals
-         */
-        get supportsNormals(): boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of tangents
-         */
-        get supportsTangents(): boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of texture coordinates
-         */
-        get supportsUVs(): boolean;
-        /**
-         * Gets the number of targets stored in this manager
-         */
-        get numTargets(): number;
-        /**
-         * Gets the number of influencers (ie. the number of targets with influences > 0)
-         */
-        get numInfluencers(): number;
-        /**
-         * Gets the list of influences (one per target)
-         */
-        get influences(): Float32Array;
-        private _useTextureToStoreTargets;
-        /**
-         * Gets or sets a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
-         * Please note that this option is not available if the hardware does not support it
-         */
-        get useTextureToStoreTargets(): boolean;
-        set useTextureToStoreTargets(value: boolean);
-        /**
-         * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
-         */
-        get isUsingTextureForTargets(): boolean;
-        /**
-         * Gets the active target at specified index. An active target is a target with an influence > 0
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getActiveTarget(index: number): MorphTarget;
-        /**
-         * Gets the target at specified index
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getTarget(index: number): MorphTarget;
-        /**
-         * Add a new target to this manager
-         * @param target defines the target to add
-         */
-        addTarget(target: MorphTarget): void;
-        /**
-         * Removes a target from the manager
-         * @param target defines the target to remove
-         */
-        removeTarget(target: MorphTarget): void;
-        /** @hidden */
-        _bind(effect: Effect): void;
-        /**
-         * Clone the current manager
-         * @returns a new MorphTargetManager
-         */
-        clone(): MorphTargetManager;
-        /**
-         * Serializes the current manager into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        private _syncActiveTargets;
-        /**
-         * Synchronize the targets with all the meshes using this morph target manager
-         */
-        synchronize(): void;
-        /**
-         * Release all resources
-         */
-        dispose(): void;
-        /**
-         * Creates a new MorphTargetManager from serialized data
-         * @param serializationObject defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns the new MorphTargetManager
-         */
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to represent a specific level of detail of a mesh
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      */
@@ -30618,12 +30289,6 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/how_to_use_lod
          */
         onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
-        /**
-         * Gets or sets the morph target manager
-         * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
-         */
-        get morphTargetManager(): Nullable<MorphTargetManager>;
-        set morphTargetManager(value: Nullable<MorphTargetManager>);
         /** @hidden */
         _creationDataStorage: Nullable<_CreationDataStorage>;
         /** @hidden */
@@ -30908,9 +30573,10 @@ declare module BABYLON {
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
          * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @param applyMorph  defines whether to apply the morph target before computing the bounding info
          * @returns the current mesh
          */
-        refreshBoundingInfo(applySkeleton?: boolean): Mesh;
+        refreshBoundingInfo(applySkeleton?: boolean, applyMorph?: boolean): Mesh;
         /** @hidden */
         _createGlobalSubMesh(force: boolean): Nullable<SubMesh>;
         /**
@@ -32423,6 +32089,336 @@ declare module BABYLON {
          * @param geometry the geometry to apply the VertexData to
          */
         static ImportVertexData(parsedVertexData: any, geometry: Geometry): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines a target to use with MorphTargetManager
+     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    export class MorphTarget implements IAnimatable {
+        /** defines the name of the target */
+        name: string;
+        /**
+         * Gets or sets the list of animations
+         */
+        animations: Animation[];
+        private _scene;
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _uvs;
+        private _influence;
+        private _uniqueId;
+        /**
+         * Observable raised when the influence changes
+         */
+        onInfluenceChanged: Observable<boolean>;
+        /** @hidden */
+        _onDataLayoutChanged: Observable<void>;
+        /**
+         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
+         */
+        get influence(): number;
+        set influence(influence: number);
+        /**
+         * Gets or sets the id of the morph Target
+         */
+        id: string;
+        private _animationPropertiesOverride;
+        /**
+         * Gets or sets the animation properties override
+         */
+        get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride>;
+        set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>);
+        /**
+         * Creates a new MorphTarget
+         * @param name defines the name of the target
+         * @param influence defines the influence to use
+         * @param scene defines the scene the morphtarget belongs to
+         */
+        constructor(
+        /** defines the name of the target */
+        name: string, influence?: number, scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        get uniqueId(): number;
+        /**
+         * Gets a boolean defining if the target contains position data
+         */
+        get hasPositions(): boolean;
+        /**
+         * Gets a boolean defining if the target contains normal data
+         */
+        get hasNormals(): boolean;
+        /**
+         * Gets a boolean defining if the target contains tangent data
+         */
+        get hasTangents(): boolean;
+        /**
+         * Gets a boolean defining if the target contains texture coordinates data
+         */
+        get hasUVs(): boolean;
+        /**
+         * Affects position data to this target
+         * @param data defines the position data to use
+         */
+        setPositions(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the position data stored in this target
+         * @returns a FloatArray containing the position data (or null if not present)
+         */
+        getPositions(): Nullable<FloatArray>;
+        /**
+         * Affects normal data to this target
+         * @param data defines the normal data to use
+         */
+        setNormals(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the normal data stored in this target
+         * @returns a FloatArray containing the normal data (or null if not present)
+         */
+        getNormals(): Nullable<FloatArray>;
+        /**
+         * Affects tangent data to this target
+         * @param data defines the tangent data to use
+         */
+        setTangents(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the tangent data stored in this target
+         * @returns a FloatArray containing the tangent data (or null if not present)
+         */
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Affects texture coordinates data to this target
+         * @param data defines the texture coordinates data to use
+         */
+        setUVs(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the texture coordinates data stored in this target
+         * @returns a FloatArray containing the texture coordinates data (or null if not present)
+         */
+        getUVs(): Nullable<FloatArray>;
+        /**
+         * Clone the current target
+         * @returns a new MorphTarget
+         */
+        clone(): MorphTarget;
+        /**
+         * Serializes the current target into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Returns the string "MorphTarget"
+         * @returns "MorphTarget"
+         */
+        getClassName(): string;
+        /**
+         * Creates a new target from serialized data
+         * @param serializationObject defines the serialized data to use
+         * @returns a new MorphTarget
+         */
+        static Parse(serializationObject: any): MorphTarget;
+        /**
+         * Creates a MorphTarget from mesh data
+         * @param mesh defines the source mesh
+         * @param name defines the name to use for the new target
+         * @param influence defines the influence to attach to the target
+         * @returns a new MorphTarget
+         */
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store 2D array textures containing user data
+     */
+    export class RawTexture2DArray extends Texture {
+        /** Gets or sets the texture format to use */
+        format: number;
+        private _depth;
+        /**
+         * Gets the number of layers of the texture
+         */
+        get depth(): number;
+        /**
+         * Create a new RawTexture2DArray
+         * @param data defines the data of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param format defines the texture format to use
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
+         * @param invertY defines if texture must be stored with Y axis inverted
+         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         */
+        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
+        /** Gets or sets the texture format to use */
+        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
+        /**
+         * Update the texture with new data
+         * @param data defines the data to store in the texture
+         */
+        update(data: ArrayBufferView): void;
+        /**
+         * Creates a RGBA texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param scene defines the scene the texture will belong to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+         * @returns the RGBA texture
+         */
+        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, depth: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture2DArray;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class is used to deform meshes using morphing between different targets
+     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    export class MorphTargetManager implements IDisposable {
+        private _targets;
+        private _targetInfluenceChangedObservers;
+        private _targetDataLayoutChangedObservers;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _morphTargetTextureIndices;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _supportsUVs;
+        private _vertexCount;
+        private _textureVertexStride;
+        private _textureWidth;
+        private _textureHeight;
+        private _uniqueId;
+        private _tempInfluences;
+        private _canUseTextureForTargets;
+        /** @hidden */
+        _targetStoreTexture: Nullable<RawTexture2DArray>;
+        /**
+         * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
+         */
+        optimizeInfluencers: boolean;
+        /**
+         * Gets or sets a boolean indicating if normals must be morphed
+         */
+        enableNormalMorphing: boolean;
+        /**
+         * Gets or sets a boolean indicating if tangents must be morphed
+         */
+        enableTangentMorphing: boolean;
+        /**
+         * Gets or sets a boolean indicating if UV must be morphed
+         */
+        enableUVMorphing: boolean;
+        /**
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
+         */
+        constructor(scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        get uniqueId(): number;
+        /**
+         * Gets the number of vertices handled by this manager
+         */
+        get vertexCount(): number;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of normals
+         */
+        get supportsNormals(): boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of tangents
+         */
+        get supportsTangents(): boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of texture coordinates
+         */
+        get supportsUVs(): boolean;
+        /**
+         * Gets the number of targets stored in this manager
+         */
+        get numTargets(): number;
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
+        get numInfluencers(): number;
+        /**
+         * Gets the list of influences (one per target)
+         */
+        get influences(): Float32Array;
+        private _useTextureToStoreTargets;
+        /**
+         * Gets or sets a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
+         * Please note that this option is not available if the hardware does not support it
+         */
+        get useTextureToStoreTargets(): boolean;
+        set useTextureToStoreTargets(value: boolean);
+        /**
+         * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
+         */
+        get isUsingTextureForTargets(): boolean;
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getActiveTarget(index: number): MorphTarget;
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getTarget(index: number): MorphTarget;
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
+        addTarget(target: MorphTarget): void;
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
+        removeTarget(target: MorphTarget): void;
+        /** @hidden */
+        _bind(effect: Effect): void;
+        /**
+         * Clone the current manager
+         * @returns a new MorphTargetManager
+         */
+        clone(): MorphTargetManager;
+        /**
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        private _syncActiveTargets;
+        /**
+         * Synchronize the targets with all the meshes using this morph target manager
+         */
+        synchronize(): void;
+        /**
+         * Release all resources
+         */
+        dispose(): void;
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 declare module BABYLON {
@@ -34477,6 +34473,7 @@ declare module BABYLON {
         _currentLOD: Nullable<AbstractMesh>;
         _currentLODIsUpToDate: boolean;
         _collisionRetryCount: number;
+        _morphTargetManager: Nullable<MorphTargetManager>;
     }
     /**
      * Class used to store all common mesh properties
@@ -34595,6 +34592,14 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
          */
         get isFacetDataEnabled(): boolean;
+        /**
+         * Gets or sets the morph target manager
+         * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+         */
+        get morphTargetManager(): Nullable<MorphTargetManager>;
+        set morphTargetManager(value: Nullable<MorphTargetManager>);
+        /** @hidden */
+        _syncGeometryWithMorphTargetManager(): void;
         /** @hidden */
         _updateNonUniformScalingState(value: boolean): boolean;
         /**
@@ -35061,13 +35066,14 @@ declare module BABYLON {
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
          * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @param applyMorph  defines whether to apply the morph target before computing the bounding info
          * @returns the current mesh
          */
-        refreshBoundingInfo(applySkeleton?: boolean): AbstractMesh;
+        refreshBoundingInfo(applySkeleton?: boolean, applyMorph?: boolean): AbstractMesh;
         /** @hidden */
         _refreshBoundingInfo(data: Nullable<FloatArray>, bias: Nullable<Vector2>): void;
         /** @hidden */
-        _getPositionData(applySkeleton: boolean): Nullable<FloatArray>;
+        _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray>;
         /** @hidden */
         _updateBoundingInfo(): AbstractMesh;
         /** @hidden */
@@ -60004,6 +60010,7 @@ declare module BABYLON {
         private _initializeLimits;
         private _initializeContextAndSwapChain;
         private _initializeMainAttachments;
+        private _createSwapChain;
         /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
@@ -84423,7 +84430,7 @@ interface ImageBitmap {
     close(): void;
 }
 
-interface WebGLQuery extends WebGLObject {
+interface WebGLQuery {
 }
 
 declare var WebGLQuery: {
@@ -84431,7 +84438,7 @@ declare var WebGLQuery: {
     new(): WebGLQuery;
 };
 
-interface WebGLSampler extends WebGLObject {
+interface WebGLSampler {
 }
 
 declare var WebGLSampler: {
@@ -84439,7 +84446,7 @@ declare var WebGLSampler: {
     new(): WebGLSampler;
 };
 
-interface WebGLSync extends WebGLObject {
+interface WebGLSync {
 }
 
 declare var WebGLSync: {
@@ -84447,7 +84454,7 @@ declare var WebGLSync: {
     new(): WebGLSync;
 };
 
-interface WebGLTransformFeedback extends WebGLObject {
+interface WebGLTransformFeedback {
 }
 
 declare var WebGLTransformFeedback: {
@@ -84455,7 +84462,7 @@ declare var WebGLTransformFeedback: {
     new(): WebGLTransformFeedback;
 };
 
-interface WebGLVertexArrayObject extends WebGLObject {
+interface WebGLVertexArrayObject {
 }
 
 declare var WebGLVertexArrayObject: {
