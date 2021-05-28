@@ -1825,6 +1825,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         // Remove from scene
         this.getScene().removeMesh(this);
 
+        if (this._parentContainer) {
+            const index = this._parentContainer.meshes.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.meshes.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         if (disposeMaterialAndTextures) {
             if (this.material) {
                 if (this.material.getClassName() === "MultiMaterial") {
