@@ -437,30 +437,30 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                             }
                         }
                     });
-                }
-
-                controllerData.selectionComponent = motionController.getMainComponent();
-                controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
-                    if (component.changes.pressed) {
-                        const pressed = component.changes.pressed.current;
-                        if (controllerData.pick) {
-                            if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
-                                if (pressed) {
-                                    controllerData.nearGrabInProcess = true;
-                                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                } else {
+                    controllerData.selectionComponent = motionController.getMainComponent();
+                    controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
+                        if (component.changes.pressed) {
+                            const pressed = component.changes.pressed.current;
+                            if (controllerData.pick) {
+                                if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
+                                    if (pressed) {
+                                        controllerData.nearGrabInProcess = true;
+                                        this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                                    } else {
+                                        this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                                        controllerData.nearGrabInProcess = false;
+                                    }
                                 } else {
-                                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                                    controllerData.nearGrabInProcess = false;
                                 }
                             } else {
-                            }
-                        } else {
-                            if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
-                                this._attachedController = xrController.uniqueId;
+                                if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
+                                    this._attachedController = xrController.uniqueId;
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             };
             if (xrController.motionController) {
                 init(xrController.motionController);
@@ -541,17 +541,17 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         var hoverIndexMeshTip = null;
         var pickIndexMeshTip = null;
 
-        let createSphereMesh = (name: string, scale: number, visibility: boolean, sceneToUse: Scene): Nullable<AbstractMesh> => {
+        let createSphereMesh = (name: string, scale: number, sceneToUse: Scene): Nullable<AbstractMesh> => {
             let resultMesh = null;
             resultMesh = SphereBuilder.CreateSphere(name, { diameter: 1 }, sceneToUse);
             resultMesh.scaling.set(scale, scale, scale);
-            resultMesh.isVisible = visibility;
+            resultMesh.isVisible = false;
 
             return resultMesh;
         };
 
-        hoverIndexMeshTip = createSphereMesh("IndexHoverSphere", this._hoverRadius, false, meshCreationScene);
-        pickIndexMeshTip = createSphereMesh("IndexPickSphere", this._pickRadius, false, meshCreationScene);
+        hoverIndexMeshTip = createSphereMesh("IndexHoverSphere", this._hoverRadius, meshCreationScene);
+        pickIndexMeshTip = createSphereMesh("IndexPickSphere", this._pickRadius, meshCreationScene);
         return {
             hoverIndexMeshTip,
             pickIndexMeshTip,
