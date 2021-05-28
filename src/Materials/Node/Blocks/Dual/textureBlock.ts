@@ -64,6 +64,13 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the sampler name associated with this texture
+     */
+    public get samplerName(): string {
+        return this._samplerName;
+    }
+
+    /**
      * Gets or sets a boolean indicating if content needs to be converted to gamma space
      */
     public convertToGammaSpace = false;
@@ -213,6 +220,9 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         return NodeMaterialBlockTargets.VertexAndFragment;
+    }
+
+    public set target(value: NodeMaterialBlockTargets) {
     }
 
     public autoConfigure(material: NodeMaterial) {
