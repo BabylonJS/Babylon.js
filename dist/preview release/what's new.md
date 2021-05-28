@@ -72,6 +72,7 @@
 - `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
 - Add option to decompose the `newWorldMatrix` when passed into `TransformNode.freezeWorldMatrix`. ([bghgary](https://github.com/bghgary))
 - Added `mesh.onMeshReadyObservable` to get notified when a mesh is ready ([RaananW](https://github.com/RaananW))
+- Added support for morph targets to the mesh `BoundingInfo` refresh. ([EricBeetsOfficial-Opuscope](https://github.com/EricBeetsOfficial-Opuscope))
 
 ### Inspector
 
@@ -230,6 +231,7 @@
 - Fix some different behaviours between `ParticleSystem` and `GPUParticleSystem` when using the cylinder emitter. Also added `WebGL2ParticleSystem` (for WebGL2 support) and `ComputeShaderParticleSystem` (for WebGPU support) ([Popov72](https://github.com/Popov72))
 - Fix the `StandardMaterial` not using the tangent attribute when available ([Popov72](https://github.com/Popov72))
 - Fix code for handling getting DeviceType/DeviceSlot in DeviceInputSystem to work better with MouseEvents ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix vector2/3/4 and quaternion toString formatting ([rgerd](https://github.com/rgerd))
 
 ## Breaking changes
 

@@ -23,7 +23,6 @@ import { Material } from "../Materials/material";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { Skeleton } from "../Bones/skeleton";
-import { MorphTargetManager } from "../Morph/morphTargetManager";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
@@ -132,9 +131,6 @@ class _InternalMeshDataInfo {
 
     public _preActivateId: number = -1;
     public _LODLevels = new Array<MeshLODLevel>();
-
-    // Morph
-    public _morphTargetManager: Nullable<MorphTargetManager> = null;
 
     public _checkReadinessObserver: Nullable<Observer<Scene>>;
 
@@ -381,22 +377,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      */
     public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
-
-    /**
-     * Gets or sets the morph target manager
-     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    public get morphTargetManager(): Nullable<MorphTargetManager> {
-        return this._internalMeshDataInfo._morphTargetManager;
-    }
-
-    public set morphTargetManager(value: Nullable<MorphTargetManager>) {
-        if (this._internalMeshDataInfo._morphTargetManager === value) {
-            return;
-        }
-        this._internalMeshDataInfo._morphTargetManager = value;
-        this._syncGeometryWithMorphTargetManager();
-    }
 
     // Private
     /** @hidden */
@@ -1317,15 +1297,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
      * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+     * @param applyMorph  defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false): Mesh {
+    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = true): Mesh {
         if (this._boundingInfo && this._boundingInfo.isLocked) {
             return this;
         }
 
         const bias = this.geometry ? this.geometry.boundingBias : null;
-        this._refreshBoundingInfo(this._getPositionData(applySkeleton), bias);
+        this._refreshBoundingInfo(this._getPositionData(applySkeleton, applyMorph), bias);
         return this;
     }
 
@@ -3593,7 +3574,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         this._markSubMeshesAsAttributesDirty();
 
-        let morphTargetManager = this._internalMeshDataInfo._morphTargetManager;
+        let morphTargetManager = this._internalAbstractMeshDataInfo._morphTargetManager;
         if (morphTargetManager && morphTargetManager.vertexCount) {
             if (morphTargetManager.vertexCount !== this.getTotalVertices()) {
                 Logger.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
