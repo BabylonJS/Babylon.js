@@ -89,6 +89,11 @@
             "referenceImage": "node-material6.png"
         },
         {
+            "title": "Node material 7",
+            "playgroundId": "#10I31V#323",
+            "referenceImage": "node-material7.png"
+        },
+        {
             "title": "Node material PBR 1",
             "playgroundId": "#D8AK3Z#17",
             "renderCount": 5,
