@@ -21,13 +21,13 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         super(props);
 
         const control = this.props.control;
-
+        this.dragOverHover = false;
         /*props.globalState.onSelectionChangedObservable.add((selection) => {
                 this.setState({ isSelected: selection === this.props.control });
         });*/
         this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
     }
-
+    dragOverHover: boolean;
     componentWillUnmount()
     {
         //this.props.globalState.onSelectionChangedObservable.remove((selection));
@@ -49,16 +49,32 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
 
     render() {
         const control = this.props.control;
-        const name = (control.name || "No name") + ` [${control.getClassName()}]`;
 
+        const name = (control.name || "No name") + ` [${control.getClassName()}]`;
         return (
             <div className="controlTools" onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}
             draggable={true}
             onDragStart={event => {
-                //event.dataTransfer.setData("babylonjs-material-node", this.props.data);
-            }}>
+                this.props.globalState.draggedControl = control;
+            }} onDrop={event => {
+                if(this.props.globalState.draggedControl != control) {
+                    this.dragOverHover = false;
+                    this.props.globalState.onParentingChangeObservable.notifyObservers(this.props.control);
+                    this.forceUpdate(); 
+                }
+            }}
+            onDragOver={event => {
+                event.preventDefault();
+                this.dragOverHover = true;
+                this.forceUpdate();
+            }}
+            onDragLeave={event => {
+             this.dragOverHover = false;   
+             this.forceUpdate();
+            }}
+            >
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
-                {(this.state.isHovered || this.state.isSelected) && <>
+                {(this.state.isHovered || this.state.isSelected || this.dragOverHover) && <>
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
                         <img src={makeComponentIcon} />
                     </div>
