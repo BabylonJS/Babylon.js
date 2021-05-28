@@ -22,8 +22,8 @@ import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { NativeShaderProcessor } from '../Engines/Native/nativeShaderProcessors';
 import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
+import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
@@ -85,9 +85,6 @@ interface INativeEngine {
     readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
     readonly ALPHA_INTERPOLATE: number;
     readonly ALPHA_SCREENMODE: number;
-
-    readonly homogeneousDepth: boolean;
-    readonly originBottomLeft: boolean;
 
     readonly STENCIL_TEST_LESS: number;
     readonly STENCIL_TEST_LEQUAL: number;
@@ -810,9 +807,6 @@ export class NativeEngine extends Engine {
     private _stencilOpDepthFail: number = Constants.KEEP;
     private _stencilOpStencilDepthPass: number = Constants.KEEP;
 
-    public homogeneousDepth: boolean = this._native.homogeneousDepth;
-    public originBottomLeft: boolean = this._native.originBottomLeft;
-
     public getHardwareScalingLevel(): number {
         return this._native.getHardwareScalingLevel();
     }
@@ -931,7 +925,7 @@ export class NativeEngine extends Engine {
         this.resize();
 
         // Shader processor
-        this._shaderProcessor = new NativeShaderProcessor();
+        this._shaderProcessor = new WebGL2ShaderProcessor();
     }
 
     public dispose(): void {
