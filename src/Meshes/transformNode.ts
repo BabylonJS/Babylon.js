@@ -1373,6 +1373,14 @@ export class TransformNode extends Node {
         // Remove from scene
         this.getScene().removeTransformNode(this);
 
+        if (this._parentContainer) {
+            const index = this._parentContainer.transformNodes.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.transformNodes.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         this.onAfterWorldMatrixUpdateObservable.clear();
 
         if (doNotRecurse) {
