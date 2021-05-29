@@ -62,7 +62,7 @@ WebGPUEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Null
              if (onLoad) {
                  onLoad();
              }
-         }, useSRGBBuffer
+         }, !!useSRGBBuffer
      );
 };
 
