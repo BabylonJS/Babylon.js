@@ -29,7 +29,7 @@ export class Vector2 {
      * @returns a string with the Vector2 coordinates
      */
     public toString(): string {
-        return "{X: " + this.x + " Y: " + this.y + "}";
+        return `{X: ${this.x} Y: ${this.y}}`;
     }
 
     /**
@@ -815,7 +815,7 @@ export class Vector3 {
      * @returns a string with the Vector3 coordinates.
      */
     public toString(): string {
-        return "{X: " + this._x + " Y:" + this._y + " Z:" + this._z + "}";
+        return `{X: ${this._x} Y: ${this._y} Z: ${this._z}}`;
     }
 
     /**
@@ -2272,7 +2272,7 @@ export class Vector4 {
      * @returns a string containing all the vector values
      */
     public toString(): string {
-        return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
+        return `{X: ${this.x} Y: ${this.y} Z: ${this.z} W: ${this.w}}`;
     }
 
     /**
@@ -3057,7 +3057,7 @@ export class Quaternion {
      * @returns a string with the Quaternion coordinates
      */
     public toString(): string {
-        return "{X: " + this._x + " Y:" + this._y + " Z:" + this._z + " W:" + this._w + "}";
+        return `{X: ${this._x} Y: ${this._y} Z: ${this._z} W: ${this._w}}`;
     }
 
     /**
