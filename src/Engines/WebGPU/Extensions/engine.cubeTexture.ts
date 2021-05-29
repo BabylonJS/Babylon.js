@@ -33,7 +33,7 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function(size: number, o
 
 WebGPUEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
      onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0,
-     fallback: Nullable<InternalTexture> = null, useSRGBBuffer?: boolean): InternalTexture
+     fallback: Nullable<InternalTexture> = null, useSRGBBuffer = false): InternalTexture
 {
      return this.createCubeTextureBase(
          rootUrl, scene, files, !!noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback,
