@@ -3488,10 +3488,8 @@ var _Exporter = /** @class */ (function () {
                         }
                     }
                     mesh.primitives.push(meshPrimitive);
-                    var promise = this._extensionsPostExportMeshPrimitiveAsync("postExport", meshPrimitive, submesh, binaryWriter);
-                    if (promise) {
-                        promises.push();
-                    }
+                    this._extensionsPostExportMeshPrimitiveAsync("postExport", meshPrimitive, submesh, binaryWriter);
+                    promises.push();
                 }
             }
         }

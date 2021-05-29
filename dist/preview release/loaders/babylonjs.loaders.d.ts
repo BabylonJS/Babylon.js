@@ -188,8 +188,12 @@ declare module BABYLON {
          */
         loadAllMaterials: boolean;
         /**
-         * Function called before loading a url referenced by the asset.
+         * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
+        useSRGBBuffers: boolean;
+        /**
+        * Function called before loading a url referenced by the asset.
+        */
         preprocessUrlAsync: (url: string) => Promise<string>;
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
@@ -1546,7 +1550,7 @@ declare module BABYLON.GLTF2 {
         /** @hidden */
         _loadTextureAsync(context: string, texture: ITexture, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
         /** @hidden */
-        _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign?: (babylonTexture: BaseTexture) => void, textureLoaderOptions?: any): Promise<BaseTexture>;
+        _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign?: (babylonTexture: BaseTexture) => void, textureLoaderOptions?: any, useSRGBBuffer?: boolean): Promise<BaseTexture>;
         private _loadSampler;
         /**
          * Loads a glTF image.
