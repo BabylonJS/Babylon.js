@@ -232,10 +232,10 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
                 const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
+                virtualMeshesInfo.dragging = false;
                 if (registeredPointerIndex !== -1) {
                     this.currentDraggingPointerIds.splice(registeredPointerIndex, 1);
                     if (this.currentDraggingPointerIds.length === 0) {
-                        virtualMeshesInfo.dragging = false;
                         this._moving = false;
                         this._draggedMesh = null;
 
