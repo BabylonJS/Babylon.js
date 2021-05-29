@@ -378,6 +378,6 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             if (onLoad) {
                 onLoad();
             }
-        }, useSRGBBuffer
+        }, !!useSRGBBuffer
     );
 };
