@@ -244,7 +244,7 @@ export class CubeTexture extends BaseTexture {
                     this._texture = this._getEngine()!.createPrefilteredCubeTexture(rootUrl, scene, lodScale, lodOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);
                 }
                 else {
-                    this._texture = this._getEngine()!.createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset, null, loaderOptions, this._useSRGBBuffer);
+                    this._texture = this._getEngine()!.createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset, null, loaderOptions, !!this._useSRGBBuffer);
                 }
                 this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
 
@@ -318,7 +318,7 @@ export class CubeTexture extends BaseTexture {
                 this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, forcedExtension, this._createPolynomials);
             }
             else {
-                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension, false, 0, 0, null, this._loaderOptions, this._useSRGBBuffer);
+                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension, false, 0, 0, null, this._loaderOptions, !!this._useSRGBBuffer);
             }
 
             this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
