@@ -170,18 +170,16 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         const referenceMesh = this.ancestorToDrag ? this.ancestorToDrag : this._ownerNode;
         const oldParent = referenceMesh.parent;
         referenceMesh.setParent(null);
-        PivotTools._RemoveAndStorePivotPoint(referenceMesh);
         
-        const positionOffset = this._getPositionOffsetAround(startingCenter.subtract(this._virtualTransformNode.position), scaling, rotationQuaternion);
+        const positionOffset = this._getPositionOffsetAround(startingCenter.subtract(this._virtualTransformNode.getAbsolutePivotPoint()), scaling, rotationQuaternion);
         this._virtualTransformNode.rotationQuaternion!.multiplyToRef(rotationQuaternion, referenceMesh.rotationQuaternion!);
         this._virtualTransformNode.scaling.multiplyToRef(scaling, referenceMesh.scaling);
         this._virtualTransformNode.position.addToRef(translation.add(positionOffset), referenceMesh.position);
         
-        PivotTools._RestorePivotPoint(referenceMesh);
         referenceMesh.setParent(oldParent);
     }
 
-    protected _targetDragStart(worldPosition: Vector3, worldRotation: Quaternion, pointerId: number) {
+    protected _targetDragStart(worldPosition: Vector3) {
         const pointerCount = this.currentDraggingPointerIds.length;
         const referenceMesh = this.ancestorToDrag ? this.ancestorToDrag : this._ownerNode;
         const oldParent = referenceMesh.parent;
@@ -190,7 +188,6 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
             referenceMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(referenceMesh.rotation.y, referenceMesh.rotation.x, referenceMesh.rotation.z);
         }
         referenceMesh.setParent(null);
-        PivotTools._RemoveAndStorePivotPoint(referenceMesh);
 
         this._targetPosition.copyFrom(referenceMesh.absolutePosition);
         this._targetOrientation.copyFrom(referenceMesh.rotationQuaternion!);
@@ -207,12 +204,12 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         this._startingPositionPointerOffset.copyFrom(this._targetPosition).subtractInPlace(worldPosition);
 
         if (pointerCount === 2) {
-            this._virtualTransformNode.position.copyFrom(referenceMesh.absolutePosition);
+            this._virtualTransformNode.position.copyFrom(referenceMesh.position);
             this._virtualTransformNode.scaling.copyFrom(referenceMesh.absoluteScaling);
             this._virtualTransformNode.rotationQuaternion!.copyFrom(referenceMesh.absoluteRotationQuaternion);
+            this._virtualTransformNode.setPivotPoint(referenceMesh.getPivotPoint());
         }
 
-        PivotTools._RestorePivotPoint(referenceMesh);
         referenceMesh.setParent(oldParent);
     }
 
@@ -221,6 +218,13 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
             this._onePointerPositionUpdated(worldDeltaPosition, worldDeltaRotation);
         } else if (this.currentDraggingPointerIds.length === 2) {
             this._twoPointersPositionUpdated(worldDeltaPosition, worldDeltaRotation, pointerId);
+        }
+    }
+
+    protected _targetDragEnd() {
+        if (this.currentDraggingPointerIds.length === 1) {
+            // We still have 1 active pointer, we must simulate a dragstart
+            this._targetDragStart(this._virtualMeshesInfo[this.currentDraggingPointerIds[0]].dragMesh.absolutePosition)
         }
     }
 
