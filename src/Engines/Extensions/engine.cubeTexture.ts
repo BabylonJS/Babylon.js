@@ -82,7 +82,7 @@ declare module "../../Engines/thinEngine" {
         createCubeTextureBase(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean,
             onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>,
             format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>,
-            beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>, imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>, useSRGBBuffer?: boolean): InternalTexture;
+            beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>, imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>, useSRGBBuffer: boolean): InternalTexture;
 
         /** @hidden */
         _partialLoadFile(url: string, index: number, loadedFiles: ArrayBuffer[], onfinish: (files: ArrayBuffer[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
@@ -229,7 +229,7 @@ ThinEngine.prototype._setCubeMapTextureParams = function(texture: InternalTextur
 ThinEngine.prototype.createCubeTextureBase = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0,
         fallback: Nullable<InternalTexture> = null, beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void> = null,
-        imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void> = null, useSRGBBuffer?: boolean): InternalTexture {
+        imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void> = null, useSRGBBuffer = false): InternalTexture {
     const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
     texture.isCube = true;
     texture.url = rootUrl;
