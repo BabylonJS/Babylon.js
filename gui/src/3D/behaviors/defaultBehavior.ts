@@ -70,16 +70,16 @@ export class DefaultBehavior implements Behavior<Mesh> {
      * @param ownerMesh The top level mesh
      * @param sixDofAnchorMesh A mesh that should behave as an anchor for the sixDof interaction. If unset, the top level mesh will be used
      */
-    public attach(ownerMesh: Mesh, sixDofAnchorMesh?: Mesh): void {
+    public attach(ownerMesh: Mesh, draggablesMeshes?: Mesh[]): void {
         this._scene = ownerMesh.getScene();
         this.attachedNode = ownerMesh;
 
         this._addObservables();
         // Since our observables are bound before the child behaviors', ours are called first
         this._followBehavior.attach(ownerMesh);
-        this._sixDofDragBehavior.attach(sixDofAnchorMesh || ownerMesh);
-        this._sixDofDragBehavior.ancestorToDrag = sixDofAnchorMesh ? ownerMesh : null;
-        this._sixDofDragBehavior.faceCameraOnDragStart = false;
+        this._sixDofDragBehavior.attach(ownerMesh);
+        this._sixDofDragBehavior.draggableMeshes = draggablesMeshes || null;
+        this._sixDofDragBehavior.faceCameraOnDragStart = true;
     }
 
     /**

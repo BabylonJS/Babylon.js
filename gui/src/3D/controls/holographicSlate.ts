@@ -1,7 +1,6 @@
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Scene } from "babylonjs/scene";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-// import { Color3 } from "babylonjs/Maths/math.color";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
@@ -255,7 +254,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const node = new Mesh("slate" + this.name);
+        const node = new Mesh("slate" + this.name, scene);
 
         this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
         this._contentPlate = BoxBuilder.CreateBox("contentPlate" + this.name, { size: 1 }, scene);
@@ -374,7 +373,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._gizmo = new SlateGizmo(this._host.utilityLayer!);
         this._gizmo.attachedSlate = this;
         this._defaultBehavior = new DefaultBehavior();
-        this._defaultBehavior.attach(this.node as Mesh, this._backPlate);
+        this._defaultBehavior.attach(this.node as Mesh, [this._backPlate]);
 
         this._updatePivot();
         this.resetDefaultAspectAndPose();

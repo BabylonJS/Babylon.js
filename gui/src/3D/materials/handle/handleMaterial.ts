@@ -3,7 +3,6 @@ import { Scene } from "babylonjs/index";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { Color3, TmpColors } from "babylonjs/Maths/math.color";
-import { CubicEase } from "babylonjs/Animations/easing";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 
 import "./shaders/handle.vertex";
@@ -21,11 +20,6 @@ export class HandleMaterial extends ShaderMaterial {
     private _targetColor: Color3;
     private _targetScale: number;
     private _lastTick = -1;
-
-    /**
-     * Easing function used to animate the material
-     */
-    public easingFunction = new CubicEase();
 
     /**
      * Is the material indicating hovering state
@@ -64,7 +58,7 @@ export class HandleMaterial extends ShaderMaterial {
     public hoverColor: Color3 = new Color3(0, 0.467, 0.84);
 
     /**
-     * Color of the handle
+     * Color of the handle when idle
      */
     public baseColor: Color3 = new Color3(1, 1, 1);
 
@@ -74,12 +68,12 @@ export class HandleMaterial extends ShaderMaterial {
     public hoverScale: number = 0.75;
 
     /**
-     * Scale of the handle when hovered
+     * Scale of the handle when idle
      */
     public baseScale: number = 0.35;
 
     /**
-     * Scale of the handle when hovered
+     * Scale of the handle when dragged
      */
     public dragScale: number = 0.55;
 
@@ -137,6 +131,9 @@ export class HandleMaterial extends ShaderMaterial {
         }
     }
 
+    /**
+     * Disposes the handle material
+     */
     public dispose() {
         super.dispose();
         this.getScene().onBeforeRenderObservable.remove(this._onBeforeRender);
