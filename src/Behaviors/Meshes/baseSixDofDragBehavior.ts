@@ -35,20 +35,14 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
     protected _scene: Scene;
     protected _moving = false;
-    protected _ownerNode: Mesh;
-    protected _draggedMesh: Nullable<AbstractMesh>;
-
-    // TODO
-    protected _draggableMeshes: Nullable<AbstractMesh[]> = null;
+    protected _ownerNode: TransformNode;
+    protected _dragging: boolean = false;
 
     /**
-     * Sets an ancestor node to drag instead of the attached node.
-     * All dragging induced by this behavior will happen on the ancestor node, while the relative position/orientation/scaling
-     * between the ancestor node and child node will be kept the same.
-     * This is useful if the attached node is acting as an anchor to move its hierarchy, and you don't want the ancestor node to be the one to receive the pointer inputs.
-     * NB : This property must be set to an actual ancestor of the attached node, or else the dragging behavior will have an undefined result.
+     * The list of child meshes that can receive drag events
+     * If `null`, all child meshes will receive drag event
      */
-    public ancestorToDrag: Nullable<TransformNode> = null;
+    public draggableMeshes: Nullable<AbstractMesh[]> = null;
 
     /**
      * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
@@ -161,7 +155,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
      * Attaches the scale behavior the passed in mesh
      * @param ownerNode The mesh that will be scaled around once attached
      */
-    public attach(ownerNode: Mesh): void {
+    public attach(ownerNode: TransformNode): void {
         this._ownerNode = ownerNode;
         this._scene = this._ownerNode.getScene();
         if (!BaseSixDofDragBehavior._virtualScene) {
@@ -170,8 +164,9 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         }
 
         var pickPredicate = (m: AbstractMesh) => {
-            return this._ownerNode == m || m.isDescendantOf(this._ownerNode);
+            return this._ownerNode === m || (m.isDescendantOf(this._ownerNode) && (!this.draggableMeshes || this.draggableMeshes.indexOf(m) !== -1));
         };
+
         this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
             const pointerId = (<PointerEvent>pointerInfo.event).pointerId;
             if (!this._virtualMeshesInfo[pointerId]) {
@@ -192,9 +187,8 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     if (!this.allowMultiPointer && this.currentDraggingPointerIds.length > 0) {
                         return;
                     }
-
-                    const pickedMesh = this._ownerNode;
-                    this._draggedMesh = pickedMesh;
+                    // todo multipointer ?
+                    this._dragging = true;
                     virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 
                     // Set position and orientation of the controller
@@ -232,12 +226,15 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
                 const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
+
+                // Update state
                 virtualMeshesInfo.dragging = false;
+
                 if (registeredPointerIndex !== -1) {
                     this.currentDraggingPointerIds.splice(registeredPointerIndex, 1);
                     if (this.currentDraggingPointerIds.length === 0) {
                         this._moving = false;
-                        this._draggedMesh = null;
+                        this._dragging = false;
 
                         // Reattach camera controls
                         if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
@@ -253,10 +250,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
 
-                if (registeredPointerIndex !== -1 && virtualMeshesInfo.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && this._draggedMesh) {
+                if (registeredPointerIndex !== -1 && virtualMeshesInfo.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray) {
                     let zDragFactor = this.zDragFactor;
 
-                    if ( this.currentDraggingPointerIds.length > 1) {
+                    // 2 pointer interaction should not have a z axis drag factor
+                    if (this.currentDraggingPointerIds.length > 1) {
                         zDragFactor = 0;
                     }
 

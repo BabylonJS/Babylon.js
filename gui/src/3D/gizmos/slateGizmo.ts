@@ -67,7 +67,7 @@ export class SlateGizmo extends Gizmo {
             this.attachedMesh = control.mesh;
             this.updateBoundingBox();
 
-            this._pickedPointObserver = control._host.onPickedMeshChangedObservable.add((pickedMesh) => {
+            this._pickedPointObserver = control._host.onPickingObservable.add((pickedMesh) => {
                 if (this._handleHovered && (!pickedMesh || pickedMesh.parent !== this._handleHovered.node)) {
                     this._handleHovered.hover = false;
                     this._handleHovered = null;
@@ -82,7 +82,7 @@ export class SlateGizmo extends Gizmo {
                 }
             });
         } else if (this._attachedSlate) {
-            this._attachedSlate._host.onPickedMeshChangedObservable.remove(this._pickedPointObserver);
+            this._attachedSlate._host.onPickingObservable.remove(this._pickedPointObserver);
         }
         this._attachedSlate = control;
     }
@@ -275,7 +275,7 @@ export class SlateGizmo extends Gizmo {
         let previousFollowState: boolean;
         let worldPlaneNormal = new Vector3();
 
-        const dragStart = (event: any) => {
+        const dragStart = (event: { position: Vector3 }) => {
             if (this.attachedSlate && this.attachedMesh) {
                 quaternionOrigin.copyFrom(this.attachedMesh.rotationQuaternion!);
                 dragOrigin.copyFrom(event.position);
@@ -293,7 +293,7 @@ export class SlateGizmo extends Gizmo {
             }
         };
 
-        const dragging = (event: any) => {
+        const dragging = (event: { position: Vector3 }) => {
             if (this.attachedSlate && this.attachedMesh) {
                 this._tmpVector.copyFrom(event.position);
                 this._tmpVector.subtractInPlace(worldPivot);

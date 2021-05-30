@@ -40,9 +40,9 @@ export class GUI3DManager implements IDisposable {
     public onPickedPointChangedObservable = new Observable<Nullable<Vector3>>();
 
     /**
-     * Observable raised when the mesh picked by the pointer events changed
+     * Observable raised when a picking happens
      */
-    public onPickedMeshChangedObservable = new Observable<Nullable<AbstractMesh>>();
+    public onPickingObservable = new Observable<Nullable<AbstractMesh>>();
 
     // Shared resources
     /** @hidden */
@@ -129,7 +129,7 @@ export class GUI3DManager implements IDisposable {
 
         let pickingInfo = pi.pickInfo;
         if (pickingInfo) {
-            this.onPickedMeshChangedObservable.notifyObservers(pickingInfo.pickedMesh);
+            this.onPickingObservable.notifyObservers(pickingInfo.pickedMesh);
         }
 
         if (!pickingInfo || !pickingInfo.hit) {
@@ -292,7 +292,7 @@ export class GUI3DManager implements IDisposable {
         }
 
         this.onPickedPointChangedObservable.clear();
-        this.onPickedMeshChangedObservable.clear();
+        this.onPickingObservable.clear();
 
         let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
 

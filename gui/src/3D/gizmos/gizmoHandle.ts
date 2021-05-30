@@ -12,21 +12,30 @@ import { Observer } from "babylonjs/Misc/observable";
  * State of the handle regarding user interaction
  */
 export enum HandleState {
+    /**
+     * Handle is idle
+     */
     IDLE = 0,
+    /**
+     * Handle is hovered
+     */
     HOVER = 1,
+    /**
+     * Handle is dragged
+     */
     DRAG = 2,
 }
 
+/**
+ * Base class for SlateGizmo handles
+ */
 export abstract class GizmoHandle {
     protected _scene: Scene;
     protected _state: HandleState = HandleState.IDLE;
     protected _materials: HandleMaterial[] = [];
 
-
     private _dragStartObserver: Nullable<Observer<any>>;
-    private _draggingObserver: Nullable<
-        Observer<any>
-    >;
+    private _draggingObserver: Nullable<Observer<any>>;
     private _dragEndObserver: Nullable<Observer<any>>;
     /**
      * @hidden
@@ -61,7 +70,9 @@ export abstract class GizmoHandle {
 
         this._updateMaterial();
     }
-
+    /**
+     * Sets drag state
+     */
     public set drag(value: boolean) {
         if (value) {
             this._state |= HandleState.DRAG;
@@ -72,8 +83,16 @@ export abstract class GizmoHandle {
         this._updateMaterial();
     }
 
+    /**
+     * Node of this handle
+     */
     public node: TransformNode;
 
+    /**
+     * Creates a handle for a SlateGizmo
+     * @param gizmo associated SlateGizmo
+     * @param scene scene
+     */
     constructor(gizmo: SlateGizmo, scene: Scene) {
         this._scene = scene;
         this._gizmo = gizmo;
@@ -110,21 +129,28 @@ export abstract class GizmoHandle {
         }
     }
 
-    public setDragBehavior(
-        dragStartObservable: (eventData: any) => void,
-        dragObservable: (eventData: any) => void,
-        dragEndObservable: (eventData: any) => void
-    ) {
+    /**
+     * Binds callbacks from dragging interaction
+     * @param dragStartFn Obser
+     * @param dragFn
+     * @param dragEndFn
+     */
+    public setDragBehavior(dragStartFn: (event: { position: Vector3 }) => void, dragFn: (event: { position: Vector3 }) => void, dragEndFn: () => void) {
         const dragBehavior = new BaseSixDofDragBehavior();
-        this.node.addBehavior(dragBehavior);
 
         this._dragBehavior = dragBehavior;
 
-        this._dragStartObserver = dragBehavior.onDragStartObservable.add(dragStartObservable);
-        this._draggingObserver = dragBehavior.onDragObservable.add(dragObservable);
-        this._dragEndObserver = dragBehavior.onDragEndObservable.add(dragEndObservable);
+        this._dragStartObserver = dragBehavior.onDragStartObservable.add(dragStartFn);
+        this._draggingObserver = dragBehavior.onDragObservable.add(dragFn);
+        this._dragEndObserver = dragBehavior.onDragEndObservable.add(dragEndFn);
+
+        this._dragBehavior.attach(this.node);
     }
 
+    /**
+     * Creates the meshes and parent node of the handle
+     * Should be overriden by child classes
+     */
     public abstract createNode(): TransformNode;
 
     /**
@@ -140,7 +166,13 @@ export abstract class GizmoHandle {
     }
 }
 
+/**
+ * Side handle class that rotates the slate
+ */
 export class SideHandle extends GizmoHandle {
+    /**
+     * Creates the meshes and parent node of the handle
+     */
     public createNode() {
         // Create a simple vertical rectangle
         const verticalBox = BoxBuilder.CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this._scene);
@@ -155,7 +187,13 @@ export class SideHandle extends GizmoHandle {
     }
 }
 
+/**
+ * Corner handle that resizes the slate
+ */
 export class CornerHandle extends GizmoHandle {
+    /**
+     * Creates the meshes and parent node of the handle
+     */
     public createNode() {
         // Create 2 boxes making a bottom left corner
         const horizontalBox = BoxBuilder.CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this._scene);
