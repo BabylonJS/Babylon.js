@@ -42,6 +42,10 @@ export class WebXRDefaultExperienceOptions {
      */
     public inputOptions?: IWebXRInputOptions;
     /**
+     * optional configuration for pointer selection
+     */
+    public pointerSelectionOptions?: IWebXRControllerPointerSelectionOptions;
+    /**
      * optional configuration for the output canvas
      */
     public outputCanvasOptions?: WebXRManagedOutputCanvasOptions;
@@ -140,10 +144,12 @@ export class WebXRDefaultExperience {
 
                 if (!options.disablePointerSelection) {
                     // Add default pointer selection
-                    result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRControllerPointerSelectionOptions>{
-                        xrInput: result.input,
-                        renderingGroupId: options.renderingGroupId,
-                    });
+                    const pointerSelectionOptions = options.pointerSelectionOptions || {} as IWebXRControllerPointerSelectionOptions;
+                    pointerSelectionOptions.xrInput = result.input;
+                    pointerSelectionOptions.renderingGroupId = options.renderingGroupId;
+
+                    result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRControllerPointerSelectionOptions>
+                    pointerSelectionOptions);
 
                     if (!options.disableTeleportation) {
                         // Add default teleportation, including rotation

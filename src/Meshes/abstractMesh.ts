@@ -17,6 +17,7 @@ import { Material } from "../Materials/material";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { Light } from "../Lights/light";
 import { Skeleton } from "../Bones/skeleton";
+import { MorphTargetManager } from "../Morph/morphTargetManager";
 import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
@@ -91,6 +92,7 @@ class _InternalAbstractMeshDataInfo {
     public _currentLOD: Nullable<AbstractMesh> = null;
     public _currentLODIsUpToDate: boolean = false;
     public _collisionRetryCount: number = 3;
+    public _morphTargetManager: Nullable<MorphTargetManager> = null;
 }
 
 /**
@@ -261,6 +263,25 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return this._internalAbstractMeshDataInfo._facetData.facetDataEnabled;
     }
 
+    /**
+     * Gets or sets the morph target manager
+     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    public get morphTargetManager(): Nullable<MorphTargetManager> {
+        return this._internalAbstractMeshDataInfo._morphTargetManager;
+    }
+
+    public set morphTargetManager(value: Nullable<MorphTargetManager>) {
+        if (this._internalAbstractMeshDataInfo._morphTargetManager === value) {
+            return;
+        }
+        this._internalAbstractMeshDataInfo._morphTargetManager = value;
+        this._syncGeometryWithMorphTargetManager();
+    }
+
+    /** @hidden */
+    public _syncGeometryWithMorphTargetManager(): void { }
+
     /** @hidden */
     public _updateNonUniformScalingState(value: boolean): boolean {
         if (!super._updateNonUniformScalingState(value)) {
@@ -311,7 +332,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public definedFacingForward = true;
 
     /** @hidden */
-    public _occlusionQuery: Nullable<WebGLQuery> = null;
+    public _occlusionQuery: Nullable<WebGLQuery | number> = null;
 
     /** @hidden */
     public _renderingGroup: Nullable<RenderingGroup> = null;
@@ -822,7 +843,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _rebuild(dispose = false): void {
         this.onRebuildObservable.notifyObservers(this);
 
-        if (this._occlusionQuery) {
+        if (this._occlusionQuery !== null) {
             this._occlusionQuery = null;
         }
 
@@ -1234,14 +1255,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
      * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+     * @param applyMorph  defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false): AbstractMesh {
+    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): AbstractMesh {
         if (this._boundingInfo && this._boundingInfo.isLocked) {
             return this;
         }
 
-        this._refreshBoundingInfo(this._getPositionData(applySkeleton), null);
+        this._refreshBoundingInfo(this._getPositionData(applySkeleton, applyMorph), null);
         return this;
     }
 
@@ -1267,13 +1289,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _getPositionData(applySkeleton: boolean): Nullable<FloatArray> {
+    public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
         var data = this.getVerticesData(VertexBuffer.PositionKind);
 
-        if (data && applySkeleton && this.skeleton) {
+        if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
             data = Tools.Slice(data);
             this._generatePointsArray();
+        }
 
+        if (data && applySkeleton && this.skeleton) {
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
             if (matricesWeightsData && matricesIndicesData) {
@@ -1316,6 +1340,20 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
                     if (this._positions) {
                         this._positions[index / 3].copyFrom(tempVector);
+                    }
+                }
+            }
+        }
+        if (data && applyMorph && this.morphTargetManager) {
+            for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
+                for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
+                    const targetMorph = this.morphTargetManager.getTarget(targetCount);
+                    const influence = targetMorph.influence;
+                    if (influence > 0.0) {
+                        const morphTargetPositions = targetMorph.getPositions();
+                        if (morphTargetPositions) {
+                            data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
+                        }
                     }
                 }
             }
@@ -1775,7 +1813,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         // Query
         let engine = this.getScene().getEngine();
-        if (this._occlusionQuery) {
+        if (this._occlusionQuery !== null) {
             this.isOcclusionQueryInProgress = false;
             engine.deleteQuery(this._occlusionQuery);
             this._occlusionQuery = null;

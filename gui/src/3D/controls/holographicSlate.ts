@@ -1,7 +1,6 @@
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Scene } from "babylonjs/scene";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Color3 } from "babylonjs/Maths/math.color";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
@@ -19,6 +18,7 @@ import { Viewport } from "babylonjs/Maths/math.viewport";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { Texture } from "babylonjs/Materials/Textures/texture";
+import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
 
 /**
  * Class used to create a holographic slate
@@ -40,31 +40,37 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * Dimensions of the slate
      */
-    public dimensions = new Vector3(5, 3, 0.04);
+    public dimensions = new Vector3(0.7, 0.4, 0.001);
 
     /**
      * Minimum dimensions of the slate
      */
-    public minDimensions = new Vector3(3, 1.5, 0.04);
+    public minDimensions = new Vector3(0.5, 0.2, 0.001);
+
+    /**
+     * Default dimensions of the slate
+     */
+    public readonly defaultDimensions = this.dimensions.clone();
 
     /**
      * Dimensions of the backplate
      */
-    public backplateDimensions = new Vector3(5, 0.3, 0.04);
+    public backplateDimensions = new Vector3(0.7, 0.02, 0.001);
 
     /**
      * Margin between backplate and contentplate
      */
-    public backPlateMargin = 0.05;
+    public backPlateMargin = 0.005;
 
     /**
      * Origin in local coordinates (top left corner)
      */
     public origin = new Vector3(0, 0, 0);
 
-    private _backPlateMaterial: FluentMaterial;
+    private _backPlateMaterial: FluentBackplateMaterial;
     private _contentMaterial: FluentMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
+    private _positionChangedObserver: Nullable<Observer<{ position: Vector3 }>>;
     private _imageUrl: string;
 
     private _contentViewport: Viewport;
@@ -212,7 +218,7 @@ export class HolographicSlate extends ContentDisplay3D {
         if (this._contentPlate.material && (this._contentPlate.material as FluentMaterial).albedoTexture) {
             const tex = (this._contentPlate.material as FluentMaterial).albedoTexture as Texture;
             tex.uScale = this._contentScaleRatio;
-            tex.vScale = this._contentScaleRatio / this._contentViewport.width * this._contentViewport.height;
+            tex.vScale = (this._contentScaleRatio / this._contentViewport.width) * this._contentViewport.height;
             tex.uOffset = this._contentViewport.x;
             tex.vOffset = this._contentViewport.y;
         }
@@ -249,7 +255,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const node = new Mesh("slate" + this.name);
+        const node = new Mesh("slate" + this.name, scene);
 
         this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
         this._contentPlate = BoxBuilder.CreateBox("contentPlate" + this.name, { size: 1 }, scene);
@@ -288,16 +294,6 @@ export class HolographicSlate extends ContentDisplay3D {
         node.rotationQuaternion = Quaternion.Identity();
         node.isVisible = false;
 
-        // By default the slate spawns in front of the camera
-        // TODO : add a parameter
-        if (scene.activeCamera) {
-            const invView = scene.activeCamera.getViewMatrix().clone().invert();
-            const backward = Vector3.TransformNormal(new Vector3(0, 0, -1), invView);
-            node.rotationQuaternion = Quaternion.FromLookDirectionLH(backward, new Vector3(0, 1, 0));
-            node.position.copyFrom(scene.activeCamera.position).subtractInPlace(backward.scale(0.7));
-            node.scaling.setAll(0.1);
-        }
-
         return node;
     }
 
@@ -333,7 +329,7 @@ export class HolographicSlate extends ContentDisplay3D {
             upWorld.normalize();
             upWorld.scaleInPlace(1 / Vector3.Dot(upWorld, worldDimensions));
             rightWorld.normalize();
-            rightWorld.scaleInPlace(1 / Vector3.Dot(rightWorld, worldDimensions))
+            rightWorld.scaleInPlace(1 / Vector3.Dot(rightWorld, worldDimensions));
         });
 
         let offset = new Vector3();
@@ -351,18 +347,15 @@ export class HolographicSlate extends ContentDisplay3D {
 
     protected _affectMaterial(mesh: AbstractMesh) {
         // TODO share materials
-        this._backPlateMaterial = new FluentMaterial(this.name + "plateMaterial", mesh.getScene());
-        this._backPlateMaterial.albedoColor = new Color3(0.08, 0.15, 0.55);
-        this._backPlateMaterial.renderBorders = true;
-        this._backPlateMaterial.renderHoverLight = true;
+        this._backPlateMaterial = new FluentBackplateMaterial(this.name + "plateMaterial", mesh.getScene());
 
         this._pickedPointObserver = this._host.onPickedPointChangedObservable.add((pickedPoint) => {
-            if (pickedPoint) {
-                this._backPlateMaterial.hoverPosition = pickedPoint;
-                this._backPlateMaterial.hoverColor.a = 1.0;
-            } else {
-                this._backPlateMaterial.hoverColor.a = 0;
-            }
+            // if (pickedPoint) {
+            //     this._backPlateMaterial. = pickedPoint;
+            //     this._backPlateMaterial.hoverColor.a = 1.0;
+            // } else {
+            //     this._backPlateMaterial.hoverColor.a = 0;
+            // }
         });
 
         this._contentMaterial = new FluentMaterial(this.name + "contentMaterial", mesh.getScene());
@@ -381,9 +374,35 @@ export class HolographicSlate extends ContentDisplay3D {
         this._gizmo = new SlateGizmo(this._host.utilityLayer!);
         this._gizmo.attachedSlate = this;
         this._defaultBehavior = new DefaultBehavior();
-        this._defaultBehavior.attach(this.node as Mesh, this._backPlate);
+        this._defaultBehavior.attach(this.node as Mesh, [this._backPlate]);
+
+        this._positionChangedObserver = this._defaultBehavior.sixDofDragBehavior.onPositionChangedObservable.add(() => {
+            this._gizmo.updateBoundingBox();
+        });
 
         this._updatePivot();
+        this.resetDefaultAspectAndPose();
+    }
+
+    /**
+     * Resets the aspect and pose of the slate so it is right in front of the active camera, facing towards it.
+     */
+    public resetDefaultAspectAndPose() {
+        if (!this._host || !this._host.utilityLayer || !this.node) {
+            return;
+        }
+        const scene = this._host.utilityLayer.utilityLayerScene;
+        const camera = scene.activeCamera;
+        if (camera) {
+            const worldMatrix = camera.getWorldMatrix();
+            const backward = Vector3.TransformNormal(Vector3.Backward(scene.useRightHandedSystem), worldMatrix);
+            this.dimensions.copyFrom(this.defaultDimensions);
+            this.origin.setAll(0);
+            this._gizmo.updateBoundingBox();
+            const pivot = this.node.getAbsolutePivotPoint();
+            this.node.position.copyFrom(camera.position).subtractInPlace(backward).subtractInPlace(pivot);
+            this.node.rotationQuaternion = Quaternion.FromLookDirectionLH(backward, new Vector3(0, 1, 0));
+        }
     }
 
     /**
@@ -400,10 +419,8 @@ export class HolographicSlate extends ContentDisplay3D {
         this._followButton.dispose();
         this._closeButton.dispose();
 
-        if (this._pickedPointObserver) {
-            this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
-            this._pickedPointObserver = null;
-        }
+        this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
+        this._defaultBehavior.sixDofDragBehavior.onPositionChangedObservable.remove(this._positionChangedObserver);
 
         this._defaultBehavior.detach();
         this._gizmo.dispose();
