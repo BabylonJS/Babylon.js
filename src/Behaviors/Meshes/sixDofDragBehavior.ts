@@ -3,9 +3,9 @@ import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Observable, Observer } from "../../Misc/observable";
-import { PivotTools } from "../../Misc/pivotTools";
 import { BaseSixDofDragBehavior } from "./baseSixDofDragBehavior";
 import { TransformNode } from "../../Meshes/transformNode";
+import { Space } from "../../Maths/math.axis";
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
  */
@@ -17,7 +17,6 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     protected _targetOrientation = new Quaternion();
     protected _targetScaling = new Vector3(1, 1, 1);
     protected _startingPosition = new Vector3(0, 0, 0);
-    protected _startingPositionPointerOffset = new Vector3(0, 0, 0);
     protected _startingOrientation = new Quaternion();
     protected _startingScaling = new Vector3(1, 1, 1);
 
@@ -63,23 +62,38 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(() => {
             if (this.currentDraggingPointerIds.length === 1 && this._moving) {
                 // 1 pointer only drags mesh
-                PivotTools._RemoveAndStorePivotPoint(ownerNode);
+                var oldParent = ownerNode.parent;
+                ownerNode.setParent(null);
                 ownerNode.position.addInPlace(this._targetPosition.subtract(ownerNode.position).scale(this.dragDeltaRatio));
 
                 this.onPositionChangedObservable.notifyObservers({ position: ownerNode.absolutePosition });
 
-                var oldParent = ownerNode.parent;
-
                 // Only rotate the mesh if it's parent has uniform scaling
                 if (!oldParent || ((oldParent as Mesh).scaling && !(oldParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
-                    ownerNode.setParent(null);
                     Quaternion.SlerpToRef(ownerNode.rotationQuaternion!, this._targetOrientation, this.dragDeltaRatio, ownerNode.rotationQuaternion!);
-                    ownerNode.setParent(oldParent);
                 }
-
-                PivotTools._RestorePivotPoint(ownerNode);
+                
+                ownerNode.setParent(oldParent);
             }
         });
+    }
+    
+    private _getPositionOffsetAround(transformationLocalOrigin: Vector3, scaling: number, rotation: Quaternion): Vector3 {
+        const translationMatrix = TmpVectors.Matrix[0]; // T
+        const translationMatrixInv = TmpVectors.Matrix[1]; // T'
+        const rotationMatrix = TmpVectors.Matrix[2]; // R
+        const scaleMatrix = TmpVectors.Matrix[3]; // S
+        const finalMatrix = TmpVectors.Matrix[4]; // T' x R x S x T
+        
+        Matrix.TranslationToRef(transformationLocalOrigin.x, transformationLocalOrigin.y, transformationLocalOrigin.z, translationMatrix); // T
+        Matrix.TranslationToRef(-transformationLocalOrigin.x, -transformationLocalOrigin.y, -transformationLocalOrigin.z, translationMatrixInv); // T'
+        Matrix.FromQuaternionToRef(rotation, rotationMatrix); // R
+        Matrix.ScalingToRef(scaling, scaling, scaling, scaleMatrix);
+        translationMatrixInv.multiplyToRef(rotationMatrix, finalMatrix); // T' x R
+        finalMatrix.multiplyToRef(scaleMatrix, finalMatrix); // T' x R x S
+        finalMatrix.multiplyToRef(translationMatrix, finalMatrix); // T' x R x S x T
+        
+        return finalMatrix.getTranslation();
     }
 
     private _onePointerPositionUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
@@ -90,34 +104,11 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
             // Convert change in rotation to only y axis rotation
             Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
             TmpVectors.Quaternion[0].multiplyToRef(this._startingOrientation, this._targetOrientation);
-            this._startingPositionPointerOffset.rotateByQuaternionToRef(TmpVectors.Quaternion[0], pointerDelta);
         }
 
         this._targetPosition.copyFrom(this._startingPosition).addInPlace(worldDeltaPosition);
-
-        if (this._ownerNode.parent) {
-            Vector3.TransformCoordinatesToRef(this._targetPosition, Matrix.Invert(this._ownerNode.parent.getWorldMatrix()), this._targetPosition);
-        }
     }
-
-    private _getPositionOffsetAround(transformationLocalOrigin: Vector3, scaling: number, rotation: Quaternion): Vector3 {
-        const translationMatrix = TmpVectors.Matrix[0]; // T
-        const translationMatrixInv = TmpVectors.Matrix[1]; // T'
-        const rotationMatrix = TmpVectors.Matrix[2]; // R
-        const scaleMatrix = TmpVectors.Matrix[3]; // S
-        const finalMatrix = TmpVectors.Matrix[4]; // T' x R x S x T
-
-        Matrix.TranslationToRef(transformationLocalOrigin.x, transformationLocalOrigin.y, transformationLocalOrigin.z, translationMatrix); // T
-        Matrix.TranslationToRef(-transformationLocalOrigin.x, -transformationLocalOrigin.y, -transformationLocalOrigin.z, translationMatrixInv); // T'
-        Matrix.FromQuaternionToRef(rotation, rotationMatrix); // R
-        Matrix.ScalingToRef(scaling, scaling, scaling, scaleMatrix);
-        translationMatrixInv.multiplyToRef(rotationMatrix, finalMatrix); // T' x R
-        finalMatrix.multiplyToRef(scaleMatrix, finalMatrix); // T' x R x S
-        finalMatrix.multiplyToRef(translationMatrix, finalMatrix); // T' x R x S x T
-
-        return finalMatrix.getTranslation();
-    }
-
+    
     private _twoPointersPositionUpdated() {
         const startingPosition0 = this._virtualMeshesInfo[this.currentDraggingPointerIds[0]].startingPosition;
         const startingPosition1 = this._virtualMeshesInfo[this.currentDraggingPointerIds[1]].startingPosition;
@@ -150,41 +141,43 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         this._virtualTransformNode.rotationQuaternion!.multiplyToRef(rotationQuaternion, this._ownerNode.rotationQuaternion!);
         this._virtualTransformNode.scaling.scaleToRef(scaling, this._ownerNode.scaling);
         this._virtualTransformNode.position.addToRef(translation.addInPlace(positionOffset), this._ownerNode.position);
+        this.onPositionChangedObservable.notifyObservers({ position: this._ownerNode.position });
 
         this._ownerNode.setParent(oldParent);
     }
 
-    protected _targetDragStart(worldPosition: Vector3) {
+    protected _targetDragStart() {
         const pointerCount = this.currentDraggingPointerIds.length;
         const oldParent = this._ownerNode.parent;
 
         if (!this._ownerNode.rotationQuaternion) {
             this._ownerNode.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._ownerNode.rotation.y, this._ownerNode.rotation.x, this._ownerNode.rotation.z);
         }
+        const worldPivot = this._ownerNode.getAbsolutePivotPoint();
         this._ownerNode.setParent(null);
 
-        PivotTools._RemoveAndStorePivotPoint(this._ownerNode);
-        this._targetPosition.copyFrom(this._ownerNode.position);
-        this._targetOrientation.copyFrom(this._ownerNode.rotationQuaternion!);
-        this._targetScaling.copyFrom(this._ownerNode.scaling);
-        PivotTools._RestorePivotPoint(this._ownerNode);
-
-        if (this.faceCameraOnDragStart && this._scene.activeCamera && pointerCount === 1) {
-            const toCamera = this._scene.activeCamera.position.subtract(this._ownerNode.getAbsolutePivotPoint()).normalize();
-            const quat = Quaternion.FromLookDirectionLH(toCamera, new Vector3(0, 1, 0));
-            quat.normalize();
-            this._targetOrientation.copyFrom(quat);
-        }
-        this._startingPosition.copyFrom(this._targetPosition);
-        this._startingOrientation.copyFrom(this._targetOrientation);
-        this._startingScaling.copyFrom(this._targetScaling);
-        this._startingPositionPointerOffset.copyFrom(this._targetPosition).subtractInPlace(worldPosition);
-
-        if (pointerCount === 2) {
+        if (pointerCount === 1) {
+            this._targetPosition.copyFrom(this._ownerNode.position);
+            this._targetOrientation.copyFrom(this._ownerNode.rotationQuaternion);
+            this._targetScaling.copyFrom(this._ownerNode.scaling);
+            
+            if (this.faceCameraOnDragStart && this._scene.activeCamera) {
+                const toCamera = this._scene.activeCamera.position.subtract(worldPivot).normalize();
+                const quat = Quaternion.FromLookDirectionLH(toCamera, new Vector3(0, 1, 0));
+                quat.normalize();
+                Quaternion.RotationYawPitchRollToRef(quat.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
+                this._targetOrientation.copyFrom(TmpVectors.Quaternion[0]);
+            }
+            this._startingPosition.copyFrom(this._targetPosition);
+            this._startingOrientation.copyFrom(this._targetOrientation);
+            this._startingScaling.copyFrom(this._targetScaling);
+        } else if (pointerCount === 2) {
+            this._virtualTransformNode.setPivotPoint(new Vector3(0, 0, 0), Space.LOCAL);
             this._virtualTransformNode.position.copyFrom(this._ownerNode.position);
-            this._virtualTransformNode.scaling.copyFrom(this._ownerNode.absoluteScaling);
-            this._virtualTransformNode.rotationQuaternion!.copyFrom(this._ownerNode.absoluteRotationQuaternion);
-            this._virtualTransformNode.setPivotPoint(this._ownerNode.getPivotPoint());
+            this._virtualTransformNode.scaling.copyFrom(this._ownerNode.scaling);
+            this._virtualTransformNode.rotationQuaternion!.copyFrom(this._ownerNode.rotationQuaternion);
+            this._virtualTransformNode.setPivotPoint(worldPivot, Space.WORLD);
+            this._resetVirtualMeshesPosition();
         }
 
         this._ownerNode.setParent(oldParent);
@@ -200,9 +193,12 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
     protected _targetDragEnd() {
         if (this.currentDraggingPointerIds.length === 1) {
-            // We still have 1 active pointer, we must simulate a dragstart to
-            // reset the node rotation and position
-            this._targetDragStart(this._virtualMeshesInfo[this.currentDraggingPointerIds[0]].dragMesh.absolutePosition);
+            // We still have 1 active pointer, we must simulate a dragstart with a reseted position/orientation
+            this._resetVirtualMeshesPosition();
+            const previousFaceCameraFlag = this.faceCameraOnDragStart;
+            this.faceCameraOnDragStart = false;
+            this._targetDragStart();
+            this.faceCameraOnDragStart = previousFaceCameraFlag;
         }
     }
 
