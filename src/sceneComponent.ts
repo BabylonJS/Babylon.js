@@ -1,17 +1,16 @@
 import { Scene } from "./scene";
-import { AbstractMesh } from "./Meshes/abstractMesh";
-import { SubMesh, } from "./Meshes/subMesh";
-import { _InstancesBatch } from "./Meshes/mesh";
 import { SmartArrayNoDuplicate } from "./Misc/smartArray";
 import { Nullable } from "./types";
-import { Camera } from "./Cameras/camera";
-import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { AbstractScene } from "./abstractScene";
 import { IPointerEvent } from "./Events/deviceInputEvents";
 
 declare type Mesh = import("./Meshes/mesh").Mesh;
 declare type Effect = import("./Materials/effect").Effect;
+declare type Camera = import("./Cameras/camera").Camera;
+declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
+declare type SubMesh = import("./Meshes/subMesh").SubMesh;
+declare type RenderTargetTexture = import("./Materials/Textures/renderTargetTexture").RenderTargetTexture;
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.
@@ -193,7 +192,7 @@ export type RenderingGroupStageAction = (renderingGroupId: number) => void;
 /**
  * Strong typing of a Mesh Render related stage step action
  */
-export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch, effect: Nullable<Effect>) => void;
+export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: any, effect: Nullable<Effect>) => void;
 
 /**
  * Strong typing of a simple stage step action

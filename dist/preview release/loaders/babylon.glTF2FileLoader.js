@@ -734,7 +734,7 @@ var EXT_texture_webp = /** @class */ (function () {
             var image = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/source", _this._loader.gltf.images, extension.source);
             return _this._loader._createTextureAsync(context, sampler, image, function (babylonTexture) {
                 assign(babylonTexture);
-            });
+            }, undefined, !texture._textureInfo.nonColorData);
         });
     };
     return EXT_texture_webp;
@@ -1598,6 +1598,7 @@ var TransmissionHelper = /** @class */ (function () {
             lodGenerationScale: 1,
             lodGenerationOffset: -4,
             renderTargetTextureType: babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTURETYPE_HALF_FLOAT,
+            generateMipmaps: true,
         };
     };
     /**
@@ -1615,7 +1616,7 @@ var TransmissionHelper = /** @class */ (function () {
         var oldOptions = this._options;
         this._options = newOptions;
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || !this._opaqueRenderTarget) {
+        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || newOptions.generateMipmaps !== oldOptions.generateMipmaps || !this._opaqueRenderTarget) {
             this._setupRenderTargets();
         }
         else {
@@ -1638,7 +1639,7 @@ var TransmissionHelper = /** @class */ (function () {
     };
     TransmissionHelper.prototype._addMesh = function (mesh) {
         var _this = this;
-        this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+        this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this._onMeshMaterialChanged.bind(this));
         // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Tools"].SetImmediate(function () {
@@ -1671,7 +1672,7 @@ var TransmissionHelper = /** @class */ (function () {
         this._scene.onMeshRemovedObservable.add(this._removeMesh.bind(this));
     };
     // When one of the meshes in the scene has its material changed, make sure that it's in the correct cache list.
-    TransmissionHelper.prototype.onMeshMaterialChanged = function (mesh) {
+    TransmissionHelper.prototype._onMeshMaterialChanged = function (mesh) {
         var transparentIdx = this._transparentMeshesCache.indexOf(mesh);
         var opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
         // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
@@ -1705,7 +1706,10 @@ var TransmissionHelper = /** @class */ (function () {
     TransmissionHelper.prototype._setupRenderTargets = function () {
         var _this = this;
         var _a, _b;
-        this._opaqueRenderTarget = new babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["RenderTargetTexture"]("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
+        if (this._opaqueRenderTarget) {
+            this._opaqueRenderTarget.dispose();
+        }
+        this._opaqueRenderTarget = new babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["RenderTargetTexture"]("opaqueSceneTexture", this._options.renderSize, this._scene, this._options.generateMipmaps, undefined, this._options.renderTargetTextureType);
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         this._opaqueRenderTarget.clearColor = (_b = (_a = this._options.clearColor) === null || _a === void 0 ? void 0 : _a.clone()) !== null && _b !== void 0 ? _b : this._scene.clearColor.clone();
@@ -2139,9 +2143,16 @@ var KHR_materials_volume = /** @class */ (function () {
         this.order = 173;
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
+        if (this.enabled) {
+            // We need to disable instance usage because the attenuation factor depends on the node scale of each individual mesh
+            this._loader._disableInstancedMesh++;
+        }
     }
     /** @hidden */
     KHR_materials_volume.prototype.dispose = function () {
+        if (this.enabled) {
+            this._loader._disableInstancedMesh--;
+        }
         this._loader = null;
     };
     /** @hidden */
@@ -2175,6 +2186,7 @@ var KHR_materials_volume = /** @class */ (function () {
         babylonMaterial.subSurface.maximumThickness = extension.thicknessFactor;
         babylonMaterial.subSurface.useThicknessAsDepth = true;
         if (extension.thicknessTexture) {
+            extension.thicknessTexture.nonColorData = true;
             return this._loader.loadTextureInfoAsync(context + "/thicknessTexture", extension.thicknessTexture)
                 .then(function (texture) {
                 babylonMaterial.subSurface.thicknessTexture = texture;
@@ -2266,7 +2278,7 @@ var KHR_texture_basisu = /** @class */ (function () {
             var image = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/source", _this._loader.gltf.images, extension.source);
             return _this._loader._createTextureAsync(context, sampler, image, function (babylonTexture) {
                 assign(babylonTexture);
-            }, texture._textureInfo.nonColorData ? { useRGBAIfASTCBC7NotAvailableWhenUASTC: true } : undefined);
+            }, texture._textureInfo.nonColorData ? { useRGBAIfASTCBC7NotAvailableWhenUASTC: true } : undefined, !texture._textureInfo.nonColorData);
         });
     };
     return KHR_texture_basisu;
@@ -4963,27 +4975,37 @@ var GLTFLoader = /** @class */ (function () {
         this.logOpen(context + " " + (texture.name || ""));
         var sampler = (texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(context + "/sampler", this._gltf.samplers, texture.sampler));
         var image = ArrayItem.Get(context + "/source", this._gltf.images, texture.source);
-        var promise = this._createTextureAsync(context, sampler, image, assign);
+        var promise = this._createTextureAsync(context, sampler, image, assign, undefined, !texture._textureInfo.nonColorData);
         this.logClose();
         return promise;
     };
     /** @hidden */
-    GLTFLoader.prototype._createTextureAsync = function (context, sampler, image, assign, textureLoaderOptions) {
+    GLTFLoader.prototype._createTextureAsync = function (context, sampler, image, assign, textureLoaderOptions, useSRGBBuffer) {
         var _this = this;
         if (assign === void 0) { assign = function () { }; }
         var samplerData = this._loadSampler("/samplers/" + sampler.index, sampler);
         var promises = new Array();
         var deferred = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Deferred"]();
         this._babylonScene._blockEntityCollection = this._forAssetContainer;
-        var babylonTexture = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Texture"](null, this._babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, function () {
-            if (!_this._disposed) {
-                deferred.resolve();
-            }
-        }, function (message, exception) {
-            if (!_this._disposed) {
-                deferred.reject(new Error(context + ": " + ((exception && exception.message) ? exception.message : message || "Failed to load texture")));
-            }
-        }, undefined, undefined, undefined, image.mimeType, textureLoaderOptions);
+        var textureCreationOptions = {
+            noMipmap: samplerData.noMipMaps,
+            invertY: false,
+            samplingMode: samplerData.samplingMode,
+            onLoad: function () {
+                if (!_this._disposed) {
+                    deferred.resolve();
+                }
+            },
+            onError: function (message, exception) {
+                if (!_this._disposed) {
+                    deferred.reject(new Error(context + ": " + ((exception && exception.message) ? exception.message : message || "Failed to load texture")));
+                }
+            },
+            mimeType: image.mimeType,
+            loaderOptions: textureLoaderOptions,
+            useSRGBBuffer: !!useSRGBBuffer && this._parent.useSRGBBuffers,
+        };
+        var babylonTexture = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Texture"](null, this._babylonScene, textureCreationOptions);
         this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
         promises.push(this.loadImageAsync("/images/" + image.index, image).then(function (data) {
@@ -5633,8 +5655,12 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.loadAllMaterials = false;
         /**
-         * Function called before loading a url referenced by the asset.
+         * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
+        this.useSRGBBuffers = true;
+        /**
+        * Function called before loading a url referenced by the asset.
+        */
         this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.

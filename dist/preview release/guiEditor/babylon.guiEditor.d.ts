@@ -34,11 +34,13 @@ declare module GUIEDITOR {
         private _forcePanning;
         private _forceZooming;
         private _forceSelecting;
+        private _outlines;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
         private _panning;
         private _canvas;
+        private _responsive;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -47,7 +49,7 @@ declare module GUIEDITOR {
         ctrlFalseEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
-        loadFromSnippet(snippedID: string): Promise<void>;
+        loadFromSnippet(snippedId: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
@@ -114,6 +116,8 @@ declare module GUIEDITOR {
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
         onSnippetSaveObservable: BABYLON.Observable<void>;
+        onOutlinesObservable: BABYLON.Observable<void>;
+        onResponsiveChangeObservable: BABYLON.Observable<boolean>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -761,7 +765,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | Slider | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -1014,7 +1018,9 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
+        private _outlines;
         constructor(props: ICommandBarComponentProps);
+        private updateNodeOutline;
         render(): JSX.Element;
         onCreate(value: string): void;
     }

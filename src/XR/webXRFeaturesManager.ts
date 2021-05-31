@@ -112,6 +112,10 @@ export class WebXRFeatureName {
      * The name of the near interaction feature
      */
     public static readonly NEAR_INTERACTION = "xr-near-interaction";
+    /**
+     * The name of the DOM overlay feature
+     */
+     public static readonly DOM_OVERLAY = "xr-dom-overlay";
 }
 
 /**

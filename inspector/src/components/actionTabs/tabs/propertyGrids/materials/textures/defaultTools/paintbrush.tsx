@@ -62,47 +62,47 @@ class paintbrushTool implements IToolType {
 
         this.pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
             const {startPainting, stopPainting, metadata} = this.getParameters();
-            if (pointerInfo.pickInfo?.hit) {
-                if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
-                    if (pointerInfo.event.button == 0) {
-                        this.isPainting = true;
-                        const circleCanvas = document.createElement('canvas');
-                        circleCanvas.width = this.width;
-                        circleCanvas.height = this.width;
-                        const circleCtx = circleCanvas.getContext('2d')!;
-                        circleCtx.imageSmoothingEnabled = false;
-                        let pixels = new Array(4 * this.width * this.width);
-                        const dis = this.width * this.width / 4;
-                        const rgb = Color3.FromHexString(metadata.color)!;
-                        const r = Math.floor(rgb.r * 255);
-                        const g = Math.floor(rgb.g * 255);
-                        const b = Math.floor(rgb.b * 255);
-                        let idx = 0;
-                        for(let y = -Math.floor(this.width / 2); y < Math.ceil(this.width / 2); y++) {
-                            for (let x = -Math.floor(this.width / 2); x < Math.ceil(this.width / 2); x++) {
-                                pixels[idx++] = r;
-                                pixels[idx++] = g;
-                                pixels[idx++] = b;
-                                pixels[idx++] = (x * x + y * y <= dis) ? 255 : 0;
-                            }
+            if (!this.isPainting) {
+                if (pointerInfo.type === PointerEventTypes.POINTERDOWN && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled() && pointerInfo.pickInfo?.hit) {
+                    this.isPainting = true;
+                    const circleCanvas = document.createElement('canvas');
+                    circleCanvas.width = this.width;
+                    circleCanvas.height = this.width;
+                    const circleCtx = circleCanvas.getContext('2d')!;
+                    circleCtx.imageSmoothingEnabled = false;
+                    let pixels = new Array(4 * this.width * this.width);
+                    const dis = this.width * this.width / 4;
+                    const rgb = Color3.FromHexString(metadata.color)!;
+                    const r = Math.floor(rgb.r * 255);
+                    const g = Math.floor(rgb.g * 255);
+                    const b = Math.floor(rgb.b * 255);
+                    let idx = 0;
+                    const x1 = -Math.floor(this.width / 2), x2 = Math.ceil(this.width / 2);
+                    const y1 = -Math.floor(this.width / 2), y2 = Math.ceil(this.width / 2);
+                    for(let y = y1; y < y2; y++) {
+                        for (let x = x1; x < x2; x++) {
+                            pixels[idx++] = r;
+                            pixels[idx++] = g;
+                            pixels[idx++] = b;
+                            pixels[idx++] = (x * x + y * y <= dis) ? 255 : 0;
                         }
-                        circleCtx.putImageData(new ImageData(Uint8ClampedArray.from(pixels), this.width, this.width), 0, 0);
-                        this.circleCanvas = circleCanvas;
-                        this.ctx = await startPainting();
-                        this.paint(pointerInfo);
-                      }
-                }
-                if (pointerInfo.type === PointerEventTypes.POINTERMOVE && this.isPainting) {
+                    }
+                    circleCtx.putImageData(new ImageData(Uint8ClampedArray.from(pixels), this.width, this.width), 0, 0);
+                    this.circleCanvas = circleCanvas;
+                    this.ctx = await startPainting();
                     this.paint(pointerInfo);
-                }
-            }
-            if (pointerInfo.type === PointerEventTypes.POINTERUP) {
-                if (pointerInfo.event.button == 0) {
+                  }
+            } else {
+                if (pointerInfo.event.buttons !== 1 || !this.getParameters().interactionEnabled()) {
                     this.isPainting = false;
                     this.circleCanvas.parentNode?.removeChild(this.circleCanvas);
                     stopPainting();
                     this.mousePos = null;
-                  }
+                } else {
+                    if (pointerInfo.pickInfo?.hit && pointerInfo.type === PointerEventTypes.POINTERMOVE) {
+                        this.paint(pointerInfo);
+                    }
+                }
             }
         });
         this.isPainting = false;
