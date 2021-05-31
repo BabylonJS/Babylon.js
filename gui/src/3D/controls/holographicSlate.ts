@@ -70,6 +70,7 @@ export class HolographicSlate extends ContentDisplay3D {
     private _backPlateMaterial: FluentBackplateMaterial;
     private _contentMaterial: FluentMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
+    private _positionChangedObserver: Nullable<Observer<{ position: Vector3 }>>;
     private _imageUrl: string;
 
     private _contentViewport: Viewport;
@@ -375,6 +376,10 @@ export class HolographicSlate extends ContentDisplay3D {
         this._defaultBehavior = new DefaultBehavior();
         this._defaultBehavior.attach(this.node as Mesh, [this._backPlate]);
 
+        this._positionChangedObserver = this._defaultBehavior.sixDofDragBehavior.onPositionChangedObservable.add(() => {
+            this._gizmo.updateBoundingBox();
+        });
+
         this._updatePivot();
         this.resetDefaultAspectAndPose();
     }
@@ -411,10 +416,8 @@ export class HolographicSlate extends ContentDisplay3D {
         this._followButton.dispose();
         this._closeButton.dispose();
 
-        if (this._pickedPointObserver) {
-            this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
-            this._pickedPointObserver = null;
-        }
+        this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
+        this._defaultBehavior.sixDofDragBehavior.onPositionChangedObservable.remove(this._positionChangedObserver);
 
         this._defaultBehavior.detach();
         this._gizmo.dispose();
