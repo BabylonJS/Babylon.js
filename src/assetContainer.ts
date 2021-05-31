@@ -219,8 +219,11 @@ export class AssetContainer extends AbstractScene {
 
             for (var m of this.meshes) {
                 if (m.skeleton === s && !m.isAnInstance) {
-                    let copy = storeMap[convertionMap[m.uniqueId]];
-                    (copy as Mesh).skeleton = clone;
+                    let copy = storeMap[convertionMap[m.uniqueId]] as Mesh;
+                    if (copy.isAnInstance) {
+                        continue;
+                    }
+                    copy.skeleton = clone;
 
                     if (alreadySwappedSkeletons.indexOf(clone) !== -1) {
                         continue;
