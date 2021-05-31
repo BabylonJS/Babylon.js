@@ -776,8 +776,12 @@ declare module BABYLON {
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5: number;
         /** Compressed BC2 */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3: number;
-        /** Compressed BC1 */
+        /** Compressed BC1 (RGBA) */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1: number;
+        /** Compressed BC1 (RGB) */
+        static readonly TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1: number;
+        /** Compressed ASTC 4x4 */
+        static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4: number;
         /** UNSIGNED_BYTE */
         static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
         /** UNSIGNED_BYTE (2nd reference) */
@@ -1140,6 +1144,8 @@ declare module BABYLON {
         static readonly BUFFER_CREATIONFLAG_READ: number;
         /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
         static readonly BUFFER_CREATIONFLAG_WRITE: number;
+        /** Flag to create a readable and writable buffer */
+        static readonly BUFFER_CREATIONFLAG_READWRITE: number;
         /** Flag to create a buffer suitable to be used as a uniform buffer */
         static readonly BUFFER_CREATIONFLAG_UNIFORM: number;
         /** Flag to create a buffer suitable to be used as a vertex buffer */
@@ -1187,6 +1193,64 @@ declare module BABYLON {
         static readonly SNAPSHOTRENDERING_STANDARD: number;
         /** Fast snapshot rendering. In this mode, everything is static and only some limited form of dynamic behaviour is possible */
         static readonly SNAPSHOTRENDERING_FAST: number;
+        /**
+         * This is the default projection mode used by the cameras.
+         * It helps recreating a feeling of perspective and better appreciate depth.
+         * This is the best way to simulate real life cameras.
+         */
+        static readonly PERSPECTIVE_CAMERA: number;
+        /**
+         * This helps creating camera with an orthographic mode.
+         * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
+         */
+        static readonly ORTHOGRAPHIC_CAMERA: number;
+        /**
+         * This is the default FOV mode for perspective cameras.
+         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+         */
+        static readonly FOVMODE_VERTICAL_FIXED: number;
+        /**
+         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+         */
+        static readonly FOVMODE_HORIZONTAL_FIXED: number;
+        /**
+         * This specifies there is no need for a camera rig.
+         * Basically only one eye is rendered corresponding to the camera.
+         */
+        static readonly RIG_MODE_NONE: number;
+        /**
+         * Simulates a camera Rig with one blue eye and one red eye.
+         * This can be use with 3d blue and red glasses.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH: number;
+        /**
+         * Defines that both eyes of the camera will be rendered side by side with a parallel target.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: number;
+        /**
+         * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
+        /**
+         * Defines that both eyes of the camera will be rendered over under each other.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
+        /**
+         * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_INTERLACED: number;
+        /**
+         * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
+         */
+        static readonly RIG_MODE_VR: number;
+        /**
+         * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
+         */
+        static readonly RIG_MODE_WEBVR: number;
+        /**
+         * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
+         */
+        static readonly RIG_MODE_CUSTOM: number;
     }
 }
 declare module BABYLON {
@@ -3653,6 +3717,23 @@ declare module BABYLON {
          */
         static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number;
         /**
+         * Slerp between two vectors. See also `SmoothToRef`
+         * @param vector0 Start vector
+         * @param vector1 End vector
+         * @param slerp amount (will be clamped between 0 and 1)
+         * @param result The slerped vector
+         */
+        static SlerpToRef(vector0: Vector3, vector1: Vector3, slerp: number, result: Vector3): void;
+        /**
+         * Smooth interpolation between two vectors using Slerp
+         * @param source source vector
+         * @param goal goal vector
+         * @param deltaTime current interpolation frame
+         * @param lerpTime total interpolation time
+         * @param result the smoothed vector
+         */
+        static SmoothToRef(source: Vector3, goal: Vector3, deltaTime: number, lerpTime: number, result: Vector3): void;
+        /**
          * Returns a new Vector3 set from the index "offset" of the given array
          * @param array defines the source array
          * @param offset defines the offset in the source array
@@ -4716,6 +4797,16 @@ declare module BABYLON {
          * @returns true if the two quaternions are close to each other
          */
         static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): boolean;
+        /**
+         * Smooth interpolation between two quaternions using Slerp
+         *
+         * @param source source quaternion
+         * @param goal goal quaternion
+         * @param deltaTime current interpolation frame
+         * @param lerpTime total interpolation time
+         * @param result the smoothed quaternion
+         */
+        static SmoothToRef(source: Quaternion, goal: Quaternion, deltaTime: number, lerpTime: number, result: Quaternion): void;
         /**
          * Creates an empty quaternion
          * @returns a new quaternion set to (0.0, 0.0, 0.0)
@@ -8574,10 +8665,16 @@ declare module BABYLON {
          */
         updateColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
         /**
-         * Lambda to Update a int a uniform buffer.
+         * Lambda to Update vec4 of float from a Color in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
+        updateDirectColor4: (name: string, color: IColor4Like, suffix?: string) => void;
+        /**
+        * Lambda to Update a int a uniform buffer.
+        * This is dynamic to allow compat with webgl 1 and 2.
+        * You will need to pass the name of the uniform as well as the value.
+        */
         updateInt: (name: string, x: number, suffix?: string) => void;
         /**
          * Lambda to Update a vec2 of int in a uniform buffer.
@@ -8771,7 +8868,9 @@ declare module BABYLON {
         private _updateColor3ForEffect;
         private _updateColor3ForUniform;
         private _updateColor4ForEffect;
+        private _updateDirectColor4ForEffect;
         private _updateColor4ForUniform;
+        private _updateDirectColor4ForUniform;
         private _updateIntForEffect;
         private _updateIntForUniform;
         private _updateInt2ForEffect;
@@ -9192,12 +9291,115 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** Defines the cross module constantsused by lights to avoid circular dependencies */
+    export class LightConstants {
+        /**
+         * Falloff Default: light is falling off following the material specification:
+         * standard material is using standard falloff whereas pbr material can request special falloff per materials.
+         */
+        static readonly FALLOFF_DEFAULT: number;
+        /**
+         * Falloff Physical: light is falling off following the inverse squared distance law.
+         */
+        static readonly FALLOFF_PHYSICAL: number;
+        /**
+         * Falloff gltf: light is falling off as described in the gltf moving to PBR document
+         * to enhance interoperability with other engines.
+         */
+        static readonly FALLOFF_GLTF: number;
+        /**
+         * Falloff Standard: light is falling off like in the standard material
+         * to enhance interoperability with other materials.
+         */
+        static readonly FALLOFF_STANDARD: number;
+        /**
+         * If every light affecting the material is in this lightmapMode,
+         * material.lightmapTexture adds or multiplies
+         * (depends on material.useLightmapAsShadowmap)
+         * after every other light calculations.
+         */
+        static readonly LIGHTMAP_DEFAULT: number;
+        /**
+         * material.lightmapTexture as only diffuse lighting from this light
+         * adds only specular lighting from this light
+         * adds dynamic shadows
+         */
+        static readonly LIGHTMAP_SPECULAR: number;
+        /**
+         * material.lightmapTexture as only lighting
+         * no light calculation from this light
+         * only adds dynamic shadows from this light
+         */
+        static readonly LIGHTMAP_SHADOWSONLY: number;
+        /**
+         * Each light type uses the default quantity according to its type:
+         *      point/spot lights use luminous intensity
+         *      directional lights use illuminance
+         */
+        static readonly INTENSITYMODE_AUTOMATIC: number;
+        /**
+         * lumen (lm)
+         */
+        static readonly INTENSITYMODE_LUMINOUSPOWER: number;
+        /**
+         * candela (lm/sr)
+         */
+        static readonly INTENSITYMODE_LUMINOUSINTENSITY: number;
+        /**
+         * lux (lm/m^2)
+         */
+        static readonly INTENSITYMODE_ILLUMINANCE: number;
+        /**
+         * nit (cd/m^2)
+         */
+        static readonly INTENSITYMODE_LUMINANCE: number;
+        /**
+         * Light type const id of the point light.
+         */
+        static readonly LIGHTTYPEID_POINTLIGHT: number;
+        /**
+         * Light type const id of the directional light.
+         */
+        static readonly LIGHTTYPEID_DIRECTIONALLIGHT: number;
+        /**
+         * Light type const id of the spot light.
+         */
+        static readonly LIGHTTYPEID_SPOTLIGHT: number;
+        /**
+         * Light type const id of the hemispheric light.
+         */
+        static readonly LIGHTTYPEID_HEMISPHERICLIGHT: number;
+        /**
+         * Sort function to order lights for rendering.
+         * @param a First Light object to compare to second.
+         * @param b Second Light object to compare first.
+         * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
+         */
+        static CompareLightsPriority(a: ISortableLight, b: ISortableLight): number;
+    }
+    /**
+     * Defines the common interface of sortable lights
+     */
+    export interface ISortableLight {
+        /**
+        * Gets or sets whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+        * the current shadow generator.
+        */
+        shadowEnabled: boolean;
+        /**
+        * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
+        * exceeding the number allowed of the materials.
+        */
+        renderPriority: number;
+    }
+}
+declare module BABYLON {
     /**
      * Base class of all the lights in Babylon. It groups all the generic information about lights.
      * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
      * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
      */
-    export abstract class Light extends Node {
+    export abstract class Light extends Node implements ISortableLight {
         /**
          * Falloff Default: light is falling off following the material specification:
          * standard material is using standard falloff whereas pbr material can request special falloff per materials.
@@ -9495,13 +9697,6 @@ declare module BABYLON {
          * @return true the mesh is affected otherwise, false.
          */
         canAffectMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Sort function to order lights for rendering.
-         * @param a First Light object to compare to second.
-         * @param b Second Light object to compare first.
-         * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
-         */
-        static CompareLightsPriority(a: Light, b: Light): number;
         /**
          * Releases resources associated with this node.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
@@ -11692,6 +11887,10 @@ declare module BABYLON {
         get texture(): Nullable<Texture>;
         set texture(texture: Nullable<Texture>);
         /**
+         * Gets the sampler name associated with this texture
+         */
+        get samplerName(): string;
+        /**
          * Gets or sets a boolean indicating if content needs to be converted to gamma space
          */
         convertToGammaSpace: boolean;
@@ -11746,6 +11945,7 @@ declare module BABYLON {
          */
         get level(): NodeMaterialConnectionPoint;
         get target(): NodeMaterialBlockTargets;
+        set target(value: NodeMaterialBlockTargets);
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
@@ -15735,7 +15935,7 @@ declare module BABYLON {
     /**
      * Strong typing of a Mesh Render related stage step action
      */
-    export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch, effect: Nullable<Effect>) => void;
+    export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: any, effect: Nullable<Effect>) => void;
     /**
      * Strong typing of a simple stage step action
      */
@@ -16260,7 +16460,7 @@ declare module BABYLON {
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         translationPivot: Vector2;
         /** @hidden */
-        protected _isAnimationSheetEnabled: boolean;
+        _isAnimationSheetEnabled: boolean;
         /**
          * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
          */
@@ -16432,7 +16632,8 @@ declare module BABYLON {
          * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
         billboardMode: number;
-        protected _isBillboardBased: boolean;
+        /** @hidden */
+        _isBillboardBased: boolean;
         /**
          * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
          */
@@ -16735,7 +16936,6 @@ declare module BABYLON {
         private _indexBuffer;
         private _drawWrapper;
         private _customWrappers;
-        private _cachedDefines;
         private _scaledColorStep;
         private _colorDiff;
         private _scaledDirection;
@@ -17290,6 +17490,33 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class UniformBufferEffectCommonAccessor {
+        setMatrix3x3: (name: string, matrix: Float32Array) => void;
+        setMatrix2x2: (name: string, matrix: Float32Array) => void;
+        setFloat: (name: string, x: number) => void;
+        setFloat2: (name: string, x: number, y: number, suffix?: string) => void;
+        setFloat3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+        setFloat4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+        setFloatArray: (name: string, array: Float32Array) => void;
+        setArray: (name: string, array: number[]) => void;
+        setIntArray: (name: string, array: Int32Array) => void;
+        setMatrix: (name: string, mat: IMatrixLike) => void;
+        setMatrices: (name: string, mat: Float32Array) => void;
+        setVector3: (name: string, vector: IVector3Like) => void;
+        setVector4: (name: string, vector: IVector4Like) => void;
+        setColor3: (name: string, color: IColor3Like, suffix?: string) => void;
+        setColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
+        setDirectColor4: (name: string, color: IColor4Like) => void;
+        setInt: (name: string, x: number, suffix?: string) => void;
+        setInt2: (name: string, x: number, y: number, suffix?: string) => void;
+        setInt3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+        setInt4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+        private _isUbo;
+        constructor(uboOrEffect: UniformBuffer | Effect);
+    }
+}
+declare module BABYLON {
     /**
      * Particle emitter represents a volume emitting particles.
      * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.
@@ -17318,9 +17545,14 @@ declare module BABYLON {
         clone(): IParticleEmitterType;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns the effect defines string
@@ -17393,9 +17625,14 @@ declare module BABYLON {
         clone(): BoxParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17485,9 +17722,14 @@ declare module BABYLON {
         clone(): ConeParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17579,9 +17821,14 @@ declare module BABYLON {
         clone(): CylinderParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17647,9 +17894,14 @@ declare module BABYLON {
         clone(): CylinderDirectedParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17732,9 +17984,14 @@ declare module BABYLON {
         clone(): HemisphericParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17798,9 +18055,14 @@ declare module BABYLON {
         clone(): PointParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17883,9 +18145,14 @@ declare module BABYLON {
         clone(): SphereParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -17949,9 +18216,14 @@ declare module BABYLON {
         clone(): SphereDirectedParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -18016,9 +18288,14 @@ declare module BABYLON {
         clone(): CustomParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -18095,9 +18372,14 @@ declare module BABYLON {
         clone(): MeshParticleEmitter;
         /**
          * Called by the GPUParticleSystem to setup the update shader
-         * @param effect defines the update shader
+         * @param uboOrEffect defines the update shader
          */
-        applyToShader(effect: Effect): void;
+        applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+        /**
+         * Creates the structure of the ubo for this particle emitter
+         * @param ubo ubo to create the structure for
+         */
+        buildUniformLayout(ubo: UniformBuffer): void;
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containing the defines string
@@ -24861,6 +25143,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the available options when creating a texture
+     */
+    export interface ITextureCreationOptions {
+        /** Defines if the texture will require mip maps or not (default: false) */
+        noMipmap?: boolean;
+        /** Defines if the texture needs to be inverted on the y axis during loading (default: true) */
+        invertY?: boolean;
+        /** Defines the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...) (default: Texture.TRILINEAR_SAMPLINGMODE) */
+        samplingMode?: number;
+        /** Ddefines a callback triggered when the texture has been loaded (default: null) */
+        onLoad?: Nullable<() => void>;
+        /** Defines a callback triggered when an error occurred during the loading session (default: null) */
+        onError?: Nullable<(message?: string, exception?: any) => void>;
+        /** Defines the buffer to load the texture from in case the texture is loaded from a buffer representation (default: null) */
+        buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>;
+        /** Defines if the buffer we are loading the texture from should be deleted after load (default: false) */
+        deleteBuffer?: boolean;
+        /** Defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...) (default: ) */
+        format?: number;
+        /** Defines an optional mime type information (default: undefined) */
+        mimeType?: string;
+        /** Options to be passed to the loader (default: undefined) */
+        loaderOptions?: any;
+        /** Specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg) (default: undefined) */
+        creationFlags?: number;
+        /** Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false) */
+        useSRGBBuffer?: boolean;
+    }
+    /**
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see https://doc.babylonjs.com/babylon101/materials#texture
      */
@@ -25037,6 +25348,7 @@ declare module BABYLON {
         private _mimeType?;
         private _loaderOptions?;
         private _creationFlags?;
+        private _useSRGBBuffer?;
         /** Returns the texture mime type if it was defined by a loader (undefined else) */
         get mimeType(): string | undefined;
         /**
@@ -25064,7 +25376,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/babylon101/materials#texture
          * @param url defines the url of the picture to load as a texture
          * @param sceneOrEngine defines the scene or engine the texture will belong to
-         * @param noMipmap defines if the texture will require mip maps or not
+         * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
          * @param invertY defines if the texture needs to be inverted on the y axis during loading
          * @param samplingMode defines the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
          * @param onLoad defines a callback triggered when the texture has been loaded
@@ -25076,7 +25388,7 @@ declare module BABYLON {
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -25138,7 +25450,7 @@ declare module BABYLON {
          * @param data Define the base64 payload without the data: prefix
          * @param name Define the name of the texture in the scene useful fo caching purpose for instance
          * @param scene Define the scene the texture should belong to
-         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
          * @param invertY define if the texture needs to be inverted on the y axis during loading
          * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
          * @param onLoad define a callback triggered when the texture has been loaded
@@ -25147,7 +25459,7 @@ declare module BABYLON {
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns the created texture
          */
-        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, format?: number, creationFlags?: number): Texture;
+        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, format?: number, creationFlags?: number): Texture;
         /**
          * Creates a texture from its data: representation. (data: will be added in case only the payload has been passed in)
          * @param data Define the base64 payload without the data: prefix
@@ -25155,7 +25467,7 @@ declare module BABYLON {
          * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
          * @param scene Define the scene the texture should belong to
          * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
-         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
          * @param invertY define if the texture needs to be inverted on the y axis during loading
          * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
          * @param onLoad define a callback triggered when the texture has been loaded
@@ -25164,7 +25476,7 @@ declare module BABYLON {
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns the created texture
          */
-        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, creationFlags?: number): Texture;
+        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, creationFlags?: number): Texture;
     }
 }
 declare module BABYLON {
@@ -25317,9 +25629,10 @@ declare module BABYLON {
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
          * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @param applyMorph  defines whether to apply the morph target before computing the bounding info
          * @returns the current mesh
          */
-        refreshBoundingInfo(applySkeleton?: boolean): InstancedMesh;
+        refreshBoundingInfo(applySkeleton?: boolean, applyMorph?: boolean): InstancedMesh;
         /** @hidden */
         _preActivate(): InstancedMesh;
         /** @hidden */
@@ -28644,336 +28957,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines a target to use with MorphTargetManager
-     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    export class MorphTarget implements IAnimatable {
-        /** defines the name of the target */
-        name: string;
-        /**
-         * Gets or sets the list of animations
-         */
-        animations: Animation[];
-        private _scene;
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _uvs;
-        private _influence;
-        private _uniqueId;
-        /**
-         * Observable raised when the influence changes
-         */
-        onInfluenceChanged: Observable<boolean>;
-        /** @hidden */
-        _onDataLayoutChanged: Observable<void>;
-        /**
-         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
-         */
-        get influence(): number;
-        set influence(influence: number);
-        /**
-         * Gets or sets the id of the morph Target
-         */
-        id: string;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride>;
-        set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>);
-        /**
-         * Creates a new MorphTarget
-         * @param name defines the name of the target
-         * @param influence defines the influence to use
-         * @param scene defines the scene the morphtarget belongs to
-         */
-        constructor(
-        /** defines the name of the target */
-        name: string, influence?: number, scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        get uniqueId(): number;
-        /**
-         * Gets a boolean defining if the target contains position data
-         */
-        get hasPositions(): boolean;
-        /**
-         * Gets a boolean defining if the target contains normal data
-         */
-        get hasNormals(): boolean;
-        /**
-         * Gets a boolean defining if the target contains tangent data
-         */
-        get hasTangents(): boolean;
-        /**
-         * Gets a boolean defining if the target contains texture coordinates data
-         */
-        get hasUVs(): boolean;
-        /**
-         * Affects position data to this target
-         * @param data defines the position data to use
-         */
-        setPositions(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the position data stored in this target
-         * @returns a FloatArray containing the position data (or null if not present)
-         */
-        getPositions(): Nullable<FloatArray>;
-        /**
-         * Affects normal data to this target
-         * @param data defines the normal data to use
-         */
-        setNormals(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the normal data stored in this target
-         * @returns a FloatArray containing the normal data (or null if not present)
-         */
-        getNormals(): Nullable<FloatArray>;
-        /**
-         * Affects tangent data to this target
-         * @param data defines the tangent data to use
-         */
-        setTangents(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the tangent data stored in this target
-         * @returns a FloatArray containing the tangent data (or null if not present)
-         */
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Affects texture coordinates data to this target
-         * @param data defines the texture coordinates data to use
-         */
-        setUVs(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the texture coordinates data stored in this target
-         * @returns a FloatArray containing the texture coordinates data (or null if not present)
-         */
-        getUVs(): Nullable<FloatArray>;
-        /**
-         * Clone the current target
-         * @returns a new MorphTarget
-         */
-        clone(): MorphTarget;
-        /**
-         * Serializes the current target into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        /**
-         * Returns the string "MorphTarget"
-         * @returns "MorphTarget"
-         */
-        getClassName(): string;
-        /**
-         * Creates a new target from serialized data
-         * @param serializationObject defines the serialized data to use
-         * @returns a new MorphTarget
-         */
-        static Parse(serializationObject: any): MorphTarget;
-        /**
-         * Creates a MorphTarget from mesh data
-         * @param mesh defines the source mesh
-         * @param name defines the name to use for the new target
-         * @param influence defines the influence to attach to the target
-         * @returns a new MorphTarget
-         */
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store 2D array textures containing user data
-     */
-    export class RawTexture2DArray extends Texture {
-        /** Gets or sets the texture format to use */
-        format: number;
-        private _depth;
-        /**
-         * Gets the number of layers of the texture
-         */
-        get depth(): number;
-        /**
-         * Create a new RawTexture2DArray
-         * @param data defines the data of the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param format defines the texture format to use
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
-         * @param invertY defines if texture must be stored with Y axis inverted
-         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
-        /** Gets or sets the texture format to use */
-        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
-        /**
-         * Update the texture with new data
-         * @param data defines the data to store in the texture
-         */
-        update(data: ArrayBufferView): void;
-        /**
-         * Creates a RGBA texture from some data.
-         * @param data Define the texture data
-         * @param width Define the width of the texture
-         * @param height Define the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param scene defines the scene the texture will belong to
-         * @param generateMipMaps Define whether or not to create mip maps for the texture
-         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
-         * @returns the RGBA texture
-         */
-        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, depth: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture2DArray;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class is used to deform meshes using morphing between different targets
-     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    export class MorphTargetManager implements IDisposable {
-        private _targets;
-        private _targetInfluenceChangedObservers;
-        private _targetDataLayoutChangedObservers;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _morphTargetTextureIndices;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _supportsUVs;
-        private _vertexCount;
-        private _textureVertexStride;
-        private _textureWidth;
-        private _textureHeight;
-        private _uniqueId;
-        private _tempInfluences;
-        private _canUseTextureForTargets;
-        /** @hidden */
-        _targetStoreTexture: Nullable<RawTexture2DArray>;
-        /**
-         * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
-         */
-        optimizeInfluencers: boolean;
-        /**
-         * Gets or sets a boolean indicating if normals must be morphed
-         */
-        enableNormalMorphing: boolean;
-        /**
-         * Gets or sets a boolean indicating if tangents must be morphed
-         */
-        enableTangentMorphing: boolean;
-        /**
-         * Gets or sets a boolean indicating if UV must be morphed
-         */
-        enableUVMorphing: boolean;
-        /**
-         * Creates a new MorphTargetManager
-         * @param scene defines the current scene
-         */
-        constructor(scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        get uniqueId(): number;
-        /**
-         * Gets the number of vertices handled by this manager
-         */
-        get vertexCount(): number;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of normals
-         */
-        get supportsNormals(): boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of tangents
-         */
-        get supportsTangents(): boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of texture coordinates
-         */
-        get supportsUVs(): boolean;
-        /**
-         * Gets the number of targets stored in this manager
-         */
-        get numTargets(): number;
-        /**
-         * Gets the number of influencers (ie. the number of targets with influences > 0)
-         */
-        get numInfluencers(): number;
-        /**
-         * Gets the list of influences (one per target)
-         */
-        get influences(): Float32Array;
-        private _useTextureToStoreTargets;
-        /**
-         * Gets or sets a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
-         * Please note that this option is not available if the hardware does not support it
-         */
-        get useTextureToStoreTargets(): boolean;
-        set useTextureToStoreTargets(value: boolean);
-        /**
-         * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
-         */
-        get isUsingTextureForTargets(): boolean;
-        /**
-         * Gets the active target at specified index. An active target is a target with an influence > 0
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getActiveTarget(index: number): MorphTarget;
-        /**
-         * Gets the target at specified index
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getTarget(index: number): MorphTarget;
-        /**
-         * Add a new target to this manager
-         * @param target defines the target to add
-         */
-        addTarget(target: MorphTarget): void;
-        /**
-         * Removes a target from the manager
-         * @param target defines the target to remove
-         */
-        removeTarget(target: MorphTarget): void;
-        /** @hidden */
-        _bind(effect: Effect): void;
-        /**
-         * Clone the current manager
-         * @returns a new MorphTargetManager
-         */
-        clone(): MorphTargetManager;
-        /**
-         * Serializes the current manager into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        private _syncActiveTargets;
-        /**
-         * Synchronize the targets with all the meshes using this morph target manager
-         */
-        synchronize(): void;
-        /**
-         * Release all resources
-         */
-        dispose(): void;
-        /**
-         * Creates a new MorphTargetManager from serialized data
-         * @param serializationObject defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns the new MorphTargetManager
-         */
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to represent a specific level of detail of a mesh
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      */
@@ -30465,12 +30448,6 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/how_to_use_lod
          */
         onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
-        /**
-         * Gets or sets the morph target manager
-         * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
-         */
-        get morphTargetManager(): Nullable<MorphTargetManager>;
-        set morphTargetManager(value: Nullable<MorphTargetManager>);
         /** @hidden */
         _creationDataStorage: Nullable<_CreationDataStorage>;
         /** @hidden */
@@ -30755,9 +30732,10 @@ declare module BABYLON {
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
          * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @param applyMorph  defines whether to apply the morph target before computing the bounding info
          * @returns the current mesh
          */
-        refreshBoundingInfo(applySkeleton?: boolean): Mesh;
+        refreshBoundingInfo(applySkeleton?: boolean, applyMorph?: boolean): Mesh;
         /** @hidden */
         _createGlobalSubMesh(force: boolean): Nullable<SubMesh>;
         /**
@@ -32274,6 +32252,336 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines a target to use with MorphTargetManager
+     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    export class MorphTarget implements IAnimatable {
+        /** defines the name of the target */
+        name: string;
+        /**
+         * Gets or sets the list of animations
+         */
+        animations: Animation[];
+        private _scene;
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _uvs;
+        private _influence;
+        private _uniqueId;
+        /**
+         * Observable raised when the influence changes
+         */
+        onInfluenceChanged: Observable<boolean>;
+        /** @hidden */
+        _onDataLayoutChanged: Observable<void>;
+        /**
+         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
+         */
+        get influence(): number;
+        set influence(influence: number);
+        /**
+         * Gets or sets the id of the morph Target
+         */
+        id: string;
+        private _animationPropertiesOverride;
+        /**
+         * Gets or sets the animation properties override
+         */
+        get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride>;
+        set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>);
+        /**
+         * Creates a new MorphTarget
+         * @param name defines the name of the target
+         * @param influence defines the influence to use
+         * @param scene defines the scene the morphtarget belongs to
+         */
+        constructor(
+        /** defines the name of the target */
+        name: string, influence?: number, scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        get uniqueId(): number;
+        /**
+         * Gets a boolean defining if the target contains position data
+         */
+        get hasPositions(): boolean;
+        /**
+         * Gets a boolean defining if the target contains normal data
+         */
+        get hasNormals(): boolean;
+        /**
+         * Gets a boolean defining if the target contains tangent data
+         */
+        get hasTangents(): boolean;
+        /**
+         * Gets a boolean defining if the target contains texture coordinates data
+         */
+        get hasUVs(): boolean;
+        /**
+         * Affects position data to this target
+         * @param data defines the position data to use
+         */
+        setPositions(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the position data stored in this target
+         * @returns a FloatArray containing the position data (or null if not present)
+         */
+        getPositions(): Nullable<FloatArray>;
+        /**
+         * Affects normal data to this target
+         * @param data defines the normal data to use
+         */
+        setNormals(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the normal data stored in this target
+         * @returns a FloatArray containing the normal data (or null if not present)
+         */
+        getNormals(): Nullable<FloatArray>;
+        /**
+         * Affects tangent data to this target
+         * @param data defines the tangent data to use
+         */
+        setTangents(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the tangent data stored in this target
+         * @returns a FloatArray containing the tangent data (or null if not present)
+         */
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Affects texture coordinates data to this target
+         * @param data defines the texture coordinates data to use
+         */
+        setUVs(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the texture coordinates data stored in this target
+         * @returns a FloatArray containing the texture coordinates data (or null if not present)
+         */
+        getUVs(): Nullable<FloatArray>;
+        /**
+         * Clone the current target
+         * @returns a new MorphTarget
+         */
+        clone(): MorphTarget;
+        /**
+         * Serializes the current target into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Returns the string "MorphTarget"
+         * @returns "MorphTarget"
+         */
+        getClassName(): string;
+        /**
+         * Creates a new target from serialized data
+         * @param serializationObject defines the serialized data to use
+         * @returns a new MorphTarget
+         */
+        static Parse(serializationObject: any): MorphTarget;
+        /**
+         * Creates a MorphTarget from mesh data
+         * @param mesh defines the source mesh
+         * @param name defines the name to use for the new target
+         * @param influence defines the influence to attach to the target
+         * @returns a new MorphTarget
+         */
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store 2D array textures containing user data
+     */
+    export class RawTexture2DArray extends Texture {
+        /** Gets or sets the texture format to use */
+        format: number;
+        private _depth;
+        /**
+         * Gets the number of layers of the texture
+         */
+        get depth(): number;
+        /**
+         * Create a new RawTexture2DArray
+         * @param data defines the data of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param format defines the texture format to use
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
+         * @param invertY defines if texture must be stored with Y axis inverted
+         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         */
+        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
+        /** Gets or sets the texture format to use */
+        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
+        /**
+         * Update the texture with new data
+         * @param data defines the data to store in the texture
+         */
+        update(data: ArrayBufferView): void;
+        /**
+         * Creates a RGBA texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param scene defines the scene the texture will belong to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+         * @returns the RGBA texture
+         */
+        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, depth: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture2DArray;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class is used to deform meshes using morphing between different targets
+     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    export class MorphTargetManager implements IDisposable {
+        private _targets;
+        private _targetInfluenceChangedObservers;
+        private _targetDataLayoutChangedObservers;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _morphTargetTextureIndices;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _supportsUVs;
+        private _vertexCount;
+        private _textureVertexStride;
+        private _textureWidth;
+        private _textureHeight;
+        private _uniqueId;
+        private _tempInfluences;
+        private _canUseTextureForTargets;
+        /** @hidden */
+        _targetStoreTexture: Nullable<RawTexture2DArray>;
+        /**
+         * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
+         */
+        optimizeInfluencers: boolean;
+        /**
+         * Gets or sets a boolean indicating if normals must be morphed
+         */
+        enableNormalMorphing: boolean;
+        /**
+         * Gets or sets a boolean indicating if tangents must be morphed
+         */
+        enableTangentMorphing: boolean;
+        /**
+         * Gets or sets a boolean indicating if UV must be morphed
+         */
+        enableUVMorphing: boolean;
+        /**
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
+         */
+        constructor(scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        get uniqueId(): number;
+        /**
+         * Gets the number of vertices handled by this manager
+         */
+        get vertexCount(): number;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of normals
+         */
+        get supportsNormals(): boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of tangents
+         */
+        get supportsTangents(): boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of texture coordinates
+         */
+        get supportsUVs(): boolean;
+        /**
+         * Gets the number of targets stored in this manager
+         */
+        get numTargets(): number;
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
+        get numInfluencers(): number;
+        /**
+         * Gets the list of influences (one per target)
+         */
+        get influences(): Float32Array;
+        private _useTextureToStoreTargets;
+        /**
+         * Gets or sets a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
+         * Please note that this option is not available if the hardware does not support it
+         */
+        get useTextureToStoreTargets(): boolean;
+        set useTextureToStoreTargets(value: boolean);
+        /**
+         * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
+         */
+        get isUsingTextureForTargets(): boolean;
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getActiveTarget(index: number): MorphTarget;
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getTarget(index: number): MorphTarget;
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
+        addTarget(target: MorphTarget): void;
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
+        removeTarget(target: MorphTarget): void;
+        /** @hidden */
+        _bind(effect: Effect): void;
+        /**
+         * Clone the current manager
+         * @returns a new MorphTargetManager
+         */
+        clone(): MorphTargetManager;
+        /**
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        private _syncActiveTargets;
+        /**
+         * Synchronize the targets with all the meshes using this morph target manager
+         */
+        synchronize(): void;
+        /**
+         * Release all resources
+         */
+        dispose(): void;
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+    }
+}
+declare module BABYLON {
+    /**
      * Class containing static functions to help procedurally build meshes
      */
     export class DiscBuilder {
@@ -32761,6 +33069,7 @@ declare module BABYLON {
         EMISSIVEFRESNEL: boolean;
         FRESNEL: boolean;
         NORMAL: boolean;
+        TANGENT: boolean;
         UV1: boolean;
         UV2: boolean;
         VERTEXCOLOR: boolean;
@@ -34323,6 +34632,7 @@ declare module BABYLON {
         _currentLOD: Nullable<AbstractMesh>;
         _currentLODIsUpToDate: boolean;
         _collisionRetryCount: number;
+        _morphTargetManager: Nullable<MorphTargetManager>;
     }
     /**
      * Class used to store all common mesh properties
@@ -34441,6 +34751,14 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
          */
         get isFacetDataEnabled(): boolean;
+        /**
+         * Gets or sets the morph target manager
+         * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+         */
+        get morphTargetManager(): Nullable<MorphTargetManager>;
+        set morphTargetManager(value: Nullable<MorphTargetManager>);
+        /** @hidden */
+        _syncGeometryWithMorphTargetManager(): void;
         /** @hidden */
         _updateNonUniformScalingState(value: boolean): boolean;
         /**
@@ -34464,7 +34782,7 @@ declare module BABYLON {
          */
         definedFacingForward: boolean;
         /** @hidden */
-        _occlusionQuery: Nullable<WebGLQuery>;
+        _occlusionQuery: Nullable<WebGLQuery | number>;
         /** @hidden */
         _renderingGroup: Nullable<RenderingGroup>;
         /**
@@ -34907,13 +35225,14 @@ declare module BABYLON {
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
          * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @param applyMorph  defines whether to apply the morph target before computing the bounding info
          * @returns the current mesh
          */
-        refreshBoundingInfo(applySkeleton?: boolean): AbstractMesh;
+        refreshBoundingInfo(applySkeleton?: boolean, applyMorph?: boolean): AbstractMesh;
         /** @hidden */
         _refreshBoundingInfo(data: Nullable<FloatArray>, bias: Nullable<Vector2>): void;
         /** @hidden */
-        _getPositionData(applySkeleton: boolean): Nullable<FloatArray>;
+        _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray>;
         /** @hidden */
         _updateBoundingInfo(): AbstractMesh;
         /** @hidden */
@@ -37840,6 +38159,8 @@ declare module BABYLON {
         standardDerivatives: boolean;
         /** Defines if s3tc texture compression is supported */
         s3tc?: WEBGL_compressed_texture_s3tc;
+        /** Defines if s3tc sRGB texture compression is supported */
+        s3tc_srgb?: WEBGL_compressed_texture_s3tc_srgb;
         /** Defines if pvrtc texture compression is supported */
         pvrtc: any;
         /** Defines if etc1 texture compression is supported */
@@ -37888,6 +38209,8 @@ declare module BABYLON {
         timerQuery?: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         canUseTimestampForTimerQuery: boolean;
+        /** Defines if occlusion queries are supported by the engine */
+        supportOcclusionQuery: boolean;
         /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
         multiview?: any;
         /** Defines if oculus multiview is supported (https://developer.oculus.com/documentation/oculus-browser/latest/concepts/browser-multiview/) */
@@ -37906,6 +38229,8 @@ declare module BABYLON {
         canUseGLVertexID: boolean;
         /** Defines if compute shaders are supported by the engine */
         supportComputeShaders: boolean;
+        /** Defines if sRGB texture formats are supported */
+        supportSRGBBuffers: boolean;
     }
 }
 declare module BABYLON {
@@ -39426,7 +39751,7 @@ declare module BABYLON {
         }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => void, prepareTextureProcessFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | {
             width: number;
             height: number;
-        }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any): InternalTexture;
+        }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture;
         /**
          * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
@@ -39447,9 +39772,10 @@ declare module BABYLON {
          * @param mimeType defines an optional mime type
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -39609,9 +39935,9 @@ declare module BABYLON {
         /** @hidden */
         _getWebGLTextureType(type: number): number;
         /** @hidden */
-        _getInternalFormat(format: number): number;
+        _getInternalFormat(format: number, useSRGBBuffer?: boolean): number;
         /** @hidden */
-        _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
+        _getRGBABufferInternalSizedFormat(type: number, format?: number, useSRGBBuffer?: boolean): number;
         /** @hidden */
         _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */
@@ -40079,6 +40405,8 @@ declare module BABYLON {
         _lodGenerationOffset: number;
         /** @hidden */
         _depthStencilTexture: Nullable<InternalTexture>;
+        /** @hidden */
+        _useSRGBBuffer: boolean;
         /** @hidden */
         _colorTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
@@ -42748,6 +43076,7 @@ declare module BABYLON {
         private _pointerBlurEvent;
         private _wheelEventName;
         private _mouseId;
+        private _isUsingFirefox;
         private _pointerWheelClearObserver;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
@@ -42831,6 +43160,12 @@ declare module BABYLON {
          * @returns DeviceType enum value
          */
         private _getGamepadDeviceType;
+        /**
+         * Get DeviceType from a given pointer/mouse/touch event.
+         * @param evt PointerEvent to evaluate
+         * @returns DeviceType interpreted from event
+         */
+        private _getPointerType;
     }
 }
 declare module BABYLON {
@@ -48054,6 +48389,14 @@ declare module BABYLON {
          */
         rotateDraggedObject: boolean;
         /**
+         * Sets an ancestor node to drag instead of the attached node.
+         * All dragging induced by this behavior will happen on the ancestor node, while the relative position/orientation/scaling
+         * between the ancestor node and child node will be kept the same.
+         * This is useful if the attached node is acting as an anchor to move its hierarchy, and you don't want the ancestor node to be the one to receive the pointer inputs.
+         * NB : This property must be set to an actual ancestor of the attached node, or else the dragging behavior will have an undefined result.
+         */
+        ancestorToDrag: Nullable<TransformNode>;
+        /**
          * If the behavior is currently in a dragging state
          */
         dragging: boolean;
@@ -48095,6 +48438,10 @@ declare module BABYLON {
          *  The name of the behavior
          */
         get name(): string;
+        /**
+         *  Returns true if the attached mesh is currently moving with this behavior
+         */
+        get isMoving(): boolean;
         /**
          *  Initializes the behavior
          */
@@ -48240,9 +48587,6 @@ declare module BABYLON {
         private _applyPitchOffset;
         private _angularClamp;
         private _orientationClamp;
-        private _vectorSlerpToRef;
-        private _vectorSmoothToRef;
-        private _quaternionSmoothToRef;
         private _passedOrientationDeadzone;
         private _updateLeashing;
         private _updateTransformToGoal;
@@ -57984,6 +58328,8 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export type OcclusionQuery = WebGLQuery | number;
+    /** @hidden */
     export class _OcclusionDataStorage {
         /** @hidden */
         occlusionInternalRetryCounter: number;
@@ -58003,25 +58349,25 @@ declare module BABYLON {
              * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
              * @return the new query
              */
-            createQuery(): WebGLQuery;
+            createQuery(): OcclusionQuery;
             /**
              * Delete and release a webGL query
              * @param query defines the query to delete
              * @return the current engine
              */
-            deleteQuery(query: WebGLQuery): Engine;
+            deleteQuery(query: OcclusionQuery): Engine;
             /**
              * Check if a given query has resolved and got its value
              * @param query defines the query to check
              * @returns true if the query got its value
              */
-            isQueryResultAvailable(query: WebGLQuery): boolean;
+            isQueryResultAvailable(query: OcclusionQuery): boolean;
             /**
              * Gets the value of a given query
              * @param query defines the query to check
              * @returns the value of the query
              */
-            getQueryResult(query: WebGLQuery): number;
+            getQueryResult(query: OcclusionQuery): number;
             /**
              * Initiates an occlusion query
              * @param algorithmType defines the algorithm to use
@@ -58029,7 +58375,7 @@ declare module BABYLON {
              * @returns the current engine
              * @see https://doc.babylonjs.com/features/occlusionquery
              */
-            beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine;
+            beginOcclusionQuery(algorithmType: number, query: OcclusionQuery): boolean;
             /**
              * Ends an occlusion query
              * @see https://doc.babylonjs.com/features/occlusionquery
@@ -58386,7 +58732,7 @@ declare module BABYLON {
         Depth24Plus = "depth24plus",
         Depth24PlusStencil8 = "depth24plus-stencil8",
         Depth32Float = "depth32float",
-        BC1RGBAUNorm = "bc1-rgba-unorm",
+        BC1RGBAUnorm = "bc1-rgba-unorm",
         BC1RGBAUnormSRGB = "bc1-rgba-unorm-srgb",
         BC2RGBAUnorm = "bc2-rgba-unorm",
         BC2RGBAUnormSRGB = "bc2-rgba-unorm-srgb",
@@ -59112,7 +59458,7 @@ declare module BABYLON {
         }): imageBitmap is ImageBitmap[];
         setCommandEncoder(encoder: GPUCommandEncoder): void;
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
-        static GetWebGPUTextureFormat(type: number, format: number): GPUTextureFormat;
+        static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -59449,6 +59795,25 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export class WebGPUQuerySet {
+        private _device;
+        private _bufferManager;
+        private _count;
+        private _canUseMultipleBuffers;
+        private _querySet;
+        private _queryBuffer;
+        private _dstBuffers;
+        get querySet(): GPUQuerySet;
+        constructor(count: number, type: QueryType, device: GPUDevice, bufferManager: WebGPUBufferManager, canUseMultipleBuffers?: boolean);
+        private _getBuffer;
+        readValues(firstQuery?: number, queryCount?: number): Promise<BigUint64Array | null>;
+        readValue(firstQuery?: number): Promise<number | null>;
+        readTwoValuesAndSubtract(firstQuery?: number): Promise<number | null>;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export class WebGPUTimestampQuery {
         private _device;
         private _bufferManager;
@@ -59465,14 +59830,36 @@ declare module BABYLON {
     }
     /** @hidden */
     export class WebGPUDurationMeasure {
-        private _device;
-        private _bufferManager;
         private _querySet;
-        private _queryBuffer;
-        private _dstBuffer;
         constructor(device: GPUDevice, bufferManager: WebGPUBufferManager);
         start(encoder: GPUCommandEncoder): void;
-        stop(encoder: GPUCommandEncoder): Promise<number>;
+        stop(encoder: GPUCommandEncoder): Promise<number | null>;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUOcclusionQuery {
+        private _engine;
+        private _device;
+        private _bufferManager;
+        private _currentTotalIndices;
+        private _countIncrement;
+        private _querySet;
+        private _availableIndices;
+        private _lastBuffer;
+        private _frameLastBuffer;
+        get querySet(): GPUQuerySet;
+        get hasQueries(): boolean;
+        get canBeginQuery(): boolean;
+        constructor(engine: WebGPUEngine, device: GPUDevice, bufferManager: WebGPUBufferManager, startCount?: number, incrementCount?: number);
+        createQuery(): number;
+        deleteQuery(index: number): void;
+        isQueryResultAvailable(index: number): boolean;
+        getQueryResult(index: number): number;
+        private _retrieveQueryBuffer;
+        private _allocateNewIndices;
+        private _delayQuerySetDispose;
         dispose(): void;
     }
 }
@@ -59628,6 +60015,8 @@ declare module BABYLON {
         /** @hidden */
         _timestampQuery: WebGPUTimestampQuery;
         /** @hidden */
+        _occlusionQuery: WebGPUOcclusionQuery;
+        /** @hidden */
         _compiledComputeEffects: {
             [key: string]: ComputeEffect;
         };
@@ -59643,6 +60032,10 @@ declare module BABYLON {
             numEnableEffects: number;
             numEnableDrawWrapper: number;
         };
+        /**
+         * Max number of uncaptured error messages to log
+         */
+        numMaxUncapturedErrors: number;
         private _mainTexture;
         private _depthTexture;
         private _mainTextureExtends;
@@ -59659,10 +60052,13 @@ declare module BABYLON {
         _currentRenderPass: Nullable<GPURenderPassEncoder>;
         /** @hidden */
         _mainRenderPassWrapper: WebGPURenderPassWrapper;
-        private _rttRenderPassWrapper;
+        /** @hidden */
+        _rttRenderPassWrapper: WebGPURenderPassWrapper;
         /** @hidden */
         _pendingDebugCommands: Array<[string, Nullable<string>]>;
         private _bundleList;
+        /** @hidden */
+        _onAfterUnbindFrameBufferObservable: Observable<WebGPUEngine>;
         private _defaultMaterialContext;
         private _currentMaterialContext;
         private _currentDrawContext;
@@ -59773,6 +60169,7 @@ declare module BABYLON {
         private _initializeLimits;
         private _initializeContextAndSwapChain;
         private _initializeMainAttachments;
+        private _createSwapChain;
         /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
@@ -59974,9 +60371,10 @@ declare module BABYLON {
          * @param mimeType defines an optional mime type
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
         generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
         /**
          * Update the sampling mode of a given texture
@@ -60073,6 +60471,8 @@ declare module BABYLON {
         /** @hidden */
         _endRenderTargetRenderPass(): void;
         private _getCurrentRenderPass;
+        /** @hidden */
+        _getCurrentRenderPassIndex(): number;
         private _startMainRenderPass;
         private _endMainRenderPass;
         /**
@@ -63762,6 +64162,7 @@ declare module BABYLON {
         PREMULTIPLYALPHA: boolean;
         EMISSIVE: boolean;
         EMISSIVEDIRECTUV: number;
+        GAMMAEMISSIVE: boolean;
         REFLECTIVITY: boolean;
         REFLECTIVITYDIRECTUV: number;
         SPECULARTERM: boolean;
@@ -70164,6 +70565,8 @@ declare module BABYLON {
         invertX: boolean;
         /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
         invertY: boolean;
+        /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
+        useParallaxOcclusion: boolean;
         /**
          * Create a new PerturbNormalBlock
          * @param name defines the block name
@@ -70199,9 +70602,25 @@ declare module BABYLON {
         */
         get strength(): NodeMaterialConnectionPoint;
         /**
+        * Gets the view direction input component
+        */
+        get viewDirection(): NodeMaterialConnectionPoint;
+        /**
+        * Gets the parallax scale input component
+        */
+        get parallaxScale(): NodeMaterialConnectionPoint;
+        /**
+        * Gets the parallax height input component
+        */
+        get parallaxHeight(): NodeMaterialConnectionPoint;
+        /**
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the uv offset output component
+         */
+        get uvOffset(): NodeMaterialConnectionPoint;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         autoConfigure(material: NodeMaterial): void;
@@ -75123,6 +75542,24 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export interface IGPUParticleSystemPlatform {
+        alignDataInBuffer: boolean;
+        isUpdateBufferCreated: () => boolean;
+        isUpdateBufferReady: () => boolean;
+        createUpdateBuffer: (defines: string) => UniformBufferEffectCommonAccessor;
+        createVertexBuffers: (updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }) => void;
+        createParticleBuffer: (data: number[]) => DataArray | DataBuffer;
+        bindDrawBuffers: (index: number, effect: Effect) => void;
+        preUpdateParticleBuffer: () => void;
+        updateParticleBuffer: (index: number, targetBuffer: Buffer, currentActiveCount: number) => void;
+        releaseBuffers: () => void;
+        releaseVertexBuffers: () => void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var gpuUpdateParticlesPixelShader: {
         name: string;
         shader: string;
@@ -75131,6 +75568,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var gpuUpdateParticlesVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var gpuUpdateParticlesComputeShader: {
         name: string;
         shader: string;
     };
@@ -75178,13 +75622,10 @@ declare module BABYLON {
         private _activeCount;
         private _currentActiveCount;
         private _accumulatedCount;
-        private _renderEffect;
-        private _updateEffect;
+        private _updateBuffer;
         private _buffer0;
         private _buffer1;
         private _spriteBuffer;
-        private _updateVAO;
-        private _renderVAO;
         private _targetIndex;
         private _sourceBuffer;
         private _targetBuffer;
@@ -75193,14 +75634,18 @@ declare module BABYLON {
         private _started;
         private _stopped;
         private _timeDelta;
-        private _randomTexture;
-        private _randomTexture2;
+        /** @hidden */
+        _randomTexture: RawTexture;
+        /** @hidden */
+        _randomTexture2: RawTexture;
         private _attributesStrideSize;
-        private _updateEffectOptions;
+        private _cachedUpdateDefines;
         private _randomTextureSize;
         private _actualFrame;
-        private _customEffect;
+        private _drawWrapper;
+        private _customWrappers;
         private readonly _rawTextureWidth;
+        private _platform;
         /**
          * Gets a boolean indicating if the GPU particles can be rendered on current browser
          */
@@ -75284,6 +75729,7 @@ declare module BABYLON {
          * @returns The effect
          */
         getCustomEffect(blendMode?: number): Nullable<Effect>;
+        private _getCustomDrawWrapper;
         /**
          * Sets the custom effect used to render the particles
          * @param effect The effect to set
@@ -75300,7 +75746,8 @@ declare module BABYLON {
          * Gets the name of the particle vertex shader
          */
         get vertexShaderName(): string;
-        private _colorGradientsTexture;
+        /** @hidden */
+        _colorGradientsTexture: RawTexture;
         protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem;
         /**
          * Adds a new color gradient
@@ -75319,11 +75766,16 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeColorGradient(gradient: number): GPUParticleSystem;
-        private _angularSpeedGradientsTexture;
-        private _sizeGradientsTexture;
-        private _velocityGradientsTexture;
-        private _limitVelocityGradientsTexture;
-        private _dragGradientsTexture;
+        /** @hidden */
+        _angularSpeedGradientsTexture: RawTexture;
+        /** @hidden */
+        _sizeGradientsTexture: RawTexture;
+        /** @hidden */
+        _velocityGradientsTexture: RawTexture;
+        /** @hidden */
+        _limitVelocityGradientsTexture: RawTexture;
+        /** @hidden */
+        _dragGradientsTexture: RawTexture;
         private _addFactorGradient;
         /**
          * Adds a new size gradient
@@ -75492,20 +75944,24 @@ declare module BABYLON {
          * @param name The name of the particle system
          * @param options The options used to create the system
          * @param sceneOrEngine The scene the particle system belongs to or the engine to use if no scene
-         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          * @param customEffect a custom effect used to change the way particles are rendered by default
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          */
         constructor(name: string, options: Partial<{
             capacity: number;
             randomTextureSize: number;
-        }>, sceneOrEngine: Scene | ThinEngine, isAnimationSheetEnabled?: boolean, customEffect?: Nullable<Effect>);
+        }>, sceneOrEngine: Scene | ThinEngine, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean);
         protected _reset(): void;
-        private _createUpdateVAO;
-        private _createRenderVAO;
+        private _createVertexBuffers;
         private _initialize;
         /** @hidden */
         _recreateUpdateEffect(): void;
-        private _getEffect;
+        /** @hidden */
+        _getWrapper(blendMode: number): DrawWrapper;
+        /** @hidden */
+        static _GetAttributeNamesOrOptions(hasColorGradients?: boolean, isAnimationSheetEnabled?: boolean, isBillboardBased?: boolean, isBillboardStretched?: boolean): string[];
+        /** @hidden */
+        static _GetEffectCreationOptions(isAnimationSheetEnabled?: boolean): string[];
         /**
          * Fill the defines array according to the current settings of the particle system
          * @param defines Array to be updated
@@ -75519,8 +75975,6 @@ declare module BABYLON {
          * @param samplers Samplers array to fill
          */
         fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>): void;
-        /** @hidden */
-        _recreateRenderEffect(): Effect;
         /**
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
          * @param preWarm defines if we are in the pre-warmimg phase
@@ -75533,18 +75987,19 @@ declare module BABYLON {
         private _createLimitVelocityGradientTexture;
         private _createDragGradientTexture;
         private _createColorGradientTexture;
+        private _render;
         /**
          * Renders the particle system in its current state
          * @param preWarm defines if the system should only update the particles but not render them
+         * @param forceUpdateOnly if true, force to only update the particles and never display them (meaning, even if preWarm=false, when forceUpdateOnly=true the particles won't be displayed)
          * @returns the current number of particles
          */
-        render(preWarm?: boolean): number;
+        render(preWarm?: boolean, forceUpdateOnly?: boolean): number;
         /**
          * Rebuilds the particle system
          */
         rebuild(): void;
         private _releaseBuffers;
-        private _releaseVAOs;
         /**
          * Disposes the particle system and free the associated resources
          * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
@@ -75572,6 +76027,57 @@ declare module BABYLON {
          * @returns the parsed GPU particle system
          */
         static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): GPUParticleSystem;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
+        private _parent;
+        private _engine;
+        private _updateEffect;
+        private _updateEffectOptions;
+        private _renderVAO;
+        private _updateVAO;
+        readonly alignDataInBuffer: boolean;
+        constructor(parent: GPUParticleSystem, engine: ThinEngine);
+        isUpdateBufferCreated(): boolean;
+        isUpdateBufferReady(): boolean;
+        createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor;
+        createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }): void;
+        createParticleBuffer(data: number[]): DataArray | DataBuffer;
+        bindDrawBuffers(index: number, effect: Effect): void;
+        preUpdateParticleBuffer(): void;
+        updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void;
+        releaseBuffers(): void;
+        releaseVertexBuffers(): void;
+        private _createUpdateVAO;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
+        private _parent;
+        private _engine;
+        private _updateComputeShader;
+        private _simParamsComputeShader;
+        private _bufferComputeShader;
+        private _renderVertexBuffers;
+        readonly alignDataInBuffer: boolean;
+        constructor(parent: GPUParticleSystem, engine: ThinEngine);
+        isUpdateBufferCreated(): boolean;
+        isUpdateBufferReady(): boolean;
+        createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor;
+        createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: {
+            [key: string]: VertexBuffer;
+        }): void;
+        createParticleBuffer(data: number[]): DataArray | DataBuffer;
+        bindDrawBuffers(index: number, effect: Effect): void;
+        preUpdateParticleBuffer(): void;
+        updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void;
+        releaseBuffers(): void;
+        releaseVertexBuffers(): void;
     }
 }
 declare module BABYLON {
@@ -83960,6 +84466,14 @@ interface WebGLRenderingContext {
     RG: number;
     R8: number;
     RG8: number;
+    SRGB: number;
+    SRGB8: number;
+    SRGB8_ALPHA8: number;
+
+    COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR: number;
+    COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT: number;
+    COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT: number;
+    COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT: number;
 
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
@@ -84093,7 +84607,7 @@ interface ImageBitmap {
     close(): void;
 }
 
-interface WebGLQuery extends WebGLObject {
+interface WebGLQuery {
 }
 
 declare var WebGLQuery: {
@@ -84101,7 +84615,7 @@ declare var WebGLQuery: {
     new(): WebGLQuery;
 };
 
-interface WebGLSampler extends WebGLObject {
+interface WebGLSampler {
 }
 
 declare var WebGLSampler: {
@@ -84109,7 +84623,7 @@ declare var WebGLSampler: {
     new(): WebGLSampler;
 };
 
-interface WebGLSync extends WebGLObject {
+interface WebGLSync {
 }
 
 declare var WebGLSync: {
@@ -84117,7 +84631,7 @@ declare var WebGLSync: {
     new(): WebGLSync;
 };
 
-interface WebGLTransformFeedback extends WebGLObject {
+interface WebGLTransformFeedback {
 }
 
 declare var WebGLTransformFeedback: {
@@ -84125,7 +84639,7 @@ declare var WebGLTransformFeedback: {
     new(): WebGLTransformFeedback;
 };
 
-interface WebGLVertexArrayObject extends WebGLObject {
+interface WebGLVertexArrayObject {
 }
 
 declare var WebGLVertexArrayObject: {

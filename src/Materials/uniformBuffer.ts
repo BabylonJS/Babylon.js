@@ -1,6 +1,6 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray } from "../types";
-import { IMatrixLike, IVector3Like, IVector4Like, IColor3Like } from "../Maths/math.like";
+import { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
 import { Effect } from "./effect";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { DataBuffer } from '../Buffers/dataBuffer';
@@ -153,6 +153,13 @@ export class UniformBuffer {
     public updateColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
 
     /**
+     * Lambda to Update vec4 of float from a Color in a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+     public updateDirectColor4: (name: string, color: IColor4Like, suffix?: string) => void;
+
+     /**
      * Lambda to Update a int a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
@@ -231,6 +238,7 @@ export class UniformBuffer {
             this.updateVector4 = this._updateVector4ForEffect;
             this.updateColor3 = this._updateColor3ForEffect;
             this.updateColor4 = this._updateColor4ForEffect;
+            this.updateDirectColor4 = this._updateDirectColor4ForEffect;
             this.updateInt = this._updateIntForEffect;
             this.updateInt2 = this._updateInt2ForEffect;
             this.updateInt3 = this._updateInt3ForEffect;
@@ -253,6 +261,7 @@ export class UniformBuffer {
             this.updateVector4 = this._updateVector4ForUniform;
             this.updateColor3 = this._updateColor3ForUniform;
             this.updateColor4 = this._updateColor4ForUniform;
+            this.updateDirectColor4 = this._updateDirectColor4ForUniform;
             this.updateInt = this._updateIntForUniform;
             this.updateInt2 = this._updateInt2ForUniform;
             this.updateInt3 = this._updateInt3ForUniform;
@@ -896,11 +905,23 @@ export class UniformBuffer {
         this._currentEffect.setColor4(name + suffix, color, alpha);
     }
 
+    private _updateDirectColor4ForEffect(name: string, color: IColor4Like, suffix = "") {
+        this._currentEffect.setDirectColor4(name + suffix, color);
+    }
+
     private _updateColor4ForUniform(name: string, color: IColor3Like, alpha: number) {
         UniformBuffer._tempBuffer[0] = color.r;
         UniformBuffer._tempBuffer[1] = color.g;
         UniformBuffer._tempBuffer[2] = color.b;
         UniformBuffer._tempBuffer[3] = alpha;
+        this.updateUniform(name, UniformBuffer._tempBuffer, 4);
+    }
+
+    private _updateDirectColor4ForUniform(name: string, color: IColor4Like) {
+        UniformBuffer._tempBuffer[0] = color.r;
+        UniformBuffer._tempBuffer[1] = color.g;
+        UniformBuffer._tempBuffer[2] = color.b;
+        UniformBuffer._tempBuffer[3] = color.a;
         this.updateUniform(name, UniformBuffer._tempBuffer, 4);
     }
 
