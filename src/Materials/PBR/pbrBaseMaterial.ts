@@ -98,6 +98,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public EMISSIVE = false;
     public EMISSIVEDIRECTUV = 0;
+    public GAMMAEMISSIVE = false;
 
     public REFLECTIVITY = false;
     public REFLECTIVITYDIRECTUV = 0;
@@ -367,26 +368,30 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
      * This impacts both the direct diffuse and specular highlights.
+     * @hidden
      */
-    protected _directIntensity: number = 1.0;
+    public _directIntensity: number = 1.0;
 
     /**
      * Intensity of the emissive part of the material.
      * This helps controlling the emissive effect without modifying the emissive color.
+     * @hidden
      */
-    protected _emissiveIntensity: number = 1.0;
+    public _emissiveIntensity: number = 1.0;
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
      * either through harmonics for rough material or through the reflection for shiny ones.
+     * @hidden
      */
-    protected _environmentIntensity: number = 1.0;
+    public _environmentIntensity: number = 1.0;
 
     /**
      * This is a special control allowing the reduction of the specular highlights coming from the
      * four lights of the scene. Those highlights may not be needed in full environment lighting.
+     * @hidden
      */
-    protected _specularIntensity: number = 1.0;
+    public _specularIntensity: number = 1.0;
 
     /**
      * This stores the direct, emissive, environment, and specular light intensities into a Vector4.
@@ -395,67 +400,79 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Debug Control allowing disabling the bump map on this material.
+     * @hidden
      */
-    protected _disableBumpMap: boolean = false;
+    public _disableBumpMap: boolean = false;
 
     /**
      * AKA Diffuse Texture in standard nomenclature.
+     * @hidden
      */
-    protected _albedoTexture: Nullable<BaseTexture> = null;
+    public _albedoTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Occlusion Texture in other nomenclature.
+     * @hidden
      */
-    protected _ambientTexture: Nullable<BaseTexture> = null;
+    public _ambientTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Occlusion Texture Intensity in other nomenclature.
+     * @hidden
      */
-    protected _ambientTextureStrength: number = 1.0;
+    public _ambientTextureStrength: number = 1.0;
 
     /**
      * Defines how much the AO map is occluding the analytical lights (point spot...).
      * 1 means it completely occludes it
      * 0 mean it has no impact
+     * @hidden
      */
-    protected _ambientTextureImpactOnAnalyticalLights: number = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
+    public _ambientTextureImpactOnAnalyticalLights: number = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
     /**
      * Stores the alpha values in a texture.
+     * @hidden
      */
-    protected _opacityTexture: Nullable<BaseTexture> = null;
+    public _opacityTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the reflection values in a texture.
+     * @hidden
      */
-    protected _reflectionTexture: Nullable<BaseTexture> = null;
+    public _reflectionTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the emissive values in a texture.
+     * @hidden
      */
-    protected _emissiveTexture: Nullable<BaseTexture> = null;
+    public _emissiveTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Specular texture in other nomenclature.
+     * @hidden
      */
-    protected _reflectivityTexture: Nullable<BaseTexture> = null;
+    public _reflectivityTexture: Nullable<BaseTexture> = null;
 
     /**
      * Used to switch from specular/glossiness to metallic/roughness workflow.
+     * @hidden
      */
-    protected _metallicTexture: Nullable<BaseTexture> = null;
+    public _metallicTexture: Nullable<BaseTexture> = null;
 
     /**
      * Specifies the metallic scalar of the metallic/roughness workflow.
      * Can also be used to scale the metalness values of the metallic texture.
+     * @hidden
      */
-    protected _metallic: Nullable<number> = null;
+    public _metallic: Nullable<number> = null;
 
     /**
      * Specifies the roughness scalar of the metallic/roughness workflow.
      * Can also be used to scale the roughness values of the metallic texture.
+     * @hidden
      */
-    protected _roughness: Nullable<number> = null;
+    public _roughness: Nullable<number> = null;
 
     /**
      * In metallic workflow, specifies an F0 factor to help configuring the material F0.
@@ -465,8 +482,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      *
      * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor;
      * F90 = metallicReflectanceColor;
+     * @hidden
      */
-    protected _metallicF0Factor = 1;
+    public _metallicF0Factor = 1;
 
     /**
      * In metallic workflow, specifies an F90 color to help configuring the material F90.
@@ -476,230 +494,271 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      *
      * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor
      * F90 = metallicReflectanceColor;
+     * @hidden
      */
-    protected _metallicReflectanceColor = Color3.White();
+    public _metallicReflectanceColor = Color3.White();
 
     /**
      * Specifies that only the A channel from _metallicReflectanceTexture should be used.
      * If false, both RGB and A channels will be used
+     * @hidden
      */
-     protected _useOnlyMetallicFromMetallicReflectanceTexture = false;
+     public _useOnlyMetallicFromMetallicReflectanceTexture = false;
 
      /**
      * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-     * This is multiplied against the scalar values defined in the material.
-     * If _useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
+     * This is multiply against the scalar values defined in the material.
+     * @hidden
      */
-    protected _metallicReflectanceTexture: Nullable<BaseTexture> = null;
+    public _metallicReflectanceTexture: Nullable<BaseTexture> = null;
 
     /**
      * Defines to store reflectanceColor in RGB
      * This is multiplied against the scalar values defined in the material.
      * If both _reflectanceTexture and _metallicReflectanceTexture textures are provided and _useOnlyMetallicFromMetallicReflectanceTexture
      * is false, _metallicReflectanceTexture takes precedence and _reflectanceTexture is not used
+     * @hidden
      */
-     protected _reflectanceTexture: Nullable<BaseTexture> = null;
+     public _reflectanceTexture: Nullable<BaseTexture> = null;
 
      /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
      * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+     * @hidden
      */
-    protected _microSurfaceTexture: Nullable<BaseTexture> = null;
+    public _microSurfaceTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores surface normal data used to displace a mesh in a texture.
+     * @hidden
      */
-    protected _bumpTexture: Nullable<BaseTexture> = null;
+    public _bumpTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the pre-calculated light information of a mesh in a texture.
+     * @hidden
      */
-    protected _lightmapTexture: Nullable<BaseTexture> = null;
+    public _lightmapTexture: Nullable<BaseTexture> = null;
 
     /**
      * The color of a material in ambient lighting.
+     * @hidden
      */
-    protected _ambientColor = new Color3(0, 0, 0);
+    public _ambientColor = new Color3(0, 0, 0);
 
     /**
      * AKA Diffuse Color in other nomenclature.
+     * @hidden
      */
-    protected _albedoColor = new Color3(1, 1, 1);
+    public _albedoColor = new Color3(1, 1, 1);
 
     /**
      * AKA Specular Color in other nomenclature.
+     * @hidden
      */
-    protected _reflectivityColor = new Color3(1, 1, 1);
+    public _reflectivityColor = new Color3(1, 1, 1);
 
     /**
      * The color applied when light is reflected from a material.
+     * @hidden
      */
-    protected _reflectionColor = new Color3(1, 1, 1);
+    public _reflectionColor = new Color3(1, 1, 1);
 
     /**
      * The color applied when light is emitted from a material.
+     * @hidden
      */
-    protected _emissiveColor = new Color3(0, 0, 0);
+    public _emissiveColor = new Color3(0, 0, 0);
 
     /**
      * AKA Glossiness in other nomenclature.
+     * @hidden
      */
-    protected _microSurface = 0.9;
+    public _microSurface = 0.9;
 
     /**
      * Specifies that the material will use the light map as a show map.
+     * @hidden
      */
-    protected _useLightmapAsShadowmap = false;
+    public _useLightmapAsShadowmap = false;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
      * makes the reflect vector face the model (under horizon).
+     * @hidden
      */
-    protected _useHorizonOcclusion = true;
+    public _useHorizonOcclusion = true;
 
     /**
      * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
      * too much the area relying on ambient texture to define their ambient occlusion.
+     * @hidden
      */
-    protected _useRadianceOcclusion = true;
+    public _useRadianceOcclusion = true;
 
     /**
      * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
+     * @hidden
      */
-    protected _useAlphaFromAlbedoTexture = false;
+    public _useAlphaFromAlbedoTexture = false;
 
     /**
      * Specifies that the material will keeps the specular highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
+     * @hidden
      */
-    protected _useSpecularOverAlpha = true;
+    public _useSpecularOverAlpha = true;
 
     /**
      * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+     * @hidden
      */
-    protected _useMicroSurfaceFromReflectivityMapAlpha = false;
+    public _useMicroSurfaceFromReflectivityMapAlpha = false;
 
     /**
      * Specifies if the metallic texture contains the roughness information in its alpha channel.
+     * @hidden
      */
-    protected _useRoughnessFromMetallicTextureAlpha = true;
+    public _useRoughnessFromMetallicTextureAlpha = true;
 
     /**
      * Specifies if the metallic texture contains the roughness information in its green channel.
+     * @hidden
      */
-    protected _useRoughnessFromMetallicTextureGreen = false;
+    public _useRoughnessFromMetallicTextureGreen = false;
 
     /**
      * Specifies if the metallic texture contains the metallness information in its blue channel.
+     * @hidden
      */
-    protected _useMetallnessFromMetallicTextureBlue = false;
+    public _useMetallnessFromMetallicTextureBlue = false;
 
     /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
+     * @hidden
      */
-    protected _useAmbientOcclusionFromMetallicTextureRed = false;
+    public _useAmbientOcclusionFromMetallicTextureRed = false;
 
     /**
      * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
+     * @hidden
      */
-    protected _useAmbientInGrayScale = false;
+    public _useAmbientInGrayScale = false;
 
     /**
      * In case the reflectivity map does not contain the microsurface information in its alpha channel,
      * The material will try to infer what glossiness each pixel should be.
+     * @hidden
      */
-    protected _useAutoMicroSurfaceFromReflectivityMap = false;
+    public _useAutoMicroSurfaceFromReflectivityMap = false;
 
     /**
      * Defines the  falloff type used in this material.
      * It by default is Physical.
+     * @hidden
      */
-    protected _lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
+    public _lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
 
     /**
      * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
+     * @hidden
      */
-    protected _useRadianceOverAlpha = true;
+    public _useRadianceOverAlpha = true;
 
     /**
      * Allows using an object space normal map (instead of tangent space).
+     * @hidden
      */
-    protected _useObjectSpaceNormalMap = false;
+    public _useObjectSpaceNormalMap = false;
 
     /**
      * Allows using the bump map in parallax mode.
+     * @hidden
      */
-    protected _useParallax = false;
+    public _useParallax = false;
 
     /**
      * Allows using the bump map in parallax occlusion mode.
+     * @hidden
      */
-    protected _useParallaxOcclusion = false;
+    public _useParallaxOcclusion = false;
 
     /**
      * Controls the scale bias of the parallax mode.
+     * @hidden
      */
-    protected _parallaxScaleBias = 0.05;
+    public _parallaxScaleBias = 0.05;
 
     /**
      * If sets to true, disables all the lights affecting the material.
+     * @hidden
      */
-    protected _disableLighting = false;
+    public _disableLighting = false;
 
     /**
      * Number of Simultaneous lights allowed on the material.
+     * @hidden
      */
-    protected _maxSimultaneousLights = 4;
+    public _maxSimultaneousLights = 4;
 
     /**
      * If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
+     * @hidden
      */
-    protected _invertNormalMapX = false;
+    public _invertNormalMapX = false;
 
     /**
      * If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
+     * @hidden
      */
-    protected _invertNormalMapY = false;
+    public _invertNormalMapY = false;
 
     /**
      * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
+     * @hidden
      */
-    protected _twoSidedLighting = false;
+    public _twoSidedLighting = false;
 
     /**
      * Defines the alpha limits in alpha test mode.
+     * @hidden
      */
-    protected _alphaCutOff = 0.4;
+    public _alphaCutOff = 0.4;
 
     /**
      * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+     * @hidden
      */
-    protected _forceAlphaTest = false;
+    public _forceAlphaTest = false;
 
     /**
      * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
      * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
+     * @hidden
      */
-    protected _useAlphaFresnel = false;
+    public _useAlphaFresnel = false;
 
     /**
      * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
      * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
+     * @hidden
      */
-    protected _useLinearAlphaFresnel = false;
+    public _useLinearAlphaFresnel = false;
 
     /**
      * Specifies the environment BRDF texture used to compute the scale and offset roughness values
      * from cos theta and roughness:
      * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+     * @hidden
      */
-    protected _environmentBRDFTexture: Nullable<BaseTexture> = null;
+    public _environmentBRDFTexture: Nullable<BaseTexture> = null;
 
     /**
      * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+     * @hidden
      */
-    protected _forceIrradianceInFragment = false;
+    public _forceIrradianceInFragment = false;
 
     private _realTimeFiltering: boolean = false;
     /**
@@ -734,15 +793,17 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Force normal to face away from face.
+     * @hidden
      */
-    protected _forceNormalForward = false;
+    public _forceNormalForward = false;
 
     /**
      * Enables specular anti aliasing in the PBR shader.
      * It will both interacts on the Geometry for analytical and IBL lighting.
      * It also prefilter the roughness map based on the bump values.
+     * @hidden
      */
-    protected _enableSpecularAntiAliasing = false;
+    public _enableSpecularAntiAliasing = false;
 
     /**
      * Default configuration related to image processing available in the PBR Material.
@@ -1549,6 +1610,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
                     MaterialHelper.PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
+                    defines.GAMMAEMISSIVE = this._emissiveTexture.gammaSpace;
                 } else {
                     defines.EMISSIVE = false;
                 }

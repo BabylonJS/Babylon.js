@@ -815,12 +815,14 @@ export class NativeEngine extends Engine {
             depthTextureExtension: false,
             vertexArrayObject: true,
             instancedArrays: false,
+            supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
             maxMSAASamples: 1,
             canUseGLInstanceID: true,
             canUseGLVertexID: true,
             supportComputeShaders: false,
+            supportSRGBBuffers: false,
         };
 
         this._features = {

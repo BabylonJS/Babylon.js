@@ -1,5 +1,6 @@
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
@@ -235,6 +236,7 @@ export class SlateGizmo extends Gizmo {
         let dragOrigin = new Vector3();
         let toObjectFrame = new Matrix();
 
+        let previousFollowState = false;
         this._dragStartObserver = dragBehavior.onDragStartObservable.add((event) => {
             if (this.attachedSlate && this.attachedMesh) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
@@ -242,7 +244,8 @@ export class SlateGizmo extends Gizmo {
                 dragOrigin.copyFrom(event.dragPlanePoint);
                 toObjectFrame.copyFrom(this.attachedMesh.computeWorldMatrix(true));
                 toObjectFrame.invert();
-                this.attachedSlate._followBehavior._enabled = false;
+                previousFollowState = this.attachedSlate._defaultBehavior.followBehaviorEnabled;
+                this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
             }
         });
 
@@ -261,7 +264,7 @@ export class SlateGizmo extends Gizmo {
         this._dragEndObserver = dragBehavior.onDragEndObservable.add(() => {
             if (this.attachedSlate && this.attachedNode) {
                 this.attachedSlate._updatePivot();
-                this.attachedSlate._followBehavior._enabled = true;
+                this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
             }
         });
 
@@ -280,6 +283,13 @@ export class SlateGizmo extends Gizmo {
         horizontalBox.position.x = 1;
         verticalBox.position.y = 1;
 
+        const mat = new StandardMaterial("slategizmo", this.gizmoLayer.utilityLayerScene);
+        mat.diffuseColor.copyFromFloats(0, 0, 0);
+        mat.emissiveColor.copyFromFloats(1, 1, 1);
+
+        horizontalBox.material = mat;
+        verticalBox.material = mat;
+
         return angleNode;
     }
 
@@ -288,6 +298,12 @@ export class SlateGizmo extends Gizmo {
         const verticalBox = BoxBuilder.CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
         const sideNode = new TransformNode("side", this.gizmoLayer.utilityLayerScene);
         verticalBox.parent = sideNode;
+
+        const mat = new StandardMaterial("slategizmo", this.gizmoLayer.utilityLayerScene);
+        mat.diffuseColor.copyFromFloats(0, 0, 0);
+        mat.emissiveColor.copyFromFloats(1, 1, 1);
+
+        verticalBox.material = mat;
 
         return sideNode;
     }

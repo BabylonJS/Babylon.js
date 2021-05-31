@@ -1,9 +1,10 @@
 import { DeepCopier } from "../../Misc/deepCopier";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
-import { Effect } from "../../Materials/effect";
 import { Particle } from "../particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
 import { Nullable } from '../../types';
+import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from a custom list of positions.
  */
@@ -96,9 +97,16 @@ export class CustomParticleEmitter implements IParticleEmitterType {
 
     /**
      * Called by the GPUParticleSystem to setup the update shader
-     * @param effect defines the update shader
+     * @param uboOrEffect defines the update shader
      */
-    public applyToShader(effect: Effect): void {
+    public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {
+    }
+
+    /**
+     * Creates the structure of the ubo for this particle emitter
+     * @param ubo ubo to create the structure for
+     */
+    public buildUniformLayout(ubo: UniformBuffer): void {
     }
 
     /**
