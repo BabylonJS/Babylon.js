@@ -30,7 +30,7 @@ export class PointerEventTypes {
      */
     public static readonly POINTERPICK = 0x10;
     /**
-         * The pointertap event is fired when a the object has been touched and released without drag.
+     * The pointertap event is fired when a the object has been touched and released without drag.
      */
     public static readonly POINTERTAP = 0x20;
     /**

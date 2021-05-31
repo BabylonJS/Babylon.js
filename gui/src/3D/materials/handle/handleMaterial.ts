@@ -1,5 +1,5 @@
 import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
-import { Scene } from "babylonjs/index";
+import { Scene } from "babylonjs/scene";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { Color3, TmpColors } from "babylonjs/Maths/math.color";
@@ -106,8 +106,8 @@ export class HandleMaterial extends ShaderMaterial {
             const scaleDiff = this._targetScale - this._scale;
             const colorDiff = TmpColors.Color3[0].copyFrom(this._targetColor).subtractToRef(this._color, TmpColors.Color3[0]);
 
-            this._scale = this._scale + scaleDiff * delta / this.animationLength;
-            colorDiff.scaleToRef(delta / this.animationLength, colorDiff)
+            this._scale = this._scale + (scaleDiff * delta) / this.animationLength;
+            colorDiff.scaleToRef(delta / this.animationLength, colorDiff);
             this._color.addToRef(colorDiff, this._color);
 
             this.setColor3("color", this._color);
@@ -124,7 +124,7 @@ export class HandleMaterial extends ShaderMaterial {
             this._targetScale = this.dragScale;
         } else if (this.hover) {
             this._targetColor = this.hoverColor;
-            this._targetScale = this.hoverScale
+            this._targetScale = this.hoverScale;
         } else {
             this._targetColor = this.baseColor;
             this._targetScale = this.baseScale;

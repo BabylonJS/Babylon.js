@@ -18,7 +18,7 @@ import { Viewport } from "babylonjs/Maths/math.viewport";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { Texture } from "babylonjs/Materials/Textures/texture";
-import { FluentBackplateMaterial } from "../materials";
+import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
 
 /**
  * Class used to create a holographic slate
@@ -384,6 +384,9 @@ export class HolographicSlate extends ContentDisplay3D {
         this.resetDefaultAspectAndPose();
     }
 
+    /**
+     * Resets the aspect and pose of the slate so it is right in front of the active camera, facing towards it.
+     */
     public resetDefaultAspectAndPose() {
         if (!this._host || !this._host.utilityLayer || !this.node) {
             return;
