@@ -2,7 +2,7 @@ import { Scene } from "babylonjs/scene";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Vector3 } from "babylonjs/Maths/math.vector";
-import { HandleMaterial } from "../materials";
+import { HandleMaterial } from "../materials/handle/handleMaterial";
 import { SlateGizmo } from "./slateGizmo";
 import { BaseSixDofDragBehavior } from "babylonjs/Behaviors/Meshes/baseSixDofDragBehavior";
 import { Nullable } from "babylonjs/types";
@@ -131,9 +131,9 @@ export abstract class GizmoHandle {
 
     /**
      * Binds callbacks from dragging interaction
-     * @param dragStartFn Obser
-     * @param dragFn
-     * @param dragEndFn
+     * @param dragStartFn Function to call on drag start
+     * @param dragFn Function to call on drag
+     * @param dragEndFn Function to call on drag end
      */
     public setDragBehavior(dragStartFn: (event: { position: Vector3 }) => void, dragFn: (event: { position: Vector3 }) => void, dragEndFn: () => void) {
         const dragBehavior = new BaseSixDofDragBehavior();
@@ -150,6 +150,7 @@ export abstract class GizmoHandle {
     /**
      * Creates the meshes and parent node of the handle
      * Should be overriden by child classes
+     * @returns created node
      */
     public abstract createNode(): TransformNode;
 
@@ -172,6 +173,7 @@ export abstract class GizmoHandle {
 export class SideHandle extends GizmoHandle {
     /**
      * Creates the meshes and parent node of the handle
+     * @returns created node
      */
     public createNode() {
         // Create a simple vertical rectangle
@@ -193,6 +195,7 @@ export class SideHandle extends GizmoHandle {
 export class CornerHandle extends GizmoHandle {
     /**
      * Creates the meshes and parent node of the handle
+     * @returns created node
      */
     public createNode() {
         // Create 2 boxes making a bottom left corner

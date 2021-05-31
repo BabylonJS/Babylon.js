@@ -6,7 +6,7 @@ import { Nullable } from "../../types";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Vector3, Quaternion } from "../../Maths/math.vector";
 import { Observer, Observable } from "../../Misc/observable";
-import { TransformNode } from "../../Meshes";
+import { TransformNode } from "../../Meshes/transformNode";
 
 /**
  * Base behavior for six degrees of freedom interactions in XR experiences.
@@ -163,10 +163,16 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         for (let i = 0; i < this.currentDraggingPointerIds.length; i++) {
             this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].pivotMesh.position.copyFrom(this._ownerNode.getAbsolutePivotPoint());
             this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].pivotMesh.rotationQuaternion!.copyFrom(this._ownerNode.rotationQuaternion!);
-            this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].startingPivotPosition.copyFrom(this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].pivotMesh.position);
-            this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].startingPivotOrientation.copyFrom(this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].pivotMesh.rotationQuaternion!);
-            this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].startingPosition.copyFrom(this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].dragMesh.position)
-            this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].startingOrientation.copyFrom(this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].dragMesh.rotationQuaternion!);
+            this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].startingPivotPosition.copyFrom(
+                this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].pivotMesh.position
+            );
+            this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].startingPivotOrientation.copyFrom(
+                this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].pivotMesh.rotationQuaternion!
+            );
+            this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].startingPosition.copyFrom(this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].dragMesh.position);
+            this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].startingOrientation.copyFrom(
+                this._virtualMeshesInfo[this.currentDraggingPointerIds[i]].dragMesh.rotationQuaternion!
+            );
         }
     }
 

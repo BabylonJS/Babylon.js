@@ -72,19 +72,19 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                 if (!oldParent || ((oldParent as Mesh).scaling && !(oldParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
                     Quaternion.SlerpToRef(ownerNode.rotationQuaternion!, this._targetOrientation, this.dragDeltaRatio, ownerNode.rotationQuaternion!);
                 }
-                
+
                 ownerNode.setParent(oldParent);
             }
         });
     }
-    
+
     private _getPositionOffsetAround(transformationLocalOrigin: Vector3, scaling: number, rotation: Quaternion): Vector3 {
         const translationMatrix = TmpVectors.Matrix[0]; // T
         const translationMatrixInv = TmpVectors.Matrix[1]; // T'
         const rotationMatrix = TmpVectors.Matrix[2]; // R
         const scaleMatrix = TmpVectors.Matrix[3]; // S
         const finalMatrix = TmpVectors.Matrix[4]; // T' x R x S x T
-        
+
         Matrix.TranslationToRef(transformationLocalOrigin.x, transformationLocalOrigin.y, transformationLocalOrigin.z, translationMatrix); // T
         Matrix.TranslationToRef(-transformationLocalOrigin.x, -transformationLocalOrigin.y, -transformationLocalOrigin.z, translationMatrixInv); // T'
         Matrix.FromQuaternionToRef(rotation, rotationMatrix); // R
@@ -92,7 +92,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         translationMatrixInv.multiplyToRef(rotationMatrix, finalMatrix); // T' x R
         finalMatrix.multiplyToRef(scaleMatrix, finalMatrix); // T' x R x S
         finalMatrix.multiplyToRef(translationMatrix, finalMatrix); // T' x R x S x T
-        
+
         return finalMatrix.getTranslation();
     }
 
@@ -108,7 +108,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
         this._targetPosition.copyFrom(this._startingPosition).addInPlace(worldDeltaPosition);
     }
-    
+
     private _twoPointersPositionUpdated() {
         const startingPosition0 = this._virtualMeshesInfo[this.currentDraggingPointerIds[0]].startingPosition;
         const startingPosition1 = this._virtualMeshesInfo[this.currentDraggingPointerIds[1]].startingPosition;
@@ -160,10 +160,12 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
             this._targetPosition.copyFrom(this._ownerNode.position);
             this._targetOrientation.copyFrom(this._ownerNode.rotationQuaternion);
             this._targetScaling.copyFrom(this._ownerNode.scaling);
-            
+
             if (this.faceCameraOnDragStart && this._scene.activeCamera) {
                 const toCamera = this._scene.activeCamera.position.subtract(worldPivot).normalize();
-                const quat = this._scene.useRightHandedSystem ? Quaternion.FromLookDirectionRH(toCamera, new Vector3(0, 1, 0)) : Quaternion.FromLookDirectionLH(toCamera, new Vector3(0, 1, 0));
+                const quat = this._scene.useRightHandedSystem
+                    ? Quaternion.FromLookDirectionRH(toCamera, new Vector3(0, 1, 0))
+                    : Quaternion.FromLookDirectionLH(toCamera, new Vector3(0, 1, 0));
                 quat.normalize();
                 Quaternion.RotationYawPitchRollToRef(quat.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
                 this._targetOrientation.copyFrom(TmpVectors.Quaternion[0]);

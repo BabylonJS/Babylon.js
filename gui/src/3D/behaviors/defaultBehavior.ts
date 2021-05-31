@@ -68,7 +68,7 @@ export class DefaultBehavior implements Behavior<Mesh> {
     /**
      * Attaches the default behavior
      * @param ownerMesh The top level mesh
-     * @param sixDofAnchorMesh A mesh that should behave as an anchor for the sixDof interaction. If unset, the top level mesh will be used
+     * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
      */
     public attach(ownerMesh: Mesh, draggablesMeshes?: Mesh[]): void {
         this._scene = ownerMesh.getScene();

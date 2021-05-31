@@ -204,7 +204,11 @@ export class SlateGizmo extends Gizmo {
         this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
     }
 
-    private _assignDragBehaviorCorners(handle: GizmoHandle, moveFn: (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => void, masks: HandleMasks) {
+    private _assignDragBehaviorCorners(
+        handle: GizmoHandle,
+        moveFn: (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => void,
+        masks: HandleMasks
+    ) {
         const dimensionsStart = new Vector3();
         const originStart = new Vector3();
         const dragOrigin = new Vector3();
@@ -219,7 +223,7 @@ export class SlateGizmo extends Gizmo {
             TmpVectors.Vector3[1].copyFrom(normal).scaleInPlace(dot);
             TmpVectors.Vector3[0].subtractInPlace(TmpVectors.Vector3[1]);
             TmpVectors.Vector3[0].addToRef(origin, ref);
-        }
+        };
 
         const dragStart = (event: any) => {
             if (this.attachedSlate && this.attachedMesh) {
@@ -242,7 +246,7 @@ export class SlateGizmo extends Gizmo {
 
         const dragging = (event: any) => {
             if (this.attachedSlate && this.attachedMesh) {
-                projectToRef(event.position, dragPlaneNormal, dragOrigin, this._tmpVector)
+                projectToRef(event.position, dragPlaneNormal, dragOrigin, this._tmpVector);
                 this._tmpVector.subtractInPlace(dragOrigin);
                 Vector3.TransformNormalToRef(this._tmpVector, toObjectFrame, this._tmpVector);
 
