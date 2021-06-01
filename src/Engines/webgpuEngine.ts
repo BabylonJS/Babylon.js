@@ -176,6 +176,13 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * If false (and if not using an offscreen canvas), the inversion will be done by the browser during compositing
      */
     forceCopyForInvertYFinalFramebuffer?: boolean;
+
+    /**
+     * Defines if the final copy pass doing the Y inversion should be disabled (default: false). This setting takes precedence over forceCopyForInvertYFinalFramebuffer.
+     * If true and if using an offscreen canvas, you should set something like canvas.style.transform = "scaleY(-1)" on the canvas from which you get the offscreen canvas, else the rendering will be Y inverted!
+     * Setting it to true allows to use the browser compositing to perform the Y inversion even when using an offscreen canvas, which leads to better performances
+     */
+    disableCopyForInvertYFinalFramebuffer?: boolean;
 }
 
 /**
@@ -528,9 +535,12 @@ export class WebGPUEngine extends Engine {
 
         this._shaderProcessor = this._getShaderProcessor();
 
-        this._invertYFinalFramebuffer = !!this._options.forceCopyForInvertYFinalFramebuffer || !this._canvas.style; // if style does not exist, we are probably using an offscreen canvas
+        this._invertYFinalFramebuffer = (!!this._options.forceCopyForInvertYFinalFramebuffer || !this._canvas.style) && !this._options.disableCopyForInvertYFinalFramebuffer;
         if (!this._invertYFinalFramebuffer) {
-            this._canvas.style.transform = "scaleY(-1)";
+            // if style does not exist, we are probably using an offscreen canvas
+            if (this._canvas.style) {
+                this._canvas.style.transform = "scaleY(-1)";
+            }
         }
     }
 
