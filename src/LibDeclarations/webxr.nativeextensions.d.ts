@@ -62,6 +62,7 @@ interface XRSession {
     trySetPreferredPlaneDetectorOptions(preferredOptions: XRGeometryDetectorOptions): boolean;
     trySetMeshDetectorEnabled(enabled: boolean): boolean;
     trySetPreferredMeshDetectorOptions(preferredOptions: XRGeometryDetectorOptions): boolean;
+    trySetEyeTrackingEnabled(enabled: boolean): boolean;
 }
 
 interface XRFrame {
