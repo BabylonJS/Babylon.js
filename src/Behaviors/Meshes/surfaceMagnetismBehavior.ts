@@ -199,7 +199,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
                 ) {
                     const pose = this._getTargetPose(pointerInfo.pickInfo);
                     if (pose) {
-                        this._workingPosition.copyFrom(pose.position);;
+                        this._workingPosition.copyFrom(pose.position);
                         this._workingQuaternion.copyFrom(pose.quaternion);
                     }
                 }
