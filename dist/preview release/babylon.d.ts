@@ -1193,6 +1193,64 @@ declare module BABYLON {
         static readonly SNAPSHOTRENDERING_STANDARD: number;
         /** Fast snapshot rendering. In this mode, everything is static and only some limited form of dynamic behaviour is possible */
         static readonly SNAPSHOTRENDERING_FAST: number;
+        /**
+         * This is the default projection mode used by the cameras.
+         * It helps recreating a feeling of perspective and better appreciate depth.
+         * This is the best way to simulate real life cameras.
+         */
+        static readonly PERSPECTIVE_CAMERA: number;
+        /**
+         * This helps creating camera with an orthographic mode.
+         * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
+         */
+        static readonly ORTHOGRAPHIC_CAMERA: number;
+        /**
+         * This is the default FOV mode for perspective cameras.
+         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+         */
+        static readonly FOVMODE_VERTICAL_FIXED: number;
+        /**
+         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+         */
+        static readonly FOVMODE_HORIZONTAL_FIXED: number;
+        /**
+         * This specifies there is no need for a camera rig.
+         * Basically only one eye is rendered corresponding to the camera.
+         */
+        static readonly RIG_MODE_NONE: number;
+        /**
+         * Simulates a camera Rig with one blue eye and one red eye.
+         * This can be use with 3d blue and red glasses.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH: number;
+        /**
+         * Defines that both eyes of the camera will be rendered side by side with a parallel target.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: number;
+        /**
+         * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
+        /**
+         * Defines that both eyes of the camera will be rendered over under each other.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
+        /**
+         * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_INTERLACED: number;
+        /**
+         * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
+         */
+        static readonly RIG_MODE_VR: number;
+        /**
+         * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
+         */
+        static readonly RIG_MODE_WEBVR: number;
+        /**
+         * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
+         */
+        static readonly RIG_MODE_CUSTOM: number;
     }
 }
 declare module BABYLON {
@@ -9067,6 +9125,8 @@ declare module BABYLON {
          * If not and the texture is not ready, the engine will use a default black texture instead.
          */
         get isBlocking(): boolean;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Instantiates a new BaseTexture.
          * Base class of all the textures in babylon.
@@ -9233,12 +9293,115 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** Defines the cross module constantsused by lights to avoid circular dependencies */
+    export class LightConstants {
+        /**
+         * Falloff Default: light is falling off following the material specification:
+         * standard material is using standard falloff whereas pbr material can request special falloff per materials.
+         */
+        static readonly FALLOFF_DEFAULT: number;
+        /**
+         * Falloff Physical: light is falling off following the inverse squared distance law.
+         */
+        static readonly FALLOFF_PHYSICAL: number;
+        /**
+         * Falloff gltf: light is falling off as described in the gltf moving to PBR document
+         * to enhance interoperability with other engines.
+         */
+        static readonly FALLOFF_GLTF: number;
+        /**
+         * Falloff Standard: light is falling off like in the standard material
+         * to enhance interoperability with other materials.
+         */
+        static readonly FALLOFF_STANDARD: number;
+        /**
+         * If every light affecting the material is in this lightmapMode,
+         * material.lightmapTexture adds or multiplies
+         * (depends on material.useLightmapAsShadowmap)
+         * after every other light calculations.
+         */
+        static readonly LIGHTMAP_DEFAULT: number;
+        /**
+         * material.lightmapTexture as only diffuse lighting from this light
+         * adds only specular lighting from this light
+         * adds dynamic shadows
+         */
+        static readonly LIGHTMAP_SPECULAR: number;
+        /**
+         * material.lightmapTexture as only lighting
+         * no light calculation from this light
+         * only adds dynamic shadows from this light
+         */
+        static readonly LIGHTMAP_SHADOWSONLY: number;
+        /**
+         * Each light type uses the default quantity according to its type:
+         *      point/spot lights use luminous intensity
+         *      directional lights use illuminance
+         */
+        static readonly INTENSITYMODE_AUTOMATIC: number;
+        /**
+         * lumen (lm)
+         */
+        static readonly INTENSITYMODE_LUMINOUSPOWER: number;
+        /**
+         * candela (lm/sr)
+         */
+        static readonly INTENSITYMODE_LUMINOUSINTENSITY: number;
+        /**
+         * lux (lm/m^2)
+         */
+        static readonly INTENSITYMODE_ILLUMINANCE: number;
+        /**
+         * nit (cd/m^2)
+         */
+        static readonly INTENSITYMODE_LUMINANCE: number;
+        /**
+         * Light type const id of the point light.
+         */
+        static readonly LIGHTTYPEID_POINTLIGHT: number;
+        /**
+         * Light type const id of the directional light.
+         */
+        static readonly LIGHTTYPEID_DIRECTIONALLIGHT: number;
+        /**
+         * Light type const id of the spot light.
+         */
+        static readonly LIGHTTYPEID_SPOTLIGHT: number;
+        /**
+         * Light type const id of the hemispheric light.
+         */
+        static readonly LIGHTTYPEID_HEMISPHERICLIGHT: number;
+        /**
+         * Sort function to order lights for rendering.
+         * @param a First Light object to compare to second.
+         * @param b Second Light object to compare first.
+         * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
+         */
+        static CompareLightsPriority(a: ISortableLight, b: ISortableLight): number;
+    }
+    /**
+     * Defines the common interface of sortable lights
+     */
+    export interface ISortableLight {
+        /**
+        * Gets or sets whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+        * the current shadow generator.
+        */
+        shadowEnabled: boolean;
+        /**
+        * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
+        * exceeding the number allowed of the materials.
+        */
+        renderPriority: number;
+    }
+}
+declare module BABYLON {
     /**
      * Base class of all the lights in Babylon. It groups all the generic information about lights.
      * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
      * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
      */
-    export abstract class Light extends Node {
+    export abstract class Light extends Node implements ISortableLight {
         /**
          * Falloff Default: light is falling off following the material specification:
          * standard material is using standard falloff whereas pbr material can request special falloff per materials.
@@ -9536,13 +9699,6 @@ declare module BABYLON {
          * @return true the mesh is affected otherwise, false.
          */
         canAffectMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Sort function to order lights for rendering.
-         * @param a First Light object to compare to second.
-         * @param b Second Light object to compare first.
-         * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
-         */
-        static CompareLightsPriority(a: Light, b: Light): number;
         /**
          * Releases resources associated with this node.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
@@ -10488,9 +10644,10 @@ declare module BABYLON {
              * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
              * @param fallback defines texture to use while falling back when (compressed) texture file not found.
              * @param loaderOptions options to be passed to the loader
+             * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
              * @returns the cube texture as an InternalTexture
              */
-            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, loaderOptions: any): InternalTexture;
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, loaderOptions: any, useSRGBBuffer: boolean): InternalTexture;
             /**
              * Creates a cube texture
              * @param rootUrl defines the url where the files to load is located
@@ -10521,7 +10678,7 @@ declare module BABYLON {
              */
             createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
             /** @hidden */
-            createCubeTextureBase(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>, imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>): InternalTexture;
+            createCubeTextureBase(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>, imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>, useSRGBBuffer: boolean): InternalTexture;
             /** @hidden */
             _partialLoadFile(url: string, index: number, loadedFiles: ArrayBuffer[], onfinish: (files: ArrayBuffer[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
             /** @hidden */
@@ -10594,6 +10751,7 @@ declare module BABYLON {
         private _format;
         private _createPolynomials;
         private _loaderOptions;
+        private _useSRGBBuffer?;
         /**
          * Creates a cube texture from an array of image urls
          * @param files defines an array of image urls
@@ -10628,9 +10786,10 @@ declare module BABYLON {
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @param loaderOptions options to be passed to the loader
-         * @return the cube texture
+         * @param useSRGBBuffer Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false)
+        * @return the cube texture
          */
-        constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, loaderOptions?: any);
+        constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, loaderOptions?: any, useSRGBBuffer?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "CubeTexture"
@@ -11733,6 +11892,10 @@ declare module BABYLON {
         get texture(): Nullable<Texture>;
         set texture(texture: Nullable<Texture>);
         /**
+         * Gets the sampler name associated with this texture
+         */
+        get samplerName(): string;
+        /**
          * Gets or sets a boolean indicating if content needs to be converted to gamma space
          */
         convertToGammaSpace: boolean;
@@ -11787,6 +11950,7 @@ declare module BABYLON {
          */
         get level(): NodeMaterialConnectionPoint;
         get target(): NodeMaterialBlockTargets;
+        set target(value: NodeMaterialBlockTargets);
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
@@ -15776,7 +15940,7 @@ declare module BABYLON {
     /**
      * Strong typing of a Mesh Render related stage step action
      */
-    export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch, effect: Nullable<Effect>) => void;
+    export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: any, effect: Nullable<Effect>) => void;
     /**
      * Strong typing of a simple stage step action
      */
@@ -21350,6 +21514,8 @@ declare module BABYLON {
         _hasWaitingData: Nullable<boolean>;
         /** @hidden */
         _waitingOverrideMeshId: Nullable<string>;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Specifies if the skeleton should be serialized
          */
@@ -24426,6 +24592,8 @@ declare module BABYLON {
      * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
      */
     export class PostProcess {
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Gets or sets the unique id of the post process
          */
@@ -27823,6 +27991,8 @@ declare module BABYLON {
         meshMap: Nullable<{
             [id: string]: AbstractMesh | undefined;
         }>;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Creates a material instance
          * @param name defines the name of the material
@@ -28527,6 +28697,8 @@ declare module BABYLON {
         /** @hidden */
         _positions: Nullable<Vector3[]>;
         private _positionsCache;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
          */
@@ -32304,6 +32476,8 @@ declare module BABYLON {
         private _tempInfluences;
         private _canUseTextureForTargets;
         /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
+        /** @hidden */
         _targetStoreTexture: Nullable<RawTexture2DArray>;
         /**
          * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
@@ -35542,6 +35716,7 @@ declare module BABYLON {
          * @returns the new constructor or null
          */
         static Construct(type: string, name: string, scene: Scene, options?: any): Nullable<() => Node>;
+        private _nodeDataStorage;
         /**
          * Gets or sets the name of the node
          */
@@ -35571,14 +35746,13 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
          */
         inspectableCustomProperties: IInspectable[];
-        private _doNotSerialize;
         /**
          * Gets or sets a boolean used to define if the node must be serialized
          */
         get doNotSerialize(): boolean;
         set doNotSerialize(value: boolean);
         /** @hidden */
-        _isDisposed: boolean;
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Gets a list of Animations associated with the node
          */
@@ -35590,9 +35764,6 @@ declare module BABYLON {
          * Callback raised when the node is ready to be used
          */
         onReady: Nullable<(node: Node) => void>;
-        private _isEnabled;
-        private _isParentEnabled;
-        private _isReady;
         /** @hidden */
         _currentRenderId: number;
         private _parentUpdateId;
@@ -35612,8 +35783,6 @@ declare module BABYLON {
         _worldMatrixDeterminant: number;
         /** @hidden */
         _worldMatrixDeterminantIsDirty: boolean;
-        /** @hidden */
-        private _sceneRootNodesIndex;
         /**
          * Gets a boolean indicating if the node has been disposed
          * @returns true if the node was disposed
@@ -43205,6 +43374,8 @@ declare module BABYLON {
         private _speedRatio;
         private _loopAnimation;
         private _isAdditive;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Gets or sets the unique id of the node
          */
@@ -59301,6 +59472,7 @@ declare module BABYLON {
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
+        copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
             height: number;
@@ -59811,6 +59983,17 @@ declare module BABYLON {
          * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
          */
         premultipliedAlpha?: boolean;
+        /**
+         * Defines if the final framebuffer Y inversion should always be done by a texture copy (default: false).
+         * If false (and if not using an offscreen canvas), the inversion will be done by the browser during compositing
+         */
+        forceCopyForInvertYFinalFramebuffer?: boolean;
+        /**
+         * Defines if the final copy pass doing the Y inversion should be disabled (default: false). This setting takes precedence over forceCopyForInvertYFinalFramebuffer.
+         * If true and if using an offscreen canvas, you should set something like canvas.style.transform = "scaleY(-1)" on the canvas from which you get the offscreen canvas, else the rendering will be Y inverted!
+         * Setting it to true allows to use the browser compositing to perform the Y inversion even when using an offscreen canvas, which leads to better performances
+         */
+        disableCopyForInvertYFinalFramebuffer?: boolean;
     }
     /**
      * The web GPU engine class provides support for WebGPU version of babylon.js.
@@ -59877,7 +60060,9 @@ declare module BABYLON {
          * Max number of uncaptured error messages to log
          */
         numMaxUncapturedErrors: number;
+        private _invertYFinalFramebuffer;
         private _mainTexture;
+        private _mainTextureLastCopy;
         private _depthTexture;
         private _mainTextureExtends;
         private _depthTextureFormat;
@@ -59893,6 +60078,7 @@ declare module BABYLON {
         _currentRenderPass: Nullable<GPURenderPassEncoder>;
         /** @hidden */
         _mainRenderPassWrapper: WebGPURenderPassWrapper;
+        private _mainRenderPassCopyWrapper;
         /** @hidden */
         _rttRenderPassWrapper: WebGPURenderPassWrapper;
         /** @hidden */
@@ -68974,6 +69160,8 @@ declare module BABYLON {
         private _invertYAxis;
         /** Gets or sets probe position (center of the cube map) */
         position: Vector3;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Creates a new reflection probe
          * @param name defines the name of the probe
@@ -70406,6 +70594,8 @@ declare module BABYLON {
         invertX: boolean;
         /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
         invertY: boolean;
+        /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
+        useParallaxOcclusion: boolean;
         /**
          * Create a new PerturbNormalBlock
          * @param name defines the block name
@@ -70441,9 +70631,25 @@ declare module BABYLON {
         */
         get strength(): NodeMaterialConnectionPoint;
         /**
+        * Gets the view direction input component
+        */
+        get viewDirection(): NodeMaterialConnectionPoint;
+        /**
+        * Gets the parallax scale input component
+        */
+        get parallaxScale(): NodeMaterialConnectionPoint;
+        /**
+        * Gets the parallax height input component
+        */
+        get parallaxHeight(): NodeMaterialConnectionPoint;
+        /**
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the uv offset output component
+         */
+        get uvOffset(): NodeMaterialConnectionPoint;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         autoConfigure(material: NodeMaterial): void;
@@ -75292,7 +75498,6 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
     export class Database implements IOfflineProvider {
-        private _callbackManifestChecked;
         private _currentSceneUrl;
         private _db;
         private _enableSceneOffline;

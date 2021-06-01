@@ -87,6 +87,7 @@
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
 - NME `TextureBlock`: add an output for the texture level and a switch to disable the internal multiplication (level * texture) ([#10192](https://github.com/BabylonJS/Babylon.js/pull/10192)) ([rassie](https://github.com/rassie))
+- Added support for parallax / parallax occlusion to the `PerturbNormal` block ([Popov72](https://github.com/Popov72))
 
 ### GUIEditor
 
@@ -232,6 +233,7 @@
 - Fix the `StandardMaterial` not using the tangent attribute when available ([Popov72](https://github.com/Popov72))
 - Fix code for handling getting DeviceType/DeviceSlot in DeviceInputSystem to work better with MouseEvents ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix vector2/3/4 and quaternion toString formatting ([rgerd](https://github.com/rgerd))
+- Fix cloning skeleton when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
