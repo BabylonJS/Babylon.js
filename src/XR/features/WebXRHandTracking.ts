@@ -626,11 +626,18 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * @returns null if not found or the WebXRHand object if found
      */
     public getHandByHandedness(handedness: XRHandedness): Nullable<WebXRHand> {
-        const handednesses = Object.keys(this._hands).map((key) => this._hands[key].handObject.xrController.inputSource.handedness);
-        const found = handednesses.indexOf(handedness);
-        if (found !== -1) {
-            return this._hands[found].handObject;
+        let found = null;
+
+        for (const key in this._hands) {
+            if (this._hands[key].handObject.xrController.inputSource.handedness === handedness) {
+                found = this._hands[key];
+            }
         }
+
+        if (found) {
+            return found.handObject;
+        }
+
         return null;
     }
 
