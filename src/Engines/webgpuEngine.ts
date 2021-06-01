@@ -790,7 +790,7 @@ export class WebGPUEngine extends Engine {
                 format: this._options.swapChainFormat!,
                 usage: WebGPUConstants.TextureUsage.RenderAttachment,
             };
-    
+
             this._mainTexture?.destroy();
             this._mainTexture = this._device.createTexture(mainTextureDescriptor);
             mainColorAttachments = [{
@@ -815,7 +815,7 @@ export class WebGPUEngine extends Engine {
                 format: this._options.swapChainFormat!,
                 usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.Sampled,
             };
-    
+
             this._mainTextureLastCopy?.destroy();
             this._mainTextureLastCopy = this._device.createTexture(mainTextureCopyDescriptor);
             if (this._options.antialiasing) {
