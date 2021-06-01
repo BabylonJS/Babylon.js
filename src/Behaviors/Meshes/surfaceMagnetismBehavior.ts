@@ -26,7 +26,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     /**
      * Distance offset from the hit point to place the target at, along the hit normal.
      */
-    public hitNormalOffset: number = 0.2;
+    public hitNormalOffset: number = 0.7;
 
     /**
      * Name of the behavior
@@ -59,7 +59,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     /**
      * If true, pitch and roll are omitted.
      */
-    public keepOrientationVertical = false;
+    public keepOrientationVertical = true;
 
     /**
      * Attaches the behavior to a transform node
@@ -108,16 +108,13 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
             worldTarget.scaleInPlace(this.hitNormalOffset);
             worldTarget.addInPlace(pickedPoint);
 
-            const worldOffset = TmpVectors.Vector3[1];
-            Vector3.TransformNormalToRef(this._attachPointLocalOffset, this._attachedMesh.getWorldMatrix(), worldOffset);
-
             if (this._attachedMesh.parent) {
                 TmpVectors.Matrix[0].copyFrom(this._attachedMesh.parent.getWorldMatrix()).invert();
-                Vector3.TransformNormalToRef(worldOffset, TmpVectors.Matrix[0], worldOffset);
+                Vector3.TransformNormalToRef(worldTarget, TmpVectors.Matrix[0], worldTarget);
             }
 
             return {
-                position: worldTarget.subtractInPlace(worldOffset),
+                position: worldTarget,
                 quaternion: Quaternion.RotationYawPitchRoll(
                     -Math.atan2(pickedNormal.x, -pickedNormal.z),
                     this.keepOrientationVertical ? 0 : Math.atan2(pickedNormal.y, Math.sqrt(pickedNormal.z * pickedNormal.z + pickedNormal.x * pickedNormal.x)),
@@ -163,8 +160,11 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         const oldParent = this._attachedMesh.parent;
         this._attachedMesh.setParent(null);
 
+        const worldOffset = TmpVectors.Vector3[0];
+        Vector3.TransformNormalToRef(this._attachPointLocalOffset, this._attachedMesh.getWorldMatrix(), worldOffset);
+
         if (!this.interpolatePose) {
-            this._attachedMesh.position.copyFrom(this._workingPosition);
+            this._attachedMesh.position.copyFrom(this._workingPosition).subtractInPlace(worldOffset);
             this._attachedMesh.rotationQuaternion!.copyFrom(this._workingQuaternion);
             return;
         }
@@ -199,7 +199,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
                 ) {
                     const pose = this._getTargetPose(pointerInfo.pickInfo);
                     if (pose) {
-                        this._workingPosition.copyFrom(pose.position);
+                        this._workingPosition.copyFrom(pose.position);;
                         this._workingQuaternion.copyFrom(pose.quaternion);
                     }
                 }
