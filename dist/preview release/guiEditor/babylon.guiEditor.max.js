@@ -42233,6 +42233,17 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "../public/imgs/babylonLogo.svg":
+/*!**************************************!*\
+  !*** ../public/imgs/babylonLogo.svg ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpolygon points='29.39 14.58 26.45 12.88 23.63 14.51 26.57 16.21 29.39 14.58' style='fill:%23e0684b'/%3E%3Cpolygon points='13.43 16.21 22.83 10.79 20 9.15 10.61 14.58 13.43 16.21' style='fill:%23e0684b'/%3E%3Cpolygon points='17.06 21.7 20 23.39 22.94 21.7 20 20 17.06 21.7' style='fill:%23e0684b'/%3E%3Cpolygon points='26.57 16.21 26.57 23.79 20 27.58 13.43 23.79 13.43 16.21 10.61 14.58 10.61 25.42 20 30.85 29.39 25.42 29.39 14.58 26.57 16.21' style='fill:%23bb464b'/%3E%3Cpolygon points='20 16.61 17.06 18.3 17.06 21.7 20 20 22.94 21.7 22.94 18.3 20 16.61' style='fill:%23bb464b'/%3E%3Cpolygon points='26.57 16.21 22.94 18.3 22.94 21.7 20 23.39 20 27.58 26.57 23.79 26.57 16.21' style='fill:%23e0ded8'/%3E%3Cpolygon points='13.43 16.21 17.06 18.3 17.06 21.7 20 23.39 20 27.58 13.43 23.79 13.43 16.21' style='fill:%23d5d2ca'/%3E%3Cpolygon points='22.83 10.79 26.45 12.88 23.63 14.51 26.57 16.21 22.94 18.3 20 16.61 17.06 18.3 13.43 16.21 22.83 10.79' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/guidesIcon.svg":
 /*!*************************************!*\
   !*** ../public/imgs/guidesIcon.svg ***!
@@ -42285,6 +42296,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.09,20.65,15.37,12.31a1.19,1.19,0,0,0-1.92.94v13.5a1.19,1.19,0,0,0,2.12.74l3.33-4.21a1.3,1.3,0,0,1,1-.5h5.44A1.19,1.19,0,0,0,26.09,20.65Zm-6.17.94a2.51,2.51,0,0,0-2,.95l-3.32,4.21V13.25l10.72,8.34Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/sliderIcon.svg":
+/*!*************************************!*\
+  !*** ../public/imgs/sliderIcon.svg ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M10.3,18a3.64,3.64,0,0,1,3.64-3.63H26.06A3.64,3.64,0,0,1,29.7,18V22a3.64,3.64,0,0,1-3.64,3.63H13.94A3.64,3.64,0,0,1,10.3,22Zm3.64-2.42A2.43,2.43,0,0,0,11.51,18V22a2.43,2.43,0,0,0,2.43,2.42H26.06A2.43,2.43,0,0,0,28.49,22V18a2.43,2.43,0,0,0-2.43-2.42Z' style='fill:%23fff'/%3E%3Ccircle cx='15.99' cy='20' r='2.64' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42347,6 +42369,8 @@ var pointerIcon = __webpack_require__(/*! ../../public/imgs/pointerIcon.svg */ "
 var handIcon = __webpack_require__(/*! ../../public/imgs/handIcon.svg */ "../public/imgs/handIcon.svg");
 var zoomIcon = __webpack_require__(/*! ../../public/imgs/zoomIcon.svg */ "../public/imgs/zoomIcon.svg");
 var guidesIcon = __webpack_require__(/*! ../../public/imgs/guidesIcon.svg */ "../public/imgs/guidesIcon.svg");
+var controlsIcon = __webpack_require__(/*! ../../public/imgs/sliderIcon.svg */ "../public/imgs/sliderIcon.svg");
+var logoIcon = __webpack_require__(/*! ../../public/imgs/babylonLogo.svg */ "../public/imgs/babylonLogo.svg");
 __webpack_require__(/*! ../scss/commandBar.scss */ "./scss/commandBar.scss");
 var CommandBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommandBarComponent, _super);
@@ -42370,22 +42394,38 @@ var CommandBarComponent = /** @class */ (function (_super) {
             _this._selecting = false;
             _this.forceUpdate();
         });
+        props.globalState.onOutlinesObservable.add(function () {
+            _this._outlines = !_this._outlines;
+            var nodes = _this.props.globalState.workbench.nodes;
+            nodes.forEach(function (node) {
+                _this.updateNodeOutline(node);
+            });
+            _this.forceUpdate();
+        });
         return _this;
     }
+    CommandBarComponent.prototype.updateNodeOutline = function (guiControl) {
+        var _this = this;
+        guiControl.isHighlighted = this._outlines;
+        guiControl.highlightLineWidth = 5;
+        if (this.props.globalState.workbench.isContainer(guiControl)) {
+            guiControl.children.forEach(function (child) {
+                _this.updateNodeOutline(child);
+            });
+        }
+    };
     CommandBarComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-commands" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-left" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: "./imgs/babylonLogo.svg", color: "white", className: "active" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: logoIcon, color: "white", className: "active" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: hamburgerIcon, tooltip: "Options", items: [
                         {
                             label: "Save",
                             onClick: function () { _this.props.globalState.onSaveObservable.notifyObservers(); }
-                        },
-                        {
+                        }, {
                             label: "Load",
-                        },
-                        {
+                        }, {
                             label: "Save to snippet",
                             onClick: function () { _this.props.globalState.onSnippetSaveObservable.notifyObservers(); }
                         }, {
@@ -42399,7 +42439,8 @@ var CommandBarComponent = /** @class */ (function (_super) {
                         _this.props.globalState.onPanObservable.notifyObservers(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Zoom", shortcut: "E", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
                         _this.props.globalState.onZoomObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: guidesIcon, tooltip: "Create", items: [
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Toggle Guides", shortcut: "R", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: controlsIcon, tooltip: "Create", items: [
                         {
                             label: "Image",
                             icon: "zoomIcon",
@@ -42980,11 +43021,11 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         xmlHttp.send(JSON.stringify(dataToSend));
     };
     PropertyTabComponent.prototype.loadFromSnippet = function () {
-        var snippedID = window.prompt("Please enter the snippet ID to use");
-        if (!snippedID) {
+        var snippedId = window.prompt("Please enter the snippet ID to use");
+        if (!snippedId) {
             return;
         }
-        this.props.globalState.workbench.loadFromSnippet(snippedID);
+        this.props.globalState.workbench.loadFromSnippet(snippedId);
     };
     PropertyTabComponent.prototype.renderProperties = function () {
         var _a;
@@ -43095,6 +43136,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Show grid", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("ShowGrid", true); }, onSelect: function (value) {
                             babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].WriteBoolean("ShowGrid", value);
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Responsive", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("Responsive", true); }, onSelect: function (value) {
+                            _this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
+                            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].WriteBoolean("Responsive", value);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FILE" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_4__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.load(file); }, accept: ".json" }),
@@ -43942,6 +43987,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
 var isFramePortData = function (variableToCheck) {
     if (variableToCheck) {
@@ -43961,6 +44007,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._forcePanning = false;
         _this._forceZooming = false;
         _this._forceSelecting = false;
+        _this._outlines = false;
         _this._frameIsMoving = false;
         _this._isLoading = false;
         _this.isOverGUINode = false;
@@ -43971,6 +44018,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this._ctrlKeyIsPressed = false;
         };
         _this.isUp = true;
+        _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["DataStorage"].ReadBoolean("Responsive", true);
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
                 _this.changeSelectionHighlight(false);
@@ -43984,6 +44032,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         }
                     }
                     else {
+                        _this.changeSelectionHighlight(false);
                         _this._selectedGuiNodes = [selection];
                     }
                     _this.changeSelectionHighlight(true);
@@ -44015,9 +44064,14 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
-                ;
                 _this._canvas.style.cursor = "zoom-in";
             }
+        });
+        props.globalState.onOutlinesObservable.add(function () {
+            _this._outlines = !_this._outlines;
+        });
+        props.globalState.onResponsiveChangeObservable.add(function (value) {
+            _this._responsive = value;
         });
         _this.props.globalState.hostDocument.addEventListener("keyup", _this.ctrlEvent, false);
         // Hotkey shortcuts
@@ -44058,13 +44112,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.globalState.guiTexture.parseContent(serializationObject);
         this.loadToEditor();
     };
-    WorkbenchComponent.prototype.loadFromSnippet = function (snippedID) {
+    WorkbenchComponent.prototype.loadFromSnippet = function (snippedId) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedID)];
+                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedId)];
                     case 1:
                         _a.sent();
                         this.loadToEditor();
@@ -44081,8 +44135,16 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         });
     };
     WorkbenchComponent.prototype.changeSelectionHighlight = function (value) {
+        var _this = this;
         this.selectedGuiNodes.forEach(function (node) {
-            node.isHighlighted = value;
+            if (_this._outlines) {
+                node.isHighlighted = true;
+                node.highlightLineWidth = value ? 10 : 5;
+            }
+            else {
+                node.isHighlighted = value;
+                node.highlightLineWidth = 10;
+            }
         });
     };
     WorkbenchComponent.prototype.resizeGuiTexture = function (newvalue) {
@@ -44158,8 +44220,27 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (ignorClick === void 0) { ignorClick = false; }
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
+        if (guiControl.typeName === "Line") {
+            var line = guiControl;
+            var x1 = line.x1.substr(0, line.x1.length - 2); //removing the 'px'
+            var x2 = line.x2.substr(0, line.x2.length - 2);
+            var y1 = line.y1.substr(0, line.y1.length - 2);
+            var y2 = line.y2.substr(0, line.y2.length - 2);
+            line.x1 = Number(x1) + newX;
+            line.x2 = Number(x2) + newX;
+            line.y1 = Number(y1) + newY;
+            line.y2 = Number(y2) + newY;
+            return true;
+        }
         guiControl.leftInPixels += newX;
         guiControl.topInPixels += newY;
+        //convert to percentage
+        if (this._responsive) {
+            var left = (guiControl.leftInPixels * 100) / (this._textureMesh.scaling.x);
+            var top_1 = (guiControl.topInPixels * 100) / (this._textureMesh.scaling.z);
+            guiControl.left = left + "%";
+            guiControl.top = top_1 + "%";
+        }
         return true;
     };
     WorkbenchComponent.prototype.componentDidMount = function () {
@@ -44310,20 +44391,24 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERUP);
         scene.onKeyboardObservable.add(function (k, e) {
             switch (k.event.key) {
-                case "q": //select?
+                case "q": //select
                 case "Q":
                     if (!_this._forceSelecting)
                         _this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
-                case "w": //pan?
+                case "w": //pan
                 case "W":
                     if (!_this._forcePanning)
                         _this.globalState.onPanObservable.notifyObservers();
                     break;
-                case "e": //zoom?
+                case "e": //zoom
                 case "E":
                     if (!_this._forceZooming)
                         _this.globalState.onZoomObservable.notifyObservers();
+                    break;
+                case "r": //outlines
+                case "R":
+                    _this.globalState.onOutlinesObservable.notifyObservers();
                     break;
                 default:
                     break;
@@ -44486,6 +44571,8 @@ var GlobalState = /** @class */ (function () {
         this.onSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onOutlinesObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onResponsiveChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
