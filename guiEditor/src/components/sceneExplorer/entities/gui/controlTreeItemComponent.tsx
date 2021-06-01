@@ -4,6 +4,7 @@ import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
 import { GlobalState } from "../../../../globalState";
+import { Nullable, Observer } from "babylonjs/Legacy/legacy";
 
 const visibilityNotActiveIcon: string = require("../../../../../public/imgs/visibilityNotActiveIcon.svg");
 const visibilityActiveIcon: string = require("../../../../../public/imgs/visibilityActiveIcon.svg");
@@ -22,15 +23,16 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
 
         const control = this.props.control;
         this.dragOverHover = false;
-        /*props.globalState.onSelectionChangedObservable.add((selection) => {
+        this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add((selection) => {
                 this.setState({ isSelected: selection === this.props.control });
-        });*/
+        });
         this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
     }
     dragOverHover: boolean;
+    private _onSelectionChangedObservable: Nullable<Observer<any>>;
     componentWillUnmount()
     {
-        //this.props.globalState.onSelectionChangedObservable.remove((selection));
+        this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
     }
 
     highlight() {
