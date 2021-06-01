@@ -21,7 +21,7 @@ import { WebXRControllerPointerSelection } from "./WebXRControllerPointerSelecti
  */
 export interface IWebXRNearInteractionOptions {
     /**
-     * if provided, this scene will be used to render meshes.
+     * If provided, this scene will be used to render meshes.
      */
     customUtilityLayerScene?: Scene;
     /**
@@ -29,11 +29,9 @@ export interface IWebXRNearInteractionOptions {
      */
     useUtilityLayer?: boolean;
     /**
-     * the xr input to use with this near interaction
+     * The xr input to use with this near interaction
      */
     xrInput: WebXRInput;
-
-    farInteractionFeature: WebXRControllerPointerSelection;
     /**
      * Enable near interaction on all controllers instead of switching between them
      */
@@ -148,7 +146,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 
     /**
-     * attach this feature
+     * Attach this feature
      * Will usually be called by the features manager
      *
      * @returns true if successful.
@@ -170,7 +168,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 
     /**
-     * detach this feature.
+     * Detach this feature.
      * Will usually be called by the features manager
      *
      * @returns true if successful.
@@ -581,7 +579,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 }
 
-//register the plugin
+//Register the plugin
 WebXRFeaturesManager.AddWebXRFeature(
     WebXRNearInteraction.Name,
     (xrSessionManager, options) => {
