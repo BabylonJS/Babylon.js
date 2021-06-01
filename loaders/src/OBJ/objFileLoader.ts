@@ -1,4 +1,4 @@
-import { FloatArray, IndicesArray } from "babylonjs/types";
+import { FloatArray, IndicesArray, Nullable } from "babylonjs/types";
 import { Vector3, Vector2 } from "babylonjs/Maths/math.vector";
 import { Color4 } from 'babylonjs/Maths/math.color';
 import { Tools } from "babylonjs/Misc/tools";
@@ -162,7 +162,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /** @hidden */
     public facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
 
-    private _forAssetContainer = false;
+    private _assetContainer: Nullable<AssetContainer> = null;
 
     private _meshLoadOptions: MeshLoadOptions;
 
@@ -286,10 +286,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns The loaded asset container
      */
     public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
-        this._forAssetContainer = true;
+        var container = new AssetContainer(scene);
+        this._assetContainer = container;
 
         return this.importMeshAsync(null, scene, data, rootUrl).then((result) => {
-            var container = new AssetContainer(scene);
             result.meshes.forEach((mesh) => container.meshes.push(mesh));
             result.meshes.forEach((mesh) => {
                 var material = mesh.material;
@@ -308,10 +308,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     }
                 }
             });
-            this._forAssetContainer = false;
+            this._assetContainer = null;
             return container;
         }).catch((ex) => {
-            this._forAssetContainer = false;
+            this._assetContainer = null;
             throw ex;
         });
     }
@@ -991,8 +991,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             handledMesh = meshesFromObj[j];
             //Create a Mesh with the name of the obj mesh
 
-            scene._blockEntityCollection = this._forAssetContainer;
+            scene._blockEntityCollection = !!this._assetContainer;
             var babylonMesh = new Mesh(meshesFromObj[j].name, scene);
+            babylonMesh._parentContainer = this._assetContainer;
             scene._blockEntityCollection = false;
 
             //Push the name of the material to an array
@@ -1036,7 +1037,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 this._loadMTL(fileToLoad, rootUrl, (dataLoaded) => {
                     try {
                         //Create materials thanks MTLLoader function
-                        materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl, this._forAssetContainer);
+                        materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl, this._assetContainer);
                         //Look at each material loaded in the mtl file
                         for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
                             //Three variables to get all meshes with the same material
