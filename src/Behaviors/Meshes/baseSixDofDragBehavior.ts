@@ -7,6 +7,7 @@ import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Vector3, Quaternion } from "../../Maths/math.vector";
 import { Observer, Observable } from "../../Misc/observable";
 import { TransformNode } from "../../Meshes/transformNode";
+import { Camera } from "../../Cameras/camera";
 
 /**
  * Base behavior for six degrees of freedom interactions in XR experiences.
@@ -212,6 +213,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     if (!this.allowMultiPointer && this.currentDraggingPointerIds.length > 0) {
                         return;
                     }
+
+                    if (this._pointerCamera && this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
+                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
+                    }
+
                     this._dragging = true;
                     virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 
@@ -241,7 +247,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     // Detach camera controls
                     if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
                         if (this._pointerCamera.inputs && this._pointerCamera.inputs.attachedToElement) {
-                            this._pointerCamera.detachControl();
+                            // this._pointerCamera.detachControl();
                             this._attachedToElement = true;
                         } else {
                             this._attachedToElement = false;
@@ -283,6 +289,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                     // 2 pointer interaction should not have a z axis drag factor
                     if (this.currentDraggingPointerIds.length > 1) {
+                        zDragFactor = 0;
+                    }
+
+                    if (this._pointerCamera && this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
+                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                         zDragFactor = 0;
                     }
 

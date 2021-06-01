@@ -36,6 +36,11 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     public rotateDraggedObject = true;
 
     /**
+     * If `rotateDraggedObject` is set to `true`, this parameter determines if we are only rotating around the y axis (yaw)
+     */
+    public rotateAroundYOnly = false;
+
+    /**
      *  The name of the behavior
      */
     public get name(): string {
@@ -101,8 +106,12 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         pointerDelta.setAll(0);
 
         if (this.rotateDraggedObject) {
-            // Convert change in rotation to only y axis rotation
-            Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
+            if (this.rotateAroundYOnly) {
+                // Convert change in rotation to only y axis rotation
+                Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
+            } else {
+                TmpVectors.Quaternion[0].copyFrom(worldDeltaRotation);
+            }
             TmpVectors.Quaternion[0].multiplyToRef(this._startingOrientation, this._targetOrientation);
         }
 
