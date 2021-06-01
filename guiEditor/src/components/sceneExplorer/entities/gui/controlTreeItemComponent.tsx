@@ -82,6 +82,10 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                         <img src={this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon }/>
                     </div>
                 </>}
+                {(this.dragOverHover) && <>
+                    <div className="Parent">
+                    </div>
+                </>}
                 <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
             </div>
         );
