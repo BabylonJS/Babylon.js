@@ -16,7 +16,6 @@ Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (c
  * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
  */
 export class Database implements IOfflineProvider {
-    private _callbackManifestChecked: (check: boolean) => any;
     private _currentSceneUrl: string;
     private _db: Nullable<IDBDatabase>;
     private _enableSceneOffline: boolean;
@@ -58,7 +57,6 @@ export class Database implements IOfflineProvider {
      * @param disableManifestCheck defines a boolean indicating that we want to skip the manifest validation (it will be considered validated and up to date)
      */
     constructor(urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) {
-        this._callbackManifestChecked = callbackManifestChecked;
         this._currentSceneUrl = Database._ReturnFullUrlLocation(urlToScene);
         this._db = null;
         this._enableSceneOffline = false;
@@ -68,17 +66,17 @@ export class Database implements IOfflineProvider {
         this._hasReachedQuota = false;
 
         if (!Database.IDBStorageEnabled) {
-            this._callbackManifestChecked(true);
+            callbackManifestChecked(true);
         } else {
             if (disableManifestCheck) {
                 this._enableSceneOffline = true;
                 this._enableTexturesOffline = true;
                 this._manifestVersionFound = 1;
                 Tools.SetImmediate(() => {
-                    this._callbackManifestChecked(true);
+                    callbackManifestChecked(true);
                 });
             } else {
-                this._checkManifestFile();
+                this._checkManifestFile(callbackManifestChecked);
             }
         }
     }
@@ -100,11 +98,11 @@ export class Database implements IOfflineProvider {
         }
     };
 
-    private _checkManifestFile() {
+    private _checkManifestFile(callbackManifestChecked: (checked: boolean) => any) {
         var noManifestFile = () => {
             this._enableSceneOffline = false;
             this._enableTexturesOffline = false;
-            this._callbackManifestChecked(false);
+            callbackManifestChecked(false);
         };
 
         var createManifestURL = (): string => {
@@ -146,9 +144,7 @@ export class Database implements IOfflineProvider {
                         if (manifestFile.version && !isNaN(parseInt(manifestFile.version))) {
                             this._manifestVersionFound = manifestFile.version;
                         }
-                        if (this._callbackManifestChecked) {
-                            this._callbackManifestChecked(true);
-                        }
+                        callbackManifestChecked(true);
                     } catch (ex) {
                         noManifestFile();
                     }
@@ -180,7 +176,7 @@ export class Database implements IOfflineProvider {
             xhr.send();
         } catch (ex) {
             Logger.Error("Error on XHR send request.");
-            this._callbackManifestChecked(false);
+            callbackManifestChecked(false);
         }
     }
 
