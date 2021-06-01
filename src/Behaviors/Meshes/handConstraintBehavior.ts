@@ -1,12 +1,45 @@
 import { TransformNode } from "../../Meshes/transformNode";
 import { Nullable } from "../../types";
 import { WebXRFeatureName } from "../../XR/webXRFeaturesManager";
-import { HandPart, WebXRHandTracking } from "../../XR/features/WebXRHandTracking";
+import { WebXRHandTracking } from "../../XR/features/WebXRHandTracking";
 import { WebXRExperienceHelper } from "../../XR/webXRExperienceHelper";
 import { Behavior } from "../behavior";
 import { Observer } from "../../Misc/observable";
 import { Scene } from "../../scene";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
+
+/**
+ * Zones around the hand
+ */
+export enum HandConstraintZone {
+    /**
+     * Above finger tips
+     */
+    ABOVE_FINGER_TIPS,
+    /**
+     * Next to the thumb
+     */
+    RADIAL_SIDE,
+    /**
+     * Next to the pinky finger
+     */
+    ULNAR_SIDE,
+    /**
+     * Below the wrist
+     */
+    BELOW_WRIST,
+}
+
+export enum HandConstraintOrientation {
+    /**
+     * Orientation is towards the camera
+     */
+    LOOK_AT_CAMERA,
+    /**
+     * Orientation is determined by the rotation of the palm
+     */
+    HAND_ROTATION,
+}
 
 /**
  * Hand constraint behavior that makes the attached `TransformNode` follow hands in XR experiences.
@@ -17,6 +50,34 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     private _node: TransformNode;
     private _handTracking: WebXRHandTracking;
     private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
+    private _zoneAxis: { [id: number]: Vector3 } = {};
+
+    /**
+     * Offset distance from the hand. Use this for bigger meshes that need more space between them and the tracked hand.
+     */
+    public targetOffset: number = 0;
+
+    /**
+     * Where to place the node regarding the center of the hand.
+     */
+    public targetZone: HandConstraintZone = HandConstraintZone.RADIAL_SIDE;
+
+    /**
+     * Orientation mode of the 4 zones around the hand
+     */
+    public zoneOrientationMode: HandConstraintOrientation = HandConstraintOrientation.HAND_ROTATION;
+    /**
+     * Orientation mode of the node attached to this behavior
+     */
+    public nodeOrientationMode: HandConstraintOrientation = HandConstraintOrientation.HAND_ROTATION;
+
+    constructor() {
+        // For a right hand
+        this._zoneAxis[HandConstraintZone.ABOVE_FINGER_TIPS] = new Vector3(0, 1, 0);
+        this._zoneAxis[HandConstraintZone.RADIAL_SIDE] = new Vector3(-1, 0, 0);
+        this._zoneAxis[HandConstraintZone.ULNAR_SIDE] = new Vector3(1, 0, 0);
+        this._zoneAxis[HandConstraintZone.BELOW_WRIST] = new Vector3(0, -1, 0);
+    }
 
     /** gets or sets behavior's name */
     public get name() {
@@ -78,7 +139,6 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
 
             if (pose) {
                 this._node.position.copyFrom(pose.position);
-                this._node.position.z += 2;
                 this._node.rotationQuaternion!.copyFrom(pose.quaternion);
             }
         });
@@ -97,6 +157,8 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
      */
     public linkToXRExperience(xr: WebXRExperienceHelper) {
         this._xr = xr;
+        // TODO;
+        this._xr;
         this._handTracking = xr.featuresManager.getEnabledFeature(WebXRFeatureName.HAND_TRACKING) as WebXRHandTracking;
         console.log(this._handTracking);
     }
