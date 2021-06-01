@@ -246,7 +246,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             }
         }
 
-        return this._texture._gammaSpace;
+        return this._texture._gammaSpace && !this._texture._useSRGBBuffer;
     }
 
     public set gammaSpace(gamma: boolean) {

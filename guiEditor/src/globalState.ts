@@ -40,6 +40,8 @@ export class GlobalState {
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
     onSnippetSaveObservable = new Observable<void>();
+    onOutlinesObservable = new Observable<void>();
+    onResponsiveChangeObservable = new Observable<boolean>();
 
     storeEditorData: (serializationObject: any) => void;
 

@@ -17,8 +17,6 @@ import { Bone } from "babylonjs/Bones/bone";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Material } from "babylonjs/Materials/material";
-import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
-import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
 
@@ -713,7 +711,7 @@ export class _Exporter {
             }
             case VertexBuffer.ColorKind: {
                 const meshMaterial = (babylonTransformNode as Mesh).material;
-                const convertToLinear = meshMaterial ? (meshMaterial instanceof StandardMaterial) : true;
+                const convertToLinear = meshMaterial ? (meshMaterial.getClassName() === "StandardMaterial") : true;
                 const vertexData : Color3 | Color4 = stride === 3 ? new Color3() : new Color4();
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
@@ -1506,8 +1504,8 @@ export class _Exporter {
                             this._materials.push(material);
                             materialIndex = this._materials.length - 1;
                         }
-                        else if (babylonMaterial instanceof MultiMaterial) {
-                            const subMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
+                        else if (babylonMaterial.getClassName() === "MultiMaterial") {
+                            const subMaterial: Material = (babylonMaterial as any).subMaterials[submesh.materialIndex];
                             if (subMaterial) {
                                 babylonMaterial = subMaterial;
                                 materialIndex = this._materialMap[babylonMaterial.uniqueId];
@@ -1595,10 +1593,8 @@ export class _Exporter {
 
                     mesh.primitives.push(meshPrimitive);
 
-                    const promise = this._extensionsPostExportMeshPrimitiveAsync("postExport", meshPrimitive, submesh, binaryWriter);
-                    if (promise) {
-                        promises.push();
-                    }
+                    this._extensionsPostExportMeshPrimitiveAsync("postExport", meshPrimitive, submesh, binaryWriter);
+                    promises.push();
                 }
             }
         }
