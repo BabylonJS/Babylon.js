@@ -59472,6 +59472,7 @@ declare module BABYLON {
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
+        copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
             height: number;
@@ -59982,6 +59983,17 @@ declare module BABYLON {
          * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
          */
         premultipliedAlpha?: boolean;
+        /**
+         * Defines if the final framebuffer Y inversion should always be done by a texture copy (default: false).
+         * If false (and if not using an offscreen canvas), the inversion will be done by the browser during compositing
+         */
+        forceCopyForInvertYFinalFramebuffer?: boolean;
+        /**
+         * Defines if the final copy pass doing the Y inversion should be disabled (default: false). This setting takes precedence over forceCopyForInvertYFinalFramebuffer.
+         * If true and if using an offscreen canvas, you should set something like canvas.style.transform = "scaleY(-1)" on the canvas from which you get the offscreen canvas, else the rendering will be Y inverted!
+         * Setting it to true allows to use the browser compositing to perform the Y inversion even when using an offscreen canvas, which leads to better performances
+         */
+        disableCopyForInvertYFinalFramebuffer?: boolean;
     }
     /**
      * The web GPU engine class provides support for WebGPU version of babylon.js.
@@ -60048,7 +60060,9 @@ declare module BABYLON {
          * Max number of uncaptured error messages to log
          */
         numMaxUncapturedErrors: number;
+        private _invertYFinalFramebuffer;
         private _mainTexture;
+        private _mainTextureLastCopy;
         private _depthTexture;
         private _mainTextureExtends;
         private _depthTextureFormat;
@@ -60064,6 +60078,7 @@ declare module BABYLON {
         _currentRenderPass: Nullable<GPURenderPassEncoder>;
         /** @hidden */
         _mainRenderPassWrapper: WebGPURenderPassWrapper;
+        private _mainRenderPassCopyWrapper;
         /** @hidden */
         _rttRenderPassWrapper: WebGPURenderPassWrapper;
         /** @hidden */
