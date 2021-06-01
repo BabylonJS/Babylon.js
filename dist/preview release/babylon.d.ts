@@ -9125,6 +9125,8 @@ declare module BABYLON {
          * If not and the texture is not ready, the engine will use a default black texture instead.
          */
         get isBlocking(): boolean;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Instantiates a new BaseTexture.
          * Base class of all the textures in babylon.
@@ -10642,9 +10644,10 @@ declare module BABYLON {
              * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
              * @param fallback defines texture to use while falling back when (compressed) texture file not found.
              * @param loaderOptions options to be passed to the loader
+             * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
              * @returns the cube texture as an InternalTexture
              */
-            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, loaderOptions: any): InternalTexture;
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, loaderOptions: any, useSRGBBuffer: boolean): InternalTexture;
             /**
              * Creates a cube texture
              * @param rootUrl defines the url where the files to load is located
@@ -10675,7 +10678,7 @@ declare module BABYLON {
              */
             createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
             /** @hidden */
-            createCubeTextureBase(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>, imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>): InternalTexture;
+            createCubeTextureBase(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>, imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>, useSRGBBuffer: boolean): InternalTexture;
             /** @hidden */
             _partialLoadFile(url: string, index: number, loadedFiles: ArrayBuffer[], onfinish: (files: ArrayBuffer[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
             /** @hidden */
@@ -10748,6 +10751,7 @@ declare module BABYLON {
         private _format;
         private _createPolynomials;
         private _loaderOptions;
+        private _useSRGBBuffer?;
         /**
          * Creates a cube texture from an array of image urls
          * @param files defines an array of image urls
@@ -10782,9 +10786,10 @@ declare module BABYLON {
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @param loaderOptions options to be passed to the loader
-         * @return the cube texture
+         * @param useSRGBBuffer Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false)
+        * @return the cube texture
          */
-        constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, loaderOptions?: any);
+        constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, loaderOptions?: any, useSRGBBuffer?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "CubeTexture"
@@ -21509,6 +21514,8 @@ declare module BABYLON {
         _hasWaitingData: Nullable<boolean>;
         /** @hidden */
         _waitingOverrideMeshId: Nullable<string>;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Specifies if the skeleton should be serialized
          */
@@ -24585,6 +24592,8 @@ declare module BABYLON {
      * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
      */
     export class PostProcess {
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Gets or sets the unique id of the post process
          */
@@ -27982,6 +27991,8 @@ declare module BABYLON {
         meshMap: Nullable<{
             [id: string]: AbstractMesh | undefined;
         }>;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Creates a material instance
          * @param name defines the name of the material
@@ -28686,6 +28697,8 @@ declare module BABYLON {
         /** @hidden */
         _positions: Nullable<Vector3[]>;
         private _positionsCache;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
          */
@@ -32463,6 +32476,8 @@ declare module BABYLON {
         private _tempInfluences;
         private _canUseTextureForTargets;
         /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
+        /** @hidden */
         _targetStoreTexture: Nullable<RawTexture2DArray>;
         /**
          * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
@@ -35701,6 +35716,7 @@ declare module BABYLON {
          * @returns the new constructor or null
          */
         static Construct(type: string, name: string, scene: Scene, options?: any): Nullable<() => Node>;
+        private _nodeDataStorage;
         /**
          * Gets or sets the name of the node
          */
@@ -35730,14 +35746,13 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
          */
         inspectableCustomProperties: IInspectable[];
-        private _doNotSerialize;
         /**
          * Gets or sets a boolean used to define if the node must be serialized
          */
         get doNotSerialize(): boolean;
         set doNotSerialize(value: boolean);
         /** @hidden */
-        _isDisposed: boolean;
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Gets a list of Animations associated with the node
          */
@@ -35749,9 +35764,6 @@ declare module BABYLON {
          * Callback raised when the node is ready to be used
          */
         onReady: Nullable<(node: Node) => void>;
-        private _isEnabled;
-        private _isParentEnabled;
-        private _isReady;
         /** @hidden */
         _currentRenderId: number;
         private _parentUpdateId;
@@ -35771,8 +35783,6 @@ declare module BABYLON {
         _worldMatrixDeterminant: number;
         /** @hidden */
         _worldMatrixDeterminantIsDirty: boolean;
-        /** @hidden */
-        private _sceneRootNodesIndex;
         /**
          * Gets a boolean indicating if the node has been disposed
          * @returns true if the node was disposed
@@ -43364,6 +43374,8 @@ declare module BABYLON {
         private _speedRatio;
         private _loopAnimation;
         private _isAdditive;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Gets or sets the unique id of the node
          */
@@ -59460,6 +59472,7 @@ declare module BABYLON {
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
+        copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
             height: number;
@@ -59970,6 +59983,17 @@ declare module BABYLON {
          * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
          */
         premultipliedAlpha?: boolean;
+        /**
+         * Defines if the final framebuffer Y inversion should always be done by a texture copy (default: false).
+         * If false (and if not using an offscreen canvas), the inversion will be done by the browser during compositing
+         */
+        forceCopyForInvertYFinalFramebuffer?: boolean;
+        /**
+         * Defines if the final copy pass doing the Y inversion should be disabled (default: false). This setting takes precedence over forceCopyForInvertYFinalFramebuffer.
+         * If true and if using an offscreen canvas, you should set something like canvas.style.transform = "scaleY(-1)" on the canvas from which you get the offscreen canvas, else the rendering will be Y inverted!
+         * Setting it to true allows to use the browser compositing to perform the Y inversion even when using an offscreen canvas, which leads to better performances
+         */
+        disableCopyForInvertYFinalFramebuffer?: boolean;
     }
     /**
      * The web GPU engine class provides support for WebGPU version of babylon.js.
@@ -60036,7 +60060,9 @@ declare module BABYLON {
          * Max number of uncaptured error messages to log
          */
         numMaxUncapturedErrors: number;
+        private _invertYFinalFramebuffer;
         private _mainTexture;
+        private _mainTextureLastCopy;
         private _depthTexture;
         private _mainTextureExtends;
         private _depthTextureFormat;
@@ -60052,6 +60078,7 @@ declare module BABYLON {
         _currentRenderPass: Nullable<GPURenderPassEncoder>;
         /** @hidden */
         _mainRenderPassWrapper: WebGPURenderPassWrapper;
+        private _mainRenderPassCopyWrapper;
         /** @hidden */
         _rttRenderPassWrapper: WebGPURenderPassWrapper;
         /** @hidden */
@@ -69133,6 +69160,8 @@ declare module BABYLON {
         private _invertYAxis;
         /** Gets or sets probe position (center of the cube map) */
         position: Vector3;
+        /** @hidden */
+        _parentContainer: Nullable<AbstractScene>;
         /**
          * Creates a new reflection probe
          * @param name defines the name of the probe
@@ -75469,7 +75498,6 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
     export class Database implements IOfflineProvider {
-        private _callbackManifestChecked;
         private _currentSceneUrl;
         private _db;
         private _enableSceneOffline;
