@@ -796,7 +796,7 @@ export class WebGPUEngine extends Engine {
             mainColorAttachments = [{
                 view: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
-                storeOp: WebGPUConstants.StoreOp.Store
+                storeOp: WebGPUConstants.StoreOp.Clear
             }];
         } else {
             mainColorAttachments = [{
