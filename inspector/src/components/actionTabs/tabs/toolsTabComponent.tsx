@@ -105,7 +105,7 @@ export class ToolsTabComponent extends PaneComponent {
             this._screenShotSize.height = undefined;
         }
         if (scene.activeCamera) {
-            Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize);
+            Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize, undefined, undefined, 4);
         }
         this._screenShotSize = oldScreenshotSize;
     }
