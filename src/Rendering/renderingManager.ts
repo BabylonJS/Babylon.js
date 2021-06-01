@@ -1,14 +1,14 @@
 import { Nullable } from "../types";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { SubMesh } from "../Meshes/subMesh";
 import { SmartArray } from "../Misc/smartArray";
 import { ISpriteManager } from "../Sprites/spriteManager";
 import { IParticleSystem } from "../Particles/IParticleSystem";
-import { Material } from "../Materials/material";
 import { RenderingGroup } from "./renderingGroup";
 
 declare type Scene = import("../scene").Scene;
 declare type Camera = import("../Cameras/camera").Camera;
+declare type Material = import("../Materials/material").Material;
+declare type SubMesh = import("../Meshes/subMesh").SubMesh;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 /**
  * Interface describing the different options available in the rendering manager
