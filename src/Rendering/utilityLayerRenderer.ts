@@ -258,10 +258,13 @@ export class UtilityLayerRenderer implements IDisposable {
                             if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
                                 this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
                                 prePointerInfo.skipOnPointerObservable = true;
-                            } else if (this._lastPointerEvents[pointerEvent.pointerId]) {
-                                // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
-                                this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
-                                delete this._lastPointerEvents[pointerEvent.pointerId];
+                            } else if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
+                                if (this._lastPointerEvents[pointerEvent.pointerId]) {
+                                    // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
+                                    this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
+                                    delete this._lastPointerEvents[pointerEvent.pointerId];
+                                }
+                                this._notifyObservers(prePointerInfo, utilityScenePick, pointerEvent);
                             }
                         }
 
