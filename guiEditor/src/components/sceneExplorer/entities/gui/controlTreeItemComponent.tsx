@@ -18,6 +18,9 @@ interface IControlTreeItemComponentProps {
 }
 
 export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean, isHovered: boolean, isSelected: boolean }> {
+    dragOverHover: boolean;
+    private _onSelectionChangedObservable: Nullable<Observer<any>>;
+    
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 
@@ -28,8 +31,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         });
         this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
     }
-    dragOverHover: boolean;
-    private _onSelectionChangedObservable: Nullable<Observer<any>>;
+
     componentWillUnmount()
     {
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
