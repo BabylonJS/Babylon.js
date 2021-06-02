@@ -36,6 +36,11 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     public rotateDraggedObject = true;
 
     /**
+     * If `rotateDraggedObject` is set to `true`, this parameter determines if we are only rotating around the y axis (yaw)
+     */
+    public rotateAroundYOnly = false;
+
+    /**
      *  The name of the behavior
      */
     public get name(): string {
@@ -106,8 +111,12 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         pointerDelta.setAll(0);
 
         if (this.rotateDraggedObject) {
-            // Convert change in rotation to only y axis rotation
-            Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
+            if (this.rotateAroundYOnly) {
+                // Convert change in rotation to only y axis rotation
+                Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
+            } else {
+                TmpVectors.Quaternion[0].copyFrom(worldDeltaRotation);
+            }
             TmpVectors.Quaternion[0].multiplyToRef(this._startingOrientation, this._targetOrientation);
         }
 
@@ -167,10 +176,15 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
             this._targetScaling.copyFrom(this._ownerNode.scaling);
 
             if (this.faceCameraOnDragStart && this._scene.activeCamera) {
-                const toCamera = this._scene.activeCamera.position.subtract(worldPivot).normalize();
-                const quat = this._scene.useRightHandedSystem
-                    ? Quaternion.FromLookDirectionRH(toCamera, new Vector3(0, 1, 0))
-                    : Quaternion.FromLookDirectionLH(toCamera, new Vector3(0, 1, 0));
+                const toCamera = TmpVectors.Vector3[0];
+                this._scene.activeCamera.position.subtractToRef(worldPivot, toCamera);
+                toCamera.normalize();
+                const quat = TmpVectors.Quaternion[0];
+                if (this._scene.useRightHandedSystem) {
+                    Quaternion.FromLookDirectionRHToRef(toCamera, new Vector3(0, 1, 0), quat);
+                } else {
+                    Quaternion.FromLookDirectionLHToRef(toCamera, new Vector3(0, 1, 0), quat);
+                }
                 quat.normalize();
                 Quaternion.RotationYawPitchRollToRef(quat.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
                 this._targetOrientation.copyFrom(TmpVectors.Quaternion[0]);

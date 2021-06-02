@@ -303,12 +303,12 @@ export class HolographicSlate extends ContentDisplay3D {
         this._contentDragBehavior.useObjectOrientationForDragging = true;
         this._contentDragBehavior.updateDragPlane = false;
 
-        let origin = new Vector3();
+        const origin = new Vector3();
+        const worldDimensions = new Vector3();
+        const upWorld = new Vector3();
+        const rightWorld = new Vector3();
+        const projectedOffset = new Vector2();
         let startViewport: Viewport;
-        let worldDimensions = new Vector3();
-        let upWorld = new Vector3();
-        let rightWorld = new Vector3();
-        let projectedOffset = new Vector2();
         let worldMatrix: Matrix;
 
         this._contentDragBehavior.onDragStartObservable.add((event) => {
@@ -332,7 +332,7 @@ export class HolographicSlate extends ContentDisplay3D {
             rightWorld.scaleInPlace(1 / Vector3.Dot(rightWorld, worldDimensions));
         });
 
-        let offset = new Vector3();
+        const offset = new Vector3();
         this._contentDragBehavior.onDragObservable.add((event) => {
             offset.copyFrom(event.dragPlanePoint);
             offset.subtractInPlace(origin);
@@ -347,7 +347,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
     protected _affectMaterial(mesh: AbstractMesh) {
         // TODO share materials
-        this._backPlateMaterial = new FluentBackplateMaterial(this.name + "plateMaterial", mesh.getScene());
+        this._backPlateMaterial = new FluentBackplateMaterial(`${this.name} plateMaterial`, mesh.getScene());
 
         this._pickedPointObserver = this._host.onPickedPointChangedObservable.add((pickedPoint) => {
             // if (pickedPoint) {

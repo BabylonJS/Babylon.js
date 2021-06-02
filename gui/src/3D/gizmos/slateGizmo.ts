@@ -225,7 +225,7 @@ export class SlateGizmo extends Gizmo {
             TmpVectors.Vector3[0].addToRef(origin, ref);
         };
 
-        const dragStart = (event: any) => {
+        const dragStart = (event: { position: Vector3 }) => {
             if (this.attachedSlate && this.attachedMesh) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
                 originStart.copyFrom(this.attachedSlate.origin);
@@ -244,7 +244,7 @@ export class SlateGizmo extends Gizmo {
             }
         };
 
-        const dragging = (event: any) => {
+        const dragging = (event: { position: Vector3 }) => {
             if (this.attachedSlate && this.attachedMesh) {
                 projectToRef(event.position, dragPlaneNormal, dragOrigin, this._tmpVector);
                 this._tmpVector.subtractInPlace(dragOrigin);
