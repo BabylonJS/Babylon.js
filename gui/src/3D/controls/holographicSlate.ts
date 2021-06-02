@@ -347,7 +347,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
     protected _affectMaterial(mesh: AbstractMesh) {
         // TODO share materials
-        this._backPlateMaterial = new FluentBackplateMaterial(this.name + "plateMaterial", mesh.getScene());
+        this._backPlateMaterial = new FluentBackplateMaterial(`${this.name} plateMaterial`, mesh.getScene());
+
 
         this._pickedPointObserver = this._host.onPickedPointChangedObservable.add((pickedPoint) => {
             // if (pickedPoint) {
