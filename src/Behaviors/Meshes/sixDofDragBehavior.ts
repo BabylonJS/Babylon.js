@@ -171,10 +171,15 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
             this._targetScaling.copyFrom(this._ownerNode.scaling);
 
             if (this.faceCameraOnDragStart && this._scene.activeCamera) {
-                const toCamera = this._scene.activeCamera.position.subtract(worldPivot).normalize();
-                const quat = this._scene.useRightHandedSystem
-                    ? Quaternion.FromLookDirectionRH(toCamera, new Vector3(0, 1, 0))
-                    : Quaternion.FromLookDirectionLH(toCamera, new Vector3(0, 1, 0));
+                const toCamera = TmpVectors.Vector3[0];
+                this._scene.activeCamera.position.subtractToRef(worldPivot, toCamera);
+                toCamera.normalize();
+                const quat = TmpVectors.Quaternion[0];
+                if (this._scene.useRightHandedSystem) {
+                    Quaternion.FromLookDirectionRHToRef(toCamera, new Vector3(0, 1, 0), quat)
+                } else {
+                    Quaternion.FromLookDirectionLHToRef(toCamera, new Vector3(0, 1, 0), quat);
+                }
                 quat.normalize();
                 Quaternion.RotationYawPitchRollToRef(quat.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
                 this._targetOrientation.copyFrom(TmpVectors.Quaternion[0]);

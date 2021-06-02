@@ -163,6 +163,10 @@ export abstract class GizmoHandle {
         this._dragBehavior.onDragEndObservable.remove(this._dragEndObserver);
 
         this._dragBehavior.detach();
+
+        for (const material of this._materials) {
+            material.dispose();
+        }
         this.node.dispose();
     }
 }
