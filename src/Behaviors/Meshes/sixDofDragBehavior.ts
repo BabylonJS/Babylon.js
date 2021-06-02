@@ -176,7 +176,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                 toCamera.normalize();
                 const quat = TmpVectors.Quaternion[0];
                 if (this._scene.useRightHandedSystem) {
-                    Quaternion.FromLookDirectionRHToRef(toCamera, new Vector3(0, 1, 0), quat)
+                    Quaternion.FromLookDirectionRHToRef(toCamera, new Vector3(0, 1, 0), quat);
                 } else {
                     Quaternion.FromLookDirectionLHToRef(toCamera, new Vector3(0, 1, 0), quat);
                 }
