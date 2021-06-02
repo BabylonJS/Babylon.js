@@ -26,7 +26,6 @@ import { InternalTexture, InternalTextureSource } from '../../Materials/Textures
 import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
-import { EngineStore } from '../engineStore';
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
@@ -1017,7 +1016,7 @@ export class WebGPUTextureHelper {
     }
 
     // TODO WEBGPU handle data source not being in the same format than the destination texture?
-    public updateTexture(imageBitmap: ImageBitmap | Uint8Array, gpuTexture: GPUTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
+    public updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, gpuTexture: GPUTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void
     {
         const blockInformation = WebGPUTextureHelper._GetBlockInformationFromFormat(format);
@@ -1084,15 +1083,12 @@ export class WebGPUTextureHelper {
                 this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, commandEncoder);
             }
         } else {
-            imageBitmap = imageBitmap as ImageBitmap;
+            imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
+
+            this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
 
             if (invertY || premultiplyAlpha) {
-                const engine = EngineStore.LastCreatedEngine;
-                engine && engine.createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
-                    this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
-                });
-            } else {
-                this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
+                this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, commandEncoder);
             }
         }
     }
