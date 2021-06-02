@@ -54,7 +54,8 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
     render() {
         const control = this.props.control;
 
-        const name = (control.name || "No name") + ` [${control.getClassName()}]`;
+        const name =  `${control.name || "No name"} [${control.getClassName()}]`;
+
         return (
             <div className="controlTools" onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}
             draggable={true}
