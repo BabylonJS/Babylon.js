@@ -1,5 +1,10 @@
 /** @hidden */
 export enum PowerPreference {
+    SRGB = "srgb"
+}
+
+/** @hidden */
+export enum PowerPreference {
     LowPower = "low-power",
     HighPerformance = "high-performance"
 }

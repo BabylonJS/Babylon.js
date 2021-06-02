@@ -1089,10 +1089,10 @@ export class WebGPUTextureHelper {
             if (invertY || premultiplyAlpha) {
                 const engine = EngineStore.LastCreatedEngine;
                 engine && engine.createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
-                    this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                    this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
                 });
             } else {
-                this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
             }
         }
     }

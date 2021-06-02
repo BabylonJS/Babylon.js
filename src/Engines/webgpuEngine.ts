@@ -566,7 +566,7 @@ export class WebGPUEngine extends Engine {
             .then((adapter: GPUAdapter | null) => {
                 this._adapter = adapter!;
                 this._adapterSupportedExtensions = [];
-                this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature));
+                this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName));
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
@@ -588,7 +588,7 @@ export class WebGPUEngine extends Engine {
             .then((device: GPUDevice | null) => {
                 this._device = device!;
                 this._deviceEnabledExtensions = [];
-                this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature));
+                this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
 
                 let numUncapturedErrors = -1;
                 this._device.addEventListener('uncapturederror', (event) => {
