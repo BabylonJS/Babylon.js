@@ -124,7 +124,7 @@ export class DefaultBehavior implements Behavior<Mesh> {
             this._followBehavior._enabled = !this._sixDofDragBehavior.isMoving && this.followBehaviorEnabled;
         });
         this._onDragObserver = this._sixDofDragBehavior.onDragObservable.add((event: { pickInfo: PickingInfo }) => {
-            this._surfaceMagnetismBehavior.findAndUpdateTarget(event.pickInfo);
+            this._sixDofDragBehavior.disableMovement = this._surfaceMagnetismBehavior.findAndUpdateTarget(event.pickInfo);
         });
     }
 

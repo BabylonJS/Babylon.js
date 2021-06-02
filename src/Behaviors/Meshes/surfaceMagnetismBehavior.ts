@@ -4,7 +4,6 @@ import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { Observer } from "../../Misc/observable";
-import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Behavior } from "../behavior";
@@ -26,7 +25,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     /**
      * Distance offset from the hit point to place the target at, along the hit normal.
      */
-    public hitNormalOffset: number = 0.3;
+    public hitNormalOffset: number = 0.05;
 
     /**
      * Name of the behavior
@@ -144,11 +143,12 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
      * Finds the intersection point of the given ray onto the meshes and updates the target.
      * Transformation will be interpolated according to `interpolatePose` and `lerpTime` properties.
      * If no mesh of `meshes` are hit, this does nothing.
+     * @returns a boolean indicating if we found a hit to stick to
      */
-    public findAndUpdateTarget(pickInfo: PickingInfo) {
+    public findAndUpdateTarget(pickInfo: PickingInfo) : boolean {
         this._hit = false;
         if (!pickInfo.ray) {
-            return;
+            return false;
         }
 
         const subPicking = pickInfo.ray.intersectsMeshes(this.meshes)[0];
@@ -166,6 +166,8 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
                 this._hit = true;
             }
         }
+
+        return this._hit;
     }
 
     private _getAttachPointOffset(): Vector3 {
