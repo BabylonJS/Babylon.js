@@ -73,6 +73,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     /**
      * Attaches the behavior to a transform node
      * @param target defines the target where the behavior is attached to
+     * @param scene the scene
      */
     public attach(target: Mesh, scene?: Scene): void {
         this._attachedMesh = target;
@@ -143,6 +144,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
      * Finds the intersection point of the given ray onto the meshes and updates the target.
      * Transformation will be interpolated according to `interpolatePose` and `lerpTime` properties.
      * If no mesh of `meshes` are hit, this does nothing.
+     * @param pickInfo The input pickingInfo that will be used to intersect the meshes
      * @returns a boolean indicating if we found a hit to stick to
      */
     public findAndUpdateTarget(pickInfo: PickingInfo) : boolean {

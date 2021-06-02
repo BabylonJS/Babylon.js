@@ -88,6 +88,7 @@ export class DefaultBehavior implements Behavior<Mesh> {
      * Attaches the default behavior
      * @param ownerMesh The top level mesh
      * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
+     * @param sceneUnderstandingMeshes Meshes from the scene understanding that will be used for surface magnetism
      */
     public attach(ownerMesh: Mesh, draggablesMeshes?: Mesh[], sceneUnderstandingMeshes?: AbstractMesh[]): void {
         this._scene = ownerMesh.getScene();

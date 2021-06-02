@@ -34,13 +34,13 @@ export class NearMenu extends VolumeBasedPanel {
     private _backPlateMaterial: FluentMaterial;
     private _pinMaterial: StandardMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
-    
+
     private _currentMin: Nullable<Vector3>;
     private _currentMax: Nullable<Vector3>;
-    
+
     /** @hidden */
     public _defaultBehavior: DefaultBehavior;
-    
+
     private _isPinned: boolean = false;
     /**
      * Indicates if the near menu is world-pinned
@@ -48,10 +48,10 @@ export class NearMenu extends VolumeBasedPanel {
     public get isPinned(): boolean {
         return this._isPinned;
     }
-    
+
     public set isPinned(value: boolean) {
         this._isPinned = value;
-        
+
         if (this._isPinned) {
             this._pinMaterial.emissiveColor.copyFromFloats(0.25, 0.4, 0.95);
             this._defaultBehavior.followBehaviorEnabled = false;
