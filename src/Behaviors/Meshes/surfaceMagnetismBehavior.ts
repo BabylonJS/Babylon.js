@@ -17,16 +17,16 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     private _attachedMesh: Nullable<Mesh>;
     private _attachPointLocalOffset: Vector3;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
-    private _utilityLayer: UtilityLayerRenderer;
     private _workingPosition: Vector3 = new Vector3();
     private _workingQuaternion: Quaternion = new Quaternion();
     private _lastTick: number = -1;
     private _onBeforeRender: Nullable<Observer<Scene>>;
+    private _hit = false;
 
     /**
      * Distance offset from the hit point to place the target at, along the hit normal.
      */
-    public hitNormalOffset: number = 0.7;
+    public hitNormalOffset: number = 0.3;
 
     /**
      * Name of the behavior
@@ -38,7 +38,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     /**
      * Spatial mapping meshes to collide with
      */
-    public meshes: AbstractMesh[];
+    public meshes: AbstractMesh[] = [];
 
     /**
      * Function called when the behavior needs to be initialized (after attaching it to a target)
@@ -62,21 +62,29 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     public keepOrientationVertical = true;
 
     /**
+     * Is this behavior reacting to pointer events
+     */
+    public enabled = true;
+
+    /**
+     * Maximum distance for the node to stick to the surface
+     */
+    public maxStickingDistance = 0.8;
+
+    /**
      * Attaches the behavior to a transform node
      * @param target defines the target where the behavior is attached to
      */
-    public attach(target: Mesh, scene?: Scene, utilityLayer?: UtilityLayerRenderer): void {
+    public attach(target: Mesh, scene?: Scene): void {
         this._attachedMesh = target;
         this._scene = scene || target.getScene();
-        this.updateAttachPoint();
         if (!this._attachedMesh.rotationQuaternion) {
             this._attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._attachedMesh.rotation.y, this._attachedMesh.rotation.x, this._attachedMesh.rotation.z);
         }
+        this.updateAttachPoint();
 
-        if (utilityLayer) {
-            this._utilityLayer = utilityLayer;
-            utilityLayer.pickingEnabled = false;
-        }
+        this._workingPosition.copyFrom(this._attachedMesh.position);
+        this._workingQuaternion.copyFrom(this._attachedMesh.rotationQuaternion);
         this._addObservables();
     }
 
@@ -86,7 +94,6 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     public detach(): void {
         this._attachedMesh = null;
         this._removeObservables();
-        this._utilityLayer.pickingEnabled = true;
     }
 
     private _getTargetPose(pickingInfo: PickingInfo): Nullable<{ position: Vector3; quaternion: Quaternion }> {
@@ -133,6 +140,34 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         this._attachPointLocalOffset = this._getAttachPointOffset();
     }
 
+    /**
+     * Finds the intersection point of the given ray onto the meshes and updates the target.
+     * Transformation will be interpolated according to `interpolatePose` and `lerpTime` properties.
+     * If no mesh of `meshes` are hit, this does nothing.
+     */
+    public findAndUpdateTarget(pickInfo: PickingInfo) {
+        this._hit = false;
+        if (!pickInfo.ray) {
+            return;
+        }
+
+        const subPicking = pickInfo.ray.intersectsMeshes(this.meshes)[0];
+
+        if (
+            this._attachedMesh &&
+            subPicking &&
+            subPicking.hit &&
+            subPicking.pickedMesh
+        ) {
+            const pose = this._getTargetPose(subPicking);
+            if (pose && Vector3.Distance(this._attachedMesh.position, pose.position) < this.maxStickingDistance) {
+                this._workingPosition.copyFrom(pose.position);
+                this._workingQuaternion.copyFrom(pose.quaternion);
+                this._hit = true;
+            }
+        }
+    }
+
     private _getAttachPointOffset(): Vector3 {
         if (!this._attachedMesh) {
             return Vector3.Zero();
@@ -153,7 +188,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     }
 
     private _updateTransformToGoal(elapsed: number) {
-        if (!this._attachedMesh) {
+        if (!this._attachedMesh || !this._hit) {
             return;
         }
 
@@ -183,31 +218,9 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     }
 
     private _addObservables() {
-        const pickPredicate = (mesh: AbstractMesh) => {
-            return this.meshes.indexOf(mesh) !== -1;
-        };
-
         this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo) => {
-            if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
-                if (
-                    this._attachedMesh &&
-                    pointerInfo.pickInfo &&
-                    pointerInfo.pickInfo.hit &&
-                    pointerInfo.pickInfo.pickedMesh &&
-                    pointerInfo.pickInfo.ray &&
-                    pickPredicate(pointerInfo.pickInfo.pickedMesh)
-                ) {
-                    const pose = this._getTargetPose(pointerInfo.pickInfo);
-                    if (pose) {
-                        this._workingPosition.copyFrom(pose.position);
-                        this._workingQuaternion.copyFrom(pose.quaternion);
-                    }
-                }
-            }
-
-            if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
-                // Release the mesh
-                this.detach();
+            if (this.enabled && pointerInfo.type == PointerEventTypes.POINTERMOVE && pointerInfo.pickInfo) {
+                this.findAndUpdateTarget(pointerInfo.pickInfo);
             }
         });
 
@@ -223,5 +236,6 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         this._scene.onPointerObservable.remove(this._pointerObserver);
         this._scene.onBeforeRenderObservable.remove(this._onBeforeRender);
         this._pointerObserver = null;
+        this._onBeforeRender = null;
     }
 }
