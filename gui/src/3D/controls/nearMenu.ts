@@ -153,8 +153,8 @@ export class NearMenu extends VolumeBasedPanel {
 
         this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
 
-        this._defaultBehavior.followBehavior.minimumDistance = extendSize.length() * 0.5 * this.scaling.length();
-        this._defaultBehavior.followBehavior.maximumDistance = extendSize.length() * 1.5 * this.scaling.length();
+        this._defaultBehavior.followBehavior.minimumDistance = extendSize.length() * 3 * this.scaling.length();
+        this._defaultBehavior.followBehavior.maximumDistance = extendSize.length() * 5 * this.scaling.length();
         this._defaultBehavior.followBehavior.defaultDistance = extendSize.length() * this.scaling.length();
     }
 
