@@ -214,7 +214,12 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         return;
                     }
 
-                    if (this._pointerCamera && this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
+                    if (
+                        this._pointerCamera &&
+                        this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE &&
+                        !this._pointerCamera._isLeftCamera &&
+                        !this._pointerCamera._isRightCamera
+                    ) {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                     }
 
@@ -292,7 +297,12 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         zDragFactor = 0;
                     }
 
-                    if (this._pointerCamera && this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
+                    if (
+                        this._pointerCamera &&
+                        this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE &&
+                        !this._pointerCamera._isLeftCamera &&
+                        !this._pointerCamera._isRightCamera
+                    ) {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                         zDragFactor = 0;
                     }
@@ -312,7 +322,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     // Update the controller position
                     virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
                     const lookAt = TmpVectors.Vector3[0];
-                    pointerInfo.pickInfo.ray.origin.addToRef(pointerInfo.pickInfo.ray.direction, lookAt)
+                    pointerInfo.pickInfo.ray.origin.addToRef(pointerInfo.pickInfo.ray.direction, lookAt);
                     virtualMeshesInfo.originMesh.lookAt(lookAt);
 
                     virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
