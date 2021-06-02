@@ -34,6 +34,8 @@ type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourcesch
 
 type XRDOMOverlayType = "screen" | "floating" | "head-locked";
 
+type XRReflectionFormat = "srgba8" | "rgba16f";
+
 type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => void;
 
 type XRPlaneSet = Set<XRPlane>;
@@ -48,6 +50,10 @@ type XRDOMOverlayInit = {
      * The root attribute specifies the overlay element that will be displayed to the user as the content of the DOM overlay. This is a required attribute, there is no default.
      */
     root: Element;
+};
+
+type XRLightProbeInit = {
+     reflectionFormat: XRReflectionFormat;
 };
 
 interface XRSessionInit {
@@ -178,6 +184,11 @@ type XRDOMOverlayState = {
     type: XRDOMOverlayType | null
 };
 
+interface XRLightProbe extends EventTarget {
+    readonly probeSpace: XRSpace ;
+    onreflectionchange: XREventHandler ;
+  }
+
 interface XRSession {
     addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
     removeEventListener(type: XREventType, listener: XREventHandler, options?: boolean | EventListenerOptions): void;
@@ -219,6 +230,14 @@ interface XRSession {
      */
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace | XRBoundedReferenceSpace>;
 
+    /**
+     * The XRSession interface is extended with the ability to create new XRLightProbe instances.
+     * XRLightProbe instances have a session object, which is the XRSession that created this XRLightProbe.
+     *
+     * Can reject with with a "NotSupportedError" DOMException
+     */
+    requestLightProbe(options?: XRLightProbeInit): Promise<XRLightProbe>;
+
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
 
     onend: XREventHandler;
@@ -248,6 +267,10 @@ interface XRSession {
      * Provided when the optional 'dom-overlay' feature is requested.
      */
     readonly domOverlayState?: XRDOMOverlayState;
+    /**
+     * Indicates the XRReflectionFormat most closely supported by the underlying XR device
+     */
+    readonly preferredReflectionFormat?: XRReflectionFormat;
 }
 
 interface XRViewerPose extends XRPose {
