@@ -12,7 +12,7 @@
         height: 30px;
         font-size: 16px;
         color: white;
-        background: #222222;
+        background: white;
         grid-row: 1;
         text-align: center;
         display: grid;
@@ -24,6 +24,7 @@
 
         #logo {
             position: relative;
+            background: white;
             grid-column: 1; 
             width: 24px;
             height: 24px;
@@ -34,6 +35,8 @@
         }        
 
         #title {
+            background: white;
+            color: black;
             grid-column: 2; 
             display: grid;
             align-items: center;   
