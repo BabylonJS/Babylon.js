@@ -23,8 +23,6 @@ const dbgShowDebugInliningProcess = false;
 
 /** @hidden */
 export class ShaderProcessor {
-    public static EnableShaderCodeInliner = false;
-
     public static Initialize(options: ProcessingOptions): void {
         if (options.processor && options.processor.initializeShaders) {
             options.processor.initializeShaders(options.processingContext);
@@ -311,7 +309,7 @@ export class ShaderProcessor {
         }
 
         // Inline functions tagged with #define inline
-        if (ShaderProcessor.EnableShaderCodeInliner) {
+        if (engine._features.needShaderCodeInlining) {
             const sci = new ShaderCodeInliner(preparedSourceCode);
             sci.debug = dbgShowDebugInliningProcess;
             sci.processCode();
@@ -341,7 +339,7 @@ export class ShaderProcessor {
         }
 
         // Inline functions tagged with #define inline
-        if (ShaderProcessor.EnableShaderCodeInliner) {
+        if (engine._features.needShaderCodeInlining) {
             const sci = new ShaderCodeInliner(preparedSourceCode);
             sci.debug = dbgShowDebugInliningProcess;
             sci.processCode();
