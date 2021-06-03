@@ -23,6 +23,8 @@ const dbgShowDebugInliningProcess = false;
 
 /** @hidden */
 export class ShaderProcessor {
+    public static EnableShaderCodeInliner = false;
+
     public static Initialize(options: ProcessingOptions): void {
         if (options.processor && options.processor.initializeShaders) {
             options.processor.initializeShaders(options.processingContext);
@@ -309,11 +311,14 @@ export class ShaderProcessor {
         }
 
         // Inline functions tagged with #define inline
-        const sci = new ShaderCodeInliner(preparedSourceCode);
-        sci.debug = dbgShowDebugInliningProcess;
-        sci.processCode();
+        if (ShaderProcessor.EnableShaderCodeInliner) {
+            const sci = new ShaderCodeInliner(preparedSourceCode);
+            sci.debug = dbgShowDebugInliningProcess;
+            sci.processCode();
+            preparedSourceCode = sci.code;
+        }
 
-        return sci.code;
+        return preparedSourceCode;
     }
 
     private static _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, engine: ThinEngine): string {
@@ -336,11 +341,14 @@ export class ShaderProcessor {
         }
 
         // Inline functions tagged with #define inline
-        const sci = new ShaderCodeInliner(preparedSourceCode);
-        sci.debug = dbgShowDebugInliningProcess;
-        sci.processCode();
+        if (ShaderProcessor.EnableShaderCodeInliner) {
+            const sci = new ShaderCodeInliner(preparedSourceCode);
+            sci.debug = dbgShowDebugInliningProcess;
+            sci.processCode();
+            preparedSourceCode = sci.code;
+        }
 
-        return sci.code;
+        return preparedSourceCode;
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {

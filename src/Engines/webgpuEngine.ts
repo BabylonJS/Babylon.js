@@ -45,6 +45,7 @@ import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 import { ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
+import { ShaderProcessor } from "./Processors/shaderProcessor";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -485,6 +486,8 @@ export class WebGPUEngine extends Engine {
      */
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
+
+        ShaderProcessor.EnableShaderCodeInliner = true;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
