@@ -14,7 +14,6 @@ import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
-import { WebXRControllerPointerSelection } from "./WebXRControllerPointerSelection";
 
 /**
  * Options interface for the near interaction module
@@ -222,7 +221,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
      * This is used to remove the selection rays when moving.
      * @param farInteractionFeature the feature to disable when finger is in hover range for a mesh
      */
-    public setfarInteractionFeature(farInteractionFeature: Nullable<IWebXRFeature>) {
+    public setFarInteractionFeature(farInteractionFeature: Nullable<IWebXRFeature>) {
         this._farInteractionFeature = farInteractionFeature;
     }
 
