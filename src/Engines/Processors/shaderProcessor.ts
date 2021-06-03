@@ -21,7 +21,6 @@ const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
 const dbgShowDebugInliningProcess = false;
 
-
 /** @hidden */
 export class ShaderProcessor {
     public static Initialize(options: ProcessingOptions): void {
@@ -310,7 +309,7 @@ export class ShaderProcessor {
         }
 
         // Inline functions tagged with #define inline
-        let sci = new ShaderCodeInliner(preparedSourceCode);
+        const sci = new ShaderCodeInliner(preparedSourceCode);
         sci.debug = dbgShowDebugInliningProcess;
         sci.processCode();
 
@@ -337,7 +336,7 @@ export class ShaderProcessor {
         }
 
         // Inline functions tagged with #define inline
-        let sci = new ShaderCodeInliner(preparedSourceCode);
+        const sci = new ShaderCodeInliner(preparedSourceCode);
         sci.debug = dbgShowDebugInliningProcess;
         sci.processCode();
 
