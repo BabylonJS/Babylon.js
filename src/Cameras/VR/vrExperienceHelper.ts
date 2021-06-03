@@ -28,7 +28,6 @@ import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingP
 import { SineEase, EasingFunction, CircleEase } from "../../Animations/easing";
 import { Animation } from "../../Animations/animation";
 import { VRCameraMetrics } from '../../Cameras/VR/vrCameraMetrics';
-import { Logger } from '../../Misc/logger';
 
 import "../../Meshes/Builders/groundBuilder";
 import "../../Meshes/Builders/torusBuilder";
