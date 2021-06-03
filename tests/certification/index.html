@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BabylonJS - Certification</title>
+    <link href="index.css" rel="stylesheet" />
+    <script src="color.js"></script>
+    <script src="zip.min.js"></script>
+    <script src="certification.js"></script>
+</head>
+
+<body>
+    <button id="download" onclick="downloadImages()" enabled=false>Download</button>
+    <iframe id="frame" width="1024" height="1024"></iframe>
+
+    <script>
+        const xhr = new XMLHttpRequest();
+
+        xhr.open("GET", "config.json", true);
+
+        xhr.addEventListener("load", async function() {
+            if (xhr.status === 200) {
+                config = JSON.parse(xhr.responseText);
+
+                const recursiveRunTest = async function(index) {
+                    const result = await runTest(index);
+
+                    if (index + 1 == config.tests.length) {
+                        showResultSummary();
+                        return;
+                    }
+
+                    recursiveRunTest(index + 1);
+                }
+
+                recursiveRunTest(0);
+            }
+        }, false);
+
+        xhr.send();
+    </script>
+</body>
+
+</html>
