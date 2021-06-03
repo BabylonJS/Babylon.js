@@ -3,21 +3,23 @@ import { Scene } from 'babylonjs/scene';
 import { FilesInput } from 'babylonjs/Misc/filesInput';
 
 export class GlobalState {
-    currentScene: Scene;
-    onSceneLoaded = new Observable<{ scene: Scene, filename: string }>();
-    onError = new Observable<{ scene?: Scene, message?: string }>();
-    onEnvironmentChanged = new Observable<string>();
-    onRequestClickInterceptor = new Observable<void>();
-    onClickInterceptorClicked = new Observable<void>();
-    glTFLoaderExtensions: { [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension } = {};
+    public currentScene: Scene;
+    public onSceneLoaded = new Observable<{ scene: Scene, filename: string }>();
+    public onError = new Observable<{ scene?: Scene, message?: string }>();
+    public onEnvironmentChanged = new Observable<string>();
+    public onRequestClickInterceptor = new Observable<void>();
+    public onClickInterceptorClicked = new Observable<void>();
+    public glTFLoaderExtensions: { [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension } = {};
 
-    filesInput: FilesInput;
-    isDebugLayerEnabled = false;
+    public filesInput: FilesInput;
+    public isDebugLayerEnabled = false;
 
-    reflector?: {
+    public reflector?: {
         hostname: string;
         port: number;
     };
+
+    public skybox = true;
 
     public showDebugLayer() {
         this.isDebugLayerEnabled = true;
