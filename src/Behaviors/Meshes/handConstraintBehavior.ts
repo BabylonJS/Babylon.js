@@ -53,9 +53,9 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     private _zoneAxis: { [id: number]: Vector3 } = {};
 
     /**
-     * Offset distance from the hand. Use this for bigger meshes that need more space between them and the tracked hand.
+     * Offset distance from the hand in meters
      */
-    public targetOffset: number = 0;
+    public targetOffset: number = 0.1;
 
     /**
      * Where to place the node regarding the center of the hand.
@@ -70,6 +70,12 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
      * Orientation mode of the node attached to this behavior
      */
     public nodeOrientationMode: HandConstraintOrientation = HandConstraintOrientation.HAND_ROTATION;
+
+    /**
+     * Rate of interpolation of position and rotation of the attached node.
+     * Higher values will give a slower interpolation.
+     */
+    public lerpTime = 100;
 
     constructor() {
         // For a right hand
@@ -134,13 +140,30 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
             this._node.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._node.rotation.y, this._node.rotation.x, this._node.rotation.z);
         }
 
+        let lastTick = Date.now();
+
         this._scene.onBeforeRenderObservable.add(() => {
             const pose = this._getHandPose();
 
             if (pose) {
-                this._node.position.copyFrom(pose.position);
-                this._node.rotationQuaternion!.copyFrom(pose.quaternion);
+                const zoneOffset = TmpVectors.Vector3[0];
+                zoneOffset.copyFrom(this._zoneAxis[this.targetZone]);
+                pose.quaternion.toRotationMatrix(TmpVectors.Matrix[0]);
+                Vector3.TransformNormalToRef(zoneOffset, TmpVectors.Matrix[0], zoneOffset);
+                zoneOffset.scaleInPlace(this.targetOffset);
+
+                const targetPosition = TmpVectors.Vector3[1];
+                const targetRotation = TmpVectors.Quaternion[0];
+                targetPosition.copyFrom(pose.position).addInPlace(zoneOffset);
+                targetRotation.copyFrom(pose.quaternion);
+
+                const elapsed = Date.now() - lastTick;
+ 
+                Vector3.SmoothToRef(this._node.position, targetPosition, elapsed, this.lerpTime, this._node.position);
+                Quaternion.SmoothToRef(this._node.rotationQuaternion!, targetRotation, elapsed, this.lerpTime, this._node.rotationQuaternion!);
             }
+
+            lastTick = Date.now();
         });
     }
 
@@ -160,6 +183,5 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         // TODO;
         this._xr;
         this._handTracking = xr.featuresManager.getEnabledFeature(WebXRFeatureName.HAND_TRACKING) as WebXRHandTracking;
-        console.log(this._handTracking);
     }
 }
