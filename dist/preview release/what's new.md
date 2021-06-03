@@ -235,6 +235,7 @@
 - Fix code for handling getting DeviceType/DeviceSlot in DeviceInputSystem to work better with MouseEvents ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix vector2/3/4 and quaternion toString formatting ([rgerd](https://github.com/rgerd))
 - Fix cloning skeleton when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
+- Fix issue with DeviceInputSystem where Mouse was being deregistered on Safari/MacOS ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 
