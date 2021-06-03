@@ -45,7 +45,6 @@ export enum HandConstraintOrientation {
  * Hand constraint behavior that makes the attached `TransformNode` follow hands in XR experiences.
  */
 export class HandConstraintBehavior implements Behavior<TransformNode> {
-    private _xr: Nullable<WebXRExperienceHelper>;
     private _scene: Scene;
     private _node: TransformNode;
     private _handTracking: WebXRHandTracking;
@@ -80,8 +79,8 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     constructor() {
         // For a right hand
         this._zoneAxis[HandConstraintZone.ABOVE_FINGER_TIPS] = new Vector3(0, 1, 0);
-        this._zoneAxis[HandConstraintZone.RADIAL_SIDE] = new Vector3(-1, 0, 0);
-        this._zoneAxis[HandConstraintZone.ULNAR_SIDE] = new Vector3(1, 0, 0);
+        this._zoneAxis[HandConstraintZone.RADIAL_SIDE] = new Vector3(1, 0, 0);
+        this._zoneAxis[HandConstraintZone.ULNAR_SIDE] = new Vector3(-1, 0, 0);
         this._zoneAxis[HandConstraintZone.BELOW_WRIST] = new Vector3(0, -1, 0);
     }
 
@@ -106,10 +105,10 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 const forward = TmpVectors.Vector3[1];
                 pinkyMetacarpal.absolutePosition.subtractToRef(middleMetacarpal.absolutePosition, forward);
                 forward.normalize();
-                Vector3.CrossToRef(up, forward, forward);
+                Vector3.CrossToRef(forward, up, forward);
 
-                const right = TmpVectors.Vector3[2];
-                Vector3.CrossToRef(forward, up, right);
+                const left = TmpVectors.Vector3[2];
+                Vector3.CrossToRef(forward, up, left);
 
                 const quaternion = Quaternion.FromLookDirectionLH(forward, up);
 
@@ -203,9 +202,6 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
      * @param xr xr experience
      */
     public linkToXRExperience(xr: WebXRExperienceHelper) {
-        this._xr = xr;
-        // TODO;
-        this._xr;
         this._handTracking = xr.featuresManager.getEnabledFeature(WebXRFeatureName.HAND_TRACKING) as WebXRHandTracking;
     }
 }

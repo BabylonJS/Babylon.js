@@ -25,10 +25,12 @@ export class NearMenu extends TouchHolographicMenu {
     private _pinButton: TouchHolographicButton;
     private _pinMaterial: StandardMaterial;
     private _defaultBehavior: DefaultBehavior;
-    private _dragObserver: Nullable<Observer<{
-        delta: Vector3;
-        position: Vector3;
-    }>>;
+    private _dragObserver: Nullable<
+        Observer<{
+            delta: Vector3;
+            position: Vector3;
+        }>
+    >;
 
     private _isPinned: boolean = false;
     /**
