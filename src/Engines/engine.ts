@@ -531,10 +531,6 @@ export class Engine extends ThinEngine {
 
         Engine.Instances.push(this);
 
-        if (!canvasOrContext) {
-            return;
-        }
-
         options = this._creationOptions;
 
         let canvas = <HTMLCanvasElement>canvasOrContext;
@@ -561,10 +557,10 @@ export class Engine extends ThinEngine {
             }
         };
 
-        document?.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-        document?.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
-        document?.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-        document?.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
+        document?.addEventListener?.("fullscreenchange", this._onFullscreenChange, false);
+        document?.addEventListener?.("mozfullscreenchange", this._onFullscreenChange, false);
+        document?.addEventListener?.("webkitfullscreenchange", this._onFullscreenChange, false);
+        document?.addEventListener?.("msfullscreenchange", this._onFullscreenChange, false);
 
         // Pointer lock
         this._onPointerLockChange = () => {
@@ -575,10 +571,10 @@ export class Engine extends ThinEngine {
             );
         };
 
-        document?.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-        document?.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
-        document?.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
-        document?.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+        document?.addEventListener?.("pointerlockchange", this._onPointerLockChange, false);
+        document?.addEventListener?.("mspointerlockchange", this._onPointerLockChange, false);
+        document?.addEventListener?.("mozpointerlockchange", this._onPointerLockChange, false);
+        document?.addEventListener?.("webkitpointerlockchange", this._onPointerLockChange, false);
 
         this._connectVREvents();
 

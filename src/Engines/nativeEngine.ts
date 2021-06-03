@@ -1,5 +1,7 @@
 import { Nullable, IndicesArray, DataArray } from "../types";
+import { NativeAudioEngine } from "../Audio/nativeAudioEngine";
 import { Engine } from "../Engines/engine";
+import { EngineOptions } from "../Engines/thinEngine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
@@ -746,7 +748,7 @@ declare var _native: any;
 /**
  * Options to create the Native engine
  */
-export interface NativeEngineOptions {
+export interface NativeEngineOptions extends EngineOptions {
 
     /**
      * defines whether to adapt to the device's viewport characteristics (default: false)
@@ -774,8 +776,7 @@ export class NativeEngine extends Engine {
     }
 
     public constructor(options: NativeEngineOptions = {}) {
-        super(null, false, undefined, options.adaptToDeviceRatio);
-
+        super(null, false, options, options.adaptToDeviceRatio);
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
 

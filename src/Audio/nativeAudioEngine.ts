@@ -3,16 +3,14 @@ import { Analyser } from "./analyser";
 import { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
-import { Engine } from "../Engines/engine";
 import { IAudioEngine } from './Interfaces/IAudioEngine';
-import { DomManagement } from "../Misc/domManagement";
 
 /**
  * This represents the default audio engine used in babylon.
  * It is responsible to play, synchronize and analyse sounds throughout the  application.
  * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
  */
-export class WebAudioEngine implements IAudioEngine {
+export class NativeAudioEngine implements IAudioEngine {
     private _audioContext: Nullable<AudioContext> = null;
     private _audioContextInitialized = false;
 
@@ -70,8 +68,10 @@ export class WebAudioEngine implements IAudioEngine {
      */
     public get audioContext(): Nullable<AudioContext> {
         if (!this._audioContextInitialized) {
+            debugger;
             this._initializeAudioContext();
         }
+        debugger;
         return this._audioContext;
     }
 
@@ -85,11 +85,9 @@ export class WebAudioEngine implements IAudioEngine {
      * @param hostElement defines the host element where to display the mute icon if necessary
      */
     constructor(hostElement: Nullable<HTMLElement> = null) {
-
-        // construct an audio context via BabylonNative plugin
-        this._audioContext = new AudioContext();
         this.isMP3supported = true; // TODO: is there a way to ask the context/underlying engine for this capability instead of the DOM?
         this.isOGGsupported = true; // TODO: is there a way to ask the context/underlying engine for this capability instead of the DOM?
+        this.canUseWebAudio = true; // TODO: is there a way to ask the context/underlying engine for this capability instead of the DOM?
     }
 
     /**
@@ -119,6 +117,7 @@ export class WebAudioEngine implements IAudioEngine {
     private _initializeAudioContext() {
         try {
             if (this.canUseWebAudio) {
+                debugger;
                 this._audioContext = new AudioContext();
                 // create a global volume gain node
                 this.masterGain = this._audioContext.createGain();
@@ -160,7 +159,6 @@ export class WebAudioEngine implements IAudioEngine {
         this.unlocked = false;
         this.onAudioLockedObservable.notifyObservers(this);
     }
-
 
     /**
      * Destroy and release the resources associated with the audio context.

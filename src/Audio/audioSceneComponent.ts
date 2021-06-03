@@ -9,7 +9,6 @@ import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { AssetContainer } from "../assetContainer";
 
-import "./audioEngine";
 import { PrecisionDate } from '../Misc/precisionDate';
 
 // Adds the parser to the scene parsers.

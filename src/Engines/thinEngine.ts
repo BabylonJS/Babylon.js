@@ -609,6 +609,7 @@ export class ThinEngine {
         let canvas: Nullable<HTMLCanvasElement> = null;
 
         options = options || {};
+        this._creationOptions = options;
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
@@ -815,7 +816,6 @@ export class ThinEngine {
         // Detect if we are running on a faulty buggy desktop OS.
         this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-        this._creationOptions = options;
         console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
     }
 
