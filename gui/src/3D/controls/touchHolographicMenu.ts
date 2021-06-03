@@ -25,6 +25,10 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     private _currentMin: Nullable<Vector3>;
     private _currentMax: Nullable<Vector3>;
 
+    /**
+     * Scale of the backplate compared to the buttons' extend size
+     */
+    public backPlateScaleFactor = 1.25;
 
     protected _createNode(scene: Scene): Nullable<TransformNode> {
         const node = new Mesh(`menu_${this.name}`, scene);
@@ -78,8 +82,8 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
         const extendSize = this._currentMax!.subtract(this._currentMin!);
 
         // Also add a % margin
-        this._backPlate.scaling.x = extendSize.x + this._cellWidth * 1.25;
-        this._backPlate.scaling.y = extendSize.y + this._cellHeight * 1.25;
+        this._backPlate.scaling.x = extendSize.x + this._cellWidth * this.backPlateScaleFactor;
+        this._backPlate.scaling.y = extendSize.y + this._cellHeight * this.backPlateScaleFactor;
         this._backPlate.scaling.z = 0.001;
 
         for (let i = 0; i < this._children.length; i++) {
