@@ -27,7 +27,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
 
 
     protected _createNode(scene: Scene): Nullable<TransformNode> {
-        const node = new Mesh(`menu_${this.name}`);
+        const node = new Mesh(`menu_${this.name}`, scene);
 
         this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
         this._backPlate.parent = node;

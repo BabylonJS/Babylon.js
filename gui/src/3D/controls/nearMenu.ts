@@ -6,6 +6,8 @@ import { TouchHolographicButton } from "./touchHolographicButton";
 import { DefaultBehavior } from "../behaviors/defaultBehavior";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { TouchHolographicMenu } from "./touchHolographicMenu";
+import { Observer } from "babylonjs/Misc/observable";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 
 /**
  * NearMenu that displays buttons and follows the camera
@@ -23,6 +25,10 @@ export class NearMenu extends TouchHolographicMenu {
     private _pinButton: TouchHolographicButton;
     private _pinMaterial: StandardMaterial;
     private _defaultBehavior: DefaultBehavior;
+    private _dragObserver: Nullable<Observer<{
+        delta: Vector3;
+        position: Vector3;
+    }>>;
 
     private _isPinned: boolean = false;
     /**
@@ -93,7 +99,7 @@ export class NearMenu extends TouchHolographicMenu {
         super(name);
 
         this._defaultBehavior = new DefaultBehavior();
-        this._defaultBehavior.sixDofDragBehavior.onDragObservable.add(() => {
+        this._dragObserver = this._defaultBehavior.sixDofDragBehavior.onDragObservable.add(() => {
             this.isPinned = true;
         });
     }
@@ -104,6 +110,7 @@ export class NearMenu extends TouchHolographicMenu {
     public dispose() {
         super.dispose();
 
+        this._defaultBehavior.sixDofDragBehavior.onDragObservable.remove(this._dragObserver);
         this._defaultBehavior.detach();
     }
 }
