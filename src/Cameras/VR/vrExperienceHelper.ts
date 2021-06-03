@@ -28,6 +28,7 @@ import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingP
 import { SineEase, EasingFunction, CircleEase } from "../../Animations/easing";
 import { Animation } from "../../Animations/animation";
 import { VRCameraMetrics } from '../../Cameras/VR/vrCameraMetrics';
+import { Logger } from '../../Misc/logger';
 
 import "../../Meshes/Builders/groundBuilder";
 import "../../Meshes/Builders/torusBuilder";
@@ -716,6 +717,7 @@ export class VRExperienceHelper {
     constructor(scene: Scene,
         /** Options to modify the vr experience helper's behavior. */
         public webVROptions: VRExperienceHelperOptions = {}) {
+        Logger.Warn('WebVR is deprecated. Please avoid using this experience helper and use the WebXR experience helper instead');
         this._scene = scene;
         this._inputElement = scene.getEngine().getInputElement();
 
