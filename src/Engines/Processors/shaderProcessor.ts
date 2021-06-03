@@ -9,6 +9,7 @@ import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 import { ProcessingOptions } from './shaderProcessingOptions';
 import { _DevTools } from '../../Misc/devTools';
+import { ShaderCodeInliner } from './shaderCodeInliner';
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
@@ -18,6 +19,8 @@ declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
+const dbgShowDebugInliningProcess = false;
+
 
 /** @hidden */
 export class ShaderProcessor {
@@ -306,7 +309,12 @@ export class ShaderProcessor {
             preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
         }
 
-        return preparedSourceCode;
+        // Inline functions tagged with #define inline
+        let sci = new ShaderCodeInliner(preparedSourceCode);
+        sci.debug = dbgShowDebugInliningProcess;
+        sci.processCode();
+
+        return sci.code;
     }
 
     private static _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, engine: ThinEngine): string {
@@ -328,7 +336,12 @@ export class ShaderProcessor {
             preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
         }
 
-        return preparedSourceCode;
+        // Inline functions tagged with #define inline
+        let sci = new ShaderCodeInliner(preparedSourceCode);
+        sci.debug = dbgShowDebugInliningProcess;
+        sci.processCode();
+
+        return sci.code;
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
