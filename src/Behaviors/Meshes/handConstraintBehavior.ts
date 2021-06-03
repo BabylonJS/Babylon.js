@@ -141,21 +141,45 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         }
 
         let lastTick = Date.now();
-
         this._scene.onBeforeRenderObservable.add(() => {
             const pose = this._getHandPose();
 
             if (pose) {
                 const zoneOffset = TmpVectors.Vector3[0];
+                const camera = this._scene.activeCamera;
+
                 zoneOffset.copyFrom(this._zoneAxis[this.targetZone]);
-                pose.quaternion.toRotationMatrix(TmpVectors.Matrix[0]);
+
+                const cameraLookAtQuaternion = TmpVectors.Quaternion[0];
+                if (camera && (this.zoneOrientationMode === HandConstraintOrientation.LOOK_AT_CAMERA || this.nodeOrientationMode === HandConstraintOrientation.LOOK_AT_CAMERA)) {
+                    const toCamera = TmpVectors.Vector3[1];
+                    toCamera.copyFrom(camera.position);
+                    toCamera.subtractInPlace(pose.position).normalize();
+                    if (this._scene.useRightHandedSystem) {
+                        Quaternion.FromLookDirectionRHToRef(toCamera, Vector3.UpReadOnly, cameraLookAtQuaternion);
+                    } else {
+                        Quaternion.FromLookDirectionLHToRef(toCamera, Vector3.UpReadOnly, cameraLookAtQuaternion);
+                    }
+                }
+
+                if (this.zoneOrientationMode === HandConstraintOrientation.HAND_ROTATION) {
+                    pose.quaternion.toRotationMatrix(TmpVectors.Matrix[0]);
+                } else {
+                    cameraLookAtQuaternion.toRotationMatrix(TmpVectors.Matrix[0]);
+                }
+
                 Vector3.TransformNormalToRef(zoneOffset, TmpVectors.Matrix[0], zoneOffset);
                 zoneOffset.scaleInPlace(this.targetOffset);
 
-                const targetPosition = TmpVectors.Vector3[1];
-                const targetRotation = TmpVectors.Quaternion[0];
+                const targetPosition = TmpVectors.Vector3[2];
+                const targetRotation = TmpVectors.Quaternion[1];
                 targetPosition.copyFrom(pose.position).addInPlace(zoneOffset);
-                targetRotation.copyFrom(pose.quaternion);
+
+                if (this.nodeOrientationMode === HandConstraintOrientation.HAND_ROTATION) {
+                    targetRotation.copyFrom(pose.quaternion);
+                } else {
+                    targetRotation.copyFrom(cameraLookAtQuaternion);
+                }
 
                 const elapsed = Date.now() - lastTick;
  
