@@ -28,6 +28,7 @@ import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOpti
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { IStencilState } from "../States/IStencilState";
+import { ShaderProcessor } from "./Processors/shaderProcessor";
 
 interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
@@ -207,6 +208,7 @@ class NativePipelineContext implements IPipelineContext {
 
     constructor(engine: NativeEngine) {
         this.engine = engine;
+        ShaderProcessor.EnableShaderCodeInliner = true;
     }
 
     public _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]) {
