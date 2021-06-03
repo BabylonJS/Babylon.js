@@ -298,7 +298,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             <div id="ge-propertyTab">
                 <div id="header">
                     <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">GUI EDITOR</div>
+                    <div id="title">AdvanceDyanamicTexture</div>
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
