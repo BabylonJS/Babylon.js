@@ -234,6 +234,7 @@
 - Fix code for handling getting DeviceType/DeviceSlot in DeviceInputSystem to work better with MouseEvents ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix vector2/3/4 and quaternion toString formatting ([rgerd](https://github.com/rgerd))
 - Fix cloning skeleton when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
+- Fix for disabledColor not working for Button ([msDestiny14](https://github.com/msDestiny14))
 
 ## Breaking changes
 
