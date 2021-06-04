@@ -154,7 +154,7 @@ export class WebXRFeaturesManager implements IDisposable {
     /**
      * The key is the feature to check and the value is the feature that conflicts.
      */
-    private static readonly _ConflictingFeatures: Record<string, string> = {
+    private static readonly _ConflictingFeatures: { [key: string]: string } = {
         [WebXRFeatureName.TELEPORTATION]: WebXRFeatureName.MOVEMENT,
         [WebXRFeatureName.MOVEMENT]: WebXRFeatureName.TELEPORTATION,
     };
