@@ -42,7 +42,8 @@ export class GlobalState {
     onSnippetSaveObservable = new Observable<void>();
     onOutlinesObservable = new Observable<void>();
     onResponsiveChangeObservable = new Observable<boolean>();
-
+    onParentingChangeObservable = new Observable<Nullable<Control>>();
+    draggedControl: Nullable<Control>;
     storeEditorData: (serializationObject: any) => void;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
