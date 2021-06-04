@@ -58263,7 +58263,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             this._screenShotSize.height = undefined;
         }
         if (scene.activeCamera) {
-            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize);
+            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize, undefined, undefined, 4);
         }
         this._screenShotSize = oldScreenshotSize;
     };

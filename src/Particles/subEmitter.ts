@@ -57,7 +57,10 @@ export class SubEmitter {
         // Automatically dispose of subemitter when system is disposed
         particleSystem.onDisposeObservable.add(() => {
             if (particleSystem.emitter && (<AbstractMesh>particleSystem.emitter).dispose) {
-                (<AbstractMesh>particleSystem.emitter).dispose();
+                // Prevent recursive dispose to break.
+                const disposable = <AbstractMesh>particleSystem.emitter;
+                particleSystem.emitter = Vector3.Zero();
+                disposable.dispose();
             }
         });
     }
