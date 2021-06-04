@@ -172,6 +172,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var light = Light.Parse(parsedLight, scene);
                 if (light) {
                     container.lights.push(light);
+                    light._parentContainer = container;
                     log += (index === 0 ? "\n\tLights:" : "");
                     log += "\n\t\t" + light.toString(fullDetails);
                 }
@@ -185,6 +186,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var reflectionProbe = ReflectionProbe.Parse(parsedReflectionProbe, scene, rootUrl);
                 if (reflectionProbe) {
                     container.reflectionProbes.push(reflectionProbe);
+                    reflectionProbe._parentContainer = container;
                     log += (index === 0 ? "\n\tReflection Probes:" : "");
                     log += "\n\t\t" + reflectionProbe.toString(fullDetails);
                 }
@@ -213,6 +215,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var mat = Material.Parse(parsedMaterial, scene, rootUrl);
                 if (mat) {
                     container.materials.push(mat);
+                    mat._parentContainer = container;
                     log += (index === 0 ? "\n\tMaterials:" : "");
                     log += "\n\t\t" + mat.toString(fullDetails);
 
@@ -221,6 +224,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                     textures.forEach((t) => {
                         if (container.textures.indexOf(t) == -1) {
                             container.textures.push(t);
+                            t._parentContainer = container;
                         }
                     });
                 }
@@ -232,6 +236,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedMultiMaterial = parsedData.multiMaterials[index];
                 var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
                 container.multiMaterials.push(mmat);
+                mmat._parentContainer = container;
 
                 log += (index === 0 ? "\n\tMultiMaterials:" : "");
                 log += "\n\t\t" + mmat.toString(fullDetails);
@@ -241,6 +246,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 textures.forEach((t) => {
                     if (container.textures.indexOf(t) == -1) {
                         container.textures.push(t);
+                        t._parentContainer = container;
                     }
                 });
             }
@@ -249,7 +255,9 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         // Morph targets
         if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
             for (var managerData of parsedData.morphTargetManagers) {
-                container.morphTargetManagers.push(MorphTargetManager.Parse(managerData, scene));
+                const manager = MorphTargetManager.Parse(managerData, scene);
+                container.morphTargetManagers.push(manager);
+                manager._parentContainer = container;
             }
         }
 
@@ -259,6 +267,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedSkeleton = parsedData.skeletons[index];
                 var skeleton = Skeleton.Parse(parsedSkeleton, scene);
                 container.skeletons.push(skeleton);
+                skeleton._parentContainer = container;
                 log += (index === 0 ? "\n\tSkeletons:" : "");
                 log += "\n\t\t" + skeleton.toString(fullDetails);
             }
@@ -281,6 +290,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             addedGeometry.forEach((g) => {
                 if (g) {
                     container.geometries.push(g);
+                    g._parentContainer = container;
                 }
             });
         }
@@ -291,6 +301,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedTransformNode = parsedData.transformNodes[index];
                 var node = TransformNode.Parse(parsedTransformNode, scene, rootUrl);
                 container.transformNodes.push(node);
+                node._parentContainer = container;
             }
         }
 
@@ -300,9 +311,11 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedMesh = parsedData.meshes[index];
                 var mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
                 container.meshes.push(mesh);
+                mesh._parentContainer = container;
                 if (mesh.hasInstances) {
                     for (var instance of (mesh as Mesh).instances) {
                         container.meshes.push(instance);
+                        instance._parentContainer = container;
                     }
                 }
                 log += (index === 0 ? "\n\tMeshes:" : "");
@@ -316,6 +329,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedCamera = parsedData.cameras[index];
                 var camera = Camera.Parse(parsedCamera, scene);
                 container.cameras.push(camera);
+                camera._parentContainer = container;
                 log += (index === 0 ? "\n\tCameras:" : "");
                 log += "\n\t\t" + camera.toString(fullDetails);
             }
@@ -328,6 +342,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var postProcess = PostProcess.Parse(parsedPostProcess, scene, rootUrl);
                 if (postProcess) {
                     container.postProcesses.push(postProcess);
+                    postProcess._parentContainer = container;
                     log += (index === 0 ? "\n\Postprocesses:" : "");
                     log += "\n\t\t" + postProcess.toString();
                 }
@@ -340,6 +355,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedAnimationGroup = parsedData.animationGroups[index];
                 var animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene);
                 container.animationGroups.push(animationGroup);
+                animationGroup._parentContainer = container;
                 log += (index === 0 ? "\n\tAnimationGroups:" : "");
                 log += "\n\t\t" + animationGroup.toString(fullDetails);
             }
