@@ -350,12 +350,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     if (this._farInteractionFeature) {
                         this._farInteractionFeature.detach();
                     }
+                    pick = populateNearInteractionInfo(hoverPickInfo);
                 }
-                pick = populateNearInteractionInfo(hoverPickInfo);
             }
 
             // near interaction pick
-            if (controllerData.pickIndexMeshTip) {
+            if (controllerData.pickIndexMeshTip && hoverRange) {
                 let utilitySceneNearPick = null;
                 if (this._options.useUtilityLayer && this._utilityLayerScene) {
                     utilitySceneNearPick = this._pickWithMesh(controllerData.pickIndexMeshTip, this._utilityLayerScene, false, this.nearPickPredicate);
@@ -366,7 +366,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             }
 
             // near interaction grab
-            if (controllerData.grabRay) {
+            if (controllerData.grabRay && hoverRange) {
                 let utilitySceneNearGrab = null;
                 if (this._utilityLayerScene) {
                     utilitySceneNearGrab = this._utilityLayerScene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
@@ -418,7 +418,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         if (component.changes.pressed) {
                             const pressed = component.changes.pressed.current;
                             if (controllerData.pick && controllerData.nearGrab) {
-                                if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
+                                if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController && !this._farInteractionFeature?.attached) {
                                     if (pressed) {
                                         controllerData.nearGrabInProcess = true;
                                         this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
@@ -437,7 +437,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 } else {
                     controllerData.selectionComponent = motionController.getMainComponent();
                     controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
-                        if (component.changes.pressed) {
+                        if (component.changes.pressed && !this._farInteractionFeature?.attached) {
                             const pressed = component.changes.pressed.current;
                             if (controllerData.pick) {
                                 if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
@@ -467,14 +467,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         } else {
             // use the select and squeeze events
             const selectStartListener = (event: XRInputSourceEvent) => {
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick && !this._farInteractionFeature?.attached) {
                     controllerData.nearGrabInProcess = true;
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 }
             };
 
             const selectEndListener = (event: XRInputSourceEvent) => {
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick && !this._farInteractionFeature?.attached) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.nearGrabInProcess = false;
                 }
