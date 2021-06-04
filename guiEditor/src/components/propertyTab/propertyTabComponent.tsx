@@ -49,6 +49,7 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Button } from "babylonjs-gui/2D/controls/button";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
+import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -66,6 +67,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
     private _lockObject = new LockObject();
+    private _sizeOption: number = 2;
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
@@ -297,11 +299,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
 
         const sizeOptions = [
-            { label: "Web (1920 x 1080)", value: 0 },
+            { label: "Web (1920)", value: 0 },
             { label: "Phone (720)", value: 1 },
             { label: "Custom", value: 2 }];
-
-        const sizeValues = [new Vector2(1920,1080)];
+        const sizeValues = [
+            new Vector2(1920, 1080),
+            new Vector2(750, 1334)];
 
         return (
             <div id="ge-propertyTab">
@@ -314,29 +317,38 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open("https://doc.babylonjs.com", "_blank")} />
                     </LineContainerComponent>
-                    <TextLineComponent label="ART BOARD" value="" color="grey"></TextLineComponent>
-
+                    <TextLineComponent label="ART BOARD" value=" " color="grey"></TextLineComponent>
+                    {
+                        this.props.globalState.workbench.artBoardBackground !== undefined &&
+                        <TextInputLineComponent lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                    }
                     <LineContainerComponent title="Canvas">
-                        <TextLineComponent label="CANVAS" value="" color="grey"></TextLineComponent>
+                        <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
                         <OptionsLineComponent
                             label="Size"
                             options={sizeOptions}
                             target={this}
-                            propertyName={"parentIndex"}
+                            propertyName={"_sizeOption"}
                             noDirectUpdate={true}
                             onSelect={(value: any) => {
-
+                                this._sizeOption = value;
+                                if (this._sizeOption != sizeOptions.length - 1) {
+                                    const newSize = sizeValues[this._sizeOption];
+                                    this.props.globalState.workbench.resizeGuiTexture(newSize);
+                                }
                                 this.forceUpdate();
                             }}
                         />
-                        <Vector2LineComponent
-                            label="GUI Canvas Size"
-                            target={this.state}
-                            propertyName="textureSize"
-                            onChange={(newvalue) => {
-                                this.props.globalState.workbench.resizeGuiTexture(newvalue);
-                            }}
-                        ></Vector2LineComponent>
+                        {this._sizeOption == 2 &&
+                            <Vector2LineComponent
+                                label="Custom Size"
+                                target={this.state}
+                                propertyName="textureSize"
+                                onChange={(newvalue) => {
+                                    this.props.globalState.workbench.resizeGuiTexture(newvalue);
+                                }}
+                            ></Vector2LineComponent>
+                        }
                         <CheckBoxLineComponent
                             label="Show grid"
                             isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
