@@ -91,6 +91,12 @@ interface XRWebGLLayerInit {
     framebufferScaleFactor?: number;
 }
 
+// https://www.w3.org/TR/webxrlayers-1/#XRWebGLBindingtype
+declare class XRWebGLBinding {
+    constructor(xrSession: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext);
+    getReflectionCubeMap: (lightProbe: XRLightProbe) => WebGLTexture;
+}
+
 declare class XRWebGLLayer {
     static getNativeFramebufferScaleFactor(session: XRSession): number;
     constructor(session: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext, layerInit?: XRWebGLLayerInit);
@@ -139,6 +145,12 @@ interface XRInputSource {
     readonly hand?: XRHand;
 }
 
+interface XRLightEstimate {
+    readonly sphericalHarmonicsCoefficients: Float32Array;
+    readonly primaryLightDirection: DOMPointReadOnly;
+    readonly primaryLightIntensity: DOMPointReadOnly;
+}
+
 interface XRPose {
     readonly transform: XRRigidTransform;
     readonly emulatedPosition: boolean;
@@ -168,6 +180,7 @@ interface XRFrame {
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
     // Image tracking
     getImageTrackingResults?(): Array<XRImageTrackingResult>;
+    getLightEstimate(xrLightProbe: XRLightProbe): XRLightEstimate;
 }
 
 interface XRInputSourceEvent extends Event {
