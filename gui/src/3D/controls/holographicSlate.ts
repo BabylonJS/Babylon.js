@@ -261,6 +261,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._contentPlate = BoxBuilder.CreateBox("contentPlate" + this.name, { size: 1 }, scene);
 
         this._backPlate.parent = node;
+        this._backPlate.isNearGrabbable = true;
         this._contentPlate.parent = node;
         this._attachContentPlateBehavior();
 
