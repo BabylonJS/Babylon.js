@@ -48,8 +48,10 @@ import { Vector2LineComponent } from "../../sharedUiComponents/lines/vector2Line
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Button } from "babylonjs-gui/2D/controls/button";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
+import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
 
 require("./propertyTab.scss");
+const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -294,10 +296,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             );
         }
 
+        const sizeOptions = [
+            { label: "Web (1920 x 1080)", value: 0 },
+            { label: "Phone (720)", value: 1 },
+            { label: "Custom", value: 2 }];
+
+        const sizeValues = [new Vector2(1920,1080)];
+
         return (
             <div id="ge-propertyTab">
                 <div id="header">
-                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                    <img id="logo" src={adtIcon} />
                     <div id="title">AdvanceDyanamicTexture</div>
                 </div>
                 <div>
@@ -305,7 +314,21 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open("https://doc.babylonjs.com", "_blank")} />
                     </LineContainerComponent>
-                    <LineContainerComponent title="OPTIONS">
+                    <TextLineComponent label="ART BOARD" value="" color="grey"></TextLineComponent>
+
+                    <LineContainerComponent title="Canvas">
+                        <TextLineComponent label="CANVAS" value="" color="grey"></TextLineComponent>
+                        <OptionsLineComponent
+                            label="Size"
+                            options={sizeOptions}
+                            target={this}
+                            propertyName={"parentIndex"}
+                            noDirectUpdate={true}
+                            onSelect={(value: any) => {
+
+                                this.forceUpdate();
+                            }}
+                        />
                         <Vector2LineComponent
                             label="GUI Canvas Size"
                             target={this.state}
