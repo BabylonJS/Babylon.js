@@ -881,7 +881,7 @@ export class NativeEngine extends Engine {
         var devicePixelRatio = window ? (window.devicePixelRatio || 1.0) : 1.0;
         this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
         this.resize();
-        
+
         const currentDepthFunction = this.getDepthFunction();
         if (currentDepthFunction)
         {
@@ -1259,7 +1259,7 @@ export class NativeEngine extends Engine {
     }
 
     public getDepthFunction(): Nullable<number> {
-        switch(this._currentDepthTest) {
+        switch (this._currentDepthTest) {
             case this._native.DEPTH_TEST_GREATER:
                 return Constants.GREATER;
             case this._native.DEPTH_TEST_GEQUAL:

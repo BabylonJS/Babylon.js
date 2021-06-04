@@ -996,7 +996,7 @@ export class Engine extends ThinEngine {
     public setDepthFunction(depthFunc: number) {
         // We delegate these calls to the named functions because
         // NativeEngine overrides them to translate the constants.
-        switch(depthFunc) {
+        switch (depthFunc) {
             case Constants.GREATER:
                 this.setDepthFunctionToGreater();
                 break;
