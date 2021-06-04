@@ -881,6 +881,12 @@ export class NativeEngine extends Engine {
         var devicePixelRatio = window ? (window.devicePixelRatio || 1.0) : 1.0;
         this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
         this.resize();
+        
+        const currentDepthFunction = this.getDepthFunction();
+        if (currentDepthFunction)
+        {
+            this.setDepthFunction(currentDepthFunction);
+        }
 
         // Shader processor
         this._shaderProcessor = new NativeShaderProcessor();
@@ -1250,6 +1256,20 @@ export class NativeEngine extends Engine {
      */
     public getDepthWrite(): boolean {
         return this._native.getDepthWrite();
+    }
+
+    public getDepthFunction(): Nullable<number> {
+        switch(this._currentDepthTest) {
+            case this._native.DEPTH_TEST_GREATER:
+                return Constants.GREATER;
+            case this._native.DEPTH_TEST_GEQUAL:
+                return Constants.GEQUAL;
+            case this._native.DEPTH_TEST_LESS:
+                return Constants.LESS;
+            case this._native.DEPTH_TEST_LEQUAL:
+                return Constants.LEQUAL;
+        }
+        return null;
     }
 
     public setDepthFunctionToGreater(): void {

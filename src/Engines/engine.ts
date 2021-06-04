@@ -994,7 +994,22 @@ export class Engine extends ThinEngine {
      * @param depthFunc defines the function to use
      */
     public setDepthFunction(depthFunc: number) {
-        this._depthCullingState.depthFunc = depthFunc;
+        // We delegate these calls to the named functions because
+        // NativeEngine overrides them to translate the constants.
+        switch(depthFunc) {
+            case Constants.GREATER:
+                this.setDepthFunctionToGreater();
+                break;
+            case Constants.GEQUAL:
+                this.setDepthFunctionToGreaterOrEqual();
+                break;
+            case Constants.LESS:
+                this.setDepthFunctionToLess();
+                break;
+            case Constants.LEQUAL:
+                this.setDepthFunctionToLessOrEqual();
+                break;
+        }
     }
 
     /**
