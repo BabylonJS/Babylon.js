@@ -22,10 +22,12 @@ interface IFooterProps {
 }
 
 export class Footer extends React.Component<IFooterProps> {
-            
-    public constructor(props: IFooterProps) {    
+    private _cameraNames: string[] = [];
+
+    public constructor(props: IFooterProps) {
         super(props);
         props.globalState.onSceneLoaded.add(info => {
+            this._updateCameraNames();
             this.forceUpdate();
         });
     }
@@ -52,23 +54,20 @@ export class Footer extends React.Component<IFooterProps> {
             camera.attachControl();
         }
     }
-    
+
+    private _updateCameraNames(): void {
+        if (!!this.props.globalState.currentScene && this.props.globalState.currentScene.cameras.length > 0) {
+            this._cameraNames = this.props.globalState.currentScene.cameras.map(c => c.name);
+            this._cameraNames.push("default camera");
+        }
+    }
+
     private _getVariantsExtension(): Nullable<KHR_materials_variants> {
         return this.props.globalState?.glTFLoaderExtensions["KHR_materials_variants"] as KHR_materials_variants;
     }
 
     render() {
-        let cameraNames: string[] = [];
         let variantNames: string[] = [];
-
-        // Cameras
-        if (!!this.props.globalState.currentScene && this.props.globalState.currentScene.cameras.length > 1) {
-            cameraNames = this.props.globalState.currentScene.cameras.map(c => c.name);
-
-            cameraNames.push("default camera");
-        }
-
-        // Variants
         let hasVariants = false;
         let activeEntry = () => "";
         let switchVariant = (name: string, index: number) => {};
@@ -107,7 +106,7 @@ export class Footer extends React.Component<IFooterProps> {
             }
         }
 
-        return (            
+        return (
             <div id="footer" className="footer">
                 <div className="footerLeft">
                     <img id="logoImg" src={babylonIdentity}/>
@@ -137,10 +136,10 @@ export class Footer extends React.Component<IFooterProps> {
                     <DropUpButton globalState={this.props.globalState} 
                                 icon={iconCameras}
                                 label="Select camera"
-                                options={cameraNames}
+                                options={this._cameraNames}
                                 activeEntry={() => this.props.globalState.currentScene?.activeCamera?.name || ""}
                                 onOptionPicked={option => this.switchCamera(option)}
-                                enabled={cameraNames.length > 1}/>
+                                enabled={this._cameraNames.length > 1}/>
                     <DropUpButton globalState={this.props.globalState} 
                                 icon={iconVariants}
                                 label="Select variant"
