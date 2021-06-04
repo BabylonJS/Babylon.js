@@ -23,7 +23,7 @@ body {
     margin-top: 10px;
     margin-bottom: 10px;
     outline: 2px solid black;
-    max-width: 1000px;
+    max-width: 1500px;
 }
 
 .containerTitle {
@@ -67,27 +67,21 @@ body {
     display: none;
 }
 
-.renderCanvas {
-    position:absolute;
-    left: -600px;
-    width: 600px;
-    height: 400px;
+.referenceImage {
+    order: 1;
+    flex-basis: 33%;
+    width: 33%;
 }
 
 .renderImage {
-    order: 1;
-    flex-basis: 50%;
-    width: 50%;
-}
-
-.resultImage {
-    width: 50%;
-    flex-basis: 50%;
     order: 2;
+    flex-basis: 33%;
+    width: 33%;
+    border: 0;
 }
 
-.buttonToggleResult {
-    position: fixed;
-    right: 10px;
-    top : 10px;
+.diffImage {
+    order: 3;
+    flex-basis: 33%;
+    width: 33%;
 }
