@@ -10,14 +10,11 @@
 </head>
 
 <body>
-    <button id="download" onclick="downloadImages()" enabled=false>Download</button>
-    <iframe id="frame" width="1024" height="1024"></iframe>
-
     <script>
+        checkUrl();
+
         const xhr = new XMLHttpRequest();
-
         xhr.open("GET", "config.json", true);
-
         xhr.addEventListener("load", async function() {
             if (xhr.status === 200) {
                 config = JSON.parse(xhr.responseText);
@@ -27,6 +24,7 @@
 
                     if (index + 1 == config.tests.length) {
                         showResultSummary();
+                        downloadResult();
                         return;
                     }
 
@@ -36,7 +34,6 @@
                 recursiveRunTest(0);
             }
         }, false);
-
         xhr.send();
     </script>
 </body>

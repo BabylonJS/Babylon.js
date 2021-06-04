@@ -1,9 +1,31 @@
 ﻿"use strict";
 
-const debug = true;
+let debug = false;
+let dist = true;
 let numTestsOk = 0;
 const failedTests = [];
 const renderImages = [];
+
+function checkUrl() {
+    const indexOf = location.href.indexOf("?");
+    if (indexOf !== -1) {
+        const params = location.href.substr(indexOf + 1).split("&");
+        for (let index = 0; index < params.length; index++) {
+            const param = params[index].split("=");
+            const name = param[0];
+            const value = param[1];
+            switch (name) {
+                case "debug": {
+                    debug = (value === "true" ? true : false);
+                }
+                case "dist": {
+                    dist = (value === "true" ? true : false);
+                    break;
+                }
+            }
+        }
+    }
+}
 
 function download(blob, fileName) {
     if (navigator && navigator.msSaveBlob) {
@@ -25,14 +47,14 @@ function download(blob, fileName) {
     window.URL.revokeObjectURL(url);
 }
 
-function compare(renderCanvas, referenceCanvas, threshold, errorRatio) {
-    if (renderCanvas.width !== referenceCanvas.width || renderCanvas.height != referenceCanvas.height) {
-        throw new Error("render canvas size does not match reference canvas size");
-    }
-
+function compare(renderCanvas, referenceCanvas, diffCanvas, threshold, errorRatio) {
     const width = renderCanvas.width;
     const height = renderCanvas.height;
     const size = width * height * 4;
+
+    const diffContext = diffCanvas.getContext("2d");
+    diffCanvas.width = width;
+    diffCanvas.height = height;
 
     const renderContext = renderCanvas.getContext("2d");
     const renderData = renderContext.getImageData(0, 0, width, height);
@@ -63,38 +85,34 @@ function compare(renderCanvas, referenceCanvas, threshold, errorRatio) {
         console.log(`Max deltaE: ${maxDeltaE}`);
     }
 
-    referenceContext.putImageData(referenceData, 0, 0);
+    diffContext.putImageData(referenceData, 0, 0);
 
     const curErrorRatio = (differencesCount * 100) / (width * height);
 
     if (differencesCount) {
-        console.log("%c Pixel difference: " + differencesCount + " pixels. Error ratio=" + curErrorRatio.toFixed(4) + "%", 'color: orange');
+        console.log(`%c Pixel difference: ${differencesCount} pixels. Error ratio=${curErrorRatio.toFixed(4)}%`, "color: orange");
     }
 
     return curErrorRatio > errorRatio;
 }
 
-function evaluate(test, renderCanvas, resultCanvas, result, waitRing) {
+function evaluate(test, renderCanvas, referenceCanvas, diffCanvas, result, waitRing) {
     let testResult = true;
 
     // Visual check
     const defaultErrorRatio = 2.5;
-    if (compare(renderCanvas, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
+    if (compare(renderCanvas, referenceCanvas, diffCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
         result.classList.add("failed");
         result.innerHTML = "×";
         testResult = false;
-        console.log('%c failed', 'color: red');
+        console.log("%c failed", "color: red");
     } else {
         result.innerHTML = "✔";
         testResult = true;
-        console.log('%c validated', 'color: green');
+        console.log("%c validated", "color: green");
     }
 
     waitRing.classList.add("hidden");
-
-    if (resultCanvas.parentElement) {
-        resultCanvas.parentElement.setAttribute("result", testResult);
-    }
 
     if (testResult) {
         numTestsOk++;
@@ -119,19 +137,17 @@ function loadImage(src) {
     });
 }
 
-function loadFrame(src) {
+function loadFrame(frame, src) {
     return new Promise(function (resolve) {
-        const frame = document.getElementById("frame");
-
         frame.onload = function () {
             const BABYLONDEVTOOLS = frame.contentWindow.BABYLONDEVTOOLS;
             if (BABYLONDEVTOOLS) {
                 BABYLONDEVTOOLS.Loader.onReady(function () {
-                    resolve(frame);
+                    resolve();
                 });
             }
             else {
-                resolve(frame);
+                resolve();
             }
         };
 
@@ -147,12 +163,14 @@ async function runTest(index) {
     container.className = "container";
     document.body.appendChild(container);
 
+    // Title bar
     const titleContainer = document.createElement("div");
     titleContainer.className = "containerTitle";
     container.appendChild(titleContainer);
 
     const title = document.createElement("div");
     title.className = "title";
+    title.innerHTML = "#" + index + "> " + test.title;
     titleContainer.appendChild(title);
 
     const result = document.createElement("div");
@@ -164,42 +182,53 @@ async function runTest(index) {
     titleContainer.appendChild(waitRing);
     waitRing.src = "/tests/validation/loading.gif";
 
-    const renderCanvas = document.createElement("canvas");
-    renderCanvas.className = "renderImage";
-    container.appendChild(renderCanvas);
+    const referenceCanvas = document.createElement("canvas");
+    referenceCanvas.className = "referenceImage";
+    container.appendChild(referenceCanvas);
 
-    const resultCanvas = document.createElement("canvas");
-    resultCanvas.className = "resultImage";
-    container.appendChild(resultCanvas);
+    const renderFrame = document.createElement("iframe");
+    renderFrame.className = "renderImage";
+    container.appendChild(renderFrame);
 
-    title.innerHTML = "#" + index + "> " + test.title;
+    const diffCanvas = document.createElement("canvas");
+    diffCanvas.className = "diffImage";
+    container.appendChild(diffCanvas);
 
     console.log(`Running ${test.title}`);
 
-    const resultContext = resultCanvas.getContext("2d");
+    // Reference
+    const referenceContext = referenceCanvas.getContext("2d");
     const referenceImage = await loadImage(test.referenceImage);
-    resultCanvas.width = referenceImage.width;
-    resultCanvas.height = referenceImage.height;
-    resultContext.drawImage(referenceImage, 0, 0);
+    referenceCanvas.width = referenceImage.width;
+    referenceCanvas.height = referenceImage.height;
+    referenceContext.drawImage(referenceImage, 0, 0);
 
+    // Render
+    renderFrame.width = referenceCanvas.clientWidth;
+    renderFrame.height = referenceCanvas.clientHeight;
     const src = "../../sandbox/public/index-local.html?skybox=false&clearColor=FFFFFF&kiosk=true"
         + `&assetUrl=../../tests/certification/models/${test.model}`
         + `&environment=../../tests/certification/models/${test.environment || "Neutral.hdr"}`
-        + `&camera=${test.camera || 0}`;
-    const frame = await loadFrame(src);
-    const frameScreenshot = await frame.contentWindow.BABYLON.Sandbox.CaptureScreenshotAsync({width: 1024, height: 1024});
-
+        + `&camera=${test.camera || 0}`
+        + (dist ? "&dist=true" : "");
+    await loadFrame(renderFrame, src);
+    const renderScreenshot = await renderFrame.contentWindow.BABYLON.Sandbox.CaptureScreenshotAsync({width: 1024, height: 1024});
+    const renderCanvas = document.createElement("canvas");
+    renderCanvas.className = "renderImage";
     const renderContext = renderCanvas.getContext("2d");
-    const renderImage = await loadImage(frameScreenshot);
+    const renderImage = await loadImage(renderScreenshot);
     renderCanvas.width = renderImage.width;
     renderCanvas.height = renderImage.height;
     renderContext.drawImage(renderImage, 0, 0);
+    renderFrame.remove();
+    container.appendChild(renderCanvas);
 
-    evaluate(test, renderCanvas, resultCanvas, result, waitRing);
+    // Diff
+    evaluate(test, renderCanvas, referenceCanvas, diffCanvas, result, waitRing);
 
     renderImages.push({
-        name: test.referenceImage.substr(test.referenceImage.lastIndexOf("/") + 1).replace("rr-", "c-"),
-        base64Image: frameScreenshot
+    name: test.referenceImage.substr(test.referenceImage.lastIndexOf("/") + 1).replace("rr-", "c-"),
+        base64Image: renderScreenshot
     });
 }
 
@@ -210,7 +239,7 @@ function showResultSummary() {
     }
 }
 
-async function downloadImages() {
+async function downloadResult() {
     const blobWriter = new zip.BlobWriter("application/zip");
     const zipWriter = new zip.ZipWriter(blobWriter);
 
