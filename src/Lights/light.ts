@@ -537,6 +537,14 @@ export abstract class Light extends Node implements ISortableLight {
         // Animations
         this.getScene().stopAnimation(this);
 
+        if (this._parentContainer) {
+            const index = this._parentContainer.lights.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.lights.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         // Remove from meshes
         for (var mesh of this.getScene().meshes) {
             mesh._removeLightSource(this, true);

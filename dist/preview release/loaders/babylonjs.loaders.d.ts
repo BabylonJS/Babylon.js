@@ -110,7 +110,7 @@ declare module BABYLON {
     /** @hidden */
     export interface IGLTFLoader extends IDisposable {
         readonly state: Nullable<GLTFLoaderState>;
-        importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<ISceneLoaderAsyncResult>;
+        importMeshAsync: (meshesNames: any, scene: Scene, container: Nullable<AssetContainer>, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<ISceneLoaderAsyncResult>;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
     }
     /**
@@ -771,7 +771,7 @@ declare module BABYLON.GLTF1 {
         importOnlyMeshes: boolean;
         importMeshesNames?: string[];
         dummyNodes: Node[];
-        forAssetContainer: boolean;
+        assetContainer: Nullable<AssetContainer>;
     }
     /** @hidden */
     export interface INodeToRoot {
@@ -873,13 +873,13 @@ declare module BABYLON.GLTF1 {
         * Imports one or more meshes from a loaded gltf file and adds them to the scene
         * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
         * @param scene the scene the meshes should be added to
-        * @param forAssetContainer defines if the entities must be stored in the scene
+        * @param assetContainer defines the asset container to use (can be null)
         * @param data gltf data containing information of the meshes in a loaded file
         * @param rootUrl root url to load from
         * @param onProgress event that fires when loading progress has occured
         * @returns a promise containg the loaded meshes, particles, skeletons and animations
         */
-        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<ISceneLoaderAsyncResult>;
+        importMeshAsync(meshesNames: any, scene: Scene, assetContainer: Nullable<AssetContainer>, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<ISceneLoaderAsyncResult>;
         private _loadAsync;
         /**
         * Imports all objects from a loaded gltf file and adds them to the scene
@@ -1335,7 +1335,7 @@ declare module BABYLON.GLTF2 {
         /** @hidden */
         _completePromises: Promise<any>[];
         /** @hidden */
-        _forAssetContainer: boolean;
+        _assetContainer: Nullable<AssetContainer>;
         /** Storage */
         _babylonLights: Light[];
         /** @hidden */
@@ -1398,7 +1398,7 @@ declare module BABYLON.GLTF2 {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
+        importMeshAsync(meshesNames: any, scene: Scene, container: Nullable<AssetContainer>, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
         /** @hidden */
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         private _loadAsync;
@@ -2395,9 +2395,9 @@ declare module BABYLON {
          * @param scene defines the scene the material will be created in
          * @param data defines the mtl data to parse
          * @param rootUrl defines the rooturl to use in order to load relative dependencies
-         * @param forAssetContainer defines if the material should be registered in the scene
+         * @param assetContainer defines the asset container to store the material in (can be null)
          */
-        parseMTL(scene: Scene, data: string | ArrayBuffer, rootUrl: string, forAssetContainer: boolean): void;
+        parseMTL(scene: Scene, data: string | ArrayBuffer, rootUrl: string, assetContainer: Nullable<AssetContainer>): void;
         /**
          * Gets the texture for the material.
          *
@@ -2533,7 +2533,7 @@ declare module BABYLON {
         facePattern4: RegExp;
         /** @hidden */
         facePattern5: RegExp;
-        private _forAssetContainer;
+        private _assetContainer;
         private _meshLoadOptions;
         /**
          * Creates loader for .OBJ files

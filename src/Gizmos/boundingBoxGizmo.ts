@@ -224,6 +224,7 @@ export class BoundingBoxGizmo extends Gizmo {
             let sphere = SphereBuilder.CreateSphere("", { diameter: 1 }, gizmoLayer.utilityLayerScene);
             sphere.rotationQuaternion = new Quaternion();
             sphere.material = this.coloredMaterial;
+            sphere.isNearGrabbable = true;
 
             // Drag behavior
             var _dragBehavior = new PointerDragBehavior({});
@@ -320,6 +321,7 @@ export class BoundingBoxGizmo extends Gizmo {
                     let box = BoxBuilder.CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
                     box.material = this.coloredMaterial;
                     box.metadata = zeroAxisCount === 2; // None homogenous scale handle
+                    box.isNearGrabbable = true;
 
                     // Dragging logic
                     let dragAxis = new Vector3(i - 1, j - 1, k - 1).normalize();
