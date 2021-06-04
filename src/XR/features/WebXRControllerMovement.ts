@@ -1,10 +1,14 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import { Observable, Observer } from "../../Misc/observable";
+import { Observer } from "../../Misc/observable";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { Nullable } from "../../types";
 import { WebXRInput } from "../webXRInput";
 import { WebXRInputSource } from "../webXRInputSource";
-import { WebXRControllerComponent, IWebXRMotionControllerAxesValue, IWebXRMotionControllerComponentChangesValues } from "../motionController/webXRControllerComponent";
+import {
+    WebXRControllerComponent,
+    IWebXRMotionControllerAxesValue,
+    IWebXRMotionControllerComponentChangesValues,
+} from "../motionController/webXRControllerComponent";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { MotionControllerComponentType } from "../motionController/webXRAbstractMotionController";
@@ -23,24 +27,24 @@ export interface IWebXRControllerMovementOptions {
      */
     movementEnabled?: boolean;
     /**
-    * Camera direction follows view pose and movement by default will move independently of the viewer's pose.
-    */
+     * Camera direction follows view pose and movement by default will move independently of the viewer's pose.
+     */
     movementOrientationFollowsViewerPose: boolean;
     /**
      * Movement speed factor (default is 1.0)
      */
     movementSpeed?: number;
     /**
-    * Minimum threshold the controller's thumbstick/touchpad must pass before being recognized for movement (avoids jitter/unintentional movement)
-    */
+     * Minimum threshold the controller's thumbstick/touchpad must pass before being recognized for movement (avoids jitter/unintentional movement)
+     */
     movementThreshold?: number;
     /**
      * Is rotation enabled
      */
     rotationEnabled?: boolean;
     /**
-    * Minimum threshold the controller's thumstick/touchpad must pass before being recognized for rotation (avoids jitter/unintentional rotation)
-    */
+     * Minimum threshold the controller's thumstick/touchpad must pass before being recognized for rotation (avoids jitter/unintentional rotation)
+     */
     rotationThreshold?: number;
     /**
      * Movement speed factor (default is 1.0)
@@ -56,23 +60,23 @@ export interface IWebXRControllerMovementOptions {
  * Feature context is used in handlers and on each XR frame to control the camera movement/direction.
  */
 export type WebXRControllerMovementFeatureContext = {
-    movementEnabled: boolean
-    movementOrientationFollowsViewerPose: boolean
-    movementSpeed: number
-    movementThreshold: number
-    rotationEnabled: boolean
-    rotationSpeed: number
-    rotationThreshold: number
+    movementEnabled: boolean;
+    movementOrientationFollowsViewerPose: boolean;
+    movementSpeed: number;
+    movementThreshold: number;
+    rotationEnabled: boolean;
+    rotationSpeed: number;
+    rotationThreshold: number;
 };
 
 /**
  * Current state of Movements shared across components and handlers.
  */
 export type WebXRControllerMovementState = {
-    moveX: number
-    moveY: number
-    rotateX: number
-    rotateY: number
+    moveX: number;
+    moveY: number;
+    rotateX: number;
+    rotateY: number;
 };
 
 /**
@@ -82,38 +86,49 @@ export type WebXRControllerMovementRegistrationConfiguration = {
     /**
      * handlers are filtered to these types only
      */
-    allowedComponentTypes?: MotionControllerComponentType[]
+    allowedComponentTypes?: MotionControllerComponentType[];
     /**
      * For registering movement to specific hand only.  Useful if your app has a "main hand" and "off hand" for determining the functionality of a controller.
      */
-    handedness?: XRHandedness
+    forceHandedness?: XRHandedness;
     /**
-     * For main component only (useful for buttons and may not trigger axis changes)
+     * For main component only (useful for buttons and may not trigger axis changes).
      */
-    mainComponentOnly?: boolean
+    mainComponentOnly?: boolean;
     /**
      * Additional predicate to apply to controllers to restrict a handler being added.
      */
-    componentSelectionPredicate?: (xrController: WebXRInputSource) => Nullable<WebXRControllerComponent>
-} & ({
-    /**
-     * called when the axis changes
-     */
-    axisChangedHandler: (axes: IWebXRMotionControllerAxesValue, movementState: WebXRControllerMovementState, featureContext: WebXRControllerMovementFeatureContext, xrInput: WebXRInput) => void
-    // buttonChangedhandler?: never
-} | {
-    /**
-     * Called when the button state changes
-     */
-    buttonChangedhandler: (pressed: IWebXRMotionControllerComponentChangesValues<boolean>, movementState: WebXRControllerMovementState, featureContext: WebXRControllerMovementFeatureContext, xrInput: WebXRInput) => void
-    // axisChangedHandler?: never
-});
+    componentSelectionPredicate?: (xrController: WebXRInputSource) => Nullable<WebXRControllerComponent>;
+} & (
+        | {
+            /**
+             * Called when axis changes occur.
+             */
+            axisChangedHandler: (
+                axes: IWebXRMotionControllerAxesValue,
+                movementState: WebXRControllerMovementState,
+                featureContext: WebXRControllerMovementFeatureContext,
+                xrInput: WebXRInput
+            ) => void;
+        }
+        | {
+            /**
+             * Called when the button state changes.
+             */
+            buttonChangedhandler: (
+                pressed: IWebXRMotionControllerComponentChangesValues<boolean>,
+                movementState: WebXRControllerMovementState,
+                featureContext: WebXRControllerMovementFeatureContext,
+                xrInput: WebXRInput
+            ) => void;
+        }
+    );
 
 type RegisteredComponent = {
-    registrationConfiguration: WebXRControllerMovementRegistrationConfiguration
-    component: WebXRControllerComponent
-    onAxisChangedObserver?: Nullable<Observer<IWebXRMotionControllerAxesValue>>
-    onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>
+    registrationConfiguration: WebXRControllerMovementRegistrationConfiguration;
+    component: WebXRControllerComponent;
+    onAxisChangedObserver?: Nullable<Observer<IWebXRMotionControllerAxesValue>>;
+    onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
 };
 
 /**
@@ -138,9 +153,9 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     private _xrInput: WebXRInput;
 
     // unused
-    private _rotationMatrix: Matrix = Matrix.Identity();
-    private _translationDirection: Vector3 = new Vector3();
-    private _movementTranslation: Vector3 = new Vector3();
+    private _tmpRotationMatrix: Matrix = Matrix.Identity();
+    private _tmpTranslationDirection: Vector3 = new Vector3();
+    private _tmpMovementTranslation: Vector3 = new Vector3();
 
     /**
      * The module's name
@@ -150,32 +165,35 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     /**
      * Standard controller configurations.
      */
-    public static readonly REGISTRATIONS: Record<string, WebXRControllerMovementRegistrationConfiguration[]> = {
-        "default": [
+    public static readonly REGISTRATIONS: { [key: string]: WebXRControllerMovementRegistrationConfiguration[] } = {
+        default: [
             {
                 allowedComponentTypes: [WebXRControllerComponent.THUMBSTICK_TYPE, WebXRControllerComponent.TOUCHPAD_TYPE],
-                handedness: "left",
-                axisChangedHandler: (axes: IWebXRMotionControllerAxesValue, movementState: WebXRControllerMovementState, featureContext: WebXRControllerMovementFeatureContext, xrInput: WebXRInput) => {
-                    movementState.rotateX = Math.abs(axes.x) > featureContext.rotationThreshold
-                        ? axes.x
-                        : 0;
-                    movementState.rotateY = Math.abs(axes.y) > featureContext.rotationThreshold
-                        ? axes.y
-                        : 0;
-                }
-            }, {
+                forceHandedness: "left",
+                axisChangedHandler: (
+                    axes: IWebXRMotionControllerAxesValue,
+                    movementState: WebXRControllerMovementState,
+                    featureContext: WebXRControllerMovementFeatureContext,
+                    xrInput: WebXRInput
+                ) => {
+                    movementState.rotateX = Math.abs(axes.x) > featureContext.rotationThreshold ? axes.x : 0;
+                    movementState.rotateY = Math.abs(axes.y) > featureContext.rotationThreshold ? axes.y : 0;
+                },
+            },
+            {
                 allowedComponentTypes: [WebXRControllerComponent.THUMBSTICK_TYPE, WebXRControllerComponent.TOUCHPAD_TYPE],
-                handedness: "right",
-                axisChangedHandler: (axes: IWebXRMotionControllerAxesValue, movementState: WebXRControllerMovementState, featureContext: WebXRControllerMovementFeatureContext, xrInput: WebXRInput) => {
-                    movementState.moveX = (Math.abs(axes.x) > featureContext.movementThreshold)
-                        ? axes.x
-                        : 0;
-                    movementState.moveY = (Math.abs(axes.y) > featureContext.movementThreshold)
-                        ? axes.y
-                        : 0;
-                }
-            }
-        ]
+                forceHandedness: "right",
+                axisChangedHandler: (
+                    axes: IWebXRMotionControllerAxesValue,
+                    movementState: WebXRControllerMovementState,
+                    featureContext: WebXRControllerMovementFeatureContext,
+                    xrInput: WebXRInput
+                ) => {
+                    movementState.moveX = Math.abs(axes.x) > featureContext.movementThreshold ? axes.x : 0;
+                    movementState.moveY = Math.abs(axes.y) > featureContext.movementThreshold ? axes.y : 0;
+                },
+            },
+        ],
     };
 
     /**
@@ -184,16 +202,6 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
      * This number does not correspond to the webxr specs version
      */
     public static readonly Version = 1;
-
-    /**
-     * An event triggered after XR frame completes
-     */
-    public onAfterXRFrameObservable = new Observable<WebXRControllerMovementState>();
-
-    /**
-    * An event triggered when XR frame begins
-    */
-    public onBeforeXRFrameObservable = new Observable<WebXRControllerMovementState>();
 
     /**
      * Current movement direction.  Will be null before XR Frames have been processed.
@@ -220,7 +228,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     /**
      * If movement follows viewer pose
      */
-     public get movementOrientationFollowsViewerPose(): boolean {
+    public get movementOrientationFollowsViewerPose(): boolean {
         return this._featureContext.movementOrientationFollowsViewerPose;
     }
 
@@ -250,7 +258,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     /**
      * Gets minimum threshold the controller's thumbstick/touchpad must pass before being recognized for movement (avoids jitter/unintentional movement)
      */
-     public get movementThreshold(): number {
+    public get movementThreshold(): number {
         return this._featureContext.movementThreshold;
     }
 
@@ -280,7 +288,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     /**
      * Gets rotation speed factor
      */
-     public get rotationSpeed(): number {
+    public get rotationSpeed(): number {
         return this._featureContext.rotationSpeed;
     }
 
@@ -295,7 +303,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     /**
      * Gets minimum threshold the controller's thumbstick/touchpad must pass before being recognized for rotation (avoids jitter/unintentional rotation)
      */
-     public get rotationThreshold(): number {
+    public get rotationThreshold(): number {
         return this._featureContext.rotationThreshold;
     }
 
@@ -375,13 +383,6 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
         return true;
     }
 
-    public dispose(): void {
-        super.dispose();
-
-        this.onBeforeXRFrameObservable.clear();
-        this.onAfterXRFrameObservable.clear();
-    }
-
     /**
      * Occurs on every XR frame.
      */
@@ -394,39 +395,36 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
             this._movementDirection = this._xrInput.xrCamera.rotationQuaternion.clone();
         }
 
-        if (this.onBeforeXRFrameObservable.hasObservers()) {
-            this.onBeforeXRFrameObservable.notifyObservers(this._movementState);
-        }
-
         if (this._movementState.rotateX !== 0 && this._featureContext.rotationEnabled) {
             // smooth rotation
             const deltaMillis = this._xrSessionManager.scene.getEngine().getDeltaTime();
-            const rotationY = (deltaMillis * 0.001) * this._featureContext.rotationSpeed * this._movementState.rotateX * (this._xrSessionManager.scene.useRightHandedSystem ? -1 : 1);
+            const rotationY = deltaMillis * 0.001 * this._featureContext.rotationSpeed * this._movementState.rotateX * (this._xrSessionManager.scene.useRightHandedSystem ? -1 : 1);
 
             if (this._featureContext.movementOrientationFollowsViewerPose === true) {
                 this._xrInput.xrCamera.cameraRotation.y += rotationY;
                 this._movementDirection = this._xrInput.xrCamera.rotationQuaternion.multiply(Quaternion.RotationYawPitchRoll(rotationY, 0, 0));
             } else {
-                // controller rotation does not affect camera
-                this._movementDirection.multiplyInPlace(Quaternion.RotationYawPitchRoll(rotationY, 0, 0));
+                // movement orientation direction does not affect camera.  We use rotation speed multiplier
+                // otherwise need to implement inertia and constraints for same feel as TargetCamera.
+                this._movementDirection.multiplyInPlace(Quaternion.RotationYawPitchRoll(rotationY * 3.0, 0, 0));
             }
         } else if (this._featureContext.movementOrientationFollowsViewerPose === true) {
             this._movementDirection.copyFrom(this._xrInput.xrCamera.rotationQuaternion);
         }
 
         if ((this._movementState.moveX !== 0 || this._movementState.moveY !== 0) && this._featureContext.movementEnabled) {
-            Matrix.FromQuaternionToRef(this._movementDirection, this._rotationMatrix);
-            this._translationDirection.set(this._movementState.moveX, 0, this._movementState.moveY * (this._xrSessionManager.scene.useRightHandedSystem ? 1.0 : -1.0));
+            Matrix.FromQuaternionToRef(this._movementDirection, this._tmpRotationMatrix);
+            this._tmpTranslationDirection.set(
+                this._movementState.moveX,
+                0,
+                this._movementState.moveY * (this._xrSessionManager.scene.useRightHandedSystem ? 1.0 : -1.0)
+            );
             // move according to forward direction based on camera speed
-            Vector3.TransformCoordinatesToRef(this._translationDirection, this._rotationMatrix, this._movementTranslation);
-            this._movementTranslation.scaleInPlace(this._xrInput.xrCamera._computeLocalCameraSpeed() * this._featureContext.movementSpeed);
-            this._movementTranslation.y = 0;
+            Vector3.TransformCoordinatesToRef(this._tmpTranslationDirection, this._tmpRotationMatrix, this._tmpMovementTranslation);
+            this._tmpMovementTranslation.scaleInPlace(this._xrInput.xrCamera._computeLocalCameraSpeed() * this._featureContext.movementSpeed);
+            this._tmpMovementTranslation.y = 0;
 
-            this._xrInput.xrCamera.cameraDirection.addInPlace(this._movementTranslation);
-        }
-
-        if (this.onAfterXRFrameObservable.hasObservers()) {
-            this.onAfterXRFrameObservable.notifyObservers(this._movementState);
+            this._xrInput.xrCamera.cameraDirection.addInPlace(this._tmpMovementTranslation);
         }
     }
 
@@ -438,7 +436,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
 
         this._controllers[xrController.uniqueId] = {
             xrController,
-            registeredComponents: []
+            registeredComponents: [],
         };
         const controllerData = this._controllers[xrController.uniqueId];
 
@@ -468,13 +466,13 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
                             component = mainComponent;
                         }
 
-                        if (typeof registration.componentSelectionPredicate === 'function') {
+                        if (typeof registration.componentSelectionPredicate === "function") {
                             // if does not match we do want to ignore a previously found component
                             component = registration.componentSelectionPredicate(xrController);
                         }
 
-                        if (component && registration.handedness) {
-                            if (xrController.inputSource.handedness !== registration.handedness) {
+                        if (component && registration.forceHandedness) {
+                            if (xrController.inputSource.handedness !== registration.forceHandedness) {
                                 continue; // do not register
                             }
                         }
@@ -486,17 +484,16 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
                         const registeredComponent: RegisteredComponent = {
                             registrationConfiguration: registration,
                             component,
-
                         };
                         controllerData.registeredComponents.push(registeredComponent);
 
-                        if ('axisChangedHandler' in registration) {
+                        if ("axisChangedHandler" in registration) {
                             registeredComponent.onAxisChangedObserver = component.onAxisValueChangedObservable.add((axesData) => {
                                 registration.axisChangedHandler(axesData, this._movementState, this._featureContext, this._xrInput);
                             });
                         }
 
-                        if ('buttonChangedhandler' in registration) {
+                        if ("buttonChangedhandler" in registration) {
                             registeredComponent.onButtonChangedObserver = component.onButtonStateChangedObservable.add(() => {
                                 if (component!.changes.pressed) {
                                     registration.buttonChangedhandler(component!.changes.pressed, this._movementState, this._featureContext, this._xrInput);
@@ -515,7 +512,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
                 });
             }
         }
-    }
+    };
 
     private _detachController(xrControllerUniqueId: string) {
         const controllerData = this._controllers[xrControllerUniqueId];
