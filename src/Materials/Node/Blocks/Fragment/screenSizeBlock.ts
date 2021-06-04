@@ -60,7 +60,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         const engine = this._scene.getEngine();
 
-        effect.setFloat2(this._varName, engine.getRenderWidth(), engine.getRenderWidth());
+        effect.setFloat2(this._varName, engine.getRenderWidth(), engine.getRenderHeight());
     }
 
     protected writeOutputs(state: NodeMaterialBuildState, varName: string): string {
