@@ -71,6 +71,9 @@ export class ReflectionProbe {
     @serializeAsVector3()
     public position = Vector3.Zero();
 
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
+
     /**
      * Creates a new reflection probe
      * @param name defines the name of the probe
@@ -234,6 +237,14 @@ export class ReflectionProbe {
         if (index !== -1) {
             // Remove from the scene if found
             this._scene.reflectionProbes.splice(index, 1);
+        }
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.reflectionProbes.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.reflectionProbes.splice(index, 1);
+            }
+            this._parentContainer = null;
         }
 
         if (this._renderTargetTexture) {

@@ -490,7 +490,7 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
                     rebuildSamples();
                     this.isReady = true;
-                }, null, this.format, this._extension);
+                }, null, this.format, this._extension, false, 0, 0, null, undefined, this._useSRGBBuffer);
                 return;
 
             case InternalTextureSource.CubeRaw:

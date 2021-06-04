@@ -935,6 +935,14 @@ export class Camera extends Node {
             }
         }
 
+        if (this._parentContainer) {
+            const index = this._parentContainer.cameras.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.cameras.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         // Postprocesses
         if (this._rigPostProcess) {
             this._rigPostProcess.dispose(this);
