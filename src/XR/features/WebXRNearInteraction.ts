@@ -406,7 +406,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             pointerType: "xr",
         };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-            if (controllerData.pick) {
+            if (controllerData.pick && !this._farInteractionFeature?.attached) {
                 this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
         });
