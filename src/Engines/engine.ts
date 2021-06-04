@@ -994,50 +994,35 @@ export class Engine extends ThinEngine {
      * @param depthFunc defines the function to use
      */
     public setDepthFunction(depthFunc: number) {
-        // We delegate these calls to the named functions because
-        // NativeEngine overrides them to translate the constants.
-        switch (depthFunc) {
-            case Constants.GREATER:
-                this.setDepthFunctionToGreater();
-                break;
-            case Constants.GEQUAL:
-                this.setDepthFunctionToGreaterOrEqual();
-                break;
-            case Constants.LESS:
-                this.setDepthFunctionToLess();
-                break;
-            case Constants.LEQUAL:
-                this.setDepthFunctionToLessOrEqual();
-                break;
-        }
+        this._depthCullingState.depthFunc = depthFunc;
     }
 
     /**
      * Sets the current depth function to GREATER
      */
     public setDepthFunctionToGreater(): void {
-        this._depthCullingState.depthFunc = Constants.GREATER;
+        this.setDepthFunction(Constants.GREATER);
     }
 
     /**
      * Sets the current depth function to GEQUAL
      */
     public setDepthFunctionToGreaterOrEqual(): void {
-        this._depthCullingState.depthFunc = Constants.GEQUAL;
+        this.setDepthFunction(Constants.GEQUAL);
     }
 
     /**
      * Sets the current depth function to LESS
      */
     public setDepthFunctionToLess(): void {
-        this._depthCullingState.depthFunc = Constants.LESS;
+        this.setDepthFunction(Constants.LESS);
     }
 
     /**
      * Sets the current depth function to LEQUAL
      */
     public setDepthFunctionToLessOrEqual(): void {
-        this._depthCullingState.depthFunc = Constants.LEQUAL;
+        this.setDepthFunction(Constants.LEQUAL);
     }
 
     private _cachedStencilBuffer: boolean;
