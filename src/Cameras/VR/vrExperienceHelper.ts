@@ -716,14 +716,15 @@ export class VRExperienceHelper {
     constructor(scene: Scene,
         /** Options to modify the vr experience helper's behavior. */
         public webVROptions: VRExperienceHelperOptions = {}) {
+        Logger.Warn('WebVR is deprecated. Please avoid using this experience helper and use the WebXR experience helper instead');
         this._scene = scene;
         this._inputElement = scene.getEngine().getInputElement();
 
         // check for VR support:
 
         const vrSupported = 'getVRDisplays' in navigator;
-        // no VR support? force XR
-        if (!vrSupported) {
+        // no VR support? force XR but only when it is not set because web vr can work without the getVRDisplays
+        if (!vrSupported && webVROptions.useXR === undefined) {
             webVROptions.useXR = true;
         }
 

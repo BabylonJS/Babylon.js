@@ -24,6 +24,8 @@ uniform float hoverRadius;
 
 #ifdef TEXTURE
 uniform sampler2D albedoSampler;
+uniform mat4 textureMatrix;
+vec2 finalUV;
 #endif
 
 void main(void) {
@@ -32,7 +34,8 @@ void main(void) {
 	float alpha = albedoColor.a;
 
 #ifdef TEXTURE
-	albedo = texture2D(albedoSampler, vUV).rgb;
+	finalUV = vec2(textureMatrix * vec4(vUV, 1.0, 0.0));
+	albedo = texture2D(albedoSampler, finalUV).rgb;
 #endif
 
 #ifdef HOVERLIGHT

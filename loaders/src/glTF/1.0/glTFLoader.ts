@@ -32,6 +32,7 @@ import { Scene } from "babylonjs/scene";
 import { GLTFUtils } from "./glTFLoaderUtils";
 import { GLTFFileLoader, IGLTFLoader, GLTFLoaderState, IGLTFLoaderData } from "../glTFFileLoader";
 import { Constants } from 'babylonjs/Engines/constants';
+import { AssetContainer } from "babylonjs/assetContainer";
 
 /**
 * Tokenizer. Used for shaders compatibility
@@ -198,15 +199,15 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
             var bufferInput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[inputData]);
             var bufferOutput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
 
-            var targetID = channel.target.id;
-            var targetNode: any = gltfRuntime.scene.getNodeByID(targetID);
+            var targetId = channel.target.id;
+            var targetNode: any = gltfRuntime.scene.getNodeById(targetId);
 
             if (targetNode === null) {
-                targetNode = gltfRuntime.scene.getNodeByName(targetID);
+                targetNode = gltfRuntime.scene.getNodeByName(targetId);
             }
 
             if (targetNode === null) {
-                Tools.Warn("Creating animation named " + anim + ". But cannot find node named " + targetID + " to attach to");
+                Tools.Warn("Creating animation named " + anim + ". But cannot find node named " + targetId + " to attach to");
                 continue;
             }
 
@@ -245,7 +246,7 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
             }
 
             if (!modifyKey) {
-                gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+                gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
                 babylonAnimation = new Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
                 gltfRuntime.scene._blockEntityCollection = false;
             }
@@ -513,7 +514,7 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
         var id = jointNode.id;
 
         // Optimize, if the bone already exists...
-        var existingBone = gltfRuntime.scene.getBoneByID(id);
+        var existingBone = gltfRuntime.scene.getBoneById(id);
         if (existingBone) {
             newSkeleton.bones.push(existingBone);
             continue;
@@ -607,8 +608,9 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
 */
 var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
     if (!newMesh) {
-        gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+        gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
         newMesh = new Mesh(node.name || "", gltfRuntime.scene);
+        newMesh._parentContainer = gltfRuntime.assetContainer;
         gltfRuntime.scene._blockEntityCollection = false;
         newMesh.id = id;
     }
@@ -626,8 +628,8 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
     var indexCounts = new Array<number>();
 
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshID = meshes[meshIndex];
-        var mesh: IGLTFMesh = gltfRuntime.meshes[meshID];
+        var meshId = meshes[meshIndex];
+        var mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
 
         if (!mesh) {
             continue;
@@ -725,7 +727,7 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
             }
 
             // Sub material
-            let material = gltfRuntime.scene.getMaterialByID(primitive.material);
+            let material = gltfRuntime.scene.getMaterialById(primitive.material);
 
             subMaterials.push(material === null ? GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
 
@@ -735,7 +737,7 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
         }
     }
     let material: StandardMaterial | MultiMaterial;
-    gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+    gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
     if (subMaterials.length > 1) {
         material = new MultiMaterial("multimat" + id, gltfRuntime.scene);
         (material as MultiMaterial).subMaterials = subMaterials;
@@ -747,6 +749,8 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
     if (subMaterials.length === 1) {
         material = (subMaterials[0] as StandardMaterial);
     }
+
+    material._parentContainer = gltfRuntime.assetContainer;
 
     if (!newMesh.material) {
         newMesh.material = material;
@@ -762,8 +766,8 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
     newMesh.subMeshes = [];
     var index = 0;
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshID = meshes[meshIndex];
-        var mesh: IGLTFMesh = gltfRuntime.meshes[meshID];
+        var meshId = meshes[meshIndex];
+        var mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
 
         if (!mesh) {
             continue;
@@ -838,7 +842,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
             var skin: IGLTFSkins = gltfRuntime.skins[node.skin];
 
             var newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
-            newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(node.skin);
+            newMesh.skeleton = gltfRuntime.scene.getLastSkeletonById(node.skin);
 
             if (newMesh.skeleton === null) {
                 newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton, node.skin);
@@ -923,7 +927,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
         if (camera) {
 
-            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+            gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
             if (camera.type === "orthographic") {
                 var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
@@ -932,6 +936,8 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
                 orthoCamera.attachControl();
 
                 lastNode = orthoCamera;
+
+                orthoCamera._parentContainer = gltfRuntime.assetContainer;
             }
             else if (camera.type === "perspective") {
                 var perspectiveCamera: IGLTFCameraPerspective = (<any>camera)[camera.type];
@@ -950,6 +956,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
                 }
 
                 lastNode = persCamera;
+                persCamera._parentContainer = gltfRuntime.assetContainer;
             }
 
             gltfRuntime.scene._blockEntityCollection = false;
@@ -962,8 +969,9 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
             return node.babylonNode;
         }
         else if (lastNode === null) {
-            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+            gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
             var dummy = new Mesh(node.name || "", gltfRuntime.scene);
+            dummy._parentContainer = gltfRuntime.assetContainer;
             gltfRuntime.scene._blockEntityCollection = false;
             node.babylonNode = dummy;
             lastNode = dummy;
@@ -1071,7 +1079,7 @@ var onBindShaderMaterial = (mesh: AbstractMesh, gltfRuntime: IGLTFRuntime, unTre
             else if (uniform.semantic && (uniform.source || uniform.node)) {
                 var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node || "");
                 if (source === null) {
-                    source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node || "");
+                    source = gltfRuntime.scene.getNodeById(uniform.source || uniform.node || "");
                 }
                 if (source === null) {
                     continue;
@@ -1252,7 +1260,7 @@ export class GLTFLoaderBase {
 
             dummyNodes: [],
 
-            forAssetContainer: false
+            assetContainer: null
         };
 
         // Parse
@@ -1444,8 +1452,9 @@ export class GLTFLoaderBase {
 
         var technique: IGLTFTechnique = gltfRuntime.techniques[material.technique];
         if (!technique) {
-            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+            gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
             var defaultMaterial = new StandardMaterial(id, gltfRuntime.scene);
+            defaultMaterial._parentContainer = gltfRuntime.assetContainer;
             gltfRuntime.scene._blockEntityCollection = false;
             defaultMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
             defaultMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
@@ -1621,11 +1630,11 @@ export class GLTFLoader implements IGLTFLoader {
         // do nothing
     }
 
-    private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, forAssetContainer: boolean, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: ISceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
+    private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, assetContainer: Nullable<AssetContainer>, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: ISceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
         scene.useRightHandedSystem = true;
 
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, (gltfRuntime) => {
-            gltfRuntime.forAssetContainer = forAssetContainer;
+            gltfRuntime.assetContainer = assetContainer;
             gltfRuntime.importOnlyMeshes = true;
 
             if (meshesNames === "") {
@@ -1689,15 +1698,15 @@ export class GLTFLoader implements IGLTFLoader {
     * Imports one or more meshes from a loaded gltf file and adds them to the scene
     * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
     * @param scene the scene the meshes should be added to
-    * @param forAssetContainer defines if the entities must be stored in the scene
+    * @param assetContainer defines the asset container to use (can be null)
     * @param data gltf data containing information of the meshes in a loaded file
     * @param rootUrl root url to load from
     * @param onProgress event that fires when loading progress has occured
     * @returns a promise containg the loaded meshes, particles, skeletons and animations
     */
-    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<ISceneLoaderAsyncResult> {
+    public importMeshAsync(meshesNames: any, scene: Scene, assetContainer: Nullable<AssetContainer>, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<ISceneLoaderAsyncResult> {
         return new Promise((resolve, reject) => {
-            this._importMeshAsync(meshesNames, scene, data, rootUrl, forAssetContainer, (meshes, skeletons) => {
+            this._importMeshAsync(meshesNames, scene, data, rootUrl, assetContainer, (meshes, skeletons) => {
                 resolve({
                     meshes: meshes,
                     particleSystems: [],
@@ -1713,7 +1722,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, forAssetContainer: boolean, onSuccess: () => void, onProgress?: (event: ISceneLoaderProgressEvent) => void, onError?: (message: string) => void): void {
+    private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress?: (event: ISceneLoaderProgressEvent) => void, onError?: (message: string) => void): void {
         scene.useRightHandedSystem = true;
 
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, (gltfRuntime) => {
@@ -1751,7 +1760,7 @@ export class GLTFLoader implements IGLTFLoader {
     */
     public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
         return new Promise((resolve, reject) => {
-            this._loadAsync(scene, data, rootUrl, false, () => {
+            this._loadAsync(scene, data, rootUrl, () => {
                 resolve();
             }, onProgress, (message) => {
                 reject(new Error(message));

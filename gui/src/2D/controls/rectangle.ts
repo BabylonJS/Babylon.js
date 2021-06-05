@@ -65,7 +65,7 @@ export class Rectangle extends Container {
         }
 
         if (this._background) {
-            context.fillStyle = this._background;
+            context.fillStyle = this.typeName === "Button" ? (this.isEnabled ? this._background : this.disabledColor) : this._background;
 
             if (this._cornerRadius) {
                 this._drawRoundedRect(context, this._thickness / 2);

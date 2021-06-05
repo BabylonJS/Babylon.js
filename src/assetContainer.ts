@@ -219,8 +219,11 @@ export class AssetContainer extends AbstractScene {
 
             for (var m of this.meshes) {
                 if (m.skeleton === s && !m.isAnInstance) {
-                    let copy = storeMap[convertionMap[m.uniqueId]];
-                    (copy as Mesh).skeleton = clone;
+                    let copy = storeMap[convertionMap[m.uniqueId]] as Mesh;
+                    if (copy.isAnInstance) {
+                        continue;
+                    }
+                    copy.skeleton = clone;
 
                     if (alreadySwappedSkeletons.indexOf(clone) !== -1) {
                         continue;
@@ -376,62 +379,62 @@ export class AssetContainer extends AbstractScene {
      * Disposes all the assets in the container
      */
     public dispose() {
-        this.cameras.forEach((o) => {
+        this.cameras.slice(0).forEach((o) => {
             o.dispose();
         });
         this.cameras = [];
 
-        this.lights.forEach((o) => {
+        this.lights.slice(0).forEach((o) => {
             o.dispose();
         });
         this.lights = [];
 
-        this.meshes.forEach((o) => {
+        this.meshes.slice(0).forEach((o) => {
             o.dispose();
         });
         this.meshes = [];
 
-        this.skeletons.forEach((o) => {
+        this.skeletons.slice(0).forEach((o) => {
             o.dispose();
         });
         this.skeletons = [];
 
-        this.animationGroups.forEach((o) => {
+        this.animationGroups.slice(0).forEach((o) => {
             o.dispose();
         });
         this.animationGroups = [];
 
-        this.multiMaterials.forEach((o) => {
+        this.multiMaterials.slice(0).forEach((o) => {
             o.dispose();
         });
         this.multiMaterials = [];
 
-        this.materials.forEach((o) => {
+        this.materials.slice(0).forEach((o) => {
             o.dispose();
         });
         this.materials = [];
 
-        this.geometries.forEach((o) => {
+        this.geometries.slice(0).forEach((o) => {
             o.dispose();
         });
         this.geometries = [];
 
-        this.transformNodes.forEach((o) => {
+        this.transformNodes.slice(0).forEach((o) => {
             o.dispose();
         });
         this.transformNodes = [];
 
-        this.actionManagers.forEach((o) => {
+        this.actionManagers.slice(0).forEach((o) => {
             o.dispose();
         });
         this.actionManagers = [];
 
-        this.textures.forEach((o) => {
+        this.textures.slice(0).forEach((o) => {
             o.dispose();
         });
         this.textures = [];
 
-        this.reflectionProbes.forEach((o) => {
+        this.reflectionProbes.slice(0).forEach((o) => {
             o.dispose();
         });
         this.reflectionProbes = [];
@@ -469,6 +472,7 @@ export class AssetContainer extends AbstractScene {
 
             if (move) {
                 targetAssets.push(asset);
+                (asset as any)._parentContainer = this;
             }
         }
     }

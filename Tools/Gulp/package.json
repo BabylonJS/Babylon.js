@@ -10,7 +10,7 @@
     "license": "(Apache-2.0)",
     "scripts": {
         "install": "cd ../../ && npm install && cd ./Viewer && npm install && cd ../Tools/Gulp/",
-        "build": "gulp --max-old-space-size=8192 --tsLintFix",
+        "build": "gulp --max-old-space-size=8192 --tsLintFix=true",
         "start": "gulp run --max-old-space-size=8192",
         "start-public-ssl": "gulp run --max-old-space-size=8192 --public --ssl"
     },

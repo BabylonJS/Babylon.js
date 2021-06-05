@@ -71,6 +71,9 @@ export class ReflectionProbe {
     @serializeAsVector3()
     public position = Vector3.Zero();
 
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
+
     /**
      * Creates a new reflection probe
      * @param name defines the name of the probe
@@ -157,7 +160,7 @@ export class ReflectionProbe {
         let currentApplyByPostProcess: boolean;
 
         this._renderTargetTexture.onBeforeBindObservable.add(() => {
-            scene.getEngine()._debugPushGroup(`reflection probe generation for ${name}`, 1);
+            scene.getEngine()._debugPushGroup?.(`reflection probe generation for ${name}`, 1);
             currentApplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (linearSpace) {
                 scene.imageProcessingConfiguration.applyByPostProcess = true;
@@ -168,7 +171,7 @@ export class ReflectionProbe {
             scene.imageProcessingConfiguration.applyByPostProcess = currentApplyByPostProcess;
             scene._forcedViewPosition = null;
             scene.updateTransformMatrix(true);
-            scene.getEngine()._debugPopGroup(1);
+            scene.getEngine()._debugPopGroup?.(1);
         });
     }
 
@@ -234,6 +237,14 @@ export class ReflectionProbe {
         if (index !== -1) {
             // Remove from the scene if found
             this._scene.reflectionProbes.splice(index, 1);
+        }
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.reflectionProbes.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.reflectionProbes.splice(index, 1);
+            }
+            this._parentContainer = null;
         }
 
         if (this._renderTargetTexture) {
@@ -303,7 +314,7 @@ export class ReflectionProbe {
         reflectionProbe.cubeTexture._waitingRenderList = parsedReflectionProbe.renderList;
 
         if (parsedReflectionProbe._attachedMesh) {
-            reflectionProbe.attachToMesh(scene.getMeshByID(parsedReflectionProbe._attachedMesh));
+            reflectionProbe.attachToMesh(scene.getMeshById(parsedReflectionProbe._attachedMesh));
         }
 
         return reflectionProbe;

@@ -26,11 +26,11 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Base Url for the button model.
      */
-    public static MODEL_BASE_URL: string = 'https://assets.babylonjs.com/meshes/MRTK/';
+    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
     /**
      * File name for the button model.
      */
-    public static MODEL_FILENAME: string = 'mrtk-fluent-button.glb';
+    public static MODEL_FILENAME: string = "mrtk-fluent-button.glb";
 
     private _backPlate: Mesh;
     private _textPlate: Mesh;
@@ -232,32 +232,30 @@ export class TouchHolographicButton extends TouchButton3D {
 
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
-
-        let panel = new StackPanel();
-        panel.isVertical = true;
-
-        if (this._imageUrl) {
-            let image = new Image();
-            image.source = this._imageUrl;
-            image.paddingTop = "40px";
-            image.height = "180px";
-            image.width = "100px";
-            image.paddingBottom = "40px";
-            panel.addControl(image);
-        }
-
-        if (this._text) {
-            let text = new TextBlock();
-            text.text = this._text;
-            text.color = "white";
-            text.height = "30px";
-            text.fontSize = 24;
-            panel.addControl(text);
-        }
-
         // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
-        if (!!document.createElement)
-        {
+        if (!!document.createElement) {
+            let panel = new StackPanel();
+            panel.isVertical = true;
+
+            if (this._imageUrl) {
+                let image = new Image();
+                image.source = this._imageUrl;
+                image.paddingTop = "40px";
+                image.height = "180px";
+                image.width = "100px";
+                image.paddingBottom = "40px";
+                panel.addControl(image);
+            }
+
+            if (this._text) {
+                let text = new TextBlock();
+                text.text = this._text;
+                text.color = "white";
+                text.height = "30px";
+                text.fontSize = 24;
+                panel.addControl(text);
+            }
+
             this.content = panel;
         }
     }
@@ -270,6 +268,7 @@ export class TouchHolographicButton extends TouchButton3D {
             depth: 1.0,
         }, scene);
         collisionMesh.isPickable = true;
+        collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
         collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
 
@@ -290,11 +289,15 @@ export class TouchHolographicButton extends TouchButton3D {
             });
 
         const backPlateDepth = 0.04;
-        this._backPlate = BoxBuilder.CreateBox(this.name + "BackMesh", {
-            width: 1.0,
-            height: 1.0,
-            depth: backPlateDepth
-        }, scene);
+        this._backPlate = BoxBuilder.CreateBox(
+            this.name + "BackMesh",
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: backPlateDepth,
+            },
+            scene
+        );
 
         this._backPlate.parent = collisionMesh;
         this._backPlate.position.z = 0.5 - backPlateDepth / 2;

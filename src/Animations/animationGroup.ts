@@ -8,6 +8,7 @@ import { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
 import "./animatable";
+import { AbstractScene } from "../abstractScene";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -58,6 +59,9 @@ export class AnimationGroup implements IDisposable {
     private _speedRatio = 1;
     private _loopAnimation = false;
     private _isAdditive = false;
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
      * Gets or sets the unique id of the node
@@ -534,10 +538,19 @@ export class AnimationGroup implements IDisposable {
         this._targetedAnimations = [];
         this._animatables = [];
 
+        // Remove from scene
         var index = this._scene.animationGroups.indexOf(this);
 
         if (index > -1) {
             this._scene.animationGroups.splice(index, 1);
+        }
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.animationGroups.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.animationGroups.splice(index, 1);
+            }
+            this._parentContainer = null;
         }
 
         this.onAnimationEndObservable.clear();
@@ -617,7 +630,7 @@ export class AnimationGroup implements IDisposable {
                 }
             }
             else {
-                var targetNode = scene.getNodeByID(id);
+                var targetNode = scene.getNodeById(id);
 
                 if (targetNode != null) {
                     animationGroup.addTargetedAnimation(animation, targetNode);
