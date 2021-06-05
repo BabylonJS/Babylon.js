@@ -88,7 +88,7 @@ export class NearMenu extends VolumeBasedPanel {
         this._pinButton = this._createPinButton(node);
         this.isPinned = false;
 
-        this._defaultBehavior.attach(node, this._backPlate);
+        this._defaultBehavior.attach(node, [this._backPlate]);
 
         return node;
     }

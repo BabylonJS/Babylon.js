@@ -181,7 +181,7 @@ export class FluentMaterial extends PushMaterial {
             var shaderName = "fluent";
 
             var uniforms = ["world", "viewProjection", "innerGlowColor", "albedoColor", "borderWidth", "edgeSmoothingValue", "scaleFactor", "borderMinValue",
-                "hoverColor", "hoverPosition", "hoverRadius"
+                "hoverColor", "hoverPosition", "hoverRadius", "textureMatrix"
             ];
 
             var samplers = ["albedoSampler"];
@@ -261,8 +261,10 @@ export class FluentMaterial extends PushMaterial {
                 this._activeEffect.setVector3("hoverPosition", this.hoverPosition);
             }
 
-            if (defines.TEXTURE) {
+            if (defines.TEXTURE && this._albedoTexture) {
                 this._activeEffect.setTexture("albedoSampler", this._albedoTexture);
+                const matrix = this._albedoTexture.getTextureMatrix();
+                this._activeEffect.setMatrix("textureMatrix", matrix);
             }
         }
 

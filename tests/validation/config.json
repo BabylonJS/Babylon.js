@@ -151,7 +151,7 @@
         {
             "title": "GUI Slate",
             "renderCount": 60,
-            "playgroundId": "#2YZFA0#200",
+            "playgroundId": "#2YZFA0#211",
             "referenceImage": "guiSlate.png",
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true

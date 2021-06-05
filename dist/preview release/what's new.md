@@ -124,7 +124,8 @@
 
 - Added `FollowBehavior`, a behavior that makes the assigned mesh hover around a camera, while facing it ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `DefaultBehavior`, a behavior that will be common to several 3D GUI controls, orchestrating `SixDoFDragBehavior` and `FollowBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
-- `SixDoFDragBehavior` can now specify an ancestor to drag instead of the attached mesh ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Added `draggableMeshes` property in `SixDoFDragBehavior` list in order to have only a subset of descendant meshes take pointer events into account ([CraigFeldspar](https://github.com/CraigFeldspar))
+- `SixDoFDragBehavior` can now handle multiple pointers at the same time to scale/rotate the owner mesh ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### WebXR
 
@@ -235,6 +236,7 @@
 - Fix code for handling getting DeviceType/DeviceSlot in DeviceInputSystem to work better with MouseEvents ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix vector2/3/4 and quaternion toString formatting ([rgerd](https://github.com/rgerd))
 - Fix cloning skeleton when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
+- Fix a bug where pointer up/move events were not sent to 3D controls when no mesh in the `UtilityLayerRenderer` is hit by the picking ray. ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix issue with DeviceInputSystem where Mouse was being deregistered on Safari/MacOS ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
