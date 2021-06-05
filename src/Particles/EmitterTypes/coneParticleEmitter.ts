@@ -1,9 +1,10 @@
 import { DeepCopier } from "../../Misc/deepCopier";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
-import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
+import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from the inside of a cone.
  * It emits the particles alongside the cone volume from the base to the particle.
@@ -148,13 +149,24 @@ export class ConeParticleEmitter implements IParticleEmitterType {
 
     /**
      * Called by the GPUParticleSystem to setup the update shader
-     * @param effect defines the update shader
+     * @param uboOrEffect defines the update shader
      */
-    public applyToShader(effect: Effect): void {
-        effect.setFloat2("radius", this._radius, this.radiusRange);
-        effect.setFloat("coneAngle", this._angle);
-        effect.setFloat2("height", this._height, this.heightRange);
-        effect.setFloat("directionRandomizer", this.directionRandomizer);
+    public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {
+        uboOrEffect.setFloat2("radius", this._radius, this.radiusRange);
+        uboOrEffect.setFloat("coneAngle", this._angle);
+        uboOrEffect.setFloat2("height", this._height, this.heightRange);
+        uboOrEffect.setFloat("directionRandomizer", this.directionRandomizer);
+    }
+
+    /**
+     * Creates the structure of the ubo for this particle emitter
+     * @param ubo ubo to create the structure for
+     */
+    public buildUniformLayout(ubo: UniformBuffer): void {
+        ubo.addUniform("radius", 2);
+        ubo.addUniform("coneAngle", 1);
+        ubo.addUniform("height", 2);
+        ubo.addUniform("directionRandomizer", 1);
     }
 
     /**

@@ -13,8 +13,6 @@ import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Color4 } from "../Maths/math.color";
-import { StandardMaterial } from "../Materials/standardMaterial";
-import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 import { _DevTools } from "../Misc/devTools";
 import { Observer } from "../Misc/observable";
 import { Engine } from "../Engines/engine";
@@ -23,6 +21,7 @@ import { Material } from "../Materials/material";
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
+import { MaterialFlags } from "../Materials/materialFlags";
 
 /** @hidden */
 interface ISavedTransformationMatrix {
@@ -349,18 +348,18 @@ export class GeometryBufferRenderer {
                 needUv = true;
             }
 
-            if (material.bumpTexture && StandardMaterial.BumpTextureEnabled) {
+            if (material.bumpTexture && MaterialFlags.BumpTextureEnabled) {
                 defines.push("#define BUMP");
                 defines.push(`#define BUMP_UV${material.bumpTexture.coordinatesIndex + 1}`);
                 needUv = true;
             }
 
             if (this._enableReflectivity) {
-                if (material instanceof StandardMaterial && material.specularTexture) {
+                if (material.specularTexture) {
                     defines.push("#define HAS_SPECULAR");
                     defines.push(`#define REFLECTIVITY_UV${material.specularTexture.coordinatesIndex + 1}`);
                     needUv = true;
-                } else if (material instanceof PBRMaterial && material.reflectivityTexture) {
+                } else if (material.reflectivityTexture) {
                     defines.push("#define HAS_REFLECTIVITY");
                     defines.push(`#define REFLECTIVITY_UV${material.reflectivityTexture.coordinatesIndex + 1}`);
                     needUv = true;
@@ -660,7 +659,7 @@ export class GeometryBufferRenderer {
                     }
 
                     // Bump
-                    if (material.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
+                    if (material.bumpTexture && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled) {
                         effect.setFloat3("vBumpInfos", material.bumpTexture.coordinatesIndex, 1.0 / material.bumpTexture.level, material.parallaxScaleBias);
                         effect.setMatrix("bumpMatrix", material.bumpTexture.getTextureMatrix());
                         effect.setTexture("bumpSampler", material.bumpTexture);
@@ -669,10 +668,10 @@ export class GeometryBufferRenderer {
 
                     // Roughness
                     if (this._enableReflectivity) {
-                        if (material instanceof StandardMaterial && material.specularTexture) {
+                        if (material.specularTexture) {
                             effect.setMatrix("reflectivityMatrix", material.specularTexture.getTextureMatrix());
                             effect.setTexture("reflectivitySampler", material.specularTexture);
-                        } else if (material instanceof PBRMaterial && material.reflectivityTexture) {
+                        } else if (material.reflectivityTexture) {
                             effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
                             effect.setTexture("reflectivitySampler", material.reflectivityTexture);
                         }

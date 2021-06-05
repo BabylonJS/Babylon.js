@@ -9,6 +9,7 @@ import { EngineStore } from "./Engines/engineStore";
 import { _DevTools } from './Misc/devTools';
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { IInspectable } from './Misc/iInspectable';
+import { AbstractScene } from "./abstractScene";
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -20,6 +21,16 @@ declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
  * Defines how a node can be built from a string name.
  */
 export type NodeConstructor = (name: string, scene: Scene, options?: any) => () => Node;
+
+/** @hidden */
+class _InternalNodeDataInfo {
+    public _doNotSerialize = false;
+    public _isDisposed = false;
+    public _sceneRootNodesIndex = -1;
+    public _isEnabled = true;
+    public _isParentEnabled = true;
+    public _isReady = true;
+}
 
 /**
  * Node is the basic class for all scene objects (Mesh, Light, Camera.)
@@ -58,6 +69,8 @@ export class Node implements IBehaviorAware<Node> {
 
         return constructorFunc(name, scene, options);
     }
+
+    private _nodeDataStorage = new _InternalNodeDataInfo();
 
     /**
      * Gets or sets the name of the node
@@ -100,12 +113,11 @@ export class Node implements IBehaviorAware<Node> {
      */
     public inspectableCustomProperties: IInspectable[];
 
-    private _doNotSerialize = false;
     /**
      * Gets or sets a boolean used to define if the node must be serialized
      */
     public get doNotSerialize() {
-        if (this._doNotSerialize) {
+        if (this._nodeDataStorage._doNotSerialize) {
             return true;
         }
 
@@ -117,11 +129,11 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     public set doNotSerialize(value: boolean) {
-        this._doNotSerialize = value;
+        this._nodeDataStorage._doNotSerialize = value;
     }
 
     /** @hidden */
-    public _isDisposed = false;
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
      * Gets a list of Animations associated with the node
@@ -134,9 +146,6 @@ export class Node implements IBehaviorAware<Node> {
      */
     public onReady: Nullable<(node: Node) => void> = null;
 
-    private _isEnabled = true;
-    private _isParentEnabled = true;
-    private _isReady = true;
     /** @hidden */
     public _currentRenderId = -1;
     private _parentUpdateId = -1;
@@ -160,15 +169,12 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public _worldMatrixDeterminantIsDirty = true;
 
-    /** @hidden */
-    private _sceneRootNodesIndex = -1;
-
     /**
      * Gets a boolean indicating if the node has been disposed
      * @returns true if the node was disposed
      */
     public isDisposed(): boolean {
-        return this._isDisposed;
+        return this._nodeDataStorage._isDisposed;
     }
 
     /**
@@ -189,7 +195,7 @@ export class Node implements IBehaviorAware<Node> {
                 this._parentNode._children.splice(index, 1);
             }
 
-            if (!parent && !this._isDisposed) {
+            if (!parent && !this._nodeDataStorage._isDisposed) {
                 this._addToSceneRootNodes();
             }
         }
@@ -219,21 +225,21 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @hidden */
     public _addToSceneRootNodes() {
-        if (this._sceneRootNodesIndex === -1) {
-            this._sceneRootNodesIndex = this._scene.rootNodes.length;
+        if (this._nodeDataStorage._sceneRootNodesIndex === -1) {
+            this._nodeDataStorage._sceneRootNodesIndex = this._scene.rootNodes.length;
             this._scene.rootNodes.push(this);
         }
     }
 
     /** @hidden */
     public _removeFromSceneRootNodes() {
-        if (this._sceneRootNodesIndex !== -1) {
+        if (this._nodeDataStorage._sceneRootNodesIndex !== -1) {
             const rootNodes = this._scene.rootNodes;
             const lastIdx = rootNodes.length - 1;
-            rootNodes[this._sceneRootNodesIndex] = rootNodes[lastIdx];
-            rootNodes[this._sceneRootNodesIndex]._sceneRootNodesIndex = this._sceneRootNodesIndex;
+            rootNodes[this._nodeDataStorage._sceneRootNodesIndex] = rootNodes[lastIdx];
+            rootNodes[this._nodeDataStorage._sceneRootNodesIndex]._nodeDataStorage._sceneRootNodesIndex = this._nodeDataStorage._sceneRootNodesIndex;
             this._scene.rootNodes.pop();
-            this._sceneRootNodesIndex = -1;
+            this._nodeDataStorage._sceneRootNodesIndex = -1;
         }
     }
 
@@ -491,7 +497,7 @@ export class Node implements IBehaviorAware<Node> {
      * @return true if the node is ready
      */
     public isReady(completeCheck = false): boolean {
-        return this._isReady;
+        return this._nodeDataStorage._isReady;
     }
 
     /**
@@ -502,19 +508,19 @@ export class Node implements IBehaviorAware<Node> {
      */
     public isEnabled(checkAncestors: boolean = true): boolean {
         if (checkAncestors === false) {
-            return this._isEnabled;
+            return this._nodeDataStorage._isEnabled;
         }
 
-        if (!this._isEnabled) {
+        if (!this._nodeDataStorage._isEnabled) {
             return false;
         }
 
-        return this._isParentEnabled;
+        return this._nodeDataStorage._isParentEnabled;
     }
 
     /** @hidden */
     protected _syncParentEnabledState() {
-        this._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
+        this._nodeDataStorage._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
 
         if (this._children) {
             this._children.forEach((c) => {
@@ -528,7 +534,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param value defines the new enabled state
      */
     public setEnabled(value: boolean): void {
-        this._isEnabled = value;
+        this._nodeDataStorage._isEnabled = value;
 
         this._syncParentEnabledState();
     }
@@ -609,19 +615,19 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @hidden */
     public _setReady(state: boolean): void {
-        if (state === this._isReady) {
+        if (state === this._nodeDataStorage._isReady) {
             return;
         }
 
         if (!state) {
-            this._isReady = false;
+            this._nodeDataStorage._isReady = false;
             return;
         }
 
         if (this.onReady) {
             this.onReady(this);
         }
-        this._isReady = true;
+        this._nodeDataStorage._isReady = true;
     }
 
     /**
@@ -751,7 +757,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
-        this._isDisposed = true;
+        this._nodeDataStorage._isDisposed = true;
 
         if (!doNotRecurse) {
             const nodes = this.getDescendants(true);

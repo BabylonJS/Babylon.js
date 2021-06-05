@@ -117,7 +117,7 @@ export enum GLTFLoaderState {
 /** @hidden */
 export interface IGLTFLoader extends IDisposable {
     readonly state: Nullable<GLTFLoaderState>;
-    importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<ISceneLoaderAsyncResult>;
+    importMeshAsync: (meshesNames: any, scene: Scene, container: Nullable<AssetContainer>, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<ISceneLoaderAsyncResult>;
     loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
 }
 
@@ -230,6 +230,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public loadAllMaterials = false;
 
     /**
+     * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
+     */
+    public useSRGBBuffers = true;
+
+     /**
      * Function called before loading a url referenced by the asset.
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
@@ -572,7 +577,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
             this._log(`Loading ${fileName || ""}`);
             this._loader = this._getLoader(data);
-            return this._loader.importMeshAsync(meshesNames, scene, false, data, rootUrl, onProgress, fileName);
+            return this._loader.importMeshAsync(meshesNames, scene, null, data, rootUrl, onProgress, fileName);
         });
     }
 
@@ -604,37 +609,17 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             const materials: Array<Material> = [];
             this.onMaterialLoadedObservable.add((material) => {
                 materials.push(material);
-                material.onDisposeObservable.addOnce(() => {
-                    let index = container.materials.indexOf(material);
-                    if (index > -1) {
-                        container.materials.splice(index, 1);
-                    }
-                    index = materials.indexOf(material);
-                    if (index > -1) {
-                        materials.splice(index, 1);
-                    }
-                });
             });
             const textures: Array<BaseTexture> = [];
             this.onTextureLoadedObservable.add((texture) => {
                 textures.push(texture);
-                texture.onDisposeObservable.addOnce(() => {
-                    let index = container.textures.indexOf(texture);
-                    if (index > -1) {
-                        container.textures.splice(index, 1);
-                    }
-                    index = textures.indexOf(texture);
-                    if (index > -1) {
-                        textures.splice(index, 1);
-                    }
-                });
             });
             const cameras: Array<Camera> = [];
             this.onCameraLoadedObservable.add((camera) => {
                 cameras.push(camera);
             });
 
-            return this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then((result) => {
+            return this._loader.importMeshAsync(null, scene, container, data, rootUrl, onProgress, fileName).then((result) => {
                 Array.prototype.push.apply(container.geometries, result.geometries);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
