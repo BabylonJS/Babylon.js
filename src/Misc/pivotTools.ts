@@ -1,5 +1,5 @@
 import { Vector3, Matrix } from '../Maths/math.vector';
-import { AbstractMesh } from '../Meshes/abstractMesh';
+import { TransformNode } from '../Meshes/transformNode';
 
 /**
  * Class containing a set of static utilities functions for managing Pivots
@@ -14,7 +14,7 @@ export class PivotTools {
     private static _PivotTmpVector = new Vector3();
     private static _PivotPostMultiplyPivotMatrix = false;
     /** @hidden */
-    public static _RemoveAndStorePivotPoint(mesh: AbstractMesh) {
+    public static _RemoveAndStorePivotPoint(mesh: TransformNode) {
         if (mesh && PivotTools._PivotCached === 0) {
             // Save old pivot and set pivot to 0,0,0
             mesh.getPivotPointToRef(PivotTools._OldPivotPoint);
@@ -31,7 +31,7 @@ export class PivotTools {
         PivotTools._PivotCached++;
     }
     /** @hidden */
-    public static _RestorePivotPoint(mesh: AbstractMesh) {
+    public static _RestorePivotPoint(mesh: TransformNode) {
         if (mesh && !PivotTools._OldPivotPoint.equalsToFloats(0, 0, 0) && PivotTools._PivotCached === 1) {
             mesh.setPivotPoint(PivotTools._OldPivotPoint);
             mesh._postMultiplyPivotMatrix = PivotTools._PivotPostMultiplyPivotMatrix;
