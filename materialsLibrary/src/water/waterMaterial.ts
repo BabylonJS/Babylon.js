@@ -50,6 +50,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public INSTANCES = false;
     public SPECULARTERM = false;
     public LOGARITHMICDEPTH = false;
+    public USE_REVERSE_DEPTHBUFFER = false;
     public FRESNELSEPARATE = false;
     public BUMPSUPERIMPOSE = false;
     public BUMPAFFECTSREFLECTION = false;

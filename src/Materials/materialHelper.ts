@@ -98,6 +98,7 @@ export class MaterialHelper {
             defines["FOG"] = fogEnabled && this.GetFogState(mesh, scene);
             defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             defines["ALPHATEST"] = alphaTest;
+            defines["USE_REVERSE_DEPTHBUFFER"] = scene.getEngine().useReverseDepthBuffer;
         }
     }
 

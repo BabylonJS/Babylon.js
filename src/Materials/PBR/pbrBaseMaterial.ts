@@ -227,6 +227,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public POINTSIZE = false;
     public FOG = false;
     public LOGARITHMICDEPTH = false;
+    public USE_REVERSE_DEPTHBUFFER = false;
 
     public FORCENORMALFORWARD = false;
 

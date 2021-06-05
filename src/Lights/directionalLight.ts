@@ -251,9 +251,14 @@ export class DirectionalLight extends ShadowLight {
         var xOffset = this._orthoRight - this._orthoLeft;
         var yOffset = this._orthoTop - this._orthoBottom;
 
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+
+        const useReverseDepth = this.getScene().getEngine().useReverseDepthBuffer;
+
         Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
             this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+            useReverseDepth ? maxZ : minZ, useReverseDepth ? minZ : maxZ, matrix);
     }
 
     protected _buildUniformLayout(): void {
