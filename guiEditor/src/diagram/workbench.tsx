@@ -125,6 +125,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._outlines = !this._outlines;
         });
 
+        props.globalState.onParentingChangeObservable.add((control) => {
+            this.parent(control);
+        });
+
         props.globalState.onResponsiveChangeObservable.add((value) => {
             this._responsive = value;
         });
@@ -272,6 +276,22 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.highlightLineWidth = 5;
     }
 
+    private parent(control: Nullable<Control>) {
+        const draggedControl = this.props.globalState.draggedControl;
+
+        if (draggedControl != null) {
+            if (draggedControl.parent) {
+                (draggedControl.parent as Container).removeControl(draggedControl);
+                this.props.globalState.guiTexture.addControl(draggedControl);
+            }
+            if (control != null && this.props.globalState.workbench.isContainer(control)) {
+                this.props.globalState.guiTexture.removeControl(draggedControl);
+                (control as Container).addControl(draggedControl);
+            }
+        }
+        this.globalState.draggedControl = null;
+    }
+
     public isSelected(value: boolean, guiNode: Control) {
         this.globalState.onSelectionChangedObservable.notifyObservers(guiNode);
     }
@@ -393,7 +413,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this._textureMesh.showBoundingBox = true;
 
-        var background = new Rectangle("Rectangle");
+        var background = new Rectangle("Art-Board-Background");
         background.width = "100%"
         background.height = "100%";
         background.background = "white";
