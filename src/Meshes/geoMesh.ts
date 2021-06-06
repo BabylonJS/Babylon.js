@@ -20,10 +20,11 @@ class Primary {
     //properties
     public _cartesian: Vector3[];
     public _vertices: IsoVector[];
-    public _mapped = new Array();
     public _max: number[];
     public _min: number[];
     public _vecToIdx: {[key: string]: number};
+    public _vertByDist: {[key: string]: any};
+    public _closestTo: number[][];
 
     public _innerFacets: string[][];
     public _isoVecsABOB: IsoVector[][];
@@ -36,7 +37,9 @@ class Primary {
     public _coav: number;
     public _cobv: number;
 
-    public _IDATA = { 
+    public _IDATA: PolyhedronData = new PolyhedronData("icosahedron", "Regular", [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], [])
+
+    public _IDTA = { 
         "name": "icosahedron", 
         "category":["Regular"],
         "edgematch": [ [1, "B"], [2, "B"], [3, "B"], [4, "B"], [0, "B"], [10, "O", 14, "A"], [11, "O", 10, "A"], [12, "O", 11, "A"], [13, "O", 12, "A"], [14, "O", 13, "A"], [0, "O"], [1, "O"], [2, "O"], [3, "O"], [4, "O"], [19, "B", 5, "A"], [15, "B", 6, "A"], [16, "B", 7, "A"], [17, "B", 8, "A"], [18, "B", 9, "A"] ], 
@@ -55,381 +58,505 @@ class Primary {
     * @param m an integer
     * @param n an integer
     */
-   constructor (
+    constructor (
         /** defines the x distance m of A from O*/
         public _m: number,
         /** defines the y distance n of A from O*/
         public _n: number,
-        ) {
-            
-        }
-         
-        //operators
-        public setIndices() {
-            let indexCount = 12; // 12 vertices already assigned
-            const vecToIdx: {[key: string]: number} = {}; //maps iso-vectors to indexCount;
-            const m = this._m;
-            const n = this._n;
-            let g = m; // hcf of m, n when n != 0
-            let m1 = 1;
-            let n1 = 0;
-            if (n !== 0) {
-                g = Scalar.HCF(m, n);
-            };
-            m1 = m / g;
-            n1 = n / g;
-        
-            let fr: any; //face to the right of current face
-            let rot: any; //rotation about which vertex for fr
-            let O: number;
-            let A: number;
-            let B: number;
-            const Ovec: IsoVector = IsoVector.Zero();
-            const Avec = new IsoVector(m, n);
-            const Bvec = new IsoVector(-n, m + n);
-            let OAvec: IsoVector = IsoVector.Zero();
-            let ABvec: IsoVector = IsoVector.Zero();
-            let OBvec: IsoVector = IsoVector.Zero();
-            let verts: number[] = [];
-            let idx: string;
-            let idxR: string;
-        
-        
-            /***edges AB to OB***** rotation about B*/
-            for (let f = 0; f < 20; f++) { //f current face
-        
-                verts = this._IDATA.face[f];
-                O = verts[2];
-                A = verts[1];
-                B = verts[0];
-        
-                idx = f +"|"+ Ovec.x + "|" + Ovec.y;
-                if (!(idx in vecToIdx)) {
-                    vecToIdx[idx] = O;
-                }
-                
-                idx = f +"|"+ Avec.x + "|" + Avec.y;
-                if (!(idx in vecToIdx)) {
-                    vecToIdx[idx] = A;
-                }
-                idx = f +"|"+ Bvec.x + "|" + Bvec.y;
-                if (!(idx in vecToIdx)) {
-                    vecToIdx[idx] = B;
-                }
-                fr = this._IDATA.edgematch[f][0];
-                rot = this._IDATA.edgematch[f][1];
-                if (rot === "B") {
-                        for (let i = 1; i < g; i++) {
-                            ABvec.x = m - i * (m1 + n1);
-                            ABvec.y = n + i * m1;
-                            OBvec.x = -i * n1;
-                            OBvec.y = i * (m1 + n1);
-                            idx = f +"|"+ ABvec.x + "|" + ABvec.y;
-                            idxR = fr +"|"+ OBvec.x + "|" + OBvec.y;
-                            matchIdx(idx, idxR);
-                        }
-                };
-        
-               if (rot === "O") {
-                        for (let i = 1; i < g; i++) {
-                            OBvec.x = -i * n1;
-                            OBvec.y = i * (m1 + n1);
-                            OAvec.x = i * m1;
-                            OAvec.y = i * n1;
-                            idx = f +"|"+ OBvec.x + "|" + OBvec.y;
-                            idxR = fr +"|"+ OAvec.x + "|" + OAvec.y;
-                            matchIdx(idx, idxR);
-                        }
-                };
-        
-                fr = this._IDATA.edgematch[f][2];
-                rot = this._IDATA.edgematch[f][3];       
-              if (rot && rot === "A") {
-                        for (let i = 1; i < g; i++) {
-                            OAvec.x = i * m1;
-                            OAvec.y = i * n1;
-                            ABvec.x = m - (g - i) * (m1 + n1);;  //reversed for BA
-                            ABvec.y = n + (g - i) * m1; //reversed for BA
-                            idx = f +"|"+ OAvec.x + "|" + OAvec.y;
-                            idxR = fr +"|"+ ABvec.x + "|" + ABvec.y;
-                            matchIdx(idx, idxR);
-                        }
-                };
-        
-                for (let i = 0; i < this._vertices.length; i++) {
-                    idx = f + "|" + this._vertices[i].x + "|" + this._vertices[i].y;
-                    if (!(idx in vecToIdx)) {
-                        vecToIdx[idx] = indexCount++;
-                    }
-                } 
-            };
-        
-            function matchIdx(idx: string, idxR: string) {
-                if (!(idx in vecToIdx || idxR in vecToIdx )) {
-                    vecToIdx[idx] = indexCount;
-                    vecToIdx[idxR] = indexCount;
-                    indexCount++;
-                }
-                else if ((idx in vecToIdx) && !(idxR in vecToIdx)) {
-                    vecToIdx[idxR] = vecToIdx[idx];
-                }
-                else if ((idxR in vecToIdx) && !(idx in vecToIdx)) {
-                    vecToIdx[idx] = vecToIdx[idxR];
-                }
-            };
-            
-            this._vecToIdx = vecToIdx;
-        }
-
-        public calcCoeffs() {
-            const m = this._m;
-            const n = this._n;
-        
-            const LSQD = m * m + n * n + m * n;
-        
-            this._coau = (m + n) / LSQD;
-            this._cobu = -n / LSQD;
-            this._coav = -THIRDR3 * (m - n) / LSQD;
-            this._cobv = THIRDR3 * (2* m + n) / LSQD;
-        }
-        
-        
-        public innerFacets() {
-            const m = this._m;
-            const n = this._n;
-            for (let y = 0; y < n + m + 1; y++) {
-                for (let x = this._min[y]; x < this._max[y] + 1; x++) {
-                    if (x < this._max[y] && x < this._max[y + 1] + 1) {
-                        this._innerFacets.push(["|" + x + "|" + y, "|" + x + "|" + (y + 1), "|" + (x + 1) + "|" + y]);
-                    }
-                    if ( y > 0 && x < this._max[y - 1] && x + 1 < this._max[y] + 1) {
-                        this._innerFacets.push(["|" + x + "|" + y, "|" + (x + 1) + "|" + y, "|" + (x + 1) + "|" + (y - 1)]);
-                    }
-                }    
-            }
-        }
-
-        public edgeVecsABOB() {
-            let m = this._m;
-            let n = this._n;
-        
-            const B = new IsoVector(-n, m + n)
-        
-            for (let y = 1; y < m + n; y++) {
-                const point = new IsoVector(this._min[y], y);
-                const prev = new IsoVector(this._min[y - 1], y - 1);
-                const next = new IsoVector(this._min[y + 1], y + 1);
-                const pointR = point.clone();
-                const prevR = prev.clone();
-                const nextR = next.clone();
-                
-                pointR.rotate60About(B);
-                prevR.rotate60About(B);
-                nextR.rotate60About(B);
-        
-                const maxPoint = new IsoVector(this._max[pointR.y], pointR.y);
-                const maxPrev = new IsoVector(this._max[pointR.y - 1], pointR.y - 1);
-                const maxLeftPrev = new IsoVector( this._max[pointR.y - 1] - 1, pointR.y - 1);
-        
-                if ((pointR.x !== maxPoint.x) || (pointR.y !== maxPoint.y)) {
-                    if (pointR.x !== maxPrev.x) { // type2
-                        //up
-                        this._vertexTypes.push([1, 0, 0]);
-                        this._isoVecsABOB.push([point, maxPrev, maxLeftPrev]);
-                        //down
-                        this._vertexTypes.push([1, 0, 0]);
-                        this._isoVecsABOB.push([point, maxLeftPrev, maxPoint]);
-                    }
-                    else if (pointR.y === nextR.y) { // type1
-                        //up
-                        this._vertexTypes.push([1, 1, 0]);
-                        this._isoVecsABOB.push([point, prev, maxPrev]);
-                        //down
-                        this._vertexTypes.push([1, 0, 1]);
-                        this._isoVecsABOB.push([point, maxPrev, next]);
-                    }
-                    else { // type 0
-                        //up
-                        this._vertexTypes.push([1, 1, 0]);
-                        this._isoVecsABOB.push([point, prev, maxPrev])
-                        //down
-                        this._vertexTypes.push([1, 0, 0]);
-                        this._isoVecsABOB.push([point, maxPrev, maxPoint]);
-                    }
-                };
-            };
+    ) {}
+     
+    //operators
+    public setIndices() {
+        let indexCount = 12; // 12 vertices already assigned
+        const vecToIdx: {[key: string]: number} = {}; //maps iso-vectors to indexCount;
+        const m = this._m;
+        const n = this._n;
+        let g = m; // hcf of m, n when n != 0
+        let m1 = 1;
+        let n1 = 0;
+        if (n !== 0) {
+            g = Scalar.HCF(m, n);
         };
+        m1 = m / g;
+        n1 = n / g;
+    
+        let fr: any; //face to the right of current face
+        let rot: any; //rotation about which vertex for fr
+        let O: number;
+        let A: number;
+        let B: number;
+        const Ovec: IsoVector = IsoVector.Zero();
+        const Avec = new IsoVector(m, n);
+        const Bvec = new IsoVector(-n, m + n);
+        let OAvec: IsoVector = IsoVector.Zero();
+        let ABvec: IsoVector = IsoVector.Zero();
+        let OBvec: IsoVector = IsoVector.Zero();
+        let verts: number[] = [];
+        let idx: string;
+        let idxR: string;
+        let isoId: string;
+        let isoIdR: string;
 
-        public mapABOBtoOBOA() {
-            let point = new IsoVector(0, 0);
-            for (let i = 0; i < this._isoVecsABOB.length; i++) {
-                const temp = [];
-                for (let j = 0; j < 3; j++) {
-                    point.x = this._isoVecsABOB[i][j].x;
-                    point.y = this._isoVecsABOB[i][j].y;
-                    if (this._vertexTypes[i][j] === 0) {
-                        point.rotateNeg120(this._m, this._n);
-                    }
-                    temp.push(point.clone());
-                }
-                this._isoVecsOBOA.push(temp);
-            }
-        };
+        const closestTo = [];
+        const vDist = this._vertByDist;
 
-        public mapABOBtoBAOA() {
-            let point = new IsoVector(0, 0);
-            for (let i = 0; i < this._isoVecsABOB.length; i++) {
-                const temp = [];
-                for (let j = 0; j < 3; j++) {
-                    point.x = this._isoVecsABOB[i][j].x;
-                    point.y = this._isoVecsABOB[i][j].y;
-                    if (this._vertexTypes[i][j] === 1) {
-                        point.rotate120(this._m, this._n);
-                    }
-                    temp.push(point.clone());
-                }
-                this._isoVecsBAOA.push(temp);
+        this._IDATA._edgematch = [ [1, "B"], [2, "B"], [3, "B"], [4, "B"], [0, "B"], [10, "O", 14, "A"], [11, "O", 10, "A"], [12, "O", 11, "A"], [13, "O", 12, "A"], [14, "O", 13, "A"], [0, "O"], [1, "O"], [2, "O"], [3, "O"], [4, "O"], [19, "B", 5, "A"], [15, "B", 6, "A"], [16, "B", 7, "A"], [17, "B", 8, "A"], [18, "B", 9, "A"] ];
+    
+    
+        /***edges AB to OB***** rotation about B*/
+        for (let f = 0; f < 20; f++) { //f current face
+    
+            verts = this._IDATA._face[f];
+            O = verts[2];
+            A = verts[1];
+            B = verts[0];
+    
+            isoId = Ovec.x + "|" + Ovec.y
+            idx = f +"|"+ isoId;
+            if (!(idx in vecToIdx)) {
+                vecToIdx[idx] = O;
+                closestTo[O] = [verts[vDist[isoId][0]], vDist[isoId][1]];
             }
             
-        };
-
-
-        //statics
-        /**Creates a primary triangle
-         * @param m 
-         * @param n 
-         * @hidden
-         */
-
-        public static Create(m: number, n: number) {
-            const vertices = new Array<IsoVector>();
+            isoId = Avec.x + "|" + Avec.y
+            idx = f +"|"+ isoId;
+            if (!(idx in vecToIdx)) {
+                vecToIdx[idx] = A;
+                closestTo[A] = [verts[vDist[isoId][0]], vDist[isoId][1]];
         
-            const O:IsoVector = IsoVector.Zero();
-            const A:IsoVector = new IsoVector(m, n);
-            const B:IsoVector = new IsoVector(-n, m + n);
-            vertices.push(O, A, B);
-        
-            //max internal isoceles triangle vertices
-            for (let y = n; y < m + 1 ; y++) {
-                for (let x = 0; x < m + 1 - y; x++ ) {
-                    vertices.push(new IsoVector(x, y));
-                }
             }
-        
-            //shared vertices along edges when needed
-            if (n > 0) {
-                const g = Scalar.HCF(m, n);
-                const m1 = m / g;
-                const n1 = n / g; 
-        
-                for (let i = 1; i < g; i++) {
-                    vertices.push(new IsoVector(i * m1, i * n1)); //OA
-                    vertices.push(new IsoVector(-i * n1, i * (m1 + n1)));  //OB
-                    vertices.push(new IsoVector(m - i * (m1 + n1), n + i * m1)); // AB
-                }; 
-        
-                //lower rows vertices and their rotations
-                const ratio = m / n;
-                for (let y = 1; y < n; y++) {
-                    for (let x = 0; x < y * ratio; x++) {
-                        vertices.push(new IsoVector(x, y));
-                        vertices.push(new IsoVector(x, y).rotate120(m , n));
-                        vertices.push(new IsoVector(x, y).rotateNeg120(m , n));
+
+            isoId = Bvec.x + "|" + Bvec.y
+            idx = f +"|"+ isoId;
+            if (!(idx in vecToIdx)) {
+                vecToIdx[idx] = B;
+                closestTo[B] = [verts[vDist[isoId][0]], vDist[isoId][1]];
+            }
+    
+            //for edge vertices
+            fr = this._IDATA._edgematch[f][0];
+            rot = this._IDATA._edgematch[f][1];
+            if (rot === "B") {
+                    for (let i = 1; i < g; i++) {
+                        ABvec.x = m - i * (m1 + n1);
+                        ABvec.y = n + i * m1;
+                        OBvec.x = -i * n1;
+                        OBvec.y = i * (m1 + n1);
+                        isoId = ABvec.x + "|" + ABvec.y;
+                        isoIdR = OBvec.x + "|" + OBvec.y 
+                        matchIdx(f, fr, isoId, isoIdR);
+                    }
+            };
+    
+            if (rot === "O") {
+                    for (let i = 1; i < g; i++) {
+                        OBvec.x = -i * n1;
+                        OBvec.y = i * (m1 + n1);
+                        OAvec.x = i * m1;
+                        OAvec.y = i * n1;
+                        isoId = OBvec.x + "|" + OBvec.y;
+                        isoIdR = OAvec.x + "|" + OAvec.y;
+                        matchIdx(f, fr, isoId, isoIdR);
+                    }
+            };
+    
+            fr = this._IDATA._edgematch[f][2];
+            rot = this._IDATA._edgematch[f][3];       
+            if (rot && rot === "A") {
+                    for (let i = 1; i < g; i++) {
+                        OAvec.x = i * m1;
+                        OAvec.y = i * n1;
+                        ABvec.x = m - (g - i) * (m1 + n1);;  //reversed for BA
+                        ABvec.y = n + (g - i) * m1; //reversed for BA
+                        isoId = OAvec.x + "|" + OAvec.y;
+                        isoIdR = ABvec.x + "|" + ABvec.y;
+                        matchIdx(f, fr, isoId, isoIdR);
+                    }
+            };
+    
+    
+            for (let i = 0; i < this._vertices.length; i++) {
+                isoId = this._vertices[i].x + "|" + this._vertices[i].y
+                idx = f + "|" + isoId;
+                if (!(idx in vecToIdx)) {
+                    vecToIdx[idx] = indexCount++;
+                    if (vDist[isoId][0] > 2) {
+                        closestTo[vecToIdx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToIdx[idx]];
+                    } 
+                    else {
+                        closestTo[vecToIdx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], idx];
                     }
                 }
+            } 
+        };
+    
+        function matchIdx(f: number, fr: number, isoId: string, isoIdR: string) {
+            idx = f +"|"+ isoId;
+            idxR = fr +"|"+ isoIdR;
+            if (!(idx in vecToIdx || idxR in vecToIdx )) {
+                vecToIdx[idx] = indexCount;
+                vecToIdx[idxR] = indexCount;
+                indexCount++;
             }
-            //order vertices by y and then x
-            vertices.sort((a, b) => {
-                return a.x - b.x
-            });
-        
-            vertices.sort((a, b) => {
-                return a.y - b.y
-            });
-        
-            let min = new Array<number>(m + n + 1);
-            let max = new Array<number>(m + n + 1);
-            min = min.map((element) => element = Infinity);
-            max = max.map((element) => element = -Infinity);
-        
-            let y: number = 0;
-            let x: number = 0;
-        
-            let len: number = vertices.length;   
-            for (let i = 0; i < len; i++) {
-                x = vertices[i].x;
-                y = vertices[i].y
-                min[y] = Math.min(x, min[y]);
-                max[y] = Math.max(x, max[y]);
-            };
+            else if ((idx in vecToIdx) && !(idxR in vecToIdx)) {
+                vecToIdx[idxR] = vecToIdx[idx];
+            }
+            else if ((idxR in vecToIdx) && !(idx in vecToIdx)) {
+                vecToIdx[idx] = vecToIdx[idxR];
+            }
+            if (vDist[isoId][0] > 2) {
+                closestTo[vecToIdx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToIdx[idx]];
+            } 
+            else {
+                closestTo[vecToIdx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], idx];
+            }
+        };
+        this._closestTo = closestTo;
+        this._vecToIdx = vecToIdx;
+    }
 
-            const cartesian = new Array<Vector3>();
-            for (let i = 0; i < len; i++) {
-                cartesian[i] = vertices[i].toCartesianOrigin(O)
+    public calcCoeffs() {
+        const m = this._m;
+        const n = this._n;
+    
+        const LSQD = m * m + n * n + m * n;
+    
+        this._coau = (m + n) / LSQD;
+        this._cobu = -n / LSQD;
+        this._coav = -THIRDR3 * (m - n) / LSQD;
+        this._cobv = THIRDR3 * (2* m + n) / LSQD;
+    }
+    
+    
+    public innerFacets() {
+        const m = this._m;
+        const n = this._n;
+        for (let y = 0; y < n + m + 1; y++) {
+            for (let x = this._min[y]; x < this._max[y] + 1; x++) {
+                if (x < this._max[y] && x < this._max[y + 1] + 1) {
+                    this._innerFacets.push(["|" + x + "|" + y, "|" + x + "|" + (y + 1), "|" + (x + 1) + "|" + y]);
+                }
+                if ( y > 0 && x < this._max[y - 1] && x + 1 < this._max[y] + 1) {
+                    this._innerFacets.push(["|" + x + "|" + y, "|" + (x + 1) + "|" + y, "|" + (x + 1) + "|" + (y - 1)]);
+                }
+            }    
+        }
+    }
+
+    public edgeVecsABOB() {
+        let m = this._m;
+        let n = this._n;
+    
+        const B = new IsoVector(-n, m + n)
+    
+        for (let y = 1; y < m + n; y++) {
+            const point = new IsoVector(this._min[y], y);
+            const prev = new IsoVector(this._min[y - 1], y - 1);
+            const next = new IsoVector(this._min[y + 1], y + 1);
+            const pointR = point.clone();
+            const prevR = prev.clone();
+            const nextR = next.clone();
+            
+            pointR.rotate60About(B);
+            prevR.rotate60About(B);
+            nextR.rotate60About(B);
+    
+            const maxPoint = new IsoVector(this._max[pointR.y], pointR.y);
+            const maxPrev = new IsoVector(this._max[pointR.y - 1], pointR.y - 1);
+            const maxLeftPrev = new IsoVector( this._max[pointR.y - 1] - 1, pointR.y - 1);
+    
+            if ((pointR.x !== maxPoint.x) || (pointR.y !== maxPoint.y)) {
+                if (pointR.x !== maxPrev.x) { // type2
+                    //up
+                    this._vertexTypes.push([1, 0, 0]);
+                    this._isoVecsABOB.push([point, maxPrev, maxLeftPrev]);
+                    //down
+                    this._vertexTypes.push([1, 0, 0]);
+                    this._isoVecsABOB.push([point, maxLeftPrev, maxPoint]);
+                }
+                else if (pointR.y === nextR.y) { // type1
+                    //up
+                    this._vertexTypes.push([1, 1, 0]);
+                    this._isoVecsABOB.push([point, prev, maxPrev]);
+                    //down
+                    this._vertexTypes.push([1, 0, 1]);
+                    this._isoVecsABOB.push([point, maxPrev, next]);
+                }
+                else { // type 0
+                    //up
+                    this._vertexTypes.push([1, 1, 0]);
+                    this._isoVecsABOB.push([point, prev, maxPrev])
+                    //down
+                    this._vertexTypes.push([1, 0, 0]);
+                    this._isoVecsABOB.push([point, maxPrev, maxPoint]);
+                }
             };
-        
-            const P = new Primary(m, n);
-            P._vertices = vertices;
-            P._cartesian = cartesian;
-            P._min = min;
-            P._max = max;
-        
-            return P;
+        };
+    };
+
+    public mapABOBtoOBOA() {
+        let point = new IsoVector(0, 0);
+        for (let i = 0; i < this._isoVecsABOB.length; i++) {
+            const temp = [];
+            for (let j = 0; j < 3; j++) {
+                point.x = this._isoVecsABOB[i][j].x;
+                point.y = this._isoVecsABOB[i][j].y;
+                if (this._vertexTypes[i][j] === 0) {
+                    point.rotateNeg120(this._m, this._n);
+                }
+                temp.push(point.clone());
+            }
+            this._isoVecsOBOA.push(temp);
         }
     };
 
-    /** Builds the data for a Geodesic Polyhedron from a primary triangle 
-    * @hidden
-    */
-    export class BuildGeoData {
-        /**
-        * @param pt primary triangle
-        */
-        public _primTri: Primary;
-
-        public _name: string = "Geodesic-m-n";
-        public _category: string[] = ["Geodesic"];
-        public _vertex: number[][] = [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]];
-        public _face: number[] = [];
-
-        constructor (
-            /* defines the */
-            public _m: number,
-            public _n: number 
-        ) {
-            this._primTri = Primary.Create(this._m, this._n);
+    public mapABOBtoBAOA() {
+        let point = new IsoVector(0, 0);
+        for (let i = 0; i < this._isoVecsABOB.length; i++) {
+            const temp = [];
+            for (let j = 0; j < 3; j++) {
+                point.x = this._isoVecsABOB[i][j].x;
+                point.y = this._isoVecsABOB[i][j].y;
+                if (this._vertexTypes[i][j] === 1) {
+                    point.rotate120(this._m, this._n);
+                }
+                temp.push(point.clone());
+            }
+            this._isoVecsBAOA.push(temp);
         }
         
+    };
 
-        public MapToFace(faceNb: number, _primTri: Primary) {
-            const F = this._primTri._IDATA.face[faceNb];
-            const Oidx = F[2];
-            const Aidx = F[1];
-            const Bidx = F[0];
-        
-            const O = Vector3.FromArray(this._primTri._IDATA.vertex[Oidx]);
-            const A = Vector3.FromArray(this._primTri._IDATA.vertex[Aidx]);
-            const B = Vector3.FromArray(this._primTri._IDATA.vertex[Bidx]);
-        
-            const OA = A.subtract(O);
-            const OB = B.subtract(O);
-        
-            let x: Vector3 = OA.scale(this._primTri._coau).add(OB.scale(this._primTri._cobu));
-            let y: Vector3 = OA.scale(this._primTri._coav).add(OB.scale(this._primTri._cobv));
-            
-            const mapped = [];
-        
-            let idx: string; 
-            let tempVec: Vector3 = TmpVectors.Vector3[0]
-            for (var i = 0; i < this._primTri._cartesian.length; i++) {
-                tempVec  = x.scale(this._primTri._cartesian[i].x).add(y.scale(this._primTri._cartesian[i].y)).add(O);
-                mapped[i] = [tempVec.x, tempVec.y, tempVec.z];
-                idx = faceNb + "|" + this._primTri._vertices[i].x + "|" + this._primTri._vertices[i].y;
-                this._vertex[this._primTri._vecToIdx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
+
+    //statics
+    /**Creates a primary triangle
+     * @param m 
+     * @param n 
+     * @hidden
+     */
+
+    public static Create(m: number, n: number) {
+        const vertices = new Array<IsoVector>();
+    
+        const O:IsoVector = IsoVector.Zero();
+        const A:IsoVector = new IsoVector(m, n);
+        const B:IsoVector = new IsoVector(-n, m + n);
+        vertices.push(O, A, B);
+    
+        //max internal isoceles triangle vertices
+        for (let y = n; y < m + 1 ; y++) {
+            for (let x = 0; x < m + 1 - y; x++ ) {
+                vertices.push(new IsoVector(x, y));
             }
-        
-            this._primTri._mapped.push(mapped);
+        }
+    
+        //shared vertices along edges when needed
+        if (n > 0) {
+            const g = Scalar.HCF(m, n);
+            const m1 = m / g;
+            const n1 = n / g; 
+    
+            for (let i = 1; i < g; i++) {
+                vertices.push(new IsoVector(i * m1, i * n1)); //OA
+                vertices.push(new IsoVector(-i * n1, i * (m1 + n1)));  //OB
+                vertices.push(new IsoVector(m - i * (m1 + n1), n + i * m1)); // AB
+            }; 
+    
+            //lower rows vertices and their rotations
+            const ratio = m / n;
+            for (let y = 1; y < n; y++) {
+                for (let x = 0; x < y * ratio; x++) {
+                    vertices.push(new IsoVector(x, y));
+                    vertices.push(new IsoVector(x, y).rotate120(m , n));
+                    vertices.push(new IsoVector(x, y).rotateNeg120(m , n));
+                }
+            }
+        }
+        //order vertices by x and then y
+        vertices.sort((a, b) => {
+            return a.x - b.x
+        });
+    
+        vertices.sort((a, b) => {
+            return a.y - b.y
+        });
+    
+        let min = new Array<number>(m + n + 1);
+        let max = new Array<number>(m + n + 1);
+        min = min.map((element) => element = Infinity);
+        max = max.map((element) => element = -Infinity);
+    
+        let y: number = 0;
+        let x: number = 0;
+    
+        let len: number = vertices.length;   
+        for (let i = 0; i < len; i++) {
+            x = vertices[i].x;
+            y = vertices[i].y
+            min[y] = Math.min(x, min[y]);
+            max[y] = Math.max(x, max[y]);
         };
+
+        //calculates the distance of a vertex from a given primary vertex
+        const  distFrom = (vert: IsoVector, primVert: string) => {
+            const v = vert.clone();
+            if (primVert === "A") {
+                v.rotateNeg120(m, n);
+            };
+            if (primVert === "B") {
+                v.rotate120(m, n);
+            };
+            if (v.x < 0) {
+                return v.y;
+            }
+            return v.x + v.y;
+        }
+
+        const cartesian = new Array<Vector3>();
+        const distFromO = new Array<number>();
+        const distFromA = new Array<number>();
+        const distFromB = new Array<number>();
+        const vertByDist: {[key: string]: any} = {};
+        const vertData = new Array<any>();
+        let closest: number = -1;
+        let dist: number = -1;
+        for (let i = 0; i < len; i++) {
+            cartesian[i] = vertices[i].toCartesianOrigin(new IsoVector(0, 0))
+            distFromO[i] = distFrom(vertices[i], "O");
+            distFromA[i] = distFrom(vertices[i], "A");
+            distFromB[i] = distFrom(vertices[i], "B");
+            
+            if ((distFromO[i] === distFromA[i]) && (distFromA[i] === distFromB[i])) {
+                closest = 3;
+                dist = distFromO[i];
+            }
+            else if (distFromO[i] === distFromA[i]) {
+                closest = 4;
+                dist = distFromO[i];
+            }
+            else if (distFromA[i] === distFromB[i]) {
+                closest = 5;
+                dist = distFromA[i];
+            }
+            else if (distFromB[i] === distFromO[i]) {
+                closest = 6;
+                dist = distFromO[i];
+            }
+            if (distFromO[i] < distFromA[i] && distFromO[i] < distFromB[i]) {
+                closest = 2;
+                dist = distFromO[i];
+            }
+            if (distFromA[i] < distFromO[i] && distFromA[i] < distFromB[i]) {
+                closest = 1;
+                dist = distFromA[i];
+            }
+            if (distFromB[i] < distFromA[i] && distFromB[i] < distFromO[i]) {
+                closest = 0;
+                dist = distFromB[i];
+            }
+            vertData.push([closest, dist, vertices[i].x, vertices[i].y]);
+        };
+    
+        vertData.sort((a, b) => {
+            return a[2] - b[2];
+        })
+        vertData.sort((a, b) => {
+            return a[3] - b[3];
+        })
+        vertData.sort((a, b) => {
+            return a[1] - b[1];
+        })
+        vertData.sort((a, b) => {
+            return a[0] - b[0];
+        })
         
+        for (let v = 0; v < vertData.length; v++) {
+            vertByDist[vertData[v][2] + "|" + vertData[v][3]] = [vertData[v][0], vertData[v][1], v];
+        }
+
+        const P = new Primary(m, n);
+        P._vertices = vertices;
+        P._vertByDist = vertByDist;
+        P._cartesian = cartesian;
+        P._min = min;
+        P._max = max;
+    
+        return P;
     }
+};
+
+/** Builds Polyhedron Data
+* @hidden
+*/
+
+export class PolyhedronData {
+
+    public _edgematch: any[][];
+
+    constructor (
+        public _name: string,
+        public _category: string,
+        public _vertex: number[][],
+        public _face: number[][]
+    ) {
+
+    }
+
+    public MapToFace(faceNb: number, primTri: Primary) {
+        const F = primTri._IDATA._face[faceNb];
+        const Oidx = F[2];
+        const Aidx = F[1];
+        const Bidx = F[0];
+    
+        const O = Vector3.FromArray(primTri._IDATA._vertex[Oidx]);
+        const A = Vector3.FromArray(primTri._IDATA._vertex[Aidx]);
+        const B = Vector3.FromArray(primTri._IDATA._vertex[Bidx]);
+    
+        const OA = A.subtract(O);
+        const OB = B.subtract(O);
+    
+        let x: Vector3 = OA.scale(primTri._coau).add(OB.scale(primTri._cobu));
+        let y: Vector3 = OA.scale(primTri._coav).add(OB.scale(primTri._cobv));
+        
+        const mapped = [];
+    
+        let idx: string; 
+        let tempVec: Vector3 = TmpVectors.Vector3[0]
+        for (var i = 0; i < primTri._cartesian.length; i++) {
+            tempVec  = x.scale(primTri._cartesian[i].x).add(y.scale(primTri._cartesian[i].y)).add(O);
+            mapped[i] = [tempVec.x, tempVec.y, tempVec.z];
+            idx = faceNb + "|" + primTri._vertices[i].x + "|" + primTri._vertices[i].y;
+            this._vertex[primTri._vecToIdx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
+        }
+    };
+
+    public InnerToGDmnData(face : number) {
+        this._closestTo = primTri._closestTo;
+        for (let i = 0; i < this._innerFacets.length; i++) {
+            GDmnDATA.face.push(this.innerFacets[i].map((el) => this.vecToIdx[face + el]));
+        }
+    }
+
+
+
+    //statics
+    /**Builds the data for a Geodesic Polyhedron from a primary triangle 
+     * @param primTri the primary triangle 
+     * @hidden
+     */
+
+    public static BuildGeoData(primTri: Primary) {
+    
+        const geoDATA = new PolyhedronData("Geodesic-m-n", "Geodesic", [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], [])
+
+        primTri.setIndices();
+        primTri.calcCoeffs();
+        primTri.innerFacets();
+        primTri.edgeVecsABOB();
+        primTri.mapABOBtoOBOA();
+        primTri.mapABOBtoBAOA();
+    }
+
+}
+
 
