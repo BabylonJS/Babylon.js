@@ -35,6 +35,7 @@ module.exports = function(config) {
             './tests/unit/babylon/src/Meshes/babylon.positionAndRotation.tests.js',
             './tests/unit/babylon/src/Misc/babylon.promise.tests.js',
             './tests/unit/babylon/src/Physics/babylon.physicsComponents.tests.js',
+            './tests/unit/babylon/src/XR/webXRFeaturesManager.tests.js',
             { pattern: 'dist/preview release/**/*.js', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
             //{ pattern: 'tests/**/*', watched: false, included: false, served: true },
