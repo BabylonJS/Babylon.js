@@ -444,7 +444,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         }
                     }
 
-                    if(!document.pointerLockElement) {
+                    if (!document.pointerLockElement) {
                         this._elementToAttachTo.setPointerCapture(this._mouseId);
                     }
                 }
