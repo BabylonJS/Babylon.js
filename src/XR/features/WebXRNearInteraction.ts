@@ -73,6 +73,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             hoverIndexMeshTip,
             grabRay: new Ray(new Vector3(), new Vector3()),
             nearInteraction: false,
+            nearInteractionInProcess: false,
             nearGrab: false,
             nearGrabInProcess: false,
             id: WebXRNearInteraction._idCounter++,
@@ -116,6 +117,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             hoverIndexMeshTip: Nullable<AbstractMesh>;
             grabRay: Ray;
             nearInteraction: boolean;
+            nearInteractionInProcess: boolean;
             nearGrab: boolean;
             nearGrabInProcess: boolean;
             // event support
@@ -380,11 +382,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     utilitySceneNearGrab = this._utilityLayerScene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
                 }
                 let originalSceneNearGrab = this._scene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
-                pick = accuratePickInfo(originalSceneNearGrab, utilitySceneNearGrab);
-                if (pick && pick.pickedPoint && pick.hit) {
+                const grabPick = accuratePickInfo(originalSceneNearGrab, utilitySceneNearGrab);
+                if (grabPick && grabPick.pickedPoint && grabPick.hit) {
                     controllerData.nearGrab = true;
                     controllerData.nearInteraction = true;
-                    pick.ray = controllerData.grabRay;
+                    grabPick.ray = controllerData.grabRay;
+                    pick = grabPick;
                 }
             }
 
@@ -417,6 +420,22 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             if (controllerData.pick && !this._farInteractionFeature?.attached) {
                 this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
+            // Near pick
+            if (controllerData.pick && controllerData.nearInteraction) {
+                if (controllerData.pick.hit) {
+                    if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
+                        if (!controllerData.nearInteractionInProcess) {
+                            this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                            controllerData.nearInteractionInProcess = true;
+                        }
+                    }
+                } else if (controllerData.nearInteractionInProcess) {
+                    if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
+                        this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                        controllerData.nearInteractionInProcess = false;
+                    }
+                }
+            }
         });
         if (xrController.inputSource.gamepad) {
             const init = (motionController: WebXRAbstractMotionController) => {
@@ -426,7 +445,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         if (component.changes.pressed) {
                             const pressed = component.changes.pressed.current;
                             if (controllerData.pick && controllerData.nearGrab) {
-                                if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController && !this._farInteractionFeature?.attached) {
+                                if (
+                                    this._options.enableNearInteractionOnAllControllers ||
+                                    (xrController.uniqueId === this._attachedController && !this._farInteractionFeature?.attached)
+                                ) {
                                     if (pressed) {
                                         controllerData.nearGrabInProcess = true;
                                         this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
