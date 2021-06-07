@@ -103,7 +103,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
     /**
      * Event Listener to for "reflectionchange" events.
      */
-    private _updateReflectionCubeMap(): void {
+    private _updateReflectionCubeMap = (): void => {
         this._reflectionCubeMap = this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe!);
         this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap);
     }

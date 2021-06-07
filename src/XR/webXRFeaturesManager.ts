@@ -120,7 +120,7 @@ export class WebXRFeatureName {
      * The name of the movement feature
      */
     public static readonly MOVEMENT = "xr-controller-movement";
-	/**
+    /**
      * The name of the light estimation feature
      */
     public static readonly LIGHT_ESTIMATION = "xr-light-estimation";
