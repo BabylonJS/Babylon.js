@@ -87,12 +87,14 @@ uniform Material {
 
     vec4 vRefractionMicrosurfaceInfos;
     vec2 vRefractionFilteringInfo;
+    vec2 vTranslucencyIntensityInfos;
     vec4 vRefractionInfos;
     mat4 refractionMatrix;
     vec2 vThicknessInfos;
-    vec2 vIntensityInfos;
+    vec2 vRefractionIntensityInfos;
     mat4 thicknessMatrix;
-    mat4 intensityMatrix;
+    mat4 refractionIntensityMatrix;
+    mat4 translucencyIntensityMatrix;
     vec2 vThicknessParam;
     vec3 vDiffusionDistance;
     vec4 vTintColor;

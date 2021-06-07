@@ -37,8 +37,11 @@ struct subSurfaceOutParams
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         const in vec4 thicknessMap,
     #endif
-    #ifdef SS_INTENSITY_TEXTURE
-        const in vec4 intensityMap,
+    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+        const in vec4 refractionIntensityMap,
+    #endif
+    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+        const in vec4 translucencyIntensityMap,
     #endif
     #ifdef REFLECTION
         #ifdef SS_TRANSLUCENCY
@@ -130,7 +133,7 @@ struct subSurfaceOutParams
     #endif
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        #if defined(SS_USE_GLTF_THICKNESS_TEXTURE)
+        #if defined(SS_USE_GLTF_TEXTURES)
             float thickness = thicknessMap.g * vThicknessParam.y + vThicknessParam.x;
         #else
             float thickness = thicknessMap.r * vThicknessParam.y + vThicknessParam.x;
@@ -141,40 +144,31 @@ struct subSurfaceOutParams
         #endif
 
         #ifdef SS_MASK_FROM_THICKNESS_TEXTURE
-            #if defined(SS_USE_GLTF_THICKNESS_TEXTURE)
-                #ifdef SS_REFRACTION
+            #if defined(SS_REFRACTION) && defined(SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE)
+                #if defined(SS_USE_GLTF_TEXTURES)
                     refractionIntensity *= thicknessMap.r;
-                #elif defined(SS_TRANSLUCENCY)
-                    translucencyIntensity *= thicknessMap.r;
-                #endif
-            #else
-                #ifdef SS_REFRACTION
+                #else
                     refractionIntensity *= thicknessMap.g;
                 #endif
-                #ifdef SS_TRANSLUCENCY
-                    translucencyIntensity *= thicknessMap.b;
-                #endif
+            #endif
+            #if defined(SS_TRANSLUCENCY) && defined(SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE)
+                translucencyIntensity *= thicknessMap.b;
             #endif
         #endif
     #else
         float thickness = vThicknessParam.y;
     #endif
 
-    #ifdef SS_INTENSITY_TEXTURE
-        #if defined(SS_USE_GLTF_THICKNESS_TEXTURE)
-            #ifdef SS_REFRACTION
-                refractionIntensity *= intensityMap.r;
-            #elif defined(SS_TRANSLUCENCY)
-                translucencyIntensity *= intensityMap.r;
-            #endif
+    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+        #ifdef SS_USE_GLTF_TEXTURES
+            refractionIntensity *= refractionIntensityMap.r;
         #else
-            #ifdef SS_REFRACTION
-                refractionIntensity *= intensityMap.g;
-            #endif
-            #ifdef SS_TRANSLUCENCY
-                translucencyIntensity *= intensityMap.b;
-            #endif
+            refractionIntensity *= refractionIntensityMap.g;
         #endif
+    #endif
+
+    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+        translucencyIntensity *= translucencyIntensityMap.b;
     #endif
 
     // _________________________________________________________________________________________

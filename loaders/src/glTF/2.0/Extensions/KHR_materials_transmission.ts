@@ -359,8 +359,8 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             (extension.transmissionTexture as ITextureInfo).nonColorData = true;
             return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined)
                 .then((texture: BaseTexture) => {
-                    pbrMaterial.subSurface.intensityTexture = texture;
-                    pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
+                    pbrMaterial.subSurface.refractionIntensityTexture = texture;
+                    pbrMaterial.subSurface.useGltfStyleTextures = true;
                 });
         } else {
             return Promise.resolve();
