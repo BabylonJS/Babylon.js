@@ -2,6 +2,7 @@ import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { Scene } from "../scene";
 import { WebXRInput, IWebXRInputOptions } from "./webXRInput";
 import { WebXRControllerPointerSelection, IWebXRControllerPointerSelectionOptions } from "./features/WebXRControllerPointerSelection";
+import { WebXRNearInteraction, IWebXRNearInteractionOptions } from "./features/WebXRNearInteraction";
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXREnterExitUI, WebXREnterExitUIOptions } from "./webXREnterExitUI";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -27,6 +28,10 @@ export class WebXRDefaultExperienceOptions {
      * Should teleportation not initialize. Defaults to false.
      */
     public disableTeleportation?: boolean;
+    /**
+     * Should nearInteraction not initialize. Defaults to false.
+     */
+    public disableNearInteraction?: boolean;
     /**
      * Floor meshes that will be used for teleport
      */
@@ -98,6 +103,11 @@ export class WebXRDefaultExperience {
      * Enables teleportation
      */
     public teleportation: WebXRMotionControllerTeleportation;
+
+    /**
+     * Enables near interaction for hands/controllers
+     */
+    public nearInteraction: WebXRNearInteraction;
 
     private constructor() {}
 
@@ -171,6 +181,15 @@ export class WebXRDefaultExperience {
                         );
                         result.teleportation.setSelectionFeature(result.pointerSelection);
                     }
+                }
+
+                if (!options.disableNearInteraction) {
+                    // Add default pointer selection
+                    result.nearInteraction = <WebXRNearInteraction>result.baseExperience.featuresManager.enableFeature(WebXRNearInteraction.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRNearInteractionOptions>{
+                        xrInput: result.input,
+                        farInteractionFeature: result.pointerSelection,
+                        renderingGroupId: options.renderingGroupId,
+                    });
                 }
 
                 // Create the WebXR output target

@@ -12,6 +12,7 @@ import { GUID } from '../../Misc/guid';
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';
 import { ThinTexture } from './thinTexture';
+import { AbstractScene } from "../../abstractScene";
 
 declare type Animation = import("../../Animations/animation").Animation;
 
@@ -422,6 +423,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return true;
     }
 
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
+
     /**
      * Instantiates a new BaseTexture.
      * Base class of all the textures in babylon.
@@ -705,6 +709,14 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             }
             this._scene.onTextureRemovedObservable.notifyObservers(this);
             this._scene = null;
+
+            if (this._parentContainer) {
+                const index = this._parentContainer.textures.indexOf(this);
+                if (index > -1) {
+                    this._parentContainer.textures.splice(index, 1);
+                }
+                this._parentContainer = null;
+            }
         }
 
         // Callback
