@@ -76,6 +76,11 @@ export class PointerInfoPre extends PointerInfoBase {
     public localPosition: Vector2;
 
     /**
+     * Defines picking info coming from a near interaction (proximity instead of ray-based picking)
+     */
+    public nearInteractionPickingInfo: PickingInfo;
+
+    /**
      * Defines whether the engine should skip the next OnPointerObservable associated to this pre.
      */
     public skipOnPointerObservable: boolean;
