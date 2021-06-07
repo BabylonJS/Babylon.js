@@ -48,7 +48,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     }
 
     /**
-     * Use this flag to update the target but not move the owner node toward the target
+     * Use this flag to update the target but not move the owner node towards the target
      */
     public disableMovement: boolean = false;
 
