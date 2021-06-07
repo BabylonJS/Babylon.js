@@ -234,7 +234,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this._scene.environmentTexture = EnvironmentTools.LoadSkyboxPathTexture(this._scene);
             }
 
-            if (this._scene.environmentTexture) {
+            if (this._scene.environmentTexture && this.props.globalState.skybox) {
                 this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera!.maxZ - this._scene.activeCamera!.minZ) / 2, 0.3, false);
             }
         } else {
