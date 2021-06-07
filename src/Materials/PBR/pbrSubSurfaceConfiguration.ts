@@ -390,7 +390,7 @@ export class PBRSubSurfaceConfiguration {
                 }
 
                 defines.SS_HAS_THICKNESS = (this.maximumThickness - this.minimumThickness) !== 0.0;
-                defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture && !hasSeparateIntensityTexture;
+                defines.SS_MASK_FROM_THICKNESS_TEXTURE = (this._useMaskFromThicknessTexture || !!this._intensityTexture) && !hasSeparateIntensityTexture;
                 defines.SS_USE_GLTF_THICKNESS_TEXTURE = this._useGltfStyleThicknessTexture;
             }
 
