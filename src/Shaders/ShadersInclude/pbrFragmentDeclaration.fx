@@ -154,9 +154,14 @@ uniform mat4 view;
         uniform mat4 thicknessMatrix;
     #endif
 
-    #ifdef SS_INTENSITY_TEXTURE
-        uniform vec2 vIntensityInfos;
-        uniform mat4 intensityMatrix;
+    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+        uniform vec2 vRefractionIntensityInfos;
+        uniform mat4 refractionIntensityMatrix;
+    #endif
+
+    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+        uniform vec2 vTranslucencyIntensityInfos;
+        uniform mat4 translucencyIntensityMatrix;
     #endif
 
     uniform vec2 vThicknessParam;

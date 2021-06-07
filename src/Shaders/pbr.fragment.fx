@@ -451,8 +451,12 @@ void main(void) {
             vec4 thicknessMap = texture2D(thicknessSampler, vThicknessUV + uvOffset);
         #endif
 
-        #ifdef SS_INTENSITY_TEXTURE
-            vec4 intensityMap = texture2D(intensitySampler, vIntensityUV + uvOffset);
+        #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+            vec4 refractionIntensityMap = texture2D(refractionIntensitySampler, vRefractionIntensityUV + uvOffset);
+        #endif
+
+        #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+            vec4 translucencyIntensityMap = texture2D(translucencyIntensitySampler, vTranslucencyIntensityUV + uvOffset);
         #endif
 
         subSurfaceBlock(
@@ -464,8 +468,11 @@ void main(void) {
         #ifdef SS_THICKNESSANDMASK_TEXTURE
             thicknessMap,
         #endif
-        #ifdef SS_INTENSITY_TEXTURE
-            intensityMap,
+        #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+            refractionIntensityMap,
+        #endif
+        #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+            translucencyIntensityMap,
         #endif
         #ifdef REFLECTION
             #ifdef SS_TRANSLUCENCY
