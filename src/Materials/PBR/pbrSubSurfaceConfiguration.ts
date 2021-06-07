@@ -394,7 +394,7 @@ export class PBRSubSurfaceConfiguration {
                     !!this._thicknessTexture &&
                     !!this._translucencyIntensityTexture &&
                     this._translucencyIntensityTexture.checkTransformsAreIdentical(this._thicknessTexture) && this._translucencyIntensityTexture._texture === this._thicknessTexture._texture;
-                
+
                 // if true, it means the refraction/translucency textures are the same than the thickness texture so there's no need to pass them to the shader, only thicknessTexture
                 const useOnlyThicknessTexture = (refractionIntensityTextureIsThicknessTexture || !this._refractionIntensityTexture) && (translucencyIntensityTextureIsThicknessTexture || !this._translucencyIntensityTexture);
 
