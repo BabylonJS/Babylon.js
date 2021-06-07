@@ -119,6 +119,11 @@ uniform float pointSize;
         uniform vec2 vThicknessInfos;
         uniform mat4 thicknessMatrix;
     #endif
+
+    #ifdef SS_INTENSITY_TEXTURE
+        uniform vec2 vIntensityInfos;
+        uniform mat4 intensityMatrix;
+    #endif
 #endif
 
 #ifdef NORMAL

@@ -154,6 +154,11 @@ uniform mat4 view;
         uniform mat4 thicknessMatrix;
     #endif
 
+    #ifdef SS_INTENSITY_TEXTURE
+        uniform vec2 vIntensityInfos;
+        uniform mat4 intensityMatrix;
+    #endif
+
     uniform vec2 vThicknessParam;
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;

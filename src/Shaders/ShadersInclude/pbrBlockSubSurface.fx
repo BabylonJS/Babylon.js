@@ -37,6 +37,9 @@ struct subSurfaceOutParams
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         const in vec4 thicknessMap,
     #endif
+    #ifdef SS_INTENSITY_TEXTURE
+        const in vec4 intensityMap,
+    #endif
     #ifdef REFLECTION
         #ifdef SS_TRANSLUCENCY
             const in mat4 reflectionMatrix,
@@ -155,6 +158,23 @@ struct subSurfaceOutParams
         #endif
     #else
         float thickness = vThicknessParam.y;
+    #endif
+
+    #ifdef SS_INTENSITY_TEXTURE
+        #if defined(SS_USE_GLTF_THICKNESS_TEXTURE)
+            #ifdef SS_REFRACTION
+                refractionIntensity *= intensityMap.r;
+            #elif defined(SS_TRANSLUCENCY)
+                translucencyIntensity *= intensityMap.r;
+            #endif
+        #else
+            #ifdef SS_REFRACTION
+                refractionIntensity *= intensityMap.g;
+            #endif
+            #ifdef SS_TRANSLUCENCY
+                translucencyIntensity *= intensityMap.b;
+            #endif
+        #endif
     #endif
 
     // _________________________________________________________________________________________

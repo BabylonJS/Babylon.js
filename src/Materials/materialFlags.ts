@@ -293,4 +293,20 @@ export class MaterialFlags {
         this._ThicknessTextureEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
+
+    private static _IntensityTextureEnabled = true;
+    /**
+     * Are intensity textures enabled in the application.
+     */
+    public static get IntensityTextureEnabled(): boolean {
+        return this._ThicknessTextureEnabled;
+    }
+    public static set IntensityTextureEnabled(value: boolean) {
+        if (this._IntensityTextureEnabled === value) {
+            return;
+        }
+
+        this._IntensityTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
 }

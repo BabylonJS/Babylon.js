@@ -276,4 +276,15 @@
         #endif
         uniform sampler2D thicknessSampler;
     #endif
+
+    #ifdef SS_INTENSITY_TEXTURE
+        #if SS_INTENSITY_TEXTUREDIRECTUV == 1
+            #define vIntensityUV vMainUV1
+        #elif SS_INTENSITY_TEXTUREDIRECTUV == 2
+            #define vIntensityUV vMainUV2
+        #else
+            varying vec2 vIntensityUV;
+        #endif
+        uniform sampler2D intensitySampler;
+    #endif
 #endif
