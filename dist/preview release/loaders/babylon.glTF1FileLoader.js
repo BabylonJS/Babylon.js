@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -704,7 +704,7 @@ var loadAnimations = function (gltfRuntime) {
                 modifyKey = true;
             }
             if (!modifyKey) {
-                gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+                gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
                 babylonAnimation = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Animation"](anim, isBone ? "_matrix" : targetPath, 1, animationType, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONLOOPMODE_CYCLE);
                 gltfRuntime.scene._blockEntityCollection = false;
             }
@@ -998,8 +998,9 @@ var importSkeleton = function (gltfRuntime, skins, mesh, newSkeleton, id) {
 */
 var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
     if (!newMesh) {
-        gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+        gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
         newMesh = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"](node.name || "", gltfRuntime.scene);
+        newMesh._parentContainer = gltfRuntime.assetContainer;
         gltfRuntime.scene._blockEntityCollection = false;
         newMesh.id = id;
     }
@@ -1106,7 +1107,7 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
         }
     }
     var material;
-    gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+    gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
     if (subMaterials.length > 1) {
         material = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["MultiMaterial"]("multimat" + id, gltfRuntime.scene);
         material.subMaterials = subMaterials;
@@ -1117,6 +1118,7 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
     if (subMaterials.length === 1) {
         material = subMaterials[0];
     }
+    material._parentContainer = gltfRuntime.assetContainer;
     if (!newMesh.material) {
         newMesh.material = material;
     }
@@ -1259,13 +1261,14 @@ var importNode = function (gltfRuntime, node, id, parent) {
     else if (node.camera && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
         var camera = gltfRuntime.cameras[node.camera];
         if (camera) {
-            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+            gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
             if (camera.type === "orthographic") {
                 var orthoCamera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"](node.camera, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene, false);
                 orthoCamera.name = node.name || "";
                 orthoCamera.mode = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"].ORTHOGRAPHIC_CAMERA;
                 orthoCamera.attachControl();
                 lastNode = orthoCamera;
+                orthoCamera._parentContainer = gltfRuntime.assetContainer;
             }
             else if (camera.type === "perspective") {
                 var perspectiveCamera = camera[camera.type];
@@ -1280,6 +1283,7 @@ var importNode = function (gltfRuntime, node, id, parent) {
                     persCamera.minZ = perspectiveCamera.znear;
                 }
                 lastNode = persCamera;
+                persCamera._parentContainer = gltfRuntime.assetContainer;
             }
             gltfRuntime.scene._blockEntityCollection = false;
         }
@@ -1290,8 +1294,9 @@ var importNode = function (gltfRuntime, node, id, parent) {
             return node.babylonNode;
         }
         else if (lastNode === null) {
-            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+            gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
             var dummy = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"](node.name || "", gltfRuntime.scene);
+            dummy._parentContainer = gltfRuntime.assetContainer;
             gltfRuntime.scene._blockEntityCollection = false;
             node.babylonNode = dummy;
             lastNode = dummy;
@@ -1539,7 +1544,7 @@ var GLTFLoaderBase = /** @class */ (function () {
             loadedShaderCount: 0,
             importOnlyMeshes: false,
             dummyNodes: [],
-            forAssetContainer: false
+            assetContainer: null
         };
         // Parse
         if (parsedData.extensions) {
@@ -1691,8 +1696,9 @@ var GLTFLoaderBase = /** @class */ (function () {
         }
         var technique = gltfRuntime.techniques[material.technique];
         if (!technique) {
-            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+            gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
             var defaultMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"](id, gltfRuntime.scene);
+            defaultMaterial._parentContainer = gltfRuntime.assetContainer;
             gltfRuntime.scene._blockEntityCollection = false;
             defaultMaterial.diffuseColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 0.5, 0.5);
             defaultMaterial.sideOrientation = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Material"].CounterClockWiseSideOrientation;
@@ -1840,11 +1846,11 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype.dispose = function () {
         // do nothing
     };
-    GLTFLoader.prototype._importMeshAsync = function (meshesNames, scene, data, rootUrl, forAssetContainer, onSuccess, onProgress, onError) {
+    GLTFLoader.prototype._importMeshAsync = function (meshesNames, scene, data, rootUrl, assetContainer, onSuccess, onProgress, onError) {
         var _this = this;
         scene.useRightHandedSystem = true;
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
-            gltfRuntime.forAssetContainer = forAssetContainer;
+            gltfRuntime.assetContainer = assetContainer;
             gltfRuntime.importOnlyMeshes = true;
             if (meshesNames === "") {
                 gltfRuntime.importMeshesNames = [];
@@ -1896,16 +1902,16 @@ var GLTFLoader = /** @class */ (function () {
     * Imports one or more meshes from a loaded gltf file and adds them to the scene
     * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
     * @param scene the scene the meshes should be added to
-    * @param forAssetContainer defines if the entities must be stored in the scene
+    * @param assetContainer defines the asset container to use (can be null)
     * @param data gltf data containing information of the meshes in a loaded file
     * @param rootUrl root url to load from
     * @param onProgress event that fires when loading progress has occured
     * @returns a promise containg the loaded meshes, particles, skeletons and animations
     */
-    GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, forAssetContainer, data, rootUrl, onProgress) {
+    GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, assetContainer, data, rootUrl, onProgress) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this._importMeshAsync(meshesNames, scene, data, rootUrl, forAssetContainer, function (meshes, skeletons) {
+            _this._importMeshAsync(meshesNames, scene, data, rootUrl, assetContainer, function (meshes, skeletons) {
                 resolve({
                     meshes: meshes,
                     particleSystems: [],
@@ -1920,7 +1926,7 @@ var GLTFLoader = /** @class */ (function () {
             });
         });
     };
-    GLTFLoader.prototype._loadAsync = function (scene, data, rootUrl, forAssetContainer, onSuccess, onProgress, onError) {
+    GLTFLoader.prototype._loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
         var _this = this;
         scene.useRightHandedSystem = true;
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
@@ -1955,7 +1961,7 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this._loadAsync(scene, data, rootUrl, false, function () {
+            _this._loadAsync(scene, data, rootUrl, function () {
                 resolve();
             }, onProgress, function (message) {
                 reject(new Error(message));
@@ -3235,7 +3241,7 @@ var GLTFFileLoader = /** @class */ (function () {
             _this.onParsedObservable.clear();
             _this._log("Loading " + (fileName || ""));
             _this._loader = _this._getLoader(data);
-            return _this._loader.importMeshAsync(meshesNames, scene, false, data, rootUrl, onProgress, fileName);
+            return _this._loader.importMeshAsync(meshesNames, scene, null, data, rootUrl, onProgress, fileName);
         });
     };
     /** @hidden */
@@ -3263,36 +3269,16 @@ var GLTFFileLoader = /** @class */ (function () {
             var materials = [];
             _this.onMaterialLoadedObservable.add(function (material) {
                 materials.push(material);
-                material.onDisposeObservable.addOnce(function () {
-                    var index = container.materials.indexOf(material);
-                    if (index > -1) {
-                        container.materials.splice(index, 1);
-                    }
-                    index = materials.indexOf(material);
-                    if (index > -1) {
-                        materials.splice(index, 1);
-                    }
-                });
             });
             var textures = [];
             _this.onTextureLoadedObservable.add(function (texture) {
                 textures.push(texture);
-                texture.onDisposeObservable.addOnce(function () {
-                    var index = container.textures.indexOf(texture);
-                    if (index > -1) {
-                        container.textures.splice(index, 1);
-                    }
-                    index = textures.indexOf(texture);
-                    if (index > -1) {
-                        textures.splice(index, 1);
-                    }
-                });
             });
             var cameras = [];
             _this.onCameraLoadedObservable.add(function (camera) {
                 cameras.push(camera);
             });
-            return _this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then(function (result) {
+            return _this._loader.importMeshAsync(null, scene, container, data, rootUrl, onProgress, fileName).then(function (result) {
                 Array.prototype.push.apply(container.geometries, result.geometries);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);

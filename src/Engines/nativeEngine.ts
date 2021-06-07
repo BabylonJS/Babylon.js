@@ -882,6 +882,11 @@ export class NativeEngine extends Engine {
         this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
         this.resize();
 
+        const currentDepthFunction = this.getDepthFunction();
+        if (currentDepthFunction) {
+            this.setDepthFunction(currentDepthFunction);
+        }
+
         // Shader processor
         this._shaderProcessor = new NativeShaderProcessor();
     }
@@ -1252,23 +1257,58 @@ export class NativeEngine extends Engine {
         return this._native.getDepthWrite();
     }
 
-    public setDepthFunctionToGreater(): void {
-        this._currentDepthTest = this._native.DEPTH_TEST_GREATER;
-        this._native.setDepthTest(this._currentDepthTest);
+    public getDepthFunction(): Nullable<number> {
+        switch (this._currentDepthTest) {
+            case this._native.DEPTH_TEST_NEVER:
+                return Constants.NEVER;
+            case this._native.DEPTH_TEST_ALWAYS:
+                return Constants.ALWAYS;
+            case this._native.DEPTH_TEST_GREATER:
+                return Constants.GREATER;
+            case this._native.DEPTH_TEST_GEQUAL:
+                return Constants.GEQUAL;
+            case this._native.DEPTH_TEST_NOTEQUAL:
+                return Constants.NOTEQUAL;
+            case this._native.DEPTH_TEST_EQUAL:
+                return Constants.EQUAL;
+            case this._native.DEPTH_TEST_LESS:
+                return Constants.LESS;
+            case this._native.DEPTH_TEST_LEQUAL:
+                return Constants.LEQUAL;
+        }
+        return null;
     }
 
-    public setDepthFunctionToGreaterOrEqual(): void {
-        this._currentDepthTest = this._native.DEPTH_TEST_GEQUAL;
-        this._native.setDepthTest(this._currentDepthTest);
-    }
+    public setDepthFunction(depthFunc: number) {
+        let nativeDepthFunc = 0;
+        switch (depthFunc) {
+            case Constants.NEVER:
+                nativeDepthFunc = this._native.DEPTH_TEST_NEVER;
+                break;
+            case Constants.ALWAYS:
+                nativeDepthFunc = this._native.DEPTH_TEST_ALWAYS;
+                break;
+            case Constants.GREATER:
+                nativeDepthFunc = this._native.DEPTH_TEST_GREATER;
+                break;
+            case Constants.GEQUAL:
+                nativeDepthFunc = this._native.DEPTH_TEST_GEQUAL;
+                break;
+            case Constants.NOTEQUAL:
+                nativeDepthFunc = this._native.DEPTH_TEST_NOTEQUAL;
+                break;
+            case Constants.EQUAL:
+                nativeDepthFunc = this._native.DEPTH_TEST_EQUAL;
+                break;
+            case Constants.LESS:
+                nativeDepthFunc = this._native.DEPTH_TEST_LESS;
+                break;
+            case Constants.LEQUAL:
+                nativeDepthFunc = this._native.DEPTH_TEST_LEQUAL;
+                break;
+        }
 
-    public setDepthFunctionToLess(): void {
-        this._currentDepthTest = this._native.DEPTH_TEST_LESS;
-        this._native.setDepthTest(this._currentDepthTest);
-    }
-
-    public setDepthFunctionToLessOrEqual(): void {
-        this._currentDepthTest = this._native.DEPTH_TEST_LEQUAL;
+        this._currentDepthTest = nativeDepthFunc;
         this._native.setDepthTest(this._currentDepthTest);
     }
 

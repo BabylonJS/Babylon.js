@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1388,15 +1388,19 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         this._pointerObserver = scene.onPointerObservable.add(function (pi, state) {
             if (pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE
                 && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP
-                && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN) {
+                && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN
+                && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERWHEEL) {
                 return;
+            }
+            if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE && pi.event.pointerId) {
+                _this._defaultMousePointerId = pi.event.pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
             var pointerId = pi.event.pointerId || _this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     var size = _this.getSize();
-                    _this._doPicking(uv.x * size.width, (_this.applyYInversionOnUpdate ? (1.0 - uv.y) : uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
+                    _this._doPicking(uv.x * size.width, (_this.applyYInversionOnUpdate ? (1.0 - uv.y) : uv.y) * size.height, pi, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
                 }
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP) {
