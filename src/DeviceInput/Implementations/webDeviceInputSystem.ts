@@ -345,10 +345,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
             }
 
-            if (deviceType === DeviceType.Mouse && this._mouseId === -1) {
-                this._mouseId = evt.pointerId;
-            }
-
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
                 // Store previous values for event
@@ -435,9 +431,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     if (this._mouseId === -1) {
                         if (evt.pointerId === undefined) { // If there is no pointerId (eg. manually dispatched MouseEvent)
                             this._mouseId = this._isUsingFirefox ? 0 : 1;
-                        }
-                        else if (!this._isUsingFirefox && evt.pointerId === 0) { // If there is a pointerId of 0 for any browser that ISN'T Firefox (can happen with manually dispatched PointerEvents with no defined pointerId)
-                            this._mouseId = 1;
                         }
                         else {
                             this._mouseId = evt.pointerId;
