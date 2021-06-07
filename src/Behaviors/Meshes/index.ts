@@ -6,3 +6,4 @@ export * from "./sixDofDragBehavior";
 export * from "./surfaceMagnetismBehavior";
 export * from "./baseSixDofDragBehavior";
 export * from "./followBehavior";
+export * from "./handConstraintBehavior";
