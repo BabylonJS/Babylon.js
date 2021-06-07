@@ -49,6 +49,7 @@
 - Added a `Prefiltered` option to the `CubeTextureAssetTask` ([MackeyK24](https://github.com/MackeyK24))
 - Added support for more uv sets to glTF loader. ([bghgary](https://github.com/bghgary))
 - Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
+- Added support for custom timeout in WebRequest. ([jamidwyer](https://github.com/jamidwyer/))
 
 ### Navigation
 
