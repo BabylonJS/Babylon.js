@@ -527,7 +527,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 this.onInputChangedObservable.notifyObservers(deviceEvent);
 
                 // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
-                if (evt.pointerType !== "mouse") {
+                if (deviceType !== DeviceType.Mouse) {
                     this._unregisterDevice(deviceType, deviceSlot);
                 }
             }

@@ -1499,6 +1499,35 @@ export class Vector3 {
     }
 
     /**
+     * Get angle between two vectors projected on a plane
+     * @param vector0 angle between vector0 and vector1
+     * @param vector1 angle between vector0 and vector1
+     * @param normal Normal of the projection plane
+     * @returns the angle between vector0 and vector1 projected on the plane with the specified normal
+     */
+    public static GetAngleBetweenVectorsOnPlane(vector0: Vector3, vector1: Vector3, normal: Vector3) {
+        MathTmp.Vector3[0].copyFrom(vector0);
+        const v0 = MathTmp.Vector3[0];
+        MathTmp.Vector3[1].copyFrom(vector1);
+        const v1 = MathTmp.Vector3[1];
+        MathTmp.Vector3[2].copyFrom(normal);
+        const vNormal = MathTmp.Vector3[2];
+        const right = MathTmp.Vector3[3];
+        const forward = MathTmp.Vector3[4];
+
+        v0.normalize();
+        v1.normalize();
+        vNormal.normalize();
+
+        Vector3.CrossToRef(vNormal, v0, right);
+        Vector3.CrossToRef(right, vNormal, forward);
+
+        const angle = Math.atan2(Vector3.Dot(v1, right), Vector3.Dot(v1, forward));
+
+        return Scalar.NormalizeRadians(angle);
+    }
+
+    /**
      * Slerp between two vectors. See also `SmoothToRef`
      * @param vector0 Start vector
      * @param vector1 End vector
