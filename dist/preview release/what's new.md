@@ -239,6 +239,7 @@
 - Fix a bug where pointer up/move events were not sent to 3D controls when no mesh in the `UtilityLayerRenderer` is hit by the picking ray. ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix issue with DeviceInputSystem where Mouse was being deregistered on Safari/MacOS ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix for disabledColor not working for Button ([msDestiny14](https://github.com/msDestiny14))
+- Fix NativeEngine not setting default depth test function to LEQUAL ([rgerd](https://github.com/rgerd))
 
 ## Breaking changes
 
