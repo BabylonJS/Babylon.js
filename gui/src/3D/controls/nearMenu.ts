@@ -8,6 +8,7 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { TouchHolographicMenu } from "./touchHolographicMenu";
 import { Observer } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
+import { PickingInfo } from "babylonjs/Collisions/pickingInfo";
 
 /**
  * NearMenu that displays buttons and follows the camera
@@ -28,6 +29,7 @@ export class NearMenu extends TouchHolographicMenu {
         Observer<{
             delta: Vector3;
             position: Vector3;
+            pickInfo: PickingInfo;
         }>
     >;
 
