@@ -115,6 +115,10 @@ varying vec2 vBumpUV;
     #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0
         varying vec2 vThicknessUV;
     #endif
+
+    #if defined(SS_INTENSITY_TEXTURE) && SS_INTENSITY_TEXTUREDIRECTUV == 0
+        varying vec2 vIntensityUV;
+    #endif
 #endif
 
 // Output
@@ -466,6 +470,17 @@ void main(void) {
         else
         {
             vThicknessUV = vec2(thicknessMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(SS_INTENSITY_TEXTURE) && SS_INTENSITY_TEXTUREDIRECTUV == 0
+        if (vIntensityInfos.x == 0.)
+        {
+            vIntensityUV = vec2(intensityMatrix * vec4(uvUpdated, 1.0, 0.0));
+        }
+        else
+        {
+            vIntensityUV = vec2(intensityMatrix * vec4(uv2, 1.0, 0.0));
         }
     #endif
 #endif

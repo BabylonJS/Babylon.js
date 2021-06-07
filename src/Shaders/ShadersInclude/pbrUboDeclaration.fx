@@ -90,7 +90,9 @@ uniform Material {
     vec4 vRefractionInfos;
     mat4 refractionMatrix;
     vec2 vThicknessInfos;
+    vec2 vIntensityInfos;
     mat4 thicknessMatrix;
+    mat4 intensityMatrix;
     vec2 vThicknessParam;
     vec3 vDiffusionDistance;
     vec4 vTintColor;

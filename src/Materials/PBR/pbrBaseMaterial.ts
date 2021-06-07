@@ -275,6 +275,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
     public SS_HAS_THICKNESS = false;
+    public SS_INTENSITY_TEXTURE = false;
+    public SS_INTENSITY_TEXTUREDIRECTUV = 0;
 
     public SS_REFRACTIONMAP_3D = false;
     public SS_REFRACTIONMAP_OPPOSITEZ = false;
