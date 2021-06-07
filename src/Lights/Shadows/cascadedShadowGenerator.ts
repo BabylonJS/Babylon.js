@@ -544,7 +544,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._cascades[cascadeIndex].prevBreakDistance = cascadeIndex === 0 ? minDistance : this._cascades[cascadeIndex - 1].breakDistance;
             this._cascades[cascadeIndex].breakDistance = (d - near) / cameraRange;
 
-            this._viewSpaceFrustumsZ[cascadeIndex] = near + this._cascades[cascadeIndex].breakDistance * cameraRange;
+            this._viewSpaceFrustumsZ[cascadeIndex] = d;
             this._frustumLengths[cascadeIndex] = (this._cascades[cascadeIndex].breakDistance - this._cascades[cascadeIndex].prevBreakDistance) * cameraRange;
         }
 
@@ -566,7 +566,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         this._cachedDirection.copyFrom(this._lightDirection);
 
+        const useReverseDepthBuffer = scene.getEngine().useReverseDepthBuffer;
+
         for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
+            const cIndex = useReverseDepthBuffer ? this._numCascades - 1 - cascadeIndex : cascadeIndex;
+
             this._computeFrustumInWorldSpace(cascadeIndex);
             this._computeCascadeFrustum(cascadeIndex);
 
@@ -576,7 +580,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._frustumCenter[cascadeIndex].addToRef(this._lightDirection.scale(this._cascadeMinExtents[cascadeIndex].z), this._shadowCameraPos[cascadeIndex]);
 
             // Come up with a new orthographic camera for the shadow caster
-            Matrix.LookAtLHToRef(this._shadowCameraPos[cascadeIndex], this._frustumCenter[cascadeIndex], UpDir, this._viewMatrices[cascadeIndex]);
+            Matrix.LookAtLHToRef(this._shadowCameraPos[cascadeIndex], this._frustumCenter[cascadeIndex], UpDir, this._viewMatrices[cIndex]);
 
             let minZ = 0, maxZ = tmpv1.z;
 
@@ -595,16 +599,17 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 minZ = Math.max(minZ, boundingInfo.boundingBox.minimumWorld.z);
             }
 
-            Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y, minZ, maxZ, this._projectionMatrices[cascadeIndex]);
+            Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y,
+                useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, this._projectionMatrices[cIndex]);
 
             this._cascadeMinExtents[cascadeIndex].z = minZ;
             this._cascadeMaxExtents[cascadeIndex].z = maxZ;
 
-            this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
+            this._viewMatrices[cIndex].multiplyToRef(this._projectionMatrices[cIndex], this._transformMatrices[cIndex]);
 
             // Create the rounding matrix, by projecting the world-space origin and determining
             // the fractional offset in texel space
-            Vector3.TransformCoordinatesToRef(ZeroVec, this._transformMatrices[cascadeIndex], tmpv1); // tmpv1 = shadowOrigin
+            Vector3.TransformCoordinatesToRef(ZeroVec, this._transformMatrices[cIndex], tmpv1); // tmpv1 = shadowOrigin
             tmpv1.scaleInPlace(this._mapSize / 2);
 
             tmpv2.copyFromFloats(Math.round(tmpv1.x), Math.round(tmpv1.y), Math.round(tmpv1.z)); // tmpv2 = roundedOrigin
@@ -612,10 +617,10 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
             Matrix.TranslationToRef(tmpv2.x, tmpv2.y, 0.0, tmpMatrix);
 
-            this._projectionMatrices[cascadeIndex].multiplyToRef(tmpMatrix, this._projectionMatrices[cascadeIndex]);
-            this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
+            this._projectionMatrices[cIndex].multiplyToRef(tmpMatrix, this._projectionMatrices[cIndex]);
+            this._viewMatrices[cIndex].multiplyToRef(this._projectionMatrices[cIndex], this._transformMatrices[cIndex]);
 
-            this._transformMatrices[cascadeIndex].copyToArray(this._transformMatricesAsArray, cascadeIndex * 16);
+            this._transformMatrices[cIndex].copyToArray(this._transformMatricesAsArray, cIndex * 16);
         }
     }
 
@@ -760,9 +765,10 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     protected _createTargetRenderTexture(): void {
+        const engine = this._scene.getEngine();
         const size = { width: this._mapSize, height: this._mapSize, layers: this.numCascades };
         this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", size, this._scene, false, true, this._textureType, false, undefined, false, false, undefined/*, Constants.TEXTUREFORMAT_RED*/);
-        this._shadowMap.createDepthStencilTexture(Constants.LESS, true);
+        this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GEQUAL : Constants.LESS, true);
     }
 
     protected _initializeShadowMap(): void {
@@ -928,7 +934,12 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         }
 
-        light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);
+        const minZ = this.getLight().getDepthMinZ(camera);
+        const maxZ = this.getLight().getDepthMaxZ(camera);
+
+        const useReverseDepth = this._scene.getEngine().useReverseDepthBuffer;
+
+        light._uniformBuffer.updateFloat2("depthValues", useReverseDepth ? maxZ : minZ, minZ + maxZ, lightIndex);
     }
 
     /**
