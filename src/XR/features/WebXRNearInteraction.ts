@@ -398,11 +398,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
             }
             controllerData.pick = pick;
-            if (pick && pick.pickedPoint && pick.hit) {
-                controllerData.meshUnderPointer = pick.pickedMesh;
-            } else {
-                controllerData.meshUnderPointer = null;
-            }
         });
     }
 
@@ -421,8 +416,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
             // Near pick
-            if (controllerData.pick && controllerData.nearInteraction) {
-                if (controllerData.pick.hit) {
+            if (controllerData.nearInteraction) {
+                if (controllerData.pick && controllerData.pick.hit) {
                     if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
                         if (!controllerData.nearInteractionInProcess) {
                             this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
@@ -431,10 +426,18 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     }
                 } else if (controllerData.nearInteractionInProcess) {
                     if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
-                        this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                        const pickingInfo = new PickingInfo();
+                        pickingInfo.pickedMesh = controllerData.meshUnderPointer;
+                        this._scene.simulatePointerUp(pickingInfo, pointerEventInit);
                         controllerData.nearInteractionInProcess = false;
                     }
                 }
+            }
+            // Update mesh under pointer
+            if (controllerData.pick && controllerData.pick.pickedPoint && controllerData.pick.hit) {
+                controllerData.meshUnderPointer = controllerData.pick.pickedMesh;
+            } else {
+                controllerData.meshUnderPointer = null;
             }
         });
         if (xrController.inputSource.gamepad) {
