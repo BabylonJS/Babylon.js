@@ -1777,12 +1777,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _planeMaterial;
         /** Tracks which keys are currently pressed */
         private _keyMap;
+        /** Tracks which mouse buttons are currently pressed */
+        private _buttonsPressed;
         private readonly ZOOM_MOUSE_SPEED;
         private readonly ZOOM_KEYBOARD_SPEED;
         private readonly ZOOM_IN_KEY;
         private readonly ZOOM_OUT_KEY;
         private readonly PAN_SPEED;
-        private readonly PAN_MOUSE_BUTTON;
+        private readonly PAN_KEY;
         private readonly MIN_SCALE;
         private readonly GRID_SCALE;
         private readonly MAX_SCALE;
@@ -1831,6 +1833,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         setSize(size: ISize): void;
         upload(file: File): void;
         saveTexture(): void;
+        toolInteractionEnabled(): boolean;
         dispose(): void;
     }
 }
@@ -1978,6 +1981,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         updatePainting: () => void;
         /** Call this when you are finished painting. */
         stopPainting: () => void;
+        /** Returns whether the tool should be allowed to interact */
+        interactionEnabled: () => boolean;
     }
     export interface IToolGUIProps {
         instance: IToolType;
@@ -3710,6 +3715,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     import { Node } from "babylonjs/node";
     export class ToolsTabComponent extends PaneComponent {
+        private _lockObject;
         private _videoRecorder;
         private _screenShotSize;
         private _gifOptions;
@@ -3719,6 +3725,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         private _gifRecorder;
         private _previousRenderingScale;
         private _crunchingGIF;
+        private _reflectorHostname;
+        private _reflectorPort;
+        private _reflector;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -3735,6 +3744,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         exportReplay(): void;
         startRecording(): void;
         applyDelta(file: File): void;
+        connectReflector(): void;
         render(): JSX.Element | null;
     }
 }
@@ -5995,12 +6005,14 @@ declare module INSPECTOR {
         private _planeMaterial;
         /** Tracks which keys are currently pressed */
         private _keyMap;
+        /** Tracks which mouse buttons are currently pressed */
+        private _buttonsPressed;
         private readonly ZOOM_MOUSE_SPEED;
         private readonly ZOOM_KEYBOARD_SPEED;
         private readonly ZOOM_IN_KEY;
         private readonly ZOOM_OUT_KEY;
         private readonly PAN_SPEED;
-        private readonly PAN_MOUSE_BUTTON;
+        private readonly PAN_KEY;
         private readonly MIN_SCALE;
         private readonly GRID_SCALE;
         private readonly MAX_SCALE;
@@ -6049,6 +6061,7 @@ declare module INSPECTOR {
         setSize(size: BABYLON.ISize): void;
         upload(file: File): void;
         saveTexture(): void;
+        toolInteractionEnabled(): boolean;
         dispose(): void;
     }
 }
@@ -6172,6 +6185,8 @@ declare module INSPECTOR {
         updatePainting: () => void;
         /** Call this when you are finished painting. */
         stopPainting: () => void;
+        /** Returns whether the tool should be allowed to interact */
+        interactionEnabled: () => boolean;
     }
     export interface IToolGUIProps {
         instance: IToolType;
@@ -7481,6 +7496,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class ToolsTabComponent extends PaneComponent {
+        private _lockObject;
         private _videoRecorder;
         private _screenShotSize;
         private _gifOptions;
@@ -7490,6 +7506,9 @@ declare module INSPECTOR {
         private _gifRecorder;
         private _previousRenderingScale;
         private _crunchingGIF;
+        private _reflectorHostname;
+        private _reflectorPort;
+        private _reflector;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -7506,6 +7525,7 @@ declare module INSPECTOR {
         exportReplay(): void;
         startRecording(): void;
         applyDelta(file: File): void;
+        connectReflector(): void;
         render(): JSX.Element | null;
     }
 }

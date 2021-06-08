@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1388,15 +1388,19 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         this._pointerObserver = scene.onPointerObservable.add(function (pi, state) {
             if (pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE
                 && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP
-                && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN) {
+                && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN
+                && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERWHEEL) {
                 return;
+            }
+            if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE && pi.event.pointerId) {
+                _this._defaultMousePointerId = pi.event.pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
             var pointerId = pi.event.pointerId || _this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     var size = _this.getSize();
-                    _this._doPicking(uv.x * size.width, (_this.applyYInversionOnUpdate ? (1.0 - uv.y) : uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
+                    _this._doPicking(uv.x * size.width, (_this.applyYInversionOnUpdate ? (1.0 - uv.y) : uv.y) * size.height, pi, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
                 }
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP) {
@@ -2102,7 +2106,7 @@ var ColorPicker = /** @class */ (function (_super) {
         _this._h = 360;
         _this._s = 1;
         _this._v = 1;
-        _this._lastPointerDownID = -1;
+        _this._lastPointerDownId = -1;
         /**
          * Observable raised when the value changes
          */
@@ -2405,12 +2409,12 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         this._updateValueFromPointer(x, y);
         this._host._capturingControl[pointerId] = this;
-        this._lastPointerDownID = pointerId;
+        this._lastPointerDownId = pointerId;
         return true;
     };
     ColorPicker.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
-        if (pointerId != this._lastPointerDownID) {
+        if (pointerId != this._lastPointerDownId) {
             return;
         }
         // Invert transform
@@ -11842,7 +11846,7 @@ var BaseSlider = /** @class */ (function (_super) {
         _this._isThumbClamped = false;
         _this._displayThumb = true;
         _this._step = 0;
-        _this._lastPointerDownID = -1;
+        _this._lastPointerDownId = -1;
         // Shared rendering info
         _this._effectiveBarOffset = 0;
         /** Observable raised when the sldier value changes */
@@ -12104,12 +12108,12 @@ var BaseSlider = /** @class */ (function (_super) {
         this._pointerIsDown = true;
         this._updateValueFromPointer(coordinates.x, coordinates.y);
         this._host._capturingControl[pointerId] = this;
-        this._lastPointerDownID = pointerId;
+        this._lastPointerDownId = pointerId;
         return true;
     };
     BaseSlider.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
-        if (pointerId != this._lastPointerDownID) {
+        if (pointerId != this._lastPointerDownId) {
             return;
         }
         if (this._pointerIsDown) {
@@ -15858,6 +15862,113 @@ var XmlLoader = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./3D/behaviors/defaultBehavior.ts":
+/*!*****************************************!*\
+  !*** ./3D/behaviors/defaultBehavior.ts ***!
+  \*****************************************/
+/*! exports provided: DefaultBehavior */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DefaultBehavior", function() { return DefaultBehavior; });
+/* harmony import */ var babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Behaviors/Meshes/followBehavior */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0__);
+
+
+/**
+ * Default behavior for 3D UI elements.
+ * Handles a FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+ */
+var DefaultBehavior = /** @class */ (function () {
+    /**
+     * Instantiates the default behavior
+     */
+    function DefaultBehavior() {
+        /**
+         * Enables the follow behavior
+         */
+        this.followBehaviorEnabled = true;
+        /**
+         * Enables the six DoF drag behavior
+         */
+        this.sixDofDragBehaviorEnabled = true;
+        this._followBehavior = new babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0__["FollowBehavior"]();
+        this._sixDofDragBehavior = new babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0__["SixDofDragBehavior"]();
+    }
+    Object.defineProperty(DefaultBehavior.prototype, "name", {
+        /**
+         *  The name of the behavior
+         */
+        get: function () {
+            return "Default";
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(DefaultBehavior.prototype, "followBehavior", {
+        /**
+         *  The follow behavior
+         */
+        get: function () {
+            return this._followBehavior;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(DefaultBehavior.prototype, "sixDofDragBehavior", {
+        /**
+         *  The six DoF drag behavior
+         */
+        get: function () {
+            return this._sixDofDragBehavior;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    /**
+     *  Initializes the behavior
+     */
+    DefaultBehavior.prototype.init = function () { };
+    /**
+     * Attaches the default behavior
+     * @param ownerMesh The top level mesh
+     * @param sixDofAnchorMesh A mesh that should behave as an anchor for the sixDof interaction. If unset, the top level mesh will be used
+     */
+    DefaultBehavior.prototype.attach = function (ownerMesh, sixDofAnchorMesh) {
+        this._scene = ownerMesh.getScene();
+        this.attachedNode = ownerMesh;
+        this._addObservables();
+        // Since our observables are bound before the child behaviors', ours are called first
+        this._followBehavior.attach(ownerMesh);
+        this._sixDofDragBehavior.attach(sixDofAnchorMesh || ownerMesh);
+        this._sixDofDragBehavior.ancestorToDrag = sixDofAnchorMesh ? ownerMesh : null;
+    };
+    /**
+     *  Detaches the behavior from the mesh
+     */
+    DefaultBehavior.prototype.detach = function () {
+        this.attachedNode = null;
+        this._removeObservables();
+        this._followBehavior.detach();
+        this._sixDofDragBehavior.detach();
+    };
+    DefaultBehavior.prototype._addObservables = function () {
+        var _this = this;
+        this._onBeforeRender = this._scene.onBeforeRenderObservable.add(function () {
+            _this._followBehavior._enabled = !_this._sixDofDragBehavior.isMoving && _this.followBehaviorEnabled;
+        });
+    };
+    DefaultBehavior.prototype._removeObservables = function () {
+        this._scene.onBeforeRenderObservable.remove(this._onBeforeRender);
+    };
+    return DefaultBehavior;
+}());
+
+
+
+/***/ }),
+
 /***/ "./3D/controls/abstractButton3D.ts":
 /*!*****************************************!*\
   !*** ./3D/controls/abstractButton3D.ts ***!
@@ -15871,7 +15982,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
+/* harmony import */ var _contentDisplay3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./contentDisplay3D */ "./3D/controls/contentDisplay3D.ts");
 
 
 
@@ -15895,7 +16006,7 @@ var AbstractButton3D = /** @class */ (function (_super) {
         return new babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]("button" + this.name);
     };
     return AbstractButton3D;
-}(_control3D__WEBPACK_IMPORTED_MODULE_2__["Control3D"]));
+}(_contentDisplay3D__WEBPACK_IMPORTED_MODULE_2__["ContentDisplay3D"]));
 
 
 
@@ -15915,9 +16026,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _abstractButton3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./abstractButton3D */ "./3D/controls/abstractButton3D.ts");
-/* harmony import */ var _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../2D/advancedDynamicTexture */ "./2D/advancedDynamicTexture.ts");
-
-
 
 
 
@@ -15935,8 +16043,6 @@ var Button3D = /** @class */ (function (_super) {
      */
     function Button3D(name) {
         var _this = _super.call(this, name) || this;
-        _this._contentResolution = 512;
-        _this._contentScaleRatio = 2;
         // Default animations
         _this.pointerEnterAnimation = function () {
             if (!_this.mesh) {
@@ -15961,80 +16067,8 @@ var Button3D = /** @class */ (function (_super) {
         };
         return _this;
     }
-    Object.defineProperty(Button3D.prototype, "contentResolution", {
-        /**
-         * Gets or sets the texture resolution used to render content (512 by default)
-         */
-        get: function () {
-            return this._contentResolution;
-        },
-        set: function (value) {
-            if (this._contentResolution === value) {
-                return;
-            }
-            this._contentResolution = value;
-            this._resetContent();
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Button3D.prototype, "contentScaleRatio", {
-        /**
-         * Gets or sets the texture scale ratio used to render content (2 by default)
-         */
-        get: function () {
-            return this._contentScaleRatio;
-        },
-        set: function (value) {
-            if (this._contentScaleRatio === value) {
-                return;
-            }
-            this._contentScaleRatio = value;
-            this._resetContent();
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Button3D.prototype._disposeFacadeTexture = function () {
-        if (this._facadeTexture) {
-            this._facadeTexture.dispose();
-            this._facadeTexture = null;
-        }
-    };
-    Button3D.prototype._resetContent = function () {
-        this._disposeFacadeTexture();
-        this.content = this._content;
-    };
-    Object.defineProperty(Button3D.prototype, "content", {
-        /**
-         * Gets or sets the GUI 2D content used to display the button's facade
-         */
-        get: function () {
-            return this._content;
-        },
-        set: function (value) {
-            this._content = value;
-            if (!this._host || !this._host.utilityLayer) {
-                return;
-            }
-            if (!this._facadeTexture) {
-                this._facadeTexture = new _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"]("Facade", this._contentResolution, this._contentResolution, this._host.utilityLayer.utilityLayerScene, true, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE);
-                this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
-                this._facadeTexture.rootContainer.scaleY = this._contentScaleRatio;
-                this._facadeTexture.premulAlpha = true;
-            }
-            else {
-                this._facadeTexture.rootContainer.clearControls();
-            }
-            this._facadeTexture.addControl(value);
-            this._applyFacade(this._facadeTexture);
-        },
-        enumerable: false,
-        configurable: true
-    });
     /**
      * Apply the facade texture (created from the content property).
-     * This function can be overloaded by child classes
      * @param facadeTexture defines the AdvancedDynamicTexture to use
      */
     Button3D.prototype._applyFacade = function (facadeTexture) {
@@ -16054,7 +16088,7 @@ var Button3D = /** @class */ (function (_super) {
             width: 1.0,
             height: 1.0,
             depth: 0.08,
-            faceUV: faceUV
+            faceUV: faceUV,
         }, scene);
         return mesh;
     };
@@ -16240,6 +16274,103 @@ var Container3D = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./3D/controls/contentDisplay3D.ts":
+/*!*****************************************!*\
+  !*** ./3D/controls/contentDisplay3D.ts ***!
+  \*****************************************/
+/*! exports provided: ContentDisplay3D */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ContentDisplay3D", function() { return ContentDisplay3D; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../2D/advancedDynamicTexture */ "./2D/advancedDynamicTexture.ts");
+/* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+/**
+ * The base class for controls that display content
+ */
+var ContentDisplay3D = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ContentDisplay3D, _super);
+    function ContentDisplay3D() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this._contentResolution = 512;
+        _this._contentScaleRatio = 2;
+        return _this;
+    }
+    Object.defineProperty(ContentDisplay3D.prototype, "content", {
+        /**
+         * Gets or sets the GUI 2D content used to display the button's facade
+         */
+        get: function () {
+            return this._content;
+        },
+        set: function (value) {
+            this._content = value;
+            if (!this._host || !this._host.utilityLayer) {
+                return;
+            }
+            if (!this._facadeTexture) {
+                this._facadeTexture = new _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_1__["AdvancedDynamicTexture"]("Facade", this._contentResolution, this._contentResolution, this._host.utilityLayer.utilityLayerScene, true, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_3__["Texture"].TRILINEAR_SAMPLINGMODE);
+                this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
+                this._facadeTexture.rootContainer.scaleY = this._contentScaleRatio;
+                this._facadeTexture.premulAlpha = true;
+            }
+            else {
+                this._facadeTexture.rootContainer.clearControls();
+            }
+            this._facadeTexture.addControl(value);
+            this._applyFacade(this._facadeTexture);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ContentDisplay3D.prototype, "contentResolution", {
+        /**
+         * Gets or sets the texture resolution used to render content (512 by default)
+         */
+        get: function () {
+            return this._contentResolution;
+        },
+        set: function (value) {
+            if (this._contentResolution === value) {
+                return;
+            }
+            this._contentResolution = value;
+            this._resetContent();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    ContentDisplay3D.prototype._disposeFacadeTexture = function () {
+        if (this._facadeTexture) {
+            this._facadeTexture.dispose();
+            this._facadeTexture = null;
+        }
+    };
+    ContentDisplay3D.prototype._resetContent = function () {
+        this._disposeFacadeTexture();
+        this.content = this._content;
+    };
+    /**
+     * Apply the facade texture (created from the content property).
+     * This function can be overloaded by child classes
+     * @param facadeTexture defines the AdvancedDynamicTexture to use
+     */
+    ContentDisplay3D.prototype._applyFacade = function (facadeTexture) { };
+    return ContentDisplay3D;
+}(_control3D__WEBPACK_IMPORTED_MODULE_2__["Control3D"]));
+
+
+
+/***/ }),
+
 /***/ "./3D/controls/control3D.ts":
 /*!**********************************!*\
   !*** ./3D/controls/control3D.ts ***!
@@ -16275,8 +16406,8 @@ var Control3D = /** @class */ (function () {
         this._downPointerIds = {}; // Store number of pointer downs per ID, from near and far interactions
         this._isVisible = true;
         /**
-        * An event triggered when the pointer move over the control
-        */
+         * An event triggered when the pointer move over the control
+         */
         this.onPointerMoveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         /**
          * An event triggered when the pointer move out of the control
@@ -16519,7 +16650,8 @@ var Control3D = /** @class */ (function () {
     };
     /** @hidden */
     Control3D.prototype._onPointerEnter = function (target) {
-        if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+        if (this._enterCount === -1) {
+            // -1 is for touch input, we are now sure we are with a mouse or pencil
             this._enterCount = 0;
         }
         this._enterCount++;
@@ -16735,6 +16867,144 @@ var CylinderPanel = /** @class */ (function (_super) {
     };
     return CylinderPanel;
 }(_volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__["VolumeBasedPanel"]));
+
+
+
+/***/ }),
+
+/***/ "./3D/controls/holographicBackplate.ts":
+/*!*********************************************!*\
+  !*** ./3D/controls/holographicBackplate.ts ***!
+  \*********************************************/
+/*! exports provided: HolographicBackplate */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return HolographicBackplate; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/Builders/boxBuilder */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _materials_fluentBackplate_fluentBackplateMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../materials/fluentBackplate/fluentBackplateMaterial */ "./3D/materials/fluentBackplate/fluentBackplateMaterial.ts");
+/* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
+
+
+
+
+
+/**
+ * Class used to create a holographic backplate in 3D
+ */
+var HolographicBackplate = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HolographicBackplate, _super);
+    /**
+     * Creates a new holographic backplate
+     * @param name defines the control name
+     */
+    function HolographicBackplate(name, _shareMaterials) {
+        if (_shareMaterials === void 0) { _shareMaterials = true; }
+        var _this = _super.call(this, name) || this;
+        _this._shareMaterials = _shareMaterials;
+        return _this;
+    }
+    Object.defineProperty(HolographicBackplate.prototype, "renderingGroupId", {
+        get: function () {
+            return this._model.renderingGroupId;
+        },
+        /**
+         * Rendering ground id of the backplate mesh.
+         */
+        set: function (id) {
+            this._model.renderingGroupId = id;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(HolographicBackplate.prototype, "material", {
+        /**
+         * Gets the material used by the backplate
+         */
+        get: function () {
+            return this._material;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(HolographicBackplate.prototype, "shareMaterials", {
+        /**
+         * Gets a boolean indicating if this backplate shares its material with other HolographicBackplates
+         */
+        get: function () {
+            return this._shareMaterials;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    HolographicBackplate.prototype._getTypeName = function () {
+        return "HolographicBackplate";
+    };
+    // Mesh association
+    HolographicBackplate.prototype._createNode = function (scene) {
+        var _this = this;
+        var _a;
+        var collisionMesh = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(((_a = this.name) !== null && _a !== void 0 ? _a : "HolographicBackplate") + "_CollisionMesh", {
+            width: 1.0,
+            height: 1.0,
+            depth: 1.0,
+        }, scene);
+        collisionMesh.isPickable = true;
+        collisionMesh.visibility = 0;
+        babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["SceneLoader"].ImportMeshAsync(undefined, HolographicBackplate.MODEL_BASE_URL, HolographicBackplate.MODEL_FILENAME, scene)
+            .then(function (result) {
+            var importedModel = result.meshes[1];
+            importedModel.name = _this.name + "_frontPlate";
+            importedModel.isPickable = false;
+            importedModel.parent = collisionMesh;
+            if (!!_this._material) {
+                importedModel.material = _this._material;
+            }
+            _this._model = importedModel;
+        });
+        return collisionMesh;
+    };
+    HolographicBackplate.prototype._createMaterial = function (mesh) {
+        this._material = new _materials_fluentBackplate_fluentBackplateMaterial__WEBPACK_IMPORTED_MODULE_2__["FluentBackplateMaterial"](this.name + " Material", mesh.getScene());
+    };
+    HolographicBackplate.prototype._affectMaterial = function (mesh) {
+        // Back
+        if (this._shareMaterials) {
+            if (!this._host._touchSharedMaterials["fluentBackplateMaterial"]) {
+                this._createMaterial(mesh);
+                this._host._touchSharedMaterials["fluentBackplateMaterial"] = this._material;
+            }
+            else {
+                this._material = this._host._touchSharedMaterials["fluentBackplateMaterial"];
+            }
+        }
+        else {
+            this._createMaterial(mesh);
+        }
+    };
+    /**
+     * Releases all associated resources
+     */
+    HolographicBackplate.prototype.dispose = function () {
+        _super.prototype.dispose.call(this); // will dispose main mesh ie. back plate
+        if (!this.shareMaterials) {
+            this._material.dispose();
+        }
+        this._model.dispose();
+    };
+    /**
+     * Base Url for the button model.
+     */
+    HolographicBackplate.MODEL_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
+    /**
+     * File name for the button model.
+     */
+    HolographicBackplate.MODEL_FILENAME = 'mrtk-fluent-backplate.glb';
+    return HolographicBackplate;
+}(_control3D__WEBPACK_IMPORTED_MODULE_3__["Control3D"]));
 
 
 
@@ -17097,11 +17367,286 @@ var HolographicButton = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./3D/controls/holographicSlate.ts":
+/*!*****************************************!*\
+  !*** ./3D/controls/holographicSlate.ts ***!
+  \*****************************************/
+/*! exports provided: HolographicSlate */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return HolographicSlate; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../materials/fluent/fluentMaterial */ "./3D/materials/fluent/fluentMaterial.ts");
+/* harmony import */ var _touchHolographicButton__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./touchHolographicButton */ "./3D/controls/touchHolographicButton.ts");
+/* harmony import */ var _contentDisplay3D__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./contentDisplay3D */ "./3D/controls/contentDisplay3D.ts");
+/* harmony import */ var _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../2D/controls/image */ "./2D/controls/image.ts");
+/* harmony import */ var _gizmos_slateGizmo__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../gizmos/slateGizmo */ "./3D/gizmos/slateGizmo.ts");
+/* harmony import */ var _behaviors_defaultBehavior__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../behaviors/defaultBehavior */ "./3D/behaviors/defaultBehavior.ts");
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Class used to create a holographic slate
+ */
+var HolographicSlate = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HolographicSlate, _super);
+    /**
+     * Creates a new slate
+     * @param name defines the control name
+     */
+    function HolographicSlate(name) {
+        var _this = _super.call(this, name) || this;
+        /**
+         * Dimensions of the slate
+         */
+        _this.dimensions = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Vector3"](5, 3, 0.04);
+        /**
+         * Minimum dimensions of the slate
+         */
+        _this.minDimensions = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Vector3"](3, 1.5, 0.04);
+        /**
+         * Dimensions of the backplate
+         */
+        _this.backplateDimensions = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Vector3"](5, 0.3, 0.04);
+        /**
+         * Margin between backplate and contentplate
+         */
+        _this.backPlateMargin = 0.05;
+        /**
+         * Origin in local coordinates (top left corner)
+         */
+        _this.origin = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        _this._contentScaleRatio = 1;
+        _this._followButton = new _touchHolographicButton__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicButton"]("followButton" + _this.name);
+        _this._closeButton = new _touchHolographicButton__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicButton"]("closeButton" + _this.name);
+        return _this;
+    }
+    Object.defineProperty(HolographicSlate.prototype, "renderingGroupId", {
+        get: function () {
+            return this._backPlate.renderingGroupId;
+        },
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        set: function (id) {
+            this._backPlate.renderingGroupId = id;
+            this._contentPlate.renderingGroupId = id;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(HolographicSlate.prototype, "imageUrl", {
+        /**
+         * Gets or sets the image url for the button
+         */
+        get: function () {
+            return this._imageUrl;
+        },
+        set: function (value) {
+            if (this._imageUrl === value) {
+                return;
+            }
+            this._imageUrl = value;
+            this._rebuildContent();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    /**
+     * Apply the facade texture (created from the content property).
+     * This function can be overloaded by child classes
+     * @param facadeTexture defines the AdvancedDynamicTexture to use
+     */
+    HolographicSlate.prototype._applyFacade = function (facadeTexture) {
+        this._contentMaterial.albedoTexture = facadeTexture;
+    };
+    HolographicSlate.prototype._rebuildContent = function () {
+        this._disposeFacadeTexture();
+        // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
+        if (!!document.createElement) {
+            if (this._imageUrl) {
+                var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__["Image"]();
+                image.source = this._imageUrl;
+                if (this._contentPlate) {
+                    this.content = image;
+                }
+            }
+        }
+    };
+    HolographicSlate.prototype._addControl = function (control) {
+        control._host = this._host;
+        if (this._host.utilityLayer) {
+            control._prepareNode(this._host.utilityLayer.utilityLayerScene);
+        }
+    };
+    HolographicSlate.prototype._getTypeName = function () {
+        return "HolographicSlate";
+    };
+    /**
+     * @hidden
+     */
+    HolographicSlate.prototype._positionElements = function () {
+        var followButtonMesh = this._followButton.mesh;
+        var closeButtonMesh = this._closeButton.mesh;
+        var backPlate = this._backPlate;
+        var contentPlate = this._contentPlate;
+        if (followButtonMesh && closeButtonMesh && backPlate) {
+            // World size of a button with 1 scaling
+            var buttonBaseSize = 1;
+            // Buttons take full backPlate on Y axis
+            var backPlateYScale = this.backplateDimensions.y / buttonBaseSize;
+            closeButtonMesh.scaling.setAll(backPlateYScale);
+            followButtonMesh.scaling.setAll(backPlateYScale);
+            closeButtonMesh.position
+                .copyFromFloats(this.backplateDimensions.x - backPlateYScale / 2, -this.backplateDimensions.y / 2, (-this.backplateDimensions.z / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1))
+                .addInPlace(this.origin);
+            followButtonMesh.position
+                .copyFromFloats(this.backplateDimensions.x - (3 * backPlateYScale) / 2, -this.backplateDimensions.y / 2, (-this.backplateDimensions.z / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1))
+                .addInPlace(this.origin);
+            var contentPlateHeight = this.dimensions.y - this.backplateDimensions.y - this.backPlateMargin;
+            backPlate.scaling.copyFrom(this.backplateDimensions);
+            contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, this.dimensions.z);
+            backPlate.position.copyFromFloats(this.backplateDimensions.x / 2, -(this.backplateDimensions.y / 2), 0).addInPlace(this.origin);
+            contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.backplateDimensions.y + this.backPlateMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
+        }
+    };
+    /**
+     * @hidden
+     */
+    HolographicSlate.prototype._updatePivot = function () {
+        if (!this.mesh) {
+            return;
+        }
+        // Update pivot point so it is at the center of geometry
+        var center = this.dimensions.scale(0.5);
+        // As origin is topleft corner in 2D, dimensions are calculated towards bottom right corner, thus y axis is downwards
+        center.y *= -1;
+        center.addInPlace(this.origin);
+        center.z = 0;
+        var origin = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformCoordinatesToRef(origin, this.mesh.computeWorldMatrix(true), origin);
+        this.mesh.setPivotPoint(center);
+        var origin2 = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformCoordinatesToRef(origin2, this.mesh.computeWorldMatrix(true), origin2);
+        this.mesh.position.addInPlace(origin).subtractInPlace(origin2);
+    };
+    // Mesh association
+    HolographicSlate.prototype._createNode = function (scene) {
+        var _this = this;
+        var node = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Mesh"]("slate" + this.name);
+        this._backPlate = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("backPlate" + this.name, { size: 1 }, scene);
+        this._contentPlate = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("contentPlate" + this.name, { size: 1 }, scene);
+        this._backPlate.parent = node;
+        this._contentPlate.parent = node;
+        this._addControl(this._followButton);
+        this._addControl(this._closeButton);
+        var followButtonMesh = this._followButton.mesh;
+        var closeButtonMesh = this._closeButton.mesh;
+        followButtonMesh.parent = node;
+        closeButtonMesh.parent = node;
+        this._positionElements();
+        this._followButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.FOLLOW_ICON_FILENAME;
+        this._closeButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.CLOSE_ICON_FILENAME;
+        this._followButton.backMaterial.alpha = 0;
+        this._closeButton.backMaterial.alpha = 0;
+        this._followButton.onPointerClickObservable.add(function () {
+            _this._defaultBehavior.followBehaviorEnabled = !_this._defaultBehavior.followBehaviorEnabled;
+            if (_this._defaultBehavior.followBehaviorEnabled) {
+                _this._defaultBehavior.followBehavior.recenter();
+            }
+        });
+        this._closeButton.onPointerClickObservable.add(function () {
+            _this.dispose();
+        });
+        node.rotationQuaternion = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].Identity();
+        node.isVisible = false;
+        return node;
+    };
+    HolographicSlate.prototype._affectMaterial = function (mesh) {
+        var _this = this;
+        // TODO share materials
+        this._backPlateMaterial = new _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_2__["FluentMaterial"](this.name + "plateMaterial", mesh.getScene());
+        this._backPlateMaterial.albedoColor = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.08, 0.15, 0.55);
+        this._backPlateMaterial.renderBorders = true;
+        this._backPlateMaterial.renderHoverLight = true;
+        this._pickedPointObserver = this._host.onPickedPointChangedObservable.add(function (pickedPoint) {
+            if (pickedPoint) {
+                _this._backPlateMaterial.hoverPosition = pickedPoint;
+                _this._backPlateMaterial.hoverColor.a = 1.0;
+            }
+            else {
+                _this._backPlateMaterial.hoverColor.a = 0;
+            }
+        });
+        this._contentMaterial = new _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_2__["FluentMaterial"](this.name + "contentMaterial", mesh.getScene());
+        this._contentMaterial.renderBorders = true;
+        this._backPlate.material = this._backPlateMaterial;
+        this._contentPlate.material = this._contentMaterial;
+        this._rebuildContent();
+    };
+    /** @hidden **/
+    HolographicSlate.prototype._prepareNode = function (scene) {
+        _super.prototype._prepareNode.call(this, scene);
+        this._gizmo = new _gizmos_slateGizmo__WEBPACK_IMPORTED_MODULE_6__["SlateGizmo"](this._host.utilityLayer);
+        this._gizmo.attachedSlate = this;
+        this._defaultBehavior = new _behaviors_defaultBehavior__WEBPACK_IMPORTED_MODULE_7__["DefaultBehavior"]();
+        this._defaultBehavior.attach(this.node, this._backPlate);
+        this._updatePivot();
+    };
+    /**
+     * Releases all associated resources
+     */
+    HolographicSlate.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        this._backPlateMaterial.dispose();
+        this._contentMaterial.dispose();
+        this._backPlate.dispose();
+        this._contentPlate.dispose();
+        this._followButton.dispose();
+        this._closeButton.dispose();
+        if (this._pickedPointObserver) {
+            this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
+            this._pickedPointObserver = null;
+        }
+        this._defaultBehavior.detach();
+        this._gizmo.dispose();
+    };
+    /**
+     * Base Url for the assets.
+     */
+    HolographicSlate.ASSETS_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
+    /**
+     * File name for the close icon.
+     */
+    HolographicSlate.CLOSE_ICON_FILENAME = "IconClose.png";
+    /**
+     * File name for the close icon.
+     */
+    HolographicSlate.FOLLOW_ICON_FILENAME = "IconFollowMe.png";
+    return HolographicSlate;
+}(_contentDisplay3D__WEBPACK_IMPORTED_MODULE_4__["ContentDisplay3D"]));
+
+
+
+/***/ }),
+
 /***/ "./3D/controls/index.ts":
 /*!******************************!*\
   !*** ./3D/controls/index.ts ***!
   \******************************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17124,40 +17669,52 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _holographicButton__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./holographicButton */ "./3D/controls/holographicButton.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return _holographicButton__WEBPACK_IMPORTED_MODULE_5__["HolographicButton"]; });
 
-/* harmony import */ var _meshButton3D__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./meshButton3D */ "./3D/controls/meshButton3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeshButton3D", function() { return _meshButton3D__WEBPACK_IMPORTED_MODULE_6__["MeshButton3D"]; });
+/* harmony import */ var _holographicSlate__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./holographicSlate */ "./3D/controls/holographicSlate.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return _holographicSlate__WEBPACK_IMPORTED_MODULE_6__["HolographicSlate"]; });
 
-/* harmony import */ var _planePanel__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./planePanel */ "./3D/controls/planePanel.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _planePanel__WEBPACK_IMPORTED_MODULE_7__["PlanePanel"]; });
+/* harmony import */ var _meshButton3D__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./meshButton3D */ "./3D/controls/meshButton3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeshButton3D", function() { return _meshButton3D__WEBPACK_IMPORTED_MODULE_7__["MeshButton3D"]; });
 
-/* harmony import */ var _scatterPanel__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./scatterPanel */ "./3D/controls/scatterPanel.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _scatterPanel__WEBPACK_IMPORTED_MODULE_8__["ScatterPanel"]; });
+/* harmony import */ var _nearMenu__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./nearMenu */ "./3D/controls/nearMenu.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NearMenu", function() { return _nearMenu__WEBPACK_IMPORTED_MODULE_8__["NearMenu"]; });
 
-/* harmony import */ var _slider3D__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./slider3D */ "./3D/controls/slider3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _slider3D__WEBPACK_IMPORTED_MODULE_9__["Slider3D"]; });
+/* harmony import */ var _planePanel__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./planePanel */ "./3D/controls/planePanel.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _planePanel__WEBPACK_IMPORTED_MODULE_9__["PlanePanel"]; });
 
-/* harmony import */ var _spherePanel__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./spherePanel */ "./3D/controls/spherePanel.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _spherePanel__WEBPACK_IMPORTED_MODULE_10__["SpherePanel"]; });
+/* harmony import */ var _scatterPanel__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./scatterPanel */ "./3D/controls/scatterPanel.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _scatterPanel__WEBPACK_IMPORTED_MODULE_10__["ScatterPanel"]; });
 
-/* harmony import */ var _stackPanel3D__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./stackPanel3D */ "./3D/controls/stackPanel3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _stackPanel3D__WEBPACK_IMPORTED_MODULE_11__["StackPanel3D"]; });
+/* harmony import */ var _slider3D__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./slider3D */ "./3D/controls/slider3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _slider3D__WEBPACK_IMPORTED_MODULE_11__["Slider3D"]; });
 
-/* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_12__["ButtonState"]; });
+/* harmony import */ var _spherePanel__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./spherePanel */ "./3D/controls/spherePanel.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _spherePanel__WEBPACK_IMPORTED_MODULE_12__["SpherePanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_12__["TouchButton3D"]; });
+/* harmony import */ var _stackPanel3D__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./stackPanel3D */ "./3D/controls/stackPanel3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _stackPanel3D__WEBPACK_IMPORTED_MODULE_13__["StackPanel3D"]; });
 
-/* harmony import */ var _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./touchMeshButton3D */ "./3D/controls/touchMeshButton3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_13__["TouchMeshButton3D"]; });
+/* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_14__["ButtonState"]; });
 
-/* harmony import */ var _touchHolographicButton__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./touchHolographicButton */ "./3D/controls/touchHolographicButton.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _touchHolographicButton__WEBPACK_IMPORTED_MODULE_14__["TouchHolographicButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_14__["TouchButton3D"]; });
 
-/* harmony import */ var _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./touchToggleButton3D */ "./3D/controls/touchToggleButton3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_15__["TouchToggleButton3D"]; });
+/* harmony import */ var _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./touchMeshButton3D */ "./3D/controls/touchMeshButton3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_15__["TouchMeshButton3D"]; });
 
-/* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_16__["VolumeBasedPanel"]; });
+/* harmony import */ var _touchHolographicButton__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./touchHolographicButton */ "./3D/controls/touchHolographicButton.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _touchHolographicButton__WEBPACK_IMPORTED_MODULE_16__["TouchHolographicButton"]; });
+
+/* harmony import */ var _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./touchToggleButton3D */ "./3D/controls/touchToggleButton3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_17__["TouchToggleButton3D"]; });
+
+/* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_18__["VolumeBasedPanel"]; });
+
+/* harmony import */ var _holographicBackplate__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./holographicBackplate */ "./3D/controls/holographicBackplate.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _holographicBackplate__WEBPACK_IMPORTED_MODULE_19__["HolographicBackplate"]; });
+
+
+
 
 
 
@@ -17252,6 +17809,195 @@ var MeshButton3D = /** @class */ (function (_super) {
     };
     return MeshButton3D;
 }(_button3D__WEBPACK_IMPORTED_MODULE_1__["Button3D"]));
+
+
+
+/***/ }),
+
+/***/ "./3D/controls/nearMenu.ts":
+/*!*********************************!*\
+  !*** ./3D/controls/nearMenu.ts ***!
+  \*********************************/
+/*! exports provided: NearMenu */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NearMenu", function() { return NearMenu; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
+/* harmony import */ var babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Meshes/mesh */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../materials/fluent/fluentMaterial */ "./3D/materials/fluent/fluentMaterial.ts");
+/* harmony import */ var _touchHolographicButton__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./touchHolographicButton */ "./3D/controls/touchHolographicButton.ts");
+/* harmony import */ var _behaviors_defaultBehavior__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../behaviors/defaultBehavior */ "./3D/behaviors/defaultBehavior.ts");
+
+
+
+
+
+
+
+
+
+/**
+ * NearMenu that displays buttons and follows the camera
+ */
+var NearMenu = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NearMenu, _super);
+    /**
+     * Creates a near menu GUI 3D control
+     * @param name name of the near menu
+     */
+    function NearMenu(name) {
+        var _this = _super.call(this) || this;
+        _this._isPinned = false;
+        _this.name = name;
+        _this._defaultBehavior = new _behaviors_defaultBehavior__WEBPACK_IMPORTED_MODULE_5__["DefaultBehavior"]();
+        _this._defaultBehavior.sixDofDragBehavior.onDragObservable.add(function () {
+            _this.isPinned = true;
+        });
+        return _this;
+    }
+    Object.defineProperty(NearMenu.prototype, "isPinned", {
+        /**
+         * Indicates if the near menu is world-pinned
+         */
+        get: function () {
+            return this._isPinned;
+        },
+        set: function (value) {
+            this._isPinned = value;
+            if (this._isPinned) {
+                this._pinMaterial.emissiveColor.copyFromFloats(0.25, 0.4, 0.95);
+                this._defaultBehavior.followBehaviorEnabled = false;
+            }
+            else {
+                this._pinMaterial.emissiveColor.copyFromFloats(0.08, 0.15, 0.55);
+                this._defaultBehavior.followBehaviorEnabled = true;
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    NearMenu.prototype._createPinButton = function (parent) {
+        var _this = this;
+        var control = new _touchHolographicButton__WEBPACK_IMPORTED_MODULE_4__["TouchHolographicButton"]("pin" + this.name, false);
+        control.imageUrl = NearMenu.ASSETS_BASE_URL + NearMenu.PIN_ICON_FILENAME;
+        control.parent = this;
+        control._host = this._host;
+        control.onPointerClickObservable.add(function () { return (_this.isPinned = !_this.isPinned); });
+        if (this._host.utilityLayer) {
+            control._prepareNode(this._host.utilityLayer.utilityLayerScene);
+            this._pinMaterial = control.backMaterial;
+            this._pinMaterial.diffuseColor.copyFromFloats(0, 0, 0);
+            if (control.node) {
+                control.node.parent = parent;
+            }
+        }
+        return control;
+    };
+    NearMenu.prototype._createNode = function (scene) {
+        var node = new babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["Mesh"]("nearMenu" + this.name);
+        this._backPlate = babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox("backPlate" + this.name, { size: 1 }, scene);
+        this._backPlate.parent = node;
+        this._pinButton = this._createPinButton(node);
+        this.isPinned = false;
+        this._defaultBehavior.attach(node, this._backPlate);
+        return node;
+    };
+    NearMenu.prototype._affectMaterial = function (mesh) {
+        var _this = this;
+        this._backPlateMaterial = new _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_3__["FluentMaterial"](this.name + "backPlateMaterial", mesh.getScene());
+        this._backPlateMaterial.albedoColor = new babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["Color3"](0.08, 0.15, 0.55);
+        this._backPlateMaterial.renderBorders = true;
+        this._backPlateMaterial.renderHoverLight = true;
+        this._pickedPointObserver = this._host.onPickedPointChangedObservable.add(function (pickedPoint) {
+            if (pickedPoint) {
+                _this._backPlateMaterial.hoverPosition = pickedPoint;
+                _this._backPlateMaterial.hoverColor.a = 1.0;
+            }
+            else {
+                _this._backPlateMaterial.hoverColor.a = 0;
+            }
+        });
+        this._backPlate.material = this._backPlateMaterial;
+    };
+    NearMenu.prototype._mapGridNode = function (control, nodePosition) {
+        // Simple plane mapping for the menu
+        var mesh = control.mesh;
+        if (!mesh) {
+            return;
+        }
+        control.position = nodePosition.clone();
+        if (!this._currentMin) {
+            this._currentMin = nodePosition.clone();
+            this._currentMax = nodePosition.clone();
+        }
+        this._currentMin.minimizeInPlace(nodePosition);
+        this._currentMax.maximizeInPlace(nodePosition);
+    };
+    NearMenu.prototype._finalProcessing = function () {
+        this._currentMin.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
+        this._currentMax.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
+        var extendSize = this._currentMax.subtract(this._currentMin);
+        // Also add a % margin
+        this._backPlate.scaling.x = extendSize.x + this._cellWidth * 1.25;
+        this._backPlate.scaling.y = extendSize.y + this._cellHeight * 1.25;
+        this._backPlate.scaling.z = 0.001;
+        for (var i = 0; i < this._children.length; i++) {
+            this._children[i].position.subtractInPlace(this._currentMin).subtractInPlace(extendSize.scale(0.5));
+            this._children[i].position.z -= 0.01;
+        }
+        this._currentMin = null;
+        this._currentMax = null;
+        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
+        this._defaultBehavior.followBehavior.minimumDistance = extendSize.length() * 0.5 * this.scaling.length();
+        this._defaultBehavior.followBehavior.maximumDistance = extendSize.length() * 1.5 * this.scaling.length();
+        this._defaultBehavior.followBehavior.defaultDistance = extendSize.length() * this.scaling.length();
+    };
+    /**
+     * Adds a button to the near menu.
+     * Please note that the back material of the button will be set to transparent as it is attached to the near menu.
+     *
+     * @param button Button to add
+     * @returns This near menu
+     */
+    NearMenu.prototype.addButton = function (button) {
+        _super.prototype.addControl.call(this, button);
+        if (button.backMaterial) {
+            button.backMaterial.alpha = 0;
+        }
+        return this;
+    };
+    /**
+     * This method should not be used directly. It is inherited from `Container3D`.
+     * Please use `addButton` instead.
+     * @param _control
+     * @returns
+     */
+    NearMenu.prototype.addControl = function (_control) {
+        babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["Logger"].Warn("Near menu can only contain buttons. Please use the method `addButton` instead.");
+        return this;
+    };
+    /**
+     * Disposes the near menu
+     */
+    NearMenu.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        this._defaultBehavior.detach();
+        this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
+    };
+    /**
+     * Base Url for the assets.
+     */
+    NearMenu.ASSETS_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
+    /**
+     * File name for the close icon.
+     */
+    NearMenu.PIN_ICON_FILENAME = "IconPin.png";
+    return NearMenu;
+}(_volumeBasedPanel__WEBPACK_IMPORTED_MODULE_1__["VolumeBasedPanel"]));
 
 
 
@@ -18432,27 +19178,27 @@ var TouchHolographicButton = /** @class */ (function (_super) {
     };
     TouchHolographicButton.prototype._rebuildContent = function () {
         this._disposeFacadeTexture();
-        var panel = new _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_3__["StackPanel"]();
-        panel.isVertical = true;
-        if (this._imageUrl) {
-            var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_4__["Image"]();
-            image.source = this._imageUrl;
-            image.paddingTop = "40px";
-            image.height = "180px";
-            image.width = "100px";
-            image.paddingBottom = "40px";
-            panel.addControl(image);
-        }
-        if (this._text) {
-            var text = new _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_5__["TextBlock"]();
-            text.text = this._text;
-            text.color = "white";
-            text.height = "30px";
-            text.fontSize = 24;
-            panel.addControl(text);
-        }
         // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
         if (!!document.createElement) {
+            var panel = new _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_3__["StackPanel"]();
+            panel.isVertical = true;
+            if (this._imageUrl) {
+                var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_4__["Image"]();
+                image.source = this._imageUrl;
+                image.paddingTop = "40px";
+                image.height = "180px";
+                image.width = "100px";
+                image.paddingBottom = "40px";
+                panel.addControl(image);
+            }
+            if (this._text) {
+                var text = new _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_5__["TextBlock"]();
+                text.text = this._text;
+                text.color = "white";
+                text.height = "30px";
+                text.fontSize = 24;
+                panel.addControl(text);
+            }
             this.content = panel;
         }
     };
@@ -18483,7 +19229,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         this._backPlate = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "BackMesh", {
             width: 1.0,
             height: 1.0,
-            depth: backPlateDepth
+            depth: backPlateDepth,
         }, scene);
         this._backPlate.parent = collisionMesh;
         this._backPlate.position.z = 0.5 - backPlateDepth / 2;
@@ -18563,11 +19309,11 @@ var TouchHolographicButton = /** @class */ (function (_super) {
     /**
      * Base Url for the button model.
      */
-    TouchHolographicButton.MODEL_BASE_URL = 'https://assets.babylonjs.com/meshes/MRTK/';
+    TouchHolographicButton.MODEL_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
     /**
      * File name for the button model.
      */
-    TouchHolographicButton.MODEL_FILENAME = 'mrtk-fluent-button.glb';
+    TouchHolographicButton.MODEL_FILENAME = "mrtk-fluent-button.glb";
     return TouchHolographicButton;
 }(_touchButton3D__WEBPACK_IMPORTED_MODULE_7__["TouchButton3D"]));
 
@@ -18930,6 +19676,360 @@ var VolumeBasedPanel = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./3D/gizmos/index.ts":
+/*!****************************!*\
+  !*** ./3D/gizmos/index.ts ***!
+  \****************************/
+/*! exports provided: SlateGizmo */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _slateGizmo__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./slateGizmo */ "./3D/gizmos/slateGizmo.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return _slateGizmo__WEBPACK_IMPORTED_MODULE_0__["SlateGizmo"]; });
+
+
+
+
+/***/ }),
+
+/***/ "./3D/gizmos/slateGizmo.ts":
+/*!*********************************!*\
+  !*** ./3D/gizmos/slateGizmo.ts ***!
+  \*********************************/
+/*! exports provided: SlateGizmo */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return SlateGizmo; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Behaviors/Meshes/pointerDragBehavior */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+
+
+
+
+
+/**
+ * Gizmo to resize 2D slates
+ */
+var SlateGizmo = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SlateGizmo, _super);
+    function SlateGizmo(utilityLayer) {
+        var _this = _super.call(this, utilityLayer) || this;
+        _this._boundingDimensions = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        _this._dragPlaneNormal = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 1);
+        _this._tmpQuaternion = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Quaternion"]();
+        _this._tmpVector = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        // Ordered bl, br, tr, tl
+        _this._corners = [];
+        // Ordered left, bottom, right, top
+        _this._sides = [];
+        _this._boundingBoxGizmo = {
+            min: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](),
+            max: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](),
+        };
+        /**
+         * Value we use to offset handles from mesh
+         */
+        _this._margin = 1;
+        _this._attachedSlate = null;
+        /**
+         * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
+         */
+        _this.fixedScreenSize = false;
+        /**
+         * The distance away from the object which the draggable meshes should appear world sized when fixedScreenSize is set to true (default: 10)
+         */
+        _this.fixedScreenSizeDistanceFactor = 10;
+        /**
+         * Size of the handles
+         */
+        _this.handleSize = 0.1;
+        _this._createNode();
+        _this.updateScale = false;
+        return _this;
+    }
+    Object.defineProperty(SlateGizmo.prototype, "attachedSlate", {
+        get: function () {
+            return this._attachedSlate;
+        },
+        /**
+         * The slate attached to this gizmo
+         */
+        set: function (control) {
+            this._attachedSlate = control;
+            if (this._attachedSlate) {
+                this.attachedMesh = this._attachedSlate.mesh;
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    SlateGizmo.prototype._createNode = function () {
+        var _this = this;
+        this._handlesParent = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]("handlesParent", this.gizmoLayer.utilityLayerScene);
+        this._handlesParent.rotationQuaternion = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].Identity();
+        var masksCorners = [
+            {
+                dimensions: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](-1, -1, 0),
+                origin: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 0, 0),
+            },
+            {
+                dimensions: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, -1, 0),
+                origin: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0),
+            },
+            {
+                dimensions: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 1, 0),
+                origin: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 1, 0),
+            },
+            {
+                dimensions: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](-1, 1, 0),
+                origin: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 1, 0),
+            },
+        ];
+        var masksSides = [
+            {
+                dimensions: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](-1, 0, 0),
+                origin: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 0, 0),
+            },
+            {
+                dimensions: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, -1, 0),
+                origin: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0),
+            },
+            {
+                dimensions: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 0, 0),
+                origin: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0),
+            },
+            {
+                dimensions: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 1, 0),
+                origin: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 1, 0),
+            },
+        ];
+        for (var i = 0; i < 4; i++) {
+            var node = this._createAngleMesh();
+            this._corners.push(node);
+            node.rotation.z = (Math.PI / 2) * i;
+            node.scaling.setAll(this.handleSize);
+            node.parent = this._handlesParent;
+            this._assignDragBehavior(node, function (originStart, dimensionsStart, offset, masks) { return _this._moveHandle(originStart, dimensionsStart, offset, masks, true); }, masksCorners[i]);
+        }
+        for (var i = 0; i < 4; i++) {
+            var node = this._createSideMesh();
+            this._sides.push(node);
+            node.rotation.z = (Math.PI / 2) * i;
+            node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
+            node.parent = this._handlesParent;
+            this._assignDragBehavior(node, function (originStart, dimensionsStart, offset, masks) { return _this._moveHandle(originStart, dimensionsStart, offset, masks, false); }, masksSides[i]);
+        }
+        this._handlesParent.parent = this._rootMesh;
+    };
+    SlateGizmo.prototype._keepAspectRatio = function (vector, aspectRatio, invertDiagonal) {
+        if (invertDiagonal === void 0) { invertDiagonal = false; }
+        var axis = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[0];
+        axis.copyFromFloats(aspectRatio, 1, 0).normalize();
+        if (invertDiagonal) {
+            axis.y *= -1;
+        }
+        var dot = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(vector, axis);
+        vector.copyFrom(axis).scaleInPlace(dot);
+    };
+    SlateGizmo.prototype._clampDimensions = function (vector, dimensions, mask, keepAspectRatio) {
+        if (keepAspectRatio === void 0) { keepAspectRatio = false; }
+        var impact = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[0];
+        impact.copyFrom(vector).multiplyInPlace(mask);
+        var clampedDimensions = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[1];
+        clampedDimensions.copyFromFloats(Math.max(this._attachedSlate.minDimensions.x, impact.x + dimensions.x), Math.max(this._attachedSlate.minDimensions.y, impact.y + dimensions.y), 0);
+        // Calculating the real impact of vector on clamped dimensions
+        impact.copyFrom(clampedDimensions).subtractInPlace(dimensions);
+        var factor = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[2];
+        factor.copyFrom(impact);
+        if (keepAspectRatio) {
+            // We want to keep aspect ratio of vector while clamping so we move by the minimum of the 2 dimensions
+            factor.x = Math.min(Math.abs(clampedDimensions.x - dimensions.x), Math.abs(clampedDimensions.y - dimensions.y));
+            factor.y = factor.x;
+        }
+        vector.x = Math.sign(vector.x) * Math.abs(factor.x);
+        vector.y = Math.sign(vector.y) * Math.abs(factor.y);
+    };
+    SlateGizmo.prototype._moveHandle = function (originStart, dimensionsStart, offset, masks, isCorner) {
+        if (!this._attachedSlate) {
+            return;
+        }
+        if (isCorner) {
+            var aspectRatio = dimensionsStart.x / dimensionsStart.y;
+            this._keepAspectRatio(offset, aspectRatio, masks.dimensions.x * masks.dimensions.y < 0);
+        }
+        this._clampDimensions(offset, dimensionsStart, masks.dimensions, isCorner);
+        var offsetOriginMasked = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[0];
+        var offsetDimensionsMasked = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[1];
+        offsetOriginMasked.copyFrom(offset).multiplyInPlace(masks.origin);
+        offsetDimensionsMasked.copyFrom(offset).multiplyInPlace(masks.dimensions);
+        this._attachedSlate.origin.copyFrom(originStart).addInPlace(offsetOriginMasked);
+        this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offsetDimensionsMasked);
+        this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
+    };
+    SlateGizmo.prototype._assignDragBehavior = function (node, moveFn, masks) {
+        var _this = this;
+        var dragBehavior = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["PointerDragBehavior"]({
+            dragPlaneNormal: this._dragPlaneNormal,
+        });
+        dragBehavior.moveAttached = false;
+        dragBehavior.updateDragPlane = false;
+        node.addBehavior(dragBehavior);
+        var dimensionsStart = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"]();
+        var originStart = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"]();
+        var dragOrigin = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"]();
+        var toObjectFrame = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Matrix"]();
+        var previousFollowState = false;
+        this._dragStartObserver = dragBehavior.onDragStartObservable.add(function (event) {
+            if (_this.attachedSlate && _this.attachedMesh) {
+                dimensionsStart.copyFrom(_this.attachedSlate.dimensions);
+                originStart.copyFrom(_this.attachedSlate.origin);
+                dragOrigin.copyFrom(event.dragPlanePoint);
+                toObjectFrame.copyFrom(_this.attachedMesh.computeWorldMatrix(true));
+                toObjectFrame.invert();
+                previousFollowState = _this.attachedSlate._defaultBehavior.followBehaviorEnabled;
+                _this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
+            }
+        });
+        this._draggingObserver = dragBehavior.onDragObservable.add(function (event) {
+            if (_this.attachedSlate && _this.attachedMesh) {
+                _this._tmpVector.copyFrom(event.dragPlanePoint);
+                _this._tmpVector.subtractInPlace(dragOrigin);
+                babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(_this._tmpVector, toObjectFrame, _this._tmpVector);
+                moveFn(originStart, dimensionsStart, _this._tmpVector, masks);
+                _this.attachedSlate._positionElements();
+                _this.updateBoundingBox();
+            }
+        });
+        this._dragEndObserver = dragBehavior.onDragEndObservable.add(function () {
+            if (_this.attachedSlate && _this.attachedNode) {
+                _this.attachedSlate._updatePivot();
+                _this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
+            }
+        });
+        this._dragBehavior = dragBehavior;
+    };
+    SlateGizmo.prototype._createAngleMesh = function () {
+        // Create 2 boxes making a bottom left corner
+        var horizontalBox = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
+        var verticalBox = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("angleVert", { width: 1, height: 3, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
+        var angleNode = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]("angle", this.gizmoLayer.utilityLayerScene);
+        horizontalBox.parent = angleNode;
+        verticalBox.parent = angleNode;
+        horizontalBox.position.x = 1;
+        verticalBox.position.y = 1;
+        var mat = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("slategizmo", this.gizmoLayer.utilityLayerScene);
+        mat.diffuseColor.copyFromFloats(0, 0, 0);
+        mat.emissiveColor.copyFromFloats(1, 1, 1);
+        horizontalBox.material = mat;
+        verticalBox.material = mat;
+        return angleNode;
+    };
+    SlateGizmo.prototype._createSideMesh = function () {
+        // Create a simple vertical rectangle
+        var verticalBox = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
+        var sideNode = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]("side", this.gizmoLayer.utilityLayerScene);
+        verticalBox.parent = sideNode;
+        var mat = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("slategizmo", this.gizmoLayer.utilityLayerScene);
+        mat.diffuseColor.copyFromFloats(0, 0, 0);
+        mat.emissiveColor.copyFromFloats(1, 1, 1);
+        verticalBox.material = mat;
+        return sideNode;
+    };
+    SlateGizmo.prototype._attachedNodeChanged = function (value) {
+        if (value) {
+            this.updateBoundingBox();
+        }
+    };
+    /**
+     * Updates the bounding box information for the gizmo
+     */
+    SlateGizmo.prototype.updateBoundingBox = function () {
+        if (this.attachedMesh) {
+            babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["PivotTools"]._RemoveAndStorePivotPoint(this.attachedMesh);
+            // Store original parent
+            var originalParent = this.attachedMesh.parent;
+            this.attachedMesh.setParent(null);
+            this._update();
+            // Rotate based on axis
+            if (!this.attachedMesh.rotationQuaternion) {
+                this.attachedMesh.rotationQuaternion = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
+            }
+            // Store original position and reset mesh to origin before computing the bounding box
+            this._tmpQuaternion.copyFrom(this.attachedMesh.rotationQuaternion);
+            this._tmpVector.copyFrom(this.attachedMesh.position);
+            this.attachedMesh.rotationQuaternion.set(0, 0, 0, 1);
+            this.attachedMesh.position.set(0, 0, 0);
+            // Update bounding dimensions/positions
+            var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors();
+            boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
+            this._boundingBoxGizmo.min = boundingMinMax.min;
+            this._boundingBoxGizmo.max = boundingMinMax.max;
+            // Update handles of the gizmo
+            this._updateHandlesPosition();
+            // Restore position/rotation values
+            this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
+            this.attachedMesh.position.copyFrom(this._tmpVector);
+            babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["PivotTools"]._RestorePivotPoint(this.attachedMesh);
+            // Restore original parent
+            this.attachedMesh.setParent(originalParent);
+        }
+    };
+    SlateGizmo.prototype._updateHandlesPosition = function () {
+        var min = this._boundingBoxGizmo.min.clone();
+        var max = this._boundingBoxGizmo.max.clone();
+        var handleScaling = this._corners[0].scaling.length();
+        min.x -= this._margin * handleScaling;
+        min.y -= this._margin * handleScaling;
+        max.x += this._margin * handleScaling;
+        max.y += this._margin * handleScaling;
+        var center = min.add(max).scaleInPlace(0.5);
+        this._corners[0].position.copyFromFloats(min.x, min.y, 0);
+        this._corners[1].position.copyFromFloats(max.x, min.y, 0);
+        this._corners[2].position.copyFromFloats(max.x, max.y, 0);
+        this._corners[3].position.copyFromFloats(min.x, max.y, 0);
+        this._sides[0].position.copyFromFloats(min.x, center.y, 0);
+        this._sides[1].position.copyFromFloats(center.x, min.y, 0);
+        this._sides[2].position.copyFromFloats(max.x, center.y, 0);
+        this._sides[3].position.copyFromFloats(center.x, max.y, 0);
+    };
+    SlateGizmo.prototype._update = function () {
+        _super.prototype._update.call(this);
+        if (!this.gizmoLayer.utilityLayerScene.activeCamera) {
+            return;
+        }
+        if (this._attachedSlate && this._attachedSlate.mesh) {
+            if (this.fixedScreenSize) {
+                this._attachedSlate.mesh.absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
+                var distanceFromCamera = (this.handleSize * this._tmpVector.length()) / this.fixedScreenSizeDistanceFactor;
+                for (var i = 0; i < this._corners.length; i++) {
+                    this._corners[i].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
+                }
+            }
+            this._updateHandlesPosition();
+        }
+    };
+    SlateGizmo.prototype.dispose = function () {
+        // Will dispose rootMesh and all descendants
+        _super.prototype.dispose.call(this);
+        this._dragBehavior.onDragStartObservable.remove(this._dragStartObserver);
+        this._dragBehavior.onDragObservable.remove(this._draggingObserver);
+        this._dragBehavior.onDragEndObservable.remove(this._dragEndObserver);
+        this._dragBehavior.detach();
+    };
+    return SlateGizmo;
+}(babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_1__["Gizmo"]));
+
+
+
+/***/ }),
+
 /***/ "./3D/gui3DManager.ts":
 /*!****************************!*\
   !*** ./3D/gui3DManager.ts ***!
@@ -19018,7 +20118,7 @@ var GUI3DManager = /** @class */ (function () {
             _this._utilityLayer = null;
             _this.dispose();
         });
-        this._utilityLayer = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["UtilityLayerRenderer"](this._scene);
+        this._utilityLayer = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["UtilityLayerRenderer"]._CreateDefaultUtilityLayerFromScene(this._scene);
         this._utilityLayer.onlyCheckPointerDownEvents = false;
         this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.mainSceneTrackerPredicate = function (mesh) {
@@ -19213,7 +20313,7 @@ var GUI3DManager = /** @class */ (function () {
 /*!*********************!*\
   !*** ./3D/index.ts ***!
   \*********************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, SlateGizmo, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19231,7 +20331,11 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["HolographicButton"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["HolographicSlate"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeshButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["MeshButton3D"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NearMenu", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["NearMenu"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["PlanePanel"]; });
 
@@ -19255,6 +20359,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["VolumeBasedPanel"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["HolographicBackplate"]; });
+
 /* harmony import */ var _materials__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./materials */ "./3D/materials/index.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return _materials__WEBPACK_IMPORTED_MODULE_1__["FluentMaterialDefines"]; });
 
@@ -19262,11 +20368,17 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _materials__WEBPACK_IMPORTED_MODULE_1__["FluentButtonMaterial"]; });
 
-/* harmony import */ var _gui3DManager__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./gui3DManager */ "./3D/gui3DManager.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _gui3DManager__WEBPACK_IMPORTED_MODULE_2__["GUI3DManager"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _materials__WEBPACK_IMPORTED_MODULE_1__["FluentBackplateMaterial"]; });
 
-/* harmony import */ var _vector3WithInfo__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./vector3WithInfo */ "./3D/vector3WithInfo.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return _vector3WithInfo__WEBPACK_IMPORTED_MODULE_3__["Vector3WithInfo"]; });
+/* harmony import */ var _gizmos__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./gizmos */ "./3D/gizmos/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return _gizmos__WEBPACK_IMPORTED_MODULE_2__["SlateGizmo"]; });
+
+/* harmony import */ var _gui3DManager__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./gui3DManager */ "./3D/gui3DManager.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _gui3DManager__WEBPACK_IMPORTED_MODULE_3__["GUI3DManager"]; });
+
+/* harmony import */ var _vector3WithInfo__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./vector3WithInfo */ "./3D/vector3WithInfo.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return _vector3WithInfo__WEBPACK_IMPORTED_MODULE_4__["Vector3WithInfo"]; });
+
 
 
 
@@ -19638,6 +20750,520 @@ var fluentVertexShader = { name: name, shader: shader };
 
 /***/ }),
 
+/***/ "./3D/materials/fluentBackplate/fluentBackplateMaterial.ts":
+/*!*****************************************************************!*\
+  !*** ./3D/materials/fluentBackplate/fluentBackplateMaterial.ts ***!
+  \*****************************************************************/
+/*! exports provided: FluentBackplateMaterial */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return FluentBackplateMaterial; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _shaders_fluentBackplate_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./shaders/fluentBackplate.fragment */ "./3D/materials/fluentBackplate/shaders/fluentBackplate.fragment.ts");
+/* harmony import */ var _shaders_fluentBackplate_vertex__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shaders/fluentBackplate.vertex */ "./3D/materials/fluentBackplate/shaders/fluentBackplate.vertex.ts");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/** @hidden */
+var FluentBackplateMaterialDefines = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FluentBackplateMaterialDefines, _super);
+    function FluentBackplateMaterialDefines() {
+        var _this = _super.call(this) || this;
+        _this.BLOB_ENABLE = true;
+        _this.BLOB_ENABLE_2 = true;
+        _this.SMOOTH_EDGES = true;
+        _this.IRIDESCENT_MAP_ENABLE = true;
+        _this._needNormals = true;
+        _this.rebuild();
+        return _this;
+    }
+    return FluentBackplateMaterialDefines;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialDefines"]));
+/**
+ * Class used to render square buttons with fluent desgin
+ */
+var FluentBackplateMaterial = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FluentBackplateMaterial, _super);
+    function FluentBackplateMaterial(name, scene) {
+        var _this = _super.call(this, name, scene) || this;
+        /**
+         * Gets or sets the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
+         */
+        _this.radius = 0.03;
+        /**
+         * Gets or sets the line width of the backplate.
+         */
+        _this.lineWidth = 0.01;
+        /**
+         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
+         */
+        _this.absoluteSizes = false;
+        /** @hidden */
+        _this._filterWidth = 1;
+        /**
+         * Gets or sets the base color of the backplate.
+         */
+        _this.baseColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0392157, 0.0666667, 0.207843, 1);
+        /**
+         * Gets or sets the line color of the backplate.
+         */
+        _this.lineColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.14902, 0.133333, 0.384314, 1);
+        /**
+         * Gets or sets the intensity of the fluent hover glow effect.
+         */
+        _this.blobIntensity = 0.98;
+        /**
+         * Gets or sets the far size of the fluent hover glow effect.
+         */
+        _this.blobFarSize = 0.04;
+        /**
+         * Gets or sets the distance considered "near" to the backplate, which controls the size of the fluent hover glow effect (see blobNearSize).
+         */
+        _this.blobNearDistance = 0;
+        /**
+         * Gets or sets the distance considered "far" from the backplate, which controls the size of the fluent hover glow effect (see blobFarSize).
+         */
+        _this.blobFarDistance = 0.08;
+        /**
+         * Gets or sets the length of the fluent hover glow effect fade.
+         */
+        _this.blobFadeLength = 0.08;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the left pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        _this.blobNearSize = 0.22;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        _this.blobPulse = 0;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        _this.blobFade = 0;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the right pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        _this.blobNearSize2 = 0.22;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        _this.blobPulse2 = 0;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 0.
+         */
+        _this.blobFade2 = 0;
+        /** @hidden */
+        _this._rate = 0.135;
+        /**
+         * Gets or sets the color of the highlights on the backplate line.
+         */
+        _this.highlightColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.98, 0.98, 0.98, 1);
+        /**
+         * Gets or sets the width of the highlights on the backplate line.
+         */
+        _this.highlightWidth = 0.25;
+        /** @hidden */
+        _this._highlightTransform = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](1, 1, 0, 0);
+        /** @hidden */
+        _this._highlight = 1;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        _this.iridescenceIntensity = 0;
+        /**
+         * Gets or sets the intensity of the iridescence effect on the backplate edges.
+         */
+        _this.iridescenceEdgeIntensity = 1;
+        /** @hidden */
+        _this._angle = -45;
+        /**
+         * Gets or sets the opacity of the backplate (0.0 - 1.0).
+         */
+        _this.fadeOut = 1;
+        /** @hidden */
+        _this._reflected = true;
+        /** @hidden */
+        _this._frequency = 1;
+        /** @hidden */
+        _this._verticalOffset = 0;
+        /**
+         * Gets or sets the world-space position of the tip of the left index finger.
+         */
+        _this.globalLeftIndexTipPosition = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
+        _this._globalLeftIndexTipPosition4 = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"].Zero();
+        /**
+         * Gets or sets the world-space position of the tip of the right index finger.
+         */
+        _this.globalRightIndexTipPosition = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
+        _this._globalRightIndexTipPosition4 = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"].Zero();
+        _this.alphaMode = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_DISABLE;
+        _this.backFaceCulling = false;
+        _this._blobTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](FluentBackplateMaterial.BLOB_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        _this._iridescentMap = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](FluentBackplateMaterial.IM_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        return _this;
+    }
+    FluentBackplateMaterial.prototype.needAlphaBlending = function () {
+        return false;
+    };
+    FluentBackplateMaterial.prototype.needAlphaTesting = function () {
+        return false;
+    };
+    FluentBackplateMaterial.prototype.getAlphaTestTexture = function () {
+        return null;
+    };
+    FluentBackplateMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+        if (this.isFrozen) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+                return true;
+            }
+        }
+        if (!subMesh._materialDefines) {
+            subMesh.materialDefines = new FluentBackplateMaterialDefines();
+        }
+        var defines = subMesh._materialDefines;
+        var scene = this.getScene();
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
+        }
+        var engine = scene.getEngine();
+        // Attribs
+        babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForAttributes(mesh, defines, false, false);
+        // Get correct effect
+        if (defines.isDirty) {
+            defines.markAsProcessed();
+            scene.resetCachedMaterial();
+            // Fallbacks
+            var fallbacks = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["EffectFallbacks"]();
+            if (defines.FOG) {
+                fallbacks.addFallback(1, "FOG");
+            }
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].HandleFallbacksForShadows(defines, fallbacks);
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+            //Attributes
+            var attribs = [babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind];
+            if (defines.NORMAL) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind);
+            }
+            if (defines.UV1) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind);
+            }
+            if (defines.UV2) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind);
+            }
+            if (defines.VERTEXCOLOR) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind);
+            }
+            if (defines.TANGENT) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind);
+            }
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareAttributesForInstances(attribs, defines);
+            // Legacy browser patch
+            var shaderName = "fluentBackplate";
+            var join = defines.toString();
+            var uniforms = [
+                "world", "viewProjection", "cameraPosition",
+                "_Radius_", "_Line_Width_", "_Absolute_Sizes_", "_Filter_Width_", "_Base_Color_", "_Line_Color_",
+                "_Radius_Top_Left_", "_Radius_Top_Right_", "_Radius_Bottom_Left_", "_Radius_Bottom_Right_",
+                "_Blob_Position_", "_Blob_Intensity_", "_Blob_Near_Size_", "_Blob_Far_Size_", "_Blob_Near_Distance_",
+                "_Blob_Far_Distance_", "_Blob_Fade_Length_", "_Blob_Pulse_", "_Blob_Fade_", "_Blob_Texture_",
+                "_Blob_Position_2_", "_Blob_Near_Size_2_", "_Blob_Pulse_2_", "_Blob_Fade_2_", "_Rate_", "_Highlight_Color_",
+                "_Highlight_Width_", "_Highlight_Transform_", "_Highlight_", "_Iridescence_Intensity_", "_Iridescence_Edge_Intensity_",
+                "_Angle_", "_Fade_Out_", "_Reflected_", "_Frequency_", "_Vertical_Offset_", "_Iridescent_Map_",
+                "_Use_Global_Left_Index_", "_Use_Global_Right_Index_", "Global_Left_Index_Tip_Position", "Global_Right_Index_Tip_Position"
+            ];
+            var samplers = ["_Blob_Texture_", "_Iridescent_Map_"];
+            var uniformBuffers = new Array();
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareUniformsAndSamplersList({
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: defines,
+                maxSimultaneousLights: 4
+            });
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                attributes: attribs,
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: join,
+                fallbacks: fallbacks,
+                onCompiled: this.onCompiled,
+                onError: this.onError,
+                indexParameters: { maxSimultaneousLights: 4 }
+            }, engine), defines);
+        }
+        if (!subMesh.effect || !subMesh.effect.isReady()) {
+            return false;
+        }
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
+        return true;
+    };
+    FluentBackplateMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
+        var _a, _b;
+        var defines = subMesh._materialDefines;
+        if (!defines) {
+            return;
+        }
+        var effect = subMesh.effect;
+        if (!effect) {
+            return;
+        }
+        this._activeEffect = effect;
+        // Matrices
+        this.bindOnlyWorldMatrix(world);
+        this._activeEffect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+        this._activeEffect.setVector3("cameraPosition", (_b = (_a = this.getScene().activeCamera) === null || _a === void 0 ? void 0 : _a.position) !== null && _b !== void 0 ? _b : babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"].ZeroReadOnly);
+        // "Round Rect"
+        this._activeEffect.setFloat("_Radius_", this.radius);
+        this._activeEffect.setFloat("_Line_Width_", this.lineWidth);
+        this._activeEffect.setFloat("_Absolute_Sizes_", this.absoluteSizes ? 1.0 : 0.0);
+        this._activeEffect.setFloat("_Filter_Width_", this._filterWidth);
+        this._activeEffect.setDirectColor4("_Base_Color_", this.baseColor);
+        this._activeEffect.setDirectColor4("_Line_Color_", this.lineColor);
+        // "Radii Multipliers"
+        this._activeEffect.setFloat("_Radius_Top_Left_", 1);
+        this._activeEffect.setFloat("_Radius_Top_Right_", 1.0);
+        this._activeEffect.setFloat("_Radius_Bottom_Left_", 1.0);
+        this._activeEffect.setFloat("_Radius_Bottom_Right_", 1.0);
+        // "Blob"
+        //define BLOB_ENABLE true;
+        this._activeEffect.setFloat("_Blob_Intensity_", this.blobIntensity);
+        this._activeEffect.setFloat("_Blob_Near_Size_", this.blobNearSize);
+        this._activeEffect.setFloat("_Blob_Far_Size_", this.blobFarSize);
+        this._activeEffect.setFloat("_Blob_Near_Distance_", this.blobNearDistance);
+        this._activeEffect.setFloat("_Blob_Far_Distance_", this.blobFarDistance);
+        this._activeEffect.setFloat("_Blob_Fade_Length_", this.blobFadeLength);
+        this._activeEffect.setFloat("_Blob_Pulse_", this.blobPulse);
+        this._activeEffect.setFloat("_Blob_Fade_", this.blobFade);
+        // "Blob Texture"
+        this._activeEffect.setTexture("_Blob_Texture_", this._blobTexture);
+        // "Blob 2"
+        //define BLOB_ENABLE_2 true;
+        this._activeEffect.setFloat("_Blob_Near_Size_2_", this.blobNearSize2);
+        this._activeEffect.setFloat("_Blob_Pulse_2_", this.blobPulse2);
+        this._activeEffect.setFloat("_Blob_Fade_2_", this.blobFade2);
+        // "Line Highlight"
+        this._activeEffect.setFloat("_Rate_", this._rate);
+        this._activeEffect.setDirectColor4("_Highlight_Color_", this.highlightColor);
+        this._activeEffect.setFloat("_Highlight_Width_", this.highlightWidth);
+        this._activeEffect.setVector4("_Highlight_Transform_", this._highlightTransform);
+        this._activeEffect.setFloat("_Highlight_", this._highlight);
+        // "Iridescence"
+        this._activeEffect.setFloat("_Iridescence_Intensity_", this.iridescenceIntensity);
+        this._activeEffect.setFloat("_Iridescence_Edge_Intensity_", this.iridescenceEdgeIntensity);
+        this._activeEffect.setFloat("_Angle_", this._angle);
+        // "Fade"
+        this._activeEffect.setFloat("_Fade_Out_", this.fadeOut);
+        // "Antialiasing"
+        //define SMOOTH_EDGES true;
+        // "ChooseAngle"
+        this._activeEffect.setFloat("_Reflected_", this._reflected ? 1.0 : 0.0);
+        // "Multiply"
+        this._activeEffect.setFloat("_Frequency_", this._frequency);
+        this._activeEffect.setFloat("_Vertical_Offset_", this._verticalOffset);
+        // "Color Texture"
+        //define IRIDESCENT_MAP_ENABLE true;
+        this._activeEffect.setTexture("_Iridescent_Map_", this._iridescentMap);
+        // "Global"
+        this._activeEffect.setFloat("_Use_Global_Left_Index_", 1.0);
+        this._activeEffect.setFloat("_Use_Global_Right_Index_", 1.0);
+        this._globalLeftIndexTipPosition4.set(this.globalLeftIndexTipPosition.x, this.globalLeftIndexTipPosition.y, this.globalLeftIndexTipPosition.z, 1.0);
+        this._activeEffect.setVector4("Global_Left_Index_Tip_Position", this._globalLeftIndexTipPosition4);
+        this._globalRightIndexTipPosition4.set(this.globalRightIndexTipPosition.x, this.globalRightIndexTipPosition.y, this.globalRightIndexTipPosition.z, 1.0);
+        this._activeEffect.setVector4("Global_Right_Index_Tip_Position", this._globalRightIndexTipPosition4);
+        this._afterBind(mesh, this._activeEffect);
+    };
+    /**
+     * Get the list of animatables in the material.
+     * @returns the list of animatables object used in the material
+     */
+    FluentBackplateMaterial.prototype.getAnimatables = function () {
+        return [];
+    };
+    FluentBackplateMaterial.prototype.dispose = function (forceDisposeEffect) {
+        _super.prototype.dispose.call(this, forceDisposeEffect);
+        this._blobTexture.dispose();
+        this._iridescentMap.dispose();
+    };
+    FluentBackplateMaterial.prototype.clone = function (name) {
+        var _this = this;
+        return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new FluentBackplateMaterial(name, _this.getScene()); }, this);
+    };
+    FluentBackplateMaterial.prototype.serialize = function () {
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        serializationObject.customType = "BABYLON.FluentBackplateMaterial";
+        return serializationObject;
+    };
+    FluentBackplateMaterial.prototype.getClassName = function () {
+        return "FluentBackplateMaterial";
+    };
+    // Statics
+    FluentBackplateMaterial.Parse = function (source, scene, rootUrl) {
+        return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new FluentBackplateMaterial(source.name, scene); }, source, scene, rootUrl);
+    };
+    /**
+     * URL pointing to the texture used to define the coloring for the fluent blob effect.
+     */
+    FluentBackplateMaterial.BLOB_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/mrtk-fluent-backplate-blob.png";
+    /**
+     * URL pointing to the texture used to define iridescent map.
+     */
+    FluentBackplateMaterial.IM_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/mrtk-fluent-backplate-iridescence.png";
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "radius", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "lineWidth", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "absoluteSizes", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "baseColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "lineColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobFarSize", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobNearDistance", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobFarDistance", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobFadeLength", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobNearSize", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobPulse", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobFade", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobNearSize2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobPulse2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "blobFade2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "highlightColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "highlightWidth", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "iridescenceIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "iridescenceEdgeIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], FluentBackplateMaterial.prototype, "fadeOut", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsVector3"])()
+    ], FluentBackplateMaterial.prototype, "globalLeftIndexTipPosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsVector3"])()
+    ], FluentBackplateMaterial.prototype, "globalRightIndexTipPosition", void 0);
+    return FluentBackplateMaterial;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.FluentBackplateMaterial"] = FluentBackplateMaterial;
+
+
+/***/ }),
+
+/***/ "./3D/materials/fluentBackplate/index.ts":
+/*!***********************************************!*\
+  !*** ./3D/materials/fluentBackplate/index.ts ***!
+  \***********************************************/
+/*! exports provided: FluentBackplateMaterial */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _fluentBackplateMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fluentBackplateMaterial */ "./3D/materials/fluentBackplate/fluentBackplateMaterial.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _fluentBackplateMaterial__WEBPACK_IMPORTED_MODULE_0__["FluentBackplateMaterial"]; });
+
+
+
+
+/***/ }),
+
+/***/ "./3D/materials/fluentBackplate/shaders/fluentBackplate.fragment.ts":
+/*!**************************************************************************!*\
+  !*** ./3D/materials/fluentBackplate/shaders/fluentBackplate.fragment.ts ***!
+  \**************************************************************************/
+/*! exports provided: fluentBackplatePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fluentBackplatePixelShader", function() { return fluentBackplatePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'fluentBackplatePixelShader';
+var shader = "uniform vec3 cameraPosition;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vColor;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\nvarying vec4 vExtra3;\nuniform float _Radius_;\nuniform float _Line_Width_;\nuniform bool _Absolute_Sizes_;\nuniform float _Filter_Width_;\nuniform vec4 _Base_Color_;\nuniform vec4 _Line_Color_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\n\nuniform vec3 _Blob_Position_;\nuniform float _Blob_Intensity_;\nuniform float _Blob_Near_Size_;\nuniform float _Blob_Far_Size_;\nuniform float _Blob_Near_Distance_;\nuniform float _Blob_Far_Distance_;\nuniform float _Blob_Fade_Length_;\nuniform float _Blob_Pulse_;\nuniform float _Blob_Fade_;\nuniform sampler2D _Blob_Texture_;\n\nuniform vec3 _Blob_Position_2_;\nuniform float _Blob_Near_Size_2_;\nuniform float _Blob_Pulse_2_;\nuniform float _Blob_Fade_2_;\nuniform float _Rate_;\nuniform vec4 _Highlight_Color_;\nuniform float _Highlight_Width_;\nuniform vec4 _Highlight_Transform_;\nuniform float _Highlight_;\nuniform float _Iridescence_Intensity_;\nuniform float _Iridescence_Edge_Intensity_;\nuniform float _Angle_;\nuniform float _Fade_Out_;\n\nuniform bool _Reflected_;\nuniform float _Frequency_;\nuniform float _Vertical_Offset_;\n\nuniform sampler2D _Iridescent_Map_;\nuniform bool _Use_Global_Left_Index_;\nuniform bool _Use_Global_Right_Index_;\nuniform vec4 Global_Left_Index_Tip_Position;\nuniform vec4 Global_Right_Index_Tip_Position;\n\nvoid Round_Rect_Fragment_B31(\nfloat Radius,\nfloat Line_Width,\nvec4 Line_Color,\nfloat Filter_Width,\nvec2 UV,\nfloat Line_Visibility,\nvec4 Rect_Parms,\nvec4 Fill_Color,\nout vec4 Color)\n{\nfloat d=length(max(abs(UV)-Rect_Parms.xy,0.0));\nfloat dx=max(fwidth(d)*Filter_Width,0.00001);\n\nfloat g=min(Rect_Parms.z,Rect_Parms.w);\nfloat dgrad=max(fwidth(g)*Filter_Width,0.00001);\nfloat Inside_Rect=clamp(g/dgrad,0.0,1.0);\n\n\nfloat inner=clamp((d+dx*0.5-max(Radius-Line_Width,d-dx*0.5))/dx,0.0,1.0);\nColor=clamp(mix(Fill_Color,Line_Color,inner),0.0,1.0)*Inside_Rect;\n\n\n\n}\n\n\nvoid Blob_Fragment_B71(\nsampler2D Blob_Texture,\nvec4 Blob_Info1,\nvec4 Blob_Info2,\nout vec4 Blob_Color)\n{\nfloat k1=dot(Blob_Info1.xy,Blob_Info1.xy);\nfloat k2=dot(Blob_Info2.xy,Blob_Info2.xy);\nvec3 closer=k1<k2 ? vec3(k1,Blob_Info1.z,Blob_Info1.w) : vec3(k2,Blob_Info2.z,Blob_Info2.w);\nBlob_Color=closer.z*texture(Blob_Texture,vec2(vec2(sqrt(closer.x),closer.y).x,1.0-vec2(sqrt(closer.x),closer.y).y))*clamp(1.0-closer.x,0.0,1.0);\n}\n\n\nvoid Line_Fragment_B48(\nvec4 Base_Color,\nvec4 Highlight_Color,\nfloat Highlight_Width,\nvec3 Line_Vertex,\nfloat Highlight,\nout vec4 Line_Color)\n{\nfloat k2=1.0-clamp(abs(Line_Vertex.y/Highlight_Width),0.0,1.0);\nLine_Color=mix(Base_Color,Highlight_Color,Highlight*k2);\n}\n\n\nvoid Scale_RGB_B54(\nvec4 Color,\nfloat Scalar,\nout vec4 Result)\n{\nResult=vec4(Scalar,Scalar,Scalar,1)*Color;\n}\n\n\nvoid Conditional_Float_B38(\nbool Which,\nfloat If_True,\nfloat If_False,\nout float Result)\n{\nResult=Which ? If_True : If_False;\n}\n\nvoid main()\n{\n\nfloat R_Q72;\nfloat G_Q72;\nfloat B_Q72;\nfloat A_Q72;\nR_Q72=vColor.r; G_Q72=vColor.g; B_Q72=vColor.b; A_Q72=vColor.a;\nvec4 Blob_Color_Q71;\n#if BLOB_ENABLE\n\nfloat k1=dot(vExtra2.xy,vExtra2.xy);\nfloat k2=dot(vExtra3.xy,vExtra3.xy);\nvec3 closer=k1<k2 ? vec3(k1,vExtra2.z,vExtra2.w) : vec3(k2,vExtra3.z,vExtra3.w);\nBlob_Color_Q71=closer.z*texture(_Blob_Texture_,vec2(vec2(sqrt(closer.x),closer.y).x,1.0-vec2(sqrt(closer.x),closer.y).y))*clamp(1.0-closer.x,0.0,1.0);\n#else\nBlob_Color_Q71=vec4(0,0,0,0);\n#endif\nvec4 Line_Color_Q48;\nLine_Fragment_B48(_Line_Color_,_Highlight_Color_,_Highlight_Width_,vTangent,_Highlight_,Line_Color_Q48);\n\nfloat X_Q67;\nfloat Y_Q67;\nX_Q67=vUV.x;\nY_Q67=vUV.y;\n\nvec3 Incident_Q66=normalize(vPosition-cameraPosition);\n\nvec3 Reflected_Q60=reflect(Incident_Q66,vBinormal);\n\nfloat Product_Q63=Y_Q67*_Vertical_Offset_;\n\nfloat Dot_Q68=dot(Incident_Q66,Reflected_Q60);\n\nfloat Dot_Q57=dot(vNormal,Incident_Q66);\nfloat Result_Q38;\nConditional_Float_B38(_Reflected_,Dot_Q68,Dot_Q57,Result_Q38);\n\nfloat Product_Q64=Result_Q38*_Frequency_;\n\nfloat Sum_Q69=Product_Q64+1.0;\n\nfloat Product_Q70=Sum_Q69*0.5;\n\nfloat Sum_Q62=Product_Q63+Product_Q70;\n\nfloat FractF_Q59=fract(Sum_Q62);\n\nvec2 Vec2_Q65=vec2(FractF_Q59,0.5);\n\nvec4 Color_Q58;\n#if IRIDESCENT_MAP_ENABLE\nColor_Q58=texture(_Iridescent_Map_,Vec2_Q65);\n#else\nColor_Q58=vec4(0,0,0,0);\n#endif\nvec4 Result_Q54;\nScale_RGB_B54(Color_Q58,_Iridescence_Edge_Intensity_,Result_Q54);\nvec4 Result_Q55;\nScale_RGB_B54(Color_Q58,_Iridescence_Intensity_,Result_Q55);\n\nvec4 Base_And_Iridescent_Q53;\nBase_And_Iridescent_Q53=Line_Color_Q48+vec4(Result_Q54.rgb,0.0);\n\nvec4 Base_And_Iridescent_Q56;\nBase_And_Iridescent_Q56=_Base_Color_+vec4(Result_Q55.rgb,0.0);\n\nvec4 Result_Q52=Base_And_Iridescent_Q53; Result_Q52.a=1.0;\n\nvec4 Result_Q35=Blob_Color_Q71+(1.0-Blob_Color_Q71.a)*Base_And_Iridescent_Q56;\nvec4 Color_Q31;\nRound_Rect_Fragment_B31(R_Q72,G_Q72,Result_Q52,_Filter_Width_,vUV,1.0,vExtra1,Result_Q35,Color_Q31);\n\nvec4 Result_Q47=_Fade_Out_*Color_Q31;\nvec4 Out_Color=Result_Q47;\nfloat Clip_Threshold=0.001;\nbool To_sRGB=false;\ngl_FragColor=Out_Color;\n}";
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var fluentBackplatePixelShader = { name: name, shader: shader };
+
+
+/***/ }),
+
+/***/ "./3D/materials/fluentBackplate/shaders/fluentBackplate.vertex.ts":
+/*!************************************************************************!*\
+  !*** ./3D/materials/fluentBackplate/shaders/fluentBackplate.vertex.ts ***!
+  \************************************************************************/
+/*! exports provided: fluentBackplateVertexShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fluentBackplateVertexShader", function() { return fluentBackplateVertexShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'fluentBackplateVertexShader';
+var shader = "uniform mat4 world;\nuniform mat4 viewProjection;\nuniform vec3 cameraPosition;\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec3 tangent;\nuniform float _Radius_;\nuniform float _Line_Width_;\nuniform bool _Absolute_Sizes_;\nuniform float _Filter_Width_;\nuniform vec4 _Base_Color_;\nuniform vec4 _Line_Color_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\n\nuniform vec3 _Blob_Position_;\nuniform float _Blob_Intensity_;\nuniform float _Blob_Near_Size_;\nuniform float _Blob_Far_Size_;\nuniform float _Blob_Near_Distance_;\nuniform float _Blob_Far_Distance_;\nuniform float _Blob_Fade_Length_;\nuniform float _Blob_Pulse_;\nuniform float _Blob_Fade_;\nuniform sampler2D _Blob_Texture_;\n\nuniform vec3 _Blob_Position_2_;\nuniform float _Blob_Near_Size_2_;\nuniform float _Blob_Pulse_2_;\nuniform float _Blob_Fade_2_;\nuniform float _Rate_;\nuniform vec4 _Highlight_Color_;\nuniform float _Highlight_Width_;\nuniform vec4 _Highlight_Transform_;\nuniform float _Highlight_;\nuniform float _Iridescence_Intensity_;\nuniform float _Iridescence_Edge_Intensity_;\nuniform float _Angle_;\nuniform float _Fade_Out_;\n\nuniform bool _Reflected_;\nuniform float _Frequency_;\nuniform float _Vertical_Offset_;\n\nuniform sampler2D _Iridescent_Map_;\nuniform bool _Use_Global_Left_Index_;\nuniform bool _Use_Global_Right_Index_;\nuniform vec4 Global_Left_Index_Tip_Position;\nuniform vec4 Global_Right_Index_Tip_Position;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vColor;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\nvarying vec4 vExtra3;\n\nvoid Object_To_World_Pos_B115(\nvec3 Pos_Object,\nout vec3 Pos_World)\n{\nPos_World=(world*vec4(Pos_Object,1.0)).xyz;\n}\n\n\nvoid PickDir_B140(\nfloat Degrees,\nvec3 DirX,\nvec3 DirY,\nout vec3 Dir)\n{\n\nfloat a=Degrees*3.14159/180.0;\nDir=cos(a)*DirX+sin(a)*DirY;\n}\n\n\nvoid Round_Rect_Vertex_B139(\nvec2 UV,\nfloat Radius,\nfloat Margin,\nfloat Anisotropy,\nfloat Gradient1,\nfloat Gradient2,\nout vec2 Rect_UV,\nout vec4 Rect_Parms,\nout vec2 Scale_XY,\nout vec2 Line_UV)\n{\nScale_XY=vec2(Anisotropy,1.0);\nLine_UV=(UV-vec2(0.5,0.5));\nRect_UV=Line_UV*Scale_XY;\nRect_Parms.xy=Scale_XY*0.5-vec2(Radius,Radius)-vec2(Margin,Margin);\nRect_Parms.z=Gradient1;\nRect_Parms.w=Gradient2;\n}\n\n\nvoid Line_Vertex_B135(\nvec2 Scale_XY,\nvec2 UV,\nfloat Time,\nfloat Rate,\nvec4 Highlight_Transform,\nout vec3 Line_Vertex)\n{\nfloat angle2=(Rate*Time)*2.0*3.1416;\nfloat sinAngle2=sin(angle2);\nfloat cosAngle2=cos(angle2);\nvec2 xformUV=UV*Highlight_Transform.xy+Highlight_Transform.zw;\nLine_Vertex.x=0.0;\nLine_Vertex.y=cosAngle2*xformUV.x-sinAngle2*xformUV.y;\nLine_Vertex.z=0.0;\n}\n\n\nvoid Blob_Vertex_B180(\nvec3 Position,\nvec3 Normal,\nvec3 Tangent,\nvec3 Bitangent,\nvec3 Blob_Position,\nfloat Intensity,\nfloat Blob_Near_Size,\nfloat Blob_Far_Size,\nfloat Blob_Near_Distance,\nfloat Blob_Far_Distance,\nfloat Blob_Fade_Length,\nfloat Blob_Pulse,\nfloat Blob_Fade,\nout vec4 Blob_Info)\n{\nvec3 blob=Blob_Position;\nvec3 delta=blob-Position;\nfloat dist=dot(Normal,delta);\nfloat lerpValue=clamp((abs(dist)-Blob_Near_Distance)/(Blob_Far_Distance-Blob_Near_Distance),0.0,1.0);\nfloat fadeValue=1.0-clamp((abs(dist)-Blob_Far_Distance)/Blob_Fade_Length,0.0,1.0);\nfloat size=Blob_Near_Size+(Blob_Far_Size-Blob_Near_Size)*lerpValue;\nvec2 blobXY=vec2(dot(delta,Tangent),dot(delta,Bitangent))/(0.0001+size);\nfloat Fade=fadeValue*Intensity*Blob_Fade;\nfloat Distance=(lerpValue*0.5+0.5)*(1.0-Blob_Pulse);\nBlob_Info=vec4(blobXY.x,blobXY.y,Distance,Fade);\n}\n\n\nvoid Move_Verts_B129(\nfloat Anisotropy,\nvec3 P,\nfloat Radius,\nout vec3 New_P,\nout vec2 New_UV,\nout float Radial_Gradient,\nout vec3 Radial_Dir)\n{\nvec2 UV=P.xy*2.0+0.5;\nvec2 center=clamp(UV,0.0,1.0);\nvec2 delta=UV-center;\nvec2 r2=2.0*vec2(Radius/Anisotropy,Radius);\nNew_UV=center+r2*(UV-2.0*center+0.5);\nNew_P=vec3(New_UV-0.5,P.z);\nRadial_Gradient=1.0-length(delta)*2.0;\nRadial_Dir=vec3(delta*r2,0.0);\n}\n\n\nvoid Object_To_World_Dir_B132(\nvec3 Dir_Object,\nout vec3 Binormal_World,\nout vec3 Binormal_World_N,\nout float Binormal_Length)\n{\nBinormal_World=(world*vec4(Dir_Object,0.0)).xyz;\nBinormal_Length=length(Binormal_World);\nBinormal_World_N=Binormal_World/Binormal_Length;\n}\n\n\nvoid RelativeOrAbsoluteDetail_B147(\nfloat Nominal_Radius,\nfloat Nominal_LineWidth,\nbool Absolute_Measurements,\nfloat Height,\nout float Radius,\nout float Line_Width)\n{\nfloat scale=Absolute_Measurements ? 1.0/Height : 1.0;\nRadius=Nominal_Radius*scale;\nLine_Width=Nominal_LineWidth*scale;\n}\n\n\nvoid Edge_AA_Vertex_B130(\nvec3 Position_World,\nvec3 Position_Object,\nvec3 Normal_Object,\nvec3 Eye,\nfloat Radial_Gradient,\nvec3 Radial_Dir,\nvec3 Tangent,\nout float Gradient1,\nout float Gradient2)\n{\n\nvec3 I=(Eye-Position_World);\nvec3 T=(world* vec4(Tangent,0.0)).xyz;\nfloat g=(dot(T,I)<0.0) ? 0.0 : 1.0;\nif (Normal_Object.z==0.0) {\n\nGradient1=Position_Object.z>0.0 ? g : 1.0;\nGradient2=Position_Object.z>0.0 ? 1.0 : g;\n} else {\n\n\n\n\nGradient1=g+(1.0-g)*(Radial_Gradient);\nGradient2=1.0;\n}\n}\n\n\nvoid Pick_Radius_B144(\nfloat Radius,\nfloat Radius_Top_Left,\nfloat Radius_Top_Right,\nfloat Radius_Bottom_Left,\nfloat Radius_Bottom_Right,\nvec3 Position,\nout float Result)\n{\nbool whichY=Position.y>0.0;\nResult=Position.x<0.0 ? (whichY ? Radius_Top_Left : Radius_Bottom_Left) : (whichY ? Radius_Top_Right : Radius_Bottom_Right);\nResult*=Radius;\n}\n\nvoid main()\n{\n\nvec3 Nrm_World_Q128;\nNrm_World_Q128=normalize((world*vec4(normal,0.0)).xyz);\n\nvec3 Tangent_World_Q131;\nvec3 Tangent_World_N_Q131;\nfloat Tangent_Length_Q131;\nTangent_World_Q131=(world*vec4(vec3(1,0,0),0.0)).xyz;\nTangent_Length_Q131=length(Tangent_World_Q131);\nTangent_World_N_Q131=Tangent_World_Q131/Tangent_Length_Q131;\nvec3 Binormal_World_Q132;\nvec3 Binormal_World_N_Q132;\nfloat Binormal_Length_Q132;\nObject_To_World_Dir_B132(vec3(0,1,0),Binormal_World_Q132,Binormal_World_N_Q132,Binormal_Length_Q132);\n\nfloat Anisotropy_Q133=Tangent_Length_Q131/Binormal_Length_Q132;\n\nvec3 Result_Q177;\nResult_Q177=mix(_Blob_Position_,Global_Left_Index_Tip_Position.xyz,float(_Use_Global_Left_Index_));\n\nvec3 Result_Q178;\nResult_Q178=mix(_Blob_Position_2_,Global_Right_Index_Tip_Position.xyz,float(_Use_Global_Right_Index_));\nfloat Result_Q144;\nPick_Radius_B144(_Radius_,_Radius_Top_Left_,_Radius_Top_Right_,_Radius_Bottom_Left_,_Radius_Bottom_Right_,position,Result_Q144);\nvec3 Dir_Q140;\nPickDir_B140(_Angle_,Tangent_World_N_Q131,Binormal_World_N_Q132,Dir_Q140);\nfloat Radius_Q147;\nfloat Line_Width_Q147;\nRelativeOrAbsoluteDetail_B147(Result_Q144,_Line_Width_,_Absolute_Sizes_,Binormal_Length_Q132,Radius_Q147,Line_Width_Q147);\n\nvec4 Out_Color_Q145=vec4(Radius_Q147,Line_Width_Q147,0,1);\nvec3 New_P_Q129;\nvec2 New_UV_Q129;\nfloat Radial_Gradient_Q129;\nvec3 Radial_Dir_Q129;\nMove_Verts_B129(Anisotropy_Q133,position,Radius_Q147,New_P_Q129,New_UV_Q129,Radial_Gradient_Q129,Radial_Dir_Q129);\nvec3 Pos_World_Q115;\nObject_To_World_Pos_B115(New_P_Q129,Pos_World_Q115);\nvec4 Blob_Info_Q180;\n#if BLOB_ENABLE\nBlob_Vertex_B180(Pos_World_Q115,Nrm_World_Q128,Tangent_World_N_Q131,Binormal_World_N_Q132,Result_Q177,_Blob_Intensity_,_Blob_Near_Size_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_,_Blob_Fade_,Blob_Info_Q180);\n#else\nBlob_Info_Q180=vec4(0,0,0,0);\n#endif\nvec4 Blob_Info_Q181;\n#if BLOB_ENABLE_2\nBlob_Vertex_B180(Pos_World_Q115,Nrm_World_Q128,Tangent_World_N_Q131,Binormal_World_N_Q132,Result_Q178,_Blob_Intensity_,_Blob_Near_Size_2_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_2_,_Blob_Fade_2_,Blob_Info_Q181);\n#else\nBlob_Info_Q181=vec4(0,0,0,0);\n#endif\nfloat Gradient1_Q130;\nfloat Gradient2_Q130;\n#if SMOOTH_EDGES\nEdge_AA_Vertex_B130(Pos_World_Q115,position,normal,cameraPosition,Radial_Gradient_Q129,Radial_Dir_Q129,tangent,Gradient1_Q130,Gradient2_Q130);\n#else\nGradient1_Q130=1.0;\nGradient2_Q130=1.0;\n#endif\nvec2 Rect_UV_Q139;\nvec4 Rect_Parms_Q139;\nvec2 Scale_XY_Q139;\nvec2 Line_UV_Q139;\nRound_Rect_Vertex_B139(New_UV_Q129,Radius_Q147,0.0,Anisotropy_Q133,Gradient1_Q130,Gradient2_Q130,Rect_UV_Q139,Rect_Parms_Q139,Scale_XY_Q139,Line_UV_Q139);\nvec3 Line_Vertex_Q135;\nLine_Vertex_B135(Scale_XY_Q139,Line_UV_Q139,0.0,_Rate_,_Highlight_Transform_,Line_Vertex_Q135);\nvec3 Position=Pos_World_Q115;\nvec3 Normal=Dir_Q140;\nvec2 UV=Rect_UV_Q139;\nvec3 Tangent=Line_Vertex_Q135;\nvec3 Binormal=Nrm_World_Q128;\nvec4 Color=Out_Color_Q145;\nvec4 Extra1=Rect_Parms_Q139;\nvec4 Extra2=Blob_Info_Q180;\nvec4 Extra3=Blob_Info_Q181;\ngl_Position=viewProjection*vec4(Position,1);\nvPosition=Position;\nvNormal=Normal;\nvUV=UV;\nvTangent=Tangent;\nvBinormal=Binormal;\nvColor=Color;\nvExtra1=Extra1;\nvExtra2=Extra2;\nvExtra3=Extra3;\n}";
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var fluentBackplateVertexShader = { name: name, shader: shader };
+
+
+/***/ }),
+
 /***/ "./3D/materials/fluentButton/fluentButtonMaterial.ts":
 /*!***********************************************************!*\
   !*** ./3D/materials/fluentButton/fluentButtonMaterial.ts ***!
@@ -19971,7 +21597,7 @@ var FluentButtonMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: 4 }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -20258,7 +21884,7 @@ var fluentButtonVertexShader = { name: name, shader: shader };
 /*!*******************************!*\
   !*** ./3D/materials/index.ts ***!
   \*******************************/
-/*! exports provided: FluentMaterialDefines, FluentMaterial, FluentButtonMaterial */
+/*! exports provided: FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20270,6 +21896,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _fluentButton__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./fluentButton */ "./3D/materials/fluentButton/index.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _fluentButton__WEBPACK_IMPORTED_MODULE_1__["FluentButtonMaterial"]; });
+
+/* harmony import */ var _fluentBackplate__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fluentBackplate */ "./3D/materials/fluentBackplate/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _fluentBackplate__WEBPACK_IMPORTED_MODULE_2__["FluentBackplateMaterial"]; });
+
 
 
 
@@ -20321,7 +21951,7 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, SlateGizmo, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20428,7 +22058,11 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["HolographicButton"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["HolographicSlate"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeshButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["MeshButton3D"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NearMenu", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["NearMenu"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["PlanePanel"]; });
 
@@ -20452,11 +22086,17 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["VolumeBasedPanel"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["HolographicBackplate"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["FluentMaterialDefines"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["FluentMaterial"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["FluentButtonMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["FluentBackplateMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["SlateGizmo"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["GUI3DManager"]; });
 
@@ -20472,7 +22112,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, SlateGizmo, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20578,7 +22218,11 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["HolographicButton"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["HolographicSlate"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeshButton3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["MeshButton3D"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NearMenu", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["NearMenu"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["PlanePanel"]; });
 
@@ -20602,11 +22246,17 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["VolumeBasedPanel"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["HolographicBackplate"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["FluentMaterialDefines"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["FluentMaterial"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["FluentButtonMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["FluentBackplateMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["SlateGizmo"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["GUI3DManager"]; });
 

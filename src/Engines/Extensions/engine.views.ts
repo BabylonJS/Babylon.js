@@ -146,9 +146,7 @@ Engine.prototype._renderViews = function() {
         if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
             canvas.width = width;
             canvas.height = height;
-            parent.width = width;
-            parent.height = height;
-            this.resize(true);
+            this.setSize(width, height);
         }
 
         if (!parent.width || !parent.height) {

@@ -178,7 +178,12 @@ Scene.prototype.pickSprite = function(x: number, y: number, predicate?: (sprite:
 
     this.createPickingRayInCameraSpaceToRef(x, y, this._tempSpritePickingRay, camera);
 
-    return this._internalPickSprites(this._tempSpritePickingRay, predicate, fastCheck, camera);
+    const result = this._internalPickSprites(this._tempSpritePickingRay, predicate, fastCheck, camera);
+    if (result) {
+        result.ray = this.createPickingRayInCameraSpace(x, y, camera);
+    }
+
+    return result;
 };
 
 Scene.prototype.pickSpriteWithRay = function(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
@@ -195,7 +200,12 @@ Scene.prototype.pickSpriteWithRay = function(ray: Ray, predicate?: (sprite: Spri
 
     Ray.TransformToRef(ray, camera.getViewMatrix(), this._tempSpritePickingRay);
 
-    return this._internalPickSprites(this._tempSpritePickingRay, predicate, fastCheck, camera);
+    const result = this._internalPickSprites(this._tempSpritePickingRay, predicate, fastCheck, camera);
+    if (result) {
+        result.ray = ray;
+    }
+
+    return result;
 };
 
 Scene.prototype.multiPickSprite = function(x: number, y: number, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {

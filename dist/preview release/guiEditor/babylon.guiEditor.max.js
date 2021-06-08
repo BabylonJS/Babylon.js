@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \**************************************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \********************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \**************************************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \********************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9577,9 +9577,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!***********************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \*****************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9980,9 +9980,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/classnames/index.js ***!
-  \************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/classnames/index.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10048,9 +10048,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!**************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \**************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
+  \**************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10066,9 +10066,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!******************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \******************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
+  \******************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10084,9 +10084,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**********************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**********************************************************************************************************************************************************************/
+/*!**********************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \**********************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10094,7 +10094,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #e2e2e2; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.react-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #ge-sceneExplorer .itemContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #e2e2e2; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.react-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #ge-sceneExplorer .itemContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 30px 30px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10102,9 +10102,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss":
-/*!*******************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
-  \*******************************************************************************************************************************************************/
+/*!*******************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
+  \*******************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10112,7 +10112,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#workbench-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #workbench-canvas #selection-container {\n    pointer-events: none; }\n    #workbench-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #workbench-canvas #workbench-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #workbench-canvas #workbench-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #workbench-canvas #workbench-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #workbench-canvas #workbench-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #workbench-canvas #workbench-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #workbench-canvas #workbench-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #workbench-canvas #workbench-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #workbench-canvas #workbench-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #workbench-canvas #workbench-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #workbench-canvas #workbench-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .top-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .right-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .left-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .right-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .left-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #workbench-canvas #workbench-container #workbench-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #workbench-canvas #workbench-container #workbench-svg-container .link {\n        stroke-width: 4px; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.hidden {\n          display: none; }\n      #workbench-canvas #workbench-container #workbench-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link:hover, #workbench-canvas #workbench-container #workbench-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #workbench-canvas #workbench-container #workbench-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #workbench-canvas #workbench-container #workbench-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n", ""]);
+exports.push([module.i, "#workbench-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  cursor: default;\n  user-select: none;\n  overflow: hidden;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #workbench-canvas #selection-container {\n    pointer-events: none; }\n    #workbench-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #workbench-canvas #workbench-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #workbench-canvas #workbench-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #workbench-canvas #workbench-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #workbench-canvas #workbench-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #workbench-canvas #workbench-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #workbench-canvas #workbench-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #workbench-canvas #workbench-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #workbench-canvas #workbench-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #workbench-canvas #workbench-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #workbench-canvas #workbench-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .top-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .right-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .left-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .right-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .left-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #workbench-canvas #workbench-container #workbench-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #workbench-canvas #workbench-container #workbench-svg-container .link {\n        stroke-width: 4px; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.hidden {\n          display: none; }\n      #workbench-canvas #workbench-container #workbench-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link:hover, #workbench-canvas #workbench-container #workbench-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #workbench-canvas #workbench-container #workbench-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #workbench-canvas #workbench-container #workbench-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10120,9 +10120,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \************************************************************************************************************************************/
+/*!************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
+  \************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10138,9 +10138,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss":
-/*!***********************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
-  \***********************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
+  \***********************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10148,7 +10148,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ".commands {\n  grid-row: 1;\n  grid-column: 1;\n  user-select: none; }\n  .commands .commands-left {\n    float: left;\n    display: flex; }\n  .commands .commands-right {\n    float: right;\n    display: flex; }\n  .commands.background-ts .command-button img, .commands.background-ts .command-dropdown img {\n    filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%); }\n  .commands.background-ts .command-button .command-dropdown-active, .commands.background-ts .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .commands.background-ts .command-button:hover img, .commands.background-ts .command-button.activated img, .commands.background-ts .command-dropdown:hover img, .commands.background-ts .command-dropdown.activated img {\n    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important; }\n  .commands.background-js .command-button img, .commands.background-js .command-dropdown img {\n    filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg); }\n  .commands.background-js .command-button .command-dropdown-active, .commands.background-js .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .commands.background-js .command-button:hover img, .commands.background-js .command-button.activated img, .commands.background-js .command-dropdown:hover img, .commands.background-js .command-dropdown.activated img {\n    filter: invert(17%) !important; }\n  .commands .command-button {\n    cursor: pointer;\n    width: 55px; }\n    .commands .command-button .command-label {\n      display: none; }\n    .commands .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    .commands .command-button:hover {\n      background-color: #666666; }\n    .commands .command-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n    .commands .command-button img.active {\n      filter: invert(100%); }\n  .commands .command-dropdown-root {\n    position: relative;\n    text-transform: uppercase;\n    z-index: 1; }\n  .commands .command-dropdown {\n    cursor: pointer;\n    width: 55px;\n    height: 55px; }\n    .commands .command-dropdown .command-dropdown-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    .commands .command-dropdown .command-dropdown-active {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      font-size: 14px; }\n    .commands .command-dropdown:hover, .commands .command-dropdown.activated {\n      background-color: #666666;\n      color: black; }\n    .commands .command-dropdown:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  .commands .command-dropdown-blocker {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    transform: scale(1);\n    z-index: 1; }\n  .commands.background-js .command-dropdown-content {\n    background: #333333; }\n    .commands.background-js .command-dropdown-content .command-dropdown-label:hover {\n      background: #333333; }\n  .commands.background-ts .command-dropdown-content .command-dropdown-label:hover {\n    background: #333333; }\n  .commands .command-dropdown-content {\n    background: #333333;\n    position: absolute;\n    top: 55px;\n    width: 200px;\n    transform: scale(1);\n    z-index: 100; }\n    .commands .command-dropdown-content.toRight {\n      width: 120px;\n      right: 0; }\n    .commands .command-dropdown-content .command-dropdown-label {\n      color: white;\n      padding: 5px;\n      padding-left: 10px;\n      height: 35px;\n      font-size: 18px;\n      display: grid;\n      align-items: center;\n      cursor: pointer;\n      user-select: none;\n      grid-template-columns: 1fr 20px;\n      grid-template-rows: 100%;\n      position: relative; }\n      .commands .command-dropdown-content .command-dropdown-label.active {\n        font-weight: bold;\n        font-size: 20px; }\n      .commands .command-dropdown-content .command-dropdown-label:hover {\n        background: #666666; }\n        .commands .command-dropdown-content .command-dropdown-label:hover .sub-items {\n          display: block; }\n      .commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-text {\n        font-family: Arial;\n        font-size: 12px;\n        grid-column: 1;\n        grid-row: 1; }\n      .commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-check {\n        grid-column: 2;\n        grid-row: 1; }\n      .commands .command-dropdown-content .command-dropdown-label .command-dropdown-arrow {\n        grid-column: 2;\n        grid-row: 1;\n        font-size: 20px;\n        font-weight: bold;\n        padding-bottom: 10px;\n        padding-left: 4px; }\n      .commands .command-dropdown-content .command-dropdown-label .sub-items {\n        position: absolute;\n        left: 200px;\n        top: 0;\n        width: 150px;\n        display: none; }\n        .commands .command-dropdown-content .command-dropdown-label .sub-items.background-js {\n          background: #bfabff; }\n          .commands .command-dropdown-content .command-dropdown-label .sub-items.background-js .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts {\n          background: #333333; }\n          .commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item {\n          color: white;\n          padding: 5px;\n          padding-left: 10px;\n          height: 35px;\n          display: grid; }\n          .commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item.checked {\n            background: white;\n            color: black; }\n", ""]);
+exports.push([module.i, ":root {\n  --selectionGrey: #666666; }\n\n.ge-commands {\n  grid-row: 1;\n  grid-column: 1;\n  user-select: none; }\n  .ge-commands .commands-left {\n    float: left;\n    display: flex; }\n  .ge-commands .commands-right {\n    float: right;\n    display: flex; }\n  .ge-commands.background-ts .command-button img, .ge-commands.background-ts .command-dropdown img {\n    filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%); }\n  .ge-commands.background-ts .command-button .command-dropdown-active, .ge-commands.background-ts .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-ts .command-button:hover img, .ge-commands.background-ts .command-button.activated img, .ge-commands.background-ts .command-dropdown:hover img, .ge-commands.background-ts .command-dropdown.activated img {\n    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important; }\n  .ge-commands.background-js .command-button img, .ge-commands.background-js .command-dropdown img {\n    filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg); }\n  .ge-commands.background-js .command-button .command-dropdown-active, .ge-commands.background-js .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-js .command-button:hover img, .ge-commands.background-js .command-button.activated img, .ge-commands.background-js .command-dropdown:hover img, .ge-commands.background-js .command-dropdown.activated img {\n    filter: invert(17%) !important; }\n  .ge-commands .command-button {\n    cursor: pointer;\n    width: 55px; }\n    .ge-commands .command-button .command-label {\n      display: none; }\n    .ge-commands .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-button:hover {\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button .active {\n      transform-origin: center;\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button img.active {\n      background-color: var(--selectionGrey); }\n  .ge-commands .command-dropdown-root {\n    position: relative;\n    text-transform: uppercase;\n    z-index: 1; }\n  .ge-commands .command-dropdown {\n    cursor: pointer;\n    width: 55px;\n    height: 55px; }\n    .ge-commands .command-dropdown .command-dropdown-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-dropdown .command-dropdown-active {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      font-size: 14px; }\n    .ge-commands .command-dropdown:hover, .ge-commands .command-dropdown.activated {\n      background-color: #666666;\n      color: black; }\n    .ge-commands .command-dropdown:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  .ge-commands .command-dropdown-blocker {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    transform: scale(1);\n    z-index: 1; }\n  .ge-commands.background-js .command-dropdown-content {\n    background: #333333; }\n    .ge-commands.background-js .command-dropdown-content .command-dropdown-label:hover {\n      background: #333333; }\n  .ge-commands.background-ts .command-dropdown-content .command-dropdown-label:hover {\n    background: #333333; }\n  .ge-commands .command-dropdown-content {\n    background: #333333;\n    position: absolute;\n    top: 55px;\n    width: 200px;\n    transform: scale(1);\n    z-index: 100; }\n    .ge-commands .command-dropdown-content.toRight {\n      width: 120px;\n      right: 0; }\n    .ge-commands .command-dropdown-content .command-dropdown-label {\n      color: white;\n      padding: 5px;\n      padding-left: 10px;\n      height: 35px;\n      font-size: 18px;\n      display: grid;\n      align-items: center;\n      cursor: pointer;\n      user-select: none;\n      grid-template-columns: 1fr 20px;\n      grid-template-rows: 100%;\n      position: relative; }\n      .ge-commands .command-dropdown-content .command-dropdown-label.active {\n        font-weight: bold;\n        font-size: 20px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label:hover {\n        background: var(--selectionGrey); }\n        .ge-commands .command-dropdown-content .command-dropdown-label:hover .sub-items {\n          display: block; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-text {\n        font-family: Arial;\n        font-size: 12px;\n        grid-column: 1;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-check {\n        grid-column: 2;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-arrow {\n        grid-column: 2;\n        grid-row: 1;\n        font-size: 20px;\n        font-weight: bold;\n        padding-bottom: 10px;\n        padding-left: 4px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .sub-items {\n        position: absolute;\n        left: 200px;\n        top: 0;\n        width: 150px;\n        display: none; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js {\n          background: #bfabff; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts {\n          background: #333333; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item {\n          color: white;\n          padding: 5px;\n          padding-left: 10px;\n          height: 35px;\n          display: grid; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item.checked {\n            background: white;\n            color: black; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10156,9 +10156,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/header.scss":
-/*!*******************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
-  \*******************************************************************************************************************************************/
+/*!*******************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
+  \*******************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10174,9 +10174,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \**************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10192,9 +10192,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10297,9 +10297,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
-  \***************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10399,9 +10399,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/process/browser.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10594,9 +10594,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10708,9 +10708,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \******************************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11311,9 +11311,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
-  \************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11337,9 +11337,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11361,9 +11361,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \******************************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11587,9 +11587,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \***********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11904,9 +11904,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \************************************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \******************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12104,9 +12104,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!**************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \**************************************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12244,9 +12244,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \*******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12584,9 +12584,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \*******************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12644,9 +12644,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \***********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12742,9 +12742,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \*******************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12804,9 +12804,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \*******************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12853,9 +12853,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \*****************************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12891,9 +12891,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37915,9 +37915,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37960,9 +37960,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38153,9 +38153,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
-  \**********************************************************/
+/*!****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/index.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38170,9 +38170,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40094,9 +40094,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
-  \*******************************************************/
+/*!*************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40111,9 +40111,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!***************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \***************************************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40472,9 +40472,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41342,9 +41342,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41359,9 +41359,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41376,9 +41376,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41574,9 +41574,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \**********************************************************************************************/
+/*!****************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41854,9 +41854,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \******************************************************************/
+/*!************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41929,9 +41929,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -42233,6 +42233,116 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "../public/imgs/babylonLogo.svg":
+/*!**************************************!*\
+  !*** ../public/imgs/babylonLogo.svg ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpolygon points='29.39 14.58 26.45 12.88 23.63 14.51 26.57 16.21 29.39 14.58' style='fill:%23e0684b'/%3E%3Cpolygon points='13.43 16.21 22.83 10.79 20 9.15 10.61 14.58 13.43 16.21' style='fill:%23e0684b'/%3E%3Cpolygon points='17.06 21.7 20 23.39 22.94 21.7 20 20 17.06 21.7' style='fill:%23e0684b'/%3E%3Cpolygon points='26.57 16.21 26.57 23.79 20 27.58 13.43 23.79 13.43 16.21 10.61 14.58 10.61 25.42 20 30.85 29.39 25.42 29.39 14.58 26.57 16.21' style='fill:%23bb464b'/%3E%3Cpolygon points='20 16.61 17.06 18.3 17.06 21.7 20 20 22.94 21.7 22.94 18.3 20 16.61' style='fill:%23bb464b'/%3E%3Cpolygon points='26.57 16.21 22.94 18.3 22.94 21.7 20 23.39 20 27.58 26.57 23.79 26.57 16.21' style='fill:%23e0ded8'/%3E%3Cpolygon points='13.43 16.21 17.06 18.3 17.06 21.7 20 23.39 20 27.58 13.43 23.79 13.43 16.21' style='fill:%23d5d2ca'/%3E%3Cpolygon points='22.83 10.79 26.45 12.88 23.63 14.51 26.57 16.21 22.94 18.3 20 16.61 17.06 18.3 13.43 16.21 22.83 10.79' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/guidesIcon.svg":
+/*!*************************************!*\
+  !*** ../public/imgs/guidesIcon.svg ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M21.6,13.38a.6.6,0,0,1-.6.6H19a.6.6,0,1,1,0-1.2h2A.6.6,0,0,1,21.6,13.38Z' style='fill:%23fff'/%3E%3Cpath d='M14,19a.6.6,0,0,0-1.2,0v2A.6.6,0,0,0,14,21Z' style='fill:%23fff'/%3E%3Cpath d='M26,19a.6.6,0,0,1,1.2,0v2A.6.6,0,0,1,26,21Z' style='fill:%23fff'/%3E%3Cpath d='M21,27.22A.6.6,0,0,0,21,26H19a.6.6,0,1,0,0,1.2Z' style='fill:%23fff'/%3E%3Cpath d='M16,13.38a.6.6,0,0,0-.6-.6H15a2.21,2.21,0,0,0-2.2,2.2v.41a.6.6,0,0,0,1.2,0V15a1,1,0,0,1,1-1h.41A.6.6,0,0,0,16,13.38Z' style='fill:%23fff'/%3E%3Cpath d='M24.61,12.78a.6.6,0,1,0,0,1.2H25a1,1,0,0,1,1,1v.41a.6.6,0,1,0,1.2,0V15a2.21,2.21,0,0,0-2.2-2.2Z' style='fill:%23fff'/%3E%3Cpath d='M16,26.62a.6.6,0,0,1-.6.6H15a2.21,2.21,0,0,1-2.2-2.2v-.41a.6.6,0,0,1,1.2,0V25a1,1,0,0,0,1,1h.41A.6.6,0,0,1,16,26.62Z' style='fill:%23fff'/%3E%3Cpath d='M24.61,27.22a.6.6,0,0,1,0-1.2H25a1,1,0,0,0,1-1v-.41a.6.6,0,0,1,1.2,0V25a2.21,2.21,0,0,1-2.2,2.2Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/hamburgerIcon.svg":
+/*!****************************************!*\
+  !*** ../public/imgs/hamburgerIcon.svg ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M12.46,15.31H27.62a.62.62,0,0,0,.53-.61.61.61,0,0,0-.61-.61H12.38a.61.61,0,0,0,.08,1.21Z' style='fill:%23fff'/%3E%3Cpath d='M27.54,19.39H12.38a.61.61,0,0,0,.08,1.21H27.62a.62.62,0,0,0,.53-.61A.61.61,0,0,0,27.54,19.39Z' style='fill:%23fff'/%3E%3Cpath d='M27.54,24.69H12.38a.62.62,0,0,0-.53.61.61.61,0,0,0,.61.61H27.62a.61.61,0,0,0-.08-1.21Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/handIcon.svg":
+/*!***********************************!*\
+  !*** ../public/imgs/handIcon.svg ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M19.39,13.51v5.07a.61.61,0,0,0,.61.61.61.61,0,0,0,.61-.61V14.51a.39.39,0,0,1,.4-.39.43.43,0,0,1,.41.41v6.08a.61.61,0,0,0,1,.42h0l0,0,.08-.07c.08-.07.19-.16.33-.26A2.66,2.66,0,0,1,24,20.2a1.86,1.86,0,0,1,1.13.11.68.68,0,0,1,.36.43l-1.35,1L24,21.8l-1.76,1.76a10,10,0,0,0-1.87,2.59,1.35,1.35,0,0,1-1.2.74H17a1.21,1.21,0,0,1-1.07-.58,9,9,0,0,1-1.39-4.08V16a.41.41,0,1,1,.81,0v2.83a.61.61,0,0,0,.61.61.61.61,0,0,0,.61-.61V14.53a.4.4,0,0,1,.4-.41.41.41,0,0,1,.41.41v4a.61.61,0,1,0,1.21,0V13.51a.41.41,0,0,1,.81,0ZM20.52,13A1.63,1.63,0,0,0,19,11.89,1.6,1.6,0,0,0,17.46,13a1.63,1.63,0,0,0-.5-.07,1.61,1.61,0,0,0-1.61,1.47,1.84,1.84,0,0,0-.41-.05A1.62,1.62,0,0,0,13.31,16v6.28a10.2,10.2,0,0,0,1.56,4.7A2.44,2.44,0,0,0,17,28.11H19.2a2.58,2.58,0,0,0,2.29-1.41,8.79,8.79,0,0,1,1.63-2.28l1.74-1.73,1.58-1.19a.61.61,0,0,0,.25-.49,1.9,1.9,0,0,0-1.06-1.78A3,3,0,0,0,23.74,19a3.64,3.64,0,0,0-1.11.4V14.53A1.63,1.63,0,0,0,21,12.91,1.51,1.51,0,0,0,20.52,13Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/makeComponentIcon.svg":
+/*!********************************************!*\
+  !*** ../public/imgs/makeComponentIcon.svg ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,11a.61.61,0,0,1,.61.61v2.83h2.83a.61.61,0,0,1,0,1.22H15.61v2.83a.61.61,0,0,1-1.22,0V15.61H11.56a.61.61,0,1,1,0-1.22h2.83V11.56A.61.61,0,0,1,15,11Z' style='fill:%23333'/%3E%3Cpath d='M7.71,10.34a2.63,2.63,0,0,1,2.63-2.63h9.32a2.63,2.63,0,0,1,2.63,2.63v9.32a2.63,2.63,0,0,1-2.63,2.63H10.34a2.63,2.63,0,0,1-2.63-2.63Zm2.63-1.41a1.41,1.41,0,0,0-1.41,1.41v9.32a1.41,1.41,0,0,0,1.41,1.41h9.32a1.41,1.41,0,0,0,1.41-1.41V10.34a1.41,1.41,0,0,0-1.41-1.41Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/pointerIcon.svg":
+/*!**************************************!*\
+  !*** ../public/imgs/pointerIcon.svg ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.09,20.65,15.37,12.31a1.19,1.19,0,0,0-1.92.94v13.5a1.19,1.19,0,0,0,2.12.74l3.33-4.21a1.3,1.3,0,0,1,1-.5h5.44A1.19,1.19,0,0,0,26.09,20.65Zm-6.17.94a2.51,2.51,0,0,0-2,.95l-3.32,4.21V13.25l10.72,8.34Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/sliderIcon.svg":
+/*!*************************************!*\
+  !*** ../public/imgs/sliderIcon.svg ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M10.3,18a3.64,3.64,0,0,1,3.64-3.63H26.06A3.64,3.64,0,0,1,29.7,18V22a3.64,3.64,0,0,1-3.64,3.63H13.94A3.64,3.64,0,0,1,10.3,22Zm3.64-2.42A2.43,2.43,0,0,0,11.51,18V22a2.43,2.43,0,0,0,2.43,2.42H26.06A2.43,2.43,0,0,0,28.49,22V18a2.43,2.43,0,0,0-2.43-2.42Z' style='fill:%23fff'/%3E%3Ccircle cx='15.99' cy='20' r='2.64' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/visibilityActiveIcon.svg":
+/*!***********************************************!*\
+  !*** ../public/imgs/visibilityActiveIcon.svg ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,13.19a3.23,3.23,0,1,1-3.22,3.22A3.22,3.22,0,0,1,15,13.19Zm0,1.21a2,2,0,1,0,2,2A2,2,0,0,0,15,14.4Zm0-4a8.06,8.06,0,0,1,7.82,6.1.61.61,0,0,1-1.18.29,6.84,6.84,0,0,0-13.28,0,.61.61,0,0,1-1.18-.3A8.07,8.07,0,0,1,15,10.36Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/visibilityNotActiveIcon.svg":
+/*!**************************************************!*\
+  !*** ../public/imgs/visibilityNotActiveIcon.svg ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,13.19a3.23,3.23,0,1,1-3.22,3.22A3.22,3.22,0,0,1,15,13.19Zm0,1.21a2,2,0,1,0,2,2A2,2,0,0,0,15,14.4Zm0-4a8.06,8.06,0,0,1,7.82,6.1.61.61,0,0,1-1.18.29,6.84,6.84,0,0,0-13.28,0,.61.61,0,0,1-1.18-.3A8.07,8.07,0,0,1,15,10.36Z' style='fill:%23888'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/zoomIcon.svg":
+/*!***********************************!*\
+  !*** ../public/imgs/zoomIcon.svg ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M27.1,26.24l-4-4a5.86,5.86,0,1,0-.86.86l4,4,.07.06a.62.62,0,0,0,.79-.06A.6.6,0,0,0,27.1,26.24Zm-8.51-3a4.65,4.65,0,1,1,4.64-4.64A4.65,4.65,0,0,1,18.59,23.23Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./components/commandBarComponent.tsx":
 /*!********************************************!*\
   !*** ./components/commandBarComponent.tsx ***!
@@ -42254,26 +42364,68 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var hamburgerIcon = __webpack_require__(/*! ../../public/imgs/hamburgerIcon.svg */ "../public/imgs/hamburgerIcon.svg");
+var pointerIcon = __webpack_require__(/*! ../../public/imgs/pointerIcon.svg */ "../public/imgs/pointerIcon.svg");
+var handIcon = __webpack_require__(/*! ../../public/imgs/handIcon.svg */ "../public/imgs/handIcon.svg");
+var zoomIcon = __webpack_require__(/*! ../../public/imgs/zoomIcon.svg */ "../public/imgs/zoomIcon.svg");
+var guidesIcon = __webpack_require__(/*! ../../public/imgs/guidesIcon.svg */ "../public/imgs/guidesIcon.svg");
+var controlsIcon = __webpack_require__(/*! ../../public/imgs/sliderIcon.svg */ "../public/imgs/sliderIcon.svg");
+var logoIcon = __webpack_require__(/*! ../../public/imgs/babylonLogo.svg */ "../public/imgs/babylonLogo.svg");
 __webpack_require__(/*! ../scss/commandBar.scss */ "./scss/commandBar.scss");
 var CommandBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommandBarComponent, _super);
     function CommandBarComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        props.globalState.onPanObservable.add(function () {
+            _this._panning = !_this._panning;
+            _this._zooming = false;
+            _this._selecting = false;
+            _this.forceUpdate();
+        });
+        props.globalState.onSelectionButtonObservable.add(function () {
+            _this._selecting = true;
+            _this._panning = false;
+            _this._zooming = false;
+            _this.forceUpdate();
+        });
+        props.globalState.onZoomObservable.add(function () {
+            _this._zooming = !_this._zooming;
+            _this._panning = false;
+            _this._selecting = false;
+            _this.forceUpdate();
+        });
+        props.globalState.onOutlinesObservable.add(function () {
+            _this._outlines = !_this._outlines;
+            var nodes = _this.props.globalState.workbench.nodes;
+            nodes.forEach(function (node) {
+                _this.updateNodeOutline(node);
+            });
+            _this.forceUpdate();
+        });
+        return _this;
     }
+    CommandBarComponent.prototype.updateNodeOutline = function (guiControl) {
+        var _this = this;
+        guiControl.isHighlighted = this._outlines;
+        guiControl.highlightLineWidth = 5;
+        if (this.props.globalState.workbench.isContainer(guiControl)) {
+            guiControl.children.forEach(function (child) {
+                _this.updateNodeOutline(child);
+            });
+        }
+    };
     CommandBarComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands " },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-commands" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-left" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: "../imgs/babylonLogo.svg", color: "white", className: "active" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: "hamburgerIcon", tooltip: "Options", items: [
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: logoIcon, color: "white", className: "active" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: hamburgerIcon, tooltip: "Options", items: [
                         {
                             label: "Save",
                             onClick: function () { _this.props.globalState.onSaveObservable.notifyObservers(); }
-                        },
-                        {
+                        }, {
                             label: "Load",
-                        },
-                        {
+                        }, {
                             label: "Save to snippet",
                             onClick: function () { _this.props.globalState.onSnippetSaveObservable.notifyObservers(); }
                         }, {
@@ -42281,10 +42433,14 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             onClick: function () { _this.props.globalState.onSnippetLoadObservable.notifyObservers(); }
                         },
                     ] }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Select", icon: "pointerIcon", shortcut: "Ctrl+S", isActive: false, onClick: function () { _this.props.globalState.onSelectionObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Pan", icon: "handIcon", shortcut: "Ctrl", isActive: false, onClick: function () { _this.props.globalState.onPanObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Zoom", icon: "zoomIcon", isActive: false, onClick: function () { _this.props.globalState.onZoomObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: "guidesIcon", tooltip: "Create", items: [
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Select", icon: pointerIcon, shortcut: "Q", isActive: this._selecting, onClick: function () { if (!_this._selecting)
+                        _this.props.globalState.onSelectionButtonObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Pan", icon: handIcon, shortcut: "W", isActive: this._panning, onClick: function () { if (!_this._panning)
+                        _this.props.globalState.onPanObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Zoom", shortcut: "E", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
+                        _this.props.globalState.onZoomObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Toggle Guides", shortcut: "R", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: controlsIcon, tooltip: "Create", items: [
                         {
                             label: "Image",
                             icon: "zoomIcon",
@@ -42386,9 +42542,9 @@ var CommandButtonComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     CommandButtonComponent.prototype.render = function () {
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-button", onClick: this.props.onClick, title: this.props.tooltip + (this.props.shortcut ? "\n" + this.props.shortcut : "") },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-button-icon" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: "../imgs/" + this.props.icon + ".svg", color: "white", className: this.props.isActive ? "active" : "" })),
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-button " + (this.props.isActive ? "active" : ""), onClick: this.props.onClick, title: this.props.tooltip + " " + (this.props.shortcut ? "\n" + this.props.shortcut : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-button-icon " + (this.props.isActive ? "active" : "") },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "white", className: this.props.isActive ? "active" : "" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-label" }, this.props.tooltip)));
     };
     return CommandButtonComponent;
@@ -42442,7 +42598,7 @@ var CommandDropdownComponent = /** @class */ (function (_super) {
                     } },
                     this.props.icon &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-icon" },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: "../imgs/" + this.props.icon + ".svg" })),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon })),
                     !this.props.icon &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-active" })),
                 this.state.isExpanded &&
@@ -42865,11 +43021,11 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         xmlHttp.send(JSON.stringify(dataToSend));
     };
     PropertyTabComponent.prototype.loadFromSnippet = function () {
-        var snippedID = window.prompt("Please enter the snippet ID to use");
-        if (!snippedID) {
+        var snippedId = window.prompt("Please enter the snippet ID to use");
+        if (!snippedId) {
             return;
         }
-        this.props.globalState.workbench.loadFromSnippet(snippedID);
+        this.props.globalState.workbench.loadFromSnippet(snippedId);
     };
     PropertyTabComponent.prototype.renderProperties = function () {
         var _a;
@@ -42980,6 +43136,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Show grid", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("ShowGrid", true); }, onSelect: function (value) {
                             babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].WriteBoolean("ShowGrid", value);
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Responsive", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("Responsive", true); }, onSelect: function (value) {
+                            _this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
+                            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].WriteBoolean("Responsive", value);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FILE" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_4__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.load(file); }, accept: ".json" }),
@@ -43010,14 +43170,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureTreeItemComponent", function() { return AdvancedDynamicTextureTreeItemComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
-/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
-
-
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
 
 
 
@@ -43058,14 +43214,12 @@ var AdvancedDynamicTextureTreeItemComponent = /** @class */ (function (_super) {
     };
     AdvancedDynamicTextureTreeItemComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "adtextureTools" },
-            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: this.props.texture.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faImage"], color: "mediumpurple" }),
-            react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "pickingMode icon " + (this.state.isInPickingMode ? 'selected' : ''), onClick: function () { return _this.onPickingMode(); }, title: "Turn picking mode on/off" },
-                react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_5__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faCrosshairs"] })),
-            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: this.props.texture, extensibilityGroups: this.props.extensibilityGroups })));
+        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "adtextureTools" },
+            react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemLabelComponent"], { label: this.props.texture.name, onClick: function () { return _this.props.onClick(); }, color: "mediumpurple" }),
+            react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_2__["ExtensionsComponent"], { target: this.props.texture, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return AdvancedDynamicTextureTreeItemComponent;
-}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
+}(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
 
 
 
@@ -43082,26 +43236,32 @@ var AdvancedDynamicTextureTreeItemComponent = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ControlTreeItemComponent", function() { return ControlTreeItemComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
-/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
 
 
 
 
-
-
+var visibilityNotActiveIcon = __webpack_require__(/*! ../../../../../public/imgs/visibilityNotActiveIcon.svg */ "../public/imgs/visibilityNotActiveIcon.svg");
+var visibilityActiveIcon = __webpack_require__(/*! ../../../../../public/imgs/visibilityActiveIcon.svg */ "../public/imgs/visibilityActiveIcon.svg");
+var makeComponentIcon = __webpack_require__(/*! ../../../../../public/imgs/makeComponentIcon.svg */ "../public/imgs/makeComponentIcon.svg");
 var ControlTreeItemComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ControlTreeItemComponent, _super);
     function ControlTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         var control = _this.props.control;
-        _this.state = { isActive: control.isHighlighted, isVisible: control.isVisible };
+        _this.dragOverHover = false;
+        _this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(function (selection) {
+            _this.setState({ isSelected: selection === _this.props.control });
+        });
+        _this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
         return _this;
     }
+    ControlTreeItemComponent.prototype.componentWillUnmount = function () {
+        this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
+    };
     ControlTreeItemComponent.prototype.highlight = function () {
         var control = this.props.control;
         control.isHighlighted = !control.isHighlighted;
@@ -43115,17 +43275,35 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
     ControlTreeItemComponent.prototype.render = function () {
         var _this = this;
         var control = this.props.control;
-        var name = (control.name || "No name") + (" [" + control.getClassName() + "]");
-        var isActiveElement = this.state.isActive ? react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_5__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faHighlighter"] }) : react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_5__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faHighlighter"], className: "isNotActive" });
-        var visibilityElement = this.state.isVisible ? react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_5__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faEye"] }) : react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_5__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faEyeSlash"], className: "isNotActive" });
-        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "controlTools" },
-            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faObjectGroup"], color: "greenyellow" }),
-            react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "highlight icon", onClick: function () { return _this.highlight(); }, title: "Highlight this control" }, isActiveElement),
-            react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchVisibility(); }, title: "Show/Hide control" }, visibilityElement),
-            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: control, extensibilityGroups: this.props.extensibilityGroups })));
+        var name = (control.name || "No name") + " [" + control.getClassName() + "]";
+        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "controlTools", onMouseOver: function () { return _this.setState({ isHovered: true }); }, onMouseLeave: function () { return _this.setState({ isHovered: false }); }, draggable: true, onDragStart: function (event) {
+                _this.props.globalState.draggedControl = control;
+            }, onDrop: function (event) {
+                if (_this.props.globalState.draggedControl != control) {
+                    _this.dragOverHover = false;
+                    _this.props.globalState.onParentingChangeObservable.notifyObservers(_this.props.control);
+                    _this.forceUpdate();
+                }
+            }, onDragOver: function (event) {
+                event.preventDefault();
+                _this.dragOverHover = true;
+                _this.forceUpdate();
+            }, onDragLeave: function (event) {
+                _this.dragOverHover = false;
+                _this.forceUpdate();
+            } },
+            react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemLabelComponent"], { label: name, onClick: function () { return _this.props.onClick(); }, color: "greenyellow" }),
+            (this.state.isHovered || this.state.isSelected || this.dragOverHover) && react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "addComponent icon", onClick: function () { return _this.highlight(); }, title: "Add component (Not Implemented)" },
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: makeComponentIcon })),
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchVisibility(); }, title: "Show/Hide control" },
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon }))),
+            (this.dragOverHover) && react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "Parent" })),
+            react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_2__["ExtensionsComponent"], { target: control, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return ControlTreeItemComponent;
-}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
+}(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
 
 
 
@@ -43294,6 +43472,9 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         this.props.globalState.onSelectionChangedObservable.add(function () {
             _this.forceUpdate();
         });
+        this._onParrentingChangeObserver = this.props.globalState.onParentingChangeObservable.add(function () {
+            _this.forceUpdate();
+        });
     };
     SceneExplorerComponent.prototype.componentWillUnmount = function () {
         if (this._onSelectionChangeObserver) {
@@ -43301,6 +43482,9 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         if (this._onNewSceneObserver) {
             this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
+        }
+        if (this._onParrentingChangeObserver) {
+            this.props.globalState.onParentingChangeObservable.remove(this._onParrentingChangeObserver);
         }
     };
     SceneExplorerComponent.prototype.filterContent = function (filter) {
@@ -43392,12 +43576,17 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
     };
     SceneExplorerComponent.prototype.renderContent = function () {
+        var _this = this;
         var scene = this.state.scene;
         if (!scene) {
             return null;
         }
         var guiElements = scene.textures.filter(function (t) { return t.getClassName() === "AdvancedDynamicTexture"; });
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree", onContextMenu: function (e) { return e.preventDefault(); } }, guiElements && guiElements.length > 0 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter })));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree", onDrop: function (event) {
+                _this.props.globalState.onParentingChangeObservable.notifyObservers(null);
+            }, onDragOver: function (event) {
+                event.preventDefault();
+            } }, guiElements && guiElements.length > 0 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter })));
     };
     SceneExplorerComponent.prototype.onClose = function () {
         if (!this.props.onClose) {
@@ -43485,7 +43674,7 @@ var TreeItemComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemComponent, _super);
     function TreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { isExpanded: false, mustExpand: false };
+        _this.state = { isExpanded: true, mustExpand: true };
         return _this;
     }
     TreeItemComponent.prototype.switchExpandedState = function () {
@@ -43579,8 +43768,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
-
 
 
 var TreeItemLabelComponent = /** @class */ (function (_super) {
@@ -43597,8 +43784,6 @@ var TreeItemLabelComponent = /** @class */ (function (_super) {
     TreeItemLabelComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "title", onClick: function () { return _this.onClick(); } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "titleIcon" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: this.props.icon, color: this.props.color })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "titleText" }, this.props.label || "no name")));
     };
     return TreeItemLabelComponent;
@@ -43697,6 +43882,9 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         }
         var children = _tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         return (children.map(function (item, i) {
+            if (item.name == "Art-Board-Background") {
+                return (null);
+            }
             return (react__WEBPACK_IMPORTED_MODULE_6__["createElement"](TreeItemSelectableComponent, { globalState: _this.props.globalState, mustExpand: _this.props.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, selectedEntity: _this.props.selectedEntity, key: i, offset: _this.props.offset + 2, entity: item, filter: _this.props.filter }));
         }));
     };
@@ -43757,12 +43945,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TreeItemSpecializedComponent", function() { return TreeItemSpecializedComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./entities/gui/controlTreeItemComponent */ "./components/sceneExplorer/entities/gui/controlTreeItemComponent.tsx");
-/* harmony import */ var _entities_gui_advancedDynamicTextureTreeItemComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./entities/gui/advancedDynamicTextureTreeItemComponent */ "./components/sceneExplorer/entities/gui/advancedDynamicTextureTreeItemComponent.tsx");
-
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./entities/gui/controlTreeItemComponent */ "./components/sceneExplorer/entities/gui/controlTreeItemComponent.tsx");
+/* harmony import */ var _entities_gui_advancedDynamicTextureTreeItemComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./entities/gui/advancedDynamicTextureTreeItemComponent */ "./components/sceneExplorer/entities/gui/advancedDynamicTextureTreeItemComponent.tsx");
 
 
 
@@ -43785,17 +43971,17 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
         if (entity && entity.getClassName) {
             var className = entity.getClassName();
             if (className === "AdvancedDynamicTexture") {
-                return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_entities_gui_advancedDynamicTextureTreeItemComponent__WEBPACK_IMPORTED_MODULE_5__["AdvancedDynamicTextureTreeItemComponent"], { onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable, extensibilityGroups: this.props.extensibilityGroups, texture: entity, onClick: function () { return _this.onClick(); } }));
+                return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_entities_gui_advancedDynamicTextureTreeItemComponent__WEBPACK_IMPORTED_MODULE_4__["AdvancedDynamicTextureTreeItemComponent"], { onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable, extensibilityGroups: this.props.extensibilityGroups, texture: entity, onClick: function () { return _this.onClick(); } }));
             }
             if (entity._host) {
-                return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_4__["ControlTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, control: entity, onClick: function () { return _this.onClick(); } }));
+                return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_3__["ControlTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, control: entity, onClick: function () { return _this.onClick(); } }));
             }
         }
-        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "meshTools" },
-            react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemLabelComponent"], { label: entity.name, onClick: function () { return _this.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faProjectDiagram"], color: "cornflowerblue" })));
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "meshTools" },
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemLabelComponent"], { label: entity.name, onClick: function () { return _this.onClick(); }, color: "cornflowerblue" })));
     };
     return TreeItemSpecializedComponent;
-}(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
+}(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
 
 
 
@@ -43835,6 +44021,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 __webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
 var isFramePortData = function (variableToCheck) {
     if (variableToCheck) {
@@ -43852,10 +44040,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._selectedGuiNodes = [];
         _this._ctrlKeyIsPressed = false;
         _this._forcePanning = false;
+        _this._forceZooming = false;
+        _this._forceSelecting = false;
+        _this._outlines = false;
         _this._frameIsMoving = false;
         _this._isLoading = false;
         _this.isOverGUINode = false;
+        _this.ctrlEvent = function (evt) {
+            _this._ctrlKeyIsPressed = evt.ctrlKey;
+        };
+        _this.ctrlFalseEvent = function () {
+            _this._ctrlKeyIsPressed = false;
+        };
         _this.isUp = true;
+        _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["DataStorage"].ReadBoolean("Responsive", true);
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
                 _this.changeSelectionHighlight(false);
@@ -43869,6 +44067,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         }
                     }
                     else {
+                        _this.changeSelectionHighlight(false);
                         _this._selectedGuiNodes = [selection];
                     }
                     _this.changeSelectionHighlight(true);
@@ -43876,21 +44075,46 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             }
         });
         props.globalState.onPanObservable.add(function () {
-            _this._forcePanning = true;
+            _this._forcePanning = !_this._forcePanning;
+            _this._forceSelecting = false;
+            _this._forceZooming = false;
+            if (!_this._forcePanning) {
+                _this.globalState.onSelectionButtonObservable.notifyObservers();
+            }
+            else {
+                _this._canvas.style.cursor = "move";
+            }
         });
-        props.globalState.onSelectionObservable.add(function () {
+        props.globalState.onSelectionButtonObservable.add(function () {
+            _this._forceSelecting = true;
             _this._forcePanning = false;
+            _this._forceZooming = false;
+            _this._canvas.style.cursor = "default";
         });
         props.globalState.onZoomObservable.add(function () {
             _this._forceZooming = !_this._forceZooming;
+            _this._forcePanning = false;
+            _this._forceSelecting = false;
+            if (!_this._forceZooming) {
+                _this.globalState.onSelectionButtonObservable.notifyObservers();
+            }
+            else {
+                _this._canvas.style.cursor = "zoom-in";
+            }
         });
-        _this.props.globalState.hostDocument.addEventListener("keyup", function () { return _this.onKeyUp(); }, false);
-        _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
-            _this._ctrlKeyIsPressed = evt.ctrlKey;
-        }, false);
-        _this.props.globalState.hostDocument.defaultView.addEventListener("blur", function () {
-            _this._ctrlKeyIsPressed = false;
-        }, false);
+        props.globalState.onOutlinesObservable.add(function () {
+            _this._outlines = !_this._outlines;
+        });
+        props.globalState.onParentingChangeObservable.add(function (control) {
+            _this.parent(control);
+        });
+        props.globalState.onResponsiveChangeObservable.add(function (value) {
+            _this._responsive = value;
+        });
+        _this.props.globalState.hostDocument.addEventListener("keyup", _this.ctrlEvent, false);
+        // Hotkey shortcuts
+        _this.props.globalState.hostDocument.addEventListener("keydown", _this.ctrlEvent, false);
+        _this.props.globalState.hostDocument.defaultView.addEventListener("blur", _this.ctrlFalseEvent, false);
         _this.props.globalState.workbench = _this;
         return _this;
     }
@@ -43916,18 +44140,23 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    WorkbenchComponent.prototype.componentWillUnmount = function () {
+        this.props.globalState.hostDocument.removeEventListener("keyup", this.ctrlEvent);
+        this.props.globalState.hostDocument.removeEventListener("keydown", this.ctrlEvent);
+        this.props.globalState.hostDocument.defaultView.removeEventListener("blur", this.ctrlFalseEvent);
+    };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.globalState.guiTexture.parseContent(serializationObject);
         this.loadToEditor();
     };
-    WorkbenchComponent.prototype.loadFromSnippet = function (snippedID) {
+    WorkbenchComponent.prototype.loadFromSnippet = function (snippedId) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedID)];
+                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedId)];
                     case 1:
                         _a.sent();
                         this.loadToEditor();
@@ -43944,8 +44173,16 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         });
     };
     WorkbenchComponent.prototype.changeSelectionHighlight = function (value) {
+        var _this = this;
         this.selectedGuiNodes.forEach(function (node) {
-            node.isHighlighted = value;
+            if (_this._outlines) {
+                node.isHighlighted = true;
+                node.highlightLineWidth = value ? 10 : 5;
+            }
+            else {
+                node.isHighlighted = value;
+                node.highlightLineWidth = 10;
+            }
         });
     };
     WorkbenchComponent.prototype.resizeGuiTexture = function (newvalue) {
@@ -43954,9 +44191,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.globalState.guiTexture.scaleTo(newvalue.x, newvalue.y);
         this.globalState.guiTexture.markAsDirty();
         this.globalState.onResizeObservable.notifyObservers(newvalue);
-    };
-    WorkbenchComponent.prototype.onKeyUp = function () {
-        this._ctrlKeyIsPressed = false;
     };
     WorkbenchComponent.prototype.findNodeFromGuiElement = function (guiControl) {
         return this.nodes.filter(function (n) { return n === guiControl; })[0];
@@ -44017,6 +44251,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }
         guiControl.highlightLineWidth = 5;
     };
+    WorkbenchComponent.prototype.parent = function (control) {
+        var draggedControl = this.props.globalState.draggedControl;
+        if (draggedControl != null) {
+            if (draggedControl.parent) {
+                draggedControl.parent.removeControl(draggedControl);
+                this.props.globalState.guiTexture.addControl(draggedControl);
+            }
+            if (control != null && this.props.globalState.workbench.isContainer(control)) {
+                this.props.globalState.guiTexture.removeControl(draggedControl);
+                control.addControl(draggedControl);
+            }
+        }
+        this.globalState.draggedControl = null;
+    };
     WorkbenchComponent.prototype.isSelected = function (value, guiNode) {
         this.globalState.onSelectionChangedObservable.notifyObservers(guiNode);
     };
@@ -44024,12 +44272,31 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (ignorClick === void 0) { ignorClick = false; }
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
+        if (guiControl.typeName === "Line") {
+            var line = guiControl;
+            var x1 = line.x1.substr(0, line.x1.length - 2); //removing the 'px'
+            var x2 = line.x2.substr(0, line.x2.length - 2);
+            var y1 = line.y1.substr(0, line.y1.length - 2);
+            var y2 = line.y2.substr(0, line.y2.length - 2);
+            line.x1 = Number(x1) + newX;
+            line.x2 = Number(x2) + newX;
+            line.y1 = Number(y1) + newY;
+            line.y2 = Number(y2) + newY;
+            return true;
+        }
         guiControl.leftInPixels += newX;
         guiControl.topInPixels += newY;
+        //convert to percentage
+        if (this._responsive) {
+            var left = (guiControl.leftInPixels * 100) / (this._textureMesh.scaling.x);
+            var top_1 = (guiControl.topInPixels * 100) / (this._textureMesh.scaling.z);
+            guiControl.left = left + "%";
+            guiControl.top = top_1 + "%";
+        }
         return true;
     };
     WorkbenchComponent.prototype.componentDidMount = function () {
-        this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"](); //this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLDivElement;
+        this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
     };
     WorkbenchComponent.prototype.onMove = function (evt) {
         var _this = this;
@@ -44083,6 +44350,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var _this = this;
         // Get the canvas element from the DOM.
         var canvas = document.getElementById("workbench-canvas");
+        this._canvas = canvas;
         // Associate a Babylon Engine to it.
         var engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Engine"](canvas);
         // Create our first scene.
@@ -44098,7 +44366,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this._textureMesh.showBoundingBox = true;
-        var background = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["Rectangle"]("Rectangle");
+        var background = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["Rectangle"]("Art-Board-Background");
         background.width = "100%";
         background.height = "100%";
         background.background = "white";
@@ -44140,12 +44408,18 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var wheelPrecisionFn = function () {
             camera.wheelPrecision = (1 / camera.radius) * 1000;
         };
-        var zoomFn = function (p, e) {
+        var zoomFnScrollWheel = function (p, e) {
             var delta = _this.zoomWheel(p, e, camera);
             _this.zooming(delta, scene, camera, plane, inertialPanning);
         };
+        var zoomFnMouse = function (p, e) {
+            var newPos = _this.getPosition(scene, camera, plane);
+            var deltaVector = initialPos.subtract(newPos);
+            _this.zooming(deltaVector.x > 0 ? -15 : 15, scene, camera, plane, inertialPanning);
+        };
         var removeObservers = function () {
             scene.onPointerObservable.removeCallback(panningFn);
+            scene.onPointerObservable.removeCallback(zoomFnMouse);
         };
         scene.onPointerObservable.add(function (p, e) {
             removeObservers();
@@ -44155,7 +44429,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this._panning = true;
             }
             else if (_this._forceZooming) {
-                scene.onPointerObservable.add(zoomFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERMOVE);
+                initialPos = _this.getPosition(scene, camera, plane);
+                scene.onPointerObservable.add(zoomFnMouse, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERMOVE);
                 _this._panning = false;
             }
             else {
@@ -44166,7 +44441,32 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this._panning = false;
             removeObservers();
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERUP);
-        scene.onPointerObservable.add(zoomFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERWHEEL);
+        scene.onKeyboardObservable.add(function (k, e) {
+            switch (k.event.key) {
+                case "q": //select
+                case "Q":
+                    if (!_this._forceSelecting)
+                        _this.globalState.onSelectionButtonObservable.notifyObservers();
+                    break;
+                case "w": //pan
+                case "W":
+                    if (!_this._forcePanning)
+                        _this.globalState.onPanObservable.notifyObservers();
+                    break;
+                case "e": //zoom
+                case "E":
+                    if (!_this._forceZooming)
+                        _this.globalState.onZoomObservable.notifyObservers();
+                    break;
+                case "r": //outlines
+                case "R":
+                    _this.globalState.onOutlinesObservable.notifyObservers();
+                    break;
+                default:
+                    break;
+            }
+        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["KeyboardEventTypes"].KEYDOWN);
+        scene.onPointerObservable.add(zoomFnScrollWheel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
         // stop context menu showing on canvas right click
@@ -44318,11 +44618,14 @@ var GlobalState = /** @class */ (function () {
         this.onPropertyChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onZoomObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPanObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onSelectionObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onSelectionButtonObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onOutlinesObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onResponsiveChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onParentingChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
@@ -44490,28 +44793,29 @@ var GUINodeTools = /** @class */ (function () {
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Ellipse"]("Ellipse");
                 element.color = "#cccccc";
                 element.isPointerBlocker = true;
+                element.thickness = 1;
                 return element;
             case "Rectangle":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Rectangle"]("Rectangle");
                 element.color = "#cccccc";
                 element.isPointerBlocker = true;
+                element.thickness = 1;
                 return element;
             case "Line":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Line"]();
                 element.x1 = 0;
-                element.y1 = 0;
-                element.y2 = 100;
-                element.x2 = 100;
-                element.lineWidth = 5;
-                element.dash = [50, 10];
+                element.y1 = 1024;
+                element.y2 = 512;
+                element.x2 = 512;
+                element.lineWidth = 2;
                 element.isPointerBlocker = true;
                 element.isHitTestVisible = true;
-                element.color = "#0";
+                element.color = "#000000";
                 return element;
             case "Text":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]("Textblock");
-                element.text = "My Text";
-                element.color = "#0";
+                element.text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sed.";
+                element.color = "#000000";
                 element.fontSize = 20;
                 element.resizeToFit = true;
                 element.isPointerBlocker = true;
@@ -44525,11 +44829,13 @@ var GUINodeTools = /** @class */ (function () {
                 element.height = "40px";
                 return element;
             case "VirtualKeyboard":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"]();
+                element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"].CreateDefaultLayout();
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
                 return element;
             case "Image":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Image"]("Image", "https://playground.babylonjs.com/textures/grass.png");
+                element.width = "512px";
+                element.height = "512px";
                 element.autoScale = true;
                 element.isPointerBlocker = true;
                 return element;
@@ -44540,14 +44846,18 @@ var GUINodeTools = /** @class */ (function () {
                 element.background = "#333333";
                 element.color = "#ffffff";
                 element.isPointerBlocker = true;
+                element.width = "160px";
+                element.height = "40px";
                 return element;
             case "InputPassword":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]("InputPassword");
                 element.maxWidth = 0.6;
-                element.text = "Input Text";
+                element.text = "Password";
                 element.background = "#333333";
                 element.color = "#ffffff";
                 element.isPointerBlocker = true;
+                element.width = "160px";
+                element.height = "40px";
                 return element;
             case "Grid":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]("Grid");

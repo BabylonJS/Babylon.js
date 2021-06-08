@@ -174,9 +174,14 @@ export class WebXRCamera extends FreeCamera {
         this._setTrackingState(trackingState);
 
         if (pose.transform) {
+            const orientation = pose.transform.orientation;
+            if (pose.transform.orientation.x === undefined) {
+                // Babylon native polyfill can return an undefined orientation value
+                // When not initialized
+                return;
+            }
             const pos = pose.transform.position;
             this._referencedPosition.set(pos.x, pos.y, pos.z);
-            const orientation = pose.transform.orientation;
 
             this._referenceQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {

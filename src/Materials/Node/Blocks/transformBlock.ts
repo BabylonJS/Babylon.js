@@ -29,7 +29,9 @@ export class TransformBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Vertex);
+        super(name, NodeMaterialBlockTargets.Neutral);
+
+        this.target = NodeMaterialBlockTargets.Vertex;
 
         this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);

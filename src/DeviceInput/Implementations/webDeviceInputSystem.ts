@@ -41,6 +41,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _pointerBlurEvent = (evt: any) => { };
     private _wheelEventName: string;
 
+    private _mouseId = -1;
+    private _isUsingFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
+
     private _pointerWheelClearObserver: Nullable<Observer<Engine>> = null;
 
     private _gamepadConnectedEvent = (evt: any) => { };
@@ -138,7 +141,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             // Blur Events
             this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
             this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
-            this._elementToAttachTo.removeEventListener(this._eventPrefix + "out", this._pointerBlurEvent);
 
             // Keyboard Events
             if (this._keyboardActive) {
@@ -150,7 +152,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             if (this._pointerActive) {
                 this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
                 this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-                window.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+                this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
                 this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
 
                 if (this._pointerWheelClearObserver) {
@@ -223,6 +225,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      * @param numberOfInputs Number of input entries to create for given device
      */
     private _registerDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number) {
+        if (deviceSlot === undefined) {
+            throw `Unable to register device ${DeviceType[deviceType]} to undefined slot.`;
+        }
+
         if (!this._inputs[deviceType]) {
             this._inputs[deviceType] = {};
         }
@@ -328,8 +334,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      */
     private _handlePointerActions() {
         this._pointerMoveEvent = ((evt) => {
-            const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
-            const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
+            const deviceType = this._getPointerType(evt);
+            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = {};
@@ -337,6 +343,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             if (!this._inputs[deviceType][deviceSlot]) {
                 this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
+            }
+
+            if (deviceType === DeviceType.Mouse && this._mouseId === -1) {
+                this._mouseId = evt.pointerId;
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
@@ -404,8 +414,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         });
 
         this._pointerDownEvent = ((evt) => {
-            const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
-            const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
+            const deviceType = this._getPointerType(evt);
+            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = {};
@@ -420,6 +430,25 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
                 const previousVertical = pointer[PointerInput.Vertical];
                 const previousButton = pointer[evt.button + 2];
+
+                if (deviceType === DeviceType.Mouse && this._mouseId === -1) { // Mouse; Among supported browsers, value is either 1 or 0 for mouse
+                    if (evt.pointerId === undefined) { // If there is no pointerId (eg. manually dispatched MouseEvent)
+                        this._mouseId = this._isUsingFirefox ? 0 : 1;
+                    }
+                    else if (!this._isUsingFirefox && evt.pointerId === 0) { // If there is a pointerId of 0 for any browser that ISN'T Firefox (can happen with manually dispatched PointerEvents with no defined pointerId)
+                        this._mouseId = 1;
+                    }
+                    else {
+                        this._mouseId = evt.pointerId;
+                    }
+
+                    this._elementToAttachTo.setPointerCapture(this._mouseId);
+                }
+                else { // Touch; Since touches are dynamically assigned, only set capture if we have an id
+                    if (evt.pointerId) {
+                        this._elementToAttachTo.setPointerCapture(evt.pointerId);
+                    }
+                }
 
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
@@ -452,8 +481,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         });
 
         this._pointerUpEvent = ((evt) => {
-            const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
-            const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
+            const deviceType = this._getPointerType(evt);
+            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
 
             const pointer = this._inputs[deviceType]?.[deviceSlot];
             if (pointer && pointer[evt.button + 2] !== 0) {
@@ -487,10 +516,18 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.inputIndex = evt.button + 2;
                 deviceEvent.previousState = previousButton;
                 deviceEvent.currentState = pointer[evt.button + 2];
+
+                if (deviceType === DeviceType.Mouse && this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture(this._mouseId)) {
+                    this._elementToAttachTo.releasePointerCapture(this._mouseId);
+                }
+                else if (evt.pointerId && this._elementToAttachTo.hasPointerCapture(evt.pointerId)) {
+                    this._elementToAttachTo.releasePointerCapture(evt.pointerId);
+                }
+
                 this.onInputChangedObservable.notifyObservers(deviceEvent);
 
                 // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
-                if (evt.pointerType !== "mouse") {
+                if (deviceType !== DeviceType.Mouse) {
                     this._unregisterDevice(deviceType, deviceSlot);
                 }
             }
@@ -529,6 +566,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             if (this.isDeviceAvailable(DeviceType.Mouse)) {
                 const pointer = this._inputs[DeviceType.Mouse][0];
 
+                if (this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture(this._mouseId)) {
+                    this._elementToAttachTo.releasePointerCapture(this._mouseId);
+                }
+
                 for (let i = 0; i <= PointerInput.BrowserForward; i++) {
                     if (pointer[i + 2] === 1) {
                         pointer[i + 2] = 0;
@@ -551,6 +592,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 for (const deviceSlotKey in pointer) {
                     const deviceSlot = +deviceSlotKey;
+
+                    if (this._elementToAttachTo.hasPointerCapture(deviceSlot)) {
+                        this._elementToAttachTo.releasePointerCapture(deviceSlot);
+                    }
 
                     if (pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
                         pointer[deviceSlot][PointerInput.LeftClick] = 0;
@@ -621,7 +666,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-        window.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+        this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
 
@@ -697,5 +742,20 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         }
 
         return DeviceType.Generic;
+    }
+
+    /**
+     * Get DeviceType from a given pointer/mouse/touch event.
+     * @param evt PointerEvent to evaluate
+     * @returns DeviceType interpreted from event
+     */
+    private _getPointerType(evt: any): DeviceType {
+        let deviceType = DeviceType.Mouse;
+
+        if (evt.pointerType === "touch" || evt.pointerType === "pen" || evt.touches) {
+            deviceType = DeviceType.Touch;
+        }
+
+        return deviceType;
     }
 }

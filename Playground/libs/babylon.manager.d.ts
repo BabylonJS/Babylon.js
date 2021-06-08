@@ -36,10 +36,14 @@ declare module BABYLON {
         static LoadSceneFile(sceneFile: string, queryString?: string): void;
         /** Shows the top page scene loader (engine.html) */
         static ShowParentLoader(show: boolean, duration?: number): void;
-        /** Get the system render quality setting. */
+        /** Get the system render quality local storage setting. */
         static GetRenderQuality(): BABYLON.RenderQuality;
-        /** Set the system render quality setting. */
+        /** Set the system render quality local storage setting. */
         static SetRenderQuality(quality: BABYLON.RenderQuality): void;
+        /** Get the system virtual reality local storage setting. */
+        static GetVirtualRealityEnabled(): boolean;
+        /** Set the system virtual reality local storage setting. */
+        static SetVirtualRealityEnabled(enabled: boolean): void;
         /** Get an item from top window local storage. */
         static GetLocalStorageItem(key: string): string;
         /** Set an item to top window local storage. */
@@ -233,7 +237,7 @@ declare module BABYLON {
         /** Get all materials with name. (Uses starts with text searching) */
         static GetAllMaterialsWithName(scene: BABYLON.Scene, name: string): BABYLON.Material[];
         /** Instantiate the specified prefab asset hierarchy into the scene. (Cloned Hierarchy) */
-        static InstantiatePrefab(container: BABYLON.AssetContainer, prefabName: string, newName: string, makeNewMaterials?: boolean, cloneAnimations?: boolean, assetsManager?: BABYLON.AssetsManager): BABYLON.TransformNode;
+        static InstantiatePrefab(container: BABYLON.AssetContainer, prefabName: string, newName: string, makeNewMaterials?: boolean, cloneAnimations?: boolean): BABYLON.TransformNode;
         /** Clones the specified transform node asset into the scene. (Transform Node) */
         static CloneTransformNode(container: BABYLON.AssetContainer, nodeName: string, cloneName: string): BABYLON.TransformNode;
         /** Clones the specified abstract mesh asset into the scene. (Abtract Mesh) */
@@ -325,7 +329,7 @@ declare module BABYLON {
         private static NavigationMesh;
         private static CrowdInterface;
         private static PluginInstance;
-        /** Register handler that is triggered when the audio clip is ready */
+        /** Register handler that is triggered when the navigation mesh is ready */
         static OnNavMeshReadyObservable: Observable<Mesh>;
         /** Get recast total memory heap size */
         static GetRecastHeapSize(): number;
@@ -621,7 +625,7 @@ declare module BABYLON {
         /** Parse the scene component metadata. Note: Internal use only */
         parseSceneComponents(entity: BABYLON.TransformNode): void;
         /** Post process pending scene components. Note: Internal use only */
-        postProcessSceneComponents(preloadList: Array<BABYLON.ScriptComponent>): void;
+        postProcessSceneComponents(preloadList: Array<BABYLON.ScriptComponent>, readyList: Array<BABYLON.ScriptComponent>): void;
         private static DoParseSceneComponents;
         private static DoProcessPendingScripts;
         private static DoProcessPendingShadows;
@@ -734,6 +738,7 @@ declare module BABYLON {
         registerTriggerVolume(volume: BABYLON.AbstractMesh): void;
         unregisterTriggerVolume(volume: BABYLON.AbstractMesh): void;
         private registerComponentInstance;
+        private delayComponentInstance;
         private destroyComponentInstance;
         private static RegisterInstance;
         private static UpdateInstance;
@@ -1311,8 +1316,6 @@ declare module BABYLON {
         private static LoadingState;
         static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
         static OnPreloaderComplete: (tasks: BABYLON.AbstractAssetTask[]) => void;
-        static IsLastSceneExecuteReady: boolean;
-        static OnLastSceneExecuteReady: BABYLON.Observable<BABYLON.Scene>;
         static IsLayerMasked(mask: number, layer: number): boolean;
         static GetLoadingState(): number;
         static Approximately(a: number, b: number): boolean;
@@ -1397,8 +1400,18 @@ declare module BABYLON {
         static ValidateTransformRotation(transform: BABYLON.TransformNode): void;
         /** Validate and switch Euler rotation to Quaternion rotation. */
         static ValidateTransformQuaternion(transform: BABYLON.TransformNode): void;
-        /** Get the smoothed keyboard input value  */
+        /** Get the smoothed keyboard input value. */
         static GetKeyboardInputValue(scene: BABYLON.Scene, currentValue: number, targetValue: number): number;
+        /** Generate a randome number. */
+        static GenerateRandonNumber(min: number, max: number, decimals?: number): number;
+        /** Projects a vector onto another vector */
+        static ProjectVector(vector: BABYLON.Vector3, onnormal: BABYLON.Vector3): BABYLON.Vector3;
+        /** Projects a vector onto another vector and sets result */
+        static ProjectVectorToRef(vector: BABYLON.Vector3, onnormal: BABYLON.Vector3, result: BABYLON.Vector3): void;
+        /** Projects a vector onto a plane defined by a normal orthogonal to the plane */
+        static ProjectVectorOnPlane(vector: BABYLON.Vector3, planenormal: BABYLON.Vector3): BABYLON.Vector3;
+        /** Projects a vector onto a plane defined by a normal orthogonal to the plane and sets result */
+        static ProjectVectorOnPlaneToRef(vector: BABYLON.Vector3, planenormal: BABYLON.Vector3, result: BABYLON.Vector3): void;
         /** TODO */
         static DownloadEnvironment(cubemap: BABYLON.CubeTexture, success?: () => void, failure?: () => void): void;
         static HasOwnProperty(object: any, property: string): boolean;
@@ -1418,10 +1431,11 @@ declare module BABYLON {
         private static TmpAmmoNormalC;
         static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean, normals?: boolean): number;
         static AddHullVerts(btConvexHullShape: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean): number;
-        static CreateImpostorCustomShape(scene: BABYLON.Scene, impostor: BABYLON.PhysicsImpostor, type: number, showDebugColliders?: boolean, colliderVisibility?: number, useTriangleNormals?: boolean): any;
+        static CreateImpostorCustomShape(scene: BABYLON.Scene, impostor: BABYLON.PhysicsImpostor, type: number, showDebugColliders?: boolean, colliderVisibility?: number, colliderRenderGroup?: number, useTriangleNormals?: boolean): any;
         static UseTriangleNormals(): boolean;
         static ShowDebugColliders(): boolean;
         static ColliderVisibility(): number;
+        static ColliderRenderGroup(): number;
         static CollisionWireframe(): boolean;
         static GetColliderMaterial(scene: BABYLON.Scene): BABYLON.Material;
         static CalculateCombinedFriction(friction0: number, friction1: number): number;
@@ -1550,7 +1564,7 @@ declare module BABYLON {
         /** Get all loaded scene transform nodes. */
         static GetSceneTransforms(scene: BABYLON.Scene): BABYLON.TransformNode[];
         /** Parse scene component metadata. */
-        static PostParseSceneComponents(scene: BABYLON.Scene, transforms: BABYLON.TransformNode[], preloadList: Array<BABYLON.ScriptComponent>): void;
+        static PostParseSceneComponents(scene: BABYLON.Scene, transforms: BABYLON.TransformNode[], preloadList: Array<BABYLON.ScriptComponent>, readyList: Array<BABYLON.ScriptComponent>): void;
         /**
          * Gets the specified asset container mesh.
          * @param container defines the asset container
@@ -1643,14 +1657,15 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     readonly name = "CVTOOLS_unity_metadata";
     /** Defines whether this extension is enabled. */
     enabled: boolean;
-    private static LastLoaderScene;
-    private static LastBabylonScene;
-    private static LastAssetsManager;
     private _loader;
+    private _babylonScene;
+    private _loaderScene;
+    private _assetsManager;
     private _parserList;
     private _masterList;
     private _detailList;
     private _shaderList;
+    private _readyList;
     private _preloadList;
     private _materialMap;
     private _lightmapMap;

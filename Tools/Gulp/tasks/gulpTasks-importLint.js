@@ -23,7 +23,7 @@ var buildShaders = function(settings) {
  * ImportLint all typescript files from the src directory.
  */
 var importLintLibrary = function(settings) {
-    const fxFilter = filter(['**', '!**/*.fragment.ts', '!**/*.vertex.ts', '!**/ShadersInclude/**'], { restore: false });
+    const fxFilter = filter(['**', '!**/*.fragment.ts', '!**/*.vertex.ts', '!**/*.compute.ts', '!**/ShadersInclude/**'], { restore: false });
     return gulp.src(settings.computed.tsGlob)
         .pipe(fxFilter)
         .pipe(validateImports({

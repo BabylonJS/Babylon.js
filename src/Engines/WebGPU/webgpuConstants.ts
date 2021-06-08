@@ -125,7 +125,7 @@ export enum TextureFormat {
 
     // BC compressed formats usable if "texture-compression-bc" is both
     // supported by the device/user agent and enabled in requestDevice.
-    BC1RGBAUNorm = "bc1-rgba-unorm",
+    BC1RGBAUnorm = "bc1-rgba-unorm",
     BC1RGBAUnormSRGB = "bc1-rgba-unorm-srgb",
     BC2RGBAUnorm = "bc2-rgba-unorm",
     BC2RGBAUnormSRGB = "bc2-rgba-unorm-srgb",

@@ -172,14 +172,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.19";
+        return "babylonjs@5.0.0-alpha.24";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.19";
+        return "5.0.0-alpha.24";
     }
 
     /**
@@ -734,36 +734,7 @@ export class ThinEngine {
                 };
 
                 this._onContextRestored = () => {
-                    // Adding a timeout to avoid race condition at browser level
-                    setTimeout(() => {
-                        this._dummyFramebuffer = null;
-
-                        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to _initGLContext / wipeCaches will reset them
-                        const depthFunc = this._depthCullingState.depthFunc;
-                        const depthMask = this._depthCullingState.depthMask;
-                        const stencilTest = this._stencilState.stencilTest;
-
-                        // Rebuild gl context
-                        this._initGLContext();
-                        // Rebuild effects
-                        this._rebuildEffects();
-                        this._rebuildComputeEffects();
-                        // Rebuild textures
-                        this._rebuildInternalTextures();
-                        // Rebuild buffers
-                        this._rebuildBuffers();
-                        // Cache
-                        this.wipeCaches(true);
-
-                        this._depthCullingState.depthTest = depthTest;
-                        this._depthCullingState.depthFunc = depthFunc;
-                        this._depthCullingState.depthMask = depthMask;
-                        this._stencilState.stencilTest = stencilTest;
-
-                        Logger.Warn("WebGL context successfully restored.");
-                        this.onContextRestoredObservable.notifyObservers(this);
-                        this._contextWasLost = false;
-                    }, 0);
+                    this._restoreEngineAfterContextLost(this._initGLContext.bind(this));
                 };
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
@@ -868,22 +839,38 @@ export class ThinEngine {
         console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
     }
 
-    /**
-     * @hidden
-     */
-    public _debugPushGroup(groupName: string, targetObject?: number): void {
-    }
+    protected _restoreEngineAfterContextLost(initEngine: () => void): void {
+        // Adding a timeout to avoid race condition at browser level
+        setTimeout(async () => {
+            this._dummyFramebuffer = null;
 
-    /**
-     * @hidden
-     */
-    public _debugPopGroup(targetObject?: number): void {
-    }
+            const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
+            const depthFunc = this._depthCullingState.depthFunc;
+            const depthMask = this._depthCullingState.depthMask;
+            const stencilTest = this._stencilState.stencilTest;
 
-    /**
-     * @hidden
-     */
-    public _debugInsertMarker(text: string, targetObject?: number): void {
+            // Rebuild context
+            await initEngine();
+            // Rebuild effects
+            this._rebuildEffects();
+            this._rebuildComputeEffects?.();
+            // Rebuild textures
+            this._rebuildInternalTextures();
+            // Rebuild buffers
+            this._rebuildBuffers();
+            // Cache
+            this.wipeCaches(true);
+
+            this._depthCullingState.depthTest = depthTest;
+            this._depthCullingState.depthFunc = depthFunc;
+            this._depthCullingState.depthMask = depthMask;
+            this._stencilState.stencilTest = stencilTest;
+
+            Logger.Warn(this.name + " context successfully restored.");
+            this.onContextRestoredObservable.notifyObservers(this);
+            this._contextWasLost = false;
+        }, 0);
+
     }
 
     /**
@@ -976,6 +963,7 @@ export class ThinEngine {
             astc: this._gl.getExtension('WEBGL_compressed_texture_astc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc'),
             bptc: this._gl.getExtension('EXT_texture_compression_bptc') || this._gl.getExtension('WEBKIT_EXT_texture_compression_bptc'),
             s3tc: this._gl.getExtension('WEBGL_compressed_texture_s3tc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc'),
+            s3tc_srgb: this._gl.getExtension('WEBGL_compressed_texture_s3tc_srgb') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc_srgb'),
             pvrtc: this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc'),
             etc1: this._gl.getExtension('WEBGL_compressed_texture_etc1') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc1'),
             etc2: this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc') ||
@@ -985,6 +973,7 @@ export class ThinEngine {
             fragmentDepthSupported: this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null,
             highPrecisionShaderSupported: false,
             timerQuery: this._gl.getExtension('EXT_disjoint_timer_query_webgl2') || this._gl.getExtension("EXT_disjoint_timer_query"),
+            supportOcclusionQuery: this._webGLVersion > 1,
             canUseTimestampForTimerQuery: false,
             drawBuffersExtension: false,
             maxMSAASamples: 1,
@@ -1002,9 +991,10 @@ export class ThinEngine {
             multiview: this._gl.getExtension('OVR_multiview2'),
             oculusMultiview: this._gl.getExtension('OCULUS_multiview'),
             depthTextureExtension: false,
-            canUseGLInstanceID: !(this._badOS && this._webGLVersion <= 1),
+            canUseGLInstanceID: this._webGLVersion > 1,
             canUseGLVertexID: this._webGLVersion > 1,
             supportComputeShaders: false,
+            supportSRGBBuffers: false,
         };
 
         // Infos
@@ -1050,6 +1040,18 @@ export class ThinEngine {
         this._caps.textureFloatLinearFiltering = this._caps.textureFloat && this._gl.getExtension('OES_texture_float_linear') ? true : false;
         this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer() ? true : false;
         this._caps.textureHalfFloatLinearFiltering = (this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension('OES_texture_half_float_linear'))) ? true : false;
+
+        // Compressed formats
+        if (this._caps.astc) {
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+        }
+        if (this._caps.bptc) {
+            this._gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT = this._caps.bptc.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
+        }
+        if (this._caps.s3tc_srgb) {
+            this._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+            this._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+        }
 
         // Checks if some of the format renders first to allow the use of webgl inspector.
         if (this._webGLVersion > 1) {
@@ -1138,6 +1140,20 @@ export class ThinEngine {
                 this._caps.blendMinMax = true;
                 this._gl.MAX = blendMinMaxExtension.MAX_EXT;
                 this._gl.MIN = blendMinMaxExtension.MIN_EXT;
+            }
+        }
+
+        // sRGB buffers
+        if (this._webGLVersion > 1) {
+            this._caps.supportSRGBBuffers = true;
+        } else {
+            const sRGBExtension = this._gl.getExtension('EXT_sRGB');
+
+            if (sRGBExtension != null) {
+                this._caps.supportSRGBBuffers = true;
+                this._gl.SRGB = sRGBExtension.SRGB_EXT;
+                this._gl.SRGB8 = sRGBExtension.SRGB_ALPHA_EXT;
+                this._gl.SRGB8_ALPHA8 = sRGBExtension.SRGB_ALPHA_EXT;
             }
         }
 
@@ -3187,7 +3203,7 @@ export class ThinEngine {
         processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => void,
         prepareTextureProcessFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture {
         url = url || "";
         const fromData = url.substr(0, 5) === "data:";
         const fromBlob = url.substr(0, 5) === "blob:";
@@ -3230,6 +3246,7 @@ export class ThinEngine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
+        texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU || noMipmap); // it seems generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
 
         if (!this._doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
@@ -3264,7 +3281,7 @@ export class ThinEngine {
             else {
                 // fall back to the original url if the transformed url fails to load
                 Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
-                this._createTextureBase(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture, format, forcedExtension, mimeType, loaderOptions);
+                this._createTextureBase(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture, format, forcedExtension, mimeType, loaderOptions, useSRGBBuffer);
             }
         };
 
@@ -3349,12 +3366,13 @@ export class ThinEngine {
      * @param mimeType defines an optional mime type
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture {
 
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
@@ -3362,10 +3380,18 @@ export class ThinEngine {
             (potWidth, potHeight, img, extension, texture, continuationCallback) => {
                 let gl = this._gl;
                 var isPot = (img.width === potWidth && img.height === potHeight);
-                let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
+
+                let internalFormat = format ?
+                    this._getInternalFormat(format, texture._useSRGBBuffer) :
+                    ((extension === ".jpg" && !texture._useSRGBBuffer) ? gl.RGB : (texture._useSRGBBuffer ? gl.SRGB8_ALPHA8 : gl.RGBA));
+                let texelFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg" && !texture._useSRGBBuffer) ? gl.RGB : gl.RGBA);
+
+                if (texture._useSRGBBuffer && this.webGLVersion === 1) {
+                    texelFormat = internalFormat;
+                }
 
                 if (isPot) {
-                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img as any);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, img as any);
                     return false;
                 }
 
@@ -3381,7 +3407,7 @@ export class ThinEngine {
                     this._workingCanvas.height = potHeight;
 
                     this._workingContext.drawImage(img as any, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas as TexImageSource);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, this._workingCanvas as TexImageSource);
 
                     texture.width = potWidth;
                     texture.height = potHeight;
@@ -3391,7 +3417,7 @@ export class ThinEngine {
                     // Using shaders when possible to rescale because canvas.drawImage is lossy
                     let source = new InternalTexture(this, InternalTextureSource.Temp);
                     this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img as any);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, img as any);
 
                     this._rescaleTexture(source, texture, scene, internalFormat, () => {
                         this._releaseTexture(source);
@@ -3403,7 +3429,7 @@ export class ThinEngine {
 
                 return true;
             },
-            buffer, fallback, format, forcedExtension, mimeType, loaderOptions
+            buffer, fallback, format, forcedExtension, mimeType, loaderOptions, useSRGBBuffer
         );
     }
 
@@ -3641,6 +3667,37 @@ export class ThinEngine {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
 
+        if (texture._useSRGBBuffer) {
+            switch (internalFormat) {
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
+                    internalFormat = gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+                    if (this._caps.s3tc_srgb) {
+                        internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+                    } else {
+                        // S3TC sRGB extension not supported
+                        texture._useSRGBBuffer = false;
+                    }
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
+                    if (this._caps.s3tc_srgb) {
+                        internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+                    } else {
+                        // S3TC sRGB extension not supported
+                        texture._useSRGBBuffer = false;
+                    }
+                    break;
+                default:
+                    // We don't support a sRGB format corresponding to internalFormat, so revert to non sRGB format
+                    texture._useSRGBBuffer = false;
+                    break;
+            }
+        }
+
         this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
     }
 
@@ -3650,7 +3707,7 @@ export class ThinEngine {
 
         var textureType = this._getWebGLTextureType(texture.type);
         var format = this._getInternalFormat(texture.format);
-        var internalFormat = babylonInternalFormat === undefined ? this._getRGBABufferInternalSizedFormat(texture.type, texture.format) : this._getInternalFormat(babylonInternalFormat);
+        var internalFormat = babylonInternalFormat === undefined ? this._getRGBABufferInternalSizedFormat(texture.type, texture.format, texture._useSRGBBuffer) : this._getInternalFormat(babylonInternalFormat, texture._useSRGBBuffer);
 
         this._unpackFlipY(texture.invertY);
 
@@ -4231,7 +4288,7 @@ export class ThinEngine {
 
         // Release effects
         this.releaseEffects();
-        this.releaseComputeEffects();
+        this.releaseComputeEffects?.();
 
         // Unbind
         this.unbindAllAttributes();
@@ -4418,8 +4475,8 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _getInternalFormat(format: number): number {
-        var internalFormat = this._gl.RGBA;
+    public _getInternalFormat(format: number, useSRGBBuffer = false): number {
+        var internalFormat = useSRGBBuffer ? this._gl.SRGB8_ALPHA8 : this._gl.RGBA;
 
         switch (format) {
             case Constants.TEXTUREFORMAT_ALPHA:
@@ -4438,10 +4495,10 @@ export class ThinEngine {
                 internalFormat = this._gl.RG;
                 break;
             case Constants.TEXTUREFORMAT_RGB:
-                internalFormat = this._gl.RGB;
+                internalFormat = useSRGBBuffer ? this._gl.SRGB : this._gl.RGB;
                 break;
             case Constants.TEXTUREFORMAT_RGBA:
-                internalFormat = this._gl.RGBA;
+                internalFormat = useSRGBBuffer ? this._gl.SRGB8_ALPHA8 : this._gl.RGBA;
                 break;
         }
 
@@ -4466,7 +4523,7 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
+    public _getRGBABufferInternalSizedFormat(type: number, format?: number, useSRGBBuffer = false): number {
         if (this._webGLVersion === 1) {
             if (format !== undefined) {
                 switch (format) {
@@ -4477,7 +4534,7 @@ export class ThinEngine {
                     case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                         return this._gl.LUMINANCE_ALPHA;
                     case Constants.TEXTUREFORMAT_RGB:
-                        return this._gl.RGB;
+                        return useSRGBBuffer ? this._gl.SRGB : this._gl.RGB;
                 }
             }
             return this._gl.RGBA;
@@ -4510,9 +4567,9 @@ export class ThinEngine {
                     case Constants.TEXTUREFORMAT_RG:
                         return this._gl.RG8;
                     case Constants.TEXTUREFORMAT_RGB:
-                        return this._gl.RGB8; // By default. Other possibilities are RGB565, SRGB8.
+                        return useSRGBBuffer ? this._gl.SRGB8 : this._gl.RGB8; // By default. Other possibilities are RGB565, SRGB8.
                     case Constants.TEXTUREFORMAT_RGBA:
-                        return this._gl.RGBA8; // By default. Other possibilities are RGB5_A1, RGBA4, SRGB8_ALPHA8.
+                        return useSRGBBuffer ? this._gl.SRGB8_ALPHA8 : this._gl.RGBA8; // By default. Other possibilities are RGB5_A1, RGBA4, SRGB8_ALPHA8.
                     case Constants.TEXTUREFORMAT_RED_INTEGER:
                         return this._gl.R8UI;
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
@@ -4629,7 +4686,7 @@ export class ThinEngine {
                 }
         }
 
-        return this._gl.RGBA8;
+        return useSRGBBuffer ? this._gl.SRGB8_ALPHA8 : this._gl.RGBA8;
     }
 
     /** @hidden */

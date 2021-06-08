@@ -25,7 +25,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
 
-        this.state = { isSelected: this.props.entity === this.props.selectedEntity, isExpanded: this.props.mustExpand ||  Tools.LookForItem(this.props.entity, this.props.selectedEntity) };
+        this.state = { isSelected: this.props.entity === this.props.selectedEntity, isExpanded: this.props.mustExpand || Tools.LookForItem(this.props.entity, this.props.selectedEntity) };
     }
 
     switchExpandedState(): void {
@@ -93,10 +93,12 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         return (
             children.map((item, i) => {
-
+                if (item.name == "Art-Board-Background") {
+                    return (null);
+                }
                 return (
-                    <TreeItemSelectableComponent globalState={this.props.globalState} mustExpand={this.props.mustExpand} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} 
-                    key={i} offset={this.props.offset + 2} entity={item} filter={this.props.filter} />
+                    <TreeItemSelectableComponent globalState={this.props.globalState} mustExpand={this.props.mustExpand} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity}
+                        key={i} offset={this.props.offset + 2} entity={item} filter={this.props.filter} />
                 );
             })
         )

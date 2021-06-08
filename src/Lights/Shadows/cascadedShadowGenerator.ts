@@ -826,7 +826,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup(`cascaded shadow map generation for ${this._nameForDrawWrapper}`, 1);
+            engine._debugPushGroup?.(`cascaded shadow map generation for ${this._nameForDrawWrapper}`, 1);
             if (this._breaksAreDirty) {
                 this._splitFrustum();
             }

@@ -347,7 +347,7 @@ export class LightBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.lightId) {
-            this.light = scene.getLightByID(serializationObject.lightId);
+            this.light = scene.getLightById(serializationObject.lightId);
         }
     }
 }

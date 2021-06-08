@@ -51,7 +51,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         this.props.onSelectionChangedObservable?.notifyObservers(null);
     }
 
-    saveToFile() {        
+    saveToFile() {
         const spriteManager = this.props.spriteManager;
         let content = JSON.stringify(spriteManager.serialize(true));
 
@@ -65,8 +65,8 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
             let jsonObject = JSON.parse(decoder.decode(data));
-            
-            spriteManager.dispose();            
+
+            spriteManager.dispose();
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
             let newManager = SpriteManager.Parse(jsonObject, scene, "");
@@ -78,16 +78,16 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         const spriteManager = this.props.spriteManager;
         const scene = spriteManager.scene;
 
-        let snippedID = window.prompt("Please enter the snippet ID to use");
+        let snippedId = window.prompt("Please enter the snippet ID to use");
 
-        if (!snippedID) {
+        if (!snippedId) {
             return;
         }
-        
-        spriteManager.dispose();            
+
+        spriteManager.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-        SpriteManager.CreateFromSnippetAsync(snippedID, scene).then((newManager) => {
+        SpriteManager.CreateFromSnippetAsync(snippedId, scene).then((newManager) => {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
         }).catch(err => {
             alert("Unable to load your sprite manager: " + err);
@@ -156,7 +156,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
             { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
             { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
             { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
-        ];        
+        ];
 
         return (
             <div className="pane">
@@ -174,7 +174,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                 <LineContainerComponent title="FILE" selection={this.props.globalState}>
                     <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
-                </LineContainerComponent>                
+                </LineContainerComponent>
                 <LineContainerComponent title="SNIPPET" selection={this.props.globalState}>
                     {
                         spriteManager.snippetId &&
@@ -182,15 +182,15 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     }
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
-                </LineContainerComponent>  
+                </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Pickable" target={spriteManager} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Fog enabled" target={spriteManager} propertyName="fogEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="No depth write" target={spriteManager} propertyName="disableDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Rendering group ID" decimalCount={0} target={spriteManager} propertyName="renderingGroupId" minimum={RenderingManager.MIN_RENDERINGGROUPS} maximum={RenderingManager.MAX_RENDERINGGROUPS - 1} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <OptionsLineComponent label="Alpha mode" options={alphaModeOptions} target={spriteManager} propertyName="blendMode" 
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} 
-                        onSelect={(value) => this.setState({ blendMode: value })} />                                       
+                    <OptionsLineComponent label="Alpha mode" options={alphaModeOptions} target={spriteManager} propertyName="blendMode"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onSelect={(value) => this.setState({ blendMode: value })} />
                 </LineContainerComponent>
                 <LineContainerComponent title="CELLS" selection={this.props.globalState}>
                     <FloatLineComponent label="Cell width" isInteger={true} target={spriteManager} propertyName="cellWidth" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>

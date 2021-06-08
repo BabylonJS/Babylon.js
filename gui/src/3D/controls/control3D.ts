@@ -67,8 +67,8 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     public pointerUpAnimation: () => void;
 
     /**
-    * An event triggered when the pointer move over the control
-    */
+     * An event triggered when the pointer move over the control
+     */
     public onPointerMoveObservable = new Observable<Vector3>();
 
     /**
@@ -199,8 +199,8 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
      */
     constructor(
         /** Defines the control name */
-        public name?: string) {
-    }
+        public name?: string
+    ) {}
 
     /**
      * Gets a string representing the class name
@@ -304,7 +304,8 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /** @hidden */
     public _onPointerEnter(target: Control3D): boolean {
-        if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+        if (this._enterCount === -1) {
+            // -1 is for touch input, we are now sure we are with a mouse or pencil
             this._enterCount = 0;
         }
 
@@ -397,7 +398,6 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
                 this._downCount = 1;
                 this._onPointerUp(this, Vector3.Zero(), 0, 0, true);
             }
-
         }
     }
 

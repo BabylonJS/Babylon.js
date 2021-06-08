@@ -422,8 +422,8 @@ declare module "babylonjs-node-editor/diagram/nodeLink" {
         onDisposedObservable: Observable<NodeLink>;
         get isVisible(): boolean;
         set isVisible(value: boolean);
-        get portA(): FrameNodePort | NodePort;
-        get portB(): FrameNodePort | NodePort | undefined;
+        get portA(): NodePort | FrameNodePort;
+        get portB(): NodePort | FrameNodePort | undefined;
         get nodeA(): GraphNode;
         get nodeB(): GraphNode | undefined;
         update(endX?: number, endY?: number, straight?: boolean): void;
@@ -1619,9 +1619,9 @@ declare module "babylonjs-node-editor/globalState" {
         onDepthPrePassChanged: Observable<void>;
         onAnimationCommandActivated: Observable<void>;
         onCandidateLinkMoved: Observable<Nullable<Vector2>>;
-        onSelectionBoxMoved: Observable<DOMRect | ClientRect>;
+        onSelectionBoxMoved: Observable<ClientRect | DOMRect>;
         onFrameCreatedObservable: Observable<GraphFrame>;
-        onCandidatePortSelectedObservable: Observable<Nullable<FrameNodePort | NodePort>>;
+        onCandidatePortSelectedObservable: Observable<Nullable<NodePort | FrameNodePort>>;
         onImportFrameObservable: Observable<any>;
         onGraphNodeRemovalObservable: Observable<GraphNode>;
         onPopupClosedObservable: Observable<void>;
@@ -3262,8 +3262,8 @@ declare module NODEEDITOR {
         onDisposedObservable: BABYLON.Observable<NodeLink>;
         get isVisible(): boolean;
         set isVisible(value: boolean);
-        get portA(): FrameNodePort | NodePort;
-        get portB(): FrameNodePort | NodePort | undefined;
+        get portA(): NodePort | FrameNodePort;
+        get portB(): NodePort | FrameNodePort | undefined;
         get nodeA(): GraphNode;
         get nodeB(): GraphNode | undefined;
         update(endX?: number, endY?: number, straight?: boolean): void;
@@ -4287,9 +4287,9 @@ declare module NODEEDITOR {
         onDepthPrePassChanged: BABYLON.Observable<void>;
         onAnimationCommandActivated: BABYLON.Observable<void>;
         onCandidateLinkMoved: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector2>>;
-        onSelectionBoxMoved: BABYLON.Observable<DOMRect | ClientRect>;
+        onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
         onFrameCreatedObservable: BABYLON.Observable<GraphFrame>;
-        onCandidatePortSelectedObservable: BABYLON.Observable<BABYLON.Nullable<FrameNodePort | NodePort>>;
+        onCandidatePortSelectedObservable: BABYLON.Observable<BABYLON.Nullable<NodePort | FrameNodePort>>;
         onImportFrameObservable: BABYLON.Observable<any>;
         onGraphNodeRemovalObservable: BABYLON.Observable<GraphNode>;
         onPopupClosedObservable: BABYLON.Observable<void>;

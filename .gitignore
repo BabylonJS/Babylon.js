@@ -169,6 +169,7 @@ node_modules
 !Playground/libs/*.d.ts
 *.fragment.ts
 *.vertex.ts
+*.compute.ts
 **/ShadersInclude/**/*.ts
 
 # Split declaration file

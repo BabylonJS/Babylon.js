@@ -54,6 +54,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps> {
                         this.props.globalState.language === "JS" &&
                         <>                        
                             <div className="language-button active background-ts" onClick={() => {
+                                this.props.globalState.loadingCodeInProgress = false;
                                 Utilities.SwitchLanguage("TS", this.props.globalState);
                             }}>TS</div>
                             <div className="language-button background-js">Javascript</div>
@@ -63,6 +64,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps> {
                         this.props.globalState.language === "TS" &&
                         <>                        
                             <div className="language-button active background-js" onClick={() => {
+                                this.props.globalState.loadingCodeInProgress = false;
                                 Utilities.SwitchLanguage("JS", this.props.globalState);                             
                             }}>JS</div>
                             <div className="language-button background-ts">TypeScript</div>

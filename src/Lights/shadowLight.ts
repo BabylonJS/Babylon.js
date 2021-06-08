@@ -12,7 +12,7 @@ import { Axis } from '../Maths/math.axis';
  */
 export interface IShadowLight extends Light {
     /**
-     * The light id in the scene (used in scene.findLightById for instance)
+     * The light id in the scene (used in scene.getLightById for instance)
      */
     id: string;
     /**

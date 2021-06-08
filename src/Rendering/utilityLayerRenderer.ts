@@ -5,10 +5,10 @@ import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointe
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
-import { HemisphericLight } from '../Lights/hemisphericLight';
-import { Vector3 } from '../Maths/math.vector';
-import { Camera } from '../Cameras/camera';
-import { Color3 } from '../Maths/math.color';
+import { HemisphericLight } from "../Lights/hemisphericLight";
+import { Vector3 } from "../Maths/math.vector";
+import { Camera } from "../Cameras/camera";
+import { Color3 } from "../Maths/math.color";
 
 /**
  * Renders a layer on top of an existing scene
@@ -35,7 +35,7 @@ export class UtilityLayerRenderer implements IDisposable {
             if (this.originalScene.activeCameras && this.originalScene.activeCameras.length > 1) {
                 activeCam = this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
             } else {
-                activeCam = <Camera>(this.originalScene.activeCamera!);
+                activeCam = <Camera>this.originalScene.activeCamera!;
             }
 
             if (getRigParentIfPossible && activeCam && activeCam.isRigCamera) {
@@ -74,11 +74,23 @@ export class UtilityLayerRenderer implements IDisposable {
      */
     public static get DefaultUtilityLayer(): UtilityLayerRenderer {
         if (UtilityLayerRenderer._DefaultUtilityLayer == null) {
-            UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(EngineStore.LastCreatedScene!);
-            UtilityLayerRenderer._DefaultUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
-                UtilityLayerRenderer._DefaultUtilityLayer = null;
-            });
+            return UtilityLayerRenderer._CreateDefaultUtilityLayerFromScene(EngineStore.LastCreatedScene!);
         }
+
+        return UtilityLayerRenderer._DefaultUtilityLayer;
+    }
+
+    /**
+     * Creates an utility layer, and set it as a default utility layer
+     * @param scene associated scene
+     * @hidden
+     */
+    public static _CreateDefaultUtilityLayerFromScene(scene: Scene): UtilityLayerRenderer {
+        UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(scene);
+        UtilityLayerRenderer._DefaultUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
+            UtilityLayerRenderer._DefaultUtilityLayer = null;
+        });
+
         return UtilityLayerRenderer._DefaultUtilityLayer;
     }
     /**
@@ -102,7 +114,7 @@ export class UtilityLayerRenderer implements IDisposable {
 
     /**
      *  If the utility layer should automatically be rendered on top of existing scene
-    */
+     */
     public shouldRender: boolean = true;
     /**
      * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
@@ -133,7 +145,8 @@ export class UtilityLayerRenderer implements IDisposable {
     constructor(
         /** the original scene that will be rendered on top of */
         public originalScene: Scene,
-        handleEvents: boolean = true) {
+        handleEvents: boolean = true
+    ) {
         // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
         this.utilityLayerScene = new Scene(originalScene.getEngine(), { virtual: true });
         this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
@@ -148,22 +161,26 @@ export class UtilityLayerRenderer implements IDisposable {
                     return;
                 }
                 if (!this.processAllEvents) {
-                    if (prePointerInfo.type !== PointerEventTypes.POINTERMOVE
-                        && prePointerInfo.type !== PointerEventTypes.POINTERUP
-                        && prePointerInfo.type !== PointerEventTypes.POINTERDOWN
-                        && prePointerInfo.type !== PointerEventTypes.POINTERDOUBLETAP) {
+                    if (
+                        prePointerInfo.type !== PointerEventTypes.POINTERMOVE &&
+                        prePointerInfo.type !== PointerEventTypes.POINTERUP &&
+                        prePointerInfo.type !== PointerEventTypes.POINTERDOWN &&
+                        prePointerInfo.type !== PointerEventTypes.POINTERDOUBLETAP
+                    ) {
                         return;
                     }
                 }
                 this.utilityLayerScene.pointerX = originalScene.pointerX;
                 this.utilityLayerScene.pointerY = originalScene.pointerY;
-                let pointerEvent = <PointerEvent>(prePointerInfo.event);
+                let pointerEvent = <PointerEvent>prePointerInfo.event;
                 if (originalScene!.isPointerCaptured(pointerEvent.pointerId)) {
                     this._pointerCaptures[pointerEvent.pointerId] = false;
                     return;
                 }
 
-                var utilityScenePick = prePointerInfo.ray ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray) : this.utilityLayerScene.pick(originalScene.pointerX, originalScene.pointerY);
+                var utilityScenePick = prePointerInfo.ray
+                    ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray)
+                    : this.utilityLayerScene.pick(originalScene.pointerX, originalScene.pointerY);
                 if (!prePointerInfo.ray && utilityScenePick) {
                     prePointerInfo.ray = utilityScenePick.ray;
                 }
@@ -174,7 +191,10 @@ export class UtilityLayerRenderer implements IDisposable {
                 // allow every non pointer down event to flow to the utility layer
                 if (this.onlyCheckPointerDownEvents && prePointerInfo.type != PointerEventTypes.POINTERDOWN) {
                     if (!prePointerInfo.skipOnPointerObservable) {
-                        this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick), prePointerInfo.type);
+                        this.utilityLayerScene.onPointerObservable.notifyObservers(
+                            new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick),
+                            prePointerInfo.type
+                        );
                     }
                     if (prePointerInfo.type === PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
                         this._pointerCaptures[pointerEvent.pointerId] = false;
@@ -185,19 +205,20 @@ export class UtilityLayerRenderer implements IDisposable {
                 if (this.utilityLayerScene.autoClearDepthAndStencil || this.pickUtilitySceneFirst) {
                     // If this layer is an overlay, check if this layer was hit and if so, skip pointer events for the main scene
                     if (utilityScenePick && utilityScenePick.hit) {
-
                         if (!prePointerInfo.skipOnPointerObservable) {
-                            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick), prePointerInfo.type);
+                            this.utilityLayerScene.onPointerObservable.notifyObservers(
+                                new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick),
+                                prePointerInfo.type
+                            );
                         }
                         prePointerInfo.skipOnPointerObservable = true;
                     }
                 } else {
                     var originalScenePick = prePointerInfo.ray ? originalScene.pickWithRay(prePointerInfo.ray) : originalScene.pick(originalScene.pointerX, originalScene.pointerY);
-                    let pointerEvent = <PointerEvent>(prePointerInfo.event);
+                    let pointerEvent = <PointerEvent>prePointerInfo.event;
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
                     if (originalScenePick && utilityScenePick) {
-
                         // No pick in utility scene
                         if (utilityScenePick.distance === 0 && originalScenePick.pickedMesh) {
                             if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
@@ -206,10 +227,13 @@ export class UtilityLayerRenderer implements IDisposable {
                                 prePointerInfo.skipOnPointerObservable = true;
                             } else if (prePointerInfo.type === PointerEventTypes.POINTERDOWN) {
                                 this._pointerCaptures[pointerEvent.pointerId] = true;
-                            } else if (this._lastPointerEvents[pointerEvent.pointerId]) {
-                                // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
-                                this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
-                                delete this._lastPointerEvents[pointerEvent.pointerId];
+                            } else if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
+                                if (this._lastPointerEvents[pointerEvent.pointerId]) {
+                                    // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
+                                    this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
+                                    delete this._lastPointerEvents[pointerEvent.pointerId];
+                                }
+                                this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
                             }
                         } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)) {
                             // We pick something in utility scene or the pick in utility is closer than the one in main scene
@@ -218,7 +242,7 @@ export class UtilityLayerRenderer implements IDisposable {
                             if (!prePointerInfo.skipOnPointerObservable) {
                                 prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
                             }
-                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance > originalScenePick.distance)) {
+                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && utilityScenePick.distance > originalScenePick.distance) {
                             // We have a pick in both scenes but main is closer than utility
 
                             // We touched an utility mesh present in the main scene
@@ -297,7 +321,6 @@ export class UtilityLayerRenderer implements IDisposable {
                 camera.rightCamera._scene = oldScene;
             }
         }
-
     }
 
     /**

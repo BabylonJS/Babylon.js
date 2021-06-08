@@ -35,7 +35,7 @@ export class ColorPicker extends Control {
     private _s = 1;
     private _v = 1;
 
-    private _lastPointerDownID = -1;
+    private _lastPointerDownId = -1;
 
     /**
      * Observable raised when the value changes
@@ -416,13 +416,13 @@ export class ColorPicker extends Control {
 
         this._updateValueFromPointer(x, y);
         this._host._capturingControl[pointerId] = this;
-        this._lastPointerDownID = pointerId;
+        this._lastPointerDownId = pointerId;
         return true;
     }
 
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
-        if (pointerId != this._lastPointerDownID) {
+        if (pointerId != this._lastPointerDownId) {
             return;
         }
         // Invert transform

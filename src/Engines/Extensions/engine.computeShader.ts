@@ -6,9 +6,15 @@ import { Nullable } from "../../types";
 
 /**
  * Type used to locate a resource in a compute shader.
- * Note that for the time being the string variant does not work because reflection is not implemented in browsers yet
+ * TODO: remove this when browsers support reflection for wgsl shaders
+*/
+export type ComputeBindingLocation = { group: number, binding: number };
+
+/**
+ * Type used to lookup a resource and retrieve its binding location
+ * TODO: remove this when browsers support reflection for wgsl shaders
  */
-export type ComputeBindingLocation = { group: number, binding: number } | string;
+export type ComputeBindingMapping = { [key: string]: ComputeBindingLocation };
 
 /** @hidden */
 export enum ComputeBindingType {
@@ -19,12 +25,7 @@ export enum ComputeBindingType {
 }
 
 /** @hidden */
-export type ComputeBindingList = { [key: string]: { location: ComputeBindingLocation, type: ComputeBindingType, object: any } };
-
-/** @hidden */
-export function BindingLocationToString(location: ComputeBindingLocation): string {
-    return (location as any).group !== undefined ? (location as any).group + "_" + (location as any).binding : <string>location;
-}
+export type ComputeBindingList = { [key: string]: { type: ComputeBindingType, object: any } };
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -56,8 +57,9 @@ declare module "../../Engines/thinEngine" {
          * @param x The number of workgroups to execute on the X dimension
          * @param y The number of workgroups to execute on the Y dimension
          * @param z The number of workgroups to execute on the Z dimension
+         * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
          */
-        computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number): void;
+        computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void;
 
         /**
          * Gets a boolean indicating if all created compute effects are ready
@@ -99,7 +101,7 @@ ThinEngine.prototype.createComputeContext = function(): IComputeContext | undefi
     return undefined;
 };
 
-ThinEngine.prototype.computeDispatch = function(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number): void {
+ThinEngine.prototype.computeDispatch = function(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void {
     throw new Error("computeDispatch: This engine does not support compute shaders!");
 };
 

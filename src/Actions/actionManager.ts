@@ -613,7 +613,7 @@ export class ActionManager extends AbstractActionManager {
                 var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
 
                 if (value._meshId) {
-                    value.mesh = scene.getMeshByID(value._meshId);
+                    value.mesh = scene.getMeshById(value._meshId);
                 }
 
                 triggerParams = { trigger: (<any>ActionManager)[trigger.name], parameter: value };
