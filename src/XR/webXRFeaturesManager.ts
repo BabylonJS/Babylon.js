@@ -115,7 +115,11 @@ export class WebXRFeatureName {
     /**
      * The name of the DOM overlay feature
      */
-     public static readonly DOM_OVERLAY = "xr-dom-overlay";
+    public static readonly DOM_OVERLAY = "xr-dom-overlay";
+    /**
+     * The name of the movement feature
+     */
+    public static readonly MOVEMENT = "xr-controller-movement";
 }
 
 /**
@@ -146,6 +150,14 @@ export class WebXRFeaturesManager implements IDisposable {
             required: boolean;
         };
     } = {};
+
+    /**
+     * The key is the feature to check and the value is the feature that conflicts.
+     */
+    private static readonly _ConflictingFeatures: { [key: string]: string } = {
+        [WebXRFeatureName.TELEPORTATION]: WebXRFeatureName.MOVEMENT,
+        [WebXRFeatureName.MOVEMENT]: WebXRFeatureName.TELEPORTATION,
+    };
 
     /**
      * constructs a new features manages.
@@ -310,7 +322,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param moduleOptions options provided to the module. Ses the module documentation / constructor
      * @param attachIfPossible if set to true (default) the feature will be automatically attached, if it is currently possible
      * @param required is this feature required to the app. If set to true the session init will fail if the feature is not available.
-     * @returns a new constructed feature or throws an error if feature not found.
+     * @returns a new constructed feature or throws an error if feature not found or conflicts with another enabled feature.
      */
     public enableFeature(featureName: string | { Name: string }, version: number | string = "latest", moduleOptions: any = {}, attachIfPossible: boolean = true, required: boolean = true): IWebXRFeature {
         const name = typeof featureName === "string" ? featureName : featureName.Name;
@@ -333,6 +345,13 @@ export class WebXRFeaturesManager implements IDisposable {
         } else {
             versionToLoad = version;
         }
+
+        // check if there is a feature conflict
+        const conflictingFeature = WebXRFeaturesManager._ConflictingFeatures[name];
+        if (conflictingFeature !== undefined && this.getEnabledFeatures().indexOf(conflictingFeature) !== -1) {
+            throw new Error(`Feature ${name} cannot be enabled while ${conflictingFeature} is enabled.`);
+        }
+
         // check if already initialized
         const feature = this._features[name];
         const constructFunction = WebXRFeaturesManager.ConstructFeature(name, versionToLoad, this._xrSessionManager, moduleOptions);
