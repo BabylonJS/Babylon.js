@@ -75,6 +75,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      * The XRLightProbe object created during attach (may not be available for a few frames depending on device).
      *
      * The XRLightProbe itself contains no lighting values, but is used to retrieve the current lighting state with each XRFrame.
+     * XR Light Probe also contains the probe space, may update it's pose over time as the user moves around their environment.
      */
     public get xrLightProbe(): Nullable<XRLightProbe> {
         return this._xrLightProbe;
