@@ -254,7 +254,7 @@ export class SpriteRenderer {
         }
 
         // Draw order
-        engine.depthCullingState.depthFunc = Constants.LEQUAL;
+        engine.depthCullingState.depthFunc = engine.useReverseDepthBuffer ? Constants.GEQUAL : Constants.LEQUAL;
         if (!this.disableDepthWrite) {
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
