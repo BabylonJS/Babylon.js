@@ -373,10 +373,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
             let utilityScenePick = null;
             if (this._utilityLayerScene) {
-                utilityScenePick = this._utilityLayerScene.pickWithRay(
-                    controllerData.tmpRay,
-                    this._utilityLayerScene.pointerMovePredicate || this.raySelectionPredicate
-                );
+                utilityScenePick = this._utilityLayerScene.pickWithRay(controllerData.tmpRay, this._utilityLayerScene.pointerMovePredicate || this.raySelectionPredicate);
             }
 
             let originalScenePick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
@@ -653,6 +650,14 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 }
             });
         }
+
+        // Fire a pointerup
+        const pointerEventInit: PointerEventInit = {
+            pointerId: controllerData.id,
+            pointerType: "xr",
+        };
+        this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+
         controllerData.selectionMesh.dispose();
         controllerData.laserPointer.dispose();
         // remove from the map
