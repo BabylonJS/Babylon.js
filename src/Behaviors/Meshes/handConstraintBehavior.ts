@@ -181,7 +181,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 }
 
                 const elapsed = Date.now() - lastTick;
- 
+
                 Vector3.SmoothToRef(this._node.position, targetPosition, elapsed, this.lerpTime, this._node.position);
                 Quaternion.SmoothToRef(this._node.rotationQuaternion!, targetRotation, elapsed, this.lerpTime, this._node.rotationQuaternion!);
             }
