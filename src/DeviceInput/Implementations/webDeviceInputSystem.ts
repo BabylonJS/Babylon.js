@@ -345,10 +345,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
             }
 
-            if (deviceType === DeviceType.Mouse && this._mouseId === -1) {
-                this._mouseId = evt.pointerId;
-            }
-
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
                 // Store previous values for event
@@ -431,21 +427,22 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const previousVertical = pointer[PointerInput.Vertical];
                 const previousButton = pointer[evt.button + 2];
 
-                if (deviceType === DeviceType.Mouse && this._mouseId === -1) { // Mouse; Among supported browsers, value is either 1 or 0 for mouse
-                    if (evt.pointerId === undefined) { // If there is no pointerId (eg. manually dispatched MouseEvent)
-                        this._mouseId = this._isUsingFirefox ? 0 : 1;
-                    }
-                    else if (!this._isUsingFirefox && evt.pointerId === 0) { // If there is a pointerId of 0 for any browser that ISN'T Firefox (can happen with manually dispatched PointerEvents with no defined pointerId)
-                        this._mouseId = 1;
-                    }
-                    else {
-                        this._mouseId = evt.pointerId;
+                if (deviceType === DeviceType.Mouse) { // Mouse; Among supported browsers, value is either 1 or 0 for mouse
+                    if (this._mouseId === -1) {
+                        if (evt.pointerId === undefined) { // If there is no pointerId (eg. manually dispatched MouseEvent)
+                            this._mouseId = this._isUsingFirefox ? 0 : 1;
+                        }
+                        else {
+                            this._mouseId = evt.pointerId;
+                        }
                     }
 
-                    this._elementToAttachTo.setPointerCapture(this._mouseId);
+                    if (!document.pointerLockElement) {
+                        this._elementToAttachTo.setPointerCapture(this._mouseId);
+                    }
                 }
                 else { // Touch; Since touches are dynamically assigned, only set capture if we have an id
-                    if (evt.pointerId) {
+                    if (evt.pointerId && !document.pointerLockElement) {
                         this._elementToAttachTo.setPointerCapture(evt.pointerId);
                     }
                 }
