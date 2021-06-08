@@ -68,14 +68,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         this._controllers[xrController.uniqueId] = {
             xrController,
             meshUnderPointer: null,
+            nearInteractionMesh: null,
             pick: null,
             pickIndexMeshTip,
             hoverIndexMeshTip,
             grabRay: new Ray(new Vector3(), new Vector3()),
+            hoverInteraction: false,
             nearInteraction: false,
-            nearInteractionInProcess: false,
-            nearGrab: false,
-            nearGrabInProcess: false,
+            grabInteraction: false,
             id: WebXRNearInteraction._idCounter++,
         };
 
@@ -111,15 +111,15 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             onSqueezeButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
             onFrameObserver?: Nullable<Observer<XRFrame>>;
             meshUnderPointer: Nullable<AbstractMesh>;
+            nearInteractionMesh: Nullable<AbstractMesh>;
             pick: Nullable<PickingInfo>;
             id: number;
             pickIndexMeshTip: Nullable<AbstractMesh>;
             hoverIndexMeshTip: Nullable<AbstractMesh>;
             grabRay: Ray;
             nearInteraction: boolean;
-            nearInteractionInProcess: boolean;
-            nearGrab: boolean;
-            nearGrabInProcess: boolean;
+            hoverInteraction: boolean;
+            grabInteraction: boolean;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
         };
@@ -238,15 +238,22 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     /**
      * Filter used for near interaction pick and hover
      */
-    private nearPickPredicate(mesh: AbstractMesh): boolean {
+    private _nearPickPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearPickable;
     }
 
     /**
      * Filter used for near interaction grab
      */
-    private nearGrabPredicate(mesh: AbstractMesh): boolean {
+    private _nearGrabPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearGrabbable;
+    }
+
+    /**
+     * Filter used for any near interaction
+     */
+    private _nearInteractionPredicate(mesh: AbstractMesh): boolean {
+        return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && (mesh.isNearPickable || mesh.isNearGrabbable);
     }
 
     private readonly _hoverRadius = 0.1;
@@ -263,10 +270,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 controllerData.pick = null;
                 return;
             }
-            if (!controllerData.nearGrabInProcess) {
-                controllerData.nearInteraction = false;
-                controllerData.nearGrab = false;
-            }
+            controllerData.hoverInteraction = false;
+            controllerData.nearInteraction = false;
+
             // Every frame check collisions/input
             if (controllerData.xrController) {
                 const hand = controllerData.xrController.inputSource.hand;
@@ -323,81 +329,73 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
                 return pick;
             };
-            let populateNearInteractionInfo = (nearInteractionInfo: Nullable<PickingInfo>): Nullable<PickingInfo> => {
-                let result = null;
+            let populateNearInteractionInfo = (nearInteractionInfo: Nullable<PickingInfo>): PickingInfo => {
+                let result = new PickingInfo();
+
                 let nearInteractionAtOrigin = false;
                 let nearInteraction = nearInteractionInfo && nearInteractionInfo.pickedPoint && nearInteractionInfo.hit;
                 if (nearInteractionInfo?.pickedPoint) {
                     nearInteractionAtOrigin = nearInteractionInfo.pickedPoint.x === 0 && nearInteractionInfo.pickedPoint.y === 0 && nearInteractionInfo.pickedPoint.z === 0;
                 }
                 if (nearInteraction && !nearInteractionAtOrigin) {
-                    result = nearInteractionInfo;
-                    controllerData.nearInteraction = true;
+                    result = nearInteractionInfo!;
                 }
                 return result;
             };
 
-            let pick = null;
-            let hoverRange = false;
+            let pick = new PickingInfo();
+
             // near interaction hover
             if (controllerData.hoverIndexMeshTip) {
                 let utilitySceneHoverPick = null;
-                let utilitySceneHoverGrab = null;
                 if (this._options.useUtilityLayer && this._utilityLayerScene) {
-                    utilitySceneHoverPick = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._utilityLayerScene, false, this.nearPickPredicate);
+                    utilitySceneHoverPick = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._utilityLayerScene, false, this._nearInteractionPredicate);
                 }
-                let originalSceneHoverPick = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._scene, false, this.nearPickPredicate);
-                if (this._options.useUtilityLayer && this._utilityLayerScene) {
-                    utilitySceneHoverGrab = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._utilityLayerScene, false, this.nearGrabPredicate);
-                }
-                let originalSceneHoverGrab = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._scene, false, this.nearGrabPredicate);
+                let originalSceneHoverPick = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._scene, false, this._nearInteractionPredicate);
 
                 let hoverPickInfo = accuratePickInfo(originalSceneHoverPick, utilitySceneHoverPick);
-                let hoverGrabInfo = accuratePickInfo(originalSceneHoverGrab, utilitySceneHoverGrab);
-                if ((hoverPickInfo && hoverPickInfo.hit) || (hoverGrabInfo && hoverGrabInfo.hit)) {
-                    hoverRange = true;
+                if (hoverPickInfo && hoverPickInfo.hit) {
                     // turn off far interaction if in the hover range
                     if (this._farInteractionFeature) {
                         this._farInteractionFeature.detach();
                     }
                     pick = populateNearInteractionInfo(hoverPickInfo);
+                    if (pick.hit) {
+                        controllerData.hoverInteraction = true;
+                    }
                 }
             }
 
             // near interaction pick
-            if (controllerData.pickIndexMeshTip && hoverRange) {
+            if (controllerData.pickIndexMeshTip && controllerData.hoverInteraction) {
                 let utilitySceneNearPick = null;
                 if (this._options.useUtilityLayer && this._utilityLayerScene) {
-                    utilitySceneNearPick = this._pickWithMesh(controllerData.pickIndexMeshTip, this._utilityLayerScene, false, this.nearPickPredicate);
+                    utilitySceneNearPick = this._pickWithMesh(controllerData.pickIndexMeshTip, this._utilityLayerScene, false, this._nearPickPredicate);
                 }
-                let originalSceneNearPick = this._pickWithMesh(controllerData.pickIndexMeshTip, this._scene, false, this.nearPickPredicate);
+                let originalSceneNearPick = this._pickWithMesh(controllerData.pickIndexMeshTip, this._scene, false, this._nearPickPredicate);
                 let pickInfo = accuratePickInfo(originalSceneNearPick, utilitySceneNearPick);
-                pick = populateNearInteractionInfo(pickInfo);
-            }
-
-            // near interaction grab
-            if (controllerData.grabRay && hoverRange) {
-                let utilitySceneNearGrab = null;
-                if (this._utilityLayerScene) {
-                    utilitySceneNearGrab = this._utilityLayerScene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
-                }
-                let originalSceneNearGrab = this._scene.pickWithRay(controllerData.grabRay, this.nearGrabPredicate);
-                const grabPick = accuratePickInfo(originalSceneNearGrab, utilitySceneNearGrab);
-                if (grabPick && grabPick.pickedPoint && grabPick.hit) {
-                    controllerData.nearGrab = true;
+                const nearPick = populateNearInteractionInfo(pickInfo);
+                if (nearPick.hit) {
+                    // Near pick takes precedence over hfover interaction
+                    pick = nearPick;
                     controllerData.nearInteraction = true;
-                    grabPick.ray = controllerData.grabRay;
-                    pick = grabPick;
                 }
+            }
+            controllerData.pick = pick;
+
+            // Update mesh under pointer
+            if (controllerData.pick && controllerData.pick.pickedPoint && controllerData.pick.hit) {
+                controllerData.meshUnderPointer = controllerData.pick.pickedMesh;
+            } else {
+                controllerData.meshUnderPointer = null;
             }
 
             // Turn on far interaction if near interaction is unsuccessful
-            if (!controllerData.nearInteraction && !hoverRange && !controllerData.nearGrabInProcess) {
+            if (!controllerData.nearInteraction && !controllerData.hoverInteraction && !controllerData.grabInteraction) {
                 if (this._farInteractionFeature) {
                     this._farInteractionFeature.attach();
                 }
             }
-            controllerData.pick = pick;
         });
     }
 
@@ -412,34 +410,42 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             pointerType: "xr",
         };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
+            if (!this._options.enableNearInteractionOnAllControllers && xrController.uniqueId !== this._attachedController) {
+                return;
+            }
             if (controllerData.pick && !this._farInteractionFeature?.attached) {
+                controllerData.pick.ray = controllerData.grabRay;
                 this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
-            // Near pick
-            if (controllerData.nearInteraction) {
-                if (controllerData.pick && controllerData.pick.hit) {
-                    if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
-                        if (!controllerData.nearInteractionInProcess) {
-                            this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                            controllerData.nearInteractionInProcess = true;
-                        }
-                    }
-                } else if (controllerData.nearInteractionInProcess) {
-                    if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
-                        const pickingInfo = new PickingInfo();
-                        pickingInfo.pickedMesh = controllerData.meshUnderPointer;
-                        this._scene.simulatePointerUp(pickingInfo, pointerEventInit);
-                        controllerData.nearInteractionInProcess = false;
-                    }
+
+            // Near pick pointer event
+            if (controllerData.nearInteraction && controllerData.pick && controllerData.pick.hit) {
+                if (!controllerData.nearInteractionMesh) {
+                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                    controllerData.nearInteractionMesh = controllerData.meshUnderPointer;
                 }
-            }
-            // Update mesh under pointer
-            if (controllerData.pick && controllerData.pick.pickedPoint && controllerData.pick.hit) {
-                controllerData.meshUnderPointer = controllerData.pick.pickedMesh;
-            } else {
-                controllerData.meshUnderPointer = null;
+            } else if (controllerData.nearInteractionMesh && controllerData.pick) {
+                this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                controllerData.nearInteractionMesh = null;
             }
         });
+
+        const grabCheck = (pressed: boolean) => {
+            if (this._options.enableNearInteractionOnAllControllers || (xrController.uniqueId === this._attachedController && !this._farInteractionFeature?.attached)) {
+                if (pressed && controllerData.pick && controllerData.meshUnderPointer && this._nearGrabPredicate(controllerData.meshUnderPointer)) {
+                    controllerData.grabInteraction = true;
+                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                } else if (!pressed && controllerData.pick && controllerData.grabInteraction) {
+                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                    controllerData.grabInteraction = false;
+                }
+            } else {
+                if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
+                    this._attachedController = xrController.uniqueId;
+                }
+            }
+        };
+
         if (xrController.inputSource.gamepad) {
             const init = (motionController: WebXRAbstractMotionController) => {
                 controllerData.squeezeComponent = motionController.getComponent("grasp");
@@ -447,47 +453,15 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     controllerData.onSqueezeButtonChangedObserver = controllerData.squeezeComponent.onButtonStateChangedObservable.add((component) => {
                         if (component.changes.pressed) {
                             const pressed = component.changes.pressed.current;
-                            if (controllerData.pick && controllerData.nearGrab) {
-                                if (
-                                    this._options.enableNearInteractionOnAllControllers ||
-                                    (xrController.uniqueId === this._attachedController && !this._farInteractionFeature?.attached)
-                                ) {
-                                    if (pressed) {
-                                        controllerData.nearGrabInProcess = true;
-                                        this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                                    } else {
-                                        this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                                        controllerData.nearGrabInProcess = false;
-                                    }
-                                }
-                            } else {
-                                if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
-                                    this._attachedController = xrController.uniqueId;
-                                }
-                            }
+                            grabCheck(pressed);
                         }
                     });
                 } else {
                     controllerData.selectionComponent = motionController.getMainComponent();
                     controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
-                        if (component.changes.pressed && !this._farInteractionFeature?.attached) {
+                        if (component.changes.pressed) {
                             const pressed = component.changes.pressed.current;
-                            if (controllerData.pick) {
-                                if (this._options.enableNearInteractionOnAllControllers || xrController.uniqueId === this._attachedController) {
-                                    if (pressed) {
-                                        controllerData.nearGrabInProcess = true;
-                                        this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                                    } else {
-                                        this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                                        controllerData.nearGrabInProcess = false;
-                                    }
-                                } else {
-                                }
-                            } else {
-                                if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
-                                    this._attachedController = xrController.uniqueId;
-                                }
-                            }
+                            grabCheck(pressed);
                         }
                     });
                 }
@@ -500,8 +474,15 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         } else {
             // use the select and squeeze events
             const selectStartListener = (event: XRInputSourceEvent) => {
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick && !this._farInteractionFeature?.attached) {
-                    controllerData.nearGrabInProcess = true;
+                if (
+                    controllerData.xrController &&
+                    event.inputSource === controllerData.xrController.inputSource &&
+                    controllerData.pick &&
+                    !this._farInteractionFeature?.attached &&
+                    controllerData.meshUnderPointer &&
+                    this._nearGrabPredicate(controllerData.meshUnderPointer)
+                ) {
+                    controllerData.grabInteraction = true;
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 }
             };
@@ -509,7 +490,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             const selectEndListener = (event: XRInputSourceEvent) => {
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick && !this._farInteractionFeature?.attached) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                    controllerData.nearGrabInProcess = false;
+                    controllerData.grabInteraction = false;
                 }
             };
 
