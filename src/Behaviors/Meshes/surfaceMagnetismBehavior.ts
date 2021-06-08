@@ -14,7 +14,7 @@ import { Behavior } from "../behavior";
 export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     private _scene: Scene;
     private _attachedMesh: Nullable<Mesh>;
-    private _attachPointLocalOffset: Vector3;
+    private _attachPointLocalOffset: Vector3 = new Vector3();
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _workingPosition: Vector3 = new Vector3();
     private _workingQuaternion: Quaternion = new Quaternion();
@@ -137,7 +137,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
      * Updates the attach point with the current geometry extents of the attached mesh
      */
     public updateAttachPoint() {
-        this._attachPointLocalOffset = this._getAttachPointOffset();
+        this._getAttachPointOffsetToRef(this._attachPointLocalOffset);
     }
 
     /**
@@ -172,7 +172,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         return this._hit;
     }
 
-    private _getAttachPointOffset(): Vector3 {
+    private _getAttachPointOffsetToRef(ref: Vector3): Vector3 {
         if (!this._attachedMesh) {
             return Vector3.Zero();
         }
@@ -182,13 +182,15 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         this._attachedMesh.rotationQuaternion!.copyFromFloats(0, 0, 0, 1);
         this._attachedMesh.computeWorldMatrix();
         const boundingMinMax = this._attachedMesh.getHierarchyBoundingVectors();
-        const center = boundingMinMax.max.add(boundingMinMax.min).scaleInPlace(0.5);
+        const center = TmpVectors.Vector3[0];
+        boundingMinMax.max.addToRef(boundingMinMax.min, center);
+        center.scaleInPlace(0.5);
         center.z = boundingMinMax.max.z;
         // We max the z coordinate because we want the attach point to be on the back of the mesh
-        const invWorld = Matrix.Invert(this._attachedMesh.getWorldMatrix());
-        const centerOffset = Vector3.TransformCoordinates(center, invWorld);
+        const invWorld = TmpVectors.Matrix[0];
+        this._attachedMesh.getWorldMatrix().invertToRef(invWorld);
+        Vector3.TransformCoordinatesToRef(center, invWorld, ref);
         this._attachedMesh.rotationQuaternion!.copyFrom(storedQuat);
-        return centerOffset;
     }
 
     private _updateTransformToGoal(elapsed: number) {
