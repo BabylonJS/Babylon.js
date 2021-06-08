@@ -70,6 +70,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
+        private parent;
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick?: boolean): boolean;
@@ -140,6 +141,8 @@ declare module "babylonjs-gui-editor/globalState" {
         onSnippetSaveObservable: Observable<void>;
         onOutlinesObservable: Observable<void>;
         onResponsiveChangeObservable: Observable<boolean>;
+        onParentingChangeObservable: Observable<Nullable<Control>>;
+        draggedControl: Nullable<Control>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -992,7 +995,10 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/contr
         isHovered: boolean;
         isSelected: boolean;
     }> {
+        dragOverHover: boolean;
+        private _onSelectionChangedObservable;
         constructor(props: IControlTreeItemComponentProps);
+        componentWillUnmount(): void;
         highlight(): void;
         switchVisibility(): void;
         render(): JSX.Element;
@@ -1072,7 +1078,7 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         componentDidMount(): void;
         componentDidUpdate(): void;
         onSelect(): void;
-        renderChildren(): JSX.Element[] | null;
+        renderChildren(): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
     }
 }
@@ -1142,6 +1148,7 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/sceneExplorerCompo
         scene: Nullable<Scene>;
     }> {
         private _onSelectionChangeObserver;
+        private _onParrentingChangeObserver;
         private _onNewSceneObserver;
         constructor(props: ISceneExplorerComponentProps);
         processMutation(): void;
@@ -1834,6 +1841,7 @@ declare module GUIEDITOR {
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
+        private parent;
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
@@ -1894,6 +1902,8 @@ declare module GUIEDITOR {
         onSnippetSaveObservable: BABYLON.Observable<void>;
         onOutlinesObservable: BABYLON.Observable<void>;
         onResponsiveChangeObservable: BABYLON.Observable<boolean>;
+        onParentingChangeObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
+        draggedControl: BABYLON.Nullable<Control>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -2598,7 +2608,10 @@ declare module GUIEDITOR {
         isHovered: boolean;
         isSelected: boolean;
     }> {
+        dragOverHover: boolean;
+        private _onSelectionChangedObservable;
         constructor(props: IControlTreeItemComponentProps);
+        componentWillUnmount(): void;
         highlight(): void;
         switchVisibility(): void;
         render(): JSX.Element;
@@ -2667,7 +2680,7 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentDidUpdate(): void;
         onSelect(): void;
-        renderChildren(): JSX.Element[] | null;
+        renderChildren(): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
     }
 }
@@ -2728,6 +2741,7 @@ declare module GUIEDITOR {
         scene: BABYLON.Nullable<BABYLON.Scene>;
     }> {
         private _onSelectionChangeObserver;
+        private _onParrentingChangeObserver;
         private _onNewSceneObserver;
         constructor(props: ISceneExplorerComponentProps);
         processMutation(): void;

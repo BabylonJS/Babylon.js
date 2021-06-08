@@ -21917,22 +21917,22 @@ declare module BABYLON {
          * Translate the bone in local or world space
          * @param vec The amount to translate the bone
          * @param space The space that the translation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to. This is only used in world space
          */
-        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        translate(vec: Vector3, space?: Space, tNode?: TransformNode): void;
         /**
          * Set the position of the bone in local or world space
          * @param position The position to set the bone
          * @param space The space that the position is in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
          */
-        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        setPosition(position: Vector3, space?: Space, tNode?: TransformNode): void;
         /**
          * Set the absolute position of the bone (world space)
          * @param position The position to set the bone
-         * @param mesh The mesh that this bone is attached to
+         * @param tNode The TransformNode that this bone is attached to
          */
-        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
+        setAbsolutePosition(position: Vector3, tNode?: TransformNode): void;
         /**
          * Scale the bone on the x, y and z axes (in local space)
          * @param x The amount to scale the bone on the x axis
@@ -21962,74 +21962,74 @@ declare module BABYLON {
          * @param pitch The rotation of the bone on the x axis
          * @param roll The rotation of the bone on the z axis
          * @param space The space that the axes of rotation are in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
          */
-        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
+        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, tNode?: TransformNode): void;
         /**
          * Add a rotation to the bone on an axis in local or world space
          * @param axis The axis to rotate the bone on
          * @param amount The amount to rotate the bone
          * @param space The space that the axis is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to. This is only used in world space
          */
-        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
+        rotate(axis: Vector3, amount: number, space?: Space, tNode?: TransformNode): void;
         /**
          * Set the rotation of the bone to a particular axis angle in local or world space
          * @param axis The axis to rotate the bone on
          * @param angle The angle that the bone should be rotated to
          * @param space The space that the axis is in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
          */
-        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
+        setAxisAngle(axis: Vector3, angle: number, space?: Space, tNode?: TransformNode): void;
         /**
          * Set the euler rotation of the bone in local or world space
          * @param rotation The euler rotation that the bone should be set to
          * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to. This is only used in world space
          */
-        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        setRotation(rotation: Vector3, space?: Space, tNode?: TransformNode): void;
         /**
          * Set the quaternion rotation of the bone in local or world space
          * @param quat The quaternion rotation that the bone should be set to
          * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to. This is only used in world space
          */
-        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
+        setRotationQuaternion(quat: Quaternion, space?: Space, tNode?: TransformNode): void;
         /**
          * Set the rotation matrix of the bone in local or world space
          * @param rotMat The rotation matrix that the bone should be set to
          * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to. This is only used in world space
          */
-        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
+        setRotationMatrix(rotMat: Matrix, space?: Space, tNode?: TransformNode): void;
         private _rotateWithMatrix;
         private _getNegativeRotationToRef;
         /**
          * Get the position of the bone in local or world space
          * @param space The space that the returned position is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to. This is only used in world space
          * @returns The position of the bone
          */
-        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        getPosition(space?: Space, tNode?: Nullable<TransformNode>): Vector3;
         /**
          * Copy the position of the bone to a vector3 in local or world space
          * @param space The space that the returned position is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to. This is only used in world space
          * @param result The vector3 to copy the position to
          */
-        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
+        getPositionToRef(space: Space | undefined, tNode: Nullable<TransformNode>, result: Vector3): void;
         /**
          * Get the absolute position of the bone (world space)
-         * @param mesh The mesh that this bone is attached to
+         * @param tNode The TransformNode that this bone is attached to
          * @returns The absolute position of the bone
          */
-        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
+        getAbsolutePosition(tNode?: Nullable<TransformNode>): Vector3;
         /**
          * Copy the absolute position of the bone (world space) to the result param
-         * @param mesh The mesh that this bone is attached to
+         * @param tNode The TransformNode that this bone is attached to
          * @param result The vector3 to copy the absolute position to
          */
-        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
+        getAbsolutePositionToRef(tNode: TransformNode, result: Vector3): void;
         /**
          * Compute the absolute transforms of this bone and its children
          */
@@ -22037,87 +22037,87 @@ declare module BABYLON {
         /**
          * Get the world direction from an axis that is in the local space of the bone
          * @param localAxis The local direction that is used to compute the world direction
-         * @param mesh The mesh that this bone is attached to
+         * @param tNode The TransformNode that this bone is attached to
          * @returns The world direction
          */
-        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        getDirection(localAxis: Vector3, tNode?: Nullable<TransformNode>): Vector3;
         /**
          * Copy the world direction to a vector3 from an axis that is in the local space of the bone
          * @param localAxis The local direction that is used to compute the world direction
-         * @param mesh The mesh that this bone is attached to
+         * @param tNode The TransformNode that this bone is attached to
          * @param result The vector3 that the world direction will be copied to
          */
-        getDirectionToRef(localAxis: Vector3, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
+        getDirectionToRef(localAxis: Vector3, tNode: Nullable<TransformNode> | undefined, result: Vector3): void;
         /**
          * Get the euler rotation of the bone in local or world space
          * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
          * @returns The euler rotation
          */
-        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        getRotation(space?: Space, tNode?: Nullable<TransformNode>): Vector3;
         /**
          * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space
          * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
          * @param result The vector3 that the rotation should be copied to
          */
-        getRotationToRef(space: Space | undefined, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
+        getRotationToRef(space: Space | undefined, tNode: Nullable<TransformNode> | undefined, result: Vector3): void;
         /**
          * Get the quaternion rotation of the bone in either local or world space
          * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
          * @returns The quaternion rotation
          */
-        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
+        getRotationQuaternion(space?: Space, tNode?: Nullable<TransformNode>): Quaternion;
         /**
          * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space
          * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
          * @param result The quaternion that the rotation should be copied to
          */
-        getRotationQuaternionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh> | undefined, result: Quaternion): void;
+        getRotationQuaternionToRef(space: Space | undefined, tNode: Nullable<TransformNode> | undefined, result: Quaternion): void;
         /**
          * Get the rotation matrix of the bone in local or world space
          * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
          * @returns The rotation matrix
          */
-        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
+        getRotationMatrix(space: Space | undefined, tNode: TransformNode): Matrix;
         /**
          * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space
          * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
          * @param result The quaternion that the rotation should be copied to
          */
-        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
+        getRotationMatrixToRef(space: Space | undefined, tNode: TransformNode, result: Matrix): void;
         /**
          * Get the world position of a point that is in the local space of the bone
          * @param position The local position
-         * @param mesh The mesh that this bone is attached to
+         * @param tNode The TransformNode that this bone is attached to
          * @returns The world position
          */
-        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        getAbsolutePositionFromLocal(position: Vector3, tNode?: Nullable<TransformNode>): Vector3;
         /**
          * Get the world position of a point that is in the local space of the bone and copy it to the result param
          * @param position The local position
-         * @param mesh The mesh that this bone is attached to
+         * @param tNode The TransformNode that this bone is attached to
          * @param result The vector3 that the world position should be copied to
          */
-        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
+        getAbsolutePositionFromLocalToRef(position: Vector3, tNode: Nullable<TransformNode> | undefined, result: Vector3): void;
         /**
          * Get the local position of a point that is in world space
          * @param position The world position
-         * @param mesh The mesh that this bone is attached to
+         * @param tNode The TransformNode that this bone is attached to
          * @returns The local position
          */
-        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        getLocalPositionFromAbsolute(position: Vector3, tNode?: Nullable<TransformNode>): Vector3;
         /**
          * Get the local position of a point that is in world space and copy it to the result param
          * @param position The world position
-         * @param mesh The mesh that this bone is attached to
+         * @param tNode The TransformNode that this bone is attached to
          * @param result The vector3 that the local position should be copied to
          */
-        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
+        getLocalPositionFromAbsoluteToRef(position: Vector3, tNode: Nullable<TransformNode> | undefined, result: Vector3): void;
         /**
          * Set the current local matrix as the restPose for this bone.
          */
@@ -34648,6 +34648,9 @@ declare module BABYLON {
         _currentLODIsUpToDate: boolean;
         _collisionRetryCount: number;
         _morphTargetManager: Nullable<MorphTargetManager>;
+        _renderingGroupId: number;
+        _material: Nullable<Material>;
+        _meshCollisionData: _MeshCollisionData;
     }
     /**
      * Class used to store all common mesh properties
@@ -34820,6 +34823,14 @@ declare module BABYLON {
          * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
          */
         isPickable: boolean;
+        /**
+         * Gets or sets a boolean indicating if the mesh can be near picked. Default is false
+         */
+        isNearPickable: boolean;
+        /**
+         * Gets or sets a boolean indicating if the mesh can be near grabbed. Default is false
+         */
+        isNearGrabbable: boolean;
         /** Gets or sets a boolean indicating that bounding boxes of subMeshes must be rendered as well (false by default) */
         showSubMeshesBoundingBox: boolean;
         /** Gets or sets a boolean indicating if the mesh must be considered as a ray blocker for lens flares (false by default)
@@ -34830,14 +34841,12 @@ declare module BABYLON {
          * Gets or sets a boolean indicating that pointer move events must be supported on this mesh (false by default)
          */
         enablePointerMoveEvents: boolean;
-        private _renderingGroupId;
         /**
          * Specifies the rendering group id for this mesh (0 by default)
          * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
          */
         get renderingGroupId(): number;
         set renderingGroupId(value: number);
-        private _material;
         /** Gets or sets current material */
         get material(): Nullable<Material>;
         set material(value: Nullable<Material>);
@@ -34897,7 +34906,6 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/how_to_use_actions
          */
         actionManager: Nullable<AbstractActionManager>;
-        private _meshCollisionData;
         /**
          * Gets or sets the ellipsoid used to impersonate this mesh when using collision engine (default is (0.5, 1, 0.5))
          * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
@@ -48616,11 +48624,12 @@ declare module BABYLON {
         private static _tmpQuat;
         private static _tmpMats;
         /**
-         * Gets or sets the target mesh
+         * Gets or sets the target TransformNode
+         * Name kept as mesh for back compability
          */
-        targetMesh: AbstractMesh;
+        targetMesh: TransformNode;
         /** Gets or sets the mesh used as pole */
-        poleTargetMesh: AbstractMesh;
+        poleTargetMesh: TransformNode;
         /**
          * Gets or sets the bone used as pole
          */
@@ -48642,9 +48651,10 @@ declare module BABYLON {
          */
         poleAngle: number;
         /**
-         * Gets or sets the mesh associated with the controller
+         * Gets or sets the TransformNode associated with the controller
+         * Name kept as mesh for back compability
          */
-        mesh: AbstractMesh;
+        mesh: TransformNode;
         /**
          * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp)
          */
@@ -48669,13 +48679,13 @@ declare module BABYLON {
         set maxAngle(value: number);
         /**
          * Creates a new BoneIKController
-         * @param mesh defines the mesh to control
+         * @param mesh defines the TransformNode to control
          * @param bone defines the bone to control
          * @param options defines options to set up the controller
          */
-        constructor(mesh: AbstractMesh, bone: Bone, options?: {
-            targetMesh?: AbstractMesh;
-            poleTargetMesh?: AbstractMesh;
+        constructor(mesh: TransformNode, bone: Bone, options?: {
+            targetMesh?: TransformNode;
+            poleTargetMesh?: TransformNode;
             poleTargetBone?: Bone;
             poleTargetLocalOffset?: Vector3;
             poleAngle?: number;
@@ -48704,9 +48714,10 @@ declare module BABYLON {
          */
         target: Vector3;
         /**
-         * The mesh that the bone is attached to
+         * The TransformNode that the bone is attached to
+         * Name kept as mesh for back compability
          */
-        mesh: AbstractMesh;
+        mesh: TransformNode;
         /**
          * The bone that will be looking to the target
          */
@@ -48775,7 +48786,7 @@ declare module BABYLON {
         set maxPitch(value: number);
         /**
          * Create a BoneLookController
-         * @param mesh the mesh that the bone belongs to
+         * @param mesh the TransformNode that the bone belongs to
          * @param bone the bone that will be looking to the target
          * @param target the target Vector3 to look at
          * @param options optional settings:
@@ -48792,7 +48803,7 @@ declare module BABYLON {
          * * adjustPitch: used to make an adjustment to the pitch of the bone
          * * adjustRoll: used to make an adjustment to the roll of the bone
          **/
-        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, options?: {
+        constructor(mesh: TransformNode, bone: Bone, target: Vector3, options?: {
             maxYaw?: number;
             minYaw?: number;
             maxPitch?: number;
@@ -52143,6 +52154,10 @@ declare module BABYLON {
          */
         static readonly IMAGE_TRACKING: string;
         /**
+         * The name of the near interaction feature
+         */
+        static readonly NEAR_INTERACTION: string;
+        /**
          * The name of the DOM overlay feature
          */
         static readonly DOM_OVERLAY: string;
@@ -54032,6 +54047,121 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options interface for the near interaction module
+     */
+    export interface IWebXRNearInteractionOptions {
+        /**
+         * If provided, this scene will be used to render meshes.
+         */
+        customUtilityLayerScene?: Scene;
+        /**
+         * Should meshes created here be added to a utility layer or the main scene
+         */
+        useUtilityLayer?: boolean;
+        /**
+         * The xr input to use with this near interaction
+         */
+        xrInput: WebXRInput;
+        /**
+         * Enable near interaction on all controllers instead of switching between them
+         */
+        enableNearInteractionOnAllControllers?: boolean;
+        /**
+         * The preferred hand to give the near interaction to. This will be prioritized when the controller initialize.
+         * If switch is enabled, it will still allow the user to switch between the different controllers
+         */
+        preferredHandedness?: XRHandedness;
+        /**
+         * Disable switching the near interaction from one controller to the other.
+         * If the preferred hand is set it will be fixed on this hand, and if not it will be fixed on the first controller added to the scene
+         */
+        disableSwitchOnClick?: boolean;
+    }
+    /**
+     * A module that will enable near interaction near interaction for hands and motion controllers of XR Input Sources
+     */
+    export class WebXRNearInteraction extends WebXRAbstractFeature {
+        private readonly _options;
+        private static _idCounter;
+        private _attachController;
+        private _controllers;
+        private _scene;
+        private _attachedController;
+        private _farInteractionFeature;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * constructs a new background remover module
+         * @param _xrSessionManager the session manager for this module
+         * @param _options read-only options to be used in this module
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options: IWebXRNearInteractionOptions);
+        /**
+         * Attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * Detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Will get the mesh under a specific pointer.
+         * `scene.meshUnderPointer` will only return one mesh - either left or right.
+         * @param controllerId the controllerId to check
+         * @returns The mesh under pointer or null if no mesh is under the pointer
+         */
+        getMeshUnderPointer(controllerId: string): Nullable<AbstractMesh>;
+        /**
+         * Get the xr controller that correlates to the pointer id in the pointer event
+         *
+         * @param id the pointer id to search for
+         * @returns the controller that correlates to this id or null if not found
+         */
+        getXRControllerByPointerId(id: number): Nullable<WebXRInputSource>;
+        /**
+         * This function sets webXRControllerPointer Selection feature that will be disabled when
+         * the hover range is reached for a mesh and will be reattached when not in hover range.
+         * This is used to remove the selection rays when moving.
+         * @param farInteractionFeature the feature to disable when finger is in hover range for a mesh
+         */
+        setFarInteractionFeature(farInteractionFeature: Nullable<IWebXRFeature>): void;
+        /**
+         * Filter used for near interaction pick and hover
+         */
+        private nearPickPredicate;
+        /**
+         * Filter used for near interaction grab
+         */
+        private nearGrabPredicate;
+        private readonly _hoverRadius;
+        private readonly _pickRadius;
+        private readonly _nearGrabLengthScale;
+        private _indexTipQuaternion;
+        private _indexTipOrientationVector;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        private get _utilityLayerScene();
+        private _attachNearInteractionMode;
+        private _detachController;
+        private _generateNewHandTipMeshes;
+        private _pickWithMesh;
+    }
+}
+declare module BABYLON {
+    /**
      * Button which can be used to enter a different mode of XR
      */
     export class WebXREnterExitUIButton {
@@ -54671,6 +54801,10 @@ declare module BABYLON {
          */
         disableTeleportation?: boolean;
         /**
+         * Should nearInteraction not initialize. Defaults to false.
+         */
+        disableNearInteraction?: boolean;
+        /**
          * Floor meshes that will be used for teleport
          */
         floorMeshes?: Array<AbstractMesh>;
@@ -54734,6 +54868,10 @@ declare module BABYLON {
          * Enables teleportation
          */
         teleportation: WebXRMotionControllerTeleportation;
+        /**
+         * Enables near interaction for hands/controllers
+         */
+        nearInteraction: WebXRNearInteraction;
         private constructor();
         /**
          * Creates the default xr experience
