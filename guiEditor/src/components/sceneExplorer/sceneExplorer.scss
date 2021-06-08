@@ -9,11 +9,11 @@
     }
 }
 
-#__resizable_base__ {
+#ge-__resizable_base__ {
     display: none;
 }
 
-.context-menu {
+.ge-context-menu {
     background: #e2e2e2;
 
     .react-contextmenu-item {
@@ -26,7 +26,7 @@
     }
 }
 
-.react-contextmenu.context-menu.react-contextmenu--visible {
+.ge-eact-contextmenu.context-menu.react-contextmenu--visible {
     z-index: 99;
     transform: scale(1);
 }
