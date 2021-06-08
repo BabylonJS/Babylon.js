@@ -13,3 +13,4 @@ export * from "./WebXRMeshDetector";
 export * from "./WebXRImageTracking";
 export * from "./WebXRNearInteraction";
 export * from "./WebXRDOMOverlay";
+export * from "./WebXRControllerMovement";
