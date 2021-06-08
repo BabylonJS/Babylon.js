@@ -52,3 +52,4 @@ export * from "./khronosTextureContainer2";
 export * from "./trajectoryClassifier";
 export * from './timer';
 export * from "./copyTools";
+export * from "./reflector";

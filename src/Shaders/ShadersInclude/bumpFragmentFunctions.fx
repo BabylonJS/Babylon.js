@@ -45,7 +45,7 @@
 
 		for (int i = 0; i < iMaxSamples; i++)
 		{
-			currSampledHeight = texture2D(bumpSampler, vBumpUV + vCurrOffset).w;
+			currSampledHeight = texture2D(bumpSampler, texCoord + vCurrOffset).w;
 
 			// Test if the view ray has intersected the surface.
 			if (currSampledHeight > currRayHeight)

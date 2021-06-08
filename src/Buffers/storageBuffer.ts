@@ -1,6 +1,7 @@
 import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { DataArray } from "../types";
+import { Constants } from "../Engines/constants";
 
 /**
  * This class is a small wrapper around a native buffer that can be read and/or written
@@ -9,32 +10,29 @@ export class StorageBuffer {
     private _engine: ThinEngine;
     private _buffer: DataBuffer;
     private _bufferSize: number;
-    private _read: boolean;
-    private _write: boolean;
+    private _creationFlags: number;
 
     /**
      * Creates a new storage buffer instance
      * @param engine The engine the buffer will be created inside
-     * @param read true if the buffer is readable (default: true)
-     * @param write true if the buffer is writable (default: true)
      * @param size The size of the buffer in bytes
+     * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added.
      */
-    constructor(engine: ThinEngine, size: number, read = true, write = true) {
+    constructor(engine: ThinEngine, size: number, creationFlags = Constants.BUFFER_CREATIONFLAG_READWRITE) {
         this._engine = engine;
         this._engine._storageBuffers.push(this);
-        this._create(size, read, write);
+        this._create(size, creationFlags);
     }
 
-    private _create(size: number, read: boolean, write: boolean): void {
+    private _create(size: number, creationFlags: number): void {
         this._bufferSize = size;
-        this._read = read;
-        this._write = write;
-        this._buffer = this._engine.createStorageBuffer(size, read, write);
+        this._creationFlags = creationFlags;
+        this._buffer = this._engine.createStorageBuffer(size, creationFlags);
     }
 
     /** @hidden */
     public _rebuild(): void {
-        this._create(this._bufferSize, this._read, this._write);
+        this._create(this._bufferSize, this._creationFlags);
     }
 
     /**

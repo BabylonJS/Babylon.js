@@ -43,11 +43,13 @@ function compare(renderData, referenceCanvas, threshold, errorRatio) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
+    var curErrorRatio = (differencesCount * 100) / (width * height);
+
     if (differencesCount) {
-        console.log("%c Pixel difference: " + differencesCount + " pixels.", 'color: orange');
+        console.log("%c Pixel difference: " + differencesCount + " pixels. Error ratio=" + curErrorRatio.toFixed(4) + "%", 'color: orange');
     }
 
-    return (differencesCount * 100) / (width * height) > errorRatio;
+    return curErrorRatio > errorRatio;
 }
 
 async function getRenderData(canvas, engine) {

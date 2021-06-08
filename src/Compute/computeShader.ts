@@ -5,17 +5,25 @@ import { Nullable } from "../types";
 import { SerializationHelper, serialize } from "../Misc/decorators";
 import { _TypeStore } from '../Misc/typeStore';
 import { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
-import { BindingLocationToString, ComputeBindingList, ComputeBindingLocation, ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
+import { ComputeBindingList, ComputeBindingMapping, ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import { IComputeContext } from "./IComputeContext";
 import { StorageBuffer } from "../Buffers/storageBuffer";
+import { Logger } from "../Misc/logger";
 
 /**
  * Defines the options associated with the creation of a compute shader.
  */
  export interface IComputeShaderOptions {
+    /**
+     * list of bindings mapping (key is property name, value is binding location)
+     * Must be provided because browsers don't support reflection for wgsl shaders yet (so there's no way to query the binding/group from a variable name)
+     * TODO: remove this when browsers support reflection for wgsl shaders
+     */
+    bindingsMapping: ComputeBindingMapping;
+
     /**
      * The list of defines used in the shader
      */
@@ -81,12 +89,18 @@ export class ComputeShader {
         this.uniqueId = UniqueIdGenerator.UniqueId;
 
         if (!this._engine.getCaps().supportComputeShaders) {
-            throw new Error("This engine does not support compute shaders!");
+            Logger.Error("This engine does not support compute shaders!");
+            return;
+        }
+        if (!options.bindingsMapping) {
+            Logger.Error("You must provide the binding mappings as browsers don't support reflection for wgsl shaders yet!");
+            return;
         }
 
         this._context = engine.createComputeContext()!;
         this._shaderPath = shaderPath;
         this._options = {
+            bindingsMapping: {},
             defines: [],
             ...options
         };
@@ -106,14 +120,12 @@ export class ComputeShader {
      * @param name Binding name of the texture
      * @param texture Texture to bind
      */
-    public setTexture(name: ComputeBindingLocation, texture: BaseTexture): void {
-        const key = BindingLocationToString(name);
-        const current = this._bindings[key];
+    public setTexture(name: string, texture: BaseTexture): void {
+        const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || current.object !== texture;
 
-        this._bindings[key] = {
-            location: name,
+        this._bindings[name] = {
             type: ComputeBindingType.Texture,
             object: texture,
         };
@@ -124,14 +136,12 @@ export class ComputeShader {
      * @param name Binding name of the texture
      * @param texture Texture to bind
      */
-    public setStorageTexture(name: ComputeBindingLocation, texture: BaseTexture): void {
-        const key = BindingLocationToString(name);
-        const current = this._bindings[key];
+    public setStorageTexture(name: string, texture: BaseTexture): void {
+        const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || current.object !== texture;
 
-        this._bindings[key] = {
-            location: name,
+        this._bindings[name] = {
             type: ComputeBindingType.StorageTexture,
             object: texture,
         };
@@ -142,14 +152,12 @@ export class ComputeShader {
      * @param name Binding name of the buffer
      * @param buffer Buffer to bind
      */
-    public setUniformBuffer(name: ComputeBindingLocation, buffer: UniformBuffer): void {
-        const key = BindingLocationToString(name);
-        const current = this._bindings[key];
+    public setUniformBuffer(name: string, buffer: UniformBuffer): void {
+        const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || current.object !== buffer;
 
-        this._bindings[key] = {
-            location: name,
+        this._bindings[name] = {
             type: ComputeBindingType.UniformBuffer,
             object: buffer,
         };
@@ -160,14 +168,12 @@ export class ComputeShader {
      * @param name Binding name of the buffer
      * @param buffer Buffer to bind
      */
-    public setStorageBuffer(name: ComputeBindingLocation, buffer: StorageBuffer): void {
-        const key = BindingLocationToString(name);
-        const current = this._bindings[key];
+    public setStorageBuffer(name: string, buffer: StorageBuffer): void {
+        const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || current.object !== buffer;
 
-        this._bindings[key] = {
-            location: name,
+        this._bindings[name] = {
             type: ComputeBindingType.StorageBuffer,
             object: buffer,
         };
@@ -251,6 +257,11 @@ export class ComputeShader {
         for (const key in this._bindings) {
             const binding = this._bindings[key];
 
+            // TODO: remove this when browsers support reflection for wgsl shaders
+            if (!this._options.bindingsMapping[key]) {
+                throw new Error("ComputeShader ('" + this.name + "'): No binding mapping has been provided for the property '" + key + "'");
+            }
+
             if (binding.type !== ComputeBindingType.Texture) {
                 continue;
             }
@@ -275,7 +286,7 @@ export class ComputeShader {
             this._context.clear();
         }
 
-        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z);
+        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping);
 
         return true;
     }
@@ -325,7 +336,6 @@ export class ComputeShader {
                     if (serializedData) {
                         serializationObject.textures[key] = serializedData;
                         serializationObject.bindings[key] = {
-                            location: binding.location,
                             type: binding.type,
                         };
                     }
@@ -356,9 +366,9 @@ export class ComputeShader {
             const texture = <Texture>Texture.Parse(source.textures[key], scene, rootUrl);
 
             if (binding.type === ComputeBindingType.Texture) {
-                compute.setTexture(binding.location, texture);
+                compute.setTexture(key, texture);
             } else {
-                compute.setStorageTexture(binding.location, texture);
+                compute.setStorageTexture(key, texture);
             }
         }
 

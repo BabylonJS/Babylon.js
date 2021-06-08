@@ -13,6 +13,7 @@ import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTe
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Constants } from "babylonjs/Engines/constants";
 import { Tools } from "babylonjs/Misc/tools";
+import { Color4 } from "babylonjs/Maths/math.color";
 
 interface ITransmissionHelperHolder {
     /**
@@ -43,9 +44,20 @@ interface ITransmissionHelperOptions {
     lodGenerationOffset: number;
 
     /**
-     * Type of the refraction render target texture (default: TEXTURETYPE_UNSIGNED_INT)
+     * Type of the refraction render target texture (default: TEXTURETYPE_HALF_FLOAT)
      */
     renderTargetTextureType: number;
+
+    /**
+     * Defines if the mipmaps for the refraction render target texture must be generated (default: true)
+     */
+    generateMipmaps: boolean;
+
+    /**
+     * Clear color of the opaque texture. If not provided, use the scene clear color (which will be converted to linear space).
+     * If provided, should be in linear space
+     */
+    clearColor?: Color4;
 }
 
 /**
@@ -62,7 +74,8 @@ class TransmissionHelper {
             samples: 4,
             lodGenerationScale: 1,
             lodGenerationOffset: -4,
-            renderTargetTextureType: Constants.TEXTURETYPE_UNSIGNED_INT
+            renderTargetTextureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            generateMipmaps: true,
         };
     }
 
@@ -126,7 +139,7 @@ class TransmissionHelper {
         this._options = newOptions;
 
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || !this._opaqueRenderTarget) {
+        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || newOptions.generateMipmaps !== oldOptions.generateMipmaps || !this._opaqueRenderTarget) {
             this._setupRenderTargets();
         } else {
             this._opaqueRenderTarget.samples = newOptions.samples;
@@ -150,7 +163,8 @@ class TransmissionHelper {
     }
 
     private _addMesh(mesh: AbstractMesh): void {
-        this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+        this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this._onMeshMaterialChanged.bind(this));
+
         // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         Tools.SetImmediate(() => {
@@ -185,7 +199,7 @@ class TransmissionHelper {
     }
 
     // When one of the meshes in the scene has its material changed, make sure that it's in the correct cache list.
-    private onMeshMaterialChanged(mesh: AbstractMesh) {
+    private _onMeshMaterialChanged(mesh: AbstractMesh) {
         const transparentIdx = this._transparentMeshesCache.indexOf(mesh);
         const opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
 
@@ -216,14 +230,32 @@ class TransmissionHelper {
      * Setup the render targets according to the specified options.
      */
     private _setupRenderTargets(): void {
-        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
+        if (this._opaqueRenderTarget) {
+            this._opaqueRenderTarget.dispose();
+        }
+        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, this._options.generateMipmaps, undefined, this._options.renderTargetTextureType);
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
-        // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
-        this._opaqueRenderTarget.gammaSpace = true;
+        this._opaqueRenderTarget.clearColor = this._options.clearColor?.clone() ?? this._scene.clearColor.clone();
+        this._opaqueRenderTarget.gammaSpace = false;
         this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
         this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
         this._opaqueRenderTarget.samples = this._options.samples;
+
+        let sceneImageProcessingapplyByPostProcess: boolean;
+
+        this._opaqueRenderTarget.onBeforeBindObservable.add((opaqueRenderTarget) => {
+            sceneImageProcessingapplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
+            if (!this._options.clearColor) {
+                this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor);
+            } else {
+                opaqueRenderTarget.clearColor.copyFrom(this._options.clearColor);
+            }
+            this._scene.imageProcessingConfiguration.applyByPostProcess = true;
+        });
+        this._opaqueRenderTarget.onAfterUnbindObservable.add(() => {
+            this._scene.imageProcessingConfiguration.applyByPostProcess = sceneImageProcessingapplyByPostProcess;
+        });
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
             if (this.shouldRenderAsTransmission(mesh.material)) {

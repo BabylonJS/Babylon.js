@@ -1,5 +1,7 @@
 export * from "./baseParticleSystem";
 export * from "./EmitterTypes/index";
+export * from "./webgl2ParticleSystem";
+export * from "./computeShaderParticleSystem";
 export * from "./gpuParticleSystem";
 export * from "./IParticleSystem";
 export * from "./particle";

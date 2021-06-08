@@ -338,9 +338,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
         } catch (err) {
-            this.props.globalState.onErrorObservable.notifyObservers({
-                message: err
-            });
+            this.props.globalState.onErrorObservable.notifyObservers(err);
         }
     }
 

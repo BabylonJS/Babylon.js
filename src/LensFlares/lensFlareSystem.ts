@@ -400,7 +400,7 @@ export class LensFlareSystem {
      * @returns the parsed system
      */
     public static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
-        var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
+        var emitter = scene.getLastEntryById(parsedLensFlareSystem.emitterId);
 
         var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
 

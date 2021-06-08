@@ -16,6 +16,7 @@ import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { IInspectable } from '../Misc/iInspectable';
 import { IAnimatable } from '../Animations/animatable.interface';
+import { AbstractScene } from "../abstractScene";
 
 /**
  * Class used to handle skinning animations
@@ -68,6 +69,9 @@ export class Skeleton implements IAnimatable {
 
     /** @hidden */
     public _waitingOverrideMeshId: Nullable<string> = null;
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
      * Specifies if the skeleton should be serialized
@@ -685,6 +689,14 @@ export class Skeleton implements IAnimatable {
 
         // Remove from scene
         this.getScene().removeSkeleton(this);
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.skeletons.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.skeletons.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
 
         if (this._transformMatrixTexture) {
             this._transformMatrixTexture.dispose();

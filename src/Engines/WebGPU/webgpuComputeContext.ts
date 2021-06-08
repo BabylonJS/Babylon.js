@@ -3,7 +3,7 @@ import { IComputeContext } from "../../Compute/IComputeContext";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Logger } from "../../Misc/logger";
-import { ComputeBindingList, ComputeBindingType } from "../Extensions/engine.computeShader";
+import { ComputeBindingList, ComputeBindingMapping, ComputeBindingType } from "../Extensions/engine.computeShader";
 import { WebGPUCacheSampler } from "./webgpuCacheSampler";
 import * as WebGPUConstants from './webgpuConstants';
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
@@ -18,15 +18,19 @@ export class WebGPUComputeContext implements IComputeContext {
     private _cacheSampler: WebGPUCacheSampler;
     private _bindGroups: GPUBindGroup[];
 
-    public getBindGroups(bindings: ComputeBindingList, computePipeline: GPUComputePipeline): GPUBindGroup[] {
+    public getBindGroups(bindings: ComputeBindingList, computePipeline: GPUComputePipeline, bindingsMapping?: ComputeBindingMapping): GPUBindGroup[] {
+        if (!bindingsMapping) {
+            throw new Error("WebGPUComputeContext.getBindGroups: bindingsMapping is required until browsers support reflection for wgsl shaders!");
+        }
         if (this._bindGroups.length === 0) {
             const bindGroupEntries: GPUBindGroupEntry[][] = [];
             for (const key in bindings) {
                 const binding = bindings[key],
-                    group = (binding.location as any).group,
-                    index = (binding.location as any).binding,
-                    type = binding.type,
-                    object = binding.object;
+                      location = bindingsMapping[key],
+                      group = location.group,
+                      index = location.binding,
+                      type = binding.type,
+                      object = binding.object;
 
                 let entries = bindGroupEntries[group];
                 if (!entries) {

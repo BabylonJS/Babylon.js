@@ -1237,7 +1237,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         var p = SerializationHelper.Parse(() => new StandardRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
 
         if (source.sourceLightId) {
-            p.sourceLight = <SpotLight | DirectionalLight>scene.getLightByID(source.sourceLightId);
+            p.sourceLight = <SpotLight | DirectionalLight>scene.getLightById(source.sourceLightId);
         }
 
         if (source.screenSpaceReflectionPostProcess) {

@@ -14,6 +14,7 @@ import { PickingInfo } from "../Collisions/pickingInfo";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { BaseTexture } from "./../Materials/Textures/baseTexture";
 import { Scalar } from "../Maths/math.scalar";
+import { Material } from "../Materials/material";
 
 /** Defines the 4 color options */
 export enum PointColor {
@@ -112,19 +113,20 @@ export class PointsCloudSystem implements IDisposable {
     /**
      * Builds the PCS underlying mesh. Returns a standard Mesh.
      * If no points were added to the PCS, the returned mesh is just a single point.
+     * @param material The material to use to render the mesh. If not provided, will create a default one
      * @returns a promise for the created mesh
      */
-    public buildMeshAsync(): Promise<Mesh> {
+    public buildMeshAsync(material?: Material): Promise<Mesh> {
         return Promise.all(this._promises).then(() => {
             this._isReady = true;
-            return this._buildMesh();
+            return this._buildMesh(material);
         });
     }
 
     /**
      * @hidden
      */
-    private _buildMesh(): Promise<Mesh> {
+    private _buildMesh(material?: Material): Promise<Mesh> {
         if (this.nbParticles === 0) {
             this.addPoints(1);
         }
@@ -157,11 +159,15 @@ export class PointsCloudSystem implements IDisposable {
             this.particles.length = 0;
         }
 
-        var mat = new StandardMaterial("point cloud material", this._scene);
-        mat.emissiveColor = new Color3(ec, ec, ec);
-        mat.disableLighting = true;
-        mat.pointsCloud = true;
-        mat.pointSize = this._size;
+        let mat = material;
+
+        if (!mat) {
+            mat = new StandardMaterial("point cloud material", this._scene);
+            (<StandardMaterial>mat).emissiveColor = new Color3(ec, ec, ec);
+            (<StandardMaterial>mat).disableLighting = true;
+            (<StandardMaterial>mat).pointsCloud = true;
+            (<StandardMaterial>mat).pointSize = this._size;
+        }
         mesh.material = mat;
 
         return new Promise((resolve) => resolve(mesh));
@@ -211,6 +217,7 @@ export class PointsCloudSystem implements IDisposable {
         mesh.computeWorldMatrix();
         var meshMatrix: Matrix = mesh.getWorldMatrix();
         if (!meshMatrix.isIdentity()) {
+            meshPos = meshPos.slice(0);
             for (var p = 0; p < meshPos.length / 3; p++) {
                 Vector3.TransformCoordinatesFromFloatsToRef(meshPos[3 * p], meshPos[3 * p + 1], meshPos[3 * p + 2], meshMatrix, place);
                 meshPos[3 * p] = place.x;

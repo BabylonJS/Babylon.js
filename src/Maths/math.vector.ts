@@ -29,7 +29,7 @@ export class Vector2 {
      * @returns a string with the Vector2 coordinates
      */
     public toString(): string {
-        return "{X: " + this.x + " Y: " + this.y + "}";
+        return `{X: ${this.x} Y: ${this.y}}`;
     }
 
     /**
@@ -815,7 +815,7 @@ export class Vector3 {
      * @returns a string with the Vector3 coordinates.
      */
     public toString(): string {
-        return "{X: " + this._x + " Y:" + this._y + " Z:" + this._z + "}";
+        return `{X: ${this._x} Y: ${this._y} Z: ${this._z}}`;
     }
 
     /**
@@ -1496,6 +1496,91 @@ export class Vector3 {
             return isNaN(angle) ? 0 : angle;
         }
         return isNaN(angle) ? -Math.PI : -Math.acos(dot);
+    }
+
+    /**
+     * Get angle between two vectors projected on a plane
+     * @param vector0 angle between vector0 and vector1
+     * @param vector1 angle between vector0 and vector1
+     * @param normal Normal of the projection plane
+     * @returns the angle between vector0 and vector1 projected on the plane with the specified normal
+     */
+    public static GetAngleBetweenVectorsOnPlane(vector0: Vector3, vector1: Vector3, normal: Vector3) {
+        MathTmp.Vector3[0].copyFrom(vector0);
+        const v0 = MathTmp.Vector3[0];
+        MathTmp.Vector3[1].copyFrom(vector1);
+        const v1 = MathTmp.Vector3[1];
+        MathTmp.Vector3[2].copyFrom(normal);
+        const vNormal = MathTmp.Vector3[2];
+        const right = MathTmp.Vector3[3];
+        const forward = MathTmp.Vector3[4];
+
+        v0.normalize();
+        v1.normalize();
+        vNormal.normalize();
+
+        Vector3.CrossToRef(vNormal, v0, right);
+        Vector3.CrossToRef(right, vNormal, forward);
+
+        const angle = Math.atan2(Vector3.Dot(v1, right), Vector3.Dot(v1, forward));
+
+        return Scalar.NormalizeRadians(angle);
+    }
+
+    /**
+     * Slerp between two vectors. See also `SmoothToRef`
+     * @param vector0 Start vector
+     * @param vector1 End vector
+     * @param slerp amount (will be clamped between 0 and 1)
+     * @param result The slerped vector
+     */
+    public static SlerpToRef(vector0: Vector3, vector1: Vector3, slerp: number, result: Vector3) {
+        slerp = Scalar.Clamp(slerp, 0, 1);
+        const vector0Dir = MathTmp.Vector3[0];
+        const vector1Dir = MathTmp.Vector3[1];
+        let vector0Length;
+        let vector1Length;
+
+        vector0Dir.copyFrom(vector0);
+        vector0Length = vector0Dir.length();
+        vector0Dir.normalizeFromLength(vector0Length);
+
+        vector1Dir.copyFrom(vector1);
+        vector1Length = vector1Dir.length();
+        vector1Dir.normalizeFromLength(vector1Length);
+
+        const dot = Vector3.Dot(vector0Dir, vector1Dir);
+
+        let scale0;
+        let scale1;
+
+        if (dot < 1 - Epsilon) {
+            const omega = Math.acos(dot);
+            const invSin = 1 / Math.sin(omega);
+            scale0 = Math.sin((1 - slerp) * omega) * invSin;
+            scale1 = Math.sin(slerp * omega) * invSin;
+        } else {
+            // Use linear interpolation
+            scale0 = 1 - slerp;
+            scale1 = slerp;
+        }
+
+        vector0Dir.scaleInPlace(scale0);
+        vector1Dir.scaleInPlace(scale1);
+        result.copyFrom(vector0Dir).addInPlace(vector1Dir);
+        result.scaleInPlace(Scalar.Lerp(vector0Length, vector1Length, slerp));
+    }
+
+    /**
+     * Smooth interpolation between two vectors using Slerp
+     * @param source source vector
+     * @param goal goal vector
+     * @param deltaTime current interpolation frame
+     * @param lerpTime total interpolation time
+     * @param result the smoothed vector
+     */
+    public static SmoothToRef(source: Vector3, goal: Vector3, deltaTime: number, lerpTime: number, result: Vector3) {
+        Vector3.SlerpToRef(source, goal, lerpTime === 0 ? 1 : deltaTime / lerpTime, result);
     }
 
     /**
@@ -2187,7 +2272,7 @@ export class Vector4 {
      * @returns a string containing all the vector values
      */
     public toString(): string {
-        return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
+        return `{X: ${this.x} Y: ${this.y} Z: ${this.z} W: ${this.w}}`;
     }
 
     /**
@@ -2972,7 +3057,7 @@ export class Quaternion {
      * @returns a string with the Quaternion coordinates
      */
     public toString(): string {
-        return "{X: " + this._x + " Y:" + this._y + " Z:" + this._z + " W:" + this._w + "}";
+        return `{X: ${this._x} Y: ${this._y} Z: ${this._z} W: ${this._w}}`;
     }
 
     /**
@@ -3397,6 +3482,22 @@ export class Quaternion {
         let dot = Quaternion.Dot(quat0, quat1);
 
         return dot >= 0;
+    }
+
+    /**
+     * Smooth interpolation between two quaternions using Slerp
+     *
+     * @param source source quaternion
+     * @param goal goal quaternion
+     * @param deltaTime current interpolation frame
+     * @param lerpTime total interpolation time
+     * @param result the smoothed quaternion
+     */
+    public static SmoothToRef(source: Quaternion, goal: Quaternion, deltaTime: number, lerpTime: number, result: Quaternion) {
+        let slerp = lerpTime === 0 ? 1 : deltaTime / lerpTime;
+        slerp = Scalar.Clamp(slerp, 0, 1);
+
+        Quaternion.SlerpToRef(source, goal, slerp, result);
     }
 
     /**
@@ -5016,16 +5117,26 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void {
-        const v = Vector3.Cross(to, from);
         const c = Vector3.Dot(to, from);
-        const k = 1 / (1 + c);
-
         const m = result._m;
-        m[0] = v._x * v._x * k + c; m[1] = v._y * v._x * k - v._z; m[2] = v._z * v._x * k + v._y; m[3] = 0;
-        m[4] = v._x * v._y * k + v._z; m[5] = v._y * v._y * k + c; m[6] = v._z * v._y * k - v._x; m[7] = 0;
-        m[8] = v._x * v._z * k - v._y; m[9] = v._y * v._z * k + v._x; m[10] = v._z * v._z * k + c; m[11] = 0;
-        m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
+        if (c < (-1 + Epsilon))
+        {
+            // from and to are colinear and opposite direction.
+            // compute a PI rotation on Z axis
+            m[0] = -1; m[1] =  0; m[2] =  0; m[3] =  0;
+            m[4] =  0; m[5] = -1; m[6] =  0; m[7] =  0;
+            m[8] =  0; m[9] =  0; m[10] = 1; m[11] = 0;
+        }
+        else
+        {
+            const v = Vector3.Cross(to, from);
+            const k = 1 / (1 + c);
 
+            m[0] = v._x * v._x * k + c; m[1] = v._y * v._x * k - v._z; m[2] = v._z * v._x * k + v._y; m[3] = 0;
+            m[4] = v._x * v._y * k + v._z; m[5] = v._y * v._y * k + c; m[6] = v._z * v._y * k - v._x; m[7] = 0;
+            m[8] = v._x * v._z * k - v._y; m[9] = v._y * v._z * k + v._x; m[10] = v._z * v._z * k + c; m[11] = 0;
+        }
+        m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
         result._markAsUpdated();
     }
 

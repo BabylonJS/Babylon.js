@@ -400,5 +400,18 @@
                 "--enable-unsafe-es3-apis"
             ]
         },
+        {
+            "name": "Launch reflector (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/sandbox/public/index-local.html?reflector=true",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        }
     ]
 }

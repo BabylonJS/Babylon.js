@@ -173,8 +173,12 @@ export class Constants {
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
     /** Compressed BC2 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
-    /** Compressed BC1 */
+    /** Compressed BC1 (RGBA) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
+    /** Compressed BC1 (RGB) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 = 33776;
+    /** Compressed ASTC 4x4 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = 37808;
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
@@ -555,6 +559,21 @@ export class Constants {
      */
     public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 7;
 
+    /** Flag to create a readable buffer (the buffer can be the source of a copy) */
+    public static readonly BUFFER_CREATIONFLAG_READ = 1;
+    /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
+    public static readonly BUFFER_CREATIONFLAG_WRITE = 2;
+    /** Flag to create a readable and writable buffer */
+    public static readonly BUFFER_CREATIONFLAG_READWRITE = 3;
+    /** Flag to create a buffer suitable to be used as a uniform buffer */
+    public static readonly BUFFER_CREATIONFLAG_UNIFORM = 4;
+    /** Flag to create a buffer suitable to be used as a vertex buffer */
+    public static readonly BUFFER_CREATIONFLAG_VERTEX = 8;
+    /** Flag to create a buffer suitable to be used as an index buffer */
+    public static readonly BUFFER_CREATIONFLAG_INDEX = 16;
+    /** Flag to create a buffer suitable to be used as a storage buffer */
+    public static readonly BUFFER_CREATIONFLAG_STORAGE = 32;
+
     /**
      * Prefixes used by the engine for sub mesh draw wrappers
      */
@@ -603,4 +622,65 @@ export class Constants {
 
     /** Fast snapshot rendering. In this mode, everything is static and only some limited form of dynamic behaviour is possible */
     public static readonly SNAPSHOTRENDERING_FAST = 1;
+
+    /**
+     * This is the default projection mode used by the cameras.
+     * It helps recreating a feeling of perspective and better appreciate depth.
+     * This is the best way to simulate real life cameras.
+     */
+     public static readonly PERSPECTIVE_CAMERA = 0;
+     /**
+      * This helps creating camera with an orthographic mode.
+      * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
+      */
+     public static readonly ORTHOGRAPHIC_CAMERA = 1;
+
+     /**
+      * This is the default FOV mode for perspective cameras.
+      * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+      */
+     public static readonly FOVMODE_VERTICAL_FIXED = 0;
+     /**
+      * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+      */
+     public static readonly FOVMODE_HORIZONTAL_FIXED = 1;
+
+     /**
+      * This specifies there is no need for a camera rig.
+      * Basically only one eye is rendered corresponding to the camera.
+      */
+     public static readonly RIG_MODE_NONE = 0;
+     /**
+      * Simulates a camera Rig with one blue eye and one red eye.
+      * This can be use with 3d blue and red glasses.
+      */
+     public static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH = 10;
+     /**
+      * Defines that both eyes of the camera will be rendered side by side with a parallel target.
+      */
+     public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11;
+     /**
+      * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
+      */
+     public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
+     /**
+      * Defines that both eyes of the camera will be rendered over under each other.
+      */
+     public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
+     /**
+      * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+      */
+     public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = 14;
+     /**
+      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
+      */
+     public static readonly RIG_MODE_VR = 20;
+     /**
+      * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
+      */
+     public static readonly RIG_MODE_WEBVR = 21;
+     /**
+      * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
+      */
+     public static readonly RIG_MODE_CUSTOM = 22;
 }

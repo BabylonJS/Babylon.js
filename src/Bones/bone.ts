@@ -3,7 +3,6 @@ import { Skeleton } from "./skeleton";
 import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Nullable } from "../types";
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Space } from '../Maths/math.axis';
@@ -282,7 +281,7 @@ export class Bone extends Node {
         }
     }
 
-    // Properties (matches AbstractMesh properties)
+    // Properties (matches TransformNode properties)
 
     /**
      * Gets the node used to drive the bone's transformation
@@ -440,9 +439,9 @@ export class Bone extends Node {
      * Translate the bone in local or world space
      * @param vec The amount to translate the bone
      * @param space The space that the translation is in
-     * @param mesh The mesh that this bone is attached to. This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to. This is only used in world space
      */
-    public translate(vec: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+    public translate(vec: Vector3, space = Space.LOCAL, tNode?: TransformNode): void {
         var lm = this.getLocalMatrix();
 
         if (space == Space.LOCAL) {
@@ -452,9 +451,9 @@ export class Bone extends Node {
         } else {
             var wm: Nullable<Matrix> = null;
 
-            //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-            if (mesh) {
-                wm = mesh.getWorldMatrix();
+            //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            if (tNode) {
+                wm = tNode.getWorldMatrix();
             }
 
             this._skeleton.computeAbsoluteTransforms();
@@ -462,7 +461,7 @@ export class Bone extends Node {
             var tvec = Bone._tmpVecs[0];
 
             if (this._parent) {
-                if (mesh && wm) {
+                if (tNode && wm) {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
                     tmat.multiplyToRef(wm, tmat);
                 } else {
@@ -488,9 +487,9 @@ export class Bone extends Node {
      * Set the position of the bone in local or world space
      * @param position The position to set the bone
      * @param space The space that the position is in
-     * @param mesh The mesh that this bone is attached to.  This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
      */
-    public setPosition(position: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+    public setPosition(position: Vector3, space = Space.LOCAL, tNode?: TransformNode): void {
         var lm = this.getLocalMatrix();
 
         if (space == Space.LOCAL) {
@@ -498,9 +497,9 @@ export class Bone extends Node {
         } else {
             var wm: Nullable<Matrix> = null;
 
-            //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-            if (mesh) {
-                wm = mesh.getWorldMatrix();
+            //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            if (tNode) {
+                wm = tNode.getWorldMatrix();
             }
 
             this._skeleton.computeAbsoluteTransforms();
@@ -509,7 +508,7 @@ export class Bone extends Node {
             var vec = Bone._tmpVecs[0];
 
             if (this._parent) {
-                if (mesh && wm) {
+                if (tNode && wm) {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
                     tmat.multiplyToRef(wm, tmat);
                 } else {
@@ -530,10 +529,10 @@ export class Bone extends Node {
     /**
      * Set the absolute position of the bone (world space)
      * @param position The position to set the bone
-     * @param mesh The mesh that this bone is attached to
+     * @param tNode The TransformNode that this bone is attached to
      */
-    public setAbsolutePosition(position: Vector3, mesh?: AbstractMesh) {
-        this.setPosition(position, Space.WORLD, mesh);
+    public setAbsolutePosition(position: Vector3, tNode?: TransformNode) {
+        this.setPosition(position, Space.WORLD, tNode);
     }
 
     /**
@@ -607,18 +606,18 @@ export class Bone extends Node {
      * @param pitch The rotation of the bone on the x axis
      * @param roll The rotation of the bone on the z axis
      * @param space The space that the axes of rotation are in
-     * @param mesh The mesh that this bone is attached to.  This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
      */
-    public setYawPitchRoll(yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+    public setYawPitchRoll(yaw: number, pitch: number, roll: number, space = Space.LOCAL, tNode?: TransformNode): void {
         if (space === Space.LOCAL) {
             var quat = Bone._tmpQuat;
             Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, quat);
-            this.setRotationQuaternion(quat, space, mesh);
+            this.setRotationQuaternion(quat, space, tNode);
             return;
         }
 
         var rotMatInv = Bone._tmpMats[0];
-        if (!this._getNegativeRotationToRef(rotMatInv, mesh)) {
+        if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
             return;
         }
 
@@ -626,7 +625,7 @@ export class Bone extends Node {
         Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
 
         rotMatInv.multiplyToRef(rotMat, rotMat);
-        this._rotateWithMatrix(rotMat, space, mesh);
+        this._rotateWithMatrix(rotMat, space, tNode);
 
     }
 
@@ -635,13 +634,13 @@ export class Bone extends Node {
      * @param axis The axis to rotate the bone on
      * @param amount The amount to rotate the bone
      * @param space The space that the axis is in
-     * @param mesh The mesh that this bone is attached to. This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to. This is only used in world space
      */
-    public rotate(axis: Vector3, amount: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+    public rotate(axis: Vector3, amount: number, space = Space.LOCAL, tNode?: TransformNode): void {
         var rmat = Bone._tmpMats[0];
         rmat.setTranslationFromFloats(0, 0, 0);
         Matrix.RotationAxisToRef(axis, amount, rmat);
-        this._rotateWithMatrix(rmat, space, mesh);
+        this._rotateWithMatrix(rmat, space, tNode);
     }
 
     /**
@@ -649,19 +648,19 @@ export class Bone extends Node {
      * @param axis The axis to rotate the bone on
      * @param angle The angle that the bone should be rotated to
      * @param space The space that the axis is in
-     * @param mesh The mesh that this bone is attached to.  This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
      */
-    public setAxisAngle(axis: Vector3, angle: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+    public setAxisAngle(axis: Vector3, angle: number, space = Space.LOCAL, tNode?: TransformNode): void {
         if (space === Space.LOCAL) {
             var quat = Bone._tmpQuat;
             Quaternion.RotationAxisToRef(axis, angle, quat);
 
-            this.setRotationQuaternion(quat, space, mesh);
+            this.setRotationQuaternion(quat, space, tNode);
             return;
         }
 
         var rotMatInv = Bone._tmpMats[0];
-        if (!this._getNegativeRotationToRef(rotMatInv, mesh)) {
+        if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
             return;
         }
 
@@ -669,26 +668,26 @@ export class Bone extends Node {
         Matrix.RotationAxisToRef(axis, angle, rotMat);
 
         rotMatInv.multiplyToRef(rotMat, rotMat);
-        this._rotateWithMatrix(rotMat, space, mesh);
+        this._rotateWithMatrix(rotMat, space, tNode);
     }
 
     /**
      * Set the euler rotation of the bone in local or world space
      * @param rotation The euler rotation that the bone should be set to
      * @param space The space that the rotation is in
-     * @param mesh The mesh that this bone is attached to. This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to. This is only used in world space
      */
-    public setRotation(rotation: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
-        this.setYawPitchRoll(rotation.y, rotation.x, rotation.z, space, mesh);
+    public setRotation(rotation: Vector3, space = Space.LOCAL, tNode?: TransformNode): void {
+        this.setYawPitchRoll(rotation.y, rotation.x, rotation.z, space, tNode);
     }
 
     /**
      * Set the quaternion rotation of the bone in local or world space
      * @param quat The quaternion rotation that the bone should be set to
      * @param space The space that the rotation is in
-     * @param mesh The mesh that this bone is attached to. This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to. This is only used in world space
      */
-    public setRotationQuaternion(quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
+    public setRotationQuaternion(quat: Quaternion, space = Space.LOCAL, tNode?: TransformNode): void {
         if (space === Space.LOCAL) {
             this._decompose();
             this._localRotation.copyFrom(quat);
@@ -699,7 +698,7 @@ export class Bone extends Node {
         }
 
         var rotMatInv = Bone._tmpMats[0];
-        if (!this._getNegativeRotationToRef(rotMatInv, mesh)) {
+        if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
             return;
         }
 
@@ -708,7 +707,7 @@ export class Bone extends Node {
 
         rotMatInv.multiplyToRef(rotMat, rotMat);
 
-        this._rotateWithMatrix(rotMat, space, mesh);
+        this._rotateWithMatrix(rotMat, space, tNode);
 
     }
 
@@ -716,18 +715,18 @@ export class Bone extends Node {
      * Set the rotation matrix of the bone in local or world space
      * @param rotMat The rotation matrix that the bone should be set to
      * @param space The space that the rotation is in
-     * @param mesh The mesh that this bone is attached to. This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to. This is only used in world space
      */
-    public setRotationMatrix(rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
+    public setRotationMatrix(rotMat: Matrix, space = Space.LOCAL, tNode?: TransformNode): void {
         if (space === Space.LOCAL) {
             var quat = Bone._tmpQuat;
             Quaternion.FromRotationMatrixToRef(rotMat, quat);
-            this.setRotationQuaternion(quat, space, mesh);
+            this.setRotationQuaternion(quat, space, tNode);
             return;
         }
 
         var rotMatInv = Bone._tmpMats[0];
-        if (!this._getNegativeRotationToRef(rotMatInv, mesh)) {
+        if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
             return;
         }
 
@@ -736,11 +735,11 @@ export class Bone extends Node {
 
         rotMatInv.multiplyToRef(rotMat, rotMat2);
 
-        this._rotateWithMatrix(rotMat2, space, mesh);
+        this._rotateWithMatrix(rotMat2, space, tNode);
 
     }
 
-    private _rotateWithMatrix(rmat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
+    private _rotateWithMatrix(rmat: Matrix, space = Space.LOCAL, tNode?: TransformNode): void {
         var lmat = this.getLocalMatrix();
         var lx = lmat.m[12];
         var ly = lmat.m[13];
@@ -750,8 +749,8 @@ export class Bone extends Node {
         var parentScaleInv = Bone._tmpMats[4];
 
         if (parent && space == Space.WORLD) {
-            if (mesh) {
-                parentScale.copyFrom(mesh.getWorldMatrix());
+            if (tNode) {
+                parentScale.copyFrom(tNode.getWorldMatrix());
                 parent.getAbsoluteTransform().multiplyToRef(parentScale, parentScale);
             } else {
                 parentScale.copyFrom(parent.getAbsoluteTransform());
@@ -762,8 +761,8 @@ export class Bone extends Node {
             lmat.multiplyToRef(rmat, lmat);
             lmat.multiplyToRef(parentScaleInv, lmat);
         } else {
-            if (space == Space.WORLD && mesh) {
-                parentScale.copyFrom(mesh.getWorldMatrix());
+            if (space == Space.WORLD && tNode) {
+                parentScale.copyFrom(tNode.getWorldMatrix());
                 parentScaleInv.copyFrom(parentScale);
                 parentScaleInv.invert();
                 lmat.multiplyToRef(parentScale, lmat);
@@ -780,13 +779,13 @@ export class Bone extends Node {
         this._markAsDirtyAndDecompose();
     }
 
-    private _getNegativeRotationToRef(rotMatInv: Matrix, mesh?: AbstractMesh): boolean {
+    private _getNegativeRotationToRef(rotMatInv: Matrix, tNode?: TransformNode): boolean {
         var scaleMatrix = Bone._tmpMats[2];
         rotMatInv.copyFrom(this.getAbsoluteTransform());
 
-        if (mesh) {
-            rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
-            Matrix.ScalingToRef(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z, scaleMatrix);
+        if (tNode) {
+            rotMatInv.multiplyToRef(tNode.getWorldMatrix(), rotMatInv);
+            Matrix.ScalingToRef(tNode.scaling.x, tNode.scaling.y, tNode.scaling.z, scaleMatrix);
         }
 
         rotMatInv.invert();
@@ -805,13 +804,13 @@ export class Bone extends Node {
     /**
      * Get the position of the bone in local or world space
      * @param space The space that the returned position is in
-     * @param mesh The mesh that this bone is attached to. This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to. This is only used in world space
      * @returns The position of the bone
      */
-    public getPosition(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null): Vector3 {
+    public getPosition(space = Space.LOCAL, tNode: Nullable<TransformNode> = null): Vector3 {
         var pos = Vector3.Zero();
 
-        this.getPositionToRef(space, mesh, pos);
+        this.getPositionToRef(space, tNode, pos);
 
         return pos;
     }
@@ -819,10 +818,10 @@ export class Bone extends Node {
     /**
      * Copy the position of the bone to a vector3 in local or world space
      * @param space The space that the returned position is in
-     * @param mesh The mesh that this bone is attached to. This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to. This is only used in world space
      * @param result The vector3 to copy the position to
      */
-    public getPositionToRef(space = Space.LOCAL, mesh: Nullable<AbstractMesh>, result: Vector3): void {
+    public getPositionToRef(space = Space.LOCAL, tNode: Nullable<TransformNode>, result: Vector3): void {
         if (space == Space.LOCAL) {
             var lm = this.getLocalMatrix();
 
@@ -832,16 +831,16 @@ export class Bone extends Node {
         } else {
             var wm: Nullable<Matrix> = null;
 
-            //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-            if (mesh) {
-                wm = mesh.getWorldMatrix();
+            //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            if (tNode) {
+                wm = tNode.getWorldMatrix();
             }
 
             this._skeleton.computeAbsoluteTransforms();
 
             var tmat = Bone._tmpMats[0];
 
-            if (mesh && wm) {
+            if (tNode && wm) {
                 tmat.copyFrom(this.getAbsoluteTransform());
                 tmat.multiplyToRef(wm, tmat);
             } else {
@@ -856,24 +855,24 @@ export class Bone extends Node {
 
     /**
      * Get the absolute position of the bone (world space)
-     * @param mesh The mesh that this bone is attached to
+     * @param tNode The TransformNode that this bone is attached to
      * @returns The absolute position of the bone
      */
-    public getAbsolutePosition(mesh: Nullable<AbstractMesh> = null): Vector3 {
+    public getAbsolutePosition(tNode: Nullable<TransformNode> = null): Vector3 {
         var pos = Vector3.Zero();
 
-        this.getPositionToRef(Space.WORLD, mesh, pos);
+        this.getPositionToRef(Space.WORLD, tNode, pos);
 
         return pos;
     }
 
     /**
      * Copy the absolute position of the bone (world space) to the result param
-     * @param mesh The mesh that this bone is attached to
+     * @param tNode The TransformNode that this bone is attached to
      * @param result The vector3 to copy the absolute position to
      */
-    public getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3) {
-        this.getPositionToRef(Space.WORLD, mesh, result);
+    public getAbsolutePositionToRef(tNode: TransformNode, result: Vector3) {
+        this.getPositionToRef(Space.WORLD, tNode, result);
     }
 
     /**
@@ -905,13 +904,13 @@ export class Bone extends Node {
     /**
      * Get the world direction from an axis that is in the local space of the bone
      * @param localAxis The local direction that is used to compute the world direction
-     * @param mesh The mesh that this bone is attached to
+     * @param tNode The TransformNode that this bone is attached to
      * @returns The world direction
      */
-    public getDirection(localAxis: Vector3, mesh: Nullable<AbstractMesh> = null): Vector3 {
+    public getDirection(localAxis: Vector3, tNode: Nullable<TransformNode> = null): Vector3 {
         var result = Vector3.Zero();
 
-        this.getDirectionToRef(localAxis, mesh, result);
+        this.getDirectionToRef(localAxis, tNode, result);
 
         return result;
     }
@@ -919,15 +918,15 @@ export class Bone extends Node {
     /**
      * Copy the world direction to a vector3 from an axis that is in the local space of the bone
      * @param localAxis The local direction that is used to compute the world direction
-     * @param mesh The mesh that this bone is attached to
+     * @param tNode The TransformNode that this bone is attached to
      * @param result The vector3 that the world direction will be copied to
      */
-    public getDirectionToRef(localAxis: Vector3, mesh: Nullable<AbstractMesh> = null, result: Vector3): void {
+    public getDirectionToRef(localAxis: Vector3, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         var wm: Nullable<Matrix> = null;
 
-        //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-        if (mesh) {
-            wm = mesh.getWorldMatrix();
+        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+        if (tNode) {
+            wm = tNode.getWorldMatrix();
         }
 
         this._skeleton.computeAbsoluteTransforms();
@@ -936,7 +935,7 @@ export class Bone extends Node {
 
         mat.copyFrom(this.getAbsoluteTransform());
 
-        if (mesh && wm) {
+        if (tNode && wm) {
             mat.multiplyToRef(wm, mat);
         }
 
@@ -948,13 +947,13 @@ export class Bone extends Node {
     /**
      * Get the euler rotation of the bone in local or world space
      * @param space The space that the rotation should be in
-     * @param mesh The mesh that this bone is attached to.  This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
      * @returns The euler rotation
      */
-    public getRotation(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null): Vector3 {
+    public getRotation(space = Space.LOCAL, tNode: Nullable<TransformNode> = null): Vector3 {
         var result = Vector3.Zero();
 
-        this.getRotationToRef(space, mesh, result);
+        this.getRotationToRef(space, tNode, result);
 
         return result;
     }
@@ -962,13 +961,13 @@ export class Bone extends Node {
     /**
      * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space
      * @param space The space that the rotation should be in
-     * @param mesh The mesh that this bone is attached to.  This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
      * @param result The vector3 that the rotation should be copied to
      */
-    public getRotationToRef(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null, result: Vector3): void {
+    public getRotationToRef(space = Space.LOCAL, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         var quat = Bone._tmpQuat;
 
-        this.getRotationQuaternionToRef(space, mesh, quat);
+        this.getRotationQuaternionToRef(space, tNode, quat);
 
         quat.toEulerAnglesToRef(result);
     }
@@ -976,13 +975,13 @@ export class Bone extends Node {
     /**
      * Get the quaternion rotation of the bone in either local or world space
      * @param space The space that the rotation should be in
-     * @param mesh The mesh that this bone is attached to.  This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
      * @returns The quaternion rotation
      */
-    public getRotationQuaternion(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null): Quaternion {
+    public getRotationQuaternion(space = Space.LOCAL, tNode: Nullable<TransformNode> = null): Quaternion {
         var result = Quaternion.Identity();
 
-        this.getRotationQuaternionToRef(space, mesh, result);
+        this.getRotationQuaternionToRef(space, tNode, result);
 
         return result;
     }
@@ -990,10 +989,10 @@ export class Bone extends Node {
     /**
      * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space
      * @param space The space that the rotation should be in
-     * @param mesh The mesh that this bone is attached to.  This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
      * @param result The quaternion that the rotation should be copied to
      */
-    public getRotationQuaternionToRef(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null, result: Quaternion): void {
+    public getRotationQuaternionToRef(space = Space.LOCAL, tNode: Nullable<TransformNode> = null, result: Quaternion): void {
         if (space == Space.LOCAL) {
             this._decompose();
             result.copyFrom(this._localRotation);
@@ -1001,8 +1000,8 @@ export class Bone extends Node {
             var mat = Bone._tmpMats[0];
             var amat = this.getAbsoluteTransform();
 
-            if (mesh) {
-                amat.multiplyToRef(mesh.getWorldMatrix(), mat);
+            if (tNode) {
+                amat.multiplyToRef(tNode.getWorldMatrix(), mat);
             } else {
                 mat.copyFrom(amat);
             }
@@ -1018,13 +1017,13 @@ export class Bone extends Node {
     /**
      * Get the rotation matrix of the bone in local or world space
      * @param space The space that the rotation should be in
-     * @param mesh The mesh that this bone is attached to.  This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
      * @returns The rotation matrix
      */
-    public getRotationMatrix(space = Space.LOCAL, mesh: AbstractMesh): Matrix {
+    public getRotationMatrix(space = Space.LOCAL, tNode: TransformNode): Matrix {
         var result = Matrix.Identity();
 
-        this.getRotationMatrixToRef(space, mesh, result);
+        this.getRotationMatrixToRef(space, tNode, result);
 
         return result;
     }
@@ -1032,10 +1031,10 @@ export class Bone extends Node {
     /**
      * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space
      * @param space The space that the rotation should be in
-     * @param mesh The mesh that this bone is attached to.  This is only used in world space
+     * @param tNode The TransformNode that this bone is attached to.  This is only used in world space
      * @param result The quaternion that the rotation should be copied to
      */
-    public getRotationMatrixToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Matrix): void {
+    public getRotationMatrixToRef(space = Space.LOCAL, tNode: TransformNode, result: Matrix): void {
         if (space == Space.LOCAL) {
             this.getLocalMatrix().getRotationMatrixToRef(result);
         } else {
@@ -1043,8 +1042,8 @@ export class Bone extends Node {
             var mat = Bone._tmpMats[0];
             var amat = this.getAbsoluteTransform();
 
-            if (mesh) {
-                amat.multiplyToRef(mesh.getWorldMatrix(), mat);
+            if (tNode) {
+                amat.multiplyToRef(tNode.getWorldMatrix(), mat);
             } else {
                 mat.copyFrom(amat);
             }
@@ -1060,13 +1059,13 @@ export class Bone extends Node {
     /**
      * Get the world position of a point that is in the local space of the bone
      * @param position The local position
-     * @param mesh The mesh that this bone is attached to
+     * @param tNode The TransformNode that this bone is attached to
      * @returns The world position
      */
-    public getAbsolutePositionFromLocal(position: Vector3, mesh: Nullable<AbstractMesh> = null): Vector3 {
+    public getAbsolutePositionFromLocal(position: Vector3, tNode: Nullable<TransformNode> = null): Vector3 {
         var result = Vector3.Zero();
 
-        this.getAbsolutePositionFromLocalToRef(position, mesh, result);
+        this.getAbsolutePositionFromLocalToRef(position, tNode, result);
 
         return result;
     }
@@ -1074,22 +1073,22 @@ export class Bone extends Node {
     /**
      * Get the world position of a point that is in the local space of the bone and copy it to the result param
      * @param position The local position
-     * @param mesh The mesh that this bone is attached to
+     * @param tNode The TransformNode that this bone is attached to
      * @param result The vector3 that the world position should be copied to
      */
-    public getAbsolutePositionFromLocalToRef(position: Vector3, mesh: Nullable<AbstractMesh> = null, result: Vector3): void {
+    public getAbsolutePositionFromLocalToRef(position: Vector3, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         var wm: Nullable<Matrix> = null;
 
-        //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-        if (mesh) {
-            wm = mesh.getWorldMatrix();
+        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+        if (tNode) {
+            wm = tNode.getWorldMatrix();
         }
 
         this._skeleton.computeAbsoluteTransforms();
 
         var tmat = Bone._tmpMats[0];
 
-        if (mesh && wm) {
+        if (tNode && wm) {
             tmat.copyFrom(this.getAbsoluteTransform());
             tmat.multiplyToRef(wm, tmat);
         } else {
@@ -1102,13 +1101,13 @@ export class Bone extends Node {
     /**
      * Get the local position of a point that is in world space
      * @param position The world position
-     * @param mesh The mesh that this bone is attached to
+     * @param tNode The TransformNode that this bone is attached to
      * @returns The local position
      */
-    public getLocalPositionFromAbsolute(position: Vector3, mesh: Nullable<AbstractMesh> = null): Vector3 {
+    public getLocalPositionFromAbsolute(position: Vector3, tNode: Nullable<TransformNode> = null): Vector3 {
         var result = Vector3.Zero();
 
-        this.getLocalPositionFromAbsoluteToRef(position, mesh, result);
+        this.getLocalPositionFromAbsoluteToRef(position, tNode, result);
 
         return result;
     }
@@ -1116,15 +1115,15 @@ export class Bone extends Node {
     /**
      * Get the local position of a point that is in world space and copy it to the result param
      * @param position The world position
-     * @param mesh The mesh that this bone is attached to
+     * @param tNode The TransformNode that this bone is attached to
      * @param result The vector3 that the local position should be copied to
      */
-    public getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: Nullable<AbstractMesh> = null, result: Vector3): void {
+    public getLocalPositionFromAbsoluteToRef(position: Vector3, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         var wm: Nullable<Matrix> = null;
 
-        //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-        if (mesh) {
-            wm = mesh.getWorldMatrix();
+        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+        if (tNode) {
+            wm = tNode.getWorldMatrix();
         }
 
         this._skeleton.computeAbsoluteTransforms();
@@ -1133,7 +1132,7 @@ export class Bone extends Node {
 
         tmat.copyFrom(this.getAbsoluteTransform());
 
-        if (mesh && wm) {
+        if (tNode && wm) {
             tmat.multiplyToRef(wm, tmat);
         }
 
