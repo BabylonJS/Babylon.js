@@ -30,6 +30,9 @@ export enum HandConstraintZone {
     BELOW_WRIST,
 }
 
+/**
+ * Orientations for the hand zones and for the attached node
+ */
 export enum HandConstraintOrientation {
     /**
      * Orientation is towards the camera
@@ -76,6 +79,9 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
      */
     public lerpTime = 100;
 
+    /**
+     * Builds a hand constraint behavior
+     */
     constructor() {
         // For a right hand
         this._zoneAxis[HandConstraintZone.ABOVE_FINGER_TIPS] = new Vector3(0, 1, 0);
@@ -129,7 +135,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
 
     /**
      * Attaches the hand constraint to a `TransformNode`
-     * @param target defines the target where the behavior is attached to
+     * @param node defines the node to attach the behavior to
      */
     public attach(node: TransformNode): void {
         this._node = node;
@@ -181,7 +187,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 }
 
                 const elapsed = Date.now() - lastTick;
- 
+
                 Vector3.SmoothToRef(this._node.position, targetPosition, elapsed, this.lerpTime, this._node.position);
                 Quaternion.SmoothToRef(this._node.rotationQuaternion!, targetRotation, elapsed, this.lerpTime, this._node.rotationQuaternion!);
             }
