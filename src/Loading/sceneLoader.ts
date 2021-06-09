@@ -479,7 +479,7 @@ export class SceneLoader {
 
         SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
 
-        if (directLoad) {
+        if (directLoad && plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url)) {
             if (plugin.directLoad) {
                 const result = plugin.directLoad(scene, directLoad);
                 if (result.then) {
