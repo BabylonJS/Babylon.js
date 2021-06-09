@@ -2658,7 +2658,7 @@ export class WebGPUEngine extends Engine {
         }
 
         // Z offset
-        this.setZOffset(this.useReverseDepthBuffer ? -zOffset : zOffset);
+        this.setZOffset(zOffset);
 
         // Front face
         // var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;

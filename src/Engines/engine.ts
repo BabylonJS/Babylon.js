@@ -770,7 +770,7 @@ export class Engine extends ThinEngine {
         }
 
         // Z offset
-        this.setZOffset(this.useReverseDepthBuffer ? -zOffset : zOffset);
+        this.setZOffset(zOffset);
 
         // Front face
         var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
@@ -786,7 +786,7 @@ export class Engine extends ThinEngine {
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
-        this._depthCullingState.zOffset = value;
+        this._depthCullingState.zOffset = this.useReverseDepthBuffer ? -value : value;
     }
 
     /**
