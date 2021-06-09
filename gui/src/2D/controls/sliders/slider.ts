@@ -3,6 +3,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { Measure } from '../../measure';
 import { serialize } from "babylonjs/Misc/decorators";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create slider controls
@@ -101,7 +102,7 @@ export class Slider extends BaseSlider {
         return "Slider";
     }
 
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
