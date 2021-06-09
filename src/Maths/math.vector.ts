@@ -2195,6 +2195,139 @@ export class Vector3 {
     }
 
     /**
+     * Projects "vector" on the triangle determined by its extremities "p0", "p1" and "p2", stores the result in "ref" 
+     * and returns the distance to the projected point.
+     * From http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.4264&rep=rep1&type=pdf
+     * 
+     * @param vector the vector to get distance from
+     * @param p0 extremity of the triangle
+     * @param p1 extremity of the triangle
+     * @param p2 extremity of the triangle
+     * @param ref variable to store the result to
+     * @returns The distance between "ref" and "vector"
+     */
+    public static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3) : number {
+        const p1p0 = MathTmp.Vector3[0];
+        const p2p0 = MathTmp.Vector3[1];
+        const p2p1 = MathTmp.Vector3[2];
+        const normal = MathTmp.Vector3[3];
+        const vectorp0 = MathTmp.Vector3[4];
+
+        // Triangle vectors
+        p1.subtractToRef(p0, p1p0);
+        p2.subtractToRef(p0, p2p0);
+        p2.subtractToRef(p1, p2p1);
+
+        const p1p0L = Math.max(p1p0.length(), Epsilon);
+        const p2p0L = Math.max(p2p0.length(), Epsilon);
+        const p2p1L = Math.max(p2p1.length(), Epsilon);
+
+        // Compute normal and vector to p0
+        vector.subtractToRef(p0, vectorp0);
+        Vector3.CrossToRef(p1p0, p2p0, normal);
+        normal.normalize();
+        let l = vectorp0.length();
+        vectorp0.normalizeFromLength(l);
+
+        // Project to "proj" that lies on the triangle plane
+        const cosA = Vector3.Dot(normal, vectorp0);
+        const projVector = MathTmp.Vector3[5];
+        const proj = MathTmp.Vector3[6];
+        projVector.copyFrom(normal).scaleInPlace(- l * cosA);
+        proj.copyFrom(vector).addInPlace(projVector);
+
+        // Compute barycentric coordinates (v0, v1 and v2 are axis from barycenter to extremities)
+        const v0 = MathTmp.Vector3[4];
+        const v1 = MathTmp.Vector3[5];
+        const v2 = MathTmp.Vector3[7];
+        const tmp = MathTmp.Vector3[8];
+
+        v0.copyFrom(p1p0).scaleInPlace(1 / p1p0L);
+        tmp.copyFrom(p2p0).scaleInPlace(1 / p2p0L);
+        v0.addInPlace(tmp).scaleInPlace(-1);
+
+        v1.copyFrom(p1p0).scaleInPlace(- 1 / p1p0L);
+        tmp.copyFrom(p2p1).scaleInPlace(1 / p2p1L);
+        v1.addInPlace(tmp).scaleInPlace(-1);
+
+        v2.copyFrom(p2p1).scaleInPlace(- 1 / p2p1L);
+        tmp.copyFrom(p2p0).scaleInPlace(- 1 / p2p0L);
+        v2.addInPlace(tmp).scaleInPlace(-1);
+
+        // Determines which edge of the triangle is closest to "proj"
+        const projP = MathTmp.Vector3[9];
+        let dot;
+        let s0, s1, s2;
+        projP.copyFrom(proj).subtractInPlace(p0);
+        Vector3.CrossToRef(v0, projP, tmp);
+        dot = Vector3.Dot(tmp, normal);
+        s0 = dot;
+
+        projP.copyFrom(proj).subtractInPlace(p1);
+        Vector3.CrossToRef(v1, projP, tmp);
+        dot = Vector3.Dot(tmp, normal);
+        s1 = dot;
+
+        projP.copyFrom(proj).subtractInPlace(p2);
+        Vector3.CrossToRef(v2, projP, tmp);
+        dot = Vector3.Dot(tmp, normal);
+        s2 = dot;
+
+        const edge = MathTmp.Vector3[10];
+        let e0, e1;
+        if (s0 > 0 && s1 < 0) {
+            edge.copyFrom(p1p0);
+            e0 = p0;
+            e1 = p1;
+        } else if (s1 > 0 && s2 < 0) {
+            edge.copyFrom(p2p1);
+            e0 = p1;
+            e1 = p2;
+        } else {
+            edge.copyFrom(p2p0).scaleInPlace(-1);
+            e0 = p2;
+            e1 = p0;
+        }
+
+        // Determines if "proj" lies inside the triangle
+        const tmp2 = MathTmp.Vector3[9];
+        const tmp3 = MathTmp.Vector3[4];
+        e0.subtractToRef(proj, tmp);
+        e1.subtractToRef(proj, tmp2);
+        Vector3.CrossToRef(tmp, tmp2, tmp3);
+        const isOutside = Vector3.Dot(tmp3, normal) < 0;
+
+        // If inside, we already found the projected point, "proj"
+        if (!isOutside) {
+            ref.copyFrom(proj);
+            return Math.abs(l * cosA);
+        }
+
+        // If outside, we find "triProj", the closest point from "proj" on the closest edge
+        const r = MathTmp.Vector3[5];
+        Vector3.CrossToRef(edge, tmp3, r);
+        r.normalize();
+        const e0proj = MathTmp.Vector3[9];
+        e0proj.copyFrom(e0).subtractInPlace(proj);
+        const e0projL = e0proj.length();
+        e0proj.normalizeFromLength(e0projL);
+        const cosG = Vector3.Dot(r, e0proj);
+        const triProj = MathTmp.Vector3[7];
+        triProj.copyFrom(proj).addInPlace(r.scaleInPlace(e0projL * cosG));
+
+        // Now we clamp "triProj" so it lies between e0 and e1
+        tmp.copyFrom(triProj).subtractInPlace(e0);
+        l = edge.length();
+        edge.normalizeFromLength(l);
+        let t = Vector3.Dot(tmp, edge) / Math.max(l, Epsilon);
+        t = Scalar.Clamp(t, 0, 1);
+        triProj.copyFrom(e0).addInPlace(edge.scaleInPlace(t * l));
+        ref.copyFrom(triProj);
+
+        return Vector3.Distance(vector, triProj);
+    }
+
+    /**
      * Returns a new Vector3 located at the center between "value1" and "value2"
      * @param value1 defines the first operand
      * @param value2 defines the second operand
@@ -6015,7 +6148,7 @@ export class Matrix {
  * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
  */
 class MathTmp {
-    public static Vector3: Vector3[] = ArrayTools.BuildArray(6, Vector3.Zero);
+    public static Vector3: Vector3[] = ArrayTools.BuildArray(11, Vector3.Zero);
     public static Matrix: Matrix[] = ArrayTools.BuildArray(2, Matrix.Identity);
     public static Quaternion: Quaternion[] = ArrayTools.BuildArray(3, Quaternion.Zero);
 }

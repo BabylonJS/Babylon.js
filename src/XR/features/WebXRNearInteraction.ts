@@ -14,6 +14,7 @@ import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
+import { BoundingSphere } from "../../Culling";
 
 /**
  * Options interface for the near interaction module
@@ -349,9 +350,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             if (controllerData.hoverIndexMeshTip) {
                 let utilitySceneHoverPick = null;
                 if (this._options.useUtilityLayer && this._utilityLayerScene) {
-                    utilitySceneHoverPick = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._utilityLayerScene, false, this._nearInteractionPredicate);
+                    utilitySceneHoverPick = this._pickWithSphere(controllerData.hoverIndexMeshTip, this._hoverRadius, this._utilityLayerScene, this._nearInteractionPredicate);
                 }
-                let originalSceneHoverPick = this._pickWithMesh(controllerData.hoverIndexMeshTip, this._scene, false, this._nearInteractionPredicate);
+                let originalSceneHoverPick = this._pickWithSphere(controllerData.hoverIndexMeshTip, this._hoverRadius, this._scene, this._nearInteractionPredicate);
 
                 let hoverPickInfo = accuratePickInfo(originalSceneHoverPick, utilitySceneHoverPick);
                 if (hoverPickInfo && hoverPickInfo.hit) {
@@ -370,9 +371,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             if (controllerData.pickIndexMeshTip && controllerData.hoverInteraction) {
                 let utilitySceneNearPick = null;
                 if (this._options.useUtilityLayer && this._utilityLayerScene) {
-                    utilitySceneNearPick = this._pickWithMesh(controllerData.pickIndexMeshTip, this._utilityLayerScene, false, this._nearPickPredicate);
+                    utilitySceneNearPick = this._pickWithSphere(controllerData.pickIndexMeshTip, this._pickRadius, this._utilityLayerScene, this._nearPickPredicate);
                 }
-                let originalSceneNearPick = this._pickWithMesh(controllerData.pickIndexMeshTip, this._scene, false, this._nearPickPredicate);
+                let originalSceneNearPick = this._pickWithSphere(controllerData.pickIndexMeshTip, this._pickRadius, this._scene, this._nearPickPredicate);
                 let pickInfo = accuratePickInfo(originalSceneNearPick, utilitySceneNearPick);
                 const nearPick = populateNearInteractionInfo(pickInfo);
                 if (nearPick.hit) {
@@ -576,22 +577,25 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         };
     }
 
-    private _pickWithMesh(indexTipMesh: AbstractMesh, sceneToUse: Scene, precise: boolean, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
-        let pickingInfo = null;
+    private _pickWithSphere(indexTipMesh: AbstractMesh, radius: number, sceneToUse: Scene, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
+        let pickingInfo = new PickingInfo();
+        pickingInfo.distance = +Infinity;
+
         if (indexTipMesh) {
             for (let meshIndex = 0; meshIndex < sceneToUse.meshes.length; meshIndex++) {
                 let mesh = sceneToUse.meshes[meshIndex];
                 if (!predicate(mesh)) {
                     continue;
                 }
-                let result = mesh.intersectsMesh(indexTipMesh, precise);
-                if (result) {
-                    pickingInfo = new PickingInfo();
-                    pickingInfo.hit = result;
+                let sphere = BoundingSphere.CreateFromCenterAndRadius(indexTipMesh.position, radius);
+                let result = mesh.pickWithSphere(sphere);
+
+                if (result && result.hit && result.distance < pickingInfo.distance) {
+                    pickingInfo.hit = result.hit;
                     pickingInfo.pickedMesh = mesh;
-                    pickingInfo.pickedPoint = indexTipMesh.position;
+                    pickingInfo.pickedPoint = result.pickedPoint;
                     pickingInfo.originMesh = indexTipMesh;
-                    pickingInfo.distance = Vector3.Distance(mesh.position, indexTipMesh.position);
+                    pickingInfo.distance = result.distance;
                 }
             }
         }
