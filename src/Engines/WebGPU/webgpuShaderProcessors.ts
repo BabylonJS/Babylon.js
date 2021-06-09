@@ -3,10 +3,7 @@ import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
-import { ShaderCodeInliner } from '../Processors/shaderCodeInliner';
 import { Logger } from '../../Misc/logger';
-
-const dbgShowDebugInliningProcess = false;
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
@@ -372,10 +369,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             code += "gl_Position.y *= -1.;\ngl_Position.z = (gl_Position.z + gl_Position.w) / 2.0; }";
         }
 
-        let sci = new ShaderCodeInliner(code);
-        sci.debug = dbgShowDebugInliningProcess;
-        sci.processCode();
-        return sci.code;
+        return code;
     }
 
     private _applyTextureArrayProcessing(code: string, name: string): string {
