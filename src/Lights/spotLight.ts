@@ -292,9 +292,9 @@ export class SpotLight extends ShadowLight {
         const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
         const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
 
-        const useReverseDepth = this.getScene().getEngine().useReverseDepthBuffer;
+        const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
 
-        Matrix.PerspectiveFovLHToRef(angle, 1.0, useReverseDepth ? maxZ : minZ, useReverseDepth ? minZ : maxZ, matrix);
+        Matrix.PerspectiveFovLHToRef(angle, 1.0, useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix);
     }
 
     protected _computeProjectionTextureViewLightMatrix(): void {
