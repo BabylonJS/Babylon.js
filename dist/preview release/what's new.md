@@ -241,6 +241,7 @@
 - Fix issue with DeviceInputSystem where Mouse was being deregistered on Safari/MacOS ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix for disabledColor not working for Button ([msDestiny14](https://github.com/msDestiny14))
 - Fix NativeEngine not setting default depth test function to LEQUAL ([rgerd](https://github.com/rgerd))
+- Fix support of `useReverseDepthBuffer` throughout the engine ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
