@@ -30,6 +30,9 @@ export enum HandConstraintZone {
     BELOW_WRIST,
 }
 
+/**
+ * Orientations for the hand zones and for the attached node
+ */
 export enum HandConstraintOrientation {
     /**
      * Orientation is towards the camera
@@ -47,7 +50,7 @@ export enum HandConstraintOrientation {
 export class HandConstraintBehavior implements Behavior<TransformNode> {
     private _scene: Scene;
     private _node: TransformNode;
-    private _handTracking: WebXRHandTracking;
+    private _handTracking: Nullable<WebXRHandTracking>;
     private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
     private _zoneAxis: { [id: number]: Vector3 } = {};
 
@@ -76,6 +79,9 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
      */
     public lerpTime = 100;
 
+    /**
+     * Builds a hand constraint behavior
+     */
     constructor() {
         // For a right hand
         this._zoneAxis[HandConstraintZone.ABOVE_FINGER_TIPS] = new Vector3(0, 1, 0);
@@ -90,6 +96,10 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     }
 
     private _getHandPose() {
+        if (!this._handTracking) {
+            return null;
+        }
+
         // Retrieve any available hand, starting by the right
         let hand = this._handTracking.getHandByHandedness("right") || this._handTracking.getHandByHandedness("left");
 
@@ -129,7 +139,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
 
     /**
      * Attaches the hand constraint to a `TransformNode`
-     * @param target defines the target where the behavior is attached to
+     * @param node defines the node to attach the behavior to
      */
     public attach(node: TransformNode): void {
         this._node = node;
