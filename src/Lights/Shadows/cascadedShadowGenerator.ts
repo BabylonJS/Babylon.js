@@ -768,7 +768,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         const engine = this._scene.getEngine();
         const size = { width: this._mapSize, height: this._mapSize, layers: this.numCascades };
         this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", size, this._scene, false, true, this._textureType, false, undefined, false, false, undefined/*, Constants.TEXTUREFORMAT_RED*/);
-        this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GEQUAL : Constants.LESS, true);
+        this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
     }
 
     protected _initializeShadowMap(): void {

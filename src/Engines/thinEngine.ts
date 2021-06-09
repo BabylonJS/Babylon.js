@@ -277,7 +277,7 @@ export class ThinEngine {
         this._useReverseDepthBuffer = useReverse;
 
         if (useReverse) {
-            this._depthCullingState.depthFunc = Constants.GREATER;
+            this._depthCullingState.depthFunc = Constants.GEQUAL;
         } else {
             this._depthCullingState.depthFunc = Constants.LEQUAL;
         }
@@ -1436,7 +1436,7 @@ export class ThinEngine {
 
         if (depth) {
             if (this.useReverseDepthBuffer) {
-                this._depthCullingState.depthFunc = this._gl.GREATER;
+                this._depthCullingState.depthFunc = this._gl.GEQUAL;
                 this._gl.clearDepth(0.0);
             } else {
                 this._gl.clearDepth(1.0);
