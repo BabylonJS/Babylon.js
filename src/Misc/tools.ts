@@ -17,6 +17,7 @@ import { InstantiationTools } from "./instantiationTools";
 import { GUID } from "./guid";
 import { IScreenshotSize } from "./interfaces/screenshotSize";
 import { SliceTools } from "./sliceTools";
+import { StringTools } from "./stringTools";
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -912,7 +913,7 @@ export class Tools {
      * @return True if the uri is a base64 string or false otherwise
      */
     public static IsBase64(uri: string): boolean {
-        return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
+        return uri.length < 5 ? false : uri.substr(0, 5) === "data:" && StringTools.EndsWith(uri.split(',')[0], ";base64");
     }
 
     /**
@@ -930,6 +931,10 @@ export class Tools {
         }
 
         return bufferView.buffer;
+    }
+
+    public static DecodeBase64AsText(uri: string): string {
+        return atob(uri.split(",")[1]);
     }
 
     /**

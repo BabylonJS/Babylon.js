@@ -12,6 +12,7 @@ import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { ThinEngine } from '../Engines/thinEngine';
 import { EngineStore } from '../Engines/engineStore';
 import { Logger } from './logger';
+import { Tools } from './tools';
 
 /** @ignore */
 export class LoadFileError extends BaseError {
@@ -56,7 +57,7 @@ export class RequestFileError extends BaseError {
 /** @ignore */
 export class ReadFileError extends BaseError {
     /**
-     * Creates a new ReadFileError
+ * Creates a new ReadFileError
      * @param message defines the message of the error
      * @param file defines the optional file
      */
@@ -348,6 +349,23 @@ export class FileTools {
         };
 
         const requestFile = () => {
+            // For a Base64 Data URL we can parse the results and respond immediately
+            if (Tools.IsBase64(url)) {
+                try {
+                    onSuccess(useArrayBuffer ? Tools.DecodeBase64(url) : Tools.DecodeBase64AsText(url));
+                } catch (error) {
+                    const message = error.message || "Failed to parse the Data URL";
+
+                    if (onError) {
+                        onError(new RequestFileError(message, new WebRequest()));
+                    } else {
+                        Logger.Error(message);
+                    }
+                }
+
+                return;
+            }
+
             let request = new WebRequest();
             let retryHandle: Nullable<number> = null;
 
