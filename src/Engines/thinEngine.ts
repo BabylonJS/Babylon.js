@@ -1170,6 +1170,7 @@ export class ThinEngine {
             supportSyncTextureRead: true,
             needsInvertingBitmap: true,
             useUBOBindingCache: true,
+            needShaderCodeInlining: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
