@@ -33,7 +33,6 @@ import { MeshLODLevel } from "./meshLODLevel";
 import { Path3D } from "../Maths/math.path";
 import { Plane } from "../Maths/math.plane";
 import { TransformNode } from "./transformNode";
-import { CanvasGenerator } from "../Misc/canvasGenerator";
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
@@ -2761,7 +2760,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Getting height map data
             var heightMapWidth = img.width;
             var heightMapHeight = img.height;
-            var canvas = CanvasGenerator.CreateCanvas(heightMapWidth, heightMapHeight);
+            var canvas = this.getEngine().createCanvas(heightMapWidth, heightMapHeight);
             var context = <CanvasRenderingContext2D>canvas.getContext("2d");
 
             context.drawImage(img, 0, 0);
