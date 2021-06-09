@@ -149,7 +149,7 @@
         padding-left: $line-padding-left;
         height: 30px;
         display: grid;
-        grid-template-columns: 1fr 120px auto;
+        grid-template-columns: auto 15px 75px 2fr;
 
         .label {
             grid-column: 1;
@@ -160,10 +160,16 @@
         .value {                        
             display: flex;
             align-items: center;
-            grid-column: 2;
-            
+            grid-column: 3;
+            background: transparent;
             input {
                 width: calc(100% - 5px);
+                background-color: transparent;
+                outline-color: transparent;
+                border-left: transparent;
+                border-right: transparent;
+                border-top: transparent;
+                outline-width: 0px
             }
         }
     }

@@ -185,6 +185,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     loadToEditor() {
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
+            if(guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle"){
+                this.artBoardBackground = guiElement as Rectangle;
+                return;
+            }
             this.createNewGuiNode(guiElement);
         });
     }
