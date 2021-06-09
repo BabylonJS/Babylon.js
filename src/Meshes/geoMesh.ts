@@ -66,7 +66,7 @@ class Primary {
     ) {}
      
     //operators
-    public setIndices() {
+    public _setIndices() {
         let indexCount = 12; // 12 vertices already assigned
         const vecToIdx: {[key: string]: number} = {}; //maps iso-vectors to indexCount;
         const m = this._m;
@@ -215,7 +215,7 @@ class Primary {
         this._vecToIdx = vecToIdx;
     }
 
-    public calcCoeffs() {
+    public _calcCoeffs() {
         const m = this._m;
         const n = this._n;
     
@@ -228,7 +228,7 @@ class Primary {
     }
     
     
-    public innerFacets() {
+    public _createInnerFacets() {
         const m = this._m;
         const n = this._n;
         for (let y = 0; y < n + m + 1; y++) {
@@ -243,7 +243,7 @@ class Primary {
         }
     }
 
-    public edgeVecsABOB() {
+    public _edgeVecsABOB() {
         let m = this._m;
         let n = this._n;
     
@@ -294,7 +294,7 @@ class Primary {
         };
     };
 
-    public mapABOBtoOBOA() {
+    public _mapABOBtoOBOA() {
         let point = new IsoVector(0, 0);
         for (let i = 0; i < this._isoVecsABOB.length; i++) {
             const temp = [];
@@ -310,7 +310,7 @@ class Primary {
         }
     };
 
-    public mapABOBtoBAOA() {
+    public _mapABOBtoBAOA() {
         let point = new IsoVector(0, 0);
         for (let i = 0; i < this._isoVecsABOB.length; i++) {
             const temp = [];
@@ -325,6 +325,34 @@ class Primary {
             this._isoVecsBAOA.push(temp);
         }
         
+    };
+
+    public _MapToFace(faceNb: number, geoData: PolyhedronData) {
+        const F = this._IDATA._face[faceNb];
+        const Oidx = F[2];
+        const Aidx = F[1];
+        const Bidx = F[0];
+    
+        const O = Vector3.FromArray(this._IDATA._vertex[Oidx]);
+        const A = Vector3.FromArray(this._IDATA._vertex[Aidx]);
+        const B = Vector3.FromArray(this._IDATA._vertex[Bidx]);
+    
+        const OA = A.subtract(O);
+        const OB = B.subtract(O);
+    
+        let x: Vector3 = OA.scale(this._coau).add(OB.scale(this._cobu));
+        let y: Vector3 = OA.scale(this._coav).add(OB.scale(this._cobv));
+        
+        const mapped = [];
+    
+        let idx: string; 
+        let tempVec: Vector3 = TmpVectors.Vector3[0]
+        for (var i = 0; i < this._cartesian.length; i++) {
+            tempVec  = x.scale(this._cartesian[i].x).add(y.scale(this._cartesian[i].y)).add(O);
+            mapped[i] = [tempVec.x, tempVec.y, tempVec.z];
+            idx = faceNb + "|" + this._vertices[i].x + "|" + this._vertices[i].y;
+            geoData._vertex[this._vecToIdx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
+        }
     };
 
 
@@ -501,40 +529,124 @@ export class PolyhedronData {
     ) {
 
     }
+}
 
-    public MapToFace(faceNb: number, primTri: Primary) {
-        const F = primTri._IDATA._face[faceNb];
-        const Oidx = F[2];
-        const Aidx = F[1];
-        const Bidx = F[0];
-    
-        const O = Vector3.FromArray(primTri._IDATA._vertex[Oidx]);
-        const A = Vector3.FromArray(primTri._IDATA._vertex[Aidx]);
-        const B = Vector3.FromArray(primTri._IDATA._vertex[Bidx]);
-    
-        const OA = A.subtract(O);
-        const OB = B.subtract(O);
-    
-        let x: Vector3 = OA.scale(primTri._coau).add(OB.scale(primTri._cobu));
-        let y: Vector3 = OA.scale(primTri._coav).add(OB.scale(primTri._cobv));
-        
-        const mapped = [];
-    
-        let idx: string; 
-        let tempVec: Vector3 = TmpVectors.Vector3[0]
-        for (var i = 0; i < primTri._cartesian.length; i++) {
-            tempVec  = x.scale(primTri._cartesian[i].x).add(y.scale(primTri._cartesian[i].y)).add(O);
-            mapped[i] = [tempVec.x, tempVec.y, tempVec.z];
-            idx = faceNb + "|" + primTri._vertices[i].x + "|" + primTri._vertices[i].y;
-            this._vertex[primTri._vecToIdx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
+export class GeoData extends PolyhedronData{
+
+    public _edgematch: any[][];    
+
+    public _InnerToData(face : number, primTri: Primary) {
+        for (let i = 0; i < primTri._innerFacets.length; i++) {
+            this._face.push(primTri._innerFacets[i].map((el) => primTri._vecToIdx[face + el]));
         }
     };
 
-    public InnerToGDmnData(face : number) {
-        this._closestTo = primTri._closestTo;
-        for (let i = 0; i < this._innerFacets.length; i++) {
-            GDmnDATA.face.push(this.innerFacets[i].map((el) => this.vecToIdx[face + el]));
+    public _mapABOBtoDATA(faceNb: number, primTri: Primary) {
+        const fr = primTri._IDATA._edgematch[faceNb][0];
+        for (let i = 0; i < primTri._isoVecsABOB.length; i++) {
+            const temp = [];
+            for (let j = 0; j < 3; j++) {
+                if (primTri._vertexTypes[i][j] === 0) {
+                    temp.push(faceNb + "|" + primTri._isoVecsABOB[i][j].x + "|" + primTri._isoVecsABOB[i][j].y);
+                }
+                else {
+                    temp.push(fr + "|" + primTri._isoVecsABOB[i][j].x + "|" + primTri._isoVecsABOB[i][j].y);
+                }
+            }
+            this._face.push([primTri._vecToIdx[temp[0]], primTri._vecToIdx[temp[1]], primTri._vecToIdx[temp[2]]]);
         }
+    };
+
+    public _mapOBOAtoDATA(faceNb: number, primTri: Primary) {
+        const fr = primTri._IDATA._edgematch[faceNb][0];
+        for (let i = 0; i < primTri._isoVecsOBOA.length; i++) {
+            const temp = [];
+            for (let j = 0; j < 3; j++) {
+                if (primTri._vertexTypes[i][j] === 1) {
+                    temp.push(faceNb + "|" + primTri._isoVecsOBOA[i][j].x + "|" + primTri._isoVecsOBOA[i][j].y);
+                }
+                else {
+                    temp.push(fr + "|" + primTri._isoVecsOBOA[i][j].x + "|" + primTri._isoVecsOBOA[i][j].y);
+                }
+            }
+            this._face.push([primTri._vecToIdx[temp[0]], primTri._vecToIdx[temp[1]], primTri._vecToIdx[temp[2]]]);
+        }
+    };
+
+    public _mapBAOAtoDATA(faceNb: number, primTri: Primary) {
+        const fr = primTri._IDATA._edgematch[faceNb][2];
+        for (let i = 0; i < primTri._isoVecsBAOA.length; i++) {
+            const temp = [];
+            for (let j = 0; j < 3; j++) {
+                if (primTri._vertexTypes[i][j] === 1) {
+                    temp.push(faceNb + "|" + primTri._isoVecsBAOA[i][j].x + "|" + primTri._isoVecsBAOA[i][j].y);
+                }
+                else {
+                    temp.push(fr + "|" + primTri._isoVecsBAOA[i][j].x + "|" + primTri._isoVecsBAOA[i][j].y);
+                }
+            }
+            this._face.push([primTri._vecToIdx[temp[0]], primTri._vecToIdx[temp[1]], primTri._vecToIdx[temp[2]]]);
+        }
+    };
+
+    public _orderData(primTri: Primary) {
+        const nearTo: any = [];
+        for (let i = 0; i < 13; i++) {
+            nearTo[i] = [];
+        }
+        const close = primTri._closestTo;
+        for (let i = 0; i < close.length; i++) {
+           if (close[i][0] > -1) {
+               if(close[i][1] > 0) {
+                   nearTo[close[i][0]].push([i, close[i][1]]);
+               }
+           }
+           else {
+               nearTo[12].push([i, close[i][0]])
+           }
+        }
+        
+        const near = [];
+        for (let i = 0; i < 12; i++) {
+            near[i] = i;
+        }
+        let nearIndex = 12;
+        for (let i = 0; i < 12; i++) {
+            nearTo[i].sort((a: number[],b: number[]) => {
+                return a[1] - b[1];
+            });
+            for (let j = 0; j < nearTo[i].length; j++) {
+                near[nearTo[i][j][0]] = nearIndex++;
+            }
+            
+        };
+   
+       for (let j = 0; j < nearTo[12].length; j++) {
+           near[nearTo[12][j][0]] = nearIndex++;
+       }
+   
+       for (let i = 0; i < this._vertex.length; i++) {
+           this._vertex[i].push(near[i]);
+       }
+       
+       this._vertex.sort((a, b) => {
+           return a[3] - b[3];
+       });
+       
+   
+       for (let i = 0; i < this._vertex.length; i++) {
+           this._vertex[i].pop();
+       }
+   
+       for (let i = 0; i < this._face.length; i++) {
+           for (let j = 0; j < this._face[i].length; j++) {
+               this._face[i][j] = near[this._face[i][j]];
+           }
+       }
+   
+       let nbToCol = this._vertex.length - nearTo[12].length;
+        
+        return nbToCol;
     }
 
 
@@ -547,14 +659,30 @@ export class PolyhedronData {
 
     public static BuildGeoData(primTri: Primary) {
     
-        const geoDATA = new PolyhedronData("Geodesic-m-n", "Geodesic", [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], [])
+        const geoDATA = new GeoData("Geodesic-m-n", "Geodesic", [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], [])
 
-        primTri.setIndices();
-        primTri.calcCoeffs();
-        primTri.innerFacets();
-        primTri.edgeVecsABOB();
-        primTri.mapABOBtoOBOA();
-        primTri.mapABOBtoBAOA();
+        primTri._setIndices();
+        primTri._calcCoeffs();
+        primTri._createInnerFacets();
+        primTri._edgeVecsABOB();
+        primTri._mapABOBtoOBOA();
+        primTri._mapABOBtoBAOA();
+
+        for (let f = 0; f < primTri._IDATA._face.length; f++) {
+            primTri._MapToFace(f, geoDATA);
+            geoDATA._InnerToData(f, primTri);
+            if(primTri._IDATA._edgematch[f][1] === "B") {
+                geoDATA._mapABOBtoDATA(f, primTri);
+            };
+            if(primTri._IDATA._edgematch[f][1] === "O") {
+                geoDATA._mapOBOAtoDATA(f, primTri);
+            };
+            if(primTri._IDATA._edgematch[f][3] === "A") {
+                geoDATA._mapBAOAtoDATA(f, primTri);
+            };
+        };
+
+        return geoDATA;
     }
 
 }
