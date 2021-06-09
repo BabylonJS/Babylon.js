@@ -50,7 +50,7 @@ export enum HandConstraintOrientation {
 export class HandConstraintBehavior implements Behavior<TransformNode> {
     private _scene: Scene;
     private _node: TransformNode;
-    private _handTracking: WebXRHandTracking;
+    private _handTracking: Nullable<WebXRHandTracking>;
     private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
     private _zoneAxis: { [id: number]: Vector3 } = {};
 
@@ -96,6 +96,10 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     }
 
     private _getHandPose() {
+        if (!this._handTracking) {
+            return null;
+        }
+
         // Retrieve any available hand, starting by the right
         let hand = this._handTracking.getHandByHandedness("right") || this._handTracking.getHandByHandedness("left");
 
