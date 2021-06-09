@@ -2224,7 +2224,7 @@ export class WebGPUEngine extends Engine {
         const colorAttachments: GPURenderPassColorAttachment[] = [];
 
         if (this.useReverseDepthBuffer) {
-            this.setDepthFunctionToGreater();
+            this.setDepthFunctionToGreaterOrEqual();
         }
 
         const colorClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearColor ? clearColor : WebGPUConstants.LoadOp.Load;
@@ -2372,7 +2372,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (this.useReverseDepthBuffer) {
-            this.setDepthFunctionToGreater();
+            this.setDepthFunctionToGreaterOrEqual();
         }
 
         const colorClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearColor ? clearColor : WebGPUConstants.LoadOp.Load;
