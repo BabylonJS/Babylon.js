@@ -281,7 +281,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             if (this.showBackLines) {
                 // Back
                 if (useReverseDepthBuffer) {
-                    engine.setDepthFunctionToLess();
+                    engine.setDepthFunctionToLessOrEqual();
                 } else {
                     engine.setDepthFunctionToGreaterOrEqual();
                 }
@@ -295,7 +295,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
             // Front
             if (useReverseDepthBuffer) {
-                engine.setDepthFunctionToGreaterOrEqual();
+                engine.setDepthFunctionToGreater();
             } else {
                 engine.setDepthFunctionToLess();
             }
