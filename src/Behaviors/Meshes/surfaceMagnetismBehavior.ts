@@ -1,6 +1,6 @@
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { PointerEventTypes, PointerInfo } from "../../Events/pointerEvents";
-import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { Observer } from "../../Misc/observable";
@@ -172,9 +172,10 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         return this._hit;
     }
 
-    private _getAttachPointOffsetToRef(ref: Vector3): Vector3 {
+    private _getAttachPointOffsetToRef(ref: Vector3) {
         if (!this._attachedMesh) {
-            return Vector3.Zero();
+            ref.setAll(0);
+            return;
         }
 
         const storedQuat = TmpVectors.Quaternion[0];
