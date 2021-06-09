@@ -29,7 +29,6 @@ import { ThinTexture } from '../Materials/Textures/thinTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
-import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { PerformanceConfigurator } from './performanceConfigurator';
 import { EngineFeatures } from './engineFeatures';
 import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
@@ -37,6 +36,7 @@ import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
+import { ICanvas, ICanvasRenderingContext } from "./ICanvas";
 import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 
@@ -442,9 +442,9 @@ export class ThinEngine {
     private _textureUnits: Int32Array;
 
     /** @hidden */
-    public _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas>;
+    public _workingCanvas: Nullable<ICanvas>;
     /** @hidden */
-    public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
+    public _workingContext: Nullable<ICanvasRenderingContext>;
 
     /** @hidden */
     public _boundRenderFunction: any;
@@ -595,6 +595,26 @@ export class ThinEngine {
 
     public set snapshotRenderingMode(mode: number) {
         this._snapshotRenderingMode = mode;
+    }
+
+    private static _createCanvas(width: number, height: number) : ICanvas {
+        if (typeof document === "undefined") {
+            return <ICanvas>(<any>(new OffscreenCanvas(width, height)));
+        }
+        let canvas = <ICanvas>(<any>(document.createElement("canvas")));
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+    }
+
+    /**
+     * Create a canvas. This method is overiden by other engines
+     * @param width width
+     * @param height height
+     * @return ICanvas interface
+     */
+    public createCanvas(width: number, height: number) : ICanvas {
+        return ThinEngine._createCanvas(width, height);
     }
 
     /**
@@ -1204,7 +1224,7 @@ export class ThinEngine {
             return;
         }
 
-        this._workingCanvas = CanvasGenerator.CreateCanvas(1, 1);
+        this._workingCanvas = this.createCanvas(1, 1);
         let context = this._workingCanvas.getContext("2d");
 
         if (context) {
@@ -3388,7 +3408,7 @@ export class ThinEngine {
                     this._workingCanvas.height = potHeight;
 
                     this._workingContext.drawImage(img as any, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, this._workingCanvas as TexImageSource);
 
                     texture.width = potWidth;
                     texture.height = potHeight;
@@ -4753,7 +4773,7 @@ export class ThinEngine {
 
         if (this._IsSupported === null) {
             try {
-                var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+                var tempcanvas = this._createCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
                 this._IsSupported = gl != null && !!window.WebGLRenderingContext;
@@ -4771,7 +4791,7 @@ export class ThinEngine {
     public static get HasMajorPerformanceCaveat(): boolean {
         if (this._HasMajorPerformanceCaveat === null) {
             try {
-                var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+                var tempcanvas = this._createCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) || (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat: true });
 
                 this._HasMajorPerformanceCaveat = !gl;
@@ -4902,5 +4922,41 @@ export class ThinEngine {
         }
 
         return document;
+    }
+
+    /**
+     * Get Font size information
+     * @param font font name
+     * @return an object containing ascent, height and descent
+     */
+    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
+        var text = document.createElement("span");
+        text.innerHTML = "Hg";
+        text.setAttribute('style', `font: ${font} !important`);
+
+        var block = document.createElement("div");
+        block.style.display = "inline-block";
+        block.style.width = "1px";
+        block.style.height = "0px";
+        block.style.verticalAlign = "bottom";
+
+        var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
+        div.appendChild(text);
+        div.appendChild(block);
+
+        document.body.appendChild(div);
+
+        var fontAscent = 0;
+        var fontHeight = 0;
+        try {
+            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+            block.style.verticalAlign = "baseline";
+            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+        } finally {
+            document.body.removeChild(div);
+        }
+        var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+        return result;
     }
 }
