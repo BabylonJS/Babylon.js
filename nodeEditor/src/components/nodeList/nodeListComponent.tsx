@@ -146,6 +146,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "ParticlePositionWorldBlock": "The world position of the particle",
         "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
+        "SceneDepthBlock": "The scene depth buffer",
         "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
         "EqualBlock": "Return a value if two operands are equals", 
         "NotEqualBlock": "Return a value if two operands are not equals", 
@@ -252,7 +253,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
         };
 
         switch (this.props.globalState.mode) {
