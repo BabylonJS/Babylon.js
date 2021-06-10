@@ -274,7 +274,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 
     private readonly _hoverRadius = 0.1;
-    private readonly _pickRadius = 0.03;
+    private readonly _pickRadius = 0.02;
     private readonly _nearGrabLengthScale = 5;
     private _indexTipQuaternion = new Quaternion();
     private _indexTipOrientationVector = Vector3.Zero();

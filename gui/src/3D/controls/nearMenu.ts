@@ -83,6 +83,9 @@ export class NearMenu extends TouchHolographicMenu {
         this.isPinned = false;
 
         this._defaultBehavior.attach(node, [this._backPlate]);
+        this._defaultBehavior.followBehavior.ignoreCameraPitchAndRoll = true;
+        this._defaultBehavior.followBehavior.pitchOffset = -15;
+        this._backPlate.isNearGrabbable = true;
         node.isVisible = false;
 
         return node;
@@ -93,9 +96,9 @@ export class NearMenu extends TouchHolographicMenu {
 
         this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
 
-        this._defaultBehavior.followBehavior.minimumDistance = this._backPlate.scaling.x * 3 * this.scaling.length();
-        this._defaultBehavior.followBehavior.maximumDistance = this._backPlate.scaling.x * 5 * this.scaling.length();
-        this._defaultBehavior.followBehavior.defaultDistance = this._backPlate.scaling.x * this.scaling.length();
+        this._defaultBehavior.followBehavior.minimumDistance = 0.3;
+        this._defaultBehavior.followBehavior.defaultDistance = 0.4;
+        this._defaultBehavior.followBehavior.maximumDistance = 0.6;
     }
 
     /**
