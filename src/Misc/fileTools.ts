@@ -57,7 +57,7 @@ export class RequestFileError extends BaseError {
 /** @ignore */
 export class ReadFileError extends BaseError {
     /**
- * Creates a new ReadFileError
+     * Creates a new ReadFileError
      * @param message defines the message of the error
      * @param file defines the optional file
      */
