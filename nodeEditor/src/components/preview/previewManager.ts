@@ -235,7 +235,7 @@ export class PreviewManager {
             case NodeMaterialModes.Particle: {
                 this._camera.radius = this._globalState.previewType === PreviewType.Explosion ? 50 : this._globalState.previewType === PreviewType.DefaultParticleSystem ? 6 : 20;
                 this._camera.upperRadiusLimit = 5000;
-                this._globalState.particleSystemBlendMode = this._particleSystem!.blendMode;
+                this._globalState.particleSystemBlendMode = this._particleSystem.blendMode ?? ParticleSystem.BLENDMODE_STANDARD;;
                 break;
             }
         }
