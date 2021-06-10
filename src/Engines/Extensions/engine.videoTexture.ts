@@ -1,7 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
-import { CanvasGenerator } from '../../Misc/canvasGenerator';
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -41,7 +40,7 @@ ThinEngine.prototype.updateVideoTexture = function(texture: Nullable<InternalTex
         // Copy video through the current working canvas if video texture is not supported
         if (!this._videoTextureSupported) {
             if (!texture._workingCanvas) {
-                texture._workingCanvas = CanvasGenerator.CreateCanvas(texture.width, texture.height);
+                texture._workingCanvas = this.createCanvas(texture.width, texture.height);
                 let context = texture._workingCanvas.getContext("2d");
 
                 if (!context) {
@@ -56,7 +55,7 @@ ThinEngine.prototype.updateVideoTexture = function(texture: Nullable<InternalTex
             texture._workingContext!.clearRect(0, 0, texture.width, texture.height);
             texture._workingContext!.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
 
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas as TexImageSource);
         } else {
             this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
         }
