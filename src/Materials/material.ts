@@ -215,6 +215,7 @@ export class Material implements IAnimatable {
     /**
      * Gets or sets user defined metadata
      */
+    @serialize()
     public metadata: any = null;
 
     /**
