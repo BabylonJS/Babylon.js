@@ -260,3 +260,4 @@
 - `dataBuffer.ts` and `buffer.ts` have been moved from `Meshes/` to `Buffers/` ([Popov72](https://github.com/Popov72))
 - By default, the glTF loader now uses sRGB buffers for gamma encoded textures (when supported by the GPU), which is more accurate than using regular buffers. However, it can lead to small visual differences. You can disable usage of sRGB buffers by setting `glTFFileLoader.useSRGBBuffers` to `false` ([Popov72](https://github.com/Popov72))
 - 4th (`isAnimationSheetEnabled`) and 5th (`customEffect`) parameters of `GPUParticleSystem` constructor have been inverted to match `ParticleSystem` constructor ([Popov72](https://github.com/Popov72))
+- `PBRSubSurfaceConfiguration.useGltfStyleThicknessTexture` has been renamed to `PBRSubSurfaceConfiguration.useGltfStyleTextures` ([Popov72](https://github.com/Popov72))

@@ -276,4 +276,26 @@
         #endif
         uniform sampler2D thicknessSampler;
     #endif
+
+    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+        #if SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV == 1
+            #define vRefractionIntensityUV vMainUV1
+        #elif SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV == 2
+            #define vRefractionIntensityUV vMainUV2
+        #else
+            varying vec2 vRefractionIntensityUV;
+        #endif
+        uniform sampler2D refractionIntensitySampler;
+    #endif
+
+    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+        #if SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV == 1
+            #define vTranslucencyIntensityUV vMainUV1
+        #elif SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV == 2
+            #define vTranslucencyIntensityUV vMainUV2
+        #else
+            varying vec2 vTranslucencyIntensityUV;
+        #endif
+        uniform sampler2D translucencyIntensitySampler;
+    #endif
 #endif
