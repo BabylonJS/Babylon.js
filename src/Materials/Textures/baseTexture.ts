@@ -518,21 +518,25 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /** @hidden */
-    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture> {
+    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean, useSRGBBuffer?: boolean): Nullable<InternalTexture> {
         const engine = this._getEngine();
         if (!engine) {
             return null;
         }
 
+        const correctedUseSRGBBuffer = !!useSRGBBuffer && engine._caps.supportSRGBBuffers && (engine.webGLVersion > 1 || engine.isWebGPU || noMipmap);
+
         var texturesCache = engine.getLoadedTexturesCache();
         for (var index = 0; index < texturesCache.length; index++) {
             var texturesCacheEntry = texturesCache[index];
 
-            if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
-                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
-                    if (!sampling || sampling === texturesCacheEntry.samplingMode) {
-                        texturesCacheEntry.incrementReferences();
-                        return texturesCacheEntry;
+            if (useSRGBBuffer === undefined || correctedUseSRGBBuffer === texturesCacheEntry._useSRGBBuffer) {
+                if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
+                    if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
+                        if (!sampling || sampling === texturesCacheEntry.samplingMode) {
+                            texturesCacheEntry.incrementReferences();
+                            return texturesCacheEntry;
+                        }
                     }
                 }
             }
