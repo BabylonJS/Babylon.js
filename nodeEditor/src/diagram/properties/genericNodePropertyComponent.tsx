@@ -12,6 +12,7 @@ import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponen
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { PropertyTypeForEdition, IPropertyDescriptionForEdition, IEditablePropertyListOption } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
 import { NodeMaterialBlockTargets } from "babylonjs/Materials/Node/Enums/nodeMaterialBlockTargets";
+import { Scene } from "babylonjs/scene";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -83,7 +84,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         super(props);
     }
 
-    forceRebuild(notifiers?: { "rebuild"?: boolean; "update"?: boolean; }) {
+    forceRebuild(notifiers?: { "rebuild"?: boolean, "update"?: boolean, "activatePreviewCommand"?: boolean, "callback"?: (scene: Scene) => void }) {
         if (!notifiers || notifiers.update) {
             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         }
@@ -91,6 +92,12 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         if (!notifiers || notifiers.rebuild) {
             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
         }
+
+        if (notifiers?.activatePreviewCommand) {
+            this.props.globalState.onPreviewCommandActivated.notifyObservers(true);
+        }
+
+        notifiers?.callback?.(this.props.globalState.nodeMaterial.getScene());
     }
 
     render() {
