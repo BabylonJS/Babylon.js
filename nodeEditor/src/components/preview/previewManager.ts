@@ -69,6 +69,7 @@ export class PreviewManager {
         this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add((forceRefresh: boolean) => {
             if (forceRefresh) {
                 this._currentType = -1;
+                this._scene.disableDepthRenderer();
             }
             this._refreshPreviewMesh();
         });
