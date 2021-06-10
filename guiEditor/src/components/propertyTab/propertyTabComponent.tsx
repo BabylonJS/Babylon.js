@@ -53,6 +53,7 @@ import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInput
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
+const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -313,16 +314,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <div id="title">AdvanceDyanamicTexture</div>
                 </div>
                 <div>
-                    <LineContainerComponent title="GENERAL">
-                        <TextLineComponent label="Version" value={Engine.Version} />
-                        <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open("https://doc.babylonjs.com", "_blank")} />
-                    </LineContainerComponent>
+
                     <TextLineComponent label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
                         <TextInputLineComponent lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
-                    <LineContainerComponent title="Canvas">
                         <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
                         <OptionsLineComponent
                             label="Size"
@@ -358,13 +355,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         />
                         <CheckBoxLineComponent
                             label="Responsive"
+                            icon={responsiveIcon}
                             isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
                             onSelect={(value: boolean) => {
                                 this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                                 DataStorage.WriteBoolean("Responsive", value);
                             }}
                         />
-                    </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent
