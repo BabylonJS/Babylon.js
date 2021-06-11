@@ -39,7 +39,7 @@ import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
-import { AudioEngineOptions } from '../Audio/audioEngine';
+import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -82,8 +82,6 @@ export interface HostInformation {
     isMobile: boolean;
 }
 
-
-
 /** Interface defining initialization parameters for Engine class */
 export interface EngineOptions extends WebGLContextAttributes {
     /**
@@ -109,8 +107,8 @@ export interface EngineOptions extends WebGLContextAttributes {
     /**
      * Specifies options for the audio engine
      */
-    audioEngineOptions?: AudioEngineOptions;
-    
+    audioEngineOptions?: IAudioEngineOptions;
+
     /**
      * Defines if animations should run using a deterministic lock step
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
@@ -316,7 +314,7 @@ export class ThinEngine {
     protected _windowIsBackground = false;
     protected _creationOptions: EngineOptions;
     protected _audioContext: Nullable<AudioContext>;
-    protected _audioDestination: Nullable<AudioDestinationNode|MediaStreamAudioDestinationNode>
+    protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
 
     protected _highPrecisionShadersAllowed = true;
     /** @hidden */
@@ -633,7 +631,7 @@ export class ThinEngine {
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
             this._renderingCanvas = canvas;
-            
+
             if (antialias !== undefined) {
                 options.antialias = antialias;
             }
@@ -1359,7 +1357,7 @@ export class ThinEngine {
      * Gets the audio destination specified in engine initialization options
      * @returns an audio destination node
      */
-     public getAudioDestination(): Nullable<AudioDestinationNode|MediaStreamAudioDestinationNode> {
+     public getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> {
         return this._audioDestination;
     }
 

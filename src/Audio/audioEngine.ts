@@ -7,20 +7,8 @@ import { Engine } from "../Engines/engine";
 import { IAudioEngine } from './Interfaces/IAudioEngine';
 import { DomManagement } from "../Misc/domManagement";
 
-export interface AudioEngineOptions {
-     /**
-     * Specifies an existing Audio Context for the audio engine
-     */
-      audioContext?: AudioContext;
-      
-      /**
-       * Specifies a destination node for the audio engine
-       */
-      audioDestination?: AudioDestinationNode|MediaStreamAudioDestinationNode;
-}
-
 // Sets the default audio engine to Babylon.js
-Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode|MediaStreamAudioDestinationNode>) => { return new AudioEngine(hostElement,audioContext,audioDestination); };
+Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => { return new AudioEngine(hostElement, audioContext, audioDestination); };
 
 /**
  * This represents the default audio engine used in babylon.
@@ -107,7 +95,7 @@ export class AudioEngine implements IAudioEngine {
      * of audio contexts you can create.
      * @param hostElement defines the host element where to display the mute icon if necessary
      */
-    constructor(hostElement: Nullable<HTMLElement> = null, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode|MediaStreamAudioDestinationNode>) {
+    constructor(hostElement: Nullable<HTMLElement> = null, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) {
         if (!DomManagement.IsWindowObjectExist()) {
             return;
         }
@@ -168,15 +156,15 @@ export class AudioEngine implements IAudioEngine {
     private _initializeAudioContext() {
         try {
             if (this.canUseWebAudio) {
-                if(!this._audioContext){
+                if (!this._audioContext) {
                     this._audioContext = new AudioContext();
                 }
                 // create a global volume gain node
                 this.masterGain = this._audioContext.createGain();
                 this.masterGain.gain.value = 1;
-                if(!this._audioDestination){
-					this._audioDestination = this._audioContext.destination;					
-				}
+                if (!this._audioDestination) {
+                    this._audioDestination = this._audioContext.destination;
+                }
                 this.masterGain.connect(this._audioDestination);
                 this._audioContextInitialized = true;
                 if (this._audioContext.state === "running") {
