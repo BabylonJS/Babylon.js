@@ -1,3 +1,5 @@
+declare type Scene = import("../../scene").Scene;
+
 /**
  * Enum defining the type of properties that can be edited in the property pages in the NME
  */
@@ -36,6 +38,10 @@ export interface IEditablePropertyOption {
         "rebuild"?: boolean;
         /** the preview should be updated */
         "update"?: boolean;
+        /** the onPreviewCommandActivated observer of the preview manager should be triggered */
+        "activatePreviewCommand"?: boolean;
+        /** a callback to trigger */
+        "callback"?: (scene: Scene) => void;
     };
     /** list of the options for a variable of type list */
     "options"?: IEditablePropertyListOption[];

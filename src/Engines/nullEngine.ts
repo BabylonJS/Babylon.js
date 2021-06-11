@@ -169,6 +169,7 @@ export class NullEngine extends Engine {
             supportSyncTextureRead: false,
             needsInvertingBitmap: false,
             useUBOBindingCache: false,
+            needShaderCodeInlining: false,
             _collectUbosUpdatedInFrame: false,
         };
 

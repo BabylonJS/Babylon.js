@@ -45,6 +45,11 @@ export interface IWebXRNearInteractionOptions {
      * If the preferred hand is set it will be fixed on this hand, and if not it will be fixed on the first controller added to the scene
      */
     disableSwitchOnClick?: boolean;
+
+    /**
+     * Far interaction feature to toggle when near interaction takes precedence
+     */
+    farInteractionFeature?: WebXRAbstractFeature;
 }
 
 /**
@@ -121,7 +126,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     private _attachedController: string;
 
-    private _farInteractionFeature: Nullable<IWebXRFeature>;
+    private _farInteractionFeature: Nullable<IWebXRFeature> = null;
 
     /**
      * The module's name
@@ -142,6 +147,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRNearInteractionOptions) {
         super(_xrSessionManager);
         this._scene = this._xrSessionManager.scene;
+        if (this._options.farInteractionFeature) {
+            this._farInteractionFeature = this._options.farInteractionFeature;
+        }
     }
 
     /**
