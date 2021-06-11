@@ -17,7 +17,6 @@ import { InstantiationTools } from "./instantiationTools";
 import { GUID } from "./guid";
 import { IScreenshotSize } from "./interfaces/screenshotSize";
 import { SliceTools } from "./sliceTools";
-import { StringTools } from "./stringTools";
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
