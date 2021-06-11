@@ -727,6 +727,7 @@ declare module "babylonjs-gui/2D/controls/control" {
     import { Measure } from "babylonjs-gui/2D/measure";
     import { Style } from "babylonjs-gui/2D/style";
     import { Matrix2D, Vector2WithInfo } from "babylonjs-gui/2D/math2D";
+    import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
     /**
      * Root class used for all 2D controls
      * @see https://doc.babylonjs.com/how_to/gui#controls
@@ -1282,35 +1283,35 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _link(host: AdvancedDynamicTexture): void;
         /** @hidden */
-        protected _transform(context?: CanvasRenderingContext2D): void;
+        protected _transform(context?: ICanvasRenderingContext): void;
         /** @hidden */
-        _renderHighlight(context: CanvasRenderingContext2D): void;
+        _renderHighlight(context: ICanvasRenderingContext): void;
         /** @hidden */
-        _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+        _renderHighlightSpecific(context: ICanvasRenderingContext): void;
         /** @hidden */
-        protected _applyStates(context: CanvasRenderingContext2D): void;
+        protected _applyStates(context: ICanvasRenderingContext): void;
         /** @hidden */
-        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean;
         /** @hidden */
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         protected _evaluateClippingState(parentMeasure: Measure): void;
         /** @hidden */
         _measure(): void;
         /** @hidden */
-        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         /** @hidden */
-        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         /** @hidden */
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         /** @hidden */
-        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _clipForChildren(context: ICanvasRenderingContext): void;
         private static _ClipMeasure;
         private _tmpMeasureA;
         private _clip;
         /** @hidden */
-        _render(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean;
+        _render(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): boolean;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
         /**
          * Tests if a given coordinates belong to the current control
          * @param x defines x coordinate to test
@@ -1395,7 +1396,7 @@ declare module "babylonjs-gui/2D/controls/control" {
             controlFirst: boolean;
         }) => any;
         /** @hidden */
-        protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void;
+        protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/container" {
@@ -1404,6 +1405,7 @@ declare module "babylonjs-gui/2D/controls/container" {
     import { Measure } from "babylonjs-gui/2D/measure";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
     import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
     /**
      * Root class for 2D containers
@@ -1499,23 +1501,23 @@ declare module "babylonjs-gui/2D/controls/container" {
         /** @hidden */
         _markAllAsDirty(): void;
         /** @hidden */
-        protected _localDraw(context: CanvasRenderingContext2D): void;
+        protected _localDraw(context: ICanvasRenderingContext): void;
         /** @hidden */
         _link(host: AdvancedDynamicTexture): void;
         /** @hidden */
         protected _beforeLayout(): void;
         /** @hidden */
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         /** @hidden */
-        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean;
         protected _postMeasure(): void;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
         _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         /**
         * Serializes the current control
         * @param serializationObject defined the JSON serialized object
@@ -1530,6 +1532,7 @@ declare module "babylonjs-gui/2D/controls/container" {
 declare module "babylonjs-gui/2D/controls/rectangle" {
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /** Class used to create rectangle container */
     export class Rectangle extends Container {
         name?: string | undefined;
@@ -1547,10 +1550,10 @@ declare module "babylonjs-gui/2D/controls/rectangle" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        protected _localDraw(context: CanvasRenderingContext2D): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _localDraw(context: ICanvasRenderingContext): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         private _drawRoundedRect;
-        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _clipForChildren(context: ICanvasRenderingContext): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/textBlock" {
@@ -1558,6 +1561,7 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
     import { Measure } from "babylonjs-gui/2D/measure";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Nullable } from "babylonjs/types";
+    import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
     /**
      * Enum that determines the text-wrapping mode to use.
      */
@@ -1701,16 +1705,16 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
          */
         name?: string | undefined, text?: string);
         protected _getTypeName(): string;
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         private _drawText;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
-        protected _applyStates(context: CanvasRenderingContext2D): void;
-        protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
-        protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
-        protected _parseLineEllipsis(line: string | undefined, width: number, context: CanvasRenderingContext2D): object;
-        protected _parseLineWordWrap(line: string | undefined, width: number, context: CanvasRenderingContext2D): object[];
-        protected _renderLines(context: CanvasRenderingContext2D): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
+        protected _applyStates(context: ICanvasRenderingContext): void;
+        protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[];
+        protected _parseLine(line: string | undefined, context: ICanvasRenderingContext): object;
+        protected _parseLineEllipsis(line: string | undefined, width: number, context: ICanvasRenderingContext): object;
+        protected _parseLineWordWrap(line: string | undefined, width: number, context: ICanvasRenderingContext): object[];
+        protected _renderLines(context: ICanvasRenderingContext): void;
         /**
          * Given a width constraint applied on the text block, find the expected height
          * @returns expected height
@@ -1724,6 +1728,7 @@ declare module "babylonjs-gui/2D/controls/image" {
     import { Observable } from "babylonjs/Misc/observable";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create 2D images
      */
@@ -1899,10 +1904,10 @@ declare module "babylonjs-gui/2D/controls/image" {
         protected _getTypeName(): string;
         /** Force the control to synchronize with its content */
         synchronizeSizeWithContent(): void;
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         private _prepareWorkingCanvasForOpaqueDetection;
         private _drawImage;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: ICanvasRenderingContext): void;
         private _renderNinePatch;
         dispose(): void;
         /** STRETCH_NONE */
@@ -2012,6 +2017,7 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create a 2D stack panel container
      */
@@ -2047,8 +2053,8 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         protected _postMeasure(): void;
         /**
          * Serializes the current control
@@ -2067,6 +2073,7 @@ declare module "babylonjs-gui/2D/controls/checkbox" {
     import { Nullable } from 'babylonjs/types';
     import { Measure } from "babylonjs-gui/2D/measure";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
     /**
      * Class used to represent a 2D checkbox
      */
@@ -2099,7 +2106,7 @@ declare module "babylonjs-gui/2D/controls/checkbox" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         /**
@@ -2235,6 +2242,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
     import { Measure } from "babylonjs-gui/2D/measure";
     import { TextWrapper } from "babylonjs-gui/2D/controls/textWrapper";
     import { IKeyboardEvent } from 'babylonjs/Events/deviceInputEvents';
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create input text control
      */
@@ -2397,7 +2405,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         private _onCutText;
         /** @hidden */
         private _onPasteText;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
@@ -2411,6 +2419,7 @@ declare module "babylonjs-gui/2D/controls/grid" {
     import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create a 2D grid container
      */
@@ -2524,9 +2533,9 @@ declare module "babylonjs-gui/2D/controls/grid" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _getGridDefinitions(definitionCallback: (lefts: number[], tops: number[], widths: number[], heights: number[]) => void): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         _flagDescendantsAsMatrixDirty(): void;
-        _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+        _renderHighlightSpecific(context: ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
     }
@@ -2539,6 +2548,7 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { Color3 } from 'babylonjs/Maths/math.color';
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /** Class used to create color pickers */
     export class ColorPicker extends Control {
         name?: string | undefined;
@@ -2585,13 +2595,13 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         private _updateSquareProps;
         private _drawGradientSquare;
         private _drawCircle;
         private _createColorWheelCanvas;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: ICanvasRenderingContext): void;
         private _pointerIsDown;
         private _updateValueFromPointer;
         private _isPointOnSquare;
@@ -2625,6 +2635,7 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
 declare module "babylonjs-gui/2D/controls/ellipse" {
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /** Class used to create 2D ellipse containers */
     export class Ellipse extends Container {
         name?: string | undefined;
@@ -2638,9 +2649,9 @@ declare module "babylonjs-gui/2D/controls/ellipse" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        protected _localDraw(context: CanvasRenderingContext2D): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _localDraw(context: ICanvasRenderingContext): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
+        protected _clipForChildren(context: ICanvasRenderingContext): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/focusableButton" {
@@ -2711,6 +2722,7 @@ declare module "babylonjs-gui/2D/controls/line" {
     import { Scene } from "babylonjs/scene";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /** Class used to render 2D lines */
     export class Line extends Control {
         name?: string | undefined;
@@ -2755,9 +2767,9 @@ declare module "babylonjs-gui/2D/controls/line" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: ICanvasRenderingContext): void;
         _measure(): void;
-        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         /**
          * Move one end of the line given 3D cartesian coordinates.
          * @param position Targeted world position
@@ -2828,6 +2840,7 @@ declare module "babylonjs-gui/2D/controls/multiLine" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { MultiLinePoint } from "babylonjs-gui/2D/multiLinePoint";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create multi line control
      */
@@ -2893,10 +2906,10 @@ declare module "babylonjs-gui/2D/controls/multiLine" {
         set horizontalAlignment(value: number);
         set verticalAlignment(value: number);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         _measure(): void;
-        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         dispose(): void;
     }
 }
@@ -2906,6 +2919,7 @@ declare module "babylonjs-gui/2D/controls/radioButton" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create radio button controls
      */
@@ -2937,7 +2951,7 @@ declare module "babylonjs-gui/2D/controls/radioButton" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: ICanvasRenderingContext): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         /**
          * Utility function to easily create a radio button with a header
@@ -3034,6 +3048,7 @@ declare module "babylonjs-gui/2D/controls/sliders/slider" {
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
     import { Nullable } from 'babylonjs/types';
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create slider controls
      */
@@ -3065,7 +3080,7 @@ declare module "babylonjs-gui/2D/controls/sliders/slider" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/selector" {
@@ -3282,6 +3297,7 @@ declare module "babylonjs-gui/2D/controls/selector" {
 declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewerWindow" {
     import { Measure } from "babylonjs-gui/2D/measure";
     import { Container } from "babylonjs-gui/2D/controls/container";
+    import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
     /**
      * Class used to hold a the container for ScrollViewer
      * @hidden
@@ -3315,13 +3331,13 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewerWindow" {
         constructor(name?: string);
         protected _getTypeName(): string;
         /** @hidden */
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         /** @hidden */
-        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean;
         private _scrollChildren;
         private _scrollChildrenWithBuckets;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void;
         protected _postMeasure(): void;
     }
 }
@@ -3330,6 +3346,7 @@ declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create slider controls
      */
@@ -3351,7 +3368,7 @@ declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _getThumbThickness(): number;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: ICanvasRenderingContext): void;
         private _first;
         private _originX;
         private _originY;
@@ -3366,6 +3383,7 @@ declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Image } from "babylonjs-gui/2D/controls/image";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create slider controls
      */
@@ -3413,7 +3431,7 @@ declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _getThumbThickness(): number;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: ICanvasRenderingContext): void;
         private _first;
         private _originX;
         private _originY;
@@ -3432,6 +3450,7 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { ScrollBar } from "babylonjs-gui/2D/controls/sliders/scrollBar";
     import { ImageScrollBar } from "babylonjs-gui/2D/controls/sliders/imageScrollBar";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to hold a viewer window and sliders in a grid
     */
@@ -3532,7 +3551,7 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
         resetWindow(): void;
         protected _getTypeName(): string;
         private _buildClientSizes;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         protected _postMeasure(): void;
         /**
          * Gets or sets the mouse wheel precision
@@ -3593,7 +3612,7 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
         private _addBar;
         /** @hidden */
         private _attachWheel;
-        _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+        _renderHighlightSpecific(context: ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
     }
@@ -3699,6 +3718,7 @@ declare module "babylonjs-gui/2D/controls/displayGrid" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Nullable } from 'babylonjs/types';
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /** Class used to render a grid  */
     export class DisplayGrid extends Control {
         name?: string | undefined;
@@ -3747,7 +3767,7 @@ declare module "babylonjs-gui/2D/controls/displayGrid" {
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
@@ -3756,6 +3776,7 @@ declare module "babylonjs-gui/2D/controls/sliders/imageBasedSlider" {
     import { Measure } from "babylonjs-gui/2D/measure";
     import { Image } from "babylonjs-gui/2D/controls/image";
     import { Nullable } from 'babylonjs/types';
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create slider controls based on images
      */
@@ -3788,7 +3809,7 @@ declare module "babylonjs-gui/2D/controls/sliders/imageBasedSlider" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
+        _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/statics" {
@@ -4123,6 +4144,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
     import { Observable } from "babylonjs/Misc/observable";
     import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Material } from "babylonjs/Materials/material";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
     import { IDisposable, Scene } from "babylonjs/scene";
     import { Container3D } from "babylonjs-gui/3D/controls/container3D";
@@ -4155,6 +4177,10 @@ declare module "babylonjs-gui/3D/gui3DManager" {
          * Observable raised when the point picked by the pointer events changed
          */
         onPickedPointChangedObservable: Observable<Nullable<Vector3>>;
+        /**
+         * Observable raised when a picking happens
+         */
+        onPickingObservable: Observable<Nullable<AbstractMesh>>;
         /** @hidden */
         _sharedMaterials: {
             [key: string]: Material;
@@ -4996,6 +5022,200 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
         dispose(): void;
     }
 }
+declare module "babylonjs-gui/3D/materials/handle/shaders/handle.vertex" {
+    /** @hidden */
+    export var handleVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/handle/shaders/handle.fragment" {
+    /** @hidden */
+    export var handlePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/handle/handleMaterial" {
+    import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
+    import { Scene } from "babylonjs/scene";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
+    import "babylonjs-gui/3D/materials/handle/shaders/handle.vertex";
+    import "babylonjs-gui/3D/materials/handle/shaders/handle.fragment";
+    /**
+     * Class used to render gizmo handles with fluent design
+     */
+    export class HandleMaterial extends ShaderMaterial {
+        private _hover;
+        private _drag;
+        private _onBeforeRender;
+        private _color;
+        private _scale;
+        private _targetColor;
+        private _targetScale;
+        private _lastTick;
+        /**
+         * Is the material indicating hovering state
+         */
+        get hover(): boolean;
+        set hover(b: boolean);
+        /**
+         * Is the material indicating drag state
+         */
+        get drag(): boolean;
+        set drag(b: boolean);
+        /**
+         * Length of animation
+         */
+        animationLength: number;
+        /**
+         * Color of the handle when hovered
+         */
+        hoverColor: Color3;
+        /**
+         * Color of the handle when idle
+         */
+        baseColor: Color3;
+        /**
+         * Scale of the handle when hovered
+         */
+        hoverScale: number;
+        /**
+         * Scale of the handle when idle
+         */
+        baseScale: number;
+        /**
+         * Scale of the handle when dragged
+         */
+        dragScale: number;
+        /**
+         * @hidden
+         */
+        _positionOffset: Vector3;
+        /**
+         * Creates a handle material
+         * @param name Name of the material
+         * @param scene Scene
+         */
+        constructor(name: string, scene: Scene);
+        private _updateInterpolationTarget;
+        /**
+         * Disposes the handle material
+         */
+        dispose(): void;
+    }
+}
+declare module "babylonjs-gui/3D/gizmos/gizmoHandle" {
+    import { Scene } from "babylonjs/scene";
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
+    import { HandleMaterial } from "babylonjs-gui/3D/materials/handle/handleMaterial";
+    import { SlateGizmo } from "babylonjs-gui/3D/gizmos/slateGizmo";
+    import { BaseSixDofDragBehavior } from "babylonjs/Behaviors/Meshes/baseSixDofDragBehavior";
+    /**
+     * State of the handle regarding user interaction
+     */
+    export enum HandleState {
+        /**
+         * Handle is idle
+         */
+        IDLE = 0,
+        /**
+         * Handle is hovered
+         */
+        HOVER = 1,
+        /**
+         * Handle is dragged
+         */
+        DRAG = 2
+    }
+    /**
+     * Base class for SlateGizmo handles
+     */
+    export abstract class GizmoHandle {
+        protected _scene: Scene;
+        protected _state: HandleState;
+        protected _materials: HandleMaterial[];
+        private _dragStartObserver;
+        private _draggingObserver;
+        private _dragEndObserver;
+        /**
+         * @hidden
+         */
+        _dragBehavior: BaseSixDofDragBehavior;
+        /**
+         * The current state of the handle
+         */
+        get state(): HandleState;
+        private _gizmo;
+        /**
+         * Returns the gizmo carrying this handle
+         */
+        get gizmo(): SlateGizmo;
+        /**
+         * Sets hover state
+         */
+        set hover(value: boolean);
+        /**
+         * Sets drag state
+         */
+        set drag(value: boolean);
+        /**
+         * Node of this handle
+         */
+        node: TransformNode;
+        /**
+         * Creates a handle for a SlateGizmo
+         * @param gizmo associated SlateGizmo
+         * @param scene scene
+         */
+        constructor(gizmo: SlateGizmo, scene: Scene);
+        protected _createMaterial(positionOffset?: Vector3): HandleMaterial;
+        private _updateMaterial;
+        /**
+         * Binds callbacks from dragging interaction
+         * @param dragStartFn Function to call on drag start
+         * @param dragFn Function to call on drag
+         * @param dragEndFn Function to call on drag end
+         */
+        setDragBehavior(dragStartFn: (event: {
+            position: Vector3;
+        }) => void, dragFn: (event: {
+            position: Vector3;
+        }) => void, dragEndFn: () => void): void;
+        /**
+         * Creates the meshes and parent node of the handle
+         * Should be overriden by child classes
+         * @returns created node
+         */
+        abstract createNode(): TransformNode;
+        /**
+         * Disposes the handle
+         */
+        dispose(): void;
+    }
+    /**
+     * Side handle class that rotates the slate
+     */
+    export class SideHandle extends GizmoHandle {
+        /**
+         * Creates the meshes and parent node of the handle
+         * @returns created node
+         */
+        createNode(): TransformNode;
+    }
+    /**
+     * Corner handle that resizes the slate
+     */
+    export class CornerHandle extends GizmoHandle {
+        /**
+         * Creates the meshes and parent node of the handle
+         * @returns created node
+         */
+        createNode(): TransformNode;
+    }
+}
 declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
     import { Gizmo } from "babylonjs/Gizmos/gizmo";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -5007,17 +5227,15 @@ declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
      */
     export class SlateGizmo extends Gizmo {
         private _boundingDimensions;
-        private _dragPlaneNormal;
+        private _pickedPointObserver;
         private _tmpQuaternion;
         private _tmpVector;
         private _corners;
         private _sides;
         private _handlesParent;
+        private _handleHovered;
+        private _handleDragged;
         private _boundingBoxGizmo;
-        private _dragStartObserver;
-        private _draggingObserver;
-        private _dragEndObserver;
-        private _dragBehavior;
         /**
          * Value we use to offset handles from mesh
          */
@@ -5032,7 +5250,7 @@ declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
          */
         fixedScreenSizeDistanceFactor: number;
         /**
-         * Size of the handles
+         * Size of the handles (meters in XR)
          */
         handleSize: number;
         /**
@@ -5045,9 +5263,8 @@ declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
         private _keepAspectRatio;
         private _clampDimensions;
         private _moveHandle;
-        private _assignDragBehavior;
-        private _createAngleMesh;
-        private _createSideMesh;
+        private _assignDragBehaviorCorners;
+        private _assignDragBehaviorSides;
         protected _attachedNodeChanged(value: Nullable<AbstractMesh>): void;
         /**
          * Updates the bounding box information for the gizmo
@@ -5108,15 +5325,185 @@ declare module "babylonjs-gui/3D/behaviors/defaultBehavior" {
         /**
          * Attaches the default behavior
          * @param ownerMesh The top level mesh
-         * @param sixDofAnchorMesh A mesh that should behave as an anchor for the sixDof interaction. If unset, the top level mesh will be used
+         * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
          */
-        attach(ownerMesh: Mesh, sixDofAnchorMesh?: Mesh): void;
+        attach(ownerMesh: Mesh, draggablesMeshes?: Mesh[]): void;
         /**
          *  Detaches the behavior from the mesh
          */
         detach(): void;
         private _addObservables;
         private _removeObservables;
+    }
+}
+declare module "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.fragment" {
+    /** @hidden */
+    export var fluentBackplatePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.vertex" {
+    /** @hidden */
+    export var fluentBackplateVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/fluentBackplate/fluentBackplateMaterial" {
+    import { Nullable } from "babylonjs/types";
+    import { Matrix, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
+    import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+    import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { SubMesh } from "babylonjs/Meshes/subMesh";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Scene } from "babylonjs/scene";
+    import { Color4 } from "babylonjs/Maths/math.color";
+    import "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.fragment";
+    import "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.vertex";
+    /**
+     * Class used to render square buttons with fluent desgin
+     */
+    export class FluentBackplateMaterial extends PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the fluent blob effect.
+         */
+        static BLOB_TEXTURE_URL: string;
+        /**
+         * URL pointing to the texture used to define iridescent map.
+         */
+        static IM_TEXTURE_URL: string;
+        private _blobTexture;
+        private _iridescentMap;
+        /**
+         * Gets or sets the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
+         */
+        radius: number;
+        /**
+         * Gets or sets the line width of the backplate.
+         */
+        lineWidth: number;
+        /**
+         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
+         */
+        absoluteSizes: boolean;
+        /** @hidden */
+        _filterWidth: number;
+        /**
+         * Gets or sets the base color of the backplate.
+         */
+        baseColor: Color4;
+        /**
+         * Gets or sets the line color of the backplate.
+         */
+        lineColor: Color4;
+        /**
+         * Gets or sets the intensity of the fluent hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the far size of the fluent hover glow effect.
+         */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the backplate, which controls the size of the fluent hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the backplate, which controls the size of the fluent hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the fluent hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the left pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        blobNearSize: number;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the right pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade2: number;
+        /** @hidden */
+        _rate: number;
+        /**
+         * Gets or sets the color of the highlights on the backplate line.
+         */
+        highlightColor: Color4;
+        /**
+         * Gets or sets the width of the highlights on the backplate line.
+         */
+        highlightWidth: number;
+        /** @hidden */
+        _highlightTransform: Vector4;
+        /** @hidden */
+        _highlight: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect on the backplate edges.
+         */
+        iridescenceEdgeIntensity: number;
+        /** @hidden */
+        _angle: number;
+        /**
+         * Gets or sets the opacity of the backplate (0.0 - 1.0).
+         */
+        fadeOut: number;
+        /** @hidden */
+        _reflected: boolean;
+        /** @hidden */
+        _frequency: number;
+        /** @hidden */
+        _verticalOffset: number;
+        /**
+         * Gets or sets the world-space position of the tip of the left index finger.
+         */
+        globalLeftIndexTipPosition: Vector3;
+        private _globalLeftIndexTipPosition4;
+        /**
+         * Gets or sets the world-space position of the tip of the right index finger.
+         */
+        globalRightIndexTipPosition: Vector3;
+        private _globalRightIndexTipPosition4;
+        constructor(name: string, scene: Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): FluentBackplateMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: Scene, rootUrl: string): FluentBackplateMaterial;
     }
 }
 declare module "babylonjs-gui/3D/controls/holographicSlate" {
@@ -5155,6 +5542,10 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
          */
         minDimensions: Vector3;
         /**
+         * Default dimensions of the slate
+         */
+        readonly defaultDimensions: Vector3;
+        /**
          * Dimensions of the backplate
          */
         backplateDimensions: Vector3;
@@ -5169,7 +5560,10 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
         private _backPlateMaterial;
         private _contentMaterial;
         private _pickedPointObserver;
+        private _positionChangedObserver;
         private _imageUrl;
+        private _contentViewport;
+        private _contentDragBehavior;
         /** @hidden */
         _defaultBehavior: DefaultBehavior;
         /** @hidden */
@@ -5207,16 +5601,105 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
          * @hidden
          */
         _positionElements(): void;
+        private _applyContentViewport;
+        private _resetContentPositionAndZoom;
         /**
          * @hidden
          */
         _updatePivot(): void;
         protected _createNode(scene: Scene): TransformNode;
+        private _attachContentPlateBehavior;
         protected _affectMaterial(mesh: AbstractMesh): void;
         /** @hidden **/
         _prepareNode(scene: Scene): void;
         /**
+         * Resets the aspect and pose of the slate so it is right in front of the active camera, facing towards it.
+         */
+        resetDefaultAspectAndPose(): void;
+        /**
          * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module "babylonjs-gui/3D/controls/touchHolographicMenu" {
+    import { Scene } from "babylonjs/scene";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Nullable } from "babylonjs/types";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
+    import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { Container3D } from "babylonjs-gui/3D/controls/container3D";
+    import { TouchHolographicButton } from "babylonjs-gui/3D/controls/touchHolographicButton";
+    /**
+     * Simple menu that can contain holographic buttons
+     */
+    export class TouchHolographicMenu extends VolumeBasedPanel {
+        protected _backPlate: Mesh;
+        private _backPlateMaterial;
+        private _pickedPointObserver;
+        private _currentMin;
+        private _currentMax;
+        /**
+         * Margin size of the backplate in button size units (setting this to 1, will make the backPlate margin the size of 1 button)
+         */
+        backPlateMargin: number;
+        protected _createNode(scene: Scene): Nullable<TransformNode>;
+        protected _affectMaterial(mesh: AbstractMesh): void;
+        protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
+        protected _finalProcessing(): void;
+        /**
+         * Creates a holographic menu GUI 3D control
+         * @param name name of the menu
+         */
+        constructor(name: string);
+        /**
+         * Adds a button to the menu.
+         * Please note that the back material of the button will be set to transparent as it is attached to the menu.
+         *
+         * @param button Button to add
+         * @returns This menu
+         */
+        addButton(button: TouchHolographicButton): TouchHolographicMenu;
+        /**
+         * This method should not be used directly. It is inherited from `Container3D`.
+         * Please use `addButton` instead.
+         * @param _control
+         * @returns
+         */
+        addControl(_control: Control3D): Container3D;
+        /**
+         * Disposes the menu
+         */
+        dispose(): void;
+    }
+}
+declare module "babylonjs-gui/3D/controls/handMenu" {
+    import { Scene } from "babylonjs/scene";
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Nullable } from "babylonjs/types";
+    import { TouchHolographicMenu } from "babylonjs-gui/3D/controls/touchHolographicMenu";
+    import { HandConstraintBehavior } from "babylonjs/Behaviors/Meshes/handConstraintBehavior";
+    import { WebXRExperienceHelper } from "babylonjs/XR/webXRExperienceHelper";
+    /**
+     * Hand menu that displays buttons and floats around the hand.
+     */
+    export class HandMenu extends TouchHolographicMenu {
+        private _handConstraintBehavior;
+        /**
+         * The hand constraint behavior setting the transformation of this node
+         */
+        get handConstraintBehavior(): HandConstraintBehavior;
+        protected _createNode(scene: Scene): Nullable<TransformNode>;
+        /**
+         * Creates a hand menu GUI 3D control
+         * @param name name of the hand menu
+         */
+        constructor(name: string, xr: WebXRExperienceHelper);
+        /**
+         * Disposes the hand menu
          */
         dispose(): void;
     }
@@ -5246,18 +5729,13 @@ declare module "babylonjs-gui/3D/controls/meshButton3D" {
 }
 declare module "babylonjs-gui/3D/controls/nearMenu" {
     import { Scene } from "babylonjs/scene";
-    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Nullable } from "babylonjs/types";
-    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
-    import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
-    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-    import { Container3D } from "babylonjs-gui/3D/controls/container3D";
-    import { TouchHolographicButton } from "babylonjs-gui/3D/controls/touchHolographicButton";
+    import { TouchHolographicMenu } from "babylonjs-gui/3D/controls/touchHolographicMenu";
     /**
      * NearMenu that displays buttons and follows the camera
      */
-    export class NearMenu extends VolumeBasedPanel {
+    export class NearMenu extends TouchHolographicMenu {
         /**
          * Base Url for the assets.
          */
@@ -5267,13 +5745,9 @@ declare module "babylonjs-gui/3D/controls/nearMenu" {
          */
         private static PIN_ICON_FILENAME;
         private _pinButton;
-        private _backPlate;
-        private _backPlateMaterial;
         private _pinMaterial;
-        private _pickedPointObserver;
         private _defaultBehavior;
-        private _currentMin;
-        private _currentMax;
+        private _dragObserver;
         private _isPinned;
         /**
          * Indicates if the near menu is world-pinned
@@ -5282,29 +5756,12 @@ declare module "babylonjs-gui/3D/controls/nearMenu" {
         set isPinned(value: boolean);
         private _createPinButton;
         protected _createNode(scene: Scene): Nullable<TransformNode>;
-        protected _affectMaterial(mesh: AbstractMesh): void;
-        protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
         protected _finalProcessing(): void;
         /**
          * Creates a near menu GUI 3D control
          * @param name name of the near menu
          */
         constructor(name: string);
-        /**
-         * Adds a button to the near menu.
-         * Please note that the back material of the button will be set to transparent as it is attached to the near menu.
-         *
-         * @param button Button to add
-         * @returns This near menu
-         */
-        addButton(button: TouchHolographicButton): NearMenu;
-        /**
-         * This method should not be used directly. It is inherited from `Container3D`.
-         * Please use `addButton` instead.
-         * @param _control
-         * @returns
-         */
-        addControl(_control: Control3D): Container3D;
         /**
          * Disposes the near menu
          */
@@ -5513,176 +5970,6 @@ declare module "babylonjs-gui/3D/controls/touchToggleButton3D" {
         dispose(): void;
     }
 }
-declare module "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.fragment" {
-    /** @hidden */
-    export var fluentBackplatePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.vertex" {
-    /** @hidden */
-    export var fluentBackplateVertexShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module "babylonjs-gui/3D/materials/fluentBackplate/fluentBackplateMaterial" {
-    import { Nullable } from "babylonjs/types";
-    import { Matrix, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
-    import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-    import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-    import { SubMesh } from "babylonjs/Meshes/subMesh";
-    import { Mesh } from "babylonjs/Meshes/mesh";
-    import { Scene } from "babylonjs/scene";
-    import { Color4 } from "babylonjs/Maths/math.color";
-    import "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.fragment";
-    import "babylonjs-gui/3D/materials/fluentBackplate/shaders/fluentBackplate.vertex";
-    /**
-     * Class used to render square buttons with fluent desgin
-     */
-    export class FluentBackplateMaterial extends PushMaterial {
-        /**
-         * URL pointing to the texture used to define the coloring for the fluent blob effect.
-         */
-        static BLOB_TEXTURE_URL: string;
-        /**
-         * URL pointing to the texture used to define iridescent map.
-         */
-        static IM_TEXTURE_URL: string;
-        private _blobTexture;
-        private _iridescentMap;
-        /**
-         * Gets or sets the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
-         */
-        radius: number;
-        /**
-         * Gets or sets the line width of the backplate.
-         */
-        lineWidth: number;
-        /**
-         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
-         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
-         */
-        absoluteSizes: boolean;
-        /** @hidden */
-        _filterWidth: number;
-        /**
-         * Gets or sets the base color of the backplate.
-         */
-        baseColor: Color4;
-        /**
-         * Gets or sets the line color of the backplate.
-         */
-        lineColor: Color4;
-        /**
-         * Gets or sets the intensity of the fluent hover glow effect.
-         */
-        blobIntensity: number;
-        /**
-         * Gets or sets the far size of the fluent hover glow effect.
-         */
-        blobFarSize: number;
-        /**
-         * Gets or sets the distance considered "near" to the backplate, which controls the size of the fluent hover glow effect (see blobNearSize).
-         */
-        blobNearDistance: number;
-        /**
-         * Gets or sets the distance considered "far" from the backplate, which controls the size of the fluent hover glow effect (see blobFarSize).
-         */
-        blobFarDistance: number;
-        /**
-         * Gets or sets the length of the fluent hover glow effect fade.
-         */
-        blobFadeLength: number;
-        /**
-         * Gets or sets the size of the fluent hover glow effect when the left pointer is considered "near" to the backplate (see blobNearDistance).
-         */
-        blobNearSize: number;
-        /**
-         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
-         */
-        blobPulse: number;
-        /**
-         * Gets or sets the opacity of the fluent hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
-         */
-        blobFade: number;
-        /**
-         * Gets or sets the size of the fluent hover glow effect when the right pointer is considered "near" to the backplate (see blobNearDistance).
-         */
-        blobNearSize2: number;
-        /**
-         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
-         */
-        blobPulse2: number;
-        /**
-         * Gets or sets the opacity of the fluent hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 0.
-         */
-        blobFade2: number;
-        /** @hidden */
-        _rate: number;
-        /**
-         * Gets or sets the color of the highlights on the backplate line.
-         */
-        highlightColor: Color4;
-        /**
-         * Gets or sets the width of the highlights on the backplate line.
-         */
-        highlightWidth: number;
-        /** @hidden */
-        _highlightTransform: Vector4;
-        /** @hidden */
-        _highlight: number;
-        /**
-         * Gets or sets the intensity of the iridescence effect.
-         */
-        iridescenceIntensity: number;
-        /**
-         * Gets or sets the intensity of the iridescence effect on the backplate edges.
-         */
-        iridescenceEdgeIntensity: number;
-        /** @hidden */
-        _angle: number;
-        /**
-         * Gets or sets the opacity of the backplate (0.0 - 1.0).
-         */
-        fadeOut: number;
-        /** @hidden */
-        _reflected: boolean;
-        /** @hidden */
-        _frequency: number;
-        /** @hidden */
-        _verticalOffset: number;
-        /**
-         * Gets or sets the world-space position of the tip of the left index finger.
-         */
-        globalLeftIndexTipPosition: Vector3;
-        private _globalLeftIndexTipPosition4;
-        /**
-         * Gets or sets the world-space position of the tip of the right index finger.
-         */
-        globalRightIndexTipPosition: Vector3;
-        private _globalRightIndexTipPosition4;
-        constructor(name: string, scene: Scene);
-        needAlphaBlending(): boolean;
-        needAlphaTesting(): boolean;
-        getAlphaTestTexture(): Nullable<BaseTexture>;
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
-        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
-        /**
-         * Get the list of animatables in the material.
-         * @returns the list of animatables object used in the material
-         */
-        getAnimatables(): IAnimatable[];
-        dispose(forceDisposeEffect?: boolean): void;
-        clone(name: string): FluentBackplateMaterial;
-        serialize(): any;
-        getClassName(): string;
-        static Parse(source: any, scene: Scene, rootUrl: string): FluentBackplateMaterial;
-    }
-}
 declare module "babylonjs-gui/3D/controls/holographicBackplate" {
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Mesh } from "babylonjs/Meshes/mesh";
@@ -5740,6 +6027,7 @@ declare module "babylonjs-gui/3D/controls/index" {
     export * from "babylonjs-gui/3D/controls/cylinderPanel";
     export * from "babylonjs-gui/3D/controls/holographicButton";
     export * from "babylonjs-gui/3D/controls/holographicSlate";
+    export * from "babylonjs-gui/3D/controls/handMenu";
     export * from "babylonjs-gui/3D/controls/meshButton3D";
     export * from "babylonjs-gui/3D/controls/nearMenu";
     export * from "babylonjs-gui/3D/controls/planePanel";
@@ -5750,6 +6038,7 @@ declare module "babylonjs-gui/3D/controls/index" {
     export * from "babylonjs-gui/3D/controls/touchButton3D";
     export * from "babylonjs-gui/3D/controls/touchMeshButton3D";
     export * from "babylonjs-gui/3D/controls/touchHolographicButton";
+    export * from "babylonjs-gui/3D/controls/touchHolographicMenu";
     export * from "babylonjs-gui/3D/controls/touchToggleButton3D";
     export * from "babylonjs-gui/3D/controls/volumeBasedPanel";
     export * from "babylonjs-gui/3D/controls/holographicBackplate";
@@ -5763,13 +6052,18 @@ declare module "babylonjs-gui/3D/materials/fluentButton/index" {
 declare module "babylonjs-gui/3D/materials/fluentBackplate/index" {
     export * from "babylonjs-gui/3D/materials/fluentBackplate/fluentBackplateMaterial";
 }
+declare module "babylonjs-gui/3D/materials/handle/index" {
+    export * from "babylonjs-gui/3D/materials/handle/handleMaterial";
+}
 declare module "babylonjs-gui/3D/materials/index" {
     export * from "babylonjs-gui/3D/materials/fluent/index";
     export * from "babylonjs-gui/3D/materials/fluentButton/index";
     export * from "babylonjs-gui/3D/materials/fluentBackplate/index";
+    export * from "babylonjs-gui/3D/materials/handle/index";
 }
 declare module "babylonjs-gui/3D/gizmos/index" {
     export * from "babylonjs-gui/3D/gizmos/slateGizmo";
+    export * from "babylonjs-gui/3D/gizmos/gizmoHandle";
 }
 declare module "babylonjs-gui/3D/index" {
     export * from "babylonjs-gui/3D/controls/index";
@@ -7036,35 +7330,35 @@ declare module BABYLON.GUI {
         /** @hidden */
         _link(host: AdvancedDynamicTexture): void;
         /** @hidden */
-        protected _transform(context?: CanvasRenderingContext2D): void;
+        protected _transform(context?: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _renderHighlight(context: CanvasRenderingContext2D): void;
+        _renderHighlight(context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+        _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        protected _applyStates(context: CanvasRenderingContext2D): void;
+        protected _applyStates(context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        _layout(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): boolean;
         /** @hidden */
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         protected _evaluateClippingState(parentMeasure: Measure): void;
         /** @hidden */
         _measure(): void;
         /** @hidden */
-        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _computeAlignment(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _clipForChildren(context: BABYLON.ICanvasRenderingContext): void;
         private static _ClipMeasure;
         private _tmpMeasureA;
         private _clip;
         /** @hidden */
-        _render(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): boolean;
+        _render(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): boolean;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /**
          * Tests if a given coordinates belong to the current control
          * @param x defines x coordinate to test
@@ -7149,7 +7443,7 @@ declare module BABYLON.GUI {
             controlFirst: boolean;
         }) => any;
         /** @hidden */
-        protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void;
+        protected static drawEllipse(x: number, y: number, width: number, height: number, context: BABYLON.ICanvasRenderingContext): void;
     }
 }
 declare module BABYLON.GUI {
@@ -7247,23 +7541,23 @@ declare module BABYLON.GUI {
         /** @hidden */
         _markAllAsDirty(): void;
         /** @hidden */
-        protected _localDraw(context: CanvasRenderingContext2D): void;
+        protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
         _link(host: AdvancedDynamicTexture): void;
         /** @hidden */
         protected _beforeLayout(): void;
         /** @hidden */
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        _layout(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): boolean;
         protected _postMeasure(): void;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
         _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /**
         * Serializes the current control
         * @param serializationObject defined the JSON serialized object
@@ -7293,10 +7587,10 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        protected _localDraw(context: CanvasRenderingContext2D): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _drawRoundedRect;
-        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _clipForChildren(context: BABYLON.ICanvasRenderingContext): void;
     }
 }
 declare module BABYLON.GUI {
@@ -7443,16 +7737,16 @@ declare module BABYLON.GUI {
          */
         name?: string | undefined, text?: string);
         protected _getTypeName(): string;
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _drawText;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
-        protected _applyStates(context: CanvasRenderingContext2D): void;
-        protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
-        protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
-        protected _parseLineEllipsis(line: string | undefined, width: number, context: CanvasRenderingContext2D): object;
-        protected _parseLineWordWrap(line: string | undefined, width: number, context: CanvasRenderingContext2D): object[];
-        protected _renderLines(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        protected _applyStates(context: BABYLON.ICanvasRenderingContext): void;
+        protected _breakLines(refWidth: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _parseLine(line: string | undefined, context: BABYLON.ICanvasRenderingContext): object;
+        protected _parseLineEllipsis(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object;
+        protected _parseLineWordWrap(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _renderLines(context: BABYLON.ICanvasRenderingContext): void;
         /**
          * Given a width constraint applied on the text block, find the expected height
          * @returns expected height
@@ -7637,10 +7931,10 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         /** Force the control to synchronize with its content */
         synchronizeSizeWithContent(): void;
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _prepareWorkingCanvasForOpaqueDetection;
         private _drawImage;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         private _renderNinePatch;
         dispose(): void;
         /** STRETCH_NONE */
@@ -7775,8 +8069,8 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         protected _postMeasure(): void;
         /**
          * Serializes the current control
@@ -7820,7 +8114,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
@@ -8104,7 +8398,7 @@ declare module BABYLON.GUI {
         private _onCutText;
         /** @hidden */
         private _onPasteText;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
@@ -8226,9 +8520,9 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _getGridDefinitions(definitionCallback: (lefts: number[], tops: number[], widths: number[], heights: number[]) => void): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         _flagDescendantsAsMatrixDirty(): void;
-        _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+        _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
     }
@@ -8280,13 +8574,13 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _updateSquareProps;
         private _drawGradientSquare;
         private _drawCircle;
         private _createColorWheelCanvas;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         private _pointerIsDown;
         private _updateValueFromPointer;
         private _isPointOnSquare;
@@ -8331,9 +8625,9 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        protected _localDraw(context: CanvasRenderingContext2D): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
+        protected _clipForChildren(context: BABYLON.ICanvasRenderingContext): void;
     }
 }
 declare module BABYLON.GUI {
@@ -8434,9 +8728,9 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         _measure(): void;
-        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _computeAlignment(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /**
          * Move one end of the line given 3D cartesian coordinates.
          * @param position Targeted world position
@@ -8562,10 +8856,10 @@ declare module BABYLON.GUI {
         set horizontalAlignment(value: number);
         set verticalAlignment(value: number);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         _measure(): void;
-        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _computeAlignment(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         dispose(): void;
     }
 }
@@ -8601,7 +8895,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
          * Utility function to easily create a radio button with a header
@@ -8721,7 +9015,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -8967,13 +9261,13 @@ declare module BABYLON.GUI {
         constructor(name?: string);
         protected _getTypeName(): string;
         /** @hidden */
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        _layout(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): boolean;
         private _scrollChildren;
         private _scrollChildrenWithBuckets;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: Measure): void;
         protected _postMeasure(): void;
     }
 }
@@ -8999,7 +9293,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _getThumbThickness(): number;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         private _first;
         private _originX;
         private _originY;
@@ -9056,7 +9350,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _getThumbThickness(): number;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         private _first;
         private _originX;
         private _originY;
@@ -9166,7 +9460,7 @@ declare module BABYLON.GUI {
         resetWindow(): void;
         protected _getTypeName(): string;
         private _buildClientSizes;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         protected _postMeasure(): void;
         /**
          * Gets or sets the mouse wheel precision
@@ -9227,7 +9521,7 @@ declare module BABYLON.GUI {
         private _addBar;
         /** @hidden */
         private _attachWheel;
-        _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+        _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
     }
@@ -9370,7 +9664,7 @@ declare module BABYLON.GUI {
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
@@ -9407,7 +9701,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -9705,6 +9999,10 @@ declare module BABYLON.GUI {
          * BABYLON.Observable raised when the point picked by the pointer events changed
          */
         onPickedPointChangedObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector3>>;
+        /**
+         * BABYLON.Observable raised when a picking happens
+         */
+        onPickingObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.AbstractMesh>>;
         /** @hidden */
         _sharedMaterials: {
             [key: string]: BABYLON.Material;
@@ -10482,22 +10780,202 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** @hidden */
+    export var handleVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var handlePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render gizmo handles with fluent design
+     */
+    export class HandleMaterial extends BABYLON.ShaderMaterial {
+        private _hover;
+        private _drag;
+        private _onBeforeRender;
+        private _color;
+        private _scale;
+        private _targetColor;
+        private _targetScale;
+        private _lastTick;
+        /**
+         * Is the material indicating hovering state
+         */
+        get hover(): boolean;
+        set hover(b: boolean);
+        /**
+         * Is the material indicating drag state
+         */
+        get drag(): boolean;
+        set drag(b: boolean);
+        /**
+         * Length of animation
+         */
+        animationLength: number;
+        /**
+         * Color of the handle when hovered
+         */
+        hoverColor: BABYLON.Color3;
+        /**
+         * Color of the handle when idle
+         */
+        baseColor: BABYLON.Color3;
+        /**
+         * Scale of the handle when hovered
+         */
+        hoverScale: number;
+        /**
+         * Scale of the handle when idle
+         */
+        baseScale: number;
+        /**
+         * Scale of the handle when dragged
+         */
+        dragScale: number;
+        /**
+         * @hidden
+         */
+        _positionOffset: BABYLON.Vector3;
+        /**
+         * Creates a handle material
+         * @param name Name of the material
+         * @param scene BABYLON.Scene
+         */
+        constructor(name: string, scene: BABYLON.Scene);
+        private _updateInterpolationTarget;
+        /**
+         * Disposes the handle material
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * State of the handle regarding user interaction
+     */
+    export enum HandleState {
+        /**
+         * Handle is idle
+         */
+        IDLE = 0,
+        /**
+         * Handle is hovered
+         */
+        HOVER = 1,
+        /**
+         * Handle is dragged
+         */
+        DRAG = 2
+    }
+    /**
+     * Base class for SlateGizmo handles
+     */
+    export abstract class GizmoHandle {
+        protected _scene: BABYLON.Scene;
+        protected _state: HandleState;
+        protected _materials: HandleMaterial[];
+        private _dragStartObserver;
+        private _draggingObserver;
+        private _dragEndObserver;
+        /**
+         * @hidden
+         */
+        _dragBehavior: BABYLON.BaseSixDofDragBehavior;
+        /**
+         * The current state of the handle
+         */
+        get state(): HandleState;
+        private _gizmo;
+        /**
+         * Returns the gizmo carrying this handle
+         */
+        get gizmo(): SlateGizmo;
+        /**
+         * Sets hover state
+         */
+        set hover(value: boolean);
+        /**
+         * Sets drag state
+         */
+        set drag(value: boolean);
+        /**
+         * Node of this handle
+         */
+        node: BABYLON.TransformNode;
+        /**
+         * Creates a handle for a SlateGizmo
+         * @param gizmo associated SlateGizmo
+         * @param scene scene
+         */
+        constructor(gizmo: SlateGizmo, scene: BABYLON.Scene);
+        protected _createMaterial(positionOffset?: BABYLON.Vector3): HandleMaterial;
+        private _updateMaterial;
+        /**
+         * Binds callbacks from dragging interaction
+         * @param dragStartFn Function to call on drag start
+         * @param dragFn Function to call on drag
+         * @param dragEndFn Function to call on drag end
+         */
+        setDragBehavior(dragStartFn: (event: {
+            position: BABYLON.Vector3;
+        }) => void, dragFn: (event: {
+            position: BABYLON.Vector3;
+        }) => void, dragEndFn: () => void): void;
+        /**
+         * Creates the meshes and parent node of the handle
+         * Should be overriden by child classes
+         * @returns created node
+         */
+        abstract createNode(): BABYLON.TransformNode;
+        /**
+         * Disposes the handle
+         */
+        dispose(): void;
+    }
+    /**
+     * Side handle class that rotates the slate
+     */
+    export class SideHandle extends GizmoHandle {
+        /**
+         * Creates the meshes and parent node of the handle
+         * @returns created node
+         */
+        createNode(): BABYLON.TransformNode;
+    }
+    /**
+     * Corner handle that resizes the slate
+     */
+    export class CornerHandle extends GizmoHandle {
+        /**
+         * Creates the meshes and parent node of the handle
+         * @returns created node
+         */
+        createNode(): BABYLON.TransformNode;
+    }
+}
+declare module BABYLON.GUI {
     /**
      * BABYLON.Gizmo to resize 2D slates
      */
     export class SlateGizmo extends BABYLON.Gizmo {
         private _boundingDimensions;
-        private _dragPlaneNormal;
+        private _pickedPointObserver;
         private _tmpQuaternion;
         private _tmpVector;
         private _corners;
         private _sides;
         private _handlesParent;
+        private _handleHovered;
+        private _handleDragged;
         private _boundingBoxGizmo;
-        private _dragStartObserver;
-        private _draggingObserver;
-        private _dragEndObserver;
-        private _dragBehavior;
         /**
          * Value we use to offset handles from mesh
          */
@@ -10512,7 +10990,7 @@ declare module BABYLON.GUI {
          */
         fixedScreenSizeDistanceFactor: number;
         /**
-         * Size of the handles
+         * Size of the handles (meters in XR)
          */
         handleSize: number;
         /**
@@ -10525,9 +11003,8 @@ declare module BABYLON.GUI {
         private _keepAspectRatio;
         private _clampDimensions;
         private _moveHandle;
-        private _assignDragBehavior;
-        private _createAngleMesh;
-        private _createSideMesh;
+        private _assignDragBehaviorCorners;
+        private _assignDragBehaviorSides;
         protected _attachedNodeChanged(value: BABYLON.Nullable<BABYLON.AbstractMesh>): void;
         /**
          * Updates the bounding box information for the gizmo
@@ -10583,15 +11060,173 @@ declare module BABYLON.GUI {
         /**
          * Attaches the default behavior
          * @param ownerMesh The top level mesh
-         * @param sixDofAnchorMesh A mesh that should behave as an anchor for the sixDof interaction. If unset, the top level mesh will be used
+         * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
          */
-        attach(ownerMesh: BABYLON.Mesh, sixDofAnchorMesh?: BABYLON.Mesh): void;
+        attach(ownerMesh: BABYLON.Mesh, draggablesMeshes?: BABYLON.Mesh[]): void;
         /**
          *  Detaches the behavior from the mesh
          */
         detach(): void;
         private _addObservables;
         private _removeObservables;
+    }
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var fluentBackplatePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var fluentBackplateVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render square buttons with fluent desgin
+     */
+    export class FluentBackplateMaterial extends BABYLON.PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the fluent blob effect.
+         */
+        static BLOB_TEXTURE_URL: string;
+        /**
+         * URL pointing to the texture used to define iridescent map.
+         */
+        static IM_TEXTURE_URL: string;
+        private _blobTexture;
+        private _iridescentMap;
+        /**
+         * Gets or sets the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
+         */
+        radius: number;
+        /**
+         * Gets or sets the line width of the backplate.
+         */
+        lineWidth: number;
+        /**
+         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
+         */
+        absoluteSizes: boolean;
+        /** @hidden */
+        _filterWidth: number;
+        /**
+         * Gets or sets the base color of the backplate.
+         */
+        baseColor: BABYLON.Color4;
+        /**
+         * Gets or sets the line color of the backplate.
+         */
+        lineColor: BABYLON.Color4;
+        /**
+         * Gets or sets the intensity of the fluent hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the far size of the fluent hover glow effect.
+         */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the backplate, which controls the size of the fluent hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the backplate, which controls the size of the fluent hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the fluent hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the left pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        blobNearSize: number;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the size of the fluent hover glow effect when the right pointer is considered "near" to the backplate (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the fluent hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade2: number;
+        /** @hidden */
+        _rate: number;
+        /**
+         * Gets or sets the color of the highlights on the backplate line.
+         */
+        highlightColor: BABYLON.Color4;
+        /**
+         * Gets or sets the width of the highlights on the backplate line.
+         */
+        highlightWidth: number;
+        /** @hidden */
+        _highlightTransform: BABYLON.Vector4;
+        /** @hidden */
+        _highlight: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect on the backplate edges.
+         */
+        iridescenceEdgeIntensity: number;
+        /** @hidden */
+        _angle: number;
+        /**
+         * Gets or sets the opacity of the backplate (0.0 - 1.0).
+         */
+        fadeOut: number;
+        /** @hidden */
+        _reflected: boolean;
+        /** @hidden */
+        _frequency: number;
+        /** @hidden */
+        _verticalOffset: number;
+        /**
+         * Gets or sets the world-space position of the tip of the left index finger.
+         */
+        globalLeftIndexTipPosition: BABYLON.Vector3;
+        private _globalLeftIndexTipPosition4;
+        /**
+         * Gets or sets the world-space position of the tip of the right index finger.
+         */
+        globalRightIndexTipPosition: BABYLON.Vector3;
+        private _globalRightIndexTipPosition4;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): BABYLON.IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): FluentBackplateMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentBackplateMaterial;
     }
 }
 declare module BABYLON.GUI {
@@ -10620,6 +11255,10 @@ declare module BABYLON.GUI {
          */
         minDimensions: BABYLON.Vector3;
         /**
+         * Default dimensions of the slate
+         */
+        readonly defaultDimensions: BABYLON.Vector3;
+        /**
          * Dimensions of the backplate
          */
         backplateDimensions: BABYLON.Vector3;
@@ -10634,7 +11273,10 @@ declare module BABYLON.GUI {
         private _backPlateMaterial;
         private _contentMaterial;
         private _pickedPointObserver;
+        private _positionChangedObserver;
         private _imageUrl;
+        private _contentViewport;
+        private _contentDragBehavior;
         /** @hidden */
         _defaultBehavior: DefaultBehavior;
         /** @hidden */
@@ -10672,16 +11314,89 @@ declare module BABYLON.GUI {
          * @hidden
          */
         _positionElements(): void;
+        private _applyContentViewport;
+        private _resetContentPositionAndZoom;
         /**
          * @hidden
          */
         _updatePivot(): void;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        private _attachContentPlateBehavior;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
         /** @hidden **/
         _prepareNode(scene: BABYLON.Scene): void;
         /**
+         * Resets the aspect and pose of the slate so it is right in front of the active camera, facing towards it.
+         */
+        resetDefaultAspectAndPose(): void;
+        /**
          * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Simple menu that can contain holographic buttons
+     */
+    export class TouchHolographicMenu extends VolumeBasedPanel {
+        protected _backPlate: BABYLON.Mesh;
+        private _backPlateMaterial;
+        private _pickedPointObserver;
+        private _currentMin;
+        private _currentMax;
+        /**
+         * Margin size of the backplate in button size units (setting this to 1, will make the backPlate margin the size of 1 button)
+         */
+        backPlateMargin: number;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
+        protected _finalProcessing(): void;
+        /**
+         * Creates a holographic menu GUI 3D control
+         * @param name name of the menu
+         */
+        constructor(name: string);
+        /**
+         * Adds a button to the menu.
+         * Please note that the back material of the button will be set to transparent as it is attached to the menu.
+         *
+         * @param button Button to add
+         * @returns This menu
+         */
+        addButton(button: TouchHolographicButton): TouchHolographicMenu;
+        /**
+         * This method should not be used directly. It is inherited from `Container3D`.
+         * Please use `addButton` instead.
+         * @param _control
+         * @returns
+         */
+        addControl(_control: Control3D): Container3D;
+        /**
+         * Disposes the menu
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Hand menu that displays buttons and floats around the hand.
+     */
+    export class HandMenu extends TouchHolographicMenu {
+        private _handConstraintBehavior;
+        /**
+         * The hand constraint behavior setting the transformation of this node
+         */
+        get handConstraintBehavior(): BABYLON.HandConstraintBehavior;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
+        /**
+         * Creates a hand menu GUI 3D control
+         * @param name name of the hand menu
+         */
+        constructor(name: string, xr: BABYLON.WebXRExperienceHelper);
+        /**
+         * Disposes the hand menu
          */
         dispose(): void;
     }
@@ -10708,7 +11423,7 @@ declare module BABYLON.GUI {
     /**
      * NearMenu that displays buttons and follows the camera
      */
-    export class NearMenu extends VolumeBasedPanel {
+    export class NearMenu extends TouchHolographicMenu {
         /**
          * Base Url for the assets.
          */
@@ -10718,13 +11433,9 @@ declare module BABYLON.GUI {
          */
         private static PIN_ICON_FILENAME;
         private _pinButton;
-        private _backPlate;
-        private _backPlateMaterial;
         private _pinMaterial;
-        private _pickedPointObserver;
         private _defaultBehavior;
-        private _currentMin;
-        private _currentMax;
+        private _dragObserver;
         private _isPinned;
         /**
          * Indicates if the near menu is world-pinned
@@ -10733,29 +11444,12 @@ declare module BABYLON.GUI {
         set isPinned(value: boolean);
         private _createPinButton;
         protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
         protected _finalProcessing(): void;
         /**
          * Creates a near menu GUI 3D control
          * @param name name of the near menu
          */
         constructor(name: string);
-        /**
-         * Adds a button to the near menu.
-         * Please note that the back material of the button will be set to transparent as it is attached to the near menu.
-         *
-         * @param button Button to add
-         * @returns This near menu
-         */
-        addButton(button: TouchHolographicButton): NearMenu;
-        /**
-         * This method should not be used directly. It is inherited from `Container3D`.
-         * Please use `addButton` instead.
-         * @param _control
-         * @returns
-         */
-        addControl(_control: Control3D): Container3D;
         /**
          * Disposes the near menu
          */
@@ -10931,164 +11625,6 @@ declare module BABYLON.GUI {
          * Releases all associated resources
          */
         dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /** @hidden */
-    export var fluentBackplatePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON.GUI {
-    /** @hidden */
-    export var fluentBackplateVertexShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to render square buttons with fluent desgin
-     */
-    export class FluentBackplateMaterial extends BABYLON.PushMaterial {
-        /**
-         * URL pointing to the texture used to define the coloring for the fluent blob effect.
-         */
-        static BLOB_TEXTURE_URL: string;
-        /**
-         * URL pointing to the texture used to define iridescent map.
-         */
-        static IM_TEXTURE_URL: string;
-        private _blobTexture;
-        private _iridescentMap;
-        /**
-         * Gets or sets the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
-         */
-        radius: number;
-        /**
-         * Gets or sets the line width of the backplate.
-         */
-        lineWidth: number;
-        /**
-         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
-         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
-         */
-        absoluteSizes: boolean;
-        /** @hidden */
-        _filterWidth: number;
-        /**
-         * Gets or sets the base color of the backplate.
-         */
-        baseColor: BABYLON.Color4;
-        /**
-         * Gets or sets the line color of the backplate.
-         */
-        lineColor: BABYLON.Color4;
-        /**
-         * Gets or sets the intensity of the fluent hover glow effect.
-         */
-        blobIntensity: number;
-        /**
-         * Gets or sets the far size of the fluent hover glow effect.
-         */
-        blobFarSize: number;
-        /**
-         * Gets or sets the distance considered "near" to the backplate, which controls the size of the fluent hover glow effect (see blobNearSize).
-         */
-        blobNearDistance: number;
-        /**
-         * Gets or sets the distance considered "far" from the backplate, which controls the size of the fluent hover glow effect (see blobFarSize).
-         */
-        blobFarDistance: number;
-        /**
-         * Gets or sets the length of the fluent hover glow effect fade.
-         */
-        blobFadeLength: number;
-        /**
-         * Gets or sets the size of the fluent hover glow effect when the left pointer is considered "near" to the backplate (see blobNearDistance).
-         */
-        blobNearSize: number;
-        /**
-         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
-         */
-        blobPulse: number;
-        /**
-         * Gets or sets the opacity of the fluent hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
-         */
-        blobFade: number;
-        /**
-         * Gets or sets the size of the fluent hover glow effect when the right pointer is considered "near" to the backplate (see blobNearDistance).
-         */
-        blobNearSize2: number;
-        /**
-         * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
-         */
-        blobPulse2: number;
-        /**
-         * Gets or sets the opacity of the fluent hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 0.
-         */
-        blobFade2: number;
-        /** @hidden */
-        _rate: number;
-        /**
-         * Gets or sets the color of the highlights on the backplate line.
-         */
-        highlightColor: BABYLON.Color4;
-        /**
-         * Gets or sets the width of the highlights on the backplate line.
-         */
-        highlightWidth: number;
-        /** @hidden */
-        _highlightTransform: BABYLON.Vector4;
-        /** @hidden */
-        _highlight: number;
-        /**
-         * Gets or sets the intensity of the iridescence effect.
-         */
-        iridescenceIntensity: number;
-        /**
-         * Gets or sets the intensity of the iridescence effect on the backplate edges.
-         */
-        iridescenceEdgeIntensity: number;
-        /** @hidden */
-        _angle: number;
-        /**
-         * Gets or sets the opacity of the backplate (0.0 - 1.0).
-         */
-        fadeOut: number;
-        /** @hidden */
-        _reflected: boolean;
-        /** @hidden */
-        _frequency: number;
-        /** @hidden */
-        _verticalOffset: number;
-        /**
-         * Gets or sets the world-space position of the tip of the left index finger.
-         */
-        globalLeftIndexTipPosition: BABYLON.Vector3;
-        private _globalLeftIndexTipPosition4;
-        /**
-         * Gets or sets the world-space position of the tip of the right index finger.
-         */
-        globalRightIndexTipPosition: BABYLON.Vector3;
-        private _globalRightIndexTipPosition4;
-        constructor(name: string, scene: BABYLON.Scene);
-        needAlphaBlending(): boolean;
-        needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
-        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
-        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
-        /**
-         * Get the list of animatables in the material.
-         * @returns the list of animatables object used in the material
-         */
-        getAnimatables(): BABYLON.IAnimatable[];
-        dispose(forceDisposeEffect?: boolean): void;
-        clone(name: string): FluentBackplateMaterial;
-        serialize(): any;
-        getClassName(): string;
-        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentBackplateMaterial;
     }
 }
 declare module BABYLON.GUI {
