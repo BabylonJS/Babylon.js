@@ -25,7 +25,6 @@ import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
-import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { IStencilState } from "../States/IStencilState";
 
 declare type IDeviceInputSystem = import("../DeviceInput/Interfaces/inputInterfaces").IDeviceInputSystem;
@@ -311,7 +310,7 @@ export class Engine extends ThinEngine {
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
     public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        var canvas = CanvasGenerator.CreateCanvas(bufferWidth, bufferHeight);
+        var canvas = this.createCanvas(bufferWidth, bufferHeight);
         var context = canvas.getContext("2d");
 
         if (!context) {
@@ -1001,28 +1000,28 @@ export class Engine extends ThinEngine {
      * Sets the current depth function to GREATER
      */
     public setDepthFunctionToGreater(): void {
-        this._depthCullingState.depthFunc = Constants.GREATER;
+        this.setDepthFunction(Constants.GREATER);
     }
 
     /**
      * Sets the current depth function to GEQUAL
      */
     public setDepthFunctionToGreaterOrEqual(): void {
-        this._depthCullingState.depthFunc = Constants.GEQUAL;
+        this.setDepthFunction(Constants.GEQUAL);
     }
 
     /**
      * Sets the current depth function to LESS
      */
     public setDepthFunctionToLess(): void {
-        this._depthCullingState.depthFunc = Constants.LESS;
+        this.setDepthFunction(Constants.LESS);
     }
 
     /**
      * Sets the current depth function to LEQUAL
      */
     public setDepthFunctionToLessOrEqual(): void {
-        this._depthCullingState.depthFunc = Constants.LEQUAL;
+        this.setDepthFunction(Constants.LEQUAL);
     }
 
     private _cachedStencilBuffer: boolean;

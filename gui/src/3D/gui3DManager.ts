@@ -1,7 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
-import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { Material } from "babylonjs/Materials/material";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -39,12 +39,17 @@ export class GUI3DManager implements IDisposable {
      */
     public onPickedPointChangedObservable = new Observable<Nullable<Vector3>>();
 
+    /**
+     * Observable raised when a picking happens
+     */
+    public onPickingObservable = new Observable<Nullable<AbstractMesh>>();
+
     // Shared resources
     /** @hidden */
     public _sharedMaterials: { [key: string]: Material } = {};
 
     /** @hidden */
-    public _touchSharedMaterials:  { [key: string]: Material } = {};
+    public _touchSharedMaterials: { [key: string]: Material } = {};
 
     /** Gets the hosting scene */
     public get scene(): Scene {
@@ -117,12 +122,16 @@ export class GUI3DManager implements IDisposable {
             return false;
         }
 
-        let pointerEvent = <PointerEvent>(pi.event);
+        let pointerEvent = <PointerEvent>pi.event;
 
         let pointerId = pointerEvent.pointerId || 0;
         let buttonIndex = pointerEvent.button;
 
         let pickingInfo = pi.pickInfo;
+        if (pickingInfo) {
+            this.onPickingObservable.notifyObservers(pickingInfo.pickedMesh);
+        }
+
         if (!pickingInfo || !pickingInfo.hit) {
             this._handlePointerOut(pointerId, pi.type === PointerEventTypes.POINTERUP);
             return false;
@@ -132,9 +141,8 @@ export class GUI3DManager implements IDisposable {
             this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
         }
 
-        const control = <Control3D>(pickingInfo.pickedMesh!.reservedDataStore?.GUI3D?.control);
+        const control = <Control3D>pickingInfo.pickedMesh!.reservedDataStore?.GUI3D?.control;
         if (!!control && !control._processObservables(pi.type, pickingInfo.pickedPoint!, pointerId, buttonIndex)) {
-
             if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
@@ -194,7 +202,7 @@ export class GUI3DManager implements IDisposable {
                 });
             });
         }
-    }
+    };
 
     /**
      * Gets the root container
@@ -221,7 +229,7 @@ export class GUI3DManager implements IDisposable {
         this._rootContainer.addControl(control);
 
         let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
-        if (utilityLayerScene && (control instanceof TouchButton3D)) {
+        if (utilityLayerScene && control instanceof TouchButton3D) {
             if (this._touchableButtons.size == 0) {
                 utilityLayerScene.registerBeforeRender(this._processTouchControls);
             }
@@ -241,7 +249,7 @@ export class GUI3DManager implements IDisposable {
         this._rootContainer.removeControl(control);
 
         let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
-        if (utilityLayerScene && (control instanceof TouchButton3D)) {
+        if (utilityLayerScene && control instanceof TouchButton3D) {
             this._touchableButtons.delete(control);
 
             if (this._touchableButtons.size == 0) {
@@ -284,6 +292,7 @@ export class GUI3DManager implements IDisposable {
         }
 
         this.onPickedPointChangedObservable.clear();
+        this.onPickingObservable.clear();
 
         let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
 

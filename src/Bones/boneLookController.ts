@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import { TransformNode } from "../Meshes/transformNode";
 import { Bone } from "./bone";
 import { Space, Axis } from '../Maths/math.axis';
 
@@ -21,9 +21,10 @@ export class BoneLookController {
     public target: Vector3;
 
     /**
-     * The mesh that the bone is attached to
+     * The TransformNode that the bone is attached to
+     * Name kept as mesh for back compability
      */
-    public mesh: AbstractMesh;
+    public mesh: TransformNode;
 
     /**
      * The bone that will be looking to the target
@@ -140,7 +141,7 @@ export class BoneLookController {
 
     /**
      * Create a BoneLookController
-     * @param mesh the mesh that the bone belongs to
+     * @param mesh the TransformNode that the bone belongs to
      * @param bone the bone that will be looking to the target
      * @param target the target Vector3 to look at
      * @param options optional settings:
@@ -157,7 +158,7 @@ export class BoneLookController {
      * * adjustPitch: used to make an adjustment to the pitch of the bone
      * * adjustRoll: used to make an adjustment to the roll of the bone
      **/
-    constructor(mesh: AbstractMesh,
+    constructor(mesh: TransformNode,
         bone: Bone,
         target: Vector3,
         options?: {
@@ -267,7 +268,7 @@ export class BoneLookController {
      */
     public update(): void {
 
-        //skip the first frame when slerping so that the mesh rotation is correct
+        //skip the first frame when slerping so that the TransformNode rotation is correct
         if (this.slerpAmount < 1 && !this._firstFrameSkipped) {
             this._firstFrameSkipped = true;
             return;

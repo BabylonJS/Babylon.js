@@ -18,6 +18,7 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { TouchButton3D } from "./touchButton3D";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+import { DomManagement } from "babylonjs/Misc/domManagement";
 
 /**
  * Class used to create a holographic button in 3D
@@ -232,8 +233,7 @@ export class TouchHolographicButton extends TouchButton3D {
 
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
-        // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
-        if (!!document.createElement) {
+        if (DomManagement.IsDocumentAvailable()) {
             let panel = new StackPanel();
             panel.isVertical = true;
 
@@ -268,6 +268,7 @@ export class TouchHolographicButton extends TouchButton3D {
             depth: 1.0,
         }, scene);
         collisionMesh.isPickable = true;
+        collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
         collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
 
