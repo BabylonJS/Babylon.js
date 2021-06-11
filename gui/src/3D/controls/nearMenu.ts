@@ -33,8 +33,13 @@ export class NearMenu extends TouchHolographicMenu {
         }>
     >;
 
-    /** @hidden */
-    public _defaultBehavior: DefaultBehavior;
+    private _defaultBehavior: DefaultBehavior;
+    /**
+     * Regroups all mesh behaviors for the near menu
+     */
+    public get defaultBehavior(): DefaultBehavior {
+        return this._defaultBehavior;
+    }
 
     private _isPinned: boolean = false;
     /**
