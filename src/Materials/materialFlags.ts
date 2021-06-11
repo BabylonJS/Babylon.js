@@ -293,4 +293,36 @@ export class MaterialFlags {
         this._ThicknessTextureEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
+
+    private static _RefractionIntensityTextureEnabled = true;
+    /**
+     * Are refraction intensity textures enabled in the application.
+     */
+    public static get RefractionIntensityTextureEnabled(): boolean {
+        return this._ThicknessTextureEnabled;
+    }
+    public static set RefractionIntensityTextureEnabled(value: boolean) {
+        if (this._RefractionIntensityTextureEnabled === value) {
+            return;
+        }
+
+        this._RefractionIntensityTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private static _TranslucencyIntensityTextureEnabled = true;
+    /**
+     * Are translucency intensity textures enabled in the application.
+     */
+    public static get TranslucencyIntensityTextureEnabled(): boolean {
+        return this._ThicknessTextureEnabled;
+    }
+    public static set TranslucencyIntensityTextureEnabled(value: boolean) {
+        if (this._TranslucencyIntensityTextureEnabled === value) {
+            return;
+        }
+
+        this._TranslucencyIntensityTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
 }
