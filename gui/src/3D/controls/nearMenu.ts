@@ -38,8 +38,13 @@ export class NearMenu extends VolumeBasedPanel {
     private _currentMin: Nullable<Vector3>;
     private _currentMax: Nullable<Vector3>;
 
-    /** @hidden */
-    public _defaultBehavior: DefaultBehavior;
+    private _defaultBehavior: DefaultBehavior;
+    /** 
+     * Regroups all mesh behaviors for the near menu
+     */
+    public get defaultBehavior(): DefaultBehavior {
+        return this._defaultBehavior;
+    }
 
     private _isPinned: boolean = false;
     /**
