@@ -12,7 +12,11 @@
 #endif
 
 #if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
-    zSM = gl_Position.z;
+    #if SM_USE_REVERSE_DEPTHBUFFER == 1
+        zSM = -gl_Position.z;
+    #else
+        zSM = gl_Position.z;
+    #endif
     gl_Position.z = 0.0;
 #elif SM_USEDISTANCE == 0
     // Color Texture Linear bias.
