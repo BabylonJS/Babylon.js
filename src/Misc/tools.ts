@@ -912,18 +912,7 @@ export class Tools {
      * @return True if the uri is a base64 string or false otherwise
      */
     public static IsBase64(uri: string): boolean {
-        // Check that the length of the string is at least as long as the minimum base64 data url length
-        if (uri.length >= "data:;base64,".length)
-        {
-            if (uri.substr(0, 5) === "data:") {
-                let commaIndex = uri.indexOf(",");
-                return (commaIndex > 7 && uri.substr(commaIndex - 7, 7) === ";base64");
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return FileTools.IsBase64DataUrl(uri);
     }
 
     /**
@@ -932,24 +921,7 @@ export class Tools {
      * @return The decoded base64 data.
      */
     public static DecodeBase64(uri: string): ArrayBuffer {
-        const decodedString = atob(uri.split(",")[1]);
-        const bufferLength = decodedString.length;
-        const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
-
-        for (let i = 0; i < bufferLength; i++) {
-            bufferView[i] = decodedString.charCodeAt(i);
-        }
-
-        return bufferView.buffer;
-    }
-
-    /**
-     * Decode the given base64 uri into a UTF-8 encoded string.
-     * @param uri The uri to decode
-     * @return The decoded base64 data.
-     */
-    public static DecodeBase64AsText(uri: string): string {
-        return atob(uri.split(",")[1]);
+        return FileTools.DecodeBase64UrlAsBinary(uri);
     }
 
     /**
