@@ -97,7 +97,7 @@ export class AudioEngine implements IAudioEngine {
      * @param audioContext defines the audio context to be used by the audio engine
      * @param audioDestination defines the audio destination node to be used by audio engine
      */
-    constructor(hostElement: Nullable<HTMLElement> = null, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) {
+    constructor(hostElement: Nullable<HTMLElement> = null, audioContext: Nullable<AudioContext> = null, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> = null) {
         if (!DomManagement.IsWindowObjectExist()) {
             return;
         }
