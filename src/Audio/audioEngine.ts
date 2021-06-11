@@ -20,7 +20,7 @@ export class AudioEngine implements IAudioEngine {
     private _audioContextInitialized = false;
     private _muteButton: Nullable<HTMLButtonElement> = null;
     private _hostElement: Nullable<HTMLElement>;
-    public _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> = null;
+    private _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> = null;
 
     /**
      * Gets whether the current host supports Web Audio and thus could create AudioContexts.
@@ -94,6 +94,8 @@ export class AudioEngine implements IAudioEngine {
      * There should be only one per page as some browsers restrict the number
      * of audio contexts you can create.
      * @param hostElement defines the host element where to display the mute icon if necessary
+     * @param audioContext defines the audio context to be used by the audio engine
+     * @param audioDestination defines the audio destination node to be used by audio engine
      */
     constructor(hostElement: Nullable<HTMLElement> = null, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) {
         if (!DomManagement.IsWindowObjectExist()) {
