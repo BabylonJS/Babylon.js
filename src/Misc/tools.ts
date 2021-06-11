@@ -908,6 +908,7 @@ export class Tools {
 
     /**
      * Test if the given uri is a base64 string
+     * @deprecated Please use FileTools.IsBase64DataUrl instead.
      * @param uri The uri to test
      * @return True if the uri is a base64 string or false otherwise
      */
@@ -917,6 +918,7 @@ export class Tools {
 
     /**
      * Decode the given base64 uri.
+     * @deprecated Please use FileTools.DecodeBase64UrlAsBinary instead.
      * @param uri The uri to decode
      * @return The decoded base64 data.
      */
