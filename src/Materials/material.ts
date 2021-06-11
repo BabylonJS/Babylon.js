@@ -1468,6 +1468,8 @@ export class Material implements IAnimatable {
             this._drawWrapper.effect = null;
         }
 
+        this.metadata = null;
+
         // Callback
         this.onDisposeObservable.notifyObservers(this);
 
