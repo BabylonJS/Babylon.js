@@ -74,6 +74,11 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     public nodeOrientationMode: HandConstraintOrientation = HandConstraintOrientation.HAND_ROTATION;
 
     /**
+     * Set the hand this behavior should follow. If set to "none", it will follow any visible hand (prioritising the right one).
+     */
+    public handedness: XRHandedness = "right";
+
+    /**
      * Rate of interpolation of position and rotation of the attached node.
      * Higher values will give a slower interpolation.
      */
@@ -101,7 +106,12 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         }
 
         // Retrieve any available hand, starting by the right
-        let hand = this._handTracking.getHandByHandedness("right") || this._handTracking.getHandByHandedness("left");
+        let hand;
+        if (this.handedness === "none") {
+            hand = this._handTracking.getHandByHandedness("right") || this._handTracking.getHandByHandedness("left");
+        } else {
+            hand = this._handTracking.getHandByHandedness(this.handedness);
+        }
 
         if (hand) {
             const pinkyMetacarpal = hand.trackedMeshes.get("pinky-finger-metacarpal");
