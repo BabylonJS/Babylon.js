@@ -57,6 +57,9 @@ export interface EngineFeatures {
     /** Indicates that the engine should cache the bound UBO */
     useUBOBindingCache: boolean;
 
+    /** Indicates that the inliner should be run over every shader code */
+    needShaderCodeInlining: boolean;
+
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }
