@@ -104,6 +104,17 @@ export class WebRequest implements IWebRequest {
         this._xhr.responseType = value;
     }
 
+    /**
+     * Gets or sets the timeout value in milliseconds
+     */
+     public get timeout(): number {
+        return this._xhr.timeout;
+    }
+
+    public set timeout(value: number) {
+        this._xhr.timeout = value;
+    }
+    
     /** @hidden */
     public addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
     public addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {

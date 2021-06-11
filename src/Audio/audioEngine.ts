@@ -8,7 +8,7 @@ import { IAudioEngine } from './Interfaces/IAudioEngine';
 import { DomManagement } from "../Misc/domManagement";
 
 // Sets the default audio engine to Babylon.js
-Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new AudioEngine(hostElement); };
+Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => { return new AudioEngine(hostElement, audioContext, audioDestination); };
 
 /**
  * This represents the default audio engine used in babylon.
@@ -20,6 +20,7 @@ export class AudioEngine implements IAudioEngine {
     private _audioContextInitialized = false;
     private _muteButton: Nullable<HTMLButtonElement> = null;
     private _hostElement: Nullable<HTMLElement>;
+    private _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> = null;
 
     /**
      * Gets whether the current host supports Web Audio and thus could create AudioContexts.
@@ -93,8 +94,10 @@ export class AudioEngine implements IAudioEngine {
      * There should be only one per page as some browsers restrict the number
      * of audio contexts you can create.
      * @param hostElement defines the host element where to display the mute icon if necessary
+     * @param audioContext defines the audio context to be used by the audio engine
+     * @param audioDestination defines the audio destination node to be used by audio engine
      */
-    constructor(hostElement: Nullable<HTMLElement> = null) {
+    constructor(hostElement: Nullable<HTMLElement> = null, audioContext: Nullable<AudioContext> = null, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> = null) {
         if (!DomManagement.IsWindowObjectExist()) {
             return;
         }
@@ -105,6 +108,8 @@ export class AudioEngine implements IAudioEngine {
 
         var audioElem = document.createElement('audio');
         this._hostElement = hostElement;
+        this._audioContext = audioContext;
+        this._audioDestination = audioDestination;
 
         try {
             if (audioElem && !!audioElem.canPlayType && (audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '') ||
@@ -153,11 +158,16 @@ export class AudioEngine implements IAudioEngine {
     private _initializeAudioContext() {
         try {
             if (this.canUseWebAudio) {
-                this._audioContext = new AudioContext();
+                if (!this._audioContext) {
+                    this._audioContext = new AudioContext();
+                }
                 // create a global volume gain node
                 this.masterGain = this._audioContext.createGain();
                 this.masterGain.gain.value = 1;
-                this.masterGain.connect(this._audioContext.destination);
+                if (!this._audioDestination) {
+                    this._audioDestination = this._audioContext.destination;
+                }
+                this.masterGain.connect(this._audioDestination);
                 this._audioContextInitialized = true;
                 if (this._audioContext.state === "running") {
                     // Do not wait for the promise to unlock.
