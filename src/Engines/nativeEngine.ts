@@ -805,7 +805,7 @@ export class NativeEngine extends Engine {
     private _stencilFuncMask: number = 255;
     private _stencilOpStencilFail: number = Constants.KEEP;
     private _stencilOpDepthFail: number = Constants.KEEP;
-    private _stencilOpStencilDepthPass: number = Constants.KEEP;
+    private _stencilOpStencilDepthPass: number = Constants.REPLACE;
 
     public getHardwareScalingLevel(): number {
         return this._native.getHardwareScalingLevel();
