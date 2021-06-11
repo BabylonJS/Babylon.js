@@ -3,6 +3,7 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /** Class used to create 2D ellipse containers */
 export class Ellipse extends Container {
@@ -35,7 +36,7 @@ export class Ellipse extends Container {
         return "Ellipse";
     }
 
-    protected _localDraw(context: CanvasRenderingContext2D): void {
+    protected _localDraw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -72,7 +73,7 @@ export class Ellipse extends Container {
         context.restore();
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.width -= 2 * this._thickness;
@@ -81,7 +82,7 @@ export class Ellipse extends Container {
         this._measureForChildren.top += this._thickness;
     }
 
-    protected _clipForChildren(context: CanvasRenderingContext2D) {
+    protected _clipForChildren(context: ICanvasRenderingContext) {
 
         Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
 

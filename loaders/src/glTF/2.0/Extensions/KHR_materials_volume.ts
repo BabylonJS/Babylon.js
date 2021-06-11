@@ -93,7 +93,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             return this._loader.loadTextureInfoAsync(`${context}/thicknessTexture`, extension.thicknessTexture)
                 .then((texture: BaseTexture) => {
                     babylonMaterial.subSurface.thicknessTexture = texture;
-                    babylonMaterial.subSurface.useGltfStyleThicknessTexture = true;
+                    babylonMaterial.subSurface.useGltfStyleTextures = true;
                 });
         } else {
             return Promise.resolve();
