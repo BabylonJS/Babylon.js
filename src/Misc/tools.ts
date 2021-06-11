@@ -917,7 +917,7 @@ export class Tools {
         {
             if (uri.substr(0, 5) === "data:") {
                 let commaIndex = uri.indexOf(",");
-                if (commaIndex > 7 && uri.substr(commaIndex - 7, 7) === ";base64") {
+                return (commaIndex > 7 && uri.substr(commaIndex - 7, 7) === ";base64");
                     return true;
                 }
             }
