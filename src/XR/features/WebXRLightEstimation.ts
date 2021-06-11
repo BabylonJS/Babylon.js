@@ -22,6 +22,7 @@ export interface IWebXRLightEstimationOptions {
  */
 export class WebXRLightEstimation extends WebXRAbstractFeature {
 
+    private _canvasContext: Nullable<WebGLRenderingContext | WebGL2RenderingContext> = null;
     private _reflectionCubeMap: Nullable<WebGLTexture> = null;
     private _xrLightEstimate: Nullable<XRLightEstimate> = null;
     private _xrLightProbe: Nullable<XRLightProbe> = null;
@@ -88,14 +89,21 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
         return this._xrLightEstimate;
     }
 
-    private _getXRGLBinding(): XRWebGLBinding {
-        if (this._xrWebGLBinding === null) {
-            // TODO: find a way that looks less hacky to get webgl context.  try webgl2 and fallback to webgl.
+    private _getCanvasContext(): WebGLRenderingContext | WebGL2RenderingContext {
+        if (this._canvasContext === null) {
             const canvas: HTMLCanvasElement = this._xrSessionManager.scene.getEngine().getRenderingCanvas()!;
             let context: Nullable<WebGLRenderingContext | WebGL2RenderingContext> = canvas.getContext("webgl2");
             if (!context) {
                 context = canvas.getContext("webgl")!;
             }
+            this._canvasContext = context;
+        }
+        return this._canvasContext;
+    }
+
+    private _getXRGLBinding(): XRWebGLBinding {
+        if (this._xrWebGLBinding === null) {
+            let context = this._getCanvasContext();
             this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, context);
         }
         return this._xrWebGLBinding;
@@ -105,6 +113,9 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      * Event Listener to for "reflectionchange" events.
      */
     private _updateReflectionCubeMap = (): void => {
+        if (this._reflectionCubeMap !== null) {
+            this._getCanvasContext().deleteTexture(this._reflectionCubeMap);
+        }
         this._reflectionCubeMap = this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe!);
         this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap);
     }
@@ -125,10 +136,32 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
         }).then((value: XRLightProbe) => {
             this._xrLightProbe = value;
             this._xrLightProbe.addEventListener('reflectionchange', this._updateReflectionCubeMap);
-            this._reflectionCubeMap = this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe!);
+            this._updateReflectionCubeMap();
         });
 
         return true;
+    }
+
+    /**
+     * detach this feature.
+     * Will usually be called by the features manager
+     *
+     * @returns true if successful.
+     */
+     public detach(): boolean {
+        const detached = super.detach();
+
+        if (this._xrLightProbe !== null) {
+            this._xrLightProbe.removeEventListener('reflectionchange', this._updateReflectionCubeMap);
+            this._xrLightProbe = null;
+        }
+
+        this._canvasContext = null;
+        this._xrLightEstimate = null;
+        // When the session ends (on detach) we must clear our XRWebGLBinging instance, which references the ended session.
+        this._xrWebGLBinding = null;
+
+        return detached;
     }
 
     /**
@@ -136,11 +169,11 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      */
     public dispose(): void {
         super.dispose();
-        if (this._xrLightProbe !== null) {
-            this._xrLightProbe.removeEventListener('reflectionchange', this._updateReflectionCubeMap);
-        }
 
-        this._xrLightProbe = null;
+        if (this._reflectionCubeMap !== null) {
+            this._getCanvasContext().deleteTexture(this._reflectionCubeMap);
+            this._reflectionCubeMap = null;
+        }
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
