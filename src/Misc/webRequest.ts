@@ -114,7 +114,7 @@ export class WebRequest implements IWebRequest {
     public set timeout(value: number) {
         this._xhr.timeout = value;
     }
-    
+
     /** @hidden */
     public addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
     public addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
