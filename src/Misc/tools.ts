@@ -913,7 +913,18 @@ export class Tools {
      * @return True if the uri is a base64 string or false otherwise
      */
     public static IsBase64(uri: string): boolean {
-        return uri.length < 5 ? false : uri.substr(0, 5) === "data:" && StringTools.EndsWith(uri.split(',')[0], ";base64");
+        // Check that the length of the string is at least as long as the minimum base64 data url length
+        if (uri.length >= "data:;base64,".length)
+        {
+            if (uri.substr(0, 5) === "data:") {
+                let commaIndex = uri.indexOf(",");
+                if (commaIndex > 7 && uri.substr(commaIndex - 7, 7) == ";base64") {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -933,6 +944,11 @@ export class Tools {
         return bufferView.buffer;
     }
 
+    /**
+     * Decode the given base64 uri into a UTF-8 encoded string.
+     * @param uri The uri to decode
+     * @return The decoded base64 data.
+     */
     public static DecodeBase64AsText(uri: string): string {
         return atob(uri.split(",")[1]);
     }
