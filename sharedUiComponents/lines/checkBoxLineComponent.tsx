@@ -83,11 +83,11 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     render() {
         return (
             <div className="checkBoxLine">
+                {this.props.icon && <img src={this.props.icon} color="black" className="icon"/>}
                 <div className="label">
                     {this.props.label}
                 </div>
                 <div className="checkBox">
-                    {this.props.icon && <img src={this.props.icon} color="black" className="icon"/>}
                     <input type="checkbox" id={"checkbox" + this._uniqueId} className="cbx hidden" checked={this.state.isSelected} onChange={() => this.onChange()} disabled={!!this.props.disabled}/>
                     <label htmlFor={"checkbox" + this._uniqueId} className={`lbl${!!this.props.disabled ? ' disabled' : ''}`}></label>
                 </div>

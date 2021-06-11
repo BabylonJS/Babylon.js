@@ -2,7 +2,6 @@ import * as React from "react";
 import { GlobalState } from "../../globalState";
 import { Nullable } from "babylonjs/types";
 import { ButtonLineComponent } from "../../sharedUiComponents/lines/buttonLineComponent";
-import { LineContainerComponent } from "../../sharedUiComponents/lines/lineContainerComponent";
 import { FileButtonLineComponent } from "../../sharedUiComponents/lines/fileButtonLineComponent";
 import { Tools } from "babylonjs/Misc/tools";
 import { CheckBoxLineComponent } from "../../sharedUiComponents/lines/checkBoxLineComponent";
@@ -10,13 +9,11 @@ import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Observer } from "babylonjs/Misc/observable";
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { StringTools } from "../../sharedUiComponents/stringTools";
-import { Engine } from "babylonjs/Engines/engine";
 import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { SliderPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent";
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 import { LinePropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent";
 import { RadioButtonPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent";
-
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
@@ -54,6 +51,8 @@ import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInput
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
+const canvasSizeIcon: string = require("../../../public/imgs/canvasSizeIcon.svg");
+const artboardColorIcon: string = require("../../../public/imgs/artboardColorIcon.svg");
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -302,10 +301,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const sizeOptions = [
             { label: "Web (1920)", value: 0 },
             { label: "Phone (720)", value: 1 },
-            { label: "Custom", value: 2 }];
+            { label: "Square (1200)", value: 2 },
+            { label: "Custom", value: 3 }];
         const sizeValues = [
             new Vector2(1920, 1080),
-            new Vector2(750, 1334)];
+            new Vector2(750, 1334),
+            new Vector2(1200, 1200)];
 
         return (
             <div id="ge-propertyTab">
@@ -314,74 +315,66 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <div id="title">AdvanceDyanamicTexture</div>
                 </div>
                 <div>
-
                     <TextLineComponent label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
-                        <TextInputLineComponent lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
-                        <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
-                        <OptionsLineComponent
-                            label="Size"
-                            options={sizeOptions}
-                            target={this}
-                            propertyName={"_sizeOption"}
-                            noDirectUpdate={true}
-                            onSelect={(value: any) => {
-                                this._sizeOption = value;
-                                if (this._sizeOption != sizeOptions.length - 1) {
-                                    const newSize = sizeValues[this._sizeOption];
-                                    this.props.globalState.workbench.resizeGuiTexture(newSize);
-                                }
-                                this.forceUpdate();
+                    <hr></hr>
+                    <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
+                    <CheckBoxLineComponent
+                        label="Responsive"
+                        icon={responsiveIcon}
+                        isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
+                        onSelect={(value: boolean) => {
+                            this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
+                            DataStorage.WriteBoolean("Responsive", value);
+                        }}
+                    />
+                    <OptionsLineComponent
+                        label="Size"
+                        options={sizeOptions}
+                        icon={canvasSizeIcon}
+                        target={this}
+                        propertyName={"_sizeOption"}
+                        noDirectUpdate={true}
+                        onSelect={(value: any) => {
+                            this._sizeOption = value;
+                            if (this._sizeOption != (sizeOptions.length - 1)) {
+                                const newSize = sizeValues[this._sizeOption];
+                                this.props.globalState.workbench.resizeGuiTexture(newSize);
+                            }
+                            this.forceUpdate();
+                        }}
+                    />
+                    {this._sizeOption == (sizeOptions.length - 1) &&
+                        <Vector2LineComponent
+                            label="Custom Size"
+                            target={this.state}
+                            propertyName="textureSize"
+                            onChange={(newvalue) => {
+                                this.props.globalState.workbench.resizeGuiTexture(newvalue);
                             }}
-                        />
-                        {this._sizeOption == 2 &&
-                            <Vector2LineComponent
-                                label="Custom Size"
-                                target={this.state}
-                                propertyName="textureSize"
-                                onChange={(newvalue) => {
-                                    this.props.globalState.workbench.resizeGuiTexture(newvalue);
-                                }}
-                            ></Vector2LineComponent>
-                        }
-                        <CheckBoxLineComponent
-                            label="Show grid"
-                            isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
-                            onSelect={(value: boolean) => {
-                                DataStorage.WriteBoolean("ShowGrid", value);
-                            }}
-                        />
-                        <CheckBoxLineComponent
-                            label="Responsive"
-                            icon={responsiveIcon}
-                            isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
-                            onSelect={(value: boolean) => {
-                                this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
-                                DataStorage.WriteBoolean("Responsive", value);
-                            }}
-                        />
-                    <LineContainerComponent title="FILE">
-                        <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
-                        <ButtonLineComponent
-                            label="Save"
-                            onClick={() => {
-                                this.save();
-                            }}
-                        />
-                    </LineContainerComponent>
-                    {
-                        <LineContainerComponent title="SNIPPET">
-                            <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
-                            <ButtonLineComponent
-                                label="Save to snippet server"
-                                onClick={() => {
-                                    this.saveToSnippetServer();
-                                }}
-                            />
-                        </LineContainerComponent>
+                        ></Vector2LineComponent>
                     }
+                    <hr></hr>
+                    <TextLineComponent label="FILE" value=" " color="grey"></TextLineComponent>
+                    <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
+                    <ButtonLineComponent
+                        label="Save"
+                        onClick={() => {
+                            this.save();
+                        }}
+                    />
+                    <hr></hr>
+                    <TextLineComponent label="SNIPPET" value=" " color="grey"></TextLineComponent>
+                    <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
+                    <ButtonLineComponent
+                        label="Save to snippet server"
+                        onClick={() => {
+                            this.saveToSnippetServer();
+                        }}
+                    />
                 </div>
             </div>
         );
