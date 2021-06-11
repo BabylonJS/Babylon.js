@@ -765,6 +765,7 @@ export class WebGPUEngine extends Engine {
             supportSyncTextureRead: false,
             needsInvertingBitmap: false,
             useUBOBindingCache: false,
+            needShaderCodeInlining: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
