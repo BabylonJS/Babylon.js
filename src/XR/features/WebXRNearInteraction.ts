@@ -14,8 +14,8 @@ import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
-import { BoundingSphere } from "../../Culling";
-import { TransformNode } from "../../Meshes";
+import { BoundingSphere } from "../../Culling/boundingSphere";
+import { TransformNode } from "../../Meshes/transformNode";
 
 type ControllerData = {
     xrController?: WebXRInputSource;

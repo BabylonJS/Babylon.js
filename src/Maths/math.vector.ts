@@ -2195,10 +2195,10 @@ export class Vector3 {
     }
 
     /**
-     * Projects "vector" on the triangle determined by its extremities "p0", "p1" and "p2", stores the result in "ref" 
+     * Projects "vector" on the triangle determined by its extremities "p0", "p1" and "p2", stores the result in "ref"
      * and returns the distance to the projected point.
      * From http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.4264&rep=rep1&type=pdf
-     * 
+     *
      * @param vector the vector to get distance from
      * @param p0 extremity of the triangle
      * @param p1 extremity of the triangle

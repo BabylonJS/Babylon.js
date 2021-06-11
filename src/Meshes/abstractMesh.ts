@@ -1768,7 +1768,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return pi;
         }
 
-
         const result = TmpVectors.Vector3[0];
         const tmpVec = TmpVectors.Vector3[1];
 
