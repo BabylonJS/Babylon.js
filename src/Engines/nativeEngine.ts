@@ -1,5 +1,7 @@
 import { Nullable, IndicesArray, DataArray } from "../types";
+import { NativeAudioEngine } from "../Audio/nativeAudioEngine";
 import { Engine } from "../Engines/engine";
+import { EngineOptions } from "../Engines/thinEngine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
@@ -747,7 +749,7 @@ declare var _native: any;
 /**
  * Options to create the Native engine
  */
-export interface NativeEngineOptions {
+export interface NativeEngineOptions extends EngineOptions {
 
     /**
      * defines whether to adapt to the device's viewport characteristics (default: false)
@@ -775,8 +777,7 @@ export class NativeEngine extends Engine {
     }
 
     public constructor(options: NativeEngineOptions = {}) {
-        super(null, false, undefined, options.adaptToDeviceRatio);
-
+        super(null, false, options, options.adaptToDeviceRatio);
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
 
@@ -891,6 +892,17 @@ export class NativeEngine extends Engine {
 
         // Shader processor
         this._shaderProcessor = new NativeShaderProcessor();
+    }
+
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+     * @param audioEngine Defines if an audio engine should be created by default
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
+        Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new NativeAudioEngine(hostElement); };
+        super._sharedInit(canvas, doNotHandleTouchAction, audioEngine);
     }
 
     public dispose(): void {

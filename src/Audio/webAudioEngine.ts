@@ -8,14 +8,14 @@ import { IAudioEngine } from './Interfaces/IAudioEngine';
 import { DomManagement } from "../Misc/domManagement";
 
 // Sets the default audio engine to Babylon.js
-Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new AudioEngine(hostElement); };
+Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new WebAudioEngine(hostElement); };
 
 /**
  * This represents the default audio engine used in babylon.
  * It is responsible to play, synchronize and analyse sounds throughout the  application.
  * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
  */
-export class AudioEngine implements IAudioEngine {
+export class WebAudioEngine implements IAudioEngine {
     private _audioContext: Nullable<AudioContext> = null;
     private _audioContextInitialized = false;
     private _muteButton: Nullable<HTMLButtonElement> = null;
