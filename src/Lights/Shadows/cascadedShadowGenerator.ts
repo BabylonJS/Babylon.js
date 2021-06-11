@@ -569,8 +569,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         const useReverseDepthBuffer = scene.getEngine().useReverseDepthBuffer;
 
         for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
-            const cIndex = useReverseDepthBuffer ? this._numCascades - 1 - cascadeIndex : cascadeIndex;
-
             this._computeFrustumInWorldSpace(cascadeIndex);
             this._computeCascadeFrustum(cascadeIndex);
 
@@ -580,7 +578,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._frustumCenter[cascadeIndex].addToRef(this._lightDirection.scale(this._cascadeMinExtents[cascadeIndex].z), this._shadowCameraPos[cascadeIndex]);
 
             // Come up with a new orthographic camera for the shadow caster
-            Matrix.LookAtLHToRef(this._shadowCameraPos[cascadeIndex], this._frustumCenter[cascadeIndex], UpDir, this._viewMatrices[cIndex]);
+            Matrix.LookAtLHToRef(this._shadowCameraPos[cascadeIndex], this._frustumCenter[cascadeIndex], UpDir, this._viewMatrices[cascadeIndex]);
 
             let minZ = 0, maxZ = tmpv1.z;
 
@@ -600,16 +598,16 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             }
 
             Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y,
-                useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, this._projectionMatrices[cIndex]);
+                useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, this._projectionMatrices[cascadeIndex]);
 
             this._cascadeMinExtents[cascadeIndex].z = minZ;
             this._cascadeMaxExtents[cascadeIndex].z = maxZ;
 
-            this._viewMatrices[cIndex].multiplyToRef(this._projectionMatrices[cIndex], this._transformMatrices[cIndex]);
+            this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
 
             // Create the rounding matrix, by projecting the world-space origin and determining
             // the fractional offset in texel space
-            Vector3.TransformCoordinatesToRef(ZeroVec, this._transformMatrices[cIndex], tmpv1); // tmpv1 = shadowOrigin
+            Vector3.TransformCoordinatesToRef(ZeroVec, this._transformMatrices[cascadeIndex], tmpv1); // tmpv1 = shadowOrigin
             tmpv1.scaleInPlace(this._mapSize / 2);
 
             tmpv2.copyFromFloats(Math.round(tmpv1.x), Math.round(tmpv1.y), Math.round(tmpv1.z)); // tmpv2 = roundedOrigin
@@ -617,10 +615,10 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
             Matrix.TranslationToRef(tmpv2.x, tmpv2.y, 0.0, tmpMatrix);
 
-            this._projectionMatrices[cIndex].multiplyToRef(tmpMatrix, this._projectionMatrices[cIndex]);
-            this._viewMatrices[cIndex].multiplyToRef(this._projectionMatrices[cIndex], this._transformMatrices[cIndex]);
+            this._projectionMatrices[cascadeIndex].multiplyToRef(tmpMatrix, this._projectionMatrices[cascadeIndex]);
+            this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
 
-            this._transformMatrices[cIndex].copyToArray(this._transformMatricesAsArray, cIndex * 16);
+            this._transformMatrices[cascadeIndex].copyToArray(this._transformMatricesAsArray, cascadeIndex * 16);
         }
     }
 
@@ -636,8 +634,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._scene.activeCamera.getViewMatrix(); // make sure the transformation matrix we get when calling 'getTransformationMatrix()' is calculated with an up to date view matrix
 
         const invViewProj = Matrix.Invert(this._scene.activeCamera.getTransformationMatrix());
+        const cornerIndexOffset = this._scene.getEngine().useReverseDepthBuffer ? 4 : 0;
         for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator.frustumCornersNDCSpace.length; ++cornerIndex) {
-            Vector3.TransformCoordinatesToRef(CascadedShadowGenerator.frustumCornersNDCSpace[cornerIndex], invViewProj, this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+            Vector3.TransformCoordinatesToRef(CascadedShadowGenerator.frustumCornersNDCSpace[(cornerIndex + cornerIndexOffset) % CascadedShadowGenerator.frustumCornersNDCSpace.length], invViewProj, this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
         }
 
         // Get the corners of the current cascade slice of the view frustum
