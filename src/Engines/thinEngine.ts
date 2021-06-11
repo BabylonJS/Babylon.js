@@ -39,6 +39,7 @@ import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
+import { AudioEngineOptions } from '../Audio/audioEngine';
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -81,6 +82,8 @@ export interface HostInformation {
     isMobile: boolean;
 }
 
+
+
 /** Interface defining initialization parameters for Engine class */
 export interface EngineOptions extends WebGLContextAttributes {
     /**
@@ -103,6 +106,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
      */
     audioEngine?: boolean;
+    /**
+     * Specifies options for the audio engine
+     */
+    audioEngineOptions?: AudioEngineOptions;
+    
     /**
      * Defines if animations should run using a deterministic lock step
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
@@ -307,6 +315,8 @@ export class ThinEngine {
     protected _renderingCanvas: Nullable<HTMLCanvasElement>;
     protected _windowIsBackground = false;
     protected _creationOptions: EngineOptions;
+    protected _audioContext: Nullable<AudioContext>;
+    protected _audioDestination: Nullable<AudioDestinationNode|MediaStreamAudioDestinationNode>
 
     protected _highPrecisionShadersAllowed = true;
     /** @hidden */
@@ -623,7 +633,7 @@ export class ThinEngine {
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
             this._renderingCanvas = canvas;
-
+            
             if (antialias !== undefined) {
                 options.antialias = antialias;
             }
@@ -646,6 +656,14 @@ export class ThinEngine {
 
             if (options.audioEngine === undefined) {
                 options.audioEngine = true;
+            }
+
+            if (options.audioEngineOptions !== undefined && options.audioEngineOptions.audioContext !== undefined) {
+                this._audioContext = options.audioEngineOptions.audioContext;
+            }
+
+            if (options.audioEngineOptions !== undefined && options.audioEngineOptions.audioDestination !== undefined) {
+                this._audioDestination = options.audioEngineOptions.audioDestination;
             }
 
             if (options.stencil === undefined) {
@@ -1327,6 +1345,22 @@ export class ThinEngine {
      */
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
         return this._renderingCanvas;
+    }
+
+    /**
+     * Gets the audio context specified in engine initialization options
+     * @returns an Audio Context
+     */
+     public getAudioContext(): Nullable<AudioContext> {
+        return this._audioContext;
+    }
+
+    /**
+     * Gets the audio destination specified in engine initialization options
+     * @returns an audio destination node
+     */
+     public getAudioDestination(): Nullable<AudioDestinationNode|MediaStreamAudioDestinationNode> {
+        return this._audioDestination;
     }
 
     /**
