@@ -1,6 +1,7 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
+import { ICanvas } from "../ICanvas";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -24,7 +25,7 @@ declare module "../../Engines/thinEngine" {
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
         updateDynamicTexture(texture: Nullable<InternalTexture>,
-            source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas,
+            source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas,
             invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
     }
 }
