@@ -79,6 +79,7 @@ import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialMo
 import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoordBlock';
 import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
 import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilderBlock';
+import { SceneDepthBlock } from 'babylonjs/Materials/Node/Blocks/Dual/sceneDepthBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -504,6 +505,8 @@ export class BlockTools {
                 return new FragCoordBlock("FragCoord");
             case "ScreenSizeBlock":
                 return new ScreenSizeBlock("ScreenSize");
+            case "SceneDepthBlock":
+                return new SceneDepthBlock("SceneDepth");
             case "EqualBlock":
                 let equalBlock = new ConditionalBlock("Equal");
                 equalBlock.condition = ConditionalBlockConditions.Equal;
