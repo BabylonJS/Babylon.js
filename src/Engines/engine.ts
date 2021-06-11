@@ -454,8 +454,7 @@ export class Engine extends ThinEngine {
      * Default AudioEngine factory responsible of creating the Audio Engine.
      * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
      */
-    public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>,audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode|MediaStreamAudioDestinationNode>) => IAudioEngine;
-    
+    public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => IAudioEngine;
 
     /**
      * Default offline support factory responsible of creating a tool used to store data locally.
