@@ -32,7 +32,7 @@ export class NearMenu extends TouchHolographicMenu {
     >;
 
     private _defaultBehavior: DefaultBehavior;
-    /** 
+    /**
      * Regroups all mesh behaviors for the near menu
      */
     public get defaultBehavior(): DefaultBehavior {

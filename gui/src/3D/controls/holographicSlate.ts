@@ -77,7 +77,7 @@ export class HolographicSlate extends ContentDisplay3D {
     private _contentDragBehavior: PointerDragBehavior;
 
     private _defaultBehavior: DefaultBehavior;
-    /** 
+    /**
      * Regroups all mesh behaviors for the slate
      */
     public get defaultBehavior(): DefaultBehavior {
