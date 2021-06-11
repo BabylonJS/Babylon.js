@@ -211,7 +211,7 @@ export class CubeTexture extends BaseTexture {
             }
         }
 
-        this._texture = this._getFromCache(rootUrl, noMipmap);
+        this._texture = this._getFromCache(rootUrl, noMipmap, undefined, undefined, useSRGBBuffer);
 
         if (!files) {
             if (!isEnv && !isDDS && !extensions) {
@@ -310,7 +310,7 @@ export class CubeTexture extends BaseTexture {
         }
 
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this._texture = this._getFromCache(this.url, this._noMipmap);
+        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer);
 
         if (!this._texture) {
             const scene = this.getScene();
