@@ -115,6 +115,14 @@ varying vec2 vBumpUV;
     #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0
         varying vec2 vThicknessUV;
     #endif
+
+    #if defined(SS_REFRACTIONINTENSITY_TEXTURE) && SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV == 0
+        varying vec2 vRefractionIntensityUV;
+    #endif
+
+    #if defined(SS_TRANSLUCENCYINTENSITY_TEXTURE) && SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV == 0
+        varying vec2 vTranslucencyIntensityUV;
+    #endif
 #endif
 
 // Output
@@ -466,6 +474,28 @@ void main(void) {
         else
         {
             vThicknessUV = vec2(thicknessMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(SS_REFRACTIONINTENSITY_TEXTURE) && SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV == 0
+        if (vRefractionIntensityInfos.x == 0.)
+        {
+            vRefractionIntensityUV = vec2(refractionIntensityMatrix * vec4(uvUpdated, 1.0, 0.0));
+        }
+        else
+        {
+            vRefractionIntensityUV = vec2(refractionIntensityMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(SS_TRANSLUCENCYINTENSITY_TEXTURE) && SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV == 0
+        if (vTranslucencyIntensityInfos.x == 0.)
+        {
+            vTranslucencyIntensityUV = vec2(translucencyIntensityMatrix * vec4(uvUpdated, 1.0, 0.0));
+        }
+        else
+        {
+            vTranslucencyIntensityUV = vec2(translucencyIntensityMatrix * vec4(uv2, 1.0, 0.0));
         }
     #endif
 #endif
