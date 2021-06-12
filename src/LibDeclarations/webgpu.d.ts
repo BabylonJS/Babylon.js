@@ -988,30 +988,25 @@ type GPUPipelineStatisticName =
     | "fragment-shader-invocations"
     | "compute-shader-invocations";
 
-declare class GPUCanvasContext {
+declare class GPUPresentationContext {
     private __brand: void;
 
-    configureSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
+    configure(descriptor?: GPUPresentationConfiguration): void;
 
-    getSwapChainPreferredFormat(adapter: GPUAdapter): GPUTextureFormat;
+    getPreferredFormat(adapter: GPUAdapter): GPUTextureFormat;
+    getCurrentTexture(): GPUTexture;
 }
 
 type GPUCanvasCompositingAlphaMode =
     | "opaque"
     | "premultiplied";
 
-interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
+interface GPUPresentationConfiguration extends GPUObjectDescriptorBase {
     device: GPUDevice;
     format: GPUTextureFormat;
     usage?: GPUTextureUsageFlags; /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */
     compositingAlphaMode?: GPUCanvasCompositingAlphaMode; /* default="opaque" */
-}
-
-declare class GPUSwapChain implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-
-    getCurrentTexture(): GPUTexture;
+    size: GPUExtent3D;
 }
 
 type GPUDeviceLostReason = "destroyed";
