@@ -7,6 +7,7 @@ import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import { Observer, Observable } from "../../Misc/observable";
 import { TransformNode } from "../../Meshes/transformNode";
+import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Camera } from "../../Cameras/camera";
 
 /**
@@ -94,7 +95,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      * Fires each time a drag happens
      */
-    public onDragObservable = new Observable<{ delta: Vector3; position: Vector3 }>();
+    public onDragObservable = new Observable<{ delta: Vector3; position: Vector3, pickInfo: PickingInfo }>();
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
      */
@@ -335,7 +336,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._tmpQuaternion.z = -this._tmpQuaternion.z;
                     virtualMeshesInfo.pivotMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
                     virtualMeshesInfo.pivotMesh.position.subtractToRef(virtualMeshesInfo.startingPivotPosition, this._tmpVector);
-                    this.onDragObservable.notifyObservers({ delta: this._tmpVector, position: virtualMeshesInfo.pivotMesh.position });
+                    this.onDragObservable.notifyObservers({ delta: this._tmpVector, position: virtualMeshesInfo.pivotMesh.position, pickInfo: pointerInfo.pickInfo });
 
                     // Notify herited methods and observables
                     this._targetDrag(this._tmpVector, this._tmpQuaternion, pointerId);

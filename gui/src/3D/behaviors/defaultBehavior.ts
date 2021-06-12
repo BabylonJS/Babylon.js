@@ -5,6 +5,10 @@ import { Scene } from "babylonjs/scene";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
+import { SurfaceMagnetismBehavior } from "babylonjs/Behaviors/Meshes/surfaceMagnetismBehavior";
+import { Vector3 } from "babylonjs/Maths/math.vector";
+import { PickingInfo } from "babylonjs/Collisions/pickingInfo";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 
 /**
  * Default behavior for 3D UI elements.
@@ -14,7 +18,9 @@ export class DefaultBehavior implements Behavior<Mesh> {
     private _scene: Scene;
     private _followBehavior: FollowBehavior;
     private _sixDofDragBehavior: SixDofDragBehavior;
-    private _onBeforeRender: Nullable<Observer<Scene>>;
+    private _surfaceMagnetismBehavior: SurfaceMagnetismBehavior;
+    private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
+    private _onDragObserver: Nullable<Observer<{ delta: Vector3; position: Vector3; pickInfo: PickingInfo }>>;
 
     /**
      * Instantiates the default behavior
@@ -22,6 +28,7 @@ export class DefaultBehavior implements Behavior<Mesh> {
     constructor() {
         this._followBehavior = new FollowBehavior();
         this._sixDofDragBehavior = new SixDofDragBehavior();
+        this._surfaceMagnetismBehavior = new SurfaceMagnetismBehavior();
     }
 
     /**
@@ -51,6 +58,13 @@ export class DefaultBehavior implements Behavior<Mesh> {
     }
 
     /**
+     * The surface magnetism behavior
+     */
+    public get surfaceMagnetismBehavior(): SurfaceMagnetismBehavior {
+        return this._surfaceMagnetismBehavior;
+    }
+
+    /**
      * Enables the follow behavior
      */
     public followBehaviorEnabled: boolean = false;
@@ -61,6 +75,11 @@ export class DefaultBehavior implements Behavior<Mesh> {
     public sixDofDragBehaviorEnabled: boolean = true;
 
     /**
+     * Enables the surface magnetism behavior
+     */
+    public surfaceMagnetismBehaviorEnabled: boolean = true;
+
+    /**
      *  Initializes the behavior
      */
     public init() {}
@@ -69,8 +88,9 @@ export class DefaultBehavior implements Behavior<Mesh> {
      * Attaches the default behavior
      * @param ownerMesh The top level mesh
      * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
+     * @param sceneUnderstandingMeshes Meshes from the scene understanding that will be used for surface magnetism
      */
-    public attach(ownerMesh: Mesh, draggablesMeshes?: Mesh[]): void {
+    public attach(ownerMesh: Mesh, draggablesMeshes?: Mesh[], sceneUnderstandingMeshes?: AbstractMesh[]): void {
         this._scene = ownerMesh.getScene();
         this.attachedNode = ownerMesh;
 
@@ -80,6 +100,13 @@ export class DefaultBehavior implements Behavior<Mesh> {
         this._sixDofDragBehavior.attach(ownerMesh);
         this._sixDofDragBehavior.draggableMeshes = draggablesMeshes || null;
         this._sixDofDragBehavior.faceCameraOnDragStart = true;
+        this._surfaceMagnetismBehavior.attach(ownerMesh, this._scene);
+        if (sceneUnderstandingMeshes) {
+            this._surfaceMagnetismBehavior.meshes = sceneUnderstandingMeshes;
+        }
+
+        // We disable this behavior because we will handle pose changing event manually with sixDofDragBehavior
+        this._surfaceMagnetismBehavior.enabled = false;
     }
 
     /**
@@ -90,15 +117,20 @@ export class DefaultBehavior implements Behavior<Mesh> {
         this._removeObservables();
         this._followBehavior.detach();
         this._sixDofDragBehavior.detach();
+        this._surfaceMagnetismBehavior.detach();
     }
 
     private _addObservables() {
-        this._onBeforeRender = this._scene.onBeforeRenderObservable.add(() => {
+        this._onBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
             this._followBehavior._enabled = !this._sixDofDragBehavior.isMoving && this.followBehaviorEnabled;
+        });
+        this._onDragObserver = this._sixDofDragBehavior.onDragObservable.add((event: { pickInfo: PickingInfo }) => {
+            this._sixDofDragBehavior.disableMovement = this._surfaceMagnetismBehavior.findAndUpdateTarget(event.pickInfo);
         });
     }
 
     private _removeObservables() {
-        this._scene.onBeforeRenderObservable.remove(this._onBeforeRender);
+        this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+        this._sixDofDragBehavior.onDragObservable.remove(this._onDragObserver);
     }
 }
