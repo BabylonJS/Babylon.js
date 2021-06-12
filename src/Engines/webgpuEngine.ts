@@ -217,8 +217,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _device: GPUDevice;
     private _deviceEnabledExtensions: GPUFeatureName[];
-    private _context: GPUCanvasContext;
-    private _swapChain: GPUSwapChain;
+    private _context: GPUPresentationContext;
     private _swapChainTexture: GPUTexture;
     private _mainPassSampleCount: number;
     /** @hidden */
@@ -771,8 +770,8 @@ export class WebGPUEngine extends Engine {
     }
 
     private _initializeContextAndSwapChain(): void {
-        this._context = this._canvas.getContext('gpupresent') as unknown as GPUCanvasContext;
-        this._createSwapChain();
+        this._context = this._canvas.getContext('gpupresent') as unknown as GPUPresentationContext;
+        this._configureContext(this._canvas.width, this._canvas.height);
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format = this._colorFormat;
@@ -879,12 +878,17 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    private _createSwapChain(): void {
-        this._swapChain = this._context.configureSwapChain({
+    private _configureContext(width: number, height: number): void {
+        this._context.configure({
             device: this._device,
             format: this._options.swapChainFormat!,
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
-            compositingAlphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasCompositingAlphaMode.Premultiplied : WebGPUConstants.CanvasCompositingAlphaMode.Opaque
+            compositingAlphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasCompositingAlphaMode.Premultiplied : WebGPUConstants.CanvasCompositingAlphaMode.Opaque,
+            size: {
+                width,
+                height,
+                depthOrArrayLayers: 1
+            },
         });
     }
 
@@ -907,7 +911,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._createSwapChain();
+        this._configureContext(width, height);
         this._initializeMainAttachments();
         return true;
     }
@@ -2387,7 +2391,7 @@ export class WebGPUEngine extends Engine {
 
         const renderPassWrapperForSwapChain = this._invertYFinalFramebuffer ? this._mainRenderPassCopyWrapper : this._mainRenderPassWrapper;
 
-        this._swapChainTexture = this._swapChain.getCurrentTexture();
+        this._swapChainTexture = this._context.getCurrentTexture();
         renderPassWrapperForSwapChain.colorAttachmentGPUTextures![0].set(this._swapChainTexture);
 
         // Resolve in case of MSAA
