@@ -1085,10 +1085,36 @@ export class WebGPUTextureHelper {
         } else {
             imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
 
-            this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
-
             if (invertY || premultiplyAlpha) {
-                this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, commandEncoder);
+                // we must preprocess the image
+                const useOwnCommandEncoder = commandEncoder === undefined;
+
+                if (useOwnCommandEncoder) {
+                    commandEncoder = this._device.createCommandEncoder({});
+                }
+
+                // create a temp texture and copy the image to it
+                const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.Sampled);
+
+                this._deferredReleaseTextures.push([srcTexture, null, null]);
+
+                textureExtent.depthOrArrayLayers = 1;
+                this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, { texture: srcTexture }, textureExtent);
+                textureExtent.depthOrArrayLayers = layers || 1;
+
+                // apply the preprocessing to this temp texture
+                this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, 0, commandEncoder);
+
+                // copy the temp texture to the destination texture
+                commandEncoder!.copyTextureToTexture({ texture: srcTexture }, textureCopyView, textureExtent);
+
+                if (useOwnCommandEncoder) {
+                    this._device.queue.submit([commandEncoder!.finish()]);
+                    commandEncoder = null as any;
+                }
+            } else {
+                // no preprocessing: direct copy to destination texture
+                this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
             }
         }
     }
