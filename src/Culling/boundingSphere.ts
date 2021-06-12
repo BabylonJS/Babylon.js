@@ -166,7 +166,14 @@ export class BoundingSphere {
         return true;
     }
 
-    public static CreateFromCenterAndRadius(center: DeepImmutable<Vector3>, radius: number, matrix?: DeepImmutable<Matrix>) {
+    /**
+     * Creates a sphere from a center and a radius
+     * @param center The center
+     * @param radius radius
+     * @param matrix Optional worldMatrix
+     * @returns The sphere
+     */
+    public static CreateFromCenterAndRadius(center: DeepImmutable<Vector3>, radius: number, matrix?: DeepImmutable<Matrix>): BoundingSphere {
         this.TmpVector3[0].copyFrom(center);
         this.TmpVector3[1].copyFromFloats(0, 0, radius);
         this.TmpVector3[2].copyFrom(center);
