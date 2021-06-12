@@ -16,7 +16,7 @@ WebGPUEngine.prototype.updateDynamicTexture = function(texture: Nullable<Interna
         gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
     }
 
-    this._textureHelper.updateTexture(canvas, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
+    this._textureHelper.updateTexture(canvas, texture, width, height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
     if (texture.generateMipMaps) {
         this._generateMipmaps(texture, this._uploadEncoder);
     }

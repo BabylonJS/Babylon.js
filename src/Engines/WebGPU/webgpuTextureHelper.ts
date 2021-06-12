@@ -1016,9 +1016,10 @@ export class WebGPUTextureHelper {
     }
 
     // TODO WEBGPU handle data source not being in the same format than the destination texture?
-    public updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, gpuTexture: GPUTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
+    public updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void
     {
+        const gpuTexture = WebGPUTextureHelper._IsInternalTexture(texture) ? (texture._hardwareTexture as WebGPUHardwareTexture).underlyingResource! : texture;
         const blockInformation = WebGPUTextureHelper._GetBlockInformationFromFormat(format);
 
         const textureCopyView: GPUImageCopyTexture = {
@@ -1087,30 +1088,46 @@ export class WebGPUTextureHelper {
 
             if (invertY || premultiplyAlpha) {
                 // we must preprocess the image
-                const useOwnCommandEncoder = commandEncoder === undefined;
+                if (WebGPUTextureHelper._IsInternalTexture(texture) && offsetX === 0 && offsetY === 0 && width === texture.width && height === texture.height) {
+                    // optimization when the source image is the same size than the destination texture and offsets X/Y == 0:
+                    // we simply copy the source to the destination and we apply the preprocessing on the destination
+                    this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
 
-                if (useOwnCommandEncoder) {
+                    // note that we have to use a new command encoder and submit it just right away so that the copy (see line above) and the preprocessing render pass happens in the right order!
+                    // if we don't create a new command encoder, we could end up calling copyExternalImageToTexture / invertYPreMultiplyAlpha / copyExternalImageToTexture / invertYPreMultiplyAlpha in the same frame,
+                    // in which case it would be executed as copyExternalImageToTexture / copyExternalImageToTexture / invertYPreMultiplyAlpha / invertYPreMultiplyAlpha because the command encoder we are passed in
+                    // is submitted at the end of the frame
                     commandEncoder = this._device.createCommandEncoder({});
-                }
-
-                // create a temp texture and copy the image to it
-                const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.Sampled);
-
-                this._deferredReleaseTextures.push([srcTexture, null, null]);
-
-                textureExtent.depthOrArrayLayers = 1;
-                this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, { texture: srcTexture }, textureExtent);
-                textureExtent.depthOrArrayLayers = layers || 1;
-
-                // apply the preprocessing to this temp texture
-                this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, 0, commandEncoder);
-
-                // copy the temp texture to the destination texture
-                commandEncoder!.copyTextureToTexture({ texture: srcTexture }, textureCopyView, textureExtent);
-
-                if (useOwnCommandEncoder) {
+                    this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, 0, commandEncoder);
                     this._device.queue.submit([commandEncoder!.finish()]);
                     commandEncoder = null as any;
+                } else {
+                    // we must apply the preprocessing on the source image before copying it into the destination texture
+                    const useOwnCommandEncoder = commandEncoder === undefined;
+
+                    if (useOwnCommandEncoder) {
+                        commandEncoder = this._device.createCommandEncoder({});
+                    }
+
+                    // create a temp texture and copy the image to it
+                    const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.Sampled);
+
+                    this._deferredReleaseTextures.push([srcTexture, null, null]);
+
+                    textureExtent.depthOrArrayLayers = 1;
+                    this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, { texture: srcTexture }, textureExtent);
+                    textureExtent.depthOrArrayLayers = layers || 1;
+
+                    // apply the preprocessing to this temp texture
+                    this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, 0, commandEncoder);
+
+                    // copy the temp texture to the destination texture
+                    commandEncoder!.copyTextureToTexture({ texture: srcTexture }, textureCopyView, textureExtent);
+
+                    if (useOwnCommandEncoder) {
+                        this._device.queue.submit([commandEncoder!.finish()]);
+                        commandEncoder = null as any;
+                    }
                 }
             } else {
                 // no preprocessing: direct copy to destination texture
