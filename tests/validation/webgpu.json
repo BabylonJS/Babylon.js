@@ -55,7 +55,8 @@
         },
         {
             "title": "default render pipeline",
-            "playgroundId": "#GAFR36#0"
+            "playgroundId": "#GAFR36#0",
+            "renderCount": 5
         },
         {
             "title": "torus knot mirror",
