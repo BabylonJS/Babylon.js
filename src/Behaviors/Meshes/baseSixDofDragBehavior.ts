@@ -243,9 +243,14 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     // Attach the virtual drag mesh and pivot mesh to the virtual origin mesh so it can be dragged
                     // Drag mesh is the actual hit point position
                     // Pivot mesh is the position of the pivot of the dragged mesh
-                    virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                    if (pointerInfo.pickInfo.originMesh) {
+                        virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
+                        virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
+                    } else {
+                        virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                        virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                    }
                     virtualMeshesInfo.pivotMesh.position.copyFrom(this._ownerNode.getAbsolutePivotPoint());
-                    virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.pickedPoint);
 
                     virtualMeshesInfo.startingPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
                     virtualMeshesInfo.startingPivotPosition.copyFrom(virtualMeshesInfo.pivotMesh.position);

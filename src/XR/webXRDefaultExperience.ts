@@ -190,6 +190,7 @@ export class WebXRDefaultExperience {
                         farInteractionFeature: result.pointerSelection,
                         renderingGroupId: options.renderingGroupId,
                         useUtilityLayer: true,
+                        enableNearInteractionOnAllControllers: true,
                     });
                 }
 
