@@ -534,6 +534,11 @@ declare module BABYLON {
          */
         get responseType(): XMLHttpRequestResponseType;
         set responseType(value: XMLHttpRequestResponseType);
+        /**
+         * Gets or sets the timeout value in milliseconds
+         */
+        get timeout(): number;
+        set timeout(value: number);
         /** @hidden */
         addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
         /** @hidden */
@@ -38907,6 +38912,21 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Interface used to define options for the Audio Engine
+     */
+    export interface IAudioEngineOptions {
+        /**
+        * Specifies an existing Audio Context for the audio engine
+        */
+        audioContext?: AudioContext;
+        /**
+        * Specifies a destination node for the audio engine
+        */
+        audioDestination?: AudioDestinationNode | MediaStreamAudioDestinationNode;
+    }
+}
+declare module BABYLON {
         interface ThinEngine {
             /**
              * Update a video texture
@@ -39124,6 +39144,10 @@ declare module BABYLON {
          */
         audioEngine?: boolean;
         /**
+         * Specifies options for the audio engine
+         */
+        audioEngineOptions?: IAudioEngineOptions;
+        /**
          * Defines if animations should run using a deterministic lock step
          * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
          */
@@ -39269,6 +39293,8 @@ declare module BABYLON {
         protected _renderingCanvas: Nullable<HTMLCanvasElement>;
         protected _windowIsBackground: boolean;
         protected _creationOptions: EngineOptions;
+        protected _audioContext: Nullable<AudioContext>;
+        protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
         protected _highPrecisionShadersAllowed: boolean;
         /** @hidden */
         get _shouldUseHighPrecisionShader(): boolean;
@@ -39570,6 +39596,16 @@ declare module BABYLON {
          * @returns a HTML canvas
          */
         getRenderingCanvas(): Nullable<HTMLCanvasElement>;
+        /**
+         * Gets the audio context specified in engine initialization options
+         * @returns an Audio Context
+         */
+        getAudioContext(): Nullable<AudioContext>;
+        /**
+         * Gets the audio destination specified in engine initialization options
+         * @returns an audio destination node
+         */
+        getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
         /**
          * Gets host window
          * @returns the host window object
@@ -41944,7 +41980,7 @@ declare module BABYLON {
          * Default AudioEngine factory responsible of creating the Audio Engine.
          * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
          */
-        static AudioEngineFactory: (hostElement: Nullable<HTMLElement>) => IAudioEngine;
+        static AudioEngineFactory: (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => IAudioEngine;
         /**
          * Default offline support factory responsible of creating a tool used to store data locally.
          * By default, this will create a Database object if the workload has been embedded.
@@ -46850,6 +46886,7 @@ declare module BABYLON {
         private _audioContextInitialized;
         private _muteButton;
         private _hostElement;
+        private _audioDestination;
         /**
          * Gets whether the current host supports Web Audio and thus could create AudioContexts.
          */
@@ -46901,8 +46938,10 @@ declare module BABYLON {
          * There should be only one per page as some browsers restrict the number
          * of audio contexts you can create.
          * @param hostElement defines the host element where to display the mute icon if necessary
+         * @param audioContext defines the audio context to be used by the audio engine
+         * @param audioDestination defines the audio destination node to be used by audio engine
          */
-        constructor(hostElement?: Nullable<HTMLElement>);
+        constructor(hostElement?: Nullable<HTMLElement>, audioContext?: Nullable<AudioContext>, audioDestination?: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>);
         /**
          * Flags the audio engine in Locked state.
          * This happens due to new browser policies preventing audio to autoplay.
