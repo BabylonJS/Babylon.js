@@ -232,8 +232,8 @@ export class SlateGizmo extends Gizmo {
                 dragOrigin.copyFrom(event.position);
                 toObjectFrame.copyFrom(this.attachedMesh.computeWorldMatrix(true));
                 toObjectFrame.invert();
-                previousFollowState = this.attachedSlate._defaultBehavior.followBehaviorEnabled;
-                this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
+                previousFollowState = this.attachedSlate.defaultBehavior.followBehaviorEnabled;
+                this.attachedSlate.defaultBehavior.followBehaviorEnabled = false;
                 Vector3.TransformNormalToRef(Vector3.Forward(), this.attachedMesh.getWorldMatrix(), dragPlaneNormal);
                 dragPlaneNormal.normalize();
 
@@ -259,7 +259,7 @@ export class SlateGizmo extends Gizmo {
         const dragEnd = () => {
             if (this.attachedSlate && this.attachedNode) {
                 this.attachedSlate._updatePivot();
-                this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
+                this.attachedSlate.defaultBehavior.followBehaviorEnabled = previousFollowState;
 
                 if (this._handleDragged) {
                     this._handleDragged.drag = false;
@@ -283,8 +283,8 @@ export class SlateGizmo extends Gizmo {
             if (this.attachedSlate && this.attachedMesh) {
                 quaternionOrigin.copyFrom(this.attachedMesh.rotationQuaternion!);
                 dragOrigin.copyFrom(event.position);
-                previousFollowState = this.attachedSlate._defaultBehavior.followBehaviorEnabled;
-                this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
+                previousFollowState = this.attachedSlate.defaultBehavior.followBehaviorEnabled;
+                this.attachedSlate.defaultBehavior.followBehaviorEnabled = false;
                 worldPivot.copyFrom(this.attachedMesh.getAbsolutePivotPoint());
                 directionOrigin.copyFrom(dragOrigin).subtractInPlace(worldPivot).normalize();
                 Vector3.TransformNormalToRef(dragPlaneNormal, this.attachedMesh.getWorldMatrix(), worldPlaneNormal);
@@ -312,7 +312,7 @@ export class SlateGizmo extends Gizmo {
         const dragEnd = () => {
             if (this.attachedSlate && this.attachedNode) {
                 this.attachedSlate._updatePivot();
-                this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
+                this.attachedSlate.defaultBehavior.followBehaviorEnabled = previousFollowState;
 
                 if (this._handleDragged) {
                     this._handleDragged.drag = false;

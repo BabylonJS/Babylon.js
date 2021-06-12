@@ -48,6 +48,11 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     }
 
     /**
+     * Use this flag to update the target but not move the owner node towards the target
+     */
+    public disableMovement: boolean = false;
+
+    /**
      * Should the object rotate towards the camera when we start dragging it
      */
     public faceCameraOnDragStart = false;
@@ -65,7 +70,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
         // On every frame move towards target scaling to avoid jitter caused by vr controllers
         this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(() => {
-            if (this.currentDraggingPointerIds.length === 1 && this._moving) {
+            if (this.currentDraggingPointerIds.length === 1 && this._moving && !this.disableMovement) {
                 // 1 pointer only drags mesh
                 var oldParent = ownerNode.parent;
                 ownerNode.setParent(null);
