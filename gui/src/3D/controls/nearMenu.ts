@@ -8,6 +8,7 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { TouchHolographicMenu } from "./touchHolographicMenu";
 import { Observer } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
+import { PickingInfo } from "babylonjs/Collisions/pickingInfo";
 
 /**
  * NearMenu that displays buttons and follows the camera
@@ -24,13 +25,21 @@ export class NearMenu extends TouchHolographicMenu {
 
     private _pinButton: TouchHolographicButton;
     private _pinMaterial: StandardMaterial;
-    private _defaultBehavior: DefaultBehavior;
     private _dragObserver: Nullable<
         Observer<{
             delta: Vector3;
             position: Vector3;
+            pickInfo: PickingInfo;
         }>
     >;
+
+    private _defaultBehavior: DefaultBehavior;
+    /**
+     * Regroups all mesh behaviors for the near menu
+     */
+    public get defaultBehavior(): DefaultBehavior {
+        return this._defaultBehavior;
+    }
 
     private _isPinned: boolean = false;
     /**
@@ -79,6 +88,7 @@ export class NearMenu extends TouchHolographicMenu {
         this.isPinned = false;
 
         this._defaultBehavior.attach(node, [this._backPlate]);
+        node.isVisible = false;
 
         return node;
     }
