@@ -432,8 +432,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             if (!this._options.enableNearInteractionOnAllControllers && xrController.uniqueId !== this._attachedController) {
                 return;
             }
-            if (controllerData.pick && !this._farInteractionFeature?.attached) {
+            if (controllerData.pick) {
                 controllerData.pick.ray = controllerData.grabRay;
+            }
+
+            if (controllerData.pick && !this._farInteractionFeature?.attached) {
                 this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
 
@@ -451,6 +454,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         const grabCheck = (pressed: boolean) => {
             if (this._options.enableNearInteractionOnAllControllers || (xrController.uniqueId === this._attachedController && !this._farInteractionFeature?.attached)) {
+                if (controllerData.pick) {
+                    controllerData.pick.ray = controllerData.grabRay;
+                }
                 if (pressed && controllerData.pick && controllerData.meshUnderPointer && this._nearGrabPredicate(controllerData.meshUnderPointer)) {
                     controllerData.grabInteraction = true;
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);

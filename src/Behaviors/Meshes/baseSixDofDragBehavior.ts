@@ -269,8 +269,8 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         }
                     }
 
-                    this._targetDragStart(virtualMeshesInfo.dragMesh.position, virtualMeshesInfo.dragMesh.rotationQuaternion!, pointerId);
-                    this.onDragStartObservable.notifyObservers({ position: virtualMeshesInfo.dragMesh.position });
+                    this._targetDragStart(virtualMeshesInfo.pivotMesh.position, virtualMeshesInfo.pivotMesh.rotationQuaternion!, pointerId);
+                    this.onDragStartObservable.notifyObservers({ position: virtualMeshesInfo.pivotMesh.position });
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
                 const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
