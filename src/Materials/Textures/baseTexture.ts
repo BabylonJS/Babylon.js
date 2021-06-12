@@ -727,6 +727,8 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
 
+        this.metadata = null;
+
         super.dispose();
     }
 

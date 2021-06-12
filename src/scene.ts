@@ -4478,6 +4478,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public dispose(): void {
         this.beforeRender = null;
         this.afterRender = null;
+        this.metadata = null;
 
         if (EngineStore._LastCreatedScene === this) {
             EngineStore._LastCreatedScene = null;
