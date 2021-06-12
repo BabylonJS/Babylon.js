@@ -175,7 +175,7 @@ export class WebGPUTextureHelper {
                     defines += "#define INVERTY\r\n";
                 }
                 if (params!.premultiplyAlpha) {
-                    defines += "define PREMULTIPLYALPHA\r\n";
+                    defines += "#define PREMULTIPLYALPHA\r\n";
                 }
             }
 
