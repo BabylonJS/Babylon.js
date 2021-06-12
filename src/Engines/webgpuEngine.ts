@@ -1718,7 +1718,7 @@ export class WebGPUEngine extends Engine {
                         const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height, undefined, creationFlags);
 
                         if (WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
-                            this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+                            this._textureHelper.updateTexture(imageBitmap, texture, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
                             if (!noMipmap && !isCompressed) {
                                 this._generateMipmaps(texture, this._uploadEncoder);
                             }
@@ -1993,7 +1993,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -2007,7 +2007,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, false, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, false, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -2028,7 +2028,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -2049,7 +2049,7 @@ export class WebGPUEngine extends Engine {
         const width = Math.ceil(texture.width / (1 << lod));
         const height = Math.ceil(texture.height / (1 << lod));
 
-        this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(bitmap, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /**
