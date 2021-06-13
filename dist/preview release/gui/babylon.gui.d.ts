@@ -4934,15 +4934,13 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Default behavior for 3D UI elements.
-     * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
+     * Handles a BABYLON.FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
      */
     export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
         private _scene;
         private _followBehavior;
         private _sixDofDragBehavior;
-        private _surfaceMagnetismBehavior;
-        private _onBeforeRenderObserver;
-        private _onDragObserver;
+        private _onBeforeRender;
         /**
          * Instantiates the default behavior
          */
@@ -4964,10 +4962,6 @@ declare module BABYLON.GUI {
          */
         get sixDofDragBehavior(): BABYLON.SixDofDragBehavior;
         /**
-         * The surface magnetism behavior
-         */
-        get surfaceMagnetismBehavior(): BABYLON.SurfaceMagnetismBehavior;
-        /**
          * Enables the follow behavior
          */
         followBehaviorEnabled: boolean;
@@ -4976,10 +4970,6 @@ declare module BABYLON.GUI {
          */
         sixDofDragBehaviorEnabled: boolean;
         /**
-         * Enables the surface magnetism behavior
-         */
-        surfaceMagnetismBehaviorEnabled: boolean;
-        /**
          *  Initializes the behavior
          */
         init(): void;
@@ -4987,9 +4977,8 @@ declare module BABYLON.GUI {
          * Attaches the default behavior
          * @param ownerMesh The top level mesh
          * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
-         * @param sceneUnderstandingMeshes Meshes from the scene understanding that will be used for surface magnetism
          */
-        attach(ownerMesh: BABYLON.Mesh, draggablesMeshes?: BABYLON.Mesh[], sceneUnderstandingMeshes?: BABYLON.AbstractMesh[]): void;
+        attach(ownerMesh: BABYLON.Mesh, draggablesMeshes?: BABYLON.Mesh[]): void;
         /**
          *  Detaches the behavior from the mesh
          */
@@ -5204,11 +5193,8 @@ declare module BABYLON.GUI {
         private _imageUrl;
         private _contentViewport;
         private _contentDragBehavior;
-        private _defaultBehavior;
-        /**
-         * Regroups all mesh behaviors for the slate
-         */
-        get defaultBehavior(): DefaultBehavior;
+        /** @hidden */
+        _defaultBehavior: DefaultBehavior;
         /** @hidden */
         _gizmo: SlateGizmo;
         protected _backPlate: BABYLON.Mesh;
@@ -5364,12 +5350,8 @@ declare module BABYLON.GUI {
         private static PIN_ICON_FILENAME;
         private _pinButton;
         private _pinMaterial;
-        private _dragObserver;
         private _defaultBehavior;
-        /**
-         * Regroups all mesh behaviors for the near menu
-         */
-        get defaultBehavior(): DefaultBehavior;
+        private _dragObserver;
         private _isPinned;
         /**
          * Indicates if the near menu is world-pinned
