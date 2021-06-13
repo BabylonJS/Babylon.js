@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!****************************************************!*\
+  !*** E:/babylonjs/node_modules/tslib/tslib.es6.js ***!
+  \****************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -15873,9 +15873,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0__);
 
 
+
 /**
  * Default behavior for 3D UI elements.
- * Handles a FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+ * Handles a FollowBehavior, SixDofBehavior and SurfaceMagnetismBehavior
  */
 var DefaultBehavior = /** @class */ (function () {
     /**
@@ -15890,8 +15891,13 @@ var DefaultBehavior = /** @class */ (function () {
          * Enables the six DoF drag behavior
          */
         this.sixDofDragBehaviorEnabled = true;
+        /**
+         * Enables the surface magnetism behavior
+         */
+        this.surfaceMagnetismBehaviorEnabled = true;
         this._followBehavior = new babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0__["FollowBehavior"]();
         this._sixDofDragBehavior = new babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0__["SixDofDragBehavior"]();
+        this._surfaceMagnetismBehavior = new babylonjs_Behaviors_Meshes_followBehavior__WEBPACK_IMPORTED_MODULE_0__["SurfaceMagnetismBehavior"]();
     }
     Object.defineProperty(DefaultBehavior.prototype, "name", {
         /**
@@ -15923,6 +15929,16 @@ var DefaultBehavior = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(DefaultBehavior.prototype, "surfaceMagnetismBehavior", {
+        /**
+         * The surface magnetism behavior
+         */
+        get: function () {
+            return this._surfaceMagnetismBehavior;
+        },
+        enumerable: false,
+        configurable: true
+    });
     /**
      *  Initializes the behavior
      */
@@ -15931,8 +15947,9 @@ var DefaultBehavior = /** @class */ (function () {
      * Attaches the default behavior
      * @param ownerMesh The top level mesh
      * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
+     * @param sceneUnderstandingMeshes Meshes from the scene understanding that will be used for surface magnetism
      */
-    DefaultBehavior.prototype.attach = function (ownerMesh, draggablesMeshes) {
+    DefaultBehavior.prototype.attach = function (ownerMesh, draggablesMeshes, sceneUnderstandingMeshes) {
         this._scene = ownerMesh.getScene();
         this.attachedNode = ownerMesh;
         this._addObservables();
@@ -15941,6 +15958,12 @@ var DefaultBehavior = /** @class */ (function () {
         this._sixDofDragBehavior.attach(ownerMesh);
         this._sixDofDragBehavior.draggableMeshes = draggablesMeshes || null;
         this._sixDofDragBehavior.faceCameraOnDragStart = true;
+        this._surfaceMagnetismBehavior.attach(ownerMesh, this._scene);
+        if (sceneUnderstandingMeshes) {
+            this._surfaceMagnetismBehavior.meshes = sceneUnderstandingMeshes;
+        }
+        // We disable this behavior because we will handle pose changing event manually with sixDofDragBehavior
+        this._surfaceMagnetismBehavior.enabled = false;
     };
     /**
      *  Detaches the behavior from the mesh
@@ -15950,15 +15973,20 @@ var DefaultBehavior = /** @class */ (function () {
         this._removeObservables();
         this._followBehavior.detach();
         this._sixDofDragBehavior.detach();
+        this._surfaceMagnetismBehavior.detach();
     };
     DefaultBehavior.prototype._addObservables = function () {
         var _this = this;
-        this._onBeforeRender = this._scene.onBeforeRenderObservable.add(function () {
+        this._onBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(function () {
             _this._followBehavior._enabled = !_this._sixDofDragBehavior.isMoving && _this.followBehaviorEnabled;
+        });
+        this._onDragObserver = this._sixDofDragBehavior.onDragObservable.add(function (event) {
+            _this._sixDofDragBehavior.disableMovement = _this._surfaceMagnetismBehavior.findAndUpdateTarget(event.pickInfo);
         });
     };
     DefaultBehavior.prototype._removeObservables = function () {
-        this._scene.onBeforeRenderObservable.remove(this._onBeforeRender);
+        this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+        this._sixDofDragBehavior.onDragObservable.remove(this._onDragObserver);
     };
     return DefaultBehavior;
 }());
@@ -17505,6 +17533,16 @@ var HolographicSlate = /** @class */ (function (_super) {
         });
         return _this;
     }
+    Object.defineProperty(HolographicSlate.prototype, "defaultBehavior", {
+        /**
+         * Regroups all mesh behaviors for the slate
+         */
+        get: function () {
+            return this._defaultBehavior;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(HolographicSlate.prototype, "renderingGroupId", {
         get: function () {
             return this._backPlate.renderingGroupId;
@@ -18015,6 +18053,16 @@ var NearMenu = /** @class */ (function (_super) {
         });
         return _this;
     }
+    Object.defineProperty(NearMenu.prototype, "defaultBehavior", {
+        /**
+         * Regroups all mesh behaviors for the near menu
+         */
+        get: function () {
+            return this._defaultBehavior;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(NearMenu.prototype, "isPinned", {
         /**
          * Indicates if the near menu is world-pinned
@@ -18058,14 +18106,18 @@ var NearMenu = /** @class */ (function (_super) {
         this._pinButton = this._createPinButton(node);
         this.isPinned = false;
         this._defaultBehavior.attach(node, [this._backPlate]);
+        this._defaultBehavior.followBehavior.ignoreCameraPitchAndRoll = true;
+        this._defaultBehavior.followBehavior.pitchOffset = -15;
+        this._defaultBehavior.followBehavior.minimumDistance = 0.3;
+        this._defaultBehavior.followBehavior.defaultDistance = 0.4;
+        this._defaultBehavior.followBehavior.maximumDistance = 0.6;
+        this._backPlate.isNearGrabbable = true;
+        node.isVisible = false;
         return node;
     };
     NearMenu.prototype._finalProcessing = function () {
         _super.prototype._finalProcessing.call(this);
         this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
-        this._defaultBehavior.followBehavior.minimumDistance = this._backPlate.scaling.x * 0.5 * this.scaling.length();
-        this._defaultBehavior.followBehavior.maximumDistance = this._backPlate.scaling.x * 1.5 * this.scaling.length();
-        this._defaultBehavior.followBehavior.defaultDistance = this._backPlate.scaling.x * this.scaling.length();
     };
     /**
      * Disposes the near menu
@@ -20083,6 +20135,7 @@ var SideHandle = /** @class */ (function (_super) {
         verticalBox.parent = sideNode;
         var mat = this._createMaterial();
         verticalBox.material = mat;
+        verticalBox.isNearGrabbable = true;
         this._materials.push(mat);
         return sideNode;
     };
@@ -20110,6 +20163,8 @@ var CornerHandle = /** @class */ (function (_super) {
         verticalBox.parent = angleNode;
         horizontalBox.material = this._createMaterial(new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 0, 0));
         verticalBox.material = this._createMaterial(new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 1, 0));
+        verticalBox.isNearGrabbable = true;
+        horizontalBox.isNearGrabbable = true;
         this._materials.push(horizontalBox.material);
         this._materials.push(verticalBox.material);
         return angleNode;
@@ -20349,8 +20404,8 @@ var SlateGizmo = /** @class */ (function (_super) {
                 dragOrigin.copyFrom(event.position);
                 toObjectFrame.copyFrom(_this.attachedMesh.computeWorldMatrix(true));
                 toObjectFrame.invert();
-                previousFollowState = _this.attachedSlate._defaultBehavior.followBehaviorEnabled;
-                _this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
+                previousFollowState = _this.attachedSlate.defaultBehavior.followBehaviorEnabled;
+                _this.attachedSlate.defaultBehavior.followBehaviorEnabled = false;
                 babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(), _this.attachedMesh.getWorldMatrix(), dragPlaneNormal);
                 dragPlaneNormal.normalize();
                 if (_this._handleHovered) {
@@ -20372,7 +20427,7 @@ var SlateGizmo = /** @class */ (function (_super) {
         var dragEnd = function () {
             if (_this.attachedSlate && _this.attachedNode) {
                 _this.attachedSlate._updatePivot();
-                _this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
+                _this.attachedSlate.defaultBehavior.followBehaviorEnabled = previousFollowState;
                 if (_this._handleDragged) {
                     _this._handleDragged.drag = false;
                     _this._handleDragged = null;
@@ -20393,8 +20448,8 @@ var SlateGizmo = /** @class */ (function (_super) {
             if (_this.attachedSlate && _this.attachedMesh) {
                 quaternionOrigin.copyFrom(_this.attachedMesh.rotationQuaternion);
                 dragOrigin.copyFrom(event.position);
-                previousFollowState = _this.attachedSlate._defaultBehavior.followBehaviorEnabled;
-                _this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
+                previousFollowState = _this.attachedSlate.defaultBehavior.followBehaviorEnabled;
+                _this.attachedSlate.defaultBehavior.followBehaviorEnabled = false;
                 worldPivot.copyFrom(_this.attachedMesh.getAbsolutePivotPoint());
                 directionOrigin.copyFrom(dragOrigin).subtractInPlace(worldPivot).normalize();
                 babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(dragPlaneNormal, _this.attachedMesh.getWorldMatrix(), worldPlaneNormal);
@@ -20418,7 +20473,7 @@ var SlateGizmo = /** @class */ (function (_super) {
         var dragEnd = function () {
             if (_this.attachedSlate && _this.attachedNode) {
                 _this.attachedSlate._updatePivot();
-                _this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
+                _this.attachedSlate.defaultBehavior.followBehaviorEnabled = previousFollowState;
                 if (_this._handleDragged) {
                     _this._handleDragged.drag = false;
                     _this._handleDragged = null;

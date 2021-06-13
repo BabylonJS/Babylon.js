@@ -16,7 +16,6 @@ import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
 import { BoundingSphere } from "../../Culling/boundingSphere";
 import { TransformNode } from "../../Meshes/transformNode";
-import { TorusBuilder } from "../../Meshes/Builders/torusBuilder";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { Color3 } from "../../Maths/math.color";
 
@@ -332,9 +331,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                                 controllerData.hoverIndexMeshTip.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
                             }
 
-                            controllerData.pickedPointVisualCue.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
-                            controllerData.pickedPointVisualCue.rotationQuaternion!.copyFrom(this._indexTipQuaternion);
-
                             // set near interaction grab ray parameters
                             const nearGrabRayLength = this._nearGrabLengthScale * this._hoverRadius;
                             controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
@@ -424,8 +420,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             // Update mesh under pointer
             if (controllerData.pick && controllerData.pick.pickedPoint && controllerData.pick.hit) {
                 controllerData.meshUnderPointer = controllerData.pick.pickedMesh;
+                controllerData.pickedPointVisualCue.position.copyFrom(controllerData.pick.pickedPoint);
+                controllerData.pickedPointVisualCue.isVisible = true;
             } else {
                 controllerData.meshUnderPointer = null;
+                controllerData.pickedPointVisualCue.isVisible = false;
             }
 
             // Turn on far interaction if near interaction is unsuccessful
@@ -443,12 +442,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     private _generateVisualCue() {
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        const selectionMesh = TorusBuilder.CreateTorus(
-            "gazeTracker",
+        const selectionMesh = SphereBuilder.CreateSphere(
+            "nearInteraction",
             {
                 diameter: 0.0035 * 3,
-                thickness: 0.0025 * 3,
-                tessellation: 20,
             },
             sceneToRenderTo
         );
