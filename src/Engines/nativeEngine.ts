@@ -1232,7 +1232,7 @@ export class NativeEngine extends Engine {
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
-        this._native.setZOffset(value);
+        this._native.setZOffset(this.useReverseDepthBuffer ? -value : value);
     }
 
     /**
