@@ -93,7 +93,7 @@ export class NearMenu extends TouchHolographicMenu {
         this._defaultBehavior.followBehavior.minimumDistance = 0.3;
         this._defaultBehavior.followBehavior.defaultDistance = 0.4;
         this._defaultBehavior.followBehavior.maximumDistance = 0.6;
-        
+
         this._backPlate.isNearGrabbable = true;
         node.isVisible = false;
 

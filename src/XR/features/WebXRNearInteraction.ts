@@ -16,6 +16,9 @@ import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
 import { BoundingSphere } from "../../Culling/boundingSphere";
 import { TransformNode } from "../../Meshes/transformNode";
+import { TorusBuilder } from "../../Meshes/Builders/torusBuilder";
+import { StandardMaterial } from "../../Materials/standardMaterial";
+import { Color3 } from "../../Maths/math.color";
 
 type ControllerData = {
     xrController?: WebXRInputSource;
@@ -36,6 +39,7 @@ type ControllerData = {
     grabInteraction: boolean;
     // event support
     eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
+    pickedPointVisualCue: AbstractMesh;
 };
 
 /**
@@ -88,6 +92,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         }
         // get two new meshes
         const { hoverIndexMeshTip, pickIndexMeshTip } = this._generateNewHandTipMeshes();
+        const selectionMesh = this._generateVisualCue();
+
         this._controllers[xrController.uniqueId] = {
             xrController,
             meshUnderPointer: null,
@@ -100,6 +106,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             nearInteraction: false,
             grabInteraction: false,
             id: WebXRNearInteraction._idCounter++,
+            pickedPointVisualCue: selectionMesh,
         };
 
         if (this._attachedController) {
@@ -144,6 +151,15 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
      * This number does not correspond to the WebXR specs version
      */
     public static readonly Version = 1;
+
+    /**
+     * default color of the selection ring
+     */
+    public selectionMeshDefaultColor: Color3 = new Color3(0.8, 0.8, 0.8);
+    /**
+     * This color will be applied to the selection ring when selection is triggered
+     */
+    public selectionMeshPickedColor: Color3 = new Color3(0.3, 0.3, 1.0);
 
     /**
      * constructs a new background remover module
@@ -316,6 +332,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                                 controllerData.hoverIndexMeshTip.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
                             }
 
+                            controllerData.pickedPointVisualCue.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
+                            controllerData.pickedPointVisualCue.rotationQuaternion!.copyFrom(this._indexTipQuaternion);
+
                             // set near interaction grab ray parameters
                             const nearGrabRayLength = this._nearGrabLengthScale * this._hoverRadius;
                             controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
@@ -420,6 +439,30 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     private get _utilityLayerScene() {
         return this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene;
+    }
+
+    private _generateVisualCue() {
+        const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
+        const selectionMesh = TorusBuilder.CreateTorus(
+            "gazeTracker",
+            {
+                diameter: 0.0035 * 3,
+                thickness: 0.0025 * 3,
+                tessellation: 20,
+            },
+            sceneToRenderTo
+        );
+        selectionMesh.bakeCurrentTransformIntoVertices();
+        selectionMesh.isPickable = false;
+        selectionMesh.isVisible = false;
+        selectionMesh.rotationQuaternion = Quaternion.Identity();
+        let targetMat = new StandardMaterial("targetMat", sceneToRenderTo);
+        targetMat.specularColor = Color3.Black();
+        targetMat.emissiveColor = this.selectionMeshDefaultColor;
+        targetMat.backFaceCulling = false;
+        selectionMesh.material = targetMat;
+
+        return selectionMesh;
     }
 
     private _attachNearInteractionMode(xrController: WebXRInputSource) {
@@ -557,6 +600,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         }
         controllerData.pickIndexMeshTip?.dispose();
         controllerData.hoverIndexMeshTip?.dispose();
+        controllerData.pickedPointVisualCue.dispose();
 
         // Fire a pointerup
         const pointerEventInit: PointerEventInit = {
