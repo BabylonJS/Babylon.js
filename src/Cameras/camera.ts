@@ -777,7 +777,7 @@ export class Camera extends Node {
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, convertFromOpenGLToD3DZRange: boolean) => void;
+            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean) => void;
             if (scene.useRightHandedSystem) {
                 getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
