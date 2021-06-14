@@ -782,6 +782,8 @@ export class Node implements IBehaviorAware<Node> {
         }
 
         this._behaviors = [];
+
+        this.metadata = null;
     }
 
     /**
