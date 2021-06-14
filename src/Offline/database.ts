@@ -597,7 +597,7 @@ export class Database implements IOfflineProvider {
             // Create XHR
             var xhr = new WebRequest();
             var fileData: any;
-            xhr.open("GET", url + "?" + Date.now());
+            xhr.open("GET", url + (url.match(/\?/) == null ? "?" : "&") + Date.now());
 
             if (useArrayBuffer) {
                 xhr.responseType = "arraybuffer";
