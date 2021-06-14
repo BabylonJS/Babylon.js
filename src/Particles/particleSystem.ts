@@ -295,7 +295,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._scene.particleSystems.push(this);
         } else {
             this._engine = (sceneOrEngine as ThinEngine);
-            this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100);
+            this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100, this._engine.isNDCHalfZRange);
         }
 
         if (this._engine.getCaps().vertexArrayObject) {

@@ -360,7 +360,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @returns the depth min z
      */
     public getDepthMinZ(activeCamera: Camera): number {
-        return this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+        return this._scene.getEngine().isNDCHalfZRange ? 0 : this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
     }
 
     /**

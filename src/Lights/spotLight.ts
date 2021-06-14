@@ -294,7 +294,7 @@ export class SpotLight extends ShadowLight {
 
         const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
 
-        Matrix.PerspectiveFovLHToRef(angle, 1.0, useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix);
+        Matrix.PerspectiveFovLHToRef(angle, 1.0, useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix, true, this._scene.getEngine().isNDCHalfZRange);
     }
 
     protected _computeProjectionTextureViewLightMatrix(): void {
