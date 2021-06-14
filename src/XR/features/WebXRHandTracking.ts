@@ -70,6 +70,10 @@ export interface IWebXRHandTrackingOptions {
          * The utilityLayer scene that contains the 3D UI elements. Passing this in turns on near interactions with the index finger tip
          */
         sceneForNearInteraction?: Scene;
+        /**
+         * Scale factor for all joint meshes (defaults to 1)
+         */
+        scaleFactor?: number;
     };
 
     /**
@@ -308,6 +312,7 @@ export class WebXRHand implements IDisposable {
      * @param _nearInteractionMesh As optional mesh used for near interaction collision checking
      * @param _leftHandedMeshes Are the hand meshes left-handed-system meshes
      * @param _jointsInvisible Are the tracked joint meshes visible
+     * @param _jointScaleFactor Scale factor for all joint meshes
      */
     constructor(
         /** The controller to which the hand correlates. */
@@ -319,7 +324,8 @@ export class WebXRHand implements IDisposable {
         readonly rigMapping: Nullable<XRHandMeshRigMapping>,
         private readonly _nearInteractionMesh?: Nullable<AbstractMesh>,
         private readonly _leftHandedMeshes: boolean = false,
-        private readonly _jointsInvisible: boolean = false
+        private readonly _jointsInvisible: boolean = false,
+        private readonly _jointScaleFactor: number = 1
     ) {
         this._scene = _jointMeshes[0].getScene();
 
@@ -430,13 +436,13 @@ export class WebXRHand implements IDisposable {
             this._tempJointMatrix.decompose(undefined, jointTransform.rotationQuaternion!, jointTransform.position);
 
             // The radius we need to make the joint in order for it to roughly cover the joints of the user's real hand.
-            const jointRadius = this._jointRadii[jointIdx];
+            const scaledJointRadius = this._jointRadii[jointIdx] * this._jointScaleFactor;
 
             const jointMesh = this._jointMeshes[jointIdx];
             jointMesh.isVisible = !this._handMesh && !this._jointsInvisible;
             jointMesh.position.copyFrom(jointTransform.position);
             jointMesh.rotationQuaternion!.copyFrom(jointTransform.rotationQuaternion!);
-            jointMesh.scaling.copyFromFloats(jointRadius, jointRadius, jointRadius);
+            jointMesh.scaling.copyFromFloats(scaledJointRadius, scaledJointRadius, scaledJointRadius);
 
             // The WebXR data comes as right-handed, so we might need to do some conversions.
             if (!this._scene.useRightHandedSystem) {
@@ -454,7 +460,7 @@ export class WebXRHand implements IDisposable {
             // Update the invisible fingertip collidable
             if (this._nearInteractionMesh && jointName == "index-finger-tip") {
                 this._nearInteractionMesh.position.copyFrom(jointTransform.position);
-                this._nearInteractionMesh.scaling.copyFromFloats(jointRadius, jointRadius, jointRadius);
+                this._nearInteractionMesh.scaling.copyFromFloats(scaledJointRadius, scaledJointRadius, scaledJointRadius);
                 if (!this._scene.useRightHandedSystem) {
                     this._nearInteractionMesh.position.z *= -1;
                 }
@@ -766,7 +772,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             this._handResources.rigMappings && this._handResources.rigMappings[handedness],
             touchMesh,
             this.options.handMeshes?.meshesUseLeftHandedCoordinates,
-            this.options.jointMeshes?.invisible
+            this.options.jointMeshes?.invisible,
+            this.options.jointMeshes?.scaleFactor
         );
 
         this._attachedHands[xrController.uniqueId] = webxrHand;
