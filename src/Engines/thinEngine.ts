@@ -283,6 +283,8 @@ export class ThinEngine {
         }
     }
 
+    public readonly isNDCHalfZRange = false;
+
     /**
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
      */

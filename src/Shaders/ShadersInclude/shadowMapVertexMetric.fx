@@ -3,11 +3,17 @@
 #endif
 
 #if SM_DEPTHTEXTURE == 1
+    #ifdef IS_NDC_HALF_ZRANGE
+        #define BIASFACTOR 0.5
+    #else
+        #define BIASFACTOR 1.0
+    #endif
+
     // Depth texture Linear bias.
     #if SM_USE_REVERSE_DEPTHBUFFER == 1
         gl_Position.z -= biasAndScaleSM.x * gl_Position.w;
     #else
-        gl_Position.z += biasAndScaleSM.x * gl_Position.w;
+        gl_Position.z += biasAndScaleSM.x * gl_Position.w * BIASFACTOR;
     #endif
 #endif
 

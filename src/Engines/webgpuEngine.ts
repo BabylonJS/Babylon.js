@@ -485,6 +485,8 @@ export class WebGPUEngine extends Engine {
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
 
+        (this.isNDCHalfZRange as any) = true;
+
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;

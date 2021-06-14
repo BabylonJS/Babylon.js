@@ -598,7 +598,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             }
 
             Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y,
-                useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, this._projectionMatrices[cascadeIndex]);
+                useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, this._projectionMatrices[cascadeIndex], scene.getEngine().isNDCHalfZRange);
 
             this._cascadeMinExtents[cascadeIndex].z = minZ;
             this._cascadeMaxExtents[cascadeIndex].z = maxZ;
@@ -631,12 +631,18 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         const prevSplitDist = this._cascades[cascadeIndex].prevBreakDistance,
               splitDist = this._cascades[cascadeIndex].breakDistance;
 
+        const isNDCHalfZRange = this._scene.getEngine().isNDCHalfZRange;
+
         this._scene.activeCamera.getViewMatrix(); // make sure the transformation matrix we get when calling 'getTransformationMatrix()' is calculated with an up to date view matrix
 
         const invViewProj = Matrix.Invert(this._scene.activeCamera.getTransformationMatrix());
         const cornerIndexOffset = this._scene.getEngine().useReverseDepthBuffer ? 4 : 0;
         for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator.frustumCornersNDCSpace.length; ++cornerIndex) {
-            Vector3.TransformCoordinatesToRef(CascadedShadowGenerator.frustumCornersNDCSpace[(cornerIndex + cornerIndexOffset) % CascadedShadowGenerator.frustumCornersNDCSpace.length], invViewProj, this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+            tmpv1.copyFrom(CascadedShadowGenerator.frustumCornersNDCSpace[(cornerIndex + cornerIndexOffset) % CascadedShadowGenerator.frustumCornersNDCSpace.length]);
+            if (isNDCHalfZRange && tmpv1.z === -1) {
+                tmpv1.z = 0;
+            }
+            Vector3.TransformCoordinatesToRef(tmpv1, invViewProj, this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
         }
 
         // Get the corners of the current cascade slice of the view frustum
