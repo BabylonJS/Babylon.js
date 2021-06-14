@@ -289,6 +289,9 @@ export class ThinEngine {
         }
     }
 
+    /**
+     * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
+     */
     public readonly isNDCHalfZRange = false;
 
     /**
@@ -299,7 +302,7 @@ export class ThinEngine {
     /**
     * An event triggered when the engine is disposed.
     */
-   public readonly onDisposeObservable = new Observable<ThinEngine>();
+    public readonly onDisposeObservable = new Observable<ThinEngine>();
 
     private _frameId = 0;
     /**
