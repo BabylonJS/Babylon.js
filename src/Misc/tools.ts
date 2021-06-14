@@ -918,12 +918,12 @@ export class Tools {
 
     /**
      * Decode the given base64 uri.
-     * @deprecated Please use FileTools.DecodeBase64UrlAsBinary instead.
+     * @deprecated Please use FileTools.DecodeBase64UrlToBinary instead.
      * @param uri The uri to decode
      * @return The decoded base64 data.
      */
     public static DecodeBase64(uri: string): ArrayBuffer {
-        return FileTools.DecodeBase64UrlAsBinary(uri);
+        return FileTools.DecodeBase64UrlToBinary(uri);
     }
 
     /**
