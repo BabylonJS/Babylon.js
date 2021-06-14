@@ -56,7 +56,7 @@ WebGPUEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTex
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }
@@ -237,7 +237,7 @@ WebGPUEngine.prototype.updateRawTexture3D = function(texture: InternalTexture, b
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }
@@ -295,7 +295,7 @@ WebGPUEngine.prototype.updateRawTexture2DArray = function(texture: InternalTextu
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }

@@ -544,7 +544,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._cascades[cascadeIndex].prevBreakDistance = cascadeIndex === 0 ? minDistance : this._cascades[cascadeIndex - 1].breakDistance;
             this._cascades[cascadeIndex].breakDistance = (d - near) / cameraRange;
 
-            this._viewSpaceFrustumsZ[cascadeIndex] = near + this._cascades[cascadeIndex].breakDistance * cameraRange;
+            this._viewSpaceFrustumsZ[cascadeIndex] = d;
             this._frustumLengths[cascadeIndex] = (this._cascades[cascadeIndex].breakDistance - this._cascades[cascadeIndex].prevBreakDistance) * cameraRange;
         }
 
@@ -565,6 +565,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         this._cachedDirection.copyFrom(this._lightDirection);
+
+        const useReverseDepthBuffer = scene.getEngine().useReverseDepthBuffer;
 
         for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
             this._computeFrustumInWorldSpace(cascadeIndex);
@@ -595,7 +597,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 minZ = Math.max(minZ, boundingInfo.boundingBox.minimumWorld.z);
             }
 
-            Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y, minZ, maxZ, this._projectionMatrices[cascadeIndex]);
+            Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y,
+                useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, this._projectionMatrices[cascadeIndex]);
 
             this._cascadeMinExtents[cascadeIndex].z = minZ;
             this._cascadeMaxExtents[cascadeIndex].z = maxZ;
@@ -631,8 +634,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._scene.activeCamera.getViewMatrix(); // make sure the transformation matrix we get when calling 'getTransformationMatrix()' is calculated with an up to date view matrix
 
         const invViewProj = Matrix.Invert(this._scene.activeCamera.getTransformationMatrix());
+        const cornerIndexOffset = this._scene.getEngine().useReverseDepthBuffer ? 4 : 0;
         for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator.frustumCornersNDCSpace.length; ++cornerIndex) {
-            Vector3.TransformCoordinatesToRef(CascadedShadowGenerator.frustumCornersNDCSpace[cornerIndex], invViewProj, this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+            Vector3.TransformCoordinatesToRef(CascadedShadowGenerator.frustumCornersNDCSpace[(cornerIndex + cornerIndexOffset) % CascadedShadowGenerator.frustumCornersNDCSpace.length], invViewProj, this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
         }
 
         // Get the corners of the current cascade slice of the view frustum
@@ -760,9 +764,10 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     protected _createTargetRenderTexture(): void {
+        const engine = this._scene.getEngine();
         const size = { width: this._mapSize, height: this._mapSize, layers: this.numCascades };
         this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", size, this._scene, false, true, this._textureType, false, undefined, false, false, undefined/*, Constants.TEXTUREFORMAT_RED*/);
-        this._shadowMap.createDepthStencilTexture(Constants.LESS, true);
+        this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
     }
 
     protected _initializeShadowMap(): void {
@@ -928,7 +933,12 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         }
 
-        light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);
+        const minZ = this.getLight().getDepthMinZ(camera);
+        const maxZ = this.getLight().getDepthMaxZ(camera);
+
+        const useReverseDepthBuffer = this._scene.getEngine().useReverseDepthBuffer && !light.needCube(); // we only work with distances with point lights, not direct depth values, so no need to switch to a special handling even in reverse depth buffer mode
+
+        light._uniformBuffer.updateFloat2("depthValues", useReverseDepthBuffer ? maxZ : minZ, minZ + maxZ, lightIndex);
     }
 
     /**
