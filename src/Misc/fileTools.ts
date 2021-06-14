@@ -351,7 +351,7 @@ export class FileTools {
             // For a Base64 Data URL we can parse the results and respond immediately
             if (FileTools.IsBase64DataUrl(url)) {
                 try {
-                    onSuccess(useArrayBuffer ? FileTools.DecodeBase64UrlAsBinary(url) : FileTools.DecodeBase64UrlAsText(url));
+                    onSuccess(useArrayBuffer ? FileTools.DecodeBase64UrlToBinary(url) : FileTools.DecodeBase64UrlToString(url));
                 } catch (error) {
                     const message = error.message || "Failed to parse the Data URL";
 
@@ -534,16 +534,8 @@ export class FileTools {
      * @param uri The uri to decode
      * @return The decoded base64 data.
      */
-    public static DecodeBase64UrlAsBinary(uri: string): ArrayBuffer {
-        const decodedString = atob(uri.split(",")[1]);
-        const bufferLength = decodedString.length;
-        const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
-
-        for (let i = 0; i < bufferLength; i++) {
-            bufferView[i] = decodedString.charCodeAt(i);
-        }
-
-        return bufferView.buffer;
+    public static DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
+        return StringTools.DecodeBase64ToBinary(uri.split(",")[1]);
     }
 
     /**
@@ -551,8 +543,8 @@ export class FileTools {
      * @param uri The uri to decode
      * @return The decoded base64 data.
      */
-    public static DecodeBase64UrlAsText(uri: string): string {
-        return atob(uri.split(",")[1]);
+    public static DecodeBase64UrlToString(uri: string): string {
+        return StringTools.DecodeBase64ToString(uri.split(",")[1]);
     }
 }
 
