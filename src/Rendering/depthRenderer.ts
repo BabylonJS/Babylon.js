@@ -222,6 +222,7 @@ export class DepthRenderer {
         var defines = [];
 
         const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
+        const engine = this._scene.getEngine();
 
         let effect = subMeshEffect.effect!;
         let cachedDefines = subMeshEffect.defines;
@@ -294,11 +295,16 @@ export class DepthRenderer {
             defines.push("#define PACKED");
         }
 
+        // Reverse depth buffer
+        if (engine.useReverseDepthBuffer) {
+            defines.push("#define USE_REVERSE_DEPTHBUFFER");
+        }
+
         // Get correct effect
         var join = defines.join("\n");
         if (cachedDefines !== join) {
             cachedDefines = join;
-            effect = this._scene.getEngine().createEffect("depth",
+            effect = engine.createEffect("depth",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "morphTargets"], join,

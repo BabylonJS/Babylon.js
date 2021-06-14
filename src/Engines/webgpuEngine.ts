@@ -217,8 +217,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _device: GPUDevice;
     private _deviceEnabledExtensions: GPUFeatureName[];
-    private _context: GPUCanvasContext;
-    private _swapChain: GPUSwapChain;
+    private _context: GPUPresentationContext;
     private _swapChainTexture: GPUTexture;
     private _mainPassSampleCount: number;
     /** @hidden */
@@ -566,7 +565,7 @@ export class WebGPUEngine extends Engine {
             .then((adapter: GPUAdapter | null) => {
                 this._adapter = adapter!;
                 this._adapterSupportedExtensions = [];
-                this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature));
+                this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName));
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
@@ -588,7 +587,7 @@ export class WebGPUEngine extends Engine {
             .then((device: GPUDevice | null) => {
                 this._device = device!;
                 this._deviceEnabledExtensions = [];
-                this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature));
+                this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
 
                 let numUncapturedErrors = -1;
                 this._device.addEventListener('uncapturederror', (event) => {
@@ -771,8 +770,8 @@ export class WebGPUEngine extends Engine {
     }
 
     private _initializeContextAndSwapChain(): void {
-        this._context = this._canvas.getContext('gpupresent') as unknown as GPUCanvasContext;
-        this._createSwapChain();
+        this._context = this._canvas.getContext('gpupresent') as unknown as GPUPresentationContext;
+        this._configureContext(this._canvas.width, this._canvas.height);
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format = this._colorFormat;
@@ -879,12 +878,17 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    private _createSwapChain(): void {
-        this._swapChain = this._context.configureSwapChain({
+    private _configureContext(width: number, height: number): void {
+        this._context.configure({
             device: this._device,
             format: this._options.swapChainFormat!,
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
-            compositingAlphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasCompositingAlphaMode.Premultiplied : WebGPUConstants.CanvasCompositingAlphaMode.Opaque
+            compositingAlphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasCompositingAlphaMode.Premultiplied : WebGPUConstants.CanvasCompositingAlphaMode.Opaque,
+            size: {
+                width,
+                height,
+                depthOrArrayLayers: 1
+            },
         });
     }
 
@@ -907,7 +911,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._createSwapChain();
+        this._configureContext(width, height);
         this._initializeMainAttachments();
         return true;
     }
@@ -1714,7 +1718,7 @@ export class WebGPUEngine extends Engine {
                         const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height, undefined, creationFlags);
 
                         if (WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
-                            this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+                            this._textureHelper.updateTexture(imageBitmap, texture, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
                             if (!noMipmap && !isCompressed) {
                                 this._generateMipmaps(texture, this._uploadEncoder);
                             }
@@ -1989,7 +1993,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -2003,7 +2007,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, false, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, false, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -2024,7 +2028,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -2045,7 +2049,7 @@ export class WebGPUEngine extends Engine {
         const width = Math.ceil(texture.width / (1 << lod));
         const height = Math.ceil(texture.height / (1 << lod));
 
-        this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(bitmap, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /**
@@ -2225,7 +2229,7 @@ export class WebGPUEngine extends Engine {
         const colorAttachments: GPURenderPassColorAttachment[] = [];
 
         if (this.useReverseDepthBuffer) {
-            this.setDepthFunctionToGreater();
+            this.setDepthFunctionToGreaterOrEqual();
         }
 
         const colorClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearColor ? clearColor : WebGPUConstants.LoadOp.Load;
@@ -2373,7 +2377,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (this.useReverseDepthBuffer) {
-            this.setDepthFunctionToGreater();
+            this.setDepthFunctionToGreaterOrEqual();
         }
 
         const colorClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearColor ? clearColor : WebGPUConstants.LoadOp.Load;
@@ -2387,7 +2391,7 @@ export class WebGPUEngine extends Engine {
 
         const renderPassWrapperForSwapChain = this._invertYFinalFramebuffer ? this._mainRenderPassCopyWrapper : this._mainRenderPassWrapper;
 
-        this._swapChainTexture = this._swapChain.getCurrentTexture();
+        this._swapChainTexture = this._context.getCurrentTexture();
         renderPassWrapperForSwapChain.colorAttachmentGPUTextures![0].set(this._swapChainTexture);
 
         // Resolve in case of MSAA

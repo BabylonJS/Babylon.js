@@ -2085,9 +2085,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
+        const engine = scene.getEngine();
+        const useReverseDepthBuffer = engine.useReverseDepthBuffer;
         let oldCameraMaxZ = 0;
         let oldCamera: Nullable<Camera> = null;
-        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
+        if (!useReverseDepthBuffer && this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
             oldCameraMaxZ = scene.activeCamera.maxZ;
             oldCamera = scene.activeCamera;
             scene.activeCamera.maxZ = 0;
@@ -2098,7 +2100,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalMeshDataInfo._onBeforeRenderObservable.notifyObservers(this);
         }
 
-        var engine = scene.getEngine();
         var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || subMesh.getRenderingMesh().hasThinInstances;
         let instanceDataStorage = this._instanceDataStorage;
 
@@ -3058,7 +3059,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public increaseVertices(numberPerEdge: number): void {
         var vertex_data = VertexData.ExtractFromMesh(this);
-        var uvs = vertex_data.uvs;
+        var uvs = vertex_data.uvs && !Array.isArray(vertex_data.uvs) && Array.from ? Array.from(vertex_data.uvs) : vertex_data.uvs;
         var currentIndices = vertex_data.indices && !Array.isArray(vertex_data.indices) && Array.from ? Array.from(vertex_data.indices) : vertex_data.indices;
         var positions = vertex_data.positions && !Array.isArray(vertex_data.positions) && Array.from ? Array.from(vertex_data.positions) : vertex_data.positions;
         var normals = vertex_data.normals && !Array.isArray(vertex_data.normals) && Array.from ? Array.from(vertex_data.normals) : vertex_data.normals;
@@ -3069,6 +3070,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             vertex_data.indices = currentIndices;
             vertex_data.positions = positions;
             vertex_data.normals = normals;
+            vertex_data.uvs = uvs;
 
             var segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
             var tempIndices: Array<Array<number>> = new Array();

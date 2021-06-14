@@ -4,7 +4,11 @@
     #if SM_USEDISTANCE == 1
         depthSM = clamp(((length(vPositionWSM - lightDataSM) + depthValuesSM.x) / (depthValuesSM.y)) + biasAndScaleSM.x, 0.0, 1.0);
     #else
-        depthSM = clamp(((zSM + depthValuesSM.x) / (depthValuesSM.y)) + biasAndScaleSM.x, 0.0, 1.0);
+        #if SM_USE_REVERSE_DEPTHBUFFER == 1
+            depthSM = clamp(((-zSM + depthValuesSM.x) / (depthValuesSM.y)) + biasAndScaleSM.x, 0.0, 1.0);
+        #else
+            depthSM = clamp(((zSM + depthValuesSM.x) / (depthValuesSM.y)) + biasAndScaleSM.x, 0.0, 1.0);
+        #endif
     #endif
     gl_FragDepth = depthSM;
 #elif SM_USEDISTANCE == 1

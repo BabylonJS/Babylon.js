@@ -779,15 +779,15 @@ export class Camera extends Node {
             const reverseDepth = engine.useReverseDepthBuffer;
             let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean) => void;
             if (scene.useRightHandedSystem) {
-                getProjectionMatrix = reverseDepth ? Matrix.PerspectiveFovReverseRHToRef : Matrix.PerspectiveFovRHToRef;
+                getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
-                getProjectionMatrix = reverseDepth ? Matrix.PerspectiveFovReverseLHToRef : Matrix.PerspectiveFovLHToRef;
+                getProjectionMatrix = Matrix.PerspectiveFovLHToRef;
             }
 
             getProjectionMatrix(this.fov,
                 engine.getAspectRatio(this),
-                this.minZ,
-                this.maxZ,
+                reverseDepth ? this.maxZ : this.minZ,
+                reverseDepth ? this.minZ : this.maxZ,
                 this._projectionMatrix,
                 this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
         } else {
