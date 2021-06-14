@@ -579,6 +579,7 @@ var WaterMaterialDefines = /** @class */ (function (_super) {
         _this.INSTANCES = false;
         _this.SPECULARTERM = false;
         _this.LOGARITHMICDEPTH = false;
+        _this.USE_REVERSE_DEPTHBUFFER = false;
         _this.FRESNELSEPARATE = false;
         _this.BUMPSUPERIMPOSE = false;
         _this.BUMPAFFECTSREFLECTION = false;
