@@ -145,7 +145,10 @@ export class DepthRenderer {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
-                effect.setFloat2("depthValues", cameraIsOrtho ? 1 : camera.minZ, cameraIsOrtho ? 2 : camera.minZ + camera.maxZ);
+                const minZ = engine.isNDCHalfZRange ? 0 : cameraIsOrtho ? 1 : camera.minZ;
+                const maxZ = cameraIsOrtho ? 1 : camera.maxZ;
+
+                effect.setFloat2("depthValues", minZ, minZ + maxZ);
 
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
