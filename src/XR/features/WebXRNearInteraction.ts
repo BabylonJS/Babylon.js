@@ -375,7 +375,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 return result;
             };
 
-            let pick = new PickingInfo();
+            let pick = null;
 
             // near interaction hover
             if (controllerData.hoverIndexMeshTip) {
