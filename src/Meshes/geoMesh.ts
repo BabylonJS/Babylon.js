@@ -1,14 +1,8 @@
-import { Logger } from "../Misc/logger";
-import { Scene } from "../scene";
 import { Vector3, TmpVectors } from "../Maths/math.vector";
-import { VertexBuffer } from "../Buffers/buffer";
-import { Mesh } from "../Meshes/mesh";
-import { VertexData } from "../Meshes/mesh.vertexData";
-import { Engine } from "../Engines/engine";
-import { Nullable } from "../types";
 import { Scalar } from '../Maths/math.scalar';
-import { Epsilon, PHI, THIRDR3, IsoGridSize } from '../Maths/math.constants';
-import { IsoVector, TmpIsoVectors } from '../Maths/math.isovector';
+import { PHI, THIRDR3 } from '../Maths/math.constants';
+import { IsoVector } from '../Maths/math.isovector';
+
 
 
 /**
@@ -16,7 +10,7 @@ import { IsoVector, TmpIsoVectors } from '../Maths/math.isovector';
  * When O is the isovector (0, 0), A is isovector (m, n)
  * @hidden
  */
-class Primary {
+export class Primary {
     //properties
     public _cartesian: Vector3[];
     public _vertices: IsoVector[];
@@ -681,6 +675,8 @@ export class GeoData extends PolyhedronData{
                 geoDATA._mapBAOAtoDATA(f, primTri);
             };
         };
+
+        geoDATA._orderData(primTri);
 
         return geoDATA;
     }
