@@ -17,6 +17,7 @@ export * from "./groundBuilder";
 export * from "./tubeBuilder";
 export * from "./polyhedronBuilder";
 export * from "./icoSphereBuilder";
+export * from "./geoBuilder";
 export * from "./decalBuilder";
 export * from "./icoSphereBuilder";
 export * from "./capsuleBuilder";

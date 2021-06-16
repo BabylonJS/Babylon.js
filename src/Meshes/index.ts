@@ -12,6 +12,7 @@ export * from "./meshBuilder";
 export * from "./meshSimplification";
 export * from "./meshSimplificationSceneComponent";
 export * from "./polygonMesh";
+export * from "./geoMesh";
 export * from "./subMesh";
 export * from "./meshLODLevel";
 export * from "./transformNode";
