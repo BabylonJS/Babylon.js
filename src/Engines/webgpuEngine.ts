@@ -2114,7 +2114,9 @@ export class WebGPUEngine extends Engine {
         this._timestampQuery.endFrame(this._renderEncoder);
 
         if (this._invertYFinalFramebuffer) {
-            this._textureHelper.copyWithInvertY(this._mainTextureLastCopy.createView(), this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format, this._mainRenderPassCopyWrapper.renderPassDescriptor!, this._renderEncoder);
+            if (this._mainRenderPassCopyWrapper.renderPassDescriptor!.colorAttachments[0].view) {
+                this._textureHelper.copyWithInvertY(this._mainTextureLastCopy.createView(), this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format, this._mainRenderPassCopyWrapper.renderPassDescriptor!, this._renderEncoder);
+            }
         }
 
         this.flushFramebuffer(false);
