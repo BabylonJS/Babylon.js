@@ -20,8 +20,6 @@ declare module BABYLON {
         static HasAudioContext(): boolean;
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
-        /** Register handler that is triggered when the fonts have been loaded (engine.html) */
-        static OnFontsReadyObservable: Observable<Engine>;
         /** Register handler that is triggered when then engine has been resized (engine.html) */
         static OnEngineResizeObservable: Observable<Engine>;
         /** Register handler that is triggered when the scene has been loaded (engine.html) */
