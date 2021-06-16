@@ -30,6 +30,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
     import { Plane } from "babylonjs/Maths/math.plane";
     import { PointerInfo } from "babylonjs/Events/pointerEvents";
     import { EventState } from "babylonjs/Misc/observable";
+    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
@@ -50,6 +51,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
+        artBoardBackground: Rectangle;
         private _panning;
         private _canvas;
         private _responsive;
@@ -162,32 +164,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/buttonLineComponen
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer" {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
-    import * as React from "react";
-    import { ISelectedLineContainer } from "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer";
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/fileButtonLineComponent" {
     import * as React from "react";
     interface IFileButtonLineComponentProps {
@@ -217,6 +193,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/checkBoxLineCompon
         onValueChanged?: () => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         disabled?: boolean;
+        icon?: string;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -273,6 +250,32 @@ declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockO
          * Gets or set if the lock is engaged
          */
         lock: boolean;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer" {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
+    import * as React from "react";
+    import { ISelectedLineContainer } from "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer";
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
+        render(): JSX.Element;
     }
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/floatLineComponent" {
@@ -360,6 +363,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineCompo
         value?: string;
         onChange?: (value: string) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        icon?: string;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -395,6 +399,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/optionsLineCompone
         extractValue?: () => number;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         allowNullValue?: boolean;
+        icon?: string;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number;
@@ -893,6 +898,7 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
         private _onBuiltObserver;
         private _timerIntervalId;
         private _lockObject;
+        private _sizeOption;
         constructor(props: IPropertyTabComponentProps);
         timerRefresh(): void;
         componentDidMount(): void;
@@ -1821,6 +1827,7 @@ declare module GUIEDITOR {
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
+        artBoardBackground: Rectangle;
         private _panning;
         private _canvas;
         private _responsive;
@@ -1923,30 +1930,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module GUIEDITOR {
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
@@ -1971,6 +1954,7 @@ declare module GUIEDITOR {
         onValueChanged?: () => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         disabled?: boolean;
+        icon?: string;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -2026,6 +2010,30 @@ declare module GUIEDITOR {
          * Gets or set if the lock is engaged
          */
         lock: boolean;
+    }
+}
+declare module GUIEDITOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module GUIEDITOR {
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
+        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {
@@ -2102,6 +2110,7 @@ declare module GUIEDITOR {
         value?: string;
         onChange?: (value: string) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        icon?: string;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -2134,6 +2143,7 @@ declare module GUIEDITOR {
         extractValue?: () => number;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         allowNullValue?: boolean;
+        icon?: string;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number;
@@ -2529,6 +2539,7 @@ declare module GUIEDITOR {
         private _onBuiltObserver;
         private _timerIntervalId;
         private _lockObject;
+        private _sizeOption;
         constructor(props: IPropertyTabComponentProps);
         timerRefresh(): void;
         componentDidMount(): void;

@@ -215,6 +215,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/checkBoxLineCompone
         onValueChanged?: () => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         disabled?: boolean;
+        icon?: string;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -362,6 +363,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/optionsLineComponen
         extractValue?: () => number;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         allowNullValue?: boolean;
+        icon?: string;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number;
@@ -623,6 +625,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/textInputLineCompon
         value?: string;
         onChange?: (value: string) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        icon?: string;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -4627,6 +4630,7 @@ declare module INSPECTOR {
         onValueChanged?: () => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         disabled?: boolean;
+        icon?: string;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -4760,6 +4764,7 @@ declare module INSPECTOR {
         extractValue?: () => number;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         allowNullValue?: boolean;
+        icon?: string;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number;
@@ -4998,6 +5003,7 @@ declare module INSPECTOR {
         value?: string;
         onChange?: (value: string) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        icon?: string;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
