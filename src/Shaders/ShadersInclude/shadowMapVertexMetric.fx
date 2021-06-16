@@ -11,24 +11,20 @@
 
     // Depth texture Linear bias.
     #if SM_USE_REVERSE_DEPTHBUFFER == 1
-        gl_Position.z -= biasAndScaleSM.x * gl_Position.w;
+        gl_Position.z -= biasAndScaleSM.x * gl_Position.w * BIASFACTOR;
     #else
         gl_Position.z += biasAndScaleSM.x * gl_Position.w * BIASFACTOR;
     #endif
 #endif
 
 #if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
-    #if SM_USE_REVERSE_DEPTHBUFFER == 1
-        zSM = -gl_Position.z;
-    #else
-        zSM = gl_Position.z;
-    #endif
+    zSM = gl_Position.z;
     gl_Position.z = 0.0;
 #elif SM_USEDISTANCE == 0
     // Color Texture Linear bias.
     #if SM_USE_REVERSE_DEPTHBUFFER == 1
-        vDepthMetricSM = ((-gl_Position.z + depthValuesSM.x) / (depthValuesSM.y)) + biasAndScaleSM.x;
+        vDepthMetricSM = (-gl_Position.z + depthValuesSM.x) / depthValuesSM.y + biasAndScaleSM.x;
     #else
-        vDepthMetricSM = ((gl_Position.z + depthValuesSM.x) / (depthValuesSM.y)) + biasAndScaleSM.x;
+        vDepthMetricSM = (gl_Position.z + depthValuesSM.x) / depthValuesSM.y + biasAndScaleSM.x;
     #endif
 #endif
