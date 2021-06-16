@@ -1,5 +1,3 @@
-import { backgroundVertexShader } from '../Shaders/background.vertex';
-
 /**
  * Scalar computation library
  */
