@@ -4770,7 +4770,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param cameraViewSpace defines if picking will be done in view space (false by default)
      * @returns a Ray
      */
-    public createPickingRay(x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
+    public createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
         throw _DevTools.WarnImport("Ray");
     }
 
@@ -4784,7 +4784,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param cameraViewSpace defines if picking will be done in view space (false by default)
      * @returns the current scene
      */
-    public createPickingRayToRef(x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
+    public createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
         throw _DevTools.WarnImport("Ray");
     }
 
