@@ -1043,6 +1043,28 @@ export class VertexData {
         throw _DevTools.WarnImport("polyhedronBuilder");
     }
 
+    /**
+     * Creates the VertexData for a Geodesic Polyhedron
+     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+     * * m number of horizontal steps along an isogrid
+     * * n number of angled steps along an isogrid
+     * * size the size of the Geodesic, optional default 1
+     * * sizeX allows stretching in the x direction, optional, default size
+     * * sizeY allows stretching in the y direction, optional, default size
+     * * sizeZ allows stretching in the z direction, optional, default size
+     * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+     * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+     * * flat when true creates a flat shaded mesh, optional, default true
+     * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @returns the VertexData of the Polyhedron
+     */
+     public static CreateGeodesic(options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+        throw _DevTools.WarnImport("geoBuilder");
+    }
+
     //
     /**
      * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
