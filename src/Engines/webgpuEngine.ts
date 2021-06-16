@@ -571,8 +571,8 @@ export class WebGPUEngine extends Engine {
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
-                if (deviceDescriptor?.nonGuaranteedFeatures) {
-                    const requestedExtensions = deviceDescriptor.nonGuaranteedFeatures;
+                if (deviceDescriptor?.requiredFeatures) {
+                    const requestedExtensions = deviceDescriptor.requiredFeatures;
                     const validExtensions: GPUFeatureName[] = [];
 
                     for (let extension of requestedExtensions) {
@@ -581,7 +581,7 @@ export class WebGPUEngine extends Engine {
                         }
                     }
 
-                    deviceDescriptor.nonGuaranteedFeatures = validExtensions;
+                    deviceDescriptor.requiredFeatures = validExtensions;
                 }
 
                 return this._adapter.requestDevice(this._options.deviceDescriptor);

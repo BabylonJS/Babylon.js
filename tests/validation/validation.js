@@ -486,7 +486,7 @@ function init(_engineName) {
 
         const options = {
             deviceDescriptor: {
-                nonGuaranteedFeatures: [
+                requiredFeatures: [
                     "texture-compression-bc",
                     "timestamp-query",
                     "pipeline-statistics-query",
