@@ -60,8 +60,8 @@ declare class GPUAdapter {
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
-    nonGuaranteedFeatures?: GPUFeatureName[]; /* default=[] */
-    nonGuaranteedLimits?: { [name: string]: GPUSize32 }; /* default={} */
+    requiredFeatures?: GPUFeatureName[]; /* default=[] */
+    requiredLimits?: { [name: string]: GPUSize32 }; /* default={} */
 }
 
 type GPUFeatureName =
