@@ -1326,6 +1326,13 @@
             "referenceImage": "reverseDepthBufferShadows.png"
         },
         {
+            "title": "Reverse depth buffer and CSM shadows",
+            "renderCount": 10,
+            "playgroundId": "#IIZ9UU#180",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "reverseDepthBufferCSMShadows.png"
+        },
+        {
             "title": "Reverse depth buffer fix flicker",
             "playgroundId": "#67JFXI#15",
             "excludedEngines": ["webgl1", "webgl2"],
