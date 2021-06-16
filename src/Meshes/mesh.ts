@@ -785,11 +785,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     private _sortLODLevels(): void {
         this._internalMeshDataInfo._LODLevels.sort((a, b) => {
-            if (a.distance < b.distance) {
-                return 1;
+            const useScreenCoverage = a.useScreenCoverage ? -1 : 1;
+            if (a.distanceOrScreenCoverage < b.distanceOrScreenCoverage) {
+                return useScreenCoverage;
             }
-            if (a.distance > b.distance) {
-                return -1;
+            if (a.distanceOrScreenCoverage > b.distanceOrScreenCoverage) {
+                return -useScreenCoverage;
             }
 
             return 0;
@@ -799,17 +800,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Add a mesh as LOD level triggered at the given distance.
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
-     * @param distance The distance from the center of the object to show this level
+     * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`
      * @param mesh The mesh to be added as LOD level (can be null)
+     * @param screenCoverage if specified, will use screen coverage (surface on the screen) instead of distance to select LOD level
      * @return This mesh (for chaining)
      */
-    public addLODLevel(distance: number, mesh: Nullable<Mesh>): Mesh {
+    public addLODLevel(distanceOrScreenCoverage: number, mesh: Nullable<Mesh>, useScreenCoverage: boolean = false): Mesh {
         if (mesh && mesh._masterMesh) {
             Logger.Warn("You cannot use a mesh as LOD level twice");
             return this;
         }
 
-        var level = new MeshLODLevel(distance, mesh);
+        var level = new MeshLODLevel(distanceOrScreenCoverage, mesh, useScreenCoverage);
         this._internalMeshDataInfo._LODLevels.push(level);
 
         if (mesh) {
@@ -832,7 +834,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var index = 0; index < internalDataInfo._LODLevels.length; index++) {
             var level = internalDataInfo._LODLevels[index];
 
-            if (level.distance === distance) {
+            if (level.distanceOrScreenCoverage === distance) {
                 return level.mesh;
             }
         }
@@ -884,8 +886,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
+        const useScreenCoverage = internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].useScreenCoverage;
+        let ratio = 1;
 
-        if (internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distance > distanceToCamera) {
+        if (useScreenCoverage) {
+            const screenArea = camera.screenArea;
+            let meshArea = bSphere.radiusWorld * camera.minZ / distanceToCamera;
+            meshArea = meshArea * meshArea * Math.PI;
+            ratio = meshArea / screenArea;
+        }
+
+        if ((useScreenCoverage && internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distanceOrScreenCoverage < ratio) ||
+            (!useScreenCoverage && internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distanceOrScreenCoverage > distanceToCamera)) {
             if (this.onLODLevelSelection) {
                 this.onLODLevelSelection(distanceToCamera, this, this);
             }
@@ -895,7 +907,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var index = 0; index < internalDataInfo._LODLevels.length; index++) {
             var level = internalDataInfo._LODLevels[index];
 
-            if (level.distance < distanceToCamera) {
+            if ((useScreenCoverage && level.distanceOrScreenCoverage > ratio) ||
+                (!useScreenCoverage && level.distanceOrScreenCoverage < distanceToCamera)) {
                 if (level.mesh) {
                     if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
                         level.mesh._checkDelayState();
