@@ -1317,6 +1317,20 @@
             "excludedEngines": ["webgl1"],
             "referenceImage": "gpuparticle-basic.png",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Reverse depth buffer and shadows",
+            "renderCount": 10,
+            "playgroundId": "#WL4Q8J#16",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "reverseDepthBufferShadows.png"
+        },
+        {
+            "title": "Reverse depth buffer fix flicker",
+            "playgroundId": "#67JFXI#15",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "referenceImage": "reverseDepthBufferFixFlicker.png",
+            "errorRatio": 2
         }
     ]
 }
