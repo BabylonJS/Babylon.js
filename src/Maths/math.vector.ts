@@ -2915,6 +2915,55 @@ export class Vector4 {
     }
 
     /**
+     * Returns a new Vector4 set with the result of the transformation by the given matrix of the given vector.
+     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * The difference with Vector3.TransformCoordinates is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+     * @param vector defines the Vector3 to transform
+     * @param transformation defines the transformation matrix
+     * @returns the transformed Vector4
+     */
+     public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector4 {
+        var result = Vector4.Zero();
+        Vector4.TransformCoordinatesToRef(vector, transformation, result);
+        return result;
+    }
+
+    /**
+     * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given vector
+     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * The difference with Vector3.TransformCoordinatesToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+     * @param vector defines the Vector3 to transform
+     * @param transformation defines the transformation matrix
+     * @param result defines the Vector4 where to store the result
+     */
+    public static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector4): void {
+        Vector4.TransformCoordinatesFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
+    }
+
+    /**
+     * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given floats (x, y, z)
+     * This method computes tranformed coordinates only, not transformed direction vectors
+     * The difference with Vector3.TransformCoordinatesFromFloatsToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+     * @param x define the x coordinate of the source vector
+     * @param y define the y coordinate of the source vector
+     * @param z define the z coordinate of the source vector
+     * @param transformation defines the transformation matrix
+     * @param result defines the Vector4 where to store the result
+     */
+    public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector4): void {
+        const m = transformation.m;
+        var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
+        var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
+        var rz = x * m[2] + y * m[6] + z * m[10] + m[14];
+        var rw = x * m[3] + y * m[7] + z * m[11] + m[15];
+
+        result.x = rx;
+        result.y = ry;
+        result.z = rz;
+        result.w = rw;
+    }
+
+    /**
      * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
      * This methods computes transformed normalized direction vectors only.
      * @param vector the vector to transform

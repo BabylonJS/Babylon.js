@@ -145,8 +145,15 @@ export class DepthRenderer {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
-                const minZ = engine.isNDCHalfZRange ? 0 : cameraIsOrtho ? 1 : camera.minZ;
-                const maxZ = cameraIsOrtho ? 1 : camera.maxZ;
+                let minZ : number, maxZ: number;
+
+                if (cameraIsOrtho) {
+                    minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+                    maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+                } else {
+                    minZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? camera.minZ : engine.isNDCHalfZRange ? 0 : camera.minZ;
+                    maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : camera.maxZ;
+                }
 
                 effect.setFloat2("depthValues", minZ, minZ + maxZ);
 
