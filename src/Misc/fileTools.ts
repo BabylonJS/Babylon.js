@@ -526,7 +526,7 @@ export class FileTools {
      */
     public static IsBase64DataUrl(uri: string): boolean {
         // Check that the length of the string is at least as long as the minimum base64 data url length
-        if (uri.length >= "data:;base64,".length)
+        if (uri.length >= 13) // "data:;base64,".length
         {
             if (uri.substr(0, 5) === "data:") {
                 let commaIndex = uri.indexOf(",");
