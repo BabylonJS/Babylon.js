@@ -1626,8 +1626,9 @@ export class NativeEngine extends Engine {
 
         if (texture != null &&
             texture._hardwareTexture != null) {
-            var webGLTexture = texture._hardwareTexture.underlyingResource;
-            this._native.copyTexture(webGLTexture, canvas.getCanvasTexture());
+            const source = canvas.getCanvasTexture();
+            const destination = texture._hardwareTexture.underlyingResource;
+            this._native.copyTexture(destination, source);
             texture.isReady = true;
         }
     }
