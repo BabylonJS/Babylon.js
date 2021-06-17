@@ -18,6 +18,7 @@ import { TextBlock } from "../../2D/controls/textBlock";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control3D } from "./control3D";
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { DomManagement } from "babylonjs/Misc/domManagement";
 
 /**
  * Class used to create a holographic button in 3D
@@ -224,30 +225,32 @@ export class HolographicButton extends Button3D {
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
 
-        let panel = new StackPanel();
-        panel.isVertical = true;
+        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
+            let panel = new StackPanel();
+            panel.isVertical = true;
 
-        if (this._imageUrl) {
-            let image = new Image();
-            image.source = this._imageUrl;
-            image.paddingTop = "40px";
-            image.height = "180px";
-            image.width = "100px";
-            image.paddingBottom = "40px";
-            panel.addControl(image);
-        }
+            if (this._imageUrl) {
+                let image = new Image();
+                image.source = this._imageUrl;
+                image.paddingTop = "40px";
+                image.height = "180px";
+                image.width = "100px";
+                image.paddingBottom = "40px";
+                panel.addControl(image);
+            }
 
-        if (this._text) {
-            let text = new TextBlock();
-            text.text = this._text;
-            text.color = "white";
-            text.height = "30px";
-            text.fontSize = 24;
-            panel.addControl(text);
-        }
+            if (this._text) {
+                let text = new TextBlock();
+                text.text = this._text;
+                text.color = "white";
+                text.height = "30px";
+                text.fontSize = 24;
+                panel.addControl(text);
+            }
 
-        if (this._frontPlate) {
-            this.content = panel;
+            if (this._frontPlate) {
+                this.content = panel;
+            }
         }
     }
 
