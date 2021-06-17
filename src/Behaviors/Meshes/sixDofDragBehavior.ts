@@ -233,6 +233,8 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
             this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);
         }
 
-        this._virtualTransformNode.dispose();
+        if (this._virtualTransformNode) {
+            this._virtualTransformNode.dispose();
+        }
     }
 }
