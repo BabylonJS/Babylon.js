@@ -19,6 +19,7 @@ import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehav
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
+import { DomManagement } from "babylonjs/Misc/domManagement";
 
 /**
  * Class used to create a holographic slate
@@ -143,8 +144,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
-        // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
-        if (!!document.createElement) {
+
+        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 let image = new Image();
                 image.source = this._imageUrl;
