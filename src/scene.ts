@@ -5093,8 +5093,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
-        const request = FileTools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
+    public _loadFile(fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
+        const request = FileTools.LoadFile(fileOrUrl, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -5103,13 +5103,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** @hidden */
-    public _loadFileAsync(url: string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+    public _loadFileAsync(fileOrUrl: File | string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onOpened?: (request: WebRequest) => void): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
-            this._loadFile(url, (data) => {
+            this._loadFile(fileOrUrl, (data) => {
                 resolve(data);
             }, onProgress, useOfflineSupport, useArrayBuffer, (request, exception) => {
                 reject(exception);
-            });
+            }, onOpened);
         });
     }
 

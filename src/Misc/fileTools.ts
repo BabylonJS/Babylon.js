@@ -265,8 +265,8 @@ export class FileTools {
      * @returns a file request object
      */
     public static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
-        let reader = new FileReader();
-        let request: IFileRequest = {
+        const reader = new FileReader();
+        const request: IFileRequest = {
             onCompleteObservable: new Observable<IFileRequest>(),
             abort: () => reader.abort(),
         };
@@ -296,8 +296,8 @@ export class FileTools {
     }
 
     /**
-     * Loads a file from a url
-     * @param url url to load
+     * Loads a file from a url, a data url, or a file url
+     * @param fileOrUrl file, url, data url, or file url to load
      * @param onSuccess callback called when the file successfully loads
      * @param onProgress callback called while file is loading (if the server supports this mode)
      * @param offlineProvider defines the offline provider for caching
@@ -305,10 +305,16 @@ export class FileTools {
      * @param onError callback called when the file fails to load
      * @returns a file request object
      */
-    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
+    public static LoadFile(fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
+        if (fileOrUrl instanceof File) {
+            return FileTools.ReadFile(fileOrUrl, onSuccess, onProgress, useArrayBuffer, onError ? (error: ReadFileError) => {
+                onError(undefined, error);
+            } : undefined);
+        }
+
         // If file and file input are set
-        if (url.indexOf("file:") !== -1) {
-            let fileName = decodeURIComponent(url.substring(5).toLowerCase());
+        if (fileOrUrl.indexOf("file:") !== -1) {
+            let fileName = decodeURIComponent(fileOrUrl.substring(5).toLowerCase());
             if (fileName.indexOf('./') === 0) {
                 fileName = fileName.substring(2);
             }
@@ -318,18 +324,37 @@ export class FileTools {
             }
         }
 
-        return FileTools.RequestFile(url, (data, request) => {
+        // For a Base64 Data URL
+        if (FileTools.IsBase64DataUrl(fileOrUrl)) {
+            try {
+                onSuccess(useArrayBuffer ? FileTools.DecodeBase64UrlToBinary(fileOrUrl) : FileTools.DecodeBase64UrlToString(fileOrUrl));
+            } catch (error) {
+                if (onError) {
+                    onError(undefined, error);
+                } else {
+                    Logger.Error(error.message || "Failed to parse the Data URL");
+                }
+            }
+
+            return {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => {},
+            };
+        }
+
+        return FileTools.RequestFile(fileOrUrl, (data, request) => {
             onSuccess(data, request ? request.responseURL : undefined);
         }, onProgress, offlineProvider, useArrayBuffer, onError ? (error) => {
             onError(error.request, new LoadFileError(error.message, error.request));
-        } : undefined);
+        } : undefined, onOpened);
     }
 
     /**
-     * Loads a file
+     * Loads a file from a url
      * @param url url to load
      * @param onSuccess callback called when the file successfully loads
      * @param onProgress callback called while file is loading (if the server supports this mode)
+     * @param offlineProvider defines the offline provider for caching
      * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
      * @param onError callback called when the file fails to load
      * @param onOpened callback called when the web request is opened
@@ -348,23 +373,6 @@ export class FileTools {
         };
 
         const requestFile = () => {
-            // For a Base64 Data URL we can parse the results and respond immediately
-            if (FileTools.IsBase64DataUrl(url)) {
-                try {
-                    onSuccess(useArrayBuffer ? FileTools.DecodeBase64UrlToBinary(url) : FileTools.DecodeBase64UrlToString(url));
-                } catch (error) {
-                    const message = error.message || "Failed to parse the Data URL";
-
-                    if (onError) {
-                        onError(new RequestFileError(message, new WebRequest()));
-                    } else {
-                        Logger.Error(message);
-                    }
-                }
-
-                return;
-            }
-
             let request = new WebRequest();
             let retryHandle: Nullable<number> = null;
 
