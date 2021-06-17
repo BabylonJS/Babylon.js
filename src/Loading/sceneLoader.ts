@@ -14,7 +14,7 @@ import { Constants } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
-import { LoadFileError } from '../Misc/fileTools';
+import { FileTools, LoadFileError } from '../Misc/fileTools';
 import { TransformNode } from '../Meshes/transformNode';
 import { Geometry } from '../Meshes/geometry';
 import { Light } from '../Lights/light';
@@ -466,7 +466,8 @@ export class SceneLoader {
 
         SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
 
-        if (directLoad && plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url)) {
+        if (directLoad && !FileTools.IsBase64DataUrl(fileInfo.url)) {
+            // The url is a data: url, but not a base64 encoded url. Load it using the directLoad path.
             if (plugin.directLoad) {
                 const result = plugin.directLoad(scene, directLoad);
                 if (result.then) {
