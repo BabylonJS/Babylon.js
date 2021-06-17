@@ -1,6 +1,5 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { FilesInputStore } from "../Misc/filesInputStore";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -15,7 +14,7 @@ import { Constants } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
-import { RequestFileError, ReadFileError } from '../Misc/fileTools';
+import { LoadFileError } from '../Misc/fileTools';
 import { TransformNode } from '../Meshes/transformNode';
 import { Geometry } from '../Meshes/geometry';
 import { Light } from '../Lights/light';
@@ -146,26 +145,14 @@ export interface ISceneLoaderPluginBase {
     /**
      * The callback called when loading from a url.
      * @param scene scene loading this url
-     * @param url url to load
+     * @param fileOrUrl file or url to load
      * @param onSuccess callback called when the file successfully loads
      * @param onProgress callback called while file is loading (if the server supports this mode)
      * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
      * @param onError callback called when the file fails to load
      * @returns a file request object
      */
-    requestFile?(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
-
-    /**
-     * The callback called when loading from a file object.
-     * @param scene scene loading this file
-     * @param file defines the file to load
-     * @param onSuccess defines the callback to call when data is loaded
-     * @param onProgress defines the callback to call during loading process
-     * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
-     * @param onError defines the callback to call when an error occurs
-     * @returns a file request object
-     */
-    readFile?(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+    loadFile?(scene: Scene, fileOrUrl: File | string, onSuccess: (data: any, responseURL?: string) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
 
     /**
      * The callback that returns true if the data can be directly loaded.
@@ -327,7 +314,7 @@ interface IFileInfo {
     /**
      * Gets the file
      */
-    file: Nullable<File>;
+     file: Nullable<File>;
 }
 
 /**
@@ -525,56 +512,46 @@ export class SceneLoader {
             });
         }
 
-        if (fileInfo.file) {
-            // Loading file from disk via input file or drag'n'drop
-            const errorCallback = (error: ReadFileError) => {
-                onError(error.message, error);
+        const manifestChecked = () => {
+            if (pluginDisposed) {
+                return;
+            }
+
+            const successCallback = (data: any, responseURL?: string) => {
+                dataCallback(data, responseURL);
             };
 
-            request = plugin.readFile
-                ? plugin.readFile(scene, fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback)
-                : scene._readFile(fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback);
-        } else {
-            const manifestChecked = () => {
-                if (pluginDisposed) {
-                    return;
-                }
-
-                const successCallback = (data: string | ArrayBuffer, request?: WebRequest) => {
-                    dataCallback(data, request ? request.responseURL : undefined);
-                };
-
-                const errorCallback = (error: RequestFileError) => {
-                    onError(error.message, error);
-                };
-
-                request = plugin.requestFile
-                    ? plugin.requestFile(scene, fileInfo.url, successCallback, onProgress, useArrayBuffer, errorCallback)
-                    : scene._requestFile(fileInfo.url, successCallback, onProgress, true, useArrayBuffer, errorCallback);
+            const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
+                onError(request?.statusText || exception?.message || "Unknown error", exception);
             };
 
-            const engine = scene.getEngine();
-            let canUseOfflineSupport = engine.enableOfflineSupport;
-            if (canUseOfflineSupport) {
-                // Also check for exceptions
-                let exceptionFound = false;
-                for (var regex of scene.disableOfflineSupportExceptionRules) {
-                    if (regex.test(fileInfo.url)) {
-                        exceptionFound = true;
-                        break;
-                    }
+            const fileOrUrl = fileInfo.file || fileInfo.url;
+            request = plugin.loadFile
+                ? plugin.loadFile(scene, fileOrUrl, successCallback, onProgress, useArrayBuffer, errorCallback)
+                : scene._loadFile(fileOrUrl, successCallback, onProgress, true, useArrayBuffer, errorCallback);
+        };
+
+        const engine = scene.getEngine();
+        let canUseOfflineSupport = engine.enableOfflineSupport;
+        if (canUseOfflineSupport) {
+            // Also check for exceptions
+            let exceptionFound = false;
+            for (var regex of scene.disableOfflineSupportExceptionRules) {
+                if (regex.test(fileInfo.url)) {
+                    exceptionFound = true;
+                    break;
                 }
-
-                canUseOfflineSupport = !exceptionFound;
             }
 
-            if (canUseOfflineSupport && Engine.OfflineProviderFactory) {
-                // Checking if a manifest file has been set for this scene and if offline mode has been requested
-                scene.offlineProvider = Engine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
-            }
-            else {
-                manifestChecked();
-            }
+            canUseOfflineSupport = !exceptionFound;
+        }
+
+        if (canUseOfflineSupport && Engine.OfflineProviderFactory) {
+            // Checking if a manifest file has been set for this scene and if offline mode has been requested
+            scene.offlineProvider = Engine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
+        }
+        else {
+            manifestChecked();
         }
 
         return plugin;
@@ -609,10 +586,6 @@ export class SceneLoader {
 
             url = rootUrl + filename;
             name = filename;
-        }
-
-        if (!file && name && StringTools.StartsWith(url, "file:")) {
-            file = FilesInputStore.FilesToLoad[name.toLowerCase()] || null;
         }
 
         return {
