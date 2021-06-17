@@ -233,7 +233,8 @@ export class TouchHolographicButton extends TouchButton3D {
 
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
-        if (DomManagement.IsDocumentAvailable()) {
+
+        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
             let panel = new StackPanel();
             panel.isVertical = true;
 
