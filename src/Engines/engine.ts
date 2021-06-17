@@ -25,7 +25,6 @@ import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
-import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { IStencilState } from "../States/IStencilState";
 
 declare type IDeviceInputSystem = import("../DeviceInput/Interfaces/inputInterfaces").IDeviceInputSystem;
@@ -311,7 +310,7 @@ export class Engine extends ThinEngine {
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
     public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        var canvas = CanvasGenerator.CreateCanvas(bufferWidth, bufferHeight);
+        var canvas = this.createCanvas(bufferWidth, bufferHeight);
         var context = canvas.getContext("2d");
 
         if (!context) {
@@ -454,7 +453,7 @@ export class Engine extends ThinEngine {
      * Default AudioEngine factory responsible of creating the Audio Engine.
      * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
      */
-    public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>) => IAudioEngine;
+    public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => IAudioEngine;
 
     /**
      * Default offline support factory responsible of creating a tool used to store data locally.
@@ -584,7 +583,7 @@ export class Engine extends ThinEngine {
 
                 // Create Audio Engine if needed.
                 if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
-                    Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
+                    Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
                 }
             }
 
@@ -659,7 +658,7 @@ export class Engine extends ThinEngine {
 
         // Create Audio Engine if needed.
         if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
-            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
+            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
         }
     }
 
@@ -786,7 +785,7 @@ export class Engine extends ThinEngine {
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
-        this._depthCullingState.zOffset = value;
+        this._depthCullingState.zOffset = this.useReverseDepthBuffer ? -value : value;
     }
 
     /**

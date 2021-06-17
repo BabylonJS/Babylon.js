@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3882,11 +3882,10 @@ var KHR_materials_translucency = /** @class */ (function () {
             return Promise.resolve();
         }
         if (extension.translucencyTexture) {
+            extension.translucencyTexture.nonColorData = true;
             return this._loader.loadTextureInfoAsync(context + "/translucencyTexture", extension.translucencyTexture)
                 .then(function (texture) {
-                pbrMaterial.subSurface.thicknessTexture = texture;
-                pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
-                pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
+                pbrMaterial.subSurface.translucencyIntensityTexture = texture;
             });
         }
         else {
@@ -4175,9 +4174,8 @@ var KHR_materials_transmission = /** @class */ (function () {
             extension.transmissionTexture.nonColorData = true;
             return this._loader.loadTextureInfoAsync(context + "/transmissionTexture", extension.transmissionTexture, undefined)
                 .then(function (texture) {
-                pbrMaterial.subSurface.thicknessTexture = texture;
-                pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
-                pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
+                pbrMaterial.subSurface.refractionIntensityTexture = texture;
+                pbrMaterial.subSurface.useGltfStyleTextures = true;
             });
         }
         else {
@@ -4549,7 +4547,7 @@ var KHR_materials_volume = /** @class */ (function () {
             return this._loader.loadTextureInfoAsync(context + "/thicknessTexture", extension.thicknessTexture)
                 .then(function (texture) {
                 babylonMaterial.subSurface.thicknessTexture = texture;
-                babylonMaterial.subSurface.useGltfStyleThicknessTexture = true;
+                babylonMaterial.subSurface.useGltfStyleTextures = true;
             });
         }
         else {
