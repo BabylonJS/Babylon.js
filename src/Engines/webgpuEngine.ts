@@ -808,7 +808,7 @@ export class WebGPUEngine extends Engine {
             mainColorAttachments = [{
                 view: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
-                storeOp: WebGPUConstants.StoreOp.Clear
+                storeOp: WebGPUConstants.StoreOp.Store // don't use StoreOp.Clear, else using several cameras with different viewports or using scissors will fail because we call beginRenderPass / endPass several times for the same color attachment!
             }];
         } else {
             mainColorAttachments = [{
