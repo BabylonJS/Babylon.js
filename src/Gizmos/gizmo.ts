@@ -323,15 +323,12 @@ export class Gizmo implements IDisposable {
     }
 
     /**
-     * refresh gizmo mesh material depending on state of dragBehavior
-     * @param enabledDragBehavior drag behavior is enabled or not
-     * @param enableddMaterial material to apply if drag behavior is enabled
-     * @param disableMaterial material to apply if drag behavior is disenabled
+     * refresh gizmo mesh material
+     * @param material material to apply
      */
-    protected _refreshForDragBehavior(enabledDragBehavior: boolean, enabledMaterial: StandardMaterial, disableMaterial: StandardMaterial) {
+    protected _setGizmoMeshMaterial(material: StandardMaterial) {
         const gizmoMeshes = this._axisCache?.gizmoMeshes;
         if (gizmoMeshes) {
-            const material = enabledDragBehavior ? enabledMaterial : disableMaterial;
             gizmoMeshes.forEach((m: Mesh) => {
                 m.material = material;
                 if ((<LinesMesh>m).color) {

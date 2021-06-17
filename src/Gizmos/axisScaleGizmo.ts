@@ -236,7 +236,7 @@ export class AxisScaleGizmo extends Gizmo {
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
-            this._refreshForDragBehavior(this.dragBehavior.enabled, this._coloredMaterial, this._disableMaterial);
+            this._setGizmoMeshMaterial(this.dragBehavior.enabled ? this._coloredMaterial : this._disableMaterial);
         }
     }
 
