@@ -289,6 +289,7 @@ export class PlaneRotationGizmo extends Gizmo {
             dragBehavior: this.dragBehavior
         };
         this._parent?.addToAxisCache(this._gizmoMesh, cache);
+        this._axisCache = cache;
 
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (this._customMeshSet) {
@@ -328,6 +329,7 @@ export class PlaneRotationGizmo extends Gizmo {
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
+            this._refreshForDragBehavior(this.dragBehavior.enabled, this._coloredMaterial, this._disableMaterial);
         }
     }
 
