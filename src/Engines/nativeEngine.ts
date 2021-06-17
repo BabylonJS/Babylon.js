@@ -27,6 +27,7 @@ import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarg
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
+import { ICanvas } from "./ICanvas";
 import { IStencilState } from "../States/IStencilState";
 
 interface INativeCamera {
@@ -845,6 +846,7 @@ export class NativeEngine extends Engine {
             supportSyncTextureRead: false,
             needsInvertingBitmap: true,
             useUBOBindingCache: true,
+            needShaderCodeInlining: true,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -1230,7 +1232,7 @@ export class NativeEngine extends Engine {
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
-        this._native.setZOffset(value);
+        this._native.setZOffset(this.useReverseDepthBuffer ? -value : value);
     }
 
     /**
@@ -2269,6 +2271,22 @@ export class NativeEngine extends Engine {
         // TODO
     }
 
+    /**
+     * Create a canvas
+     * @param width width
+     * @param height height
+     * @return ICanvas interface
+     */
+    public createCanvas(width: number, height: number) : ICanvas {
+        if (!_native.NativeCanvas) {
+            throw new Error("Native Canvas plugin not available.");
+        }
+        const canvas = new _native.NativeCanvas();
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+    }
+
     /** @hidden */
     public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
         throw new Error("_uploadCompressedDataToTextureDirectly not implemented.");
@@ -2381,5 +2399,11 @@ export class NativeEngine extends Engine {
             default:
                 throw new Error(`Unsupported attribute type: ${type}.`);
         }
+    }
+
+    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
+        // TODO
+        var result = { ascent: 0, height: 0, descent: 0 };
+        return result;
     }
 }
