@@ -56941,6 +56941,7 @@ declare module BABYLON {
         private _attachedMesh;
         private _attachedNode;
         private _customRotationQuaternion;
+        protected _axisCache: Nullable<GizmoAxisCache>;
         /**
          * Ratio for the scale of the gizmo (Default: 1)
          */
@@ -57024,6 +57025,11 @@ declare module BABYLON {
          * @param value Node, TransformNode or mesh
          */
         protected _matrixChanged(): void;
+        /**
+         * refresh gizmo mesh material
+         * @param material material to apply
+         */
+        protected _setGizmoMeshMaterial(material: StandardMaterial): void;
         /**
          * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
          * @param gizmoLayer The utility layer the gizmo will be added to
