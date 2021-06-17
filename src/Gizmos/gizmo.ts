@@ -46,6 +46,7 @@ export class Gizmo implements IDisposable {
     private _attachedMesh: Nullable<AbstractMesh> = null;
     private _attachedNode: Nullable<Node> = null;
     private _customRotationQuaternion: Nullable<Quaternion> = null;
+    protected _axisCache: Nullable<GizmoAxisCache> = null;
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
@@ -318,6 +319,25 @@ export class Gizmo implements IDisposable {
                 lmat.copyFrom(bone.getWorldMatrix());
             }
             bone.markAsDirty();
+        }
+    }
+
+    /**
+     * refresh gizmo mesh material depending on state of dragBehavior
+     * @param enabledDragBehavior drag behavior is enabled or not
+     * @param enableddMaterial material to apply if drag behavior is enabled
+     * @param disableMaterial material to apply if drag behavior is disenabled
+     */
+    protected _refreshForDragBehavior(enabledDragBehavior: boolean, enabledMaterial: StandardMaterial, disableMaterial: StandardMaterial) {
+        const gizmoMeshes = this._axisCache?.gizmoMeshes;
+        if (gizmoMeshes) {
+            const material = enabledDragBehavior ? enabledMaterial : disableMaterial;
+            gizmoMeshes.forEach((m: Mesh) => {
+                m.material = material;
+                if ((<LinesMesh>m).color) {
+                    (<LinesMesh>m).color = material.diffuseColor;
+                }
+            });
         }
     }
 
