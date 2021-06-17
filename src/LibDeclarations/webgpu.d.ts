@@ -968,7 +968,7 @@ declare class GPUQueue implements GPUObjectBase {
     // @todo: to be removed
     copyImageBitmapToTexture(
         source: GPUImageBitmapCopyView,
-        destination: GPUTextureCopyView,
+        destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
 
