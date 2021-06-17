@@ -26,6 +26,7 @@ import { InternalTexture, InternalTextureSource } from '../../Materials/Textures
 import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
+import { EngineStore } from "../engineStore";
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
@@ -1084,7 +1085,18 @@ export class WebGPUTextureHelper {
                 this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, commandEncoder);
             }
         } else {
-            imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
+            imageBitmap = imageBitmap as ImageBitmap;
+
+            if (invertY || premultiplyAlpha) {
+                const engine = EngineStore.LastCreatedEngine;
+                engine && engine.createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
+                    this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                });
+            } else {
+                this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+            }
+
+            /*imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
 
             if (invertY || premultiplyAlpha) {
                 // we must preprocess the image
@@ -1132,7 +1144,7 @@ export class WebGPUTextureHelper {
             } else {
                 // no preprocessing: direct copy to destination texture
                 this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
-            }
+            }*/
         }
     }
 
