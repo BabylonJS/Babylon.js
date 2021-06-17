@@ -466,8 +466,9 @@ export class SceneLoader {
 
         SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
 
-        if (directLoad && !FileTools.IsBase64DataUrl(fileInfo.url)) {
-            // The url is a data: url, but not a base64 encoded url. Load it using the directLoad path.
+        // Check if we have a direct load url. If the plugin is registered to handle
+        // it or it's not a base64 data url, then pass it through the direct load path.
+        if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url) || !FileTools.IsBase64DataUrl(fileInfo.url)))) {
             if (plugin.directLoad) {
                 const result = plugin.directLoad(scene, directLoad);
                 if (result.then) {
