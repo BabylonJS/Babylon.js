@@ -5,6 +5,8 @@
 
 precision highp float;
 
+uniform float visibility;
+
 uniform vec3 mainColor;
 uniform vec3 lineColor;
 uniform vec4 gridControl;
@@ -23,7 +25,7 @@ uniform sampler2D opacitySampler;
 uniform vec2 vOpacityInfos;
 #endif
 
-float getVisibility(float position) {
+float getDynamicVisibility(float position) {
     // Major grid line every Frequency defined in material.
     float majorGridFrequency = gridControl.y;
     if (floor(position + 0.5) == floor(position / majorGridFrequency + 0.5) * majorGridFrequency)
@@ -56,8 +58,8 @@ float contributionOnAxis(float position) {
     float result = isPointOnLine(position, differentialLength);
 
     // Add dynamic visibility.
-    float visibility = getVisibility(position);
-    result *= visibility;
+    float dynamicVisibility = getDynamicVisibility(position);
+    result *= dynamicVisibility;
     
     // Anisotropic filtering.
     float anisotropicAttenuation = getAnisotropicAttenuation(differentialLength);
@@ -108,7 +110,7 @@ void main(void) {
 #endif    
 
     // Apply the color.
-    gl_FragColor = vec4(color.rgb, opacity);
+    gl_FragColor = vec4(color.rgb, opacity * visibility);
 
 #ifdef TRANSPARENT
     #ifdef PREMULTIPLYALPHA

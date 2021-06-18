@@ -189,6 +189,8 @@ export class WebXRDefaultExperience {
                         xrInput: result.input,
                         farInteractionFeature: result.pointerSelection,
                         renderingGroupId: options.renderingGroupId,
+                        useUtilityLayer: true,
+                        enableNearInteractionOnAllControllers: true,
                     });
                 }
 
