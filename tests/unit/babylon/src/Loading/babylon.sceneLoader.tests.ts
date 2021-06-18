@@ -731,4 +731,94 @@ describe('Babylon Scene Loader', function() {
             return BABYLON.SceneLoader.LoadAsync("file:///", "Box.gltf").then(resetPreprocessUrl, resetPreprocessUrl);
         });
     });
+
+    describe('#DirectLoad', () => {
+        it('should load a base64 encoded obj with no mime type', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('data:;base64,' + objBase64, undefined, scene, () => { }, ".obj").then((container) => {
+                expect(container.meshes.length).to.eq(1);
+                expect(container.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
+        it('should load a base64 encoded obj with a valid mime type', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('data:model/obj;base64,' + objBase64, undefined, scene, () => { }, ".obj").then((container) => {
+                expect(container.meshes.length).to.eq(1);
+                expect(container.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
+        it('should load a base64 encoded obj with an invalid mime type', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('data:foo/bar;base64,' + objBase64, undefined, scene, () => { }, ".obj").then((container) => {
+                expect(container.meshes.length).to.eq(1);
+                expect(container.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
+        it('should load a base64 encoded obj with an invalid mime type', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('data:foo/bar;base64,' + objBase64, undefined, scene, () => { }, ".obj").then((container) => {
+                expect(container.meshes.length).to.eq(1);
+                expect(container.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
+        it('should direct load a glTF file without specifying a pluginExtension', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync('', 'data:' + gltfRaw, undefined, scene, () => { }).then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(3);
+            });
+        });
+
+        it('should direct load a base64 encoded glTF file', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync('', 'data:;base64,' + gltfBase64, undefined, scene, () => { }, ".gltf").then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(3);
+            });
+        });
+
+        it('should direct load a base64 encoded glb with a valid mime type and no pluginExtension', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync('', 'data:model/gltf-binary;base64,' + glbBase64, undefined, scene, () => { }).then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(24);
+            });
+        });
+
+        it('should direct load a base64 encoded glb with an invalid mime type and pluginExtension specified', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync('', 'data:image/jpg;base64,' + glbBase64, undefined, scene, () => { }, ".glb").then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(24);
+            });
+        });
+
+        it('should direct load an ascii stl file', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync('', 'data:' + stlAsciiRaw, undefined, scene, () => { }, ".stl").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(3);
+            });
+        });
+
+        it('should direct load a base64 encoded ascii stl file', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync('', 'data:;base64,' + stlAsciiBase64, undefined, scene, () => { }, ".stl").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(3);
+            });
+        });
+
+        it('should direct load a base64 encoded binary stl file', () => {
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync('', 'data:;base64,' + stlBinaryBase64, undefined, scene, () => { }, ".stl").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(3);
+            });
+        });
+    });
 });
