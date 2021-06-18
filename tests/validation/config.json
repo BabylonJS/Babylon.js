@@ -1317,6 +1317,11 @@
             "excludedEngines": ["webgl1"],
             "referenceImage": "gpuparticle-basic.png",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "GLTF ext MSFT_LOD",
+            "playgroundId": "#2YZFA0#233",
+            "referenceImage": "gltfMSFTLOD.png"
         }
     ]
 }

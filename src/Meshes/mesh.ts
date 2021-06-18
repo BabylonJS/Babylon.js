@@ -130,7 +130,8 @@ class _InternalMeshDataInfo {
 
     public _preActivateId: number = -1;
     public _LODLevels = new Array<MeshLODLevel>();
-
+    /** Alternative definition of LOD level, using screen coverage instead of distance */
+    public _useLODScreenCoverage: boolean = false;
     public _checkReadinessObserver: Nullable<Observer<Scene>>;
 
     public _onMeshReadyObserverAdded: (observer: Observer<Mesh>) => void;
@@ -245,6 +246,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Internal data
     private _internalMeshDataInfo = new _InternalMeshDataInfo();
+
+    /**
+     * Determines if the LOD levels are intended to be calculated using screen coverage (surface area ratio) instead of distance
+     */
+    public get useLODScreenCoverage() {
+        return this._internalMeshDataInfo._useLODScreenCoverage;
+    }
+
+    public set useLODScreenCoverage(value: boolean) {
+        this._internalMeshDataInfo._useLODScreenCoverage = value;
+    }
 
     /**
      * Will notify when the mesh is completely ready, including materials.
@@ -784,8 +796,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     private _sortLODLevels(): void {
+        const useScreenCoverage = this._internalMeshDataInfo._useLODScreenCoverage ? -1 : 1;
         this._internalMeshDataInfo._LODLevels.sort((a, b) => {
-            const useScreenCoverage = a.useScreenCoverage ? -1 : 1;
             if (a.distanceOrScreenCoverage < b.distanceOrScreenCoverage) {
                 return useScreenCoverage;
             }
@@ -802,7 +814,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`
      * @param mesh The mesh to be added as LOD level (can be null)
-     * @param screenCoverage if specified, will use screen coverage (surface on the screen) instead of distance to select LOD level
+     * @param screenCoverage if specified, will use screen coverage (surface on the screen) instead of distance to select LOD level. Affects *ALL* LOD levels loaded.
      * @return This mesh (for chaining)
      */
     public addLODLevel(distanceOrScreenCoverage: number, mesh: Nullable<Mesh>, useScreenCoverage: boolean = false): Mesh {
@@ -811,8 +823,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        var level = new MeshLODLevel(distanceOrScreenCoverage, mesh, useScreenCoverage);
+        var level = new MeshLODLevel(distanceOrScreenCoverage, mesh);
         this._internalMeshDataInfo._LODLevels.push(level);
+        this._internalMeshDataInfo._useLODScreenCoverage = useScreenCoverage;
 
         if (mesh) {
             mesh._masterMesh = this;
@@ -886,7 +899,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
-        const useScreenCoverage = internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].useScreenCoverage;
+        const useScreenCoverage = internalDataInfo._useLODScreenCoverage;
         let ratio = 1;
 
         if (useScreenCoverage) {
