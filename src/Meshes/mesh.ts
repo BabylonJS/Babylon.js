@@ -814,10 +814,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`
      * @param mesh The mesh to be added as LOD level (can be null)
-     * @param screenCoverage if specified, will use screen coverage (surface on the screen) instead of distance to select LOD level. Affects *ALL* LOD levels loaded.
      * @return This mesh (for chaining)
      */
-    public addLODLevel(distanceOrScreenCoverage: number, mesh: Nullable<Mesh>, useScreenCoverage: boolean = false): Mesh {
+    public addLODLevel(distanceOrScreenCoverage: number, mesh: Nullable<Mesh>): Mesh {
         if (mesh && mesh._masterMesh) {
             Logger.Warn("You cannot use a mesh as LOD level twice");
             return this;
@@ -825,7 +824,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var level = new MeshLODLevel(distanceOrScreenCoverage, mesh);
         this._internalMeshDataInfo._LODLevels.push(level);
-        this._internalMeshDataInfo._useLODScreenCoverage = useScreenCoverage;
 
         if (mesh) {
             mesh._masterMesh = this;
