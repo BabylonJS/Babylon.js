@@ -283,6 +283,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Procedural__Texture"];
                 delete allBlocks["PBR"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
+                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
+                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
                 break;
         }
 
