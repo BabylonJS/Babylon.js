@@ -7,8 +7,8 @@ import { WebXRInput } from "../webXRInput";
 import { WebXRInputSource } from "../webXRInputSource";
 import { Scene } from "../../scene";
 import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
-import { Nullable } from "../../types";
-import { Vector3, Quaternion } from "../../Maths/math.vector";
+import { IndicesArray, Nullable } from "../../types";
+import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import { Ray } from "../../Culling/ray";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
@@ -389,10 +389,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
                 let hoverPickInfo = accuratePickInfo(originalSceneHoverPick, utilitySceneHoverPick);
                 if (hoverPickInfo && hoverPickInfo.hit) {
-                    // turn off far interaction if in the hover range
-                    if (this._farInteractionFeature) {
-                        this._farInteractionFeature.detach();
-                    }
                     pick = populateNearInteractionInfo(hoverPickInfo);
                     if (pick.hit) {
                         controllerData.hoverInteraction = true;
@@ -410,7 +406,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 let pickInfo = accuratePickInfo(originalSceneNearPick, utilitySceneNearPick);
                 const nearPick = populateNearInteractionInfo(pickInfo);
                 if (nearPick.hit) {
-                    // Near pick takes precedence over hfover interaction
+                    // Near pick takes precedence over hover interaction
                     pick = nearPick;
                     controllerData.nearInteraction = true;
                 }
@@ -422,13 +418,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 controllerData.meshUnderPointer = controllerData.pick.pickedMesh;
                 controllerData.pickedPointVisualCue.position.copyFrom(controllerData.pick.pickedPoint);
                 controllerData.pickedPointVisualCue.isVisible = true;
+
+                if (this._farInteractionFeature) {
+                    this._farInteractionFeature.detach();
+                }
             } else {
                 controllerData.meshUnderPointer = null;
                 controllerData.pickedPointVisualCue.isVisible = false;
-            }
 
-            // Turn on far interaction if near interaction is unsuccessful
-            if (!controllerData.nearInteraction && !controllerData.hoverInteraction && !controllerData.grabInteraction) {
                 if (this._farInteractionFeature) {
                     this._farInteractionFeature.attach();
                 }
@@ -648,13 +645,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         if (controllerData.pickIndexMeshTip && controllerData.xrController) {
             const position = controllerData.pickIndexMeshTip.position;
+            const sphere = BoundingSphere.CreateFromCenterAndRadius(position, radius);
+
             for (let meshIndex = 0; meshIndex < sceneToUse.meshes.length; meshIndex++) {
                 let mesh = sceneToUse.meshes[meshIndex];
                 if (!predicate(mesh) || !this._controllerAvailablePredicate(mesh, controllerData.xrController.uniqueId)) {
                     continue;
                 }
-                let sphere = BoundingSphere.CreateFromCenterAndRadius(position, radius);
-                let result = mesh.pickWithSphere(sphere);
+                let result = WebXRNearInteraction.PickMeshWithSphere(mesh, sphere);
 
                 if (result && result.hit && result.distance < pickingInfo.distance) {
                     pickingInfo.hit = result.hit;
@@ -666,6 +664,65 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             }
         }
         return pickingInfo;
+    }
+
+    /**
+     * Picks a mesh with a sphere
+     * @param mesh the mesh to pick
+     * @param sphere picking sphere in world coordinates
+     * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
+     * @returns the picking info
+     */
+    public static PickMeshWithSphere(mesh: AbstractMesh, sphere: BoundingSphere, skipBoundingInfo = false): PickingInfo {
+        const subMeshes = mesh.subMeshes;
+        const pi = new PickingInfo();
+        const boundingInfo = mesh._boundingInfo;
+
+        if (!mesh._generatePointsArray()) {
+            return pi;
+        }
+
+        if (!mesh.subMeshes || !boundingInfo) {
+            return pi;
+        }
+
+        if (!skipBoundingInfo && !BoundingSphere.Intersects(boundingInfo.boundingSphere, sphere)) {
+            return pi;
+        }
+
+        const result = TmpVectors.Vector3[0];
+        const tmpVec = TmpVectors.Vector3[1];
+
+        let distance = +Infinity;
+        let tmp;
+        const center = TmpVectors.Vector3[2];
+        const invert = TmpVectors.Matrix[0];
+        invert.copyFrom(mesh.getWorldMatrix());
+        invert.invert();
+        Vector3.TransformCoordinatesToRef(sphere.center, invert, center);
+
+        for (var index = 0; index < subMeshes.length; index++) {
+            const subMesh = subMeshes[index];
+
+            subMesh.projectToRef(center, <Vector3[]>mesh._positions, <IndicesArray>mesh.getIndices(), tmpVec);
+
+            Vector3.TransformCoordinatesToRef(tmpVec, mesh.getWorldMatrix(), tmpVec);
+            tmp = Vector3.Distance(tmpVec, sphere.center);
+
+            if (tmp !== -1 && tmp < distance) {
+                distance = tmp;
+                result.copyFrom(tmpVec);
+            }
+        }
+
+        if (distance < sphere.radius) {
+            pi.hit = true;
+            pi.distance = distance;
+            pi.pickedMesh = mesh;
+            pi.pickedPoint = result;
+        }
+
+        return pi;
     }
 }
 
