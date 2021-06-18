@@ -234,10 +234,10 @@ export class TouchHolographicButton extends TouchButton3D {
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
 
-        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
-            let panel = new StackPanel();
-            panel.isVertical = true;
+        let panel = new StackPanel();
+        panel.isVertical = true;
 
+        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 let image = new Image();
                 image.source = this._imageUrl;
@@ -247,18 +247,18 @@ export class TouchHolographicButton extends TouchButton3D {
                 image.paddingBottom = "40px";
                 panel.addControl(image);
             }
-
-            if (this._text) {
-                let text = new TextBlock();
-                text.text = this._text;
-                text.color = "white";
-                text.height = "30px";
-                text.fontSize = 24;
-                panel.addControl(text);
-            }
-
-            this.content = panel;
         }
+
+        if (this._text) {
+            let text = new TextBlock();
+            text.text = this._text;
+            text.color = "white";
+            text.height = "30px";
+            text.fontSize = 24;
+            panel.addControl(text);
+        }
+
+        this.content = panel;
     }
 
     // Mesh association

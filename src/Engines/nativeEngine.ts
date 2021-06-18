@@ -187,6 +187,7 @@ interface INativeEngine {
     setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
     setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
+    copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
     createImageBitmap(data: ArrayBufferView): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number) : Uint8Array;
@@ -1813,11 +1814,18 @@ export class NativeEngine extends Engine {
      * @param format defines the format of the data
      * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
      */
-    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-        // TODO: Stub! This function is needed for some GLTF validation tests.
-        // Loads a dummy 8x8 transparent png
-        var imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYSURBVChTY/z//z8DPsAEpXGC4aCAgQEAGGMDDWwwgqsAAAAASUVORK5CYII=';
-        this.createTexture('data:my_image_name', true, invertY, null, Texture.BILINEAR_SAMPLINGMODE, undefined, undefined, imageData, texture, NativeEngine.TEXTUREFORMAT_RGBA, null, undefined);
+    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+        if (premulAlpha === void 0) {
+            premulAlpha = false;
+        }
+
+        if (!!texture &&
+            !!texture._hardwareTexture) {
+            const source = canvas.getCanvasTexture();
+            const destination = texture._hardwareTexture.underlyingResource;
+            this._native.copyTexture(destination, source);
+            texture.isReady = true;
+        }
     }
 
     public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
