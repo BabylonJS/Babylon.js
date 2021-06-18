@@ -48,9 +48,9 @@ import { Primary, GeoData} from "../geoMesh"
             m = temp;
             Logger.Warn("n > m therefore m and n swapped");
         }
-        const primTri: Primary = new Primary(m, n);
+        const primTri: Primary = new Primary;
+        primTri.build(m, n);
         const geoData = GeoData.BuildGeoData(primTri);
-
         
         const geoOptions: object = {
             custom: geoData,
