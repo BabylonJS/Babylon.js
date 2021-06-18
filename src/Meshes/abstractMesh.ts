@@ -11,7 +11,6 @@ import { VertexData, IGetSetVerticesData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
 import { SubMesh } from "../Meshes/subMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { BoundingSphere } from "../Culling/boundingSphere";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Material } from "../Materials/material";
