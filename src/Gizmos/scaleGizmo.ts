@@ -166,6 +166,7 @@ export class ScaleGizmo extends Gizmo {
         };
 
         this.addToAxisCache(uniformScaleGizmo._rootMesh, cache);
+        this._axisCache = cache;
 
         return uniformScaleGizmo;
     }

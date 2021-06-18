@@ -51,6 +51,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
+    public artBoardBackground : Rectangle;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
@@ -184,6 +185,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     loadToEditor() {
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
+            if(guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle"){
+                this.artBoardBackground = guiElement as Rectangle;
+                return;
+            }
             this.createNewGuiNode(guiElement);
         });
     }
@@ -413,12 +418,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this._textureMesh.showBoundingBox = true;
 
-        var background = new Rectangle("Art-Board-Background");
-        background.width = "100%"
-        background.height = "100%";
-        background.background = "white";
+        this.artBoardBackground = new Rectangle("Art-Board-Background");
+        this.artBoardBackground.width = "100%"
+        this.artBoardBackground.height = "100%";
+        this.artBoardBackground.background = "white";
 
-        this.globalState.guiTexture.addControl(background);
+        this.globalState.guiTexture.addControl(this.artBoardBackground);
         this.addControls(this._scene, camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
@@ -437,7 +442,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     addControls(scene: Scene, camera: ArcRotateCamera) {
         camera.inertia = 0.7;
         camera.lowerRadiusLimit = 10;
-        camera.upperRadiusLimit = 1500;
+        camera.upperRadiusLimit = 2500;
         camera.upperBetaLimit = Math.PI / 2 - 0.1;
         camera.angularSensibilityX = camera.angularSensibilityY = 500;
 
@@ -471,7 +476,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const zoomFnMouse = (p: PointerInfo, e: EventState) => {
             const newPos = this.getPosition(scene, camera, plane);
             const deltaVector = initialPos.subtract(newPos);
-            this.zooming(deltaVector.x > 0 ? -15 : 15, scene, camera, plane, inertialPanning);
+            this.zooming(deltaVector.x > 0 ? -10 : 10, scene, camera, plane, inertialPanning);
         };
 
         const removeObservers = () => {

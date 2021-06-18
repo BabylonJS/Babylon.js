@@ -167,6 +167,7 @@ export class AxisDragGizmo extends Gizmo {
             dragBehavior: this.dragBehavior
         };
         this._parent?.addToAxisCache(collider as Mesh, cache);
+        this._axisCache = cache;
 
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (this._customMeshSet) {
@@ -187,6 +188,7 @@ export class AxisDragGizmo extends Gizmo {
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
+            this._setGizmoMeshMaterial(this.dragBehavior.enabled ? this._coloredMaterial : this._disableMaterial);
         }
     }
 
