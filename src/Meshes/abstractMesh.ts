@@ -1746,64 +1746,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Picks this mesh with a sphere
-     * @param sphere picking sphere in world coordinates
-     * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
-     * @returns the picking info
-     */
-    public pickWithSphere(sphere: BoundingSphere, skipBoundingInfo = false): PickingInfo {
-        const subMeshes = this.subMeshes;
-        const pi = new PickingInfo();
-        const boundingInfo = this._boundingInfo;
-
-        if (!this._generatePointsArray()) {
-            return pi;
-        }
-
-        if (!this.subMeshes || !boundingInfo) {
-            return pi;
-        }
-
-        if (!skipBoundingInfo && !BoundingSphere.Intersects(boundingInfo.boundingSphere, sphere)) {
-            return pi;
-        }
-
-        const result = TmpVectors.Vector3[0];
-        const tmpVec = TmpVectors.Vector3[1];
-
-        let distance = +Infinity;
-        let tmp;
-        const center = TmpVectors.Vector3[2];
-        const invert = TmpVectors.Matrix[0];
-        invert.copyFrom(this.getWorldMatrix());
-        invert.invert();
-        Vector3.TransformCoordinatesToRef(sphere.center, invert, center);
-
-        for (var index = 0; index < subMeshes.length; index++) {
-            const subMesh = subMeshes[index];
-
-            subMesh.projectToRef(center, <Vector3[]>this._positions, <IndicesArray>this.getIndices(), tmpVec);
-
-            Vector3.TransformCoordinatesToRef(tmpVec, this.getWorldMatrix(), tmpVec);
-            tmp = Vector3.Distance(tmpVec, sphere.center);
-
-            if (tmp !== -1 && tmp < distance) {
-                distance = tmp;
-                result.copyFrom(tmpVec);
-            }
-        }
-
-        if (distance < sphere.radius) {
-            pi.hit = true;
-            pi.distance = distance;
-            pi.pickedMesh = this;
-            pi.pickedPoint = result;
-        }
-
-        return pi;
-    }
-
-    /**
      * Clones the current mesh
      * @param name defines the mesh name
      * @param newParent defines the new mesh parent
