@@ -5285,7 +5285,7 @@ declare module "babylonjs-gui/3D/behaviors/defaultBehavior" {
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     /**
      * Default behavior for 3D UI elements.
-     * Handles a FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+     * Handles a FollowBehavior, SixDofBehavior and SurfaceMagnetismBehavior
      */
     export class DefaultBehavior implements Behavior<Mesh> {
         private _scene;
@@ -11039,7 +11039,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Default behavior for 3D UI elements.
-     * Handles a BABYLON.FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+     * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
      */
     export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
         private _scene;
