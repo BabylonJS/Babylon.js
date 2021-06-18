@@ -1662,12 +1662,7 @@ export class ShadowGenerator implements IShadowGenerator {
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
         }
 
-        const minZ = this.getLight().getDepthMinZ(camera);
-        const maxZ = this.getLight().getDepthMaxZ(camera);
-
-        const useReverseDepthBuffer = this._scene.getEngine().useReverseDepthBuffer && !light.needCube(); // we only work with distances with point lights, not direct depth values, so no need to switch to a special handling even in reverse depth buffer mode
-
-        light._uniformBuffer.updateFloat2("depthValues", useReverseDepthBuffer ? maxZ : minZ, minZ + maxZ, lightIndex);
+        light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);
     }
 
     /**
