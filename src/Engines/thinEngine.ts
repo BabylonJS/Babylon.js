@@ -266,12 +266,28 @@ export class ThinEngine {
     /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
     public validateShaderPrograms = false;
 
+    private _useReverseDepthBuffer = false;
     /**
      * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
      * This can provide greater z depth for distant objects.
      */
-    public useReverseDepthBuffer = false;
-    // Uniform buffers list
+    public get useReverseDepthBuffer(): boolean {
+        return this._useReverseDepthBuffer;
+    }
+
+    public set useReverseDepthBuffer(useReverse) {
+        if (useReverse === this._useReverseDepthBuffer) {
+            return;
+        }
+
+        this._useReverseDepthBuffer = useReverse;
+
+        if (useReverse) {
+            this._depthCullingState.depthFunc = Constants.GEQUAL;
+        } else {
+            this._depthCullingState.depthFunc = Constants.LEQUAL;
+        }
+    }
 
     /**
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
@@ -1473,7 +1489,7 @@ export class ThinEngine {
 
         if (depth) {
             if (this.useReverseDepthBuffer) {
-                this._depthCullingState.depthFunc = this._gl.GREATER;
+                this._depthCullingState.depthFunc = this._gl.GEQUAL;
                 this._gl.clearDepth(0.0);
             } else {
                 this._gl.clearDepth(1.0);

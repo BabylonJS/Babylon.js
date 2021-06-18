@@ -28,8 +28,10 @@
 - Added support for clip planes to the edge renderer ([#10053](https://github.com/BabylonJS/Babylon.js/issues/10053)) ([Popov72](https://github.com/Popov72))
 - Added support for [cannon-es](https://github.com/pmndrs/cannon-es) to the cannonJSPlugin. ([frankieali](https://github.com/frankieali))
 - Added check for duplicates in addShadowCaster ([ivankoleda](https://github.com/ivankoleda))
+- Added observable for PointerDragBehavior enable state ([cedricguillemet](https://github.com/cedricguillemet))
 - spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the correspondgin `xxxById` ([barroij](https://github.com/barroij))
 - Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
+- Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
 
 ### Engine
 
@@ -69,6 +71,7 @@
 - Added the `cullBackFaces` property to `Material` ([Popov72](https://github.com/Popov72))
 - Added the `stencil` object property to `Material` ([Popov72](https://github.com/Popov72))
 - Set the `metadata` property on `Material` to be serializable, so that it can be properly loaded from .babylon files ([jlivak](https://github.com/jlivak))
+- Add `mesh.visibility` support to grid material ([bghgary](https://github.com/bghgary))
 
 ### Meshes
 
@@ -129,7 +132,8 @@
 ### Behaviors
 
 - Added `FollowBehavior`, a behavior that makes the assigned mesh hover around a camera, while facing it ([CraigFeldspar](https://github.com/CraigFeldspar))
-- Added `DefaultBehavior`, a behavior that will be common to several 3D GUI controls, orchestrating `SixDoFDragBehavior` and `FollowBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Added `SurfaceMagnetismBehavior`, a behavior that makes the assigned mesh stick on surfaces of other meshes ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Added `DefaultBehavior`, a behavior that will be common to several 3D GUI controls, orchestrating `SixDoFDragBehavior`, `FollowBehavior` and `SurfaceMagnetismBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `draggableMeshes` property in `SixDoFDragBehavior` list in order to have only a subset of descendant meshes take pointer events into account ([CraigFeldspar](https://github.com/CraigFeldspar))
 - `SixDoFDragBehavior` can now handle multiple pointers at the same time to scale/rotate the owner mesh ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `HandConstraintBehavior`, to make the assigned mesh follow the hand pose. This behavior requires to be linked to a XR experience with the `HandTracking` feature activated. ([CraigFeldspar](https://github.com/CraigFeldspar))
@@ -249,6 +253,7 @@
 - Fix for disabledColor not working for Button ([msDestiny14](https://github.com/msDestiny14))
 - Fix NativeEngine not setting default depth test function to LEQUAL ([rgerd](https://github.com/rgerd))
 - Fix an exception where loading a very small STL file could result in attempting to read outside the files range ([CoPrez](https://github.com/CoPrez))
+- Fix support of `useReverseDepthBuffer` throughout the engine ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

@@ -534,6 +534,11 @@ declare module BABYLON {
          */
         get responseType(): XMLHttpRequestResponseType;
         set responseType(value: XMLHttpRequestResponseType);
+        /**
+         * Gets or sets the timeout value in milliseconds
+         */
+        get timeout(): number;
+        set timeout(value: number);
         /** @hidden */
         addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
         /** @hidden */
@@ -4431,6 +4436,19 @@ declare module BABYLON {
          */
         static DistanceSquared(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number;
         /**
+         * Projects "vector" on the triangle determined by its extremities "p0", "p1" and "p2", stores the result in "ref"
+         * and returns the distance to the projected point.
+         * From http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.4264&rep=rep1&type=pdf
+         *
+         * @param vector the vector to get distance from
+         * @param p0 extremity of the triangle
+         * @param p1 extremity of the triangle
+         * @param p2 extremity of the triangle
+         * @param ref variable to store the result to
+         * @returns The distance between "ref" and "vector"
+         */
+        static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3): number;
+        /**
          * Returns a new Vector3 located at the center between "value1" and "value2"
          * @param value1 defines the first operand
          * @param value2 defines the second operand
@@ -8116,6 +8134,14 @@ declare module BABYLON {
          * @returns true if the spheres intersect
          */
         static Intersects(sphere0: DeepImmutable<BoundingSphere>, sphere1: DeepImmutable<BoundingSphere>): boolean;
+        /**
+         * Creates a sphere from a center and a radius
+         * @param center The center
+         * @param radius radius
+         * @param matrix Optional worldMatrix
+         * @returns The sphere
+         */
+        static CreateFromCenterAndRadius(center: DeepImmutable<Vector3>, radius: number, matrix?: DeepImmutable<Matrix>): BoundingSphere;
     }
 }
 declare module BABYLON {
@@ -16122,7 +16148,7 @@ declare module BABYLON {
         /** If we are picking a mesh with thin instance, this will give you the picked thin instance */
         thinInstanceIndex: number;
         /**
-         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
+         * If a mesh was used to do the picking (eg. 6dof controller) as a "near interaction", this will be populated.
          */
         originMesh: Nullable<AbstractMesh>;
         /**
@@ -19530,6 +19556,7 @@ declare module BABYLON {
         NORMAL: boolean;
         TANGENT: boolean;
         UV1: boolean;
+        USE_REVERSE_DEPTHBUFFER: boolean;
         /** BONES */
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -20463,9 +20490,13 @@ declare module BABYLON {
      */
     export class PointerInfoPre extends PointerInfoBase {
         /**
-         * Ray from a pointer if availible (eg. 6dof controller)
+         * Ray from a pointer if available (eg. 6dof controller)
          */
         ray: Nullable<Ray>;
+        /**
+         * Defines picking info coming from a near interaction (proximity instead of ray-based picking)
+         */
+        nearInteractionPickingInfo: Nullable<PickingInfo>;
         /**
          * Defines the local position of the pointer on the canvas.
          */
@@ -28935,6 +28966,16 @@ declare module BABYLON {
          * @returns intersection info or null if no intersection
          */
         intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo>;
+        /**
+         * Projects a point on this submesh and stores the result in "ref"
+         *
+         * @param vector point to project
+         * @param positions defines mesh's positions array
+         * @param indices defines mesh's indices array
+         * @param ref vector that will store the result
+         * @returns distance from the point and the submesh, or -1 if the mesh rendering mode doesn't support projections
+         */
+        projectToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
         /** @hidden */
         private _intersectLines;
         /** @hidden */
@@ -28943,6 +28984,10 @@ declare module BABYLON {
         private _intersectTriangles;
         /** @hidden */
         private _intersectUnIndexedTriangles;
+        /** @hidden */
+        private _projectOnTrianglesToRef;
+        /** @hidden */
+        private _projectOnUnIndexedTrianglesToRef;
         /** @hidden */
         _rebuild(): void;
         /**
@@ -33466,6 +33511,7 @@ declare module BABYLON {
         REFLECTIONMAP_OPPOSITEZ: boolean;
         INVERTCUBICMAP: boolean;
         LOGARITHMICDEPTH: boolean;
+        USE_REVERSE_DEPTHBUFFER: boolean;
         REFRACTION: boolean;
         REFRACTIONMAP_3D: boolean;
         REFLECTIONOVERALPHA: boolean;
@@ -35127,20 +35173,20 @@ declare module BABYLON {
         /** @hidden */
         _updateNonUniformScalingState(value: boolean): boolean;
         /**
-        * An event triggered when this mesh collides with another one
-        */
+         * An event triggered when this mesh collides with another one
+         */
         onCollideObservable: Observable<AbstractMesh>;
         /** Set a function to call when this mesh collides with another one */
         set onCollide(callback: () => void);
         /**
-        * An event triggered when the collision's position changes
-        */
+         * An event triggered when the collision's position changes
+         */
         onCollisionPositionChangeObservable: Observable<Vector3>;
         /** Set a function to call when the collision's position changes */
         set onCollisionPositionChange(callback: () => void);
         /**
-        * An event triggered when material is changed
-        */
+         * An event triggered when material is changed
+         */
         onMaterialChangedObservable: Observable<AbstractMesh>;
         /**
          * Gets or sets the orientation for POV movement & rotation
@@ -35404,8 +35450,8 @@ declare module BABYLON {
         /** @hidden */
         _markSubMeshesAsMiscDirty(): void;
         /**
-        * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
-        */
+         * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
+         */
         get scaling(): Vector3;
         set scaling(newScaling: Vector3);
         /**
@@ -38907,6 +38953,21 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Interface used to define options for the Audio Engine
+     */
+    export interface IAudioEngineOptions {
+        /**
+        * Specifies an existing Audio Context for the audio engine
+        */
+        audioContext?: AudioContext;
+        /**
+        * Specifies a destination node for the audio engine
+        */
+        audioDestination?: AudioDestinationNode | MediaStreamAudioDestinationNode;
+    }
+}
+declare module BABYLON {
         interface ThinEngine {
             /**
              * Update a video texture
@@ -39124,6 +39185,10 @@ declare module BABYLON {
          */
         audioEngine?: boolean;
         /**
+         * Specifies options for the audio engine
+         */
+        audioEngineOptions?: IAudioEngineOptions;
+        /**
          * Defines if animations should run using a deterministic lock step
          * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
          */
@@ -39235,11 +39300,13 @@ declare module BABYLON {
         preventCacheWipeBetweenFrames: boolean;
         /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
         validateShaderPrograms: boolean;
+        private _useReverseDepthBuffer;
         /**
          * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
          * This can provide greater z depth for distant objects.
          */
-        useReverseDepthBuffer: boolean;
+        get useReverseDepthBuffer(): boolean;
+        set useReverseDepthBuffer(useReverse: boolean);
         /**
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
@@ -39269,6 +39336,8 @@ declare module BABYLON {
         protected _renderingCanvas: Nullable<HTMLCanvasElement>;
         protected _windowIsBackground: boolean;
         protected _creationOptions: EngineOptions;
+        protected _audioContext: Nullable<AudioContext>;
+        protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
         protected _highPrecisionShadersAllowed: boolean;
         /** @hidden */
         get _shouldUseHighPrecisionShader(): boolean;
@@ -39570,6 +39639,16 @@ declare module BABYLON {
          * @returns a HTML canvas
          */
         getRenderingCanvas(): Nullable<HTMLCanvasElement>;
+        /**
+         * Gets the audio context specified in engine initialization options
+         * @returns an Audio Context
+         */
+        getAudioContext(): Nullable<AudioContext>;
+        /**
+         * Gets the audio destination specified in engine initialization options
+         * @returns an audio destination node
+         */
+        getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
         /**
          * Gets host window
          * @returns the host window object
@@ -41944,7 +42023,7 @@ declare module BABYLON {
          * Default AudioEngine factory responsible of creating the Audio Engine.
          * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
          */
-        static AudioEngineFactory: (hostElement: Nullable<HTMLElement>) => IAudioEngine;
+        static AudioEngineFactory: (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => IAudioEngine;
         /**
          * Default offline support factory responsible of creating a tool used to store data locally.
          * By default, this will create a Database object if the workload has been embedded.
@@ -45899,7 +45978,7 @@ declare module BABYLON {
          * @param cameraViewSpace defines if picking will be done in view space (false by default)
          * @returns a Ray
          */
-        createPickingRay(x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace?: boolean): Ray;
+        createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace?: boolean): Ray;
         /**
          * Creates a ray that can be used to pick in the scene
          * @param x defines the x coordinate of the origin (on-screen)
@@ -45910,7 +45989,7 @@ declare module BABYLON {
          * @param cameraViewSpace defines if picking will be done in view space (false by default)
          * @returns the current scene
          */
-        createPickingRayToRef(x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace?: boolean): Scene;
+        createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace?: boolean): Scene;
         /**
          * Creates a ray that can be used to pick in the scene
          * @param x defines the x coordinate of the origin (on-screen)
@@ -46850,6 +46929,7 @@ declare module BABYLON {
         private _audioContextInitialized;
         private _muteButton;
         private _hostElement;
+        private _audioDestination;
         /**
          * Gets whether the current host supports Web Audio and thus could create AudioContexts.
          */
@@ -46901,8 +46981,10 @@ declare module BABYLON {
          * There should be only one per page as some browsers restrict the number
          * of audio contexts you can create.
          * @param hostElement defines the host element where to display the mute icon if necessary
+         * @param audioContext defines the audio context to be used by the audio engine
+         * @param audioDestination defines the audio destination node to be used by audio engine
          */
-        constructor(hostElement?: Nullable<HTMLElement>);
+        constructor(hostElement?: Nullable<HTMLElement>, audioContext?: Nullable<AudioContext>, audioDestination?: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>);
         /**
          * Flags the audio engine in Locked state.
          * This happens due to new browser policies preventing audio to autoplay.
@@ -48622,13 +48704,19 @@ declare module BABYLON {
             pointerId: number;
         }>;
         /**
+         *  Fires each time behavior enabled state changes
+         */
+        onEnabledObservable: Observable<boolean>;
+        /**
          *  If the attached mesh should be moved when dragged
          */
         moveAttached: boolean;
         /**
          *  If the drag behavior will react to drag events (Default: true)
          */
-        enabled: boolean;
+        set enabled(value: boolean);
+        get enabled(): boolean;
+        private _enabled;
         /**
          * If pointer events should start and release the drag (Default: true)
          */
@@ -48753,6 +48841,22 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Data store to track virtual pointers movement
+     */
+    type VirtualMeshInfo = {
+        dragging: boolean;
+        moving: boolean;
+        dragMesh: AbstractMesh;
+        originMesh: AbstractMesh;
+        pivotMesh: AbstractMesh;
+        startingPivotPosition: Vector3;
+        startingPivotOrientation: Quaternion;
+        startingPosition: Vector3;
+        startingOrientation: Quaternion;
+        lastOriginPosition: Vector3;
+        lastDragPosition: Vector3;
+    };
+    /**
      * Base behavior for six degrees of freedom interactions in XR experiences.
      * Creates virtual meshes that are dragged around
      * And observables for position/rotation changes
@@ -48762,19 +48866,7 @@ declare module BABYLON {
         private _pointerObserver;
         private _attachedToElement;
         protected _virtualMeshesInfo: {
-            [id: number]: {
-                dragging: boolean;
-                moving: boolean;
-                dragMesh: AbstractMesh;
-                originMesh: AbstractMesh;
-                pivotMesh: AbstractMesh;
-                startingPivotPosition: Vector3;
-                startingPivotOrientation: Quaternion;
-                startingPosition: Vector3;
-                startingOrientation: Quaternion;
-                lastOriginPosition: Vector3;
-                lastDragPosition: Vector3;
-            };
+            [id: number]: VirtualMeshInfo;
         };
         private _tmpVector;
         private _tmpQuaternion;
@@ -48823,6 +48915,7 @@ declare module BABYLON {
         onDragObservable: Observable<{
             delta: Vector3;
             position: Vector3;
+            pickInfo: PickingInfo;
         }>;
         /**
          *  Fires each time a drag ends (eg. mouse release after drag)
@@ -48901,6 +48994,10 @@ declare module BABYLON {
          */
         get name(): string;
         /**
+         * Use this flag to update the target but not move the owner node towards the target
+         */
+        disableMovement: boolean;
+        /**
          * Should the object rotate towards the camera when we start dragging it
          */
         faceCameraOnDragStart: boolean;
@@ -48919,6 +49016,86 @@ declare module BABYLON {
          *  Detaches the behavior from the mesh
          */
         detach(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * A behavior that allows a transform node to stick to a surface position/orientation
+     */
+    export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
+        private _scene;
+        private _attachedMesh;
+        private _attachPointLocalOffset;
+        private _pointerObserver;
+        private _workingPosition;
+        private _workingQuaternion;
+        private _lastTick;
+        private _onBeforeRender;
+        private _hit;
+        /**
+         * Distance offset from the hit point to place the target at, along the hit normal.
+         */
+        hitNormalOffset: number;
+        /**
+         * Name of the behavior
+         */
+        get name(): string;
+        /**
+         * Spatial mapping meshes to collide with
+         */
+        meshes: AbstractMesh[];
+        /**
+         * Function called when the behavior needs to be initialized (after attaching it to a target)
+         */
+        init(): void;
+        /**
+         * Set to false if the node should strictly follow the camera without any interpolation time
+         */
+        interpolatePose: boolean;
+        /**
+         * Rate of interpolation of position and rotation of the attached node.
+         * Higher values will give a slower interpolation.
+         */
+        lerpTime: number;
+        /**
+         * If true, pitch and roll are omitted.
+         */
+        keepOrientationVertical: boolean;
+        /**
+         * Is this behavior reacting to pointer events
+         */
+        enabled: boolean;
+        /**
+         * Maximum distance for the node to stick to the surface
+         */
+        maxStickingDistance: number;
+        /**
+         * Attaches the behavior to a transform node
+         * @param target defines the target where the behavior is attached to
+         * @param scene the scene
+         */
+        attach(target: Mesh, scene?: Scene): void;
+        /**
+         * Detaches the behavior
+         */
+        detach(): void;
+        private _getTargetPose;
+        /**
+         * Updates the attach point with the current geometry extents of the attached mesh
+         */
+        updateAttachPoint(): void;
+        /**
+         * Finds the intersection point of the given ray onto the meshes and updates the target.
+         * Transformation will be interpolated according to `interpolatePose` and `lerpTime` properties.
+         * If no mesh of `meshes` are hit, this does nothing.
+         * @param pickInfo The input pickingInfo that will be used to intersect the meshes
+         * @returns a boolean indicating if we found a hit to stick to
+         */
+        findAndUpdateTarget(pickInfo: PickingInfo): boolean;
+        private _getAttachPointOffsetToRef;
+        private _updateTransformToGoal;
+        private _addObservables;
+        private _removeObservables;
     }
 }
 declare module BABYLON {
@@ -54627,6 +54804,10 @@ declare module BABYLON {
          */
         processAllEvents: boolean;
         /**
+         * Set to false to disable picking
+         */
+        pickingEnabled: boolean;
+        /**
          * Observable raised when the pointer move from the utility layer scene to the main scene
          */
         onPointerOutObservable: Observable<number>;
@@ -54900,6 +55081,14 @@ declare module BABYLON {
          */
         static readonly Version: number;
         /**
+         * default color of the selection ring
+         */
+        selectionMeshDefaultColor: Color3;
+        /**
+         * This color will be applied to the selection ring when selection is triggered
+         */
+        selectionMeshPickedColor: Color3;
+        /**
          * constructs a new background remover module
          * @param _xrSessionManager the session manager for this module
          * @param _options read-only options to be used in this module
@@ -54943,11 +55132,16 @@ declare module BABYLON {
         /**
          * Filter used for near interaction pick and hover
          */
-        private nearPickPredicate;
+        private _nearPickPredicate;
         /**
          * Filter used for near interaction grab
          */
-        private nearGrabPredicate;
+        private _nearGrabPredicate;
+        /**
+         * Filter used for any near interaction
+         */
+        private _nearInteractionPredicate;
+        private _controllerAvailablePredicate;
         private readonly _hoverRadius;
         private readonly _pickRadius;
         private readonly _nearGrabLengthScale;
@@ -54955,10 +55149,19 @@ declare module BABYLON {
         private _indexTipOrientationVector;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private get _utilityLayerScene();
+        private _generateVisualCue;
         private _attachNearInteractionMode;
         private _detachController;
         private _generateNewHandTipMeshes;
-        private _pickWithMesh;
+        private _pickWithSphere;
+        /**
+         * Picks a mesh with a sphere
+         * @param mesh the mesh to pick
+         * @param sphere picking sphere in world coordinates
+         * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
+         * @returns the picking info
+         */
+        static PickMeshWithSphere(mesh: AbstractMesh, sphere: BoundingSphere, skipBoundingInfo?: boolean): PickingInfo;
     }
 }
 declare module BABYLON {
@@ -56892,6 +57095,11 @@ declare module BABYLON {
          * @param value Node, TransformNode or mesh
          */
         protected _matrixChanged(): void;
+        /**
+         * refresh gizmo mesh material
+         * @param material material to apply
+         */
+        protected _setGizmoMeshMaterial(gizmoMeshes: Mesh[], material: StandardMaterial): void;
         /**
          * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -59585,6 +59793,10 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export enum PowerPreference {
+        SRGB = "srgb"
+    }
+    /** @hidden */
+    export enum PowerPreference {
         LowPower = "low-power",
         HighPerformance = "high-performance"
     }
@@ -60393,7 +60605,7 @@ declare module BABYLON {
         createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture;
         createMSAATexture(texture: InternalTexture, samples: number): void;
         updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
-        updateTexture(imageBitmap: ImageBitmap | Uint8Array, gpuTexture: GPUTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
+        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
         readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, buffer?: Nullable<ArrayBufferView>): Promise<ArrayBufferView>;
         releaseTexture(texture: InternalTexture | GPUTexture): void;
         destroyDeferredTextures(): void;
@@ -60926,7 +61138,6 @@ declare module BABYLON {
         _device: GPUDevice;
         private _deviceEnabledExtensions;
         private _context;
-        private _swapChain;
         private _swapChainTexture;
         private _mainPassSampleCount;
         /** @hidden */
@@ -61102,7 +61313,7 @@ declare module BABYLON {
         private _initializeLimits;
         private _initializeContextAndSwapChain;
         private _initializeMainAttachments;
-        private _createSwapChain;
+        private _configureContext;
         /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
@@ -61879,12 +62090,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
-        postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine): string;
-    }
-}
-declare module BABYLON {
     /**
      * Container for accessors for natively-stored mesh data buffers.
      */
@@ -61915,7 +62120,14 @@ declare module BABYLON {
         private readonly INVALID_HANDLE;
         private _boundBuffersVertexArray;
         private _currentDepthTest;
-        homogeneousDepth: boolean;
+        private _stencilTest;
+        private _stencilMask;
+        private _stencilFunc;
+        private _stencilFuncRef;
+        private _stencilFuncMask;
+        private _stencilOpStencilFail;
+        private _stencilOpDepthFail;
+        private _stencilOpStencilDepthPass;
         getHardwareScalingLevel(): number;
         setHardwareScalingLevel(level: number): void;
         constructor(options?: NativeEngineOptions);
@@ -62032,6 +62244,87 @@ declare module BABYLON {
          * @returns the current color writing state
          */
         getColorWrite(): boolean;
+        private applyStencil;
+        /**
+         * Enable or disable the stencil buffer
+         * @param enable defines if the stencil buffer must be enabled or disabled
+         */
+        setStencilBuffer(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if stencil buffer is enabled
+         * @returns the current stencil buffer state
+         */
+        getStencilBuffer(): boolean;
+        /**
+     * Gets the current stencil operation when stencil passes
+     * @returns a number defining stencil operation to use when stencil passes
+     */
+        getStencilOperationPass(): number;
+        /**
+         * Sets the stencil operation to use when stencil passes
+         * @param operation defines the stencil operation to use when stencil passes
+         */
+        setStencilOperationPass(operation: number): void;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilMask(mask: number): void;
+        /**
+         * Sets the current stencil function
+         * @param stencilFunc defines the new stencil function to use
+         */
+        setStencilFunction(stencilFunc: number): void;
+        /**
+         * Sets the current stencil reference
+         * @param reference defines the new stencil reference to use
+         */
+        setStencilFunctionReference(reference: number): void;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilFunctionMask(mask: number): void;
+        /**
+         * Sets the stencil operation to use when stencil fails
+         * @param operation defines the stencil operation to use when stencil fails
+         */
+        setStencilOperationFail(operation: number): void;
+        /**
+         * Sets the stencil operation to use when depth fails
+         * @param operation defines the stencil operation to use when depth fails
+         */
+        setStencilOperationDepthFail(operation: number): void;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the new stencil mask to use
+         */
+        getStencilMask(): number;
+        /**
+         * Gets the current stencil function
+         * @returns a number defining the stencil function to use
+         */
+        getStencilFunction(): number;
+        /**
+         * Gets the current stencil reference value
+         * @returns a number defining the stencil reference value to use
+         */
+        getStencilFunctionReference(): number;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the stencil mask to use
+         */
+        getStencilFunctionMask(): number;
+        /**
+         * Gets the current stencil operation when stencil fails
+         * @returns a number defining stencil operation to use when stencil fails
+         */
+        getStencilOperationFail(): number;
+        /**
+         * Gets the current stencil operation when depth fails
+         * @returns a number defining stencil operation to use when depth fails
+         */
+        getStencilOperationDepthFail(): number;
         /**
          * Sets alpha constants used by some alpha blending modes
          * @param r defines the red component
@@ -62087,7 +62380,7 @@ declare module BABYLON {
          * @param format defines the format of the data
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
-        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
+        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha?: boolean, format?: number): void;
         createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
         createVideoElement(constraints: MediaTrackConstraints): any;
         updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
@@ -62189,6 +62482,10 @@ declare module BABYLON {
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
         private _getNativeSamplingMode;
+        private _getStencilFunc;
+        private _getStencilOpFail;
+        private _getStencilDepthFail;
+        private _getStencilDepthPass;
         private _getNativeTextureFormat;
         private _getNativeAlphaMode;
         private _getNativeAttribType;
@@ -65238,6 +65535,7 @@ declare module BABYLON {
         POINTSIZE: boolean;
         FOG: boolean;
         LOGARITHMICDEPTH: boolean;
+        USE_REVERSE_DEPTHBUFFER: boolean;
         FORCENORMALFORWARD: boolean;
         SPECULARAA: boolean;
         CLEARCOAT: boolean;
@@ -85618,16 +85916,6 @@ declare var WebGLVertexArrayObject: {
     new(): WebGLVertexArrayObject;
 };
 
-type GPUBufferDynamicOffset = number; /* unsigned long */
-type GPUStencilValue = number; /* unsigned long */
-type GPUSampleMask = number; /* unsigned long */
-type GPUDepthBias = number; /* long */
-type GPUSize64 = number; /* unsigned long long */
-type GPUIntegerCoordinate = number; /* unsigned long */
-type GPUIndex32 = number; /* unsigned long */
-type GPUSize32 = number; /* unsigned long */
-type GPUSignedOffset32 = number; /* long */
-
 interface GPUObjectBase {
     label: string | undefined;
 }
@@ -85636,7 +85924,7 @@ interface GPUObjectDescriptorBase {
     label?: string;
 }
 
-interface GPUAdapterLimits {
+interface GPUSupportedLimits {
     readonly maxTextureDimension1D: GPUSize32;
     readonly maxTextureDimension2D: GPUSize32;
     readonly maxTextureDimension3D: GPUSize32;
@@ -85655,6 +85943,10 @@ interface GPUAdapterLimits {
     readonly maxVertexAttributes: GPUSize32;
     readonly maxVertexBufferArrayStride: GPUSize32;
 }
+
+type GPUSupportedFeatures = ReadonlySet<string>;
+
+type GPUPredefinedColorSpace = "srgb";
 
 interface Navigator {
     readonly gpu: GPU | undefined;
@@ -85679,8 +85971,8 @@ declare class GPUAdapter {
     // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
     private __brand: void;
     readonly name: string;
-    readonly features: ReadonlySet<GPUFeatureName>;
-    readonly limits: Required<GPUAdapterLimits>;
+    readonly features: GPUSupportedFeatures;
+    readonly limits: GPUSupportedLimits;
 
     requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice | null>;
 }
@@ -85702,8 +85994,8 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
 
-    readonly features: ReadonlySet<GPUFeatureName>;
-    readonly limits: Required<GPUAdapterLimits>;
+    readonly features: GPUSupportedFeatures;
+    readonly limits: GPUSupportedLimits;
 
     readonly queue: GPUQueue;
 
@@ -85712,6 +86004,7 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer;
     createTexture(descriptor: GPUTextureDescriptor): GPUTexture;
     createSampler(descriptor?: GPUSamplerDescriptor): GPUSampler;
+    importExternalTexture(descriptor: GPUExternalTextureDescriptor): GPUExternalTexture;
 
     createBindGroupLayout(descriptor: GPUBindGroupLayoutDescriptor): GPUBindGroupLayout;
     createPipelineLayout(descriptor: GPUPipelineLayoutDescriptor): GPUPipelineLayout;
@@ -85880,6 +86173,16 @@ type GPUTextureFormat =
     // "depth32float-stencil8" feature
     | "depth32float-stencil8";
 
+declare class GPUExternalTexture implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+}
+
+interface GPUExternalTextureDescriptor extends GPUObjectDescriptorBase {
+    source: HTMLVideoElement;
+    colorSpace: GPUPredefinedColorSpace; /* default="srgb" */
+}
+
 declare class GPUSampler implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -85931,6 +86234,7 @@ interface GPUBindGroupLayoutEntry {
     sampler?: GPUSamplerBindingLayout;
     texture?: GPUTextureBindingLayout;
     storageTexture?: GPUStorageTextureBindingLayout;
+    externalTexture?: GPUExternalTextureBindingLayout;
 }
 
 type GPUBufferBindingType = "uniform" | "storage" | "read-only-storage";
@@ -85968,6 +86272,9 @@ interface GPUStorageTextureBindingLayout {
     viewDimension?: GPUTextureViewDimension; /* default="2d" */
 }
 
+interface GPUExternalTextureBindingLayout {
+}
+
 declare class GPUBindGroup implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -85981,7 +86288,8 @@ interface GPUBindGroupDescriptor extends GPUObjectDescriptorBase {
 type GPUBindingResource =
     | GPUSampler
     | GPUTextureView
-    | GPUBufferBinding;
+    | GPUBufferBinding
+    | GPUExternalTexture;
 
 interface GPUBindGroupEntry {
     binding: GPUIndex32;
@@ -86003,19 +86311,6 @@ interface GPUPipelineLayoutDescriptor extends GPUObjectDescriptorBase {
     bindGroupLayouts: GPUBindGroupLayout[];
 }
 
-type GPUCompilationMessageType = "error" | "warning" | "info";
-
-interface GPUCompilationMessage {
-    readonly message: string;
-    readonly type: GPUCompilationMessageType;
-    readonly lineNum: number;
-    readonly linePos: number;
-}
-
-interface GPUCompilationInfo {
-    readonly messages: readonly GPUCompilationMessage[];
-}
-
 declare class GPUShaderModule implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -86028,6 +86323,21 @@ interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
     sourceMap?: object;
 }
 
+type GPUCompilationMessageType = "error" | "warning" | "info";
+
+interface GPUCompilationMessage {
+    readonly message: string;
+    readonly type: GPUCompilationMessageType;
+    readonly lineNum: number;
+    readonly linePos: number;
+    readonly offset: number;
+    readonly length: number;
+}
+
+interface GPUCompilationInfo {
+    readonly messages: readonly GPUCompilationMessage[];
+}
+
 interface GPUPipelineDescriptorBase extends GPUObjectDescriptorBase {
     layout?: GPUPipelineLayout;
 }
@@ -86038,7 +86348,7 @@ interface GPUPipelineBase {
 
 interface GPUProgrammableStage {
     module: GPUShaderModule;
-    entryPoint: string;
+    entryPoint: string | Uint32Array;
 }
 
 declare class GPUComputePipeline implements GPUObjectBase, GPUPipelineBase {
@@ -86304,8 +86614,8 @@ interface GPUImageCopyTexture {
     aspect?: GPUTextureAspect; /* default="all" */
 }
 
-interface GPUImageCopyImageBitmap {
-    imageBitmap: ImageBitmap;
+interface GPUImageCopyExternalImage {
+    source: ImageBitmap | HTMLCanvasElement | OffscreenCanvas;
     origin?: GPUOrigin2D; /* default={} */
 }
 
@@ -86567,8 +86877,8 @@ declare class GPUQueue implements GPUObjectBase {
         size: GPUExtent3D
     ): void;
 
-    copyImageBitmapToTexture(
-        source: GPUImageCopyImageBitmap,
+    copyExternalImageToTexture(
+        source: GPUImageCopyExternalImage,
         destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
@@ -86596,30 +86906,25 @@ type GPUPipelineStatisticName =
     | "fragment-shader-invocations"
     | "compute-shader-invocations";
 
-declare class GPUCanvasContext {
+declare class GPUPresentationContext {
     private __brand: void;
 
-    configureSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
+    configure(descriptor?: GPUPresentationConfiguration): void;
 
-    getSwapChainPreferredFormat(adapter: GPUAdapter): GPUTextureFormat;
+    getPreferredFormat(adapter: GPUAdapter): GPUTextureFormat;
+    getCurrentTexture(): GPUTexture;
 }
 
 type GPUCanvasCompositingAlphaMode =
     | "opaque"
     | "premultiplied";
 
-interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
+interface GPUPresentationConfiguration extends GPUObjectDescriptorBase {
     device: GPUDevice;
     format: GPUTextureFormat;
     usage?: GPUTextureUsageFlags; /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */
     compositingAlphaMode?: GPUCanvasCompositingAlphaMode; /* default="opaque" */
-}
-
-declare class GPUSwapChain implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-
-    getCurrentTexture(): GPUTexture;
+    size: GPUExtent3D;
 }
 
 type GPUDeviceLostReason = "destroyed";
@@ -86657,6 +86962,16 @@ declare class GPUUncapturedErrorEvent extends Event {
 interface GPUUncapturedErrorEventInit extends EventInit {
     error: GPUError;
 }
+
+type GPUBufferDynamicOffset = number; /* unsigned long */
+type GPUStencilValue = number; /* unsigned long */
+type GPUSampleMask = number; /* unsigned long */
+type GPUDepthBias = number; /* long */
+type GPUSize64 = number; /* unsigned long long */
+type GPUIntegerCoordinate = number; /* unsigned long */
+type GPUIndex32 = number; /* unsigned long */
+type GPUSize32 = number; /* unsigned long */
+type GPUSignedOffset32 = number; /* long */
 
 interface GPUColorDict {
     r: number;

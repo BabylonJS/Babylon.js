@@ -84,6 +84,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public onDragEndObservable = new Observable<{ dragPlanePoint: Vector3, pointerId: number }>();
     /**
+     *  Fires each time behavior enabled state changes
+     */
+     public onEnabledObservable = new Observable<boolean>();
+
+    /**
      *  If the attached mesh should be moved when dragged
      */
     public moveAttached = true;
@@ -91,7 +96,17 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     /**
      *  If the drag behavior will react to drag events (Default: true)
      */
-    public enabled = true;
+    public set enabled(value: boolean) {
+        if (value != this._enabled) {
+            this.onEnabledObservable.notifyObservers(value);
+        }
+        this._enabled = value;
+    }
+
+    public get enabled() {
+        return this._enabled;
+    }
+    private _enabled = true;
 
     /**
      * If pointer events should start and release the drag (Default: true)
