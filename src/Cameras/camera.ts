@@ -11,11 +11,11 @@ import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
-import { _TypeStore } from '../Misc/typeStore';
-import { _DevTools } from '../Misc/devTools';
-import { Viewport } from '../Maths/math.viewport';
-import { Frustum } from '../Maths/math.frustum';
-import { Plane } from '../Maths/math.plane';
+import { _TypeStore } from "../Misc/typeStore";
+import { _DevTools } from "../Misc/devTools";
+import { Viewport } from "../Maths/math.viewport";
+import { Frustum } from "../Maths/math.frustum";
+import { Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -32,7 +32,7 @@ export class Camera extends Node {
     /** @hidden */
     public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
         throw _DevTools.WarnImport("UniversalCamera");
-    }
+    };
 
     /**
      * This is the default projection mode used by the cameras.
@@ -215,7 +215,7 @@ export class Camera extends Node {
      * A camera with a layerMask of 1 will render mesh.layerMask & camera.layerMask!== 0
      */
     @serialize()
-    public layerMask: number = 0x0FFFFFFF;
+    public layerMask: number = 0x0fffffff;
 
     /**
      * fovMode sets the camera frustum bounds to the viewport bounds. (default is FOVMODE_VERTICAL_FIXED)
@@ -425,7 +425,7 @@ export class Camera extends Node {
      * @returns true if active, false otherwise
      */
     public isActiveMesh(mesh: Mesh): boolean {
-        return (this._activeMeshes.indexOf(mesh) !== -1);
+        return this._activeMeshes.indexOf(mesh) !== -1;
     }
 
     /**
@@ -488,16 +488,12 @@ export class Camera extends Node {
             return false;
         }
 
-        return this._cache.position.equals(this.position)
-            && this._cache.upVector.equals(this.upVector)
-            && this.isSynchronizedWithParent();
+        return this._cache.position.equals(this.position) && this._cache.upVector.equals(this.upVector) && this.isSynchronizedWithParent();
     }
 
     /** @hidden */
     public _isSynchronizedProjectionMatrix(): boolean {
-        var check = this._cache.mode === this.mode
-            && this._cache.minZ === this.minZ
-            && this._cache.maxZ === this.maxZ;
+        var check = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
 
         if (!check) {
             return false;
@@ -506,17 +502,15 @@ export class Camera extends Node {
         var engine = this.getEngine();
 
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
-            check = this._cache.fov === this.fov
-                && this._cache.fovMode === this.fovMode
-                && this._cache.aspectRatio === engine.getAspectRatio(this);
-        }
-        else {
-            check = this._cache.orthoLeft === this.orthoLeft
-                && this._cache.orthoRight === this.orthoRight
-                && this._cache.orthoBottom === this.orthoBottom
-                && this._cache.orthoTop === this.orthoTop
-                && this._cache.renderWidth === engine.getRenderWidth()
-                && this._cache.renderHeight === engine.getRenderHeight();
+            check = this._cache.fov === this.fov && this._cache.fovMode === this.fovMode && this._cache.aspectRatio === engine.getAspectRatio(this);
+        } else {
+            check =
+                this._cache.orthoLeft === this.orthoLeft &&
+                this._cache.orthoRight === this.orthoRight &&
+                this._cache.orthoBottom === this.orthoBottom &&
+                this._cache.orthoTop === this.orthoTop &&
+                this._cache.renderWidth === engine.getRenderWidth() &&
+                this._cache.renderHeight === engine.getRenderHeight();
         }
 
         return check;
@@ -539,8 +533,7 @@ export class Camera extends Node {
      * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(ignored?: any, noPreventDefault?: boolean): void {
-    }
+    public attachControl(ignored?: any, noPreventDefault?: boolean): void {}
 
     /**
      * Detach the current controls from the specified dom element.
@@ -555,8 +548,7 @@ export class Camera extends Node {
      * Detach the current controls from the specified dom element.
      * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
      */
-    public detachControl(ignored?: any): void {
-    }
+    public detachControl(ignored?: any): void {}
 
     /**
      * Update the camera state according to the different inputs gathered during the frame.
@@ -619,7 +611,6 @@ export class Camera extends Node {
                 }
                 cam._postProcesses = this._postProcesses.slice(0).concat(rigPostProcess);
                 rigPostProcess.markTextureDirty();
-
             } else {
                 cam._postProcesses = this._postProcesses.slice(0);
             }
@@ -717,7 +708,7 @@ export class Camera extends Node {
 
         // Notify parent camera if rig camera is changed
         if (this.parent && (this.parent as Camera).onViewMatrixChangedObservable) {
-            (this.parent as Camera).onViewMatrixChangedObservable.notifyObservers((this.parent as Camera));
+            (this.parent as Camera).onViewMatrixChangedObservable.notifyObservers(this.parent as Camera);
         }
 
         this.onViewMatrixChangedObservable.notifyObservers(this);
@@ -752,6 +743,7 @@ export class Camera extends Node {
      * @param force forces the camera to recompute the matrix without looking at the cached state
      * @returns the projection matrix
      */
+    public tilt = 0;
     public getProjectionMatrix(force?: boolean): Matrix {
         if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
             return this._projectionMatrix;
@@ -777,38 +769,45 @@ export class Camera extends Node {
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean) => void;
+            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, tilt: number) => void;
             if (scene.useRightHandedSystem) {
                 getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
                 getProjectionMatrix = Matrix.PerspectiveFovLHToRef;
             }
 
-            getProjectionMatrix(this.fov,
+            getProjectionMatrix(
+                this.fov,
                 engine.getAspectRatio(this),
                 reverseDepth ? this.maxZ : this.minZ,
                 reverseDepth ? this.minZ : this.maxZ,
                 this._projectionMatrix,
-                this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+                this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
+                this.tilt
+            );
         } else {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
             if (scene.useRightHandedSystem) {
-                Matrix.OrthoOffCenterRHToRef(this.orthoLeft ?? -halfWidth,
+                Matrix.OrthoOffCenterRHToRef(
+                    this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
-                    this._projectionMatrix);
+                    this._projectionMatrix
+                );
             } else {
-                Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
+                Matrix.OrthoOffCenterLHToRef(
+                    this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
-                    this._projectionMatrix);
+                    this._projectionMatrix
+                );
             }
 
             this._cache.orthoLeft = this.orthoLeft;
@@ -948,8 +947,7 @@ export class Camera extends Node {
             this._rigPostProcess.dispose(this);
             this._rigPostProcess = null;
             this._postProcesses = [];
-        }
-        else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+        } else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._rigPostProcess = null;
             this._postProcesses = [];
         } else {
@@ -1000,7 +998,7 @@ export class Camera extends Node {
         if (this._rigCameras.length < 1) {
             return null;
         }
-        return (<FreeCamera>this._rigCameras[0]);
+        return <FreeCamera>this._rigCameras[0];
     }
 
     /**
@@ -1010,7 +1008,7 @@ export class Camera extends Node {
         if (this._rigCameras.length < 2) {
             return null;
         }
-        return (<FreeCamera>this._rigCameras[1]);
+        return <FreeCamera>this._rigCameras[1];
     }
 
     /**
@@ -1081,7 +1079,7 @@ export class Camera extends Node {
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
             case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
-                    Camera._setStereoscopicRigMode(this);
+                Camera._setStereoscopicRigMode(this);
                 break;
             case Camera.RIG_MODE_VR:
                 Camera._setVRRigMode(this, rigParams);
@@ -1117,7 +1115,13 @@ export class Camera extends Node {
 
     /** @hidden */
     public _getVRProjectionMatrix(): Matrix {
-        Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+        Matrix.PerspectiveFovLHToRef(
+            this._cameraRigParams.vrMetrics.aspectRatioFov,
+            this._cameraRigParams.vrMetrics.aspectRatio,
+            this.minZ,
+            this.maxZ,
+            this._cameraRigParams.vrWorkMatrix
+        );
         this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
         return this._projectionMatrix;
     }
@@ -1187,8 +1191,7 @@ export class Camera extends Node {
     }
 
     /** @hidden */
-    public _setupInputs() {
-    }
+    public _setupInputs() {}
 
     /**
      * Serialiaze the camera setup to a json representation
@@ -1269,7 +1272,7 @@ export class Camera extends Node {
     static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
         let constructorFunc = Node.Construct(type, name, scene, {
             interaxial_distance: interaxial_distance,
-            isStereoscopicSideBySide: isStereoscopicSideBySide
+            isStereoscopicSideBySide: isStereoscopicSideBySide,
         });
 
         if (constructorFunc) {
@@ -1316,7 +1319,8 @@ export class Camera extends Node {
             camera.upVector = Vector3.FromArray(parsedCamera.upVector); // need to force the upVector
         }
 
-        if ((<any>camera).setPosition) { // need to force position
+        if ((<any>camera).setPosition) {
+            // need to force position
             camera.position.copyFromFloats(0, 0, 0);
             (<any>camera).setPosition(Vector3.FromArray(parsedCamera.position));
         }
@@ -1330,7 +1334,7 @@ export class Camera extends Node {
 
         // Apply 3d rig, when found
         if (parsedCamera.cameraRigMode) {
-            var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
+            var rigParams = parsedCamera.interaxial_distance ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
             camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
         }
 

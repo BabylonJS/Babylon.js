@@ -5670,7 +5670,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      */
-    public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, tilt: number = 0): void {
         let n = znear;
         let f = zfar;
 
@@ -5679,10 +5679,11 @@ export class Matrix {
         let b = isVerticalFovFixed ? t : (t * aspect);
         let c = f !== 0 ? (f + n) / (f - n) : 1;
         let d = f !== 0 ? -2.0 * f * n / (f - n) : -2 * n;
+        let rot = Math.tan(tilt);
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, 0.0,
+            0.0, b, 0.0, -rot,
             0.0, 0.0, c, 1.0,
             0.0, 0.0, d, 0.0,
             result
@@ -5736,7 +5737,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      */
-    public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, tilt: number = 0): void {
         //alternatively this could be expressed as:
         //    m = PerspectiveFovLHToRef
         //    m[10] *= -1.0;
@@ -5750,10 +5751,11 @@ export class Matrix {
         let b = isVerticalFovFixed ? t : (t * aspect);
         let c = f !== 0 ? -(f + n) / (f - n) : -1;
         let d = f !== 0 ? -2 * f * n / (f - n) : -2 * n;
+        let rot = Math.tan(tilt);
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, 0.0,
+            0.0, b, 0.0, -rot,
             0.0, 0.0, c, -1.0,
             0.0, 0.0, d, 0.0,
             result
