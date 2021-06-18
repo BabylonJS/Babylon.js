@@ -46,7 +46,7 @@
             "excludeFromAutomaticTesting": true
         },
         {
-            "title": "Point light shadows",
+            "title": "Spotlight shadows",
             "playgroundId": "#U2F7P9#4",
             "referenceImage": "point-light-shadows.png"
         },
@@ -446,8 +446,7 @@
         {
             "title": "Custom render target",
             "renderCount": 20,
-            "scriptToRun": "/Demos/CustomRenderTarget/customRenderTarget.js",
-            "functionToCall": "CreateCustomRenderTargetTestScene",
+            "playgroundId": "#TQCEBF#1",
             "referenceImage": "customRTT.png"
         },
         {

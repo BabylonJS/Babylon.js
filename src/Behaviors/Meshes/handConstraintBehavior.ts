@@ -135,6 +135,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 return {
                     quaternion,
                     position: middleMetacarpal.absolutePosition,
+                    controllerId: hand.xrController.uniqueId
                 };
             }
         }
@@ -162,6 +163,10 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         let lastTick = Date.now();
         this._scene.onBeforeRenderObservable.add(() => {
             const pose = this._getHandPose();
+
+            this._node.reservedDataStore = this._node.reservedDataStore || {};
+            this._node.reservedDataStore.nearInteraction = this._node.reservedDataStore.nearInteraction || {};
+            this._node.reservedDataStore.nearInteraction.excludedControllerId = null;
 
             if (pose) {
                 const zoneOffset = TmpVectors.Vector3[0];
@@ -204,6 +209,8 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
 
                 Vector3.SmoothToRef(this._node.position, targetPosition, elapsed, this.lerpTime, this._node.position);
                 Quaternion.SmoothToRef(this._node.rotationQuaternion!, targetRotation, elapsed, this.lerpTime, this._node.rotationQuaternion!);
+
+                this._node.reservedDataStore.nearInteraction.excludedControllerId = pose.controllerId;
             }
 
             lastTick = Date.now();

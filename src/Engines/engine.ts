@@ -785,7 +785,7 @@ export class Engine extends ThinEngine {
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
-        this._depthCullingState.zOffset = value;
+        this._depthCullingState.zOffset = this.useReverseDepthBuffer ? -value : value;
     }
 
     /**

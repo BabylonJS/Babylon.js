@@ -193,13 +193,12 @@ export class AxisScaleGizmo extends Gizmo {
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 const material = this.dragBehavior.enabled ? (this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial) : this._disableMaterial;
-                cache.gizmoMeshes.forEach((m: Mesh) => {
-                    m.material = material;
-                    if ((<LinesMesh>m).color && this.dragBehavior.enabled) {
-                        (<LinesMesh>m).color = material.diffuseColor;
-                    }
-                });
+                this._setGizmoMeshMaterial(cache.gizmoMeshes, material);
             }
+        });
+
+        this.dragBehavior.onEnabledObservable.add((newState) => {
+            this._setGizmoMeshMaterial(cache.gizmoMeshes, newState ? this._coloredMaterial : this._disableMaterial);
         });
 
         var light = gizmoLayer._getSharedGizmoLight();

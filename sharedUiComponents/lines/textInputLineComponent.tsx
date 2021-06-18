@@ -11,6 +11,7 @@ interface ITextInputLineComponentProps {
     value?: string;
     onChange?: (value: string) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    icon?: string;
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string }> {
@@ -74,6 +75,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     render() {
         return (
             <div className="textInputLine">
+                {this.props.icon && <img src={this.props.icon} color="black" className="icon"/>}
                 <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
