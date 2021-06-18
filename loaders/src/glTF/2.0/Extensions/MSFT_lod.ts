@@ -184,6 +184,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                         
                         if (screenCoverages && screenCoverages.length) {
                             screenCoverages.reverse();
+                            (lod0 as Mesh).useLODScreenCoverage = true;
                             for (let i = 0; i < transformNodes.length - 1; i++) {
                                 (lod0 as Mesh).addLODLevel(screenCoverages[i + 1], transformNodes[i] as Mesh);
                             }
@@ -191,7 +192,6 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                                 // Adding empty LOD
                                 (lod0 as Mesh).addLODLevel(screenCoverages[0], null);
                             }
-                            (lod0 as Mesh).useLODScreenCoverage = true;
                         }
                     }
                 };
