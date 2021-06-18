@@ -11,6 +11,23 @@ import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Camera } from "../../Cameras/camera";
 
 /**
+ * Data store to track virtual pointers movement
+ */
+type VirtualMeshInfo = {
+    dragging: boolean;
+    moving: boolean;
+    dragMesh: AbstractMesh;
+    originMesh: AbstractMesh;
+    pivotMesh: AbstractMesh;
+    startingPivotPosition: Vector3;
+    startingPivotOrientation: Quaternion;
+    startingPosition: Vector3;
+    startingOrientation: Quaternion;
+    lastOriginPosition: Vector3;
+    lastDragPosition: Vector3;
+};
+
+/**
  * Base behavior for six degrees of freedom interactions in XR experiences.
  * Creates virtual meshes that are dragged around
  * And observables for position/rotation changes
@@ -20,19 +37,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
     protected _virtualMeshesInfo: {
-        [id: number]: {
-            dragging: boolean;
-            moving: boolean;
-            dragMesh: AbstractMesh;
-            originMesh: AbstractMesh;
-            pivotMesh: AbstractMesh;
-            startingPivotPosition: Vector3;
-            startingPivotOrientation: Quaternion;
-            startingPosition: Vector3;
-            startingOrientation: Quaternion;
-            lastOriginPosition: Vector3;
-            lastDragPosition: Vector3;
-        };
+        [id: number]: VirtualMeshInfo;
     } = {};
 
     private _tmpVector: Vector3 = new Vector3();
@@ -95,7 +100,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      * Fires each time a drag happens
      */
-    public onDragObservable = new Observable<{ delta: Vector3; position: Vector3, pickInfo: PickingInfo }>();
+    public onDragObservable = new Observable<{ delta: Vector3; position: Vector3; pickInfo: PickingInfo }>();
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
      */
@@ -190,7 +195,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             BaseSixDofDragBehavior._virtualScene.detachControl();
         }
 
-        var pickPredicate = (m: AbstractMesh) => {
+        const pickPredicate = (m: AbstractMesh) => {
             return this._ownerNode === m || (m.isDescendantOf(this._ownerNode) && (!this.draggableMeshes || this.draggableMeshes.indexOf(m) !== -1));
         };
 
@@ -214,7 +219,6 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     if (!this.allowMultiPointer && this.currentDraggingPointerIds.length > 0) {
                         return;
                     }
-
                     if (
                         this._pointerCamera &&
                         this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE &&
@@ -223,20 +227,30 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     ) {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                     }
-
                     this._dragging = true;
+
                     virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 
                     // Set position and orientation of the controller
                     virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-                    virtualMeshesInfo.originMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
+                    if (pointerInfo.pickInfo.originMesh) {
+                        // Near interaction
+                        virtualMeshesInfo.originMesh.lookAt(this._pointerCamera!.globalPosition);
+                    } else {
+                        virtualMeshesInfo.originMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
+                    }
 
                     // Attach the virtual drag mesh and pivot mesh to the virtual origin mesh so it can be dragged
                     // Drag mesh is the actual hit point position
                     // Pivot mesh is the position of the pivot of the dragged mesh
-                    virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                    if (pointerInfo.pickInfo.originMesh) {
+                        virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
+                        virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
+                    } else {
+                        virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                        virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                    }
                     virtualMeshesInfo.pivotMesh.position.copyFrom(this._ownerNode.getAbsolutePivotPoint());
-                    virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.pickedPoint);
 
                     virtualMeshesInfo.startingPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
                     virtualMeshesInfo.startingPivotPosition.copyFrom(virtualMeshesInfo.pivotMesh.position);
@@ -253,15 +267,15 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     // Detach camera controls
                     if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
                         if (this._pointerCamera.inputs && this._pointerCamera.inputs.attachedToElement) {
-                            // this._pointerCamera.detachControl();
+                            this._pointerCamera.detachControl();
                             this._attachedToElement = true;
                         } else {
                             this._attachedToElement = false;
                         }
                     }
 
-                    this._targetDragStart(virtualMeshesInfo.dragMesh.position, virtualMeshesInfo.dragMesh.rotationQuaternion!, pointerId);
-                    this.onDragStartObservable.notifyObservers({ position: virtualMeshesInfo.dragMesh.position });
+                    this._targetDragStart(virtualMeshesInfo.pivotMesh.position, virtualMeshesInfo.pivotMesh.rotationQuaternion!, pointerId);
+                    this.onDragStartObservable.notifyObservers({ position: virtualMeshesInfo.pivotMesh.position });
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
                 const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
@@ -294,7 +308,8 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     let zDragFactor = this.zDragFactor;
 
                     // 2 pointer interaction should not have a z axis drag factor
-                    if (this.currentDraggingPointerIds.length > 1) {
+                    // as well as near interaction
+                    if (this.currentDraggingPointerIds.length > 1 || pointerInfo.pickInfo.originMesh) {
                         zDragFactor = 0;
                     }
 
@@ -321,9 +336,15 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._applyZOffset(virtualMeshesInfo.pivotMesh, localOriginDragDifference, zDragFactor);
 
                     // Update the controller position
+                    // In case of near interaction, ray origin is finger tip
                     virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
                     const lookAt = TmpVectors.Vector3[0];
-                    pointerInfo.pickInfo.ray.origin.addToRef(pointerInfo.pickInfo.ray.direction, lookAt);
+                    if (pointerInfo.pickInfo.originMesh) {
+                        // Near interaction
+                        lookAt.copyFrom(this._pointerCamera!.globalPosition);
+                    } else {
+                        pointerInfo.pickInfo.ray.origin.addToRef(pointerInfo.pickInfo.ray.direction, lookAt);
+                    }
                     virtualMeshesInfo.originMesh.lookAt(lookAt);
 
                     virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
