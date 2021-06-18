@@ -19535,6 +19535,7 @@ declare module BABYLON {
         NORMAL: boolean;
         TANGENT: boolean;
         UV1: boolean;
+        USE_REVERSE_DEPTHBUFFER: boolean;
         /** BONES */
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -33471,6 +33472,7 @@ declare module BABYLON {
         REFLECTIONMAP_OPPOSITEZ: boolean;
         INVERTCUBICMAP: boolean;
         LOGARITHMICDEPTH: boolean;
+        USE_REVERSE_DEPTHBUFFER: boolean;
         REFRACTION: boolean;
         REFRACTIONMAP_3D: boolean;
         REFLECTIONOVERALPHA: boolean;
@@ -39259,11 +39261,13 @@ declare module BABYLON {
         preventCacheWipeBetweenFrames: boolean;
         /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
         validateShaderPrograms: boolean;
+        private _useReverseDepthBuffer;
         /**
          * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
          * This can provide greater z depth for distant objects.
          */
-        useReverseDepthBuffer: boolean;
+        get useReverseDepthBuffer(): boolean;
+        set useReverseDepthBuffer(useReverse: boolean);
         /**
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
@@ -48862,6 +48866,7 @@ declare module BABYLON {
         onDragObservable: Observable<{
             delta: Vector3;
             position: Vector3;
+            pickInfo: PickingInfo;
         }>;
         /**
          *  Fires each time a drag ends (eg. mouse release after drag)
@@ -48940,6 +48945,10 @@ declare module BABYLON {
          */
         get name(): string;
         /**
+         * Use this flag to update the target but not move the owner node towards the target
+         */
+        disableMovement: boolean;
+        /**
          * Should the object rotate towards the camera when we start dragging it
          */
         faceCameraOnDragStart: boolean;
@@ -48958,6 +48967,86 @@ declare module BABYLON {
          *  Detaches the behavior from the mesh
          */
         detach(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * A behavior that allows a transform node to stick to a surface position/orientation
+     */
+    export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
+        private _scene;
+        private _attachedMesh;
+        private _attachPointLocalOffset;
+        private _pointerObserver;
+        private _workingPosition;
+        private _workingQuaternion;
+        private _lastTick;
+        private _onBeforeRender;
+        private _hit;
+        /**
+         * Distance offset from the hit point to place the target at, along the hit normal.
+         */
+        hitNormalOffset: number;
+        /**
+         * Name of the behavior
+         */
+        get name(): string;
+        /**
+         * Spatial mapping meshes to collide with
+         */
+        meshes: AbstractMesh[];
+        /**
+         * Function called when the behavior needs to be initialized (after attaching it to a target)
+         */
+        init(): void;
+        /**
+         * Set to false if the node should strictly follow the camera without any interpolation time
+         */
+        interpolatePose: boolean;
+        /**
+         * Rate of interpolation of position and rotation of the attached node.
+         * Higher values will give a slower interpolation.
+         */
+        lerpTime: number;
+        /**
+         * If true, pitch and roll are omitted.
+         */
+        keepOrientationVertical: boolean;
+        /**
+         * Is this behavior reacting to pointer events
+         */
+        enabled: boolean;
+        /**
+         * Maximum distance for the node to stick to the surface
+         */
+        maxStickingDistance: number;
+        /**
+         * Attaches the behavior to a transform node
+         * @param target defines the target where the behavior is attached to
+         * @param scene the scene
+         */
+        attach(target: Mesh, scene?: Scene): void;
+        /**
+         * Detaches the behavior
+         */
+        detach(): void;
+        private _getTargetPose;
+        /**
+         * Updates the attach point with the current geometry extents of the attached mesh
+         */
+        updateAttachPoint(): void;
+        /**
+         * Finds the intersection point of the given ray onto the meshes and updates the target.
+         * Transformation will be interpolated according to `interpolatePose` and `lerpTime` properties.
+         * If no mesh of `meshes` are hit, this does nothing.
+         * @param pickInfo The input pickingInfo that will be used to intersect the meshes
+         * @returns a boolean indicating if we found a hit to stick to
+         */
+        findAndUpdateTarget(pickInfo: PickingInfo): boolean;
+        private _getAttachPointOffsetToRef;
+        private _updateTransformToGoal;
+        private _addObservables;
+        private _removeObservables;
     }
 }
 declare module BABYLON {
@@ -54666,6 +54755,10 @@ declare module BABYLON {
          */
         processAllEvents: boolean;
         /**
+         * Set to false to disable picking
+         */
+        pickingEnabled: boolean;
+        /**
          * Observable raised when the pointer move from the utility layer scene to the main scene
          */
         onPointerOutObservable: Observable<number>;
@@ -56848,6 +56941,7 @@ declare module BABYLON {
         private _attachedMesh;
         private _attachedNode;
         private _customRotationQuaternion;
+        protected _axisCache: Nullable<GizmoAxisCache>;
         /**
          * Ratio for the scale of the gizmo (Default: 1)
          */
@@ -56931,6 +57025,11 @@ declare module BABYLON {
          * @param value Node, TransformNode or mesh
          */
         protected _matrixChanged(): void;
+        /**
+         * refresh gizmo mesh material
+         * @param material material to apply
+         */
+        protected _setGizmoMeshMaterial(material: StandardMaterial): void;
         /**
          * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -59624,6 +59723,10 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export enum PowerPreference {
+        SRGB = "srgb"
+    }
+    /** @hidden */
+    export enum PowerPreference {
         LowPower = "low-power",
         HighPerformance = "high-performance"
     }
@@ -60432,7 +60535,7 @@ declare module BABYLON {
         createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture;
         createMSAATexture(texture: InternalTexture, samples: number): void;
         updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
-        updateTexture(imageBitmap: ImageBitmap | Uint8Array, gpuTexture: GPUTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
+        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
         readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, buffer?: Nullable<ArrayBufferView>): Promise<ArrayBufferView>;
         releaseTexture(texture: InternalTexture | GPUTexture): void;
         destroyDeferredTextures(): void;
@@ -60965,7 +61068,6 @@ declare module BABYLON {
         _device: GPUDevice;
         private _deviceEnabledExtensions;
         private _context;
-        private _swapChain;
         private _swapChainTexture;
         private _mainPassSampleCount;
         /** @hidden */
@@ -61141,7 +61243,7 @@ declare module BABYLON {
         private _initializeLimits;
         private _initializeContextAndSwapChain;
         private _initializeMainAttachments;
-        private _createSwapChain;
+        private _configureContext;
         /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
@@ -65277,6 +65379,7 @@ declare module BABYLON {
         POINTSIZE: boolean;
         FOG: boolean;
         LOGARITHMICDEPTH: boolean;
+        USE_REVERSE_DEPTHBUFFER: boolean;
         FORCENORMALFORWARD: boolean;
         SPECULARAA: boolean;
         CLEARCOAT: boolean;
@@ -85657,16 +85760,6 @@ declare var WebGLVertexArrayObject: {
     new(): WebGLVertexArrayObject;
 };
 
-type GPUBufferDynamicOffset = number; /* unsigned long */
-type GPUStencilValue = number; /* unsigned long */
-type GPUSampleMask = number; /* unsigned long */
-type GPUDepthBias = number; /* long */
-type GPUSize64 = number; /* unsigned long long */
-type GPUIntegerCoordinate = number; /* unsigned long */
-type GPUIndex32 = number; /* unsigned long */
-type GPUSize32 = number; /* unsigned long */
-type GPUSignedOffset32 = number; /* long */
-
 interface GPUObjectBase {
     label: string | undefined;
 }
@@ -85675,7 +85768,7 @@ interface GPUObjectDescriptorBase {
     label?: string;
 }
 
-interface GPUAdapterLimits {
+interface GPUSupportedLimits {
     readonly maxTextureDimension1D: GPUSize32;
     readonly maxTextureDimension2D: GPUSize32;
     readonly maxTextureDimension3D: GPUSize32;
@@ -85694,6 +85787,10 @@ interface GPUAdapterLimits {
     readonly maxVertexAttributes: GPUSize32;
     readonly maxVertexBufferArrayStride: GPUSize32;
 }
+
+type GPUSupportedFeatures = ReadonlySet<string>;
+
+type GPUPredefinedColorSpace = "srgb";
 
 interface Navigator {
     readonly gpu: GPU | undefined;
@@ -85718,8 +85815,8 @@ declare class GPUAdapter {
     // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
     private __brand: void;
     readonly name: string;
-    readonly features: ReadonlySet<GPUFeatureName>;
-    readonly limits: Required<GPUAdapterLimits>;
+    readonly features: GPUSupportedFeatures;
+    readonly limits: GPUSupportedLimits;
 
     requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice | null>;
 }
@@ -85741,8 +85838,8 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
 
-    readonly features: ReadonlySet<GPUFeatureName>;
-    readonly limits: Required<GPUAdapterLimits>;
+    readonly features: GPUSupportedFeatures;
+    readonly limits: GPUSupportedLimits;
 
     readonly queue: GPUQueue;
 
@@ -85751,6 +85848,7 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer;
     createTexture(descriptor: GPUTextureDescriptor): GPUTexture;
     createSampler(descriptor?: GPUSamplerDescriptor): GPUSampler;
+    importExternalTexture(descriptor: GPUExternalTextureDescriptor): GPUExternalTexture;
 
     createBindGroupLayout(descriptor: GPUBindGroupLayoutDescriptor): GPUBindGroupLayout;
     createPipelineLayout(descriptor: GPUPipelineLayoutDescriptor): GPUPipelineLayout;
@@ -85919,6 +86017,16 @@ type GPUTextureFormat =
     // "depth32float-stencil8" feature
     | "depth32float-stencil8";
 
+declare class GPUExternalTexture implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+}
+
+interface GPUExternalTextureDescriptor extends GPUObjectDescriptorBase {
+    source: HTMLVideoElement;
+    colorSpace: GPUPredefinedColorSpace; /* default="srgb" */
+}
+
 declare class GPUSampler implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -85970,6 +86078,7 @@ interface GPUBindGroupLayoutEntry {
     sampler?: GPUSamplerBindingLayout;
     texture?: GPUTextureBindingLayout;
     storageTexture?: GPUStorageTextureBindingLayout;
+    externalTexture?: GPUExternalTextureBindingLayout;
 }
 
 type GPUBufferBindingType = "uniform" | "storage" | "read-only-storage";
@@ -86007,6 +86116,9 @@ interface GPUStorageTextureBindingLayout {
     viewDimension?: GPUTextureViewDimension; /* default="2d" */
 }
 
+interface GPUExternalTextureBindingLayout {
+}
+
 declare class GPUBindGroup implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -86020,7 +86132,8 @@ interface GPUBindGroupDescriptor extends GPUObjectDescriptorBase {
 type GPUBindingResource =
     | GPUSampler
     | GPUTextureView
-    | GPUBufferBinding;
+    | GPUBufferBinding
+    | GPUExternalTexture;
 
 interface GPUBindGroupEntry {
     binding: GPUIndex32;
@@ -86042,19 +86155,6 @@ interface GPUPipelineLayoutDescriptor extends GPUObjectDescriptorBase {
     bindGroupLayouts: GPUBindGroupLayout[];
 }
 
-type GPUCompilationMessageType = "error" | "warning" | "info";
-
-interface GPUCompilationMessage {
-    readonly message: string;
-    readonly type: GPUCompilationMessageType;
-    readonly lineNum: number;
-    readonly linePos: number;
-}
-
-interface GPUCompilationInfo {
-    readonly messages: readonly GPUCompilationMessage[];
-}
-
 declare class GPUShaderModule implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -86067,6 +86167,21 @@ interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
     sourceMap?: object;
 }
 
+type GPUCompilationMessageType = "error" | "warning" | "info";
+
+interface GPUCompilationMessage {
+    readonly message: string;
+    readonly type: GPUCompilationMessageType;
+    readonly lineNum: number;
+    readonly linePos: number;
+    readonly offset: number;
+    readonly length: number;
+}
+
+interface GPUCompilationInfo {
+    readonly messages: readonly GPUCompilationMessage[];
+}
+
 interface GPUPipelineDescriptorBase extends GPUObjectDescriptorBase {
     layout?: GPUPipelineLayout;
 }
@@ -86077,7 +86192,7 @@ interface GPUPipelineBase {
 
 interface GPUProgrammableStage {
     module: GPUShaderModule;
-    entryPoint: string;
+    entryPoint: string | Uint32Array;
 }
 
 declare class GPUComputePipeline implements GPUObjectBase, GPUPipelineBase {
@@ -86343,8 +86458,8 @@ interface GPUImageCopyTexture {
     aspect?: GPUTextureAspect; /* default="all" */
 }
 
-interface GPUImageCopyImageBitmap {
-    imageBitmap: ImageBitmap;
+interface GPUImageCopyExternalImage {
+    source: ImageBitmap | HTMLCanvasElement | OffscreenCanvas;
     origin?: GPUOrigin2D; /* default={} */
 }
 
@@ -86606,8 +86721,8 @@ declare class GPUQueue implements GPUObjectBase {
         size: GPUExtent3D
     ): void;
 
-    copyImageBitmapToTexture(
-        source: GPUImageCopyImageBitmap,
+    copyExternalImageToTexture(
+        source: GPUImageCopyExternalImage,
         destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
@@ -86635,30 +86750,25 @@ type GPUPipelineStatisticName =
     | "fragment-shader-invocations"
     | "compute-shader-invocations";
 
-declare class GPUCanvasContext {
+declare class GPUPresentationContext {
     private __brand: void;
 
-    configureSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
+    configure(descriptor?: GPUPresentationConfiguration): void;
 
-    getSwapChainPreferredFormat(adapter: GPUAdapter): GPUTextureFormat;
+    getPreferredFormat(adapter: GPUAdapter): GPUTextureFormat;
+    getCurrentTexture(): GPUTexture;
 }
 
 type GPUCanvasCompositingAlphaMode =
     | "opaque"
     | "premultiplied";
 
-interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
+interface GPUPresentationConfiguration extends GPUObjectDescriptorBase {
     device: GPUDevice;
     format: GPUTextureFormat;
     usage?: GPUTextureUsageFlags; /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */
     compositingAlphaMode?: GPUCanvasCompositingAlphaMode; /* default="opaque" */
-}
-
-declare class GPUSwapChain implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-
-    getCurrentTexture(): GPUTexture;
+    size: GPUExtent3D;
 }
 
 type GPUDeviceLostReason = "destroyed";
@@ -86696,6 +86806,16 @@ declare class GPUUncapturedErrorEvent extends Event {
 interface GPUUncapturedErrorEventInit extends EventInit {
     error: GPUError;
 }
+
+type GPUBufferDynamicOffset = number; /* unsigned long */
+type GPUStencilValue = number; /* unsigned long */
+type GPUSampleMask = number; /* unsigned long */
+type GPUDepthBias = number; /* long */
+type GPUSize64 = number; /* unsigned long long */
+type GPUIntegerCoordinate = number; /* unsigned long */
+type GPUIndex32 = number; /* unsigned long */
+type GPUSize32 = number; /* unsigned long */
+type GPUSignedOffset32 = number; /* long */
 
 interface GPUColorDict {
     r: number;
