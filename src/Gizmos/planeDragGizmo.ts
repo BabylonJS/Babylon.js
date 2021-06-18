@@ -128,7 +128,6 @@ export class PlaneDragGizmo extends Gizmo {
             dragBehavior: this.dragBehavior
         };
         this._parent?.addToAxisCache((this._gizmoMesh as Mesh), cache);
-        this._axisCache = cache;
 
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (this._customMeshSet) {
@@ -137,16 +136,17 @@ export class PlaneDragGizmo extends Gizmo {
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 const material = cache.dragBehavior.enabled ? (this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial) : this._disableMaterial;
-                cache.gizmoMeshes.forEach((m: Mesh) => {
-                    m.material = material;
-                });
+                this._setGizmoMeshMaterial(cache.gizmoMeshes, material);
             }
+        });
+
+        this.dragBehavior.onEnabledObservable.add((newState) => {
+            this._setGizmoMeshMaterial(cache.gizmoMeshes, newState ? this._coloredMaterial : this._disableMaterial);
         });
     }
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
-            this._setGizmoMeshMaterial(this.dragBehavior.enabled ? this._coloredMaterial : this._disableMaterial);
         }
     }
 

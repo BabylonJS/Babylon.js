@@ -46,7 +46,6 @@ export class Gizmo implements IDisposable {
     private _attachedMesh: Nullable<AbstractMesh> = null;
     private _attachedNode: Nullable<Node> = null;
     private _customRotationQuaternion: Nullable<Quaternion> = null;
-    protected _axisCache: Nullable<GizmoAxisCache> = null;
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
@@ -326,8 +325,7 @@ export class Gizmo implements IDisposable {
      * refresh gizmo mesh material
      * @param material material to apply
      */
-    protected _setGizmoMeshMaterial(material: StandardMaterial) {
-        const gizmoMeshes = this._axisCache?.gizmoMeshes;
+    protected _setGizmoMeshMaterial(gizmoMeshes: Mesh[], material: StandardMaterial) {
         if (gizmoMeshes) {
             gizmoMeshes.forEach((m: Mesh) => {
                 m.material = material;
