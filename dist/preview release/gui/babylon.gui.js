@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -15876,7 +15876,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /**
  * Default behavior for 3D UI elements.
- * Handles a FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+ * Handles a FollowBehavior, SixDofBehavior and SurfaceMagnetismBehavior
  */
 var DefaultBehavior = /** @class */ (function () {
     /**
@@ -17130,6 +17130,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Class used to create a holographic button in 3D
  */
@@ -17332,14 +17333,16 @@ var HolographicButton = /** @class */ (function (_super) {
         this._disposeFacadeTexture();
         var panel = new _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_4__["StackPanel"]();
         panel.isVertical = true;
-        if (this._imageUrl) {
-            var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__["Image"]();
-            image.source = this._imageUrl;
-            image.paddingTop = "40px";
-            image.height = "180px";
-            image.width = "100px";
-            image.paddingBottom = "40px";
-            panel.addControl(image);
+        if (babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["DomManagement"].IsDocumentAvailable() && !!document.createElement) {
+            if (this._imageUrl) {
+                var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__["Image"]();
+                image.source = this._imageUrl;
+                image.paddingTop = "40px";
+                image.height = "180px";
+                image.width = "100px";
+                image.paddingBottom = "40px";
+                panel.addControl(image);
+            }
         }
         if (this._text) {
             var text = new _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_6__["TextBlock"]();
@@ -17489,6 +17492,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Class used to create a holographic slate
  */
@@ -17586,8 +17590,7 @@ var HolographicSlate = /** @class */ (function (_super) {
     };
     HolographicSlate.prototype._rebuildContent = function () {
         this._disposeFacadeTexture();
-        // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
-        if (!!document.createElement) {
+        if (babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["DomManagement"].IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__["Image"]();
                 image.source = this._imageUrl;
@@ -18106,15 +18109,18 @@ var NearMenu = /** @class */ (function (_super) {
         this._pinButton = this._createPinButton(node);
         this.isPinned = false;
         this._defaultBehavior.attach(node, [this._backPlate]);
+        this._defaultBehavior.followBehavior.ignoreCameraPitchAndRoll = true;
+        this._defaultBehavior.followBehavior.pitchOffset = -15;
+        this._defaultBehavior.followBehavior.minimumDistance = 0.3;
+        this._defaultBehavior.followBehavior.defaultDistance = 0.4;
+        this._defaultBehavior.followBehavior.maximumDistance = 0.6;
+        this._backPlate.isNearGrabbable = true;
         node.isVisible = false;
         return node;
     };
     NearMenu.prototype._finalProcessing = function () {
         _super.prototype._finalProcessing.call(this);
         this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
-        this._defaultBehavior.followBehavior.minimumDistance = this._backPlate.scaling.x * 0.5 * this.scaling.length();
-        this._defaultBehavior.followBehavior.maximumDistance = this._backPlate.scaling.x * 1.5 * this.scaling.length();
-        this._defaultBehavior.followBehavior.defaultDistance = this._backPlate.scaling.x * this.scaling.length();
     };
     /**
      * Disposes the near menu
@@ -19315,9 +19321,9 @@ var TouchHolographicButton = /** @class */ (function (_super) {
     };
     TouchHolographicButton.prototype._rebuildContent = function () {
         this._disposeFacadeTexture();
-        if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["DomManagement"].IsDocumentAvailable()) {
-            var panel = new _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_3__["StackPanel"]();
-            panel.isVertical = true;
+        var panel = new _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_3__["StackPanel"]();
+        panel.isVertical = true;
+        if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["DomManagement"].IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_4__["Image"]();
                 image.source = this._imageUrl;
@@ -19327,16 +19333,16 @@ var TouchHolographicButton = /** @class */ (function (_super) {
                 image.paddingBottom = "40px";
                 panel.addControl(image);
             }
-            if (this._text) {
-                var text = new _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_5__["TextBlock"]();
-                text.text = this._text;
-                text.color = "white";
-                text.height = "30px";
-                text.fontSize = 24;
-                panel.addControl(text);
-            }
-            this.content = panel;
         }
+        if (this._text) {
+            var text = new _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_5__["TextBlock"]();
+            text.text = this._text;
+            text.color = "white";
+            text.height = "30px";
+            text.fontSize = 24;
+            panel.addControl(text);
+        }
+        this.content = panel;
     };
     // Mesh association
     TouchHolographicButton.prototype._createNode = function (scene) {
@@ -20132,6 +20138,7 @@ var SideHandle = /** @class */ (function (_super) {
         verticalBox.parent = sideNode;
         var mat = this._createMaterial();
         verticalBox.material = mat;
+        verticalBox.isNearGrabbable = true;
         this._materials.push(mat);
         return sideNode;
     };
@@ -20159,6 +20166,8 @@ var CornerHandle = /** @class */ (function (_super) {
         verticalBox.parent = angleNode;
         horizontalBox.material = this._createMaterial(new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 0, 0));
         verticalBox.material = this._createMaterial(new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 1, 0));
+        verticalBox.isNearGrabbable = true;
+        horizontalBox.isNearGrabbable = true;
         this._materials.push(horizontalBox.material);
         this._materials.push(verticalBox.material);
         return angleNode;
