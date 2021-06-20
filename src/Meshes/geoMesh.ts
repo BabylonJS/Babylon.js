@@ -652,6 +652,68 @@ export class GeoData extends PolyhedronData{
         return nbToCol;
     }
 
+    //Puts vertices of a face for GP in correct order for mesh construction
+    public _setOrder(m: number, faces: number[]) {
+        const dualFaces = [];
+        let face: any = faces.pop();
+        dualFaces.push(face);
+        let index = this.face[face].indexOf(m);
+        index = (index + 2) % 3; //index to vertex included in adjacent face
+        let v = this.face[face][index];
+        let f = 0;
+        while (faces.length > 0) {
+            face = faces[f]
+            if (this.face[face].indexOf(v) > -1) { // v is a vertex of face f
+                index = (this.face[face].indexOf(v) + 1) % 3;
+                v = this.face[face][index];
+                dualFaces.push(face);
+                faces.splice(f, 1);
+                f = 0;
+            }
+            else {
+                f++
+            }
+        }
+        return dualFaces; 
+    }
+
+    public _toGoldbergData(): PolyhedronData {
+        const GoldbergData: PolyhedronData = new PolyhedronData("GeoDual", "Goldberg", [], []);
+        GoldbergData.name = "GD dual";
+        const verticesNb: number = this.vertex.length;
+        const map = new Array(verticesNb);
+        for (let v = 0; v < verticesNb; v++) {
+            map[v] = [];
+        }
+        for (let f = 0; f < this.face.length; f++) {
+            for (let i = 0; i < 3; i++) {
+                map[this.face[f][i]].push(f);
+            }
+        }
+        let cx = 0;
+        let cy = 0;
+        let cz = 0;
+        let face = [];
+        let vertex = [];
+        for(let m = 0; m < map.length; m++) {
+            GoldbergData.face[m] = this._setOrder(m, map[m].concat([]));
+            map[m].forEach((el: number) => {
+                cx = 0;
+                cy = 0;
+                cz = 0;
+                face = this.face[el];
+                for(let i = 0; i < 3; i++) {
+                    vertex = this.vertex[face[i]];
+                    cx += vertex[0];
+                    cy += vertex[1];
+                    cz += vertex[2];
+                }
+                GoldbergData.vertex[el] = [cx / 3, cy / 3, cz / 3];  
+            });
+        }
+        return GoldbergData;
+    }
+
 
 
     //statics
@@ -661,7 +723,7 @@ export class GeoData extends PolyhedronData{
      */
 
     public static BuildGeoData(primTri: Primary) {
-    
+        
         const geoDATA = new GeoData("Geodesic-m-n", "Geodesic", [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], [])
 
         primTri._setIndices();
