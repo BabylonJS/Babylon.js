@@ -2,10 +2,14 @@ import { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh } from "../../Meshes/mesh";
-import { MeshBuilder } from "../../Meshes/meshBuilder";
+import { PolyhedronBuilder } from ".././Builders/polyhedronBuilder";
 import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { Primary, GeoData} from "../geoMesh"
+
+Mesh.CreateGeodesic = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
+    return GeoBuilder.CreateGeodesic(name, options, scene);
+};
 
 /**
  * Class containing static functions to help procedurally build meshes
@@ -66,7 +70,7 @@ import { Primary, GeoData} from "../geoMesh"
             frontUVs: options.frontUVs,
             backUVs: options.backUVs
         }
-        const geodesic = MeshBuilder.CreatePolyhedron(name, geoOptions, scene);
+        const geodesic = PolyhedronBuilder.CreatePolyhedron(name, geoOptions, scene);
 
         return geodesic;
     }
