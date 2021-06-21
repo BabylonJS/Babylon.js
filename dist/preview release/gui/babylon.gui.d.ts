@@ -4934,7 +4934,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Default behavior for 3D UI elements.
-     * Handles a BABYLON.FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+     * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
      */
     export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
         private _scene;
