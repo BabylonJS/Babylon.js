@@ -733,6 +733,14 @@ describe('Babylon Scene Loader', function() {
     });
 
     describe('#DirectLoad', () => {
+        it('should load a raw obj with no mime type', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync('', `data:${objRaw}`, undefined, scene, undefined, ".obj").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
         it('should load a base64 encoded obj with no mime type', () => {
             const scene = new BABYLON.Scene(subject);
             return BABYLON.SceneLoader.ImportMeshAsync('', `data:;base64,${objBase64}`, undefined, scene, undefined, ".obj").then((result) => {
