@@ -2142,7 +2142,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         return this._parent.preprocessUrlAsync(this._rootUrl + uri).then((url) => {
             return new Promise((resolve, reject) => {
-                this._parent._loadFile(url, this._babylonScene, (data) => {
+                this._parent._loadFile(this._babylonScene, url, (data) => {
                     if (!this._disposed) {
                         this.log(`${context}: Loaded ${uri} (${(data as ArrayBuffer).byteLength} bytes)`);
                         resolve(new Uint8Array(data as ArrayBuffer));

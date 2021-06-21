@@ -54,6 +54,7 @@
 - Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Added support for custom timeout in WebRequest. ([jamidwyer](https://github.com/jamidwyer/))
 - Improved support for MSFT_lod, now LOD levels are loaded and accurately displayed according to screen coverage ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Added support for direct loading [base64 data URLs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for all loader ([CoPrez](https://github.com/CoPrez))
 
 ### Navigation
 
@@ -252,6 +253,7 @@
 - Fix issue with DeviceInputSystem where Mouse was being deregistered on Safari/MacOS ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix for disabledColor not working for Button ([msDestiny14](https://github.com/msDestiny14))
 - Fix NativeEngine not setting default depth test function to LEQUAL ([rgerd](https://github.com/rgerd))
+- Fix an exception where loading a very small STL file could result in attempting to read outside the files range ([CoPrez](https://github.com/CoPrez))
 - Fix support of `useReverseDepthBuffer` throughout the engine ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes

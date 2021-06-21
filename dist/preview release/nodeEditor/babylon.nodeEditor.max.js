@@ -55784,7 +55784,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         "SubtractBlock": "Subtracts the right input from the left input of the same type",
         "GradientBlock": "Returns the color in the gradient represented by the target value of the input",
         "PosterizeBlock": "Reduces the number of values in each channel to the number in the corresponding channel of steps",
-        "ReplaceColorBlock": "Replaces a reference color in value with the color in replacement blended by distance",
+        "ReplaceColorBlock": "Outputs the replacement color if the distance between value and reference is less than distance, else outputs the value color",
         "ColorMergerBlock": "Combines float input channels into a color",
         "ColorSplitterBlock": "Separates color input channels into individual floats",
         "VectorMergerBlock": "Combines up to four input floats into a vector",

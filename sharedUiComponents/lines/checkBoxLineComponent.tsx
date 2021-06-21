@@ -83,7 +83,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     render() {
         return (
             <div className="checkBoxLine">
-                {this.props.icon && <img src={this.props.icon} color="black" className="icon"/>}
+                {this.props.icon && <img src={this.props.icon} className="icon"/>}
                 <div className="label">
                     {this.props.label}
                 </div>

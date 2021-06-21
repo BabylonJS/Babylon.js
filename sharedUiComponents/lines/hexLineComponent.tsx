@@ -17,6 +17,7 @@ interface IHexLineComponentProps {
     digits?: number;
     useEuler?: boolean;
     min?: number
+    icon? : string;
 }
 
 export class HexLineComponent extends React.Component<IHexLineComponentProps, { value: string }> {
@@ -165,6 +166,7 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
                 {
                     !this.props.useEuler &&
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
+                        {this.props.icon && <img src={this.props.icon} className="icon"/>}
                         <div className="label" title={this.props.label}>
                             {this.props.label}
                         </div>
