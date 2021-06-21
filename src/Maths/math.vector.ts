@@ -3048,6 +3048,55 @@ export class Vector4 {
     }
 
     /**
+     * Returns a new Vector4 set with the result of the transformation by the given matrix of the given vector.
+     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * The difference with Vector3.TransformCoordinates is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+     * @param vector defines the Vector3 to transform
+     * @param transformation defines the transformation matrix
+     * @returns the transformed Vector4
+     */
+     public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector4 {
+        var result = Vector4.Zero();
+        Vector4.TransformCoordinatesToRef(vector, transformation, result);
+        return result;
+    }
+
+    /**
+     * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given vector
+     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * The difference with Vector3.TransformCoordinatesToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+     * @param vector defines the Vector3 to transform
+     * @param transformation defines the transformation matrix
+     * @param result defines the Vector4 where to store the result
+     */
+    public static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector4): void {
+        Vector4.TransformCoordinatesFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
+    }
+
+    /**
+     * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given floats (x, y, z)
+     * This method computes tranformed coordinates only, not transformed direction vectors
+     * The difference with Vector3.TransformCoordinatesFromFloatsToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+     * @param x define the x coordinate of the source vector
+     * @param y define the y coordinate of the source vector
+     * @param z define the z coordinate of the source vector
+     * @param transformation defines the transformation matrix
+     * @param result defines the Vector4 where to store the result
+     */
+    public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector4): void {
+        const m = transformation.m;
+        var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
+        var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
+        var rz = x * m[2] + y * m[6] + z * m[10] + m[14];
+        var rw = x * m[3] + y * m[7] + z * m[11] + m[15];
+
+        result.x = rx;
+        result.y = ry;
+        result.z = rz;
+        result.w = rw;
+    }
+
+    /**
      * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
      * This methods computes transformed normalized direction vectors only.
      * @param vector the vector to transform
@@ -5634,11 +5683,12 @@ export class Matrix {
      * @param height defines the viewport height
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @returns a new matrix as a left-handed orthographic projection matrix
      */
-    public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
+    public static OrthoLH(width: number, height: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
         var matrix = new Matrix();
-        Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
+        Matrix.OrthoLHToRef(width, height, znear, zfar, matrix, halfZRange);
         return matrix;
     }
 
@@ -5649,8 +5699,9 @@ export class Matrix {
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
+    public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void {
         let n = znear;
         let f = zfar;
 
@@ -5667,6 +5718,10 @@ export class Matrix {
             result
         );
 
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
+
         result._updateIdentityStatus(a === 1 && b === 1 && c === 1 && d === 0);
     }
 
@@ -5678,11 +5733,12 @@ export class Matrix {
      * @param top defines the viewport top coordinate
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @returns a new matrix as a left-handed orthographic projection matrix
      */
-    public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
+    public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
         var matrix = new Matrix();
-        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix);
+        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix, halfZRange);
         return matrix;
     }
 
@@ -5695,8 +5751,9 @@ export class Matrix {
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+    public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void {
         let n = znear;
         let f = zfar;
 
@@ -5715,6 +5772,10 @@ export class Matrix {
             result
         );
 
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
+
         result._markAsUpdated();
     }
 
@@ -5726,11 +5787,12 @@ export class Matrix {
      * @param top defines the viewport top coordinate
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @returns a new matrix as a right-handed orthographic projection matrix
      */
-    public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
+    public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
         var matrix = new Matrix();
-        Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
+        Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix, halfZRange);
         return matrix;
     }
 
@@ -5743,9 +5805,10 @@ export class Matrix {
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
-        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
+    public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void {
+        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
         result._m[10] *= -1; // No need to call _markAsUpdated as previous function already called it and let _isIdentityDirty to true
     }
 
@@ -5755,9 +5818,10 @@ export class Matrix {
      * @param height defines the viewport height
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @returns a new matrix as a left-handed perspective projection matrix
      */
-    public static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix {
+    public static PerspectiveLH(width: number, height: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
         var matrix = new Matrix();
 
         let n = znear;
@@ -5776,6 +5840,10 @@ export class Matrix {
             matrix
         );
 
+        if (halfZRange) {
+            matrix.multiplyToRef(mtxConvertNDCToHalfZRange, matrix);
+        }
+
         matrix._updateIdentityStatus(false);
         return matrix;
     }
@@ -5786,11 +5854,12 @@ export class Matrix {
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @returns a new matrix as a left-handed perspective projection matrix
      */
-    public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
+    public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
         var matrix = new Matrix();
-        Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
+        Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix, true, halfZRange);
         return matrix;
     }
 
@@ -5802,8 +5871,9 @@ export class Matrix {
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean): void {
         let n = znear;
         let f = zfar;
 
@@ -5820,6 +5890,11 @@ export class Matrix {
             0.0, 0.0, d, 0.0,
             result
         );
+
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
+
         result._updateIdentityStatus(false);
     }
 
@@ -5831,8 +5906,9 @@ export class Matrix {
      * @param zfar not used as infinity is used as far clip
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean): void {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
@@ -5843,6 +5919,9 @@ export class Matrix {
             0.0, 0.0, 1.0, 0.0,
             result
         );
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
         result._updateIdentityStatus(false);
     }
 
@@ -5852,11 +5931,12 @@ export class Matrix {
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @returns a new matrix as a right-handed perspective projection matrix
      */
-    public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
+    public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
         var matrix = new Matrix();
-        Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
+        Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix, true, halfZRange);
         return matrix;
     }
 
@@ -5868,8 +5948,9 @@ export class Matrix {
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean): void {
         //alternatively this could be expressed as:
         //    m = PerspectiveFovLHToRef
         //    m[10] *= -1.0;
@@ -5892,6 +5973,10 @@ export class Matrix {
             result
         );
 
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
+
         result._updateIdentityStatus(false);
     }
 
@@ -5903,13 +5988,9 @@ export class Matrix {
      * @param zfar not used as infinity is used as far clip
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
-        //alternatively this could be expressed as:
-        //    m = PerspectiveFovLHToRef
-        //    m[10] *= -1.0;
-        //    m[11] *= -1.0;
-
+    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean): void {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
@@ -5922,6 +6003,10 @@ export class Matrix {
             result
         );
 
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
+
         result._updateIdentityStatus(false);
     }
 
@@ -5932,8 +6017,9 @@ export class Matrix {
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
      * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+    public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false, halfZRange?: boolean): void {
 
         var rightHandedFactor = rightHanded ? -1 : 1;
 
@@ -5954,6 +6040,10 @@ export class Matrix {
         m[11] = 1.0 * rightHandedFactor;
         m[12] = m[13] = m[15] = 0.0;
         m[14] = -(2.0 * zfar * znear) / (zfar - znear);
+
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
 
         result._markAsUpdated();
     }
@@ -6168,3 +6258,10 @@ _TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;
 _TypeStore.RegisteredTypes["BABYLON.Vector3"] = Vector3;
 _TypeStore.RegisteredTypes["BABYLON.Vector4"] = Vector4;
 _TypeStore.RegisteredTypes["BABYLON.Matrix"] = Matrix;
+
+const mtxConvertNDCToHalfZRange = Matrix.FromValues(
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 0.5, 0,
+    0, 0, 0.5, 1
+);

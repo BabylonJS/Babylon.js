@@ -275,6 +275,11 @@ export class ShaderProcessor {
         }
         preprocessors["__VERSION__"] = options.version;
         preprocessors[options.platformName] = "true";
+        if (options.isNDCHalfZRange) {
+            preprocessors["IS_NDC_HALF_ZRANGE"] = "";
+        } else {
+            delete preprocessors["IS_NDC_HALF_ZRANGE"];
+        }
 
         return preprocessors;
     }

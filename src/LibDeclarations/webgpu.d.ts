@@ -60,8 +60,8 @@ declare class GPUAdapter {
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
-    nonGuaranteedFeatures?: GPUFeatureName[]; /* default=[] */
-    nonGuaranteedLimits?: { [name: string]: GPUSize32 }; /* default={} */
+    requiredFeatures?: GPUFeatureName[]; /* default=[] */
+    requiredLimits?: { [name: string]: GPUSize32 }; /* default={} */
 }
 
 type GPUFeatureName =
@@ -936,6 +936,12 @@ interface GPURenderBundleEncoderDescriptor extends GPUObjectDescriptorBase {
     sampleCount?: GPUSize32; /* default=1 */
 }
 
+// @todo: to be removed
+interface GPUImageBitmapCopyView {
+    imageBitmap: ImageBitmap;
+    origin?: GPUOrigin2D;
+}
+
 declare class GPUQueue implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -957,6 +963,13 @@ declare class GPUQueue implements GPUObjectBase {
         data: BufferSource,
         dataLayout: GPUImageDataLayout,
         size: GPUExtent3D
+    ): void;
+
+    // @todo: to be removed
+    copyImageBitmapToTexture(
+        source: GPUImageBitmapCopyView,
+        destination: GPUImageCopyTexture,
+        copySize: GPUExtent3D
     ): void;
 
     copyExternalImageToTexture(

@@ -40,6 +40,7 @@ import { ICanvas, ICanvasRenderingContext } from "./ICanvas";
 import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
+import { IStencilState } from "../States/IStencilState";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -178,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.25";
+        return "babylonjs@5.0.0-alpha.27";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.25";
+        return "5.0.0-alpha.27";
     }
 
     /**
@@ -290,6 +291,11 @@ export class ThinEngine {
     }
 
     /**
+     * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
+     */
+    public readonly isNDCHalfZRange = false;
+
+    /**
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
      */
     public disableUniformBuffers = false;
@@ -297,7 +303,7 @@ export class ThinEngine {
     /**
     * An event triggered when the engine is disposed.
     */
-   public readonly onDisposeObservable = new Observable<ThinEngine>();
+    public readonly onDisposeObservable = new Observable<ThinEngine>();
 
     private _frameId = 0;
     /**
@@ -1657,6 +1663,55 @@ export class ThinEngine {
         }
 
         this.wipeCaches();
+    }
+
+    /**
+     * Set various states to the webGL context
+     * @param culling defines culling state: true to enable culling, false to disable it
+     * @param zOffset defines the value to apply to zOffset (0 by default)
+     * @param force defines if states must be applied even if cache is up to date
+     * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
+     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+     * @param stencil stencil states to set
+     */
+     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+        // Culling
+        if (this._depthCullingState.cull !== culling || force) {
+            this._depthCullingState.cull = culling;
+        }
+
+        // Cull face
+        var cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? this._gl.BACK : this._gl.FRONT;
+        if (this._depthCullingState.cullFace !== cullFace || force) {
+            this._depthCullingState.cullFace = cullFace;
+        }
+
+        // Z offset
+        this.setZOffset(zOffset);
+
+        // Front face
+        var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
+        if (this._depthCullingState.frontFace !== frontFace || force) {
+            this._depthCullingState.frontFace = frontFace;
+        }
+
+        this._stencilStateComposer.stencilMaterial = stencil;
+    }
+
+    /**
+     * Set the z offset to apply to current rendering
+     * @param value defines the offset to apply
+     */
+     public setZOffset(value: number): void {
+        this._depthCullingState.zOffset = this.useReverseDepthBuffer ? -value : value;
+    }
+
+    /**
+     * Gets the current value of the zOffset
+     * @returns the current zOffset state
+     */
+    public getZOffset(): number {
+        return this._depthCullingState.zOffset;
     }
 
     /** @hidden */
