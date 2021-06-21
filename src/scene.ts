@@ -4488,10 +4488,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        if (EngineStore._LastCreatedScene === this) {
-            EngineStore._LastCreatedScene = null;
-        }
-
         this.skeletons = [];
         this.morphTargetManagers = [];
         this._transientComponents = [];
