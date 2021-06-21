@@ -1947,6 +1947,7 @@ declare module BABYLON {
         platformName: string;
         lookForClosingBracketForUniformBuffer?: boolean;
         processingContext: Nullable<ShaderProcessingContext>;
+        isNDCHalfZRange: boolean;
     }
 }
 declare module BABYLON {
@@ -4889,6 +4890,35 @@ declare module BABYLON {
          */
         static CenterToRef(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>, ref: DeepImmutable<Vector4>): Vector4;
         /**
+         * Returns a new Vector4 set with the result of the transformation by the given matrix of the given vector.
+         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+         * The difference with Vector3.TransformCoordinates is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @returns the transformed Vector4
+         */
+        static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector4;
+        /**
+         * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given vector
+         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+         * The difference with Vector3.TransformCoordinatesToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector4 where to store the result
+         */
+        static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector4): void;
+        /**
+         * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given floats (x, y, z)
+         * This method computes tranformed coordinates only, not transformed direction vectors
+         * The difference with Vector3.TransformCoordinatesFromFloatsToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+         * @param x define the x coordinate of the source vector
+         * @param y define the y coordinate of the source vector
+         * @param z define the z coordinate of the source vector
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector4 where to store the result
+         */
+        static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector4): void;
+        /**
          * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
          * This methods computes transformed normalized direction vectors only.
          * @param vector the vector to transform
@@ -6002,9 +6032,10 @@ declare module BABYLON {
          * @param height defines the viewport height
          * @param znear defines the near clip plane
          * @param zfar defines the far clip plane
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @returns a new matrix as a left-handed orthographic projection matrix
          */
-        static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        static OrthoLH(width: number, height: number, znear: number, zfar: number, halfZRange?: boolean): Matrix;
         /**
          * Store a left-handed orthographic projection to a given matrix
          * @param width defines the viewport width
@@ -6012,8 +6043,9 @@ declare module BABYLON {
          * @param znear defines the near clip plane
          * @param zfar defines the far clip plane
          * @param result defines the target matrix
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          */
-        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void;
+        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void;
         /**
          * Create a left-handed orthographic projection matrix
          * @param left defines the viewport left coordinate
@@ -6022,9 +6054,10 @@ declare module BABYLON {
          * @param top defines the viewport top coordinate
          * @param znear defines the near clip plane
          * @param zfar defines the far clip plane
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @returns a new matrix as a left-handed orthographic projection matrix
          */
-        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
+        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, halfZRange?: boolean): Matrix;
         /**
          * Stores a left-handed orthographic projection into a given matrix
          * @param left defines the viewport left coordinate
@@ -6034,8 +6067,9 @@ declare module BABYLON {
          * @param znear defines the near clip plane
          * @param zfar defines the far clip plane
          * @param result defines the target matrix
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          */
-        static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
+        static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void;
         /**
          * Creates a right-handed orthographic projection matrix
          * @param left defines the viewport left coordinate
@@ -6044,9 +6078,10 @@ declare module BABYLON {
          * @param top defines the viewport top coordinate
          * @param znear defines the near clip plane
          * @param zfar defines the far clip plane
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @returns a new matrix as a right-handed orthographic projection matrix
          */
-        static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
+        static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, halfZRange?: boolean): Matrix;
         /**
          * Stores a right-handed orthographic projection into a given matrix
          * @param left defines the viewport left coordinate
@@ -6056,26 +6091,29 @@ declare module BABYLON {
          * @param znear defines the near clip plane
          * @param zfar defines the far clip plane
          * @param result defines the target matrix
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          */
-        static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
+        static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void;
         /**
          * Creates a left-handed perspective projection matrix
          * @param width defines the viewport width
          * @param height defines the viewport height
          * @param znear defines the near clip plane
          * @param zfar defines the far clip plane
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @returns a new matrix as a left-handed perspective projection matrix
          */
-        static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        static PerspectiveLH(width: number, height: number, znear: number, zfar: number, halfZRange?: boolean): Matrix;
         /**
          * Creates a left-handed perspective projection matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
          * @param zfar defines the far clip plane
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @returns a new matrix as a left-handed perspective projection matrix
          */
-        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
+        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean): Matrix;
         /**
          * Stores a left-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
@@ -6084,8 +6122,9 @@ declare module BABYLON {
          * @param zfar defines the far clip plane
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          */
-        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean): void;
         /**
          * Stores a left-handed perspective projection into a given matrix with depth reversed
          * @param fov defines the horizontal field of view
@@ -6094,17 +6133,19 @@ declare module BABYLON {
          * @param zfar not used as infinity is used as far clip
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          */
-        static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean): void;
         /**
          * Creates a right-handed perspective projection matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
          * @param zfar defines the far clip plane
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @returns a new matrix as a right-handed perspective projection matrix
          */
-        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
+        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean): Matrix;
         /**
          * Stores a right-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
@@ -6113,8 +6154,9 @@ declare module BABYLON {
          * @param zfar defines the far clip plane
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          */
-        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean): void;
         /**
          * Stores a right-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
@@ -6123,8 +6165,9 @@ declare module BABYLON {
          * @param zfar not used as infinity is used as far clip
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          */
-        static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean): void;
         /**
          * Stores a perspective projection for WebVR info a given matrix
          * @param fov defines the field of view
@@ -6132,13 +6175,14 @@ declare module BABYLON {
          * @param zfar defines the far clip plane
          * @param result defines the target matrix
          * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
+         * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          */
         static PerspectiveFovWebVRToRef(fov: {
             upDegrees: number;
             downDegrees: number;
             leftDegrees: number;
             rightDegrees: number;
-        }, znear: number, zfar: number, result: Matrix, rightHanded?: boolean): void;
+        }, znear: number, zfar: number, result: Matrix, rightHanded?: boolean, halfZRange?: boolean): void;
         /**
          * Computes a complete transformation matrix
          * @param viewport defines the viewport to use
@@ -22548,6 +22592,7 @@ declare module BABYLON {
         protected _scaling: Vector3;
         protected _isDirty: boolean;
         private _transformToBoneReferal;
+        private _currentParentWhenAttachingToBone;
         private _isAbsoluteSynced;
         private _billboardMode;
         /**
@@ -22847,9 +22892,10 @@ declare module BABYLON {
         attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode;
         /**
          * Detach the transform node if its associated with a bone
+         * @param resetToPreviousParent Indicates if the parent that was in effect when attachToBone was called should be set back or if we should set parent to null instead (defaults to the latter) @since 5.0.0
          * @returns this object
          */
-        detachFromBone(): TransformNode;
+        detachFromBone(resetToPreviousParent?: boolean): TransformNode;
         private static _rotationAxisCache;
         /**
          * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
@@ -39308,6 +39354,10 @@ declare module BABYLON {
         get useReverseDepthBuffer(): boolean;
         set useReverseDepthBuffer(useReverse: boolean);
         /**
+         * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
+         */
+        readonly isNDCHalfZRange: boolean;
+        /**
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
         disableUniformBuffers: boolean;
@@ -39731,6 +39781,26 @@ declare module BABYLON {
          * @param layer defines the 2d array index to bind to frame buffer to
          */
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel?: number, layer?: number): void;
+        /**
+         * Set various states to the webGL context
+         * @param culling defines culling state: true to enable culling, false to disable it
+         * @param zOffset defines the value to apply to zOffset (0 by default)
+         * @param force defines if states must be applied even if cache is up to date
+         * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
+         * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+         * @param stencil stencil states to set
+         */
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
+        /**
+         * Set the z offset to apply to current rendering
+         * @param value defines the offset to apply
+         */
+        setZOffset(value: number): void;
+        /**
+         * Gets the current value of the zOffset
+         * @returns the current zOffset state
+         */
+        getZOffset(): number;
         /** @hidden */
         _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
         /**
@@ -42125,26 +42195,6 @@ declare module BABYLON {
          */
         generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
         /** States */
-        /**
-         * Set various states to the webGL context
-         * @param culling defines culling state: true to enable culling, false to disable it
-         * @param zOffset defines the value to apply to zOffset (0 by default)
-         * @param force defines if states must be applied even if cache is up to date
-         * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
-         * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
-         * @param stencil stencil states to set
-         */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
-        /**
-         * Set the z offset to apply to current rendering
-         * @param value defines the offset to apply
-         */
-        setZOffset(value: number): void;
-        /**
-         * Gets the current value of the zOffset
-         * @returns the current zOffset state
-         */
-        getZOffset(): number;
         /**
          * Gets a boolean indicating if depth testing is enabled
          * @returns the current state
@@ -58823,6 +58873,7 @@ declare module BABYLON {
          *
          * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
          * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * (when not using reverse depth buffer / NDC half Z range)
          * @param activeCamera The camera we are returning the min for
          * @returns the depth min z
          */
@@ -58832,6 +58883,7 @@ declare module BABYLON {
          *
          * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
          * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * (when not using reverse depth buffer / NDC half Z range)
          * @param activeCamera The camera we are returning the max for
          * @returns the depth max z
          */
@@ -60448,7 +60500,7 @@ declare module BABYLON {
             [key: string]: string;
         }, processingContext: Nullable<ShaderProcessingContext>): string;
         uniformBufferProcessor(uniformBuffer: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string;
-        postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string;
+        postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine): string;
         private _applyTextureArrayProcessing;
         finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): {
             vertexCode: string;
@@ -63186,6 +63238,18 @@ declare module BABYLON {
          * Disposes the light and the associated resources.
          */
         dispose(): void;
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         * @param activeCamera The camera we are returning the min for
+         * @returns the depth min z
+         */
+        getDepthMinZ(activeCamera: Camera): number;
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         * @param activeCamera The camera we are returning the max for
+         * @returns the depth max z
+         */
+        getDepthMaxZ(activeCamera: Camera): number;
         /**
          * Prepares the list of defines specific to the light type.
          * @param defines the list of defines
@@ -85978,8 +86042,8 @@ declare class GPUAdapter {
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
-    nonGuaranteedFeatures?: GPUFeatureName[]; /* default=[] */
-    nonGuaranteedLimits?: { [name: string]: GPUSize32 }; /* default={} */
+    requiredFeatures?: GPUFeatureName[]; /* default=[] */
+    requiredLimits?: { [name: string]: GPUSize32 }; /* default={} */
 }
 
 type GPUFeatureName =
@@ -86854,6 +86918,12 @@ interface GPURenderBundleEncoderDescriptor extends GPUObjectDescriptorBase {
     sampleCount?: GPUSize32; /* default=1 */
 }
 
+// @todo: to be removed
+interface GPUImageBitmapCopyView {
+    imageBitmap: ImageBitmap;
+    origin?: GPUOrigin2D;
+}
+
 declare class GPUQueue implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -86875,6 +86945,13 @@ declare class GPUQueue implements GPUObjectBase {
         data: BufferSource,
         dataLayout: GPUImageDataLayout,
         size: GPUExtent3D
+    ): void;
+
+    // @todo: to be removed
+    copyImageBitmapToTexture(
+        source: GPUImageBitmapCopyView,
+        destination: GPUImageCopyTexture,
+        copySize: GPUExtent3D
     ): void;
 
     copyExternalImageToTexture(
