@@ -187,9 +187,15 @@ export class UtilityLayerRenderer implements IDisposable {
                     return;
                 }
 
-                var utilityScenePick = prePointerInfo.ray
-                    ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray)
-                    : this.utilityLayerScene.pick(originalScene.pointerX, originalScene.pointerY);
+                let utilityScenePick;
+
+                if (prePointerInfo.nearInteractionPickingInfo) {
+                    utilityScenePick = prePointerInfo.nearInteractionPickingInfo;
+                } else {
+                    utilityScenePick = prePointerInfo.ray
+                        ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray)
+                        : this.utilityLayerScene.pick(originalScene.pointerX, originalScene.pointerY);
+                }
                 if (!prePointerInfo.ray && utilityScenePick) {
                     prePointerInfo.ray = utilityScenePick.ray;
                 }
