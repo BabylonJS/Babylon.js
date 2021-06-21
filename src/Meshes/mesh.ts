@@ -899,19 +899,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
         const useScreenCoverage = internalDataInfo._useLODScreenCoverage;
-        let ratio = 1;
+        let compareValue = distanceToCamera;
+        let compareSign = 1;
 
         if (useScreenCoverage) {
             const screenArea = camera.screenArea;
             let meshArea = bSphere.radiusWorld * camera.minZ / distanceToCamera;
             meshArea = meshArea * meshArea * Math.PI;
-            ratio = meshArea / screenArea;
+            compareValue = meshArea / screenArea;
+            compareSign = -1;
         }
 
-        if ((useScreenCoverage && internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distanceOrScreenCoverage < ratio) ||
-            (!useScreenCoverage && internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distanceOrScreenCoverage > distanceToCamera)) {
+        if (compareSign * internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distanceOrScreenCoverage > compareSign * compareValue) {
             if (this.onLODLevelSelection) {
-                this.onLODLevelSelection(distanceToCamera, this, this);
+                this.onLODLevelSelection(compareValue, this, this);
             }
             return this;
         }
@@ -919,8 +920,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var index = 0; index < internalDataInfo._LODLevels.length; index++) {
             var level = internalDataInfo._LODLevels[index];
 
-            if ((useScreenCoverage && level.distanceOrScreenCoverage > ratio) ||
-                (!useScreenCoverage && level.distanceOrScreenCoverage < distanceToCamera)) {
+            if (compareSign * level.distanceOrScreenCoverage < compareSign * compareValue) {
                 if (level.mesh) {
                     if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
                         level.mesh._checkDelayState();
@@ -936,7 +936,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
 
                 if (this.onLODLevelSelection) {
-                    this.onLODLevelSelection(distanceToCamera, this, level.mesh);
+                    this.onLODLevelSelection(compareValue, this, level.mesh);
                 }
 
                 return level.mesh;
@@ -944,7 +944,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (this.onLODLevelSelection) {
-            this.onLODLevelSelection(distanceToCamera, this, this);
+            this.onLODLevelSelection(compareValue, this, this);
         }
         return this;
     }
