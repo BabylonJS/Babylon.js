@@ -148,6 +148,13 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         // check if file size is correct for binary stl
         var faceSize, nFaces, reader;
         reader = new DataView(data);
+
+        // A Binary STL header is 80 bytes, if the data size is not great than
+        // that then it's not a binary STL.
+        if (reader.byteLength <= 80) {
+            return false;
+        }
+
         faceSize = (32 / 8 * 3) + ((32 / 8 * 3) * 3) + (16 / 8);
         nFaces = reader.getUint32(80, true);
 
