@@ -143,7 +143,7 @@ export class ReflectionProbe {
                 Matrix.LookAtRHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
                 if (scene.activeCamera) {
-                    this._projectionMatrix = Matrix.PerspectiveFovRH(Math.PI / 2, 1, useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ, useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ);
+                    this._projectionMatrix = Matrix.PerspectiveFovRH(Math.PI / 2, 1, useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ, useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ, this._scene.getEngine().isNDCHalfZRange);
                     scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
                 }
             }
@@ -151,7 +151,7 @@ export class ReflectionProbe {
                 Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
                 if (scene.activeCamera) {
-                    this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ, useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ);
+                    this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ, useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ, this._scene.getEngine().isNDCHalfZRange);
                     scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
                 }
             }

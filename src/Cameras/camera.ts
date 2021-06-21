@@ -802,7 +802,7 @@ export class Camera extends Node {
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean) => void;
+            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean) => void;
             if (scene.useRightHandedSystem) {
                 getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
@@ -814,7 +814,8 @@ export class Camera extends Node {
                 reverseDepth ? this.maxZ : this.minZ,
                 reverseDepth ? this.minZ : this.maxZ,
                 this._projectionMatrix,
-                this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+                this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
+                engine.isNDCHalfZRange);
         } else {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
@@ -825,16 +826,18 @@ export class Camera extends Node {
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
-                    this._projectionMatrix);
-            } else {
+                    this._projectionMatrix,
+                    engine.isNDCHalfZRange);
+                } else {
                 Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
-                    this._projectionMatrix);
-            }
+                    this._projectionMatrix,
+                    engine.isNDCHalfZRange);
+                }
 
             this._cache.orthoLeft = this.orthoLeft;
             this._cache.orthoRight = this.orthoRight;
@@ -1142,7 +1145,7 @@ export class Camera extends Node {
 
     /** @hidden */
     public _getVRProjectionMatrix(): Matrix {
-        Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+        Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix, true, this.getEngine().isNDCHalfZRange);
         this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
         return this._projectionMatrix;
     }

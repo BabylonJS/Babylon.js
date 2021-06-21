@@ -4436,6 +4436,19 @@ declare module BABYLON {
          */
         static DistanceSquared(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number;
         /**
+         * Projects "vector" on the triangle determined by its extremities "p0", "p1" and "p2", stores the result in "ref"
+         * and returns the distance to the projected point.
+         * From http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.4264&rep=rep1&type=pdf
+         *
+         * @param vector the vector to get distance from
+         * @param p0 extremity of the triangle
+         * @param p1 extremity of the triangle
+         * @param p2 extremity of the triangle
+         * @param ref variable to store the result to
+         * @returns The distance between "ref" and "vector"
+         */
+        static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3): number;
+        /**
          * Returns a new Vector3 located at the center between "value1" and "value2"
          * @param value1 defines the first operand
          * @param value2 defines the second operand
@@ -8121,6 +8134,14 @@ declare module BABYLON {
          * @returns true if the spheres intersect
          */
         static Intersects(sphere0: DeepImmutable<BoundingSphere>, sphere1: DeepImmutable<BoundingSphere>): boolean;
+        /**
+         * Creates a sphere from a center and a radius
+         * @param center The center
+         * @param radius radius
+         * @param matrix Optional worldMatrix
+         * @returns The sphere
+         */
+        static CreateFromCenterAndRadius(center: DeepImmutable<Vector3>, radius: number, matrix?: DeepImmutable<Matrix>): BoundingSphere;
     }
 }
 declare module BABYLON {
@@ -16127,7 +16148,7 @@ declare module BABYLON {
         /** If we are picking a mesh with thin instance, this will give you the picked thin instance */
         thinInstanceIndex: number;
         /**
-         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
+         * If a mesh was used to do the picking (eg. 6dof controller) as a "near interaction", this will be populated.
          */
         originMesh: Nullable<AbstractMesh>;
         /**
@@ -20469,9 +20490,13 @@ declare module BABYLON {
      */
     export class PointerInfoPre extends PointerInfoBase {
         /**
-         * Ray from a pointer if availible (eg. 6dof controller)
+         * Ray from a pointer if available (eg. 6dof controller)
          */
         ray: Nullable<Ray>;
+        /**
+         * Defines picking info coming from a near interaction (proximity instead of ray-based picking)
+         */
+        nearInteractionPickingInfo: Nullable<PickingInfo>;
         /**
          * Defines the local position of the pointer on the canvas.
          */
@@ -28941,6 +28966,16 @@ declare module BABYLON {
          * @returns intersection info or null if no intersection
          */
         intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo>;
+        /**
+         * Projects a point on this submesh and stores the result in "ref"
+         *
+         * @param vector point to project
+         * @param positions defines mesh's positions array
+         * @param indices defines mesh's indices array
+         * @param ref vector that will store the result
+         * @returns distance from the point and the submesh, or -1 if the mesh rendering mode doesn't support projections
+         */
+        projectToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
         /** @hidden */
         private _intersectLines;
         /** @hidden */
@@ -28949,6 +28984,10 @@ declare module BABYLON {
         private _intersectTriangles;
         /** @hidden */
         private _intersectUnIndexedTriangles;
+        /** @hidden */
+        private _projectOnTrianglesToRef;
+        /** @hidden */
+        private _projectOnUnIndexedTrianglesToRef;
         /** @hidden */
         _rebuild(): void;
         /**
@@ -35134,20 +35173,20 @@ declare module BABYLON {
         /** @hidden */
         _updateNonUniformScalingState(value: boolean): boolean;
         /**
-        * An event triggered when this mesh collides with another one
-        */
+         * An event triggered when this mesh collides with another one
+         */
         onCollideObservable: Observable<AbstractMesh>;
         /** Set a function to call when this mesh collides with another one */
         set onCollide(callback: () => void);
         /**
-        * An event triggered when the collision's position changes
-        */
+         * An event triggered when the collision's position changes
+         */
         onCollisionPositionChangeObservable: Observable<Vector3>;
         /** Set a function to call when the collision's position changes */
         set onCollisionPositionChange(callback: () => void);
         /**
-        * An event triggered when material is changed
-        */
+         * An event triggered when material is changed
+         */
         onMaterialChangedObservable: Observable<AbstractMesh>;
         /**
          * Gets or sets the orientation for POV movement & rotation
@@ -35411,8 +35450,8 @@ declare module BABYLON {
         /** @hidden */
         _markSubMeshesAsMiscDirty(): void;
         /**
-        * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
-        */
+         * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
+         */
         get scaling(): Vector3;
         set scaling(newScaling: Vector3);
         /**
@@ -45939,7 +45978,7 @@ declare module BABYLON {
          * @param cameraViewSpace defines if picking will be done in view space (false by default)
          * @returns a Ray
          */
-        createPickingRay(x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace?: boolean): Ray;
+        createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace?: boolean): Ray;
         /**
          * Creates a ray that can be used to pick in the scene
          * @param x defines the x coordinate of the origin (on-screen)
@@ -45950,7 +45989,7 @@ declare module BABYLON {
          * @param cameraViewSpace defines if picking will be done in view space (false by default)
          * @returns the current scene
          */
-        createPickingRayToRef(x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace?: boolean): Scene;
+        createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace?: boolean): Scene;
         /**
          * Creates a ray that can be used to pick in the scene
          * @param x defines the x coordinate of the origin (on-screen)
@@ -48665,13 +48704,19 @@ declare module BABYLON {
             pointerId: number;
         }>;
         /**
+         *  Fires each time behavior enabled state changes
+         */
+        onEnabledObservable: Observable<boolean>;
+        /**
          *  If the attached mesh should be moved when dragged
          */
         moveAttached: boolean;
         /**
          *  If the drag behavior will react to drag events (Default: true)
          */
-        enabled: boolean;
+        set enabled(value: boolean);
+        get enabled(): boolean;
+        private _enabled;
         /**
          * If pointer events should start and release the drag (Default: true)
          */
@@ -48796,6 +48841,22 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Data store to track virtual pointers movement
+     */
+    type VirtualMeshInfo = {
+        dragging: boolean;
+        moving: boolean;
+        dragMesh: AbstractMesh;
+        originMesh: AbstractMesh;
+        pivotMesh: AbstractMesh;
+        startingPivotPosition: Vector3;
+        startingPivotOrientation: Quaternion;
+        startingPosition: Vector3;
+        startingOrientation: Quaternion;
+        lastOriginPosition: Vector3;
+        lastDragPosition: Vector3;
+    };
+    /**
      * Base behavior for six degrees of freedom interactions in XR experiences.
      * Creates virtual meshes that are dragged around
      * And observables for position/rotation changes
@@ -48805,19 +48866,7 @@ declare module BABYLON {
         private _pointerObserver;
         private _attachedToElement;
         protected _virtualMeshesInfo: {
-            [id: number]: {
-                dragging: boolean;
-                moving: boolean;
-                dragMesh: AbstractMesh;
-                originMesh: AbstractMesh;
-                pivotMesh: AbstractMesh;
-                startingPivotPosition: Vector3;
-                startingPivotOrientation: Quaternion;
-                startingPosition: Vector3;
-                startingOrientation: Quaternion;
-                lastOriginPosition: Vector3;
-                lastDragPosition: Vector3;
-            };
+            [id: number]: VirtualMeshInfo;
         };
         private _tmpVector;
         private _tmpQuaternion;
@@ -55032,6 +55081,14 @@ declare module BABYLON {
          */
         static readonly Version: number;
         /**
+         * default color of the selection ring
+         */
+        selectionMeshDefaultColor: Color3;
+        /**
+         * This color will be applied to the selection ring when selection is triggered
+         */
+        selectionMeshPickedColor: Color3;
+        /**
          * constructs a new background remover module
          * @param _xrSessionManager the session manager for this module
          * @param _options read-only options to be used in this module
@@ -55075,11 +55132,16 @@ declare module BABYLON {
         /**
          * Filter used for near interaction pick and hover
          */
-        private nearPickPredicate;
+        private _nearPickPredicate;
         /**
          * Filter used for near interaction grab
          */
-        private nearGrabPredicate;
+        private _nearGrabPredicate;
+        /**
+         * Filter used for any near interaction
+         */
+        private _nearInteractionPredicate;
+        private _controllerAvailablePredicate;
         private readonly _hoverRadius;
         private readonly _pickRadius;
         private readonly _nearGrabLengthScale;
@@ -55087,10 +55149,19 @@ declare module BABYLON {
         private _indexTipOrientationVector;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private get _utilityLayerScene();
+        private _generateVisualCue;
         private _attachNearInteractionMode;
         private _detachController;
         private _generateNewHandTipMeshes;
-        private _pickWithMesh;
+        private _pickWithSphere;
+        /**
+         * Picks a mesh with a sphere
+         * @param mesh the mesh to pick
+         * @param sphere picking sphere in world coordinates
+         * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
+         * @returns the picking info
+         */
+        static PickMeshWithSphere(mesh: AbstractMesh, sphere: BoundingSphere, skipBoundingInfo?: boolean): PickingInfo;
     }
 }
 declare module BABYLON {
@@ -56941,7 +57012,6 @@ declare module BABYLON {
         private _attachedMesh;
         private _attachedNode;
         private _customRotationQuaternion;
-        protected _axisCache: Nullable<GizmoAxisCache>;
         /**
          * Ratio for the scale of the gizmo (Default: 1)
          */
@@ -57029,7 +57099,7 @@ declare module BABYLON {
          * refresh gizmo mesh material
          * @param material material to apply
          */
-        protected _setGizmoMeshMaterial(material: StandardMaterial): void;
+        protected _setGizmoMeshMaterial(gizmoMeshes: Mesh[], material: StandardMaterial): void;
         /**
          * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -62020,12 +62090,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
-        postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine): string;
-    }
-}
-declare module BABYLON {
     /**
      * Container for accessors for natively-stored mesh data buffers.
      */
@@ -62056,7 +62120,14 @@ declare module BABYLON {
         private readonly INVALID_HANDLE;
         private _boundBuffersVertexArray;
         private _currentDepthTest;
-        homogeneousDepth: boolean;
+        private _stencilTest;
+        private _stencilMask;
+        private _stencilFunc;
+        private _stencilFuncRef;
+        private _stencilFuncMask;
+        private _stencilOpStencilFail;
+        private _stencilOpDepthFail;
+        private _stencilOpStencilDepthPass;
         getHardwareScalingLevel(): number;
         setHardwareScalingLevel(level: number): void;
         constructor(options?: NativeEngineOptions);
@@ -62173,6 +62244,87 @@ declare module BABYLON {
          * @returns the current color writing state
          */
         getColorWrite(): boolean;
+        private applyStencil;
+        /**
+         * Enable or disable the stencil buffer
+         * @param enable defines if the stencil buffer must be enabled or disabled
+         */
+        setStencilBuffer(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if stencil buffer is enabled
+         * @returns the current stencil buffer state
+         */
+        getStencilBuffer(): boolean;
+        /**
+     * Gets the current stencil operation when stencil passes
+     * @returns a number defining stencil operation to use when stencil passes
+     */
+        getStencilOperationPass(): number;
+        /**
+         * Sets the stencil operation to use when stencil passes
+         * @param operation defines the stencil operation to use when stencil passes
+         */
+        setStencilOperationPass(operation: number): void;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilMask(mask: number): void;
+        /**
+         * Sets the current stencil function
+         * @param stencilFunc defines the new stencil function to use
+         */
+        setStencilFunction(stencilFunc: number): void;
+        /**
+         * Sets the current stencil reference
+         * @param reference defines the new stencil reference to use
+         */
+        setStencilFunctionReference(reference: number): void;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilFunctionMask(mask: number): void;
+        /**
+         * Sets the stencil operation to use when stencil fails
+         * @param operation defines the stencil operation to use when stencil fails
+         */
+        setStencilOperationFail(operation: number): void;
+        /**
+         * Sets the stencil operation to use when depth fails
+         * @param operation defines the stencil operation to use when depth fails
+         */
+        setStencilOperationDepthFail(operation: number): void;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the new stencil mask to use
+         */
+        getStencilMask(): number;
+        /**
+         * Gets the current stencil function
+         * @returns a number defining the stencil function to use
+         */
+        getStencilFunction(): number;
+        /**
+         * Gets the current stencil reference value
+         * @returns a number defining the stencil reference value to use
+         */
+        getStencilFunctionReference(): number;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the stencil mask to use
+         */
+        getStencilFunctionMask(): number;
+        /**
+         * Gets the current stencil operation when stencil fails
+         * @returns a number defining stencil operation to use when stencil fails
+         */
+        getStencilOperationFail(): number;
+        /**
+         * Gets the current stencil operation when depth fails
+         * @returns a number defining stencil operation to use when depth fails
+         */
+        getStencilOperationDepthFail(): number;
         /**
          * Sets alpha constants used by some alpha blending modes
          * @param r defines the red component
@@ -62228,7 +62380,7 @@ declare module BABYLON {
          * @param format defines the format of the data
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
-        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
+        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha?: boolean, format?: number): void;
         createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
         createVideoElement(constraints: MediaTrackConstraints): any;
         updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
@@ -62330,6 +62482,10 @@ declare module BABYLON {
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
         private _getNativeSamplingMode;
+        private _getStencilFunc;
+        private _getStencilOpFail;
+        private _getStencilDepthFail;
+        private _getStencilDepthPass;
         private _getNativeTextureFormat;
         private _getNativeAlphaMode;
         private _getNativeAttribType;
