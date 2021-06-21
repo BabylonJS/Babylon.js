@@ -485,6 +485,8 @@ export class WebGPUEngine extends Engine {
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
 
+        (this.isNDCHalfZRange as any) = true;
+
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
@@ -569,8 +571,8 @@ export class WebGPUEngine extends Engine {
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
-                if (deviceDescriptor?.nonGuaranteedFeatures) {
-                    const requestedExtensions = deviceDescriptor.nonGuaranteedFeatures;
+                if (deviceDescriptor?.requiredFeatures) {
+                    const requestedExtensions = deviceDescriptor.requiredFeatures;
                     const validExtensions: GPUFeatureName[] = [];
 
                     for (let extension of requestedExtensions) {
@@ -579,7 +581,7 @@ export class WebGPUEngine extends Engine {
                         }
                     }
 
-                    deviceDescriptor.nonGuaranteedFeatures = validExtensions;
+                    deviceDescriptor.requiredFeatures = validExtensions;
                 }
 
                 return this._adapter.requestDevice(this._options.deviceDescriptor);
@@ -806,7 +808,7 @@ export class WebGPUEngine extends Engine {
             mainColorAttachments = [{
                 view: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
-                storeOp: WebGPUConstants.StoreOp.Clear
+                storeOp: WebGPUConstants.StoreOp.Store // don't use StoreOp.Clear, else using several cameras with different viewports or using scissors will fail because we call beginRenderPass / endPass several times for the same color attachment!
             }];
         } else {
             mainColorAttachments = [{
@@ -2112,7 +2114,9 @@ export class WebGPUEngine extends Engine {
         this._timestampQuery.endFrame(this._renderEncoder);
 
         if (this._invertYFinalFramebuffer) {
-            this._textureHelper.copyWithInvertY(this._mainTextureLastCopy.createView(), this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format, this._mainRenderPassCopyWrapper.renderPassDescriptor!, this._renderEncoder);
+            if (this._mainRenderPassCopyWrapper.renderPassDescriptor!.colorAttachments[0].view) {
+                this._textureHelper.copyWithInvertY(this._mainTextureLastCopy.createView(), this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format, this._mainRenderPassCopyWrapper.renderPassDescriptor!, this._renderEncoder);
+            }
         }
 
         this.flushFramebuffer(false);

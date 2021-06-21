@@ -12,7 +12,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 
 /**
  * Default behavior for 3D UI elements.
- * Handles a FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+ * Handles a FollowBehavior, SixDofBehavior and SurfaceMagnetismBehavior
  */
 export class DefaultBehavior implements Behavior<Mesh> {
     private _scene: Scene;

@@ -759,7 +759,7 @@
         },
         {
             "title": "Depth of field",
-            "playgroundId": "#IDSQK2#53",
+            "playgroundId": "#IDSQK2#86",
             "renderCount": 20,
             "referenceImage": "depthOfField.png"
         },
@@ -1092,7 +1092,7 @@
         {
             "title": "Prepass SSAO + depth of field",
             "renderCount": 10,
-            "playgroundId": "#8F5HYV#14",
+            "playgroundId": "#8F5HYV#16",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-dof.png"
         },
@@ -1322,6 +1322,27 @@
             "title": "GLTF ext MSFT_LOD",
             "playgroundId": "#2YZFA0#234",
             "referenceImage": "gltfMSFTLOD.png"
+        },
+        {
+            "title": "Reverse depth buffer and shadows",
+            "renderCount": 10,
+            "playgroundId": "#WL4Q8J#16",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "reverseDepthBufferShadows.png"
+        },
+        {
+            "title": "Reverse depth buffer and CSM shadows",
+            "renderCount": 10,
+            "playgroundId": "#IIZ9UU#180",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "reverseDepthBufferCSMShadows.png"
+        },
+        {
+            "title": "Reverse depth buffer fix flicker",
+            "playgroundId": "#67JFXI#15",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "referenceImage": "reverseDepthBufferFixFlicker.png",
+            "errorRatio": 2
         }
     ]
 }
