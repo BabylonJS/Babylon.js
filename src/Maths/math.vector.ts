@@ -5836,7 +5836,7 @@ export class Matrix {
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, -rot,
+            0.0, b, 0.0, rot,
             0.0, 0.0, c, 1.0,
             0.0, 0.0, d, 0.0,
             matrix
@@ -5890,7 +5890,7 @@ export class Matrix {
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, -rot,
+            0.0, b, 0.0, rot,
             0.0, 0.0, c, 1.0,
             0.0, 0.0, d, 0.0,
             result
@@ -5922,7 +5922,7 @@ export class Matrix {
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, -rot,
+            0.0, b, 0.0, rot,
             0.0, 0.0, -znear, 1.0,
             0.0, 0.0, 1.0, 0.0,
             result
@@ -5978,7 +5978,7 @@ export class Matrix {
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, -rot,
+            0.0, b, 0.0, rot,
             0.0, 0.0, c, -1.0,
             0.0, 0.0, d, 0.0,
             result
@@ -6010,7 +6010,7 @@ export class Matrix {
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, -rot,
+            0.0, b, 0.0, rot,
             0.0, 0.0, -znear, -1.0,
             0.0, 0.0, -1.0, 0.0,
             result
@@ -6050,7 +6050,7 @@ export class Matrix {
         m[1] = m[2] = m[3] = m[4] = 0.0;
         m[5] = yScale;
         m[6] = 0.0;
-        m[7] = -rot;
+        m[7] = rot;
         m[8] = ((leftTan - rightTan) * xScale * 0.5);
         m[9] = -((upTan - downTan) * yScale * 0.5);
         m[10] = -zfar / (znear - zfar);
