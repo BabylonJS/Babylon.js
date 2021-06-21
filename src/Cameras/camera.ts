@@ -170,6 +170,14 @@ export class Camera extends Node {
     public fov = 0.8;
 
     /**
+     * Projection plane tilt around the X axis (horizontal), set in Radians. (default is 0)
+     * Can be used to make vertical lines in world space actually vertical on the screen.
+     * See https://forum.babylonjs.com/t/add-vertical-shift-to-3ds-max-exporter-babylon-cameras/17480
+     */
+    @serialize()
+    public projectionPlaneTilt = 0;
+
+    /**
      * Define the minimum distance the camera can see from.
      * This is important to note that the depth buffer are not infinite and the closer it starts
      * the more your scene might encounter depth fighting issue.
@@ -405,6 +413,15 @@ export class Camera extends Node {
     }
 
     /**
+     * Automatically tilts the projection plane, using `projectionPlaneTilt`, to correct the perspective effect on vertical lines.
+     */
+    public applyVerticalCorrection() {
+        const rot = this.absoluteRotation.toEulerAngles();
+
+        this.projectionPlaneTilt = -rot.x;
+    }
+
+    /**
      * Gets the current world space position of the camera.
      */
     public get globalPosition(): Vector3 {
@@ -502,7 +519,7 @@ export class Camera extends Node {
         var engine = this.getEngine();
 
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
-            check = this._cache.fov === this.fov && this._cache.fovMode === this.fovMode && this._cache.aspectRatio === engine.getAspectRatio(this);
+            check = this._cache.fov === this.fov && this._cache.fovMode === this.fovMode && this._cache.aspectRatio === engine.getAspectRatio(this) && this._cache.projectionPlaneTilt === this.projectionPlaneTilt;
         } else {
             check =
                 this._cache.orthoLeft === this.orthoLeft &&
@@ -743,7 +760,6 @@ export class Camera extends Node {
      * @param force forces the camera to recompute the matrix without looking at the cached state
      * @returns the projection matrix
      */
-    public tilt = 0;
     public getProjectionMatrix(force?: boolean): Matrix {
         if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
             return this._projectionMatrix;
@@ -763,13 +779,23 @@ export class Camera extends Node {
             this._cache.fov = this.fov;
             this._cache.fovMode = this.fovMode;
             this._cache.aspectRatio = engine.getAspectRatio(this);
+            this._cache.projectionPlaneTilt = this.projectionPlaneTilt;
 
             if (this.minZ <= 0) {
                 this.minZ = 0.1;
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean, projectionPlaneTilt: number) => void;
+            let getProjectionMatrix: (
+                fov: number,
+                aspect: number,
+                znear: number,
+                zfar: number,
+                result: Matrix,
+                isVerticalFovFixed: boolean,
+                halfZRange: boolean,
+                projectionPlaneTilt: number
+            ) => void;
             if (scene.useRightHandedSystem) {
                 getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
@@ -784,8 +810,7 @@ export class Camera extends Node {
                 this._projectionMatrix,
                 this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
                 engine.isNDCHalfZRange,
-                this.tilt
-                );
+                this.projectionPlaneTilt
             );
         } else {
             var halfWidth = engine.getRenderWidth() / 2.0;
@@ -799,8 +824,9 @@ export class Camera extends Node {
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix,
-                    engine.isNDCHalfZRange);
-                } else {
+                    engine.isNDCHalfZRange
+                );
+            } else {
                 Matrix.OrthoOffCenterLHToRef(
                     this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
@@ -809,8 +835,9 @@ export class Camera extends Node {
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix,
-                    engine.isNDCHalfZRange);
-                }
+                    engine.isNDCHalfZRange
+                );
+            }
 
             this._cache.orthoLeft = this.orthoLeft;
             this._cache.orthoRight = this.orthoRight;
@@ -1117,7 +1144,15 @@ export class Camera extends Node {
 
     /** @hidden */
     public _getVRProjectionMatrix(): Matrix {
-        Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix, true, this.getEngine().isNDCHalfZRange);
+        Matrix.PerspectiveFovLHToRef(
+            this._cameraRigParams.vrMetrics.aspectRatioFov,
+            this._cameraRigParams.vrMetrics.aspectRatio,
+            this.minZ,
+            this.maxZ,
+            this._cameraRigParams.vrWorkMatrix,
+            true,
+            this.getEngine().isNDCHalfZRange
+        );
         this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
         return this._projectionMatrix;
     }
