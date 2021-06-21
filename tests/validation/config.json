@@ -1319,6 +1319,11 @@
             "excludeFromAutomaticTesting": true
         },
         {
+            "title": "GLTF ext MSFT_LOD",
+            "playgroundId": "#2YZFA0#234",
+            "referenceImage": "gltfMSFTLOD.png"
+        },
+        {
             "title": "Reverse depth buffer and shadows",
             "renderCount": 10,
             "playgroundId": "#WL4Q8J#16",

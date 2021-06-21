@@ -136,6 +136,31 @@ export class Camera extends Node {
     }
 
     /**
+     * The screen area in scene units squared
+     */
+    public get screenArea(): number {
+        let x = 0;
+        let y = 0;
+        if (this.mode === Camera.PERSPECTIVE_CAMERA) {
+            if (this.fovMode === Camera.FOVMODE_VERTICAL_FIXED) {
+                y = this.minZ * 2 * Math.tan(this.fov / 2);
+                x = this.getEngine().getAspectRatio(this) * y;
+            } else {
+                x = this.minZ * 2 * Math.tan(this.fov / 2);
+                y = x / this.getEngine().getAspectRatio(this);
+            }
+        } else {
+            const halfWidth = this.getEngine().getRenderWidth() / 2.0;
+            const halfHeight = this.getEngine().getRenderHeight() / 2.0;
+
+            x = (this.orthoRight ?? halfWidth) - (this.orthoLeft ?? -halfWidth);
+            y = (this.orthoTop ?? halfHeight) - (this.orthoBottom ?? -halfHeight);
+        }
+
+        return x * y;
+    }
+
+    /**
      * Define the current limit on the left side for an orthographic camera
      * In scene unit
      */
