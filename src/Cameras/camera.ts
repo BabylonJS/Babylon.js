@@ -418,7 +418,7 @@ export class Camera extends Node {
     public applyVerticalCorrection() {
         const rot = this.absoluteRotation.toEulerAngles();
 
-        this.projectionPlaneTilt = -rot.x;
+        this.projectionPlaneTilt = this._scene.useRightHandedSystem ? rot.x : -rot.x;
     }
 
     /**
