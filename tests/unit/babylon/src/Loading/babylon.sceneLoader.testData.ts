@@ -1,6 +1,7 @@
 const objBase64 = "ZyB0ZXRyYWhlZHJvbgoKdiAxLjAwIDEuMDAgMS4wMCAwLjY2NiAwIDAKdiAyLjAwIDEuMDAgMS4wMCAwLjY2NiAwIDAKdiAxLjAwIDIuMDAgMS4wMCAwLjY2NiAwIDAKdiAxLjAwIDEuMDAgMi4wMCAwLjY2NiAwIDAKCmYgMSAzIDIKZiAxIDQgMwpmIDEgMiA0CmYgMiAzIDQ=";
 
 const objRaw = `
+# data:;base64,iVBORw
 g tetrahedron
 
 v 1.00 1.00 1.00 0.666 0 0

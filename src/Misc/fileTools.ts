@@ -520,20 +520,17 @@ export class FileTools {
     }
 
     /**
-     * Test if the given uri is a base64 string
+     * Test if the given uri is a valid base64 data url
      * @param uri The uri to test
-     * @return True if the uri is a base64 string or false otherwise
+     * @return True if the uri is a base64 data url or false otherwise
      */
     public static IsBase64DataUrl(uri: string): boolean {
-        // Check that the length of the string is at least as long as the minimum base64 data url length
-        if (uri.length >= 13) // "data:;base64,".length
-        {
-            if (uri.indexOf('data:') === 0) {
-                return uri.indexOf(';base64,') > 0;
-            }
-        }
-
-        return false;
+        // Use Regex to validate the data url. The checks the following (ignoring casing):
+        // 1. Checks that the input starts with "data:"
+        // 2. Checks for an optional mimetype in the format "category/type"
+        // 3. Checks for any optional media type parameters in the format ";foo=bar"
+        // 4. Checks for the string ";base64,"
+        return !!uri.match(new RegExp(/^data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)*)?;base64,/i));
     }
 
     /**
