@@ -9,7 +9,6 @@ interface ILinkButtonComponentProps {
     onClick: () => void;
     icon?: IconProp;
     onIconClick?: () => void;
-    icon? : string;
 }
 
 export class LinkButtonComponent extends React.Component<ILinkButtonComponentProps> {
@@ -26,7 +25,6 @@ export class LinkButtonComponent extends React.Component<ILinkButtonComponentPro
     render() {
         return (
             <div className={"linkButtonLine"}>
-                {this.props.icon && <img src={this.props.icon} className="icon"/>}
                 <div className="link" title={this.props.label} onClick={() => this.onLink()}>
                     {this.props.label}
                 </div>
