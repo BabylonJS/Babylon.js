@@ -181,7 +181,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     const lod0 = transformNodes[transformNodes.length - 1];
                     if (fullArray && lod0) {
                         const screenCoverages = lod0.metadata?.gltf?.extras?.MSFT_screencoverage as any[];
-                        
+
                         if (screenCoverages && screenCoverages.length) {
                             screenCoverages.reverse();
                             (lod0 as Mesh).useLODScreenCoverage = true;

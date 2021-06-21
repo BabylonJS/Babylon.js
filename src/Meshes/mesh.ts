@@ -796,13 +796,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     private _sortLODLevels(): void {
-        const useScreenCoverage = this._internalMeshDataInfo._useLODScreenCoverage ? -1 : 1;
+        const sortingOrderFactor = this._internalMeshDataInfo._useLODScreenCoverage ? -1 : 1;
         this._internalMeshDataInfo._LODLevels.sort((a, b) => {
             if (a.distanceOrScreenCoverage < b.distanceOrScreenCoverage) {
-                return useScreenCoverage;
+                return sortingOrderFactor;
             }
             if (a.distanceOrScreenCoverage > b.distanceOrScreenCoverage) {
-                return -useScreenCoverage;
+                return -sortingOrderFactor;
             }
 
             return 0;
@@ -812,7 +812,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Add a mesh as LOD level triggered at the given distance.
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
-     * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`
+     * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`.
+     * If screen coverage, value is a fraction of the screen's total surface, between 0 and 1.
      * @param mesh The mesh to be added as LOD level (can be null)
      * @return This mesh (for chaining)
      */
