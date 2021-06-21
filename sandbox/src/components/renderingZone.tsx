@@ -58,7 +58,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         if (useWebGPU) {
             this._engine = new WebGPUEngine(this._canvas, {
                 deviceDescriptor: {
-                    nonGuaranteedFeatures: [
+                    requiredFeatures: [
                         "texture-compression-bc",
                         "timestamp-query",
                         "pipeline-statistics-query",
