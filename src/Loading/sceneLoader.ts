@@ -519,18 +519,14 @@ export class SceneLoader {
                 return;
             }
 
-            const successCallback = (data: any, responseURL?: string) => {
-                dataCallback(data, responseURL);
-            };
-
             const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
                 onError(request?.statusText || exception?.message || "Unknown error", exception);
             };
 
             const fileOrUrl = fileInfo.file || fileInfo.url;
             request = plugin.loadFile
-                ? plugin.loadFile(scene, fileOrUrl, successCallback, onProgress, useArrayBuffer, errorCallback)
-                : scene._loadFile(fileOrUrl, successCallback, onProgress, true, useArrayBuffer, errorCallback);
+                ? plugin.loadFile(scene, fileOrUrl, dataCallback, onProgress, useArrayBuffer, errorCallback)
+                : scene._loadFile(fileOrUrl, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
         };
 
         const engine = scene.getEngine();

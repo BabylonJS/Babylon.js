@@ -528,9 +528,8 @@ export class FileTools {
         // Check that the length of the string is at least as long as the minimum base64 data url length
         if (uri.length >= 13) // "data:;base64,".length
         {
-            if (uir.indexOf('data:') === 0) {
-                let commaIndex = uri.indexOf(",");
-                return commaIndex > 7 && uri.substr(commaIndex - 7, 7) === ";base64";
+            if (uri.indexOf('data:') === 0) {
+                return uri.indexOf(';base64,') > 0;
             }
         }
 
