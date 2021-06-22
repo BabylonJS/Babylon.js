@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "UV index bigger than 1",
+            "playgroundId": "#ZRZIIZ#39",
+            "referenceImage": "UV index 2.png"
+        }, 
+        {
             "title": "Texture cache",
             "playgroundId": "#3TFH5I#0",
             "referenceImage": "texture cache.png",
