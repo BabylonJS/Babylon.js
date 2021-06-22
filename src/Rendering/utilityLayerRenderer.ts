@@ -193,6 +193,9 @@ export class UtilityLayerRenderer implements IDisposable {
                     if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == this.utilityLayerScene) {
                         utilityScenePick = prePointerInfo.nearInteractionPickingInfo;
                     }
+                    else {
+                        utilityScenePick = new PickingInfo();
+                    }
                 } else {
                     utilityScenePick = prePointerInfo.ray
                         ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray)
@@ -231,7 +234,19 @@ export class UtilityLayerRenderer implements IDisposable {
                         prePointerInfo.skipOnPointerObservable = true;
                     }
                 } else {
-                    var originalScenePick = prePointerInfo.ray ? originalScene.pickWithRay(prePointerInfo.ray) : originalScene.pick(originalScene.pointerX, originalScene.pointerY);
+
+                    let originalScenePick = null; /// now same logic between main and utility layer scene, lambda that up
+                    if (prePointerInfo.nearInteractionPickingInfo) {
+                        if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == originalScene) {
+                            originalScenePick = prePointerInfo.nearInteractionPickingInfo;
+                        }
+                        else {
+                            originalScenePick = new PickingInfo();
+                        }
+                    } else {
+                        originalScenePick = prePointerInfo.ray ? originalScene.pickWithRay(prePointerInfo.ray) : originalScene.pick(originalScene.pointerX, originalScene.pointerY);
+                    }
+
                     let pointerEvent = <PointerEvent>prePointerInfo.event;
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
