@@ -195,6 +195,14 @@ export class Camera extends Node {
     public fov = 0.8;
 
     /**
+     * Projection plane tilt around the X axis (horizontal), set in Radians. (default is 0)
+     * Can be used to make vertical lines in world space actually vertical on the screen.
+     * See https://forum.babylonjs.com/t/add-vertical-shift-to-3ds-max-exporter-babylon-cameras/17480
+     */
+    @serialize()
+    public projectionPlaneTilt = 0;
+
+    /**
      * Define the minimum distance the camera can see from.
      * This is important to note that the depth buffer are not infinite and the closer it starts
      * the more your scene might encounter depth fighting issue.
@@ -430,6 +438,15 @@ export class Camera extends Node {
     }
 
     /**
+     * Automatically tilts the projection plane, using `projectionPlaneTilt`, to correct the perspective effect on vertical lines.
+     */
+    public applyVerticalCorrection() {
+        const rot = this.absoluteRotation.toEulerAngles();
+
+        this.projectionPlaneTilt = this._scene.useRightHandedSystem ? -rot.x : rot.x;
+    }
+
+    /**
      * Gets the current world space position of the camera.
      */
     public get globalPosition(): Vector3 {
@@ -533,7 +550,8 @@ export class Camera extends Node {
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
             check = this._cache.fov === this.fov
                 && this._cache.fovMode === this.fovMode
-                && this._cache.aspectRatio === engine.getAspectRatio(this);
+                && this._cache.aspectRatio === engine.getAspectRatio(this)
+                && this._cache.projectionPlaneTilt === this.projectionPlaneTilt;
         }
         else {
             check = this._cache.orthoLeft === this.orthoLeft
@@ -796,13 +814,14 @@ export class Camera extends Node {
             this._cache.fov = this.fov;
             this._cache.fovMode = this.fovMode;
             this._cache.aspectRatio = engine.getAspectRatio(this);
+            this._cache.projectionPlaneTilt = this.projectionPlaneTilt;
 
             if (this.minZ <= 0) {
                 this.minZ = 0.1;
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean) => void;
+            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean, projectionPlaneTilt: number) => void;
             if (scene.useRightHandedSystem) {
                 getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
@@ -815,7 +834,8 @@ export class Camera extends Node {
                 reverseDepth ? this.minZ : this.maxZ,
                 this._projectionMatrix,
                 this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
-                engine.isNDCHalfZRange);
+                engine.isNDCHalfZRange,
+                this.projectionPlaneTilt);
         } else {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
