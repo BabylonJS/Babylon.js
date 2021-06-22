@@ -244,7 +244,10 @@ class TransmissionHelper {
 
         let sceneImageProcessingapplyByPostProcess: boolean;
 
+        let saveSceneEnvIntensity: number;
         this._opaqueRenderTarget.onBeforeBindObservable.add((opaqueRenderTarget) => {
+            saveSceneEnvIntensity = this._scene.environmentIntensity;
+            this._scene.environmentIntensity = 1.0;
             sceneImageProcessingapplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (!this._options.clearColor) {
                 this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor);
@@ -254,6 +257,7 @@ class TransmissionHelper {
             this._scene.imageProcessingConfiguration.applyByPostProcess = true;
         });
         this._opaqueRenderTarget.onAfterUnbindObservable.add(() => {
+            this._scene.environmentIntensity = saveSceneEnvIntensity;
             this._scene.imageProcessingConfiguration.applyByPostProcess = sceneImageProcessingapplyByPostProcess;
         });
 

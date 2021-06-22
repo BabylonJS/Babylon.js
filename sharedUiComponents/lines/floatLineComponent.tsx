@@ -22,6 +22,7 @@ interface IFloatLineComponentProps {
     max?: number;
     smallUI?: boolean;
     onEnter?: (newValue:number) => void;
+    icon? : string;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -142,6 +143,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                 {
                     !this.props.useEuler &&
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
+                        {this.props.icon && <img src={this.props.icon} className="icon"/>}
                         <div className="label" title={this.props.label}>
                             {this.props.label}
                         </div>
