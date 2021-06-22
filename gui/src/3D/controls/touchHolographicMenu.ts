@@ -119,6 +119,9 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
             button.backMaterial.alpha = 0;
         }
 
+        // Scale the buttons down to a friendly size for how close the buttons will appear
+        button.scaling.scaleInPlace(0.32);
+
         return this;
     }
 
