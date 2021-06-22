@@ -8,6 +8,8 @@ import { _TypeStore } from '../Misc/typeStore';
 import { Plane } from './math.plane';
 import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
 
+type TransformNode = import('../Meshes/transformNode').TransformNode;
+
 /**
  * Class representing a vector containing 2 coordinates
  */
@@ -4690,6 +4692,16 @@ export class Matrix {
             hash = (hash * 397) ^ (this._m[i] | 0);
         }
         return hash;
+    }
+
+    /**
+     * Decomposes the current Matrix into a translation, rotation and scaling components of the provided node
+     * @param node the node to decompose the matrix to
+     * @returns true if operation was successful
+     */
+    public decomposeToTransformNode(node: TransformNode): boolean {
+        node.rotationQuaternion = node.rotationQuaternion || new Quaternion();
+        return this.decompose(node.scaling, node.rotationQuaternion, node.position);
     }
 
     /**
