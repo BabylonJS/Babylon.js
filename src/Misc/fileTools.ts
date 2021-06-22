@@ -13,6 +13,8 @@ import { ThinEngine } from '../Engines/thinEngine';
 import { EngineStore } from '../Engines/engineStore';
 import { Logger } from './logger';
 
+const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
+
 /** @ignore */
 export class LoadFileError extends BaseError {
     public request?: WebRequest;
@@ -525,12 +527,7 @@ export class FileTools {
      * @return True if the uri is a base64 data url or false otherwise
      */
     public static IsBase64DataUrl(uri: string): boolean {
-        // Use Regex to validate the data url. The checks the following (ignoring casing):
-        // 1. Checks that the input starts with "data:"
-        // 2. Checks for an optional mimetype in the format "category/type"
-        // 3. Checks for any optional media type parameters in the format ";foo=bar"
-        // 4. Checks for the string ";base64,"
-        return !!uri.match(new RegExp(/^data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)*)?;base64,/i));
+        return base64DataUrlRegEx.test(uri);
     }
 
     /**
