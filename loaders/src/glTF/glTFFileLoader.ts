@@ -633,7 +633,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /** @hidden */
     public directLoad(scene: Scene, data: string): Promise<any> {
-        if (StringTools.StartsWith(data, "data:;base64," + GLTFFileLoader.magicBase64Encoded) ||
+        if (StringTools.StartsWith(data, ";base64," + GLTFFileLoader.magicBase64Encoded) ||
             StringTools.StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded) ||
             StringTools.StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded)) {
             const arrayBuffer = FileTools.DecodeBase64UrlToBinary(data);
