@@ -44,6 +44,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _mouseId = -1;
     private _isUsingFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
 
+    // Array to store active Pointer ID values; prevents issues with negative pointerIds
+    private _activeTouchIds: Array<number> = [];
+    private _rollingTouchId: number = 0; // Rolling ID number to assign; emulates Chrome assignment
+
     private _pointerWheelClearObserver: Nullable<Observer<Engine>> = null;
 
     private _gamepadConnectedEvent = (evt: any) => { };
@@ -335,7 +339,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _handlePointerActions() {
         this._pointerMoveEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
-            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
+            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds[evt.pointerId];
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = {};
@@ -411,7 +415,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._pointerDownEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
-            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
+            let deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
+
+            if (deviceType === DeviceType.Touch) {
+                deviceSlot = this._rollingTouchId++;
+                this._activeTouchIds[evt.pointerId] = deviceSlot;
+            }
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = {};
@@ -479,7 +488,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._pointerUpEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
-            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
+            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds[evt.pointerId];
 
             const pointer = this._inputs[deviceType]?.[deviceSlot];
             if (pointer && pointer[evt.button + 2] !== 0) {
@@ -525,6 +534,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
                 if (deviceType !== DeviceType.Mouse) {
+                    delete this._activeTouchIds[evt.pointerId];
                     this._unregisterDevice(deviceType, deviceSlot);
                 }
             }
@@ -587,17 +597,18 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             if (this.isDeviceAvailable(DeviceType.Touch)) {
                 const pointer = this._inputs[DeviceType.Touch];
 
-                for (const deviceSlotKey in pointer) {
-                    const deviceSlot = +deviceSlotKey;
+                // Get list of active touch ids and clear each one in the inputs array
+                for (const deviceSlotKey in Object.keys(this._activeTouchIds)) {
+                    const deviceSlot = this._activeTouchIds[+deviceSlotKey];
 
-                    if (this._elementToAttachTo.hasPointerCapture(deviceSlot)) {
-                        this._elementToAttachTo.releasePointerCapture(deviceSlot);
+                    if (this._elementToAttachTo.hasPointerCapture(+deviceSlotKey)) {
+                        this._elementToAttachTo.releasePointerCapture(+deviceSlotKey);
                     }
 
                     if (pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
                         pointer[deviceSlot][PointerInput.LeftClick] = 0;
 
-                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 1, this, this._elementToAttachTo);
+                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, +deviceSlotKey, PointerInput.LeftClick, 1, this, this._elementToAttachTo);
                         const deviceEvent = evt as IDeviceEvent;
                         deviceEvent.deviceType = DeviceType.Mouse;
                         deviceEvent.deviceSlot = deviceSlot;
@@ -609,6 +620,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         this._unregisterDevice(DeviceType.Touch, deviceSlot);
                     }
                 }
+                // Clear all active touches
+                this._activeTouchIds = [];
             }
         });
 
