@@ -187,10 +187,12 @@ export class UtilityLayerRenderer implements IDisposable {
                     return;
                 }
 
-                let utilityScenePick;
+                let utilityScenePick = null;
 
                 if (prePointerInfo.nearInteractionPickingInfo) {
-                    utilityScenePick = prePointerInfo.nearInteractionPickingInfo;
+                    if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == this.utilityLayerScene) {
+                        utilityScenePick = prePointerInfo.nearInteractionPickingInfo;
+                    }
                 } else {
                     utilityScenePick = prePointerInfo.ray
                         ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray)
