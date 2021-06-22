@@ -257,7 +257,6 @@
 - Fix NativeEngine not setting default depth test function to LEQUAL ([rgerd](https://github.com/rgerd))
 - Fix an exception where loading a very small STL file could result in attempting to read outside the files range ([CoPrez](https://github.com/CoPrez))
 - Fix support of `useReverseDepthBuffer` throughout the engine ([Popov72](https://github.com/Popov72))
-- Fix support of uv set index bigger than 1 ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
 

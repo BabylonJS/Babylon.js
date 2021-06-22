@@ -47,7 +47,7 @@ export class MaterialHelper {
     public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
         defines._needUVs = true;
         defines[key] = true;
-        if (texture.getTextureMatrix().isIdentityAs3x2() && texture.coordinatesIndex < 2) {
+        if (texture.getTextureMatrix().isIdentityAs3x2()) {
             defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
             if (texture.coordinatesIndex === 0) {
                 defines["MAINUV1"] = true;
