@@ -13,7 +13,7 @@ import { ThinEngine } from '../Engines/thinEngine';
 import { EngineStore } from '../Engines/engineStore';
 import { Logger } from './logger';
 
-const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/);
+const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
 /** @ignore */
 export class LoadFileError extends BaseError {
