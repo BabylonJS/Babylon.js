@@ -60519,7 +60519,9 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.serializePortData = function (exposedPorts) {
         if (exposedPorts.length > 0) {
             for (var i = 0; i < exposedPorts.length; ++i) {
-                exposedPorts[i].exposedPortPosition = i;
+                if (exposedPorts[i]) {
+                    exposedPorts[i].exposedPortPosition = i;
+                }
             }
         }
     };

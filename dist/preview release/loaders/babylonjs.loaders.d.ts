@@ -312,9 +312,7 @@ declare module BABYLON {
          */
         dispose(): void;
         /** @hidden */
-        requestFile(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
-        /** @hidden */
-        readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: any, responseURL?: string) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
         /** @hidden */
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
         /** @hidden */
@@ -344,9 +342,7 @@ declare module BABYLON {
          */
         whenCompleteAsync(): Promise<void>;
         /** @hidden */
-        _loadFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void): IFileRequest;
-        /** @hidden */
-        _requestFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
+        _loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
         private _onProgress;
         private _validate;
         private _getLoader;

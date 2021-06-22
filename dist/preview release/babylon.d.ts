@@ -423,6 +423,18 @@ declare module BABYLON {
          */
         static EncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
         /**
+         * Converts a given base64 string as an ASCII encoded stream of data
+         * @param base64Data The base64 encoded string to decode
+         * @returns Decoded ASCII string
+         */
+        static DecodeBase64ToString(base64Data: string): string;
+        /**
+         * Converts a given base64 string into an ArrayBuffer of raw byte data
+         * @param base64Data The base64 encoded string to decode
+         * @returns ArrayBuffer of byte data
+         */
+        static DecodeBase64ToBinary(base64Data: string): ArrayBuffer;
+        /**
         * Converts a number to string and pads with preceding zeroes until it is of specified length.
         * @param num the number to convert and pad
         * @param length the expected length of the string
@@ -2185,7 +2197,7 @@ declare module BABYLON {
     export class ReadFileError extends BaseError {
         file: File;
         /**
-         * Creates a new ReadFileError
+        * Creates a new ReadFileError
          * @param message defines the message of the error
          * @param file defines the optional file
          */
@@ -2248,8 +2260,8 @@ declare module BABYLON {
          */
         static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest;
         /**
-         * Loads a file from a url
-         * @param url url to load
+         * Loads a file from a url, a data url, or a file url
+         * @param fileOrUrl file, url, data url, or file url to load
          * @param onSuccess callback called when the file successfully loads
          * @param onProgress callback called while file is loading (if the server supports this mode)
          * @param offlineProvider defines the offline provider for caching
@@ -2257,12 +2269,13 @@ declare module BABYLON {
          * @param onError callback called when the file fails to load
          * @returns a file request object
          */
-        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
+        static LoadFile(fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
         /**
-         * Loads a file
+         * Loads a file from a url
          * @param url url to load
          * @param onSuccess callback called when the file successfully loads
          * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param offlineProvider defines the offline provider for caching
          * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
          * @param onError callback called when the file fails to load
          * @param onOpened callback called when the web request is opened
@@ -2274,6 +2287,24 @@ declare module BABYLON {
          * @returns boolean
          */
         static IsFileURL(): boolean;
+        /**
+         * Test if the given uri is a valid base64 data url
+         * @param uri The uri to test
+         * @return True if the uri is a base64 data url or false otherwise
+         */
+        static IsBase64DataUrl(uri: string): boolean;
+        /**
+         * Decode the given base64 uri.
+         * @param uri The uri to decode
+         * @return The decoded base64 data.
+         */
+        static DecodeBase64UrlToBinary(uri: string): ArrayBuffer;
+        /**
+         * Decode the given base64 uri into a UTF-8 encoded string.
+         * @param uri The uri to decode
+         * @return The decoded base64 data.
+         */
+        static DecodeBase64UrlToString(uri: string): string;
     }
 }
 declare module BABYLON {
@@ -29426,18 +29457,18 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      */
     export class MeshLODLevel {
-        /** Defines the distance where this level should start being displayed */
-        distance: number;
+        /** Either distance from the center of the object to show this level or the screen coverage if `useLODScreenCoverage` is set to `true` on the mesh*/
+        distanceOrScreenCoverage: number;
         /** Defines the mesh to use to render this level */
         mesh: Nullable<Mesh>;
         /**
          * Creates a new LOD level
-         * @param distance defines the distance where this level should star being displayed
+         * @param distanceOrScreenCoverage defines either the distance or the screen coverage where this level should start being displayed
          * @param mesh defines the mesh to use to render this level
          */
         constructor(
-        /** Defines the distance where this level should start being displayed */
-        distance: number, 
+        /** Either distance from the center of the object to show this level or the screen coverage if `useLODScreenCoverage` is set to `true` on the mesh*/
+        distanceOrScreenCoverage: number, 
         /** Defines the mesh to use to render this level */
         mesh: Nullable<Mesh>);
     }
@@ -30843,6 +30874,11 @@ declare module BABYLON {
         static _GetDefaultSideOrientation(orientation?: number): number;
         private _internalMeshDataInfo;
         /**
+         * Determines if the LOD levels are intended to be calculated using screen coverage (surface area ratio) instead of distance
+         */
+        get useLODScreenCoverage(): boolean;
+        set useLODScreenCoverage(value: boolean);
+        /**
          * Will notify when the mesh is completely ready, including materials.
          * Observers added to this observable will be removed once triggered
          */
@@ -31001,11 +31037,12 @@ declare module BABYLON {
         /**
          * Add a mesh as LOD level triggered at the given distance.
          * @see https://doc.babylonjs.com/how_to/how_to_use_lod
-         * @param distance The distance from the center of the object to show this level
+         * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`.
+         * If screen coverage, value is a fraction of the screen's total surface, between 0 and 1.
          * @param mesh The mesh to be added as LOD level (can be null)
          * @return This mesh (for chaining)
          */
-        addLODLevel(distance: number, mesh: Nullable<Mesh>): Mesh;
+        addLODLevel(distanceOrScreenCoverage: number, mesh: Nullable<Mesh>): Mesh;
         /**
          * Returns the LOD level mesh at the passed distance or null if not found.
          * @see https://doc.babylonjs.com/how_to/how_to_use_lod
@@ -37087,6 +37124,10 @@ declare module BABYLON {
         set upVector(vec: Vector3);
         get upVector(): Vector3;
         /**
+         * The screen area in scene units squared
+         */
+        get screenArea(): number;
+        /**
          * Define the current limit on the left side for an orthographic camera
          * In scene unit
          */
@@ -43111,12 +43152,14 @@ declare module BABYLON {
         static RandomId(): string;
         /**
          * Test if the given uri is a base64 string
+         * @deprecated Please use FileTools.IsBase64DataUrl instead.
          * @param uri The uri to test
          * @return True if the uri is a base64 string or false otherwise
          */
         static IsBase64(uri: string): boolean;
         /**
          * Decode the given base64 uri.
+         * @deprecated Please use FileTools.DecodeBase64UrlToBinary instead.
          * @param uri The uri to decode
          * @return The decoded base64 data.
          */
@@ -46190,9 +46233,9 @@ declare module BABYLON {
          */
         markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
         /** @hidden */
-        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
+        _loadFile(fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
         /** @hidden */
-        _loadFileAsync(url: string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        _loadFileAsync(fileOrUrl: File | string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onOpened?: (request: WebRequest) => void): Promise<string | ArrayBuffer>;
         /** @hidden */
         _requestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
         /** @hidden */
@@ -50165,25 +50208,14 @@ declare module BABYLON {
         /**
          * The callback called when loading from a url.
          * @param scene scene loading this url
-         * @param url url to load
+         * @param fileOrUrl file or url to load
          * @param onSuccess callback called when the file successfully loads
          * @param onProgress callback called while file is loading (if the server supports this mode)
          * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
          * @param onError callback called when the file fails to load
          * @returns a file request object
          */
-        requestFile?(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
-        /**
-         * The callback called when loading from a file object.
-         * @param scene scene loading this file
-         * @param file defines the file to load
-         * @param onSuccess defines the callback to call when data is loaded
-         * @param onProgress defines the callback to call during loading process
-         * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
-         * @param onError defines the callback to call when an error occurs
-         * @returns a file request object
-         */
-        readFile?(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        loadFile?(scene: Scene, fileOrUrl: File | string, onSuccess: (data: any, responseURL?: string) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
         /**
          * The callback that returns true if the data can be directly loaded.
          * @param data string containing the file data
@@ -54799,8 +54831,10 @@ declare module BABYLON {
         originalScene: Scene;
         private _pointerCaptures;
         private _lastPointerEvents;
-        private static _DefaultUtilityLayer;
-        private static _DefaultKeepDepthUtilityLayer;
+        /** @hidden */
+        static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer>;
+        /** @hidden */
+        static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer>;
         private _sharedGizmoLight;
         private _renderCamera;
         /**
@@ -69705,7 +69739,7 @@ declare module BABYLON {
      * This represents a texture coming from an HDR input.
      *
      * The only supported format is currently panorama picture stored in RGBE format.
-     * Example of such files can be found on HDRI Haven: https://hdrihaven.com/
+     * Example of such files can be found on Poly Haven: https://polyhaven.com/hdris
      */
     export class HDRCubeTexture extends BaseTexture {
         private static _facesMapping;
