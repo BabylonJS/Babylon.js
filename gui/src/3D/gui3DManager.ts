@@ -11,7 +11,7 @@ import { IDisposable, Scene } from "babylonjs/scene";
 
 import { Container3D } from "./controls/container3D";
 import { Control3D } from "./controls/control3D";
-import { TouchButton3D } from "./controls/touchButton3D";
+//import { TouchButton3D } from "./controls/touchButton3D";
 
 /**
  * Class used to manage 3D user interface
@@ -24,9 +24,9 @@ export class GUI3DManager implements IDisposable {
     private _rootContainer: Container3D;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _pointerOutObserver: Nullable<Observer<number>>;
-    private _touchableButtons = new Set<TouchButton3D>();
-    private _touchIds = new Map<string, number>();
-    private static _touchIdCounter = 300;
+//    private _touchableButtons = new Set<TouchButton3D>();
+//    private _touchIds = new Map<string, number>();
+//    private static _touchIdCounter = 300;
     /** @hidden */
     public _lastPickedControl: Control3D;
     /** @hidden */
@@ -165,7 +165,7 @@ export class GUI3DManager implements IDisposable {
 
         return true;
     }
-
+/*
     private _processTouchControls = () => {
         let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
         if (utilityLayerScene) {
@@ -202,7 +202,7 @@ export class GUI3DManager implements IDisposable {
                 });
             });
         }
-    };
+    };*/
 
     /**
      * Gets the root container
@@ -227,16 +227,6 @@ export class GUI3DManager implements IDisposable {
      */
     public addControl(control: Control3D): GUI3DManager {
         this._rootContainer.addControl(control);
-
-        let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
-        if (utilityLayerScene && control instanceof TouchButton3D) {
-            if (this._touchableButtons.size == 0) {
-                utilityLayerScene.registerBeforeRender(this._processTouchControls);
-            }
-
-            this._touchableButtons.add(control as TouchButton3D);
-        }
-
         return this;
     }
 
@@ -247,16 +237,6 @@ export class GUI3DManager implements IDisposable {
      */
     public removeControl(control: Control3D): GUI3DManager {
         this._rootContainer.removeControl(control);
-
-        let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
-        if (utilityLayerScene && control instanceof TouchButton3D) {
-            this._touchableButtons.delete(control);
-
-            if (this._touchableButtons.size == 0) {
-                utilityLayerScene.unregisterBeforeRender(this._processTouchControls);
-            }
-        }
-
         return this;
     }
 
@@ -297,10 +277,6 @@ export class GUI3DManager implements IDisposable {
         let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
 
         if (utilityLayerScene) {
-            if (this._touchableButtons.size != 0) {
-                utilityLayerScene.unregisterBeforeRender(this._processTouchControls);
-            }
-
             if (this._pointerObserver) {
                 utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
                 this._pointerObserver = null;
