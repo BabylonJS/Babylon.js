@@ -2132,13 +2132,7 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: '${uri}' is invalid`);
         }
 
-        if (Tools.IsBase64(uri)) {
-            const data = new Uint8Array(Tools.DecodeBase64(uri));
-            this.log(`${context}: Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
-            return Promise.resolve(data);
-        }
-
-        this.log(`${context}: Loading ${uri}`);
+        this.log(`${context}: Loading ${uri.substr(0, 64)}`);
 
         return this._parent.preprocessUrlAsync(this._rootUrl + uri).then((url) => {
             return new Promise((resolve, reject) => {
