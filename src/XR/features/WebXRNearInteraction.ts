@@ -31,7 +31,6 @@ type ControllerData = {
     pick: Nullable<PickingInfo>;
     id: number;
     pickIndexMeshTip: Nullable<AbstractMesh>;
-    hoverIndexMeshTip: Nullable<AbstractMesh>;
     grabRay: Ray;
     nearInteraction: boolean;
     hoverInteraction: boolean;
@@ -90,7 +89,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return;
         }
         // get two new meshes
-        const { hoverIndexMeshTip, pickIndexMeshTip } = this._generateNewHandTipMeshes();
+        const pickIndexMeshTip = this._generateNewHandTipMesh();
         const selectionMesh = this._generateVisualCue();
 
         this._controllers[xrController.uniqueId] = {
@@ -99,7 +98,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             nearInteractionMesh: null,
             pick: null,
             pickIndexMeshTip,
-            hoverIndexMeshTip,
             grabRay: new Ray(new Vector3(), new Vector3()),
             hoverInteraction: false,
             nearInteraction: false,
@@ -327,9 +325,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                             if (controllerData.pickIndexMeshTip) {
                                 controllerData.pickIndexMeshTip.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
                             }
-                            if (controllerData.hoverIndexMeshTip) {
-                                controllerData.hoverIndexMeshTip.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
-                            }
 
                             // set near interaction grab ray parameters
                             const nearGrabRayLength = this._nearGrabLengthScale * this._hoverRadius;
@@ -378,7 +373,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             let pick = null;
 
             // near interaction hover
-            if (controllerData.hoverIndexMeshTip) {
+            {
                 let utilitySceneHoverPick = null;
                 if (this._options.useUtilityLayer && this._utilityLayerScene) {
                     utilitySceneHoverPick = this._pickWithSphere(controllerData, this._hoverRadius, this._utilityLayerScene, (mesh: AbstractMesh) =>
@@ -593,7 +588,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             });
         }
         controllerData.pickIndexMeshTip?.dispose();
-        controllerData.hoverIndexMeshTip?.dispose();
         controllerData.pickedPointVisualCue.dispose();
 
         // Fire a pointerup
@@ -616,10 +610,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         }
     }
 
-    private _generateNewHandTipMeshes() {
+    private _generateNewHandTipMesh() {
         // populate information for near hover, pick and pinch
         const meshCreationScene = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        var hoverIndexMeshTip = null;
         var pickIndexMeshTip = null;
 
         let createSphereMesh = (name: string, scale: number, sceneToUse: Scene): Nullable<AbstractMesh> => {
@@ -631,12 +624,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return resultMesh;
         };
 
-        hoverIndexMeshTip = createSphereMesh("IndexHoverSphere", this._hoverRadius, meshCreationScene);
         pickIndexMeshTip = createSphereMesh("IndexPickSphere", this._pickRadius, meshCreationScene);
-        return {
-            hoverIndexMeshTip,
-            pickIndexMeshTip,
-        };
+        return pickIndexMeshTip;
     }
 
     private _pickWithSphere(controllerData: ControllerData, radius: number, sceneToUse: Scene, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
