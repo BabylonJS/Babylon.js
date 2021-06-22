@@ -172,6 +172,7 @@
 ### Math
 
 - Faster scalar's WithinEpsilon with Math.abs ([nekochanoide](https://github.com/nekochanoide))
+- Added decomposeToTransformNode ([RaananW](https://github.com/RaananW))
 
 ### Serializers
 
