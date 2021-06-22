@@ -43,7 +43,7 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
     import { WebRequest } from "babylonjs/Misc/webRequest";
     import { IFileRequest } from "babylonjs/Misc/fileRequest";
     import { IDataBuffer } from 'babylonjs/Misc/dataReader';
-    import { RequestFileError } from 'babylonjs/Misc/fileTools';
+    import { LoadFileError } from 'babylonjs/Misc/fileTools';
     /**
      * Mode that determines the coordinate system to use.
      */
@@ -327,9 +327,7 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          */
         dispose(): void;
         /** @hidden */
-        requestFile(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
-        /** @hidden */
-        readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: any, responseURL?: string) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
         /** @hidden */
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
         /** @hidden */
@@ -359,9 +357,7 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          */
         whenCompleteAsync(): Promise<void>;
         /** @hidden */
-        _loadFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void): IFileRequest;
-        /** @hidden */
-        _requestFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
+        _loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
         private _onProgress;
         private _validate;
         private _getLoader;
@@ -2458,7 +2454,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod" {
     import { INode, IMaterial, IBuffer, IScene } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
-    import { IProperty } from 'babylonjs-gltf2interface';
+    import { IProperty } from "babylonjs-gltf2interface";
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
      */
@@ -3315,9 +3311,7 @@ declare module BABYLON {
          */
         dispose(): void;
         /** @hidden */
-        requestFile(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
-        /** @hidden */
-        readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: any, responseURL?: string) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
         /** @hidden */
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
         /** @hidden */
@@ -3347,9 +3341,7 @@ declare module BABYLON {
          */
         whenCompleteAsync(): Promise<void>;
         /** @hidden */
-        _loadFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void): IFileRequest;
-        /** @hidden */
-        _requestFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
+        _loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
         private _onProgress;
         private _validate;
         private _getLoader;
