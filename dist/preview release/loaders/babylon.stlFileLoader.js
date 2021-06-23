@@ -321,11 +321,19 @@ var STLFileLoader = /** @class */ (function () {
                 var vertexstart = start + i * 12;
                 // ordering is intentional to match ascii import
                 positions[offset] = reader.getFloat32(vertexstart, true);
-                positions[offset + 2] = reader.getFloat32(vertexstart + 4, true);
-                positions[offset + 1] = reader.getFloat32(vertexstart + 8, true);
                 normals[offset] = normalX;
-                normals[offset + 2] = normalY;
-                normals[offset + 1] = normalZ;
+                if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+                    positions[offset + 2] = reader.getFloat32(vertexstart + 4, true);
+                    positions[offset + 1] = reader.getFloat32(vertexstart + 8, true);
+                    normals[offset + 2] = normalY;
+                    normals[offset + 1] = normalZ;
+                }
+                else {
+                    positions[offset + 1] = reader.getFloat32(vertexstart + 4, true);
+                    positions[offset + 2] = reader.getFloat32(vertexstart + 8, true);
+                    normals[offset + 1] = normalY;
+                    normals[offset + 2] = normalZ;
+                }
                 offset += 3;
             }
             indices[indicesCount] = indicesCount++;
@@ -355,8 +363,16 @@ var STLFileLoader = /** @class */ (function () {
             var normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
             var vertexMatch;
             while (vertexMatch = this.vertexPattern.exec(facet)) {
-                positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
-                normals.push(normal[0], normal[1], normal[2]);
+                if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
+                    normals.push(normal[0], normal[1], normal[2]);
+                }
+                else {
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[5]));
+                    // Flipping the second and third component because inverted
+                    // when normal was declared.
+                    normals.push(normal[0], normal[2], normal[1]);
+                }
             }
             indices.push(indicesCount++, indicesCount++, indicesCount++);
             this.vertexPattern.lastIndex = 0;
@@ -367,6 +383,12 @@ var STLFileLoader = /** @class */ (function () {
         mesh.setIndices(indices);
         mesh.computeWorldMatrix(true);
     };
+    /**
+     * Defines if Y and Z axes are swapped or not when loading an STL file.
+     * The default is false to maintain backward compatibility. When set to
+     * true, coordinates from the STL file are used without change.
+     */
+    STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES = false;
     return STLFileLoader;
 }());
 

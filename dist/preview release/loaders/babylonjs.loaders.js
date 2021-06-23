@@ -1788,11 +1788,19 @@ var STLFileLoader = /** @class */ (function () {
                 var vertexstart = start + i * 12;
                 // ordering is intentional to match ascii import
                 positions[offset] = reader.getFloat32(vertexstart, true);
-                positions[offset + 2] = reader.getFloat32(vertexstart + 4, true);
-                positions[offset + 1] = reader.getFloat32(vertexstart + 8, true);
                 normals[offset] = normalX;
-                normals[offset + 2] = normalY;
-                normals[offset + 1] = normalZ;
+                if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+                    positions[offset + 2] = reader.getFloat32(vertexstart + 4, true);
+                    positions[offset + 1] = reader.getFloat32(vertexstart + 8, true);
+                    normals[offset + 2] = normalY;
+                    normals[offset + 1] = normalZ;
+                }
+                else {
+                    positions[offset + 1] = reader.getFloat32(vertexstart + 4, true);
+                    positions[offset + 2] = reader.getFloat32(vertexstart + 8, true);
+                    normals[offset + 1] = normalY;
+                    normals[offset + 2] = normalZ;
+                }
                 offset += 3;
             }
             indices[indicesCount] = indicesCount++;
@@ -1822,8 +1830,16 @@ var STLFileLoader = /** @class */ (function () {
             var normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
             var vertexMatch;
             while (vertexMatch = this.vertexPattern.exec(facet)) {
-                positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
-                normals.push(normal[0], normal[1], normal[2]);
+                if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
+                    normals.push(normal[0], normal[1], normal[2]);
+                }
+                else {
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[5]));
+                    // Flipping the second and third component because inverted
+                    // when normal was declared.
+                    normals.push(normal[0], normal[2], normal[1]);
+                }
             }
             indices.push(indicesCount++, indicesCount++, indicesCount++);
             this.vertexPattern.lastIndex = 0;
@@ -1834,6 +1850,12 @@ var STLFileLoader = /** @class */ (function () {
         mesh.setIndices(indices);
         mesh.computeWorldMatrix(true);
     };
+    /**
+     * Defines if Y and Z axes are swapped or not when loading an STL file.
+     * The default is false to maintain backward compatibility. When set to
+     * true, coordinates from the STL file are used without change.
+     */
+    STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES = false;
     return STLFileLoader;
 }());
 
@@ -8919,8 +8941,8 @@ var GLTFLoader = /** @class */ (function () {
         if (!GLTFLoader._ValidateUri(uri)) {
             throw new Error(context + ": '" + uri + "' is invalid");
         }
-        if (babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Tools"].IsBase64(uri)) {
-            var data = new Uint8Array(babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Tools"].DecodeBase64(uri));
+        if (babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["FileTools"].IsBase64DataUrl(uri)) {
+            var data = new Uint8Array(babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["FileTools"].DecodeBase64UrlToBinary(uri));
             this.log(context + ": Decoded " + uri.substr(0, 64) + "... (" + data.length + " bytes)");
             return Promise.resolve(data);
         }
@@ -9389,6 +9411,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _glTFValidation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./glTFValidation */ "./glTF/glTFValidation.ts");
+
 
 
 
@@ -9898,16 +9921,16 @@ var GLTFFileLoader = /** @class */ (function () {
     /** @hidden */
     GLTFFileLoader.prototype.canDirectLoad = function (data) {
         return (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1)
-            || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "data:base64," + GLTFFileLoader.magicBase64Encoded)
+            || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "data:;base64," + GLTFFileLoader.magicBase64Encoded)
             || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded)
             || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded);
     };
     /** @hidden */
     GLTFFileLoader.prototype.directLoad = function (scene, data) {
-        if (babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "base64," + GLTFFileLoader.magicBase64Encoded) ||
+        if (babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, ";base64," + GLTFFileLoader.magicBase64Encoded) ||
             babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded) ||
             babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded)) {
-            var arrayBuffer_1 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].DecodeBase64(data);
+            var arrayBuffer_1 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["FileTools"].DecodeBase64UrlToBinary(data);
             this._validate(scene, arrayBuffer_1);
             return this._unpackBinaryAsync(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataReader"]({
                 readAsync: function (byteOffset, byteLength) { return Promise.resolve(new Uint8Array(arrayBuffer_1, byteOffset, byteLength)); },
