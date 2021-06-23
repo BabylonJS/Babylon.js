@@ -622,7 +622,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
                 }
                 // Clear all active touches
-                this._activeTouchIds = [];
+                this._activeTouchIds.length = 0;
             }
         });
 
