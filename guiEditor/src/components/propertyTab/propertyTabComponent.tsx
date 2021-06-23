@@ -43,7 +43,6 @@ import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropert
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Button } from "babylonjs-gui/2D/controls/button";
-import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
@@ -286,7 +285,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div id="title">{`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}</div>
                     </div>
                     {this.renderProperties()}
-                    <ParentingPropertyGridComponent guiNode={this.state.currentNode} guiNodes={this.props.globalState.guiTexture.getChildren()[0].children} globalState={this.props.globalState}></ParentingPropertyGridComponent>
+                   <hr></hr>
                     <ButtonLineComponent
                         label="REMOVE ELEMENT"
                         onClick={() => {

@@ -4,9 +4,13 @@ import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyCha
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+
+const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");
+const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
+const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 interface IRectanglePropertyGridComponentProps {
     rectangle: Rectangle,
@@ -24,12 +28,14 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={rectangle} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="RECTANGLE">
-                    <CheckBoxLineComponent label="Clip children" target={rectangle} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Thickness" target={rectangle} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Corner radius" target={rectangle} propertyName="cornerRadius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={rectangle} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <hr></hr>
+                <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
+                <CheckBoxLineComponent icon={clipContentsIcon} label=" " target={rectangle} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <div className="divider">
+                <FloatLineComponent icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={rectangle} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent icon={conerRadiusIcon} lockObject={this.props.lockObject} label=" " target={rectangle} propertyName="cornerRadius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
             </div>
         );
     }
