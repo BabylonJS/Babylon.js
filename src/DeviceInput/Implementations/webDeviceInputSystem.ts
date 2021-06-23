@@ -339,7 +339,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _handlePointerActions() {
         this._pointerMoveEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
-            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds[evt.pointerId];
+            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = {};
@@ -419,7 +419,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             if (deviceType === DeviceType.Touch) {
                 deviceSlot = this._rollingTouchId++;
-                this._activeTouchIds[evt.pointerId] = deviceSlot;
+                this._activeTouchIds[deviceSlot] = evt.pointerId;
             }
 
             if (!this._inputs[deviceType]) {
@@ -488,7 +488,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._pointerUpEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
-            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds[evt.pointerId];
+            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
 
             const pointer = this._inputs[deviceType]?.[deviceSlot];
             if (pointer && pointer[evt.button + 2] !== 0) {
@@ -534,7 +534,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
                 if (deviceType !== DeviceType.Mouse) {
-                    delete this._activeTouchIds[evt.pointerId];
+                    let idToRemove = this._activeTouchIds.indexOf(evt.pointerId);
+                    delete this._activeTouchIds[idToRemove];
                     this._unregisterDevice(deviceType, deviceSlot);
                 }
             }
@@ -599,8 +600,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 // Get list of active touch ids and clear each one in the inputs array
                 for (const deviceSlotKey in Object.keys(this._activeTouchIds)) {
-                    const pointerId = +deviceSlotKey;
-                    const deviceSlot = this._activeTouchIds[pointerId];
+                    const deviceSlot = +deviceSlotKey;
+                    const pointerId = this._activeTouchIds[deviceSlot];
 
                     if (this._elementToAttachTo.hasPointerCapture(pointerId)) {
                         this._elementToAttachTo.releasePointerCapture(pointerId);
@@ -622,7 +623,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
                 }
                 // Clear all active touches
-                this._activeTouchIds.length = 0;
+                while(this._activeTouchIds.length > 0) {
+                    this._activeTouchIds.pop();
+                }
             }
         });
 
