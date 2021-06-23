@@ -623,7 +623,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
                 }
                 // Clear all active touches
-                while (this._activeTouchIds.length > 0) {
+                while (this._activeTouchIds.pop() !== undefined) { }
+
                     this._activeTouchIds.pop();
                 }
             }
