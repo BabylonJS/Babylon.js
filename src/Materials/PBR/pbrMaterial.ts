@@ -580,7 +580,6 @@ export class PBRMaterial extends PBRBaseMaterial {
      * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF_RGBD.png
      * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
      */
-    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public environmentBRDFTexture: Nullable<BaseTexture> = null;
 
