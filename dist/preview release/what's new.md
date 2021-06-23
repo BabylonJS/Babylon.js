@@ -32,6 +32,7 @@
 - spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the correspondgin `xxxById` ([barroij](https://github.com/barroij))
 - Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
+- Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### Engine
 
@@ -55,6 +56,7 @@
 - Added support for custom timeout in WebRequest. ([jamidwyer](https://github.com/jamidwyer/))
 - Improved support for MSFT_lod, now LOD levels are loaded and accurately displayed according to screen coverage ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for direct loading [base64 data URLs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for all loader ([CoPrez](https://github.com/CoPrez))
+- Added DO_NOT_ALTER_FILE_COORDINATES flag to STL loader ([AlbertoPa](https://github.com/AlbertoPa))
 
 ### Navigation
 
@@ -174,6 +176,7 @@
 ### Math
 
 - Faster scalar's WithinEpsilon with Math.abs ([nekochanoide](https://github.com/nekochanoide))
+- Added decomposeToTransformNode ([RaananW](https://github.com/RaananW))
 
 ### Serializers
 

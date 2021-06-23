@@ -2912,6 +2912,12 @@ declare module "babylonjs-loaders/STL/stlFileLoader" {
          */
         extensions: ISceneLoaderPluginExtensions;
         /**
+         * Defines if Y and Z axes are swapped or not when loading an STL file.
+         * The default is false to maintain backward compatibility. When set to
+         * true, coordinates from the STL file are used without change.
+         */
+        static DO_NOT_ALTER_FILE_COORDINATES: boolean;
+        /**
          * Import meshes into a scene.
          * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
          * @param scene The scene to import into
@@ -5632,6 +5638,12 @@ declare module BABYLON {
          * we'll convert to string if it looks like it's an ASCII .stl
          */
         extensions: ISceneLoaderPluginExtensions;
+        /**
+         * Defines if Y and Z axes are swapped or not when loading an STL file.
+         * The default is false to maintain backward compatibility. When set to
+         * true, coordinates from the STL file are used without change.
+         */
+        static DO_NOT_ALTER_FILE_COORDINATES: boolean;
         /**
          * Import meshes into a scene.
          * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
