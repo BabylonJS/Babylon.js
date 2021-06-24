@@ -4,7 +4,7 @@
     height: 100%;
     width: 100%;
     background: #e2e2e2;
-    font: 14px "acumin-pro";   
+    font: 14px "acumin-pro-condensed";   
 }
 
 .wait-screen {
@@ -16,7 +16,7 @@
     background: #464646;
     opacity: 0.95;
     color:white;
-    font: 24px "acumin-pro";  
+    font: 24px "acumin-pro-condensed";  
     position: absolute;
     top: 0;
     left: 0; 
@@ -262,7 +262,7 @@
     left: 0;
 
     background: rgba(20, 20, 20, 0.95);    
-    font-family: "acumin-pro";
+    font-family: "acumin-pro-condensed";
     color: white;
     font-size: 24px;
 
@@ -287,7 +287,7 @@
     height: 100%;
     background: rgba(0.1, 0.1, 0.1, 0.6);
     display: grid;
-    font-family: "acumin-pro";
+    font-family: "acumin-pro-condensed";
     top:0;
 
     .dialog {

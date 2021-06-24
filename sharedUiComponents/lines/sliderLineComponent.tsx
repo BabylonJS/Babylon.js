@@ -18,6 +18,7 @@ interface ISliderLineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     decimalCount?: number;
     margin?: boolean;
+    icon? : string;
 }
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {
@@ -109,6 +110,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
 
         return (
             <div className="sliderLine">
+                {this.props.icon && <img src={this.props.icon} className="icon"/>}
                 <div className={this.props.margin ? "label withMargins" : "label"}  title={this.props.label}>
                     {this.props.label}
                 </div>
