@@ -10,7 +10,7 @@ import { Engine } from "babylonjs/Engines/engine";
 
 import { ValueLineComponent } from "../../../sharedUiComponents/lines/valueLineComponent";
 import { BooleanLineComponent } from "../../../sharedUiComponents/lines/booleanLineComponent";
-import { PerformanceViewerComponent } from "./performanceViewer/performanceVIewerComponent";
+import { PerformanceViewerComponent } from "./performanceViewer/performanceViewerComponent";
 
 export class StatisticsTabComponent extends PaneComponent {
     private _sceneInstrumentation: Nullable<SceneInstrumentation>;
