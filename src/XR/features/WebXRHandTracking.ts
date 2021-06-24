@@ -292,12 +292,21 @@ export class WebXRHand implements IDisposable {
     }
 
     /**
-     * Get meshes of part of the hand
-     * @param part the part of hand to get
-     * @returns An array of meshes that correlate to the hand part requested
+     * Get meshes of part of the hand.
+     * @param part The part of hand to get.
+     * @returns An array of meshes that correlate to the hand part requested.
      */
     public getHandPartMeshes(part: HandPart): AbstractMesh[] {
         return handPartsDefinition[part].map((name) => this._jointMeshes[handJointReferenceArray.indexOf(name)]!);
+    }
+
+    /**
+     * Retrieves a mesh linked to a named joint in the hand. 
+     * @param jointName The name of the joint.
+     * @returns An AbstractMesh whose position corresponds with the joint position.
+     */
+    public getJointMesh(jointName: XRHandJoint): AbstractMesh {
+        return this._jointMeshes[handJointReferenceArray.indexOf(jointName)!];
     }
 
     /**
