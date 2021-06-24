@@ -17,6 +17,7 @@ export * from "./engine.views";
 export * from "./engine.readTexture";
 export * from "./engine.computeShader";
 export * from "./engine.storageBuffer";
+export * from "./engine.shaderInliner";
 
 // must import first since nothing references the exports
 import "./engine.textureSelector";
