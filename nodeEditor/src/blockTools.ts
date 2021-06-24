@@ -364,6 +364,31 @@ export class BlockTools {
                 meshUV.setAsAttribute("uv");
                 return meshUV;
             }
+            case "UV2Block": {
+                let meshUV = new InputBlock("uv2");
+                meshUV.setAsAttribute("uv2");
+                return meshUV;
+            }
+            case "UV3Block": {
+                let meshUV = new InputBlock("uv3");
+                meshUV.setAsAttribute("uv3");
+                return meshUV;
+            }
+            case "UV4Block": {
+                let meshUV = new InputBlock("uv'");
+                meshUV.setAsAttribute("uv'");
+                return meshUV;
+            }
+            case "UV5Block": {
+                let meshUV = new InputBlock("uv5");
+                meshUV.setAsAttribute("uv5");
+                return meshUV;
+            }
+            case "UV6Block": {
+                let meshUV = new InputBlock("uv6");
+                meshUV.setAsAttribute("uv6");
+                return meshUV;
+            }
             case "ColorBlock": {
                 let meshColor = new InputBlock("color");
                 meshColor.setAsAttribute("color");
