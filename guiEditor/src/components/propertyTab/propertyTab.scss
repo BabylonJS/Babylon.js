@@ -102,12 +102,13 @@
         height: var(--spacingHeight);;
         display: grid;
         grid-template-rows: 100%;
-        grid-template-columns: auto 15px auto auto 1fr;
+        grid-template-columns: auto auto auto 1fr;
 
         .label {
             grid-column: 2;
             display: flex;
             align-items: center;
+            min-width: 15px;
         }
 
         .img {
@@ -118,18 +119,19 @@
 
 
         .slider {
-            grid-column: 5;
+            grid-column: 4;
             grid-row: 1;
             margin-right: 5px;
             width: 90%;
             display: flex;
             align-items: center;
+            padding-left: 5px;
         }
 
         .floatLine {
-            grid-column: 4;
-            padding-left: $line-padding-left;
-    
+            grid-column: 3;
+            padding-left: 15px;
+            
             .label {
                 grid-column: 1;
                 display: none;
@@ -175,12 +177,13 @@
         padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
-        grid-template-columns: auto auto 15px 2fr 1fr;
+        grid-template-columns: auto auto 2fr 1fr;
         .label {
             grid-column: 2;
             padding-left: 5px;
             display: flex;
             align-items: center;
+            min-width: 15px;
         }
 
         .img {
@@ -192,7 +195,8 @@
         .value {                        
             display: flex;
             align-items: center;
-            grid-column: 4;
+            padding-left: 15px;
+            grid-column: 3;
             background: transparent;
             input {
                 width: calc(100% - 5px);
@@ -420,12 +424,13 @@
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
         display: grid;
-        grid-template-columns: auto auto 15px 2fr 1fr;
+        grid-template-columns: auto auto 2fr 1fr;
 
         .label {
             grid-column: 2;
             display: flex;
             align-items: center;
+            min-width: 15px;
         }
 
         .img {
@@ -436,8 +441,9 @@
 
         .value {                        
             display: flex;
+            padding-left: 15px;
             align-items: center;
-            grid-column: 4;
+            grid-column: 3;
             background: transparent;
             input {
                 width: calc(100% - 5px);

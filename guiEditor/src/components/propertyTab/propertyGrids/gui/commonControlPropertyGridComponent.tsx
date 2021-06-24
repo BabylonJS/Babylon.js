@@ -127,28 +127,28 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <TextLineComponent label="APPEARANCE" value=" " color="grey"></TextLineComponent>
                 {
                     (control as any).color !== undefined &&
-                    <TextInputLineComponent icon={colorIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent icon={colorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
                     (control as any).background !== undefined &&
-                    <TextInputLineComponent icon={fillColorIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent icon={fillColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
-                <SliderLineComponent icon={alphaIcon} label=" " target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent icon={shadowColorIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="shadowColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderLineComponent icon={alphaIcon} label="" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent icon={shadowColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <div className="divider">
-                    <FloatLineComponent icon={shadowOffsetXIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="shadowOffsetX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent icon={shadowOffsetYIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="shadowOffsetY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent icon={shadowOffsetXIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent icon={shadowOffsetYIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <FloatLineComponent icon={shadowBlurIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="shadowBlur" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowBlur" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr></hr>
                 <TextLineComponent label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                 <div className="divider">
-                    <TextInputLineComponent icon={fontFamilyIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="fontFamily" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent icon={fontSizeIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="fontSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent icon={fontFamilyIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontFamily" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent icon={fontSizeIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent icon={shadowBlurIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="fontWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent icon={fontStyleIcon} lockObject={this.props.lockObject} label=" " target={control} propertyName="fontStyle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent icon={fontStyleIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontStyle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 {
                     this.renderGridInformation()
