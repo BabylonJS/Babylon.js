@@ -1,5 +1,6 @@
 // Import Dependencies.
 const gulp = require("gulp");
+const minimist = require("minimist");
 const path = require("path");
 const fs = require("fs-extra");
 const shelljs = require('shelljs');
@@ -9,6 +10,11 @@ const colorConsole = require("../../NodeHelpers/colorConsole");
 
 // Read the full config.
 var config = require("../../Config/config.js");
+
+// Parse Command Line.
+const commandLineOptions = minimist(process.argv.slice(2), {
+    boolean: ["noGlobalInstall"],
+});
 
 // Base Line Path.
 var baseLinePath = path.resolve(config.computed.rootFolder, "dist/preview release/packagesSizeBaseLine.json");
@@ -23,14 +29,24 @@ gulp.task("tests-es6Modules", function(done) {
     try {
         Object.assign(shelljs.config, {verbose: true, silent: false, fatal: true});
 
-        colorConsole.log("Link to dev copy of built modules");
-        const coreDevDir = config.core.computed.packageES6DevDirectory;
-        const materialsDevDir = config.materialsLibrary.computed.packageES6DevDirectory;
-        shelljs.exec(`npm install --no-save "${coreDevDir}"`, {cwd: es6TestsFolder});
-        shelljs.exec(`npm install --no-save "${materialsDevDir}"`, {cwd: es6TestsFolder});
+        if (commandLineOptions.noGlobalInstall) {
+            colorConsole.log("Link to dev copy of built modules");
+            const coreDevDir = config.core.computed.packageES6DevDirectory;
+            const materialsDevDir = config.materialsLibrary.computed.packageES6DevDirectory;
+            shelljs.exec(`npm install --no-save "${coreDevDir}"`, {cwd: es6TestsFolder});
+            shelljs.exec(`npm install --no-save "${materialsDevDir}"`, {cwd: es6TestsFolder});
+        } else {
+            colorConsole.log("Link to installed copy of built modules");
+            shelljs.exec("npm link @babylonjs/core", {cwd: es6TestsFolder});
+            shelljs.exec("npm link @babylonjs/materials", {cwd: es6TestsFolder});
+        }
 
         colorConsole.log("Bundle test app with webpack");
-        shelljs.exec("npx webpack", {cwd: es6TestsFolder});
+        webpack_result = shelljs.exec("npx webpack", {cwd: es6TestsFolder});
+        if (webpack_result.stdout)
+            colorConsole.error(`webpack stdout:\n${webpack_result.stdout}`);
+        if (webpack_result.stderr)
+            colorConsole.error(`webpack stderr:\n${webpack_result.stderr}`);
     }
     finally {
         Object.assign(shelljs.config, savedShellConfig);
