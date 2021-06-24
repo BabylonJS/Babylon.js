@@ -52,8 +52,11 @@ export interface IWebXRHandTrackingOptions {
          * This function will be called after a mesh was created for a specific joint.
          * Using this function you can either manipulate the instance or return a new mesh.
          * When returning a new mesh the instance created before will be disposed.
+         * @param meshInstance An instance of the original joint mesh being used for the joint.
+         * @param jointId The joint's index, see https://immersive-web.github.io/webxr-hand-input/#skeleton-joints-section for more info.
+         * @param hand Which hand ("left", "right") the joint will be on.
          */
-        onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, jointName: string) => AbstractMesh | undefined;
+        onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, hand: XRHandedness) => AbstractMesh | undefined;
         /**
          * Should the source mesh stay visible (defaults to false).
          */
@@ -523,14 +526,14 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
 
     private static _generateTrackedJointMeshes(featureOptions: IWebXRHandTrackingOptions): { left: AbstractMesh[], right: AbstractMesh[] } {
         const meshes: { [handedness: string]: AbstractMesh[] } = {};
-        ["left", "right"].map((handedness) => {
+        ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
             const trackedMeshes = [];
             const originalMesh = featureOptions.jointMeshes?.sourceMesh || IcoSphereBuilder.CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS);
             originalMesh.isVisible = !!featureOptions.jointMeshes?.keepOriginalVisible;
             for (let i = 0; i < handJointReferenceArray.length; ++i) {
                 let newInstance: AbstractMesh = originalMesh.createInstance(`${handedness}-handJoint-${i}`);
                 if (featureOptions.jointMeshes?.onHandJointMeshGenerated) {
-                    const returnedMesh = featureOptions.jointMeshes.onHandJointMeshGenerated(newInstance as InstancedMesh, i, handJointReferenceArray[i]);
+                    const returnedMesh = featureOptions.jointMeshes.onHandJointMeshGenerated(newInstance as InstancedMesh, i, handedness);
                     if (returnedMesh) {
                         if (returnedMesh !== newInstance) {
                             newInstance.dispose();
