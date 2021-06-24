@@ -5,6 +5,7 @@ import { Mesh } from "babylonjs/Meshes/mesh";
 import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
+import { TmpVectors } from "babylonjs/Maths/math.vector";
 
 import { Button3D } from "./button3D";
 
@@ -13,9 +14,9 @@ import { Button3D } from "./button3D";
  */
 export class TouchButton3D extends Button3D {
     private _collisionMesh: Mesh;
-    private _collidableFrontDirection: Vector3;
 
-    private _collidableInitialized = false;
+    // 'front' direction. If Vector3.Zero, there is no front and all directions of interaction are accepted
+    private _collidableFrontDirection: Vector3;
 
     /**
      * Creates a new touchable button
@@ -25,17 +26,44 @@ export class TouchButton3D extends Button3D {
     constructor(name?: string, collisionMesh?: Mesh) {
         super(name);
 
+        this.collidableFrontDirection = Vector3.Zero();
+
         if (collisionMesh) {
             this.collisionMesh = collisionMesh;
         }
     }
 
     /**
-     * Sets the front-facing direction of the button
+     * Sets the front-facing direction of the button. Pass in Vector3.Zero to allow interactions from any direction
      * @param frontDir the forward direction of the button
      */
     public set collidableFrontDirection(frontWorldDir: Vector3) {
         this._collidableFrontDirection = frontWorldDir.normalize();
+
+        if (this._collisionMesh) {
+            const transformedDirection = TmpVectors.Vector3[0];
+            const invert = TmpVectors.Matrix[0];
+
+            invert.copyFrom(this._collisionMesh.getWorldMatrix());
+            invert.invert();
+            Vector3.TransformNormalToRef(this._collidableFrontDirection, invert, transformedDirection);
+            this._collidableFrontDirection = transformedDirection;
+        }
+    }
+
+    /**
+     * Returns the front-facing direction of the button, or Vector3.Zero if there is no 'front'
+     */
+    public get collidableFrontDirection() {
+        if (this._collisionMesh) {
+            // Update the front direction to reflect any rotations of the collision mesh
+            const transformedDirection = TmpVectors.Vector3[0];
+            Vector3.TransformNormalToRef(this._collidableFrontDirection, this._collisionMesh.getWorldMatrix(), transformedDirection);
+
+            return transformedDirection;
+        }
+
+        return this._collidableFrontDirection;
     }
 
     /**
@@ -57,33 +85,33 @@ export class TouchButton3D extends Button3D {
         this._collisionMesh.isNearPickable = true;
 
         this.collidableFrontDirection = collisionMesh.forward;
-
-        this._collidableInitialized = true;
     }
 
-    // Returns the distance in front of the center of the button
-    // Returned value is negative when collidable is past the center
-    private _getHeightFromButtonCenter(collidablePos: Vector3) {
-        const d = Vector3.Dot(this._collisionMesh.getAbsolutePosition(), this._collidableFrontDirection);
-        const abc = Vector3.Dot(collidablePos, this._collidableFrontDirection);
+    // Returns true if the collidable is in front of the button, or if the button has no front direction
+    private _isInteractionInFrontOfButton(collidablePos: Vector3) {
+        const frontDir = this.collidableFrontDirection;
+        if (frontDir.length() === 0) {
+            // The button has no front, just return the distance to the center
+            return true;
+        }
+        const d = Vector3.Dot(this._collisionMesh.getAbsolutePosition(), frontDir);
+        const abc = Vector3.Dot(collidablePos, frontDir);
 
-        return abc - d;
+        return abc > d;
     }
 
     /** hidden */
     public _generatePointerEventType(providedType: number, nearMeshPosition: Vector3, activeInteractionCount: number): number {
-        if (this._collidableInitialized) {
-            if (providedType == PointerEventTypes.POINTERDOWN) {
-                if (this._getHeightFromButtonCenter(nearMeshPosition) < 0) {
-                    // Near interaction mesh is behind the button, don't send a pointer down
-                    return PointerEventTypes.POINTERMOVE;
-                }
+        if (providedType == PointerEventTypes.POINTERDOWN) {
+            if (this._isInteractionInFrontOfButton(nearMeshPosition)) {
+                // Near interaction mesh is behind the button, don't send a pointer down
+                return PointerEventTypes.POINTERMOVE;
             }
-            if (providedType == PointerEventTypes.POINTERUP) {
-                if (activeInteractionCount == 0) {
-                    // We get the release for the down we swallowed earlier, swallow as well
-                    return PointerEventTypes.POINTERMOVE;
-                }
+        }
+        if (providedType == PointerEventTypes.POINTERUP) {
+            if (activeInteractionCount == 0) {
+                // We get the release for the down we swallowed earlier, swallow as well
+                return PointerEventTypes.POINTERMOVE;
             }
         }
 
