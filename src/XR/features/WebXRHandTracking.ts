@@ -417,12 +417,13 @@ export class WebXRHand implements IDisposable {
 
         const anyHand: any = hand;
         const jointSpaces: XRJointSpace[] = handJointReferenceArray.map((jointName) => anyHand[jointName]);
-        let trackingSuccessful = true;
+        let trackingSuccessful = false;
 
         if (xrFrame.fillPoses && xrFrame.fillJointRadii) {
             trackingSuccessful = xrFrame.fillPoses(jointSpaces, referenceSpace, this._jointTransformMatrices) &&
                 xrFrame.fillJointRadii(jointSpaces, this._jointRadii);
         } else if (xrFrame.getJointPose) {
+            trackingSuccessful = true;
             // Warning: This codepath is slow by comparison, only here for compat.
             for (let jointIdx = 0; jointIdx < jointSpaces.length; jointIdx++) {
                 const jointPose = xrFrame.getJointPose(jointSpaces[jointIdx], referenceSpace);
@@ -434,8 +435,6 @@ export class WebXRHand implements IDisposable {
                     break;
                 }
             }
-        } else {
-            throw new Error("XRFrame does not support joint tracking!");
         }
 
         if (!trackingSuccessful) {
