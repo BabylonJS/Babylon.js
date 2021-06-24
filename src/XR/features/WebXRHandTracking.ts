@@ -416,7 +416,7 @@ export class WebXRHand implements IDisposable {
         }
 
         const anyHand: any = hand;
-        const jointSpaces: XRJointSpace[] = handJointReferenceArray.map((jointName) => anyHand[jointName]);
+        const jointSpaces: XRJointSpace[] = handJointReferenceArray.map((jointName) => anyHand[jointName] || hand.get(jointName));
         let trackingSuccessful = false;
 
         if (xrFrame.fillPoses && xrFrame.fillJointRadii) {
