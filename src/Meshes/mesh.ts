@@ -4789,6 +4789,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         subdivideWithSubMeshes?: boolean,
         multiMultiMaterials?: boolean
     ): Nullable<Mesh> {
+        if (meshes.length === 0) {
+            return null;
+        }
+
         var index: number;
         if (!allow32BitsIndices) {
             var totalVertices = 0;
@@ -4814,10 +4818,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var materialArray: Array<Material> = new Array<Material>();
         var materialIndexArray: Array<number> = new Array<number>();
         // Merge
-        var vertexData: Nullable<VertexData> = null;
-        var otherVertexData: VertexData;
         var indiceArray: Array<number> = new Array<number>();
-        var source: Nullable<Mesh> = null;
         for (index = 0; index < meshes.length; index++) {
             if (meshes[index]) {
                 var mesh = meshes[index];
@@ -4826,19 +4827,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     return null;
                 }
 
-                const wm = mesh.computeWorldMatrix(true);
-                otherVertexData = VertexData.ExtractFromMesh(mesh, true, true);
-                otherVertexData.transform(wm);
-
-                if (vertexData) {
-                    vertexData.merge(otherVertexData, allow32BitsIndices);
-                } else {
-                    vertexData = otherVertexData;
-                    source = mesh;
-                }
                 if (subdivideWithSubMeshes) {
                     indiceArray.push(mesh.getTotalIndices());
                 }
+
                 if (multiMultiMaterials) {
                     if (mesh.material) {
                         var material = mesh.material;
@@ -4871,7 +4863,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
 
-        source = <Mesh>source;
+        const source = meshes[0];
+
+        const getVertexDataFromMesh = (mesh: Mesh) => {
+            const wm = mesh.computeWorldMatrix(true);
+            const vertexData = VertexData.ExtractFromMesh(mesh, true, true);
+            vertexData.transform(wm);
+            return vertexData;
+        };
+        const vertexData = getVertexDataFromMesh(source).merge(meshes.slice(1).map(mesh => getVertexDataFromMesh(mesh)));
 
         if (!meshSubclass) {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
