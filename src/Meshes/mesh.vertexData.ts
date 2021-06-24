@@ -545,15 +545,15 @@ export class VertexData {
     }
 
     private static _mergeElement(source: Nullable<FloatArray>, others: readonly Nullable<FloatArray>[]): Nullable<FloatArray> {
-        if (!others || others.length === 0) {
+        const nonNullOthers = others.filter((other): other is FloatArray => other !== null && other !== undefined);
+
+        if (nonNullOthers.length === 0) {
             return source;
         }
 
         if (!source) {
-            return this._mergeElement(others[1], others.slice(1));
+            return this._mergeElement(nonNullOthers[1], nonNullOthers.slice(1));
         }
-
-        const nonNullOthers = others.filter((other): other is FloatArray => other !== null);
 
         const len = source.length + nonNullOthers.reduce((othersSumLen, other) => othersSumLen += other.length, 0);
 
