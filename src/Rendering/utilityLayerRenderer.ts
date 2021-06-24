@@ -187,20 +187,28 @@ export class UtilityLayerRenderer implements IDisposable {
                     return;
                 }
 
-                let utilityScenePick = null;
 
-                if (prePointerInfo.nearInteractionPickingInfo) {
-                    if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == this.utilityLayerScene) {
-                        utilityScenePick = prePointerInfo.nearInteractionPickingInfo;
+                let getNearPickDataForScene = (scene: Scene)=>{
+                    let scenePick = null;
+
+                    if (prePointerInfo.nearInteractionPickingInfo) {
+                        if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == scene) {
+                            scenePick = prePointerInfo.nearInteractionPickingInfo;
+                        }
+                        else {
+                            scenePick = new PickingInfo();
+                        }
+                    } else {
+                        scenePick = prePointerInfo.ray
+                            ? scene.pickWithRay(prePointerInfo.ray)
+                            : scene.pick(originalScene.pointerX, originalScene.pointerY);
                     }
-                    else {
-                        utilityScenePick = new PickingInfo();
-                    }
-                } else {
-                    utilityScenePick = prePointerInfo.ray
-                        ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray)
-                        : this.utilityLayerScene.pick(originalScene.pointerX, originalScene.pointerY);
-                }
+
+                    return scenePick;
+                };
+
+                let utilityScenePick = getNearPickDataForScene(this.utilityLayerScene);
+
                 if (!prePointerInfo.ray && utilityScenePick) {
                     prePointerInfo.ray = utilityScenePick.ray;
                 }
@@ -235,18 +243,7 @@ export class UtilityLayerRenderer implements IDisposable {
                     }
                 } else {
 
-                    let originalScenePick = null; /// now same logic between main and utility layer scene, lambda that up
-                    if (prePointerInfo.nearInteractionPickingInfo) {
-                        if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == originalScene) {
-                            originalScenePick = prePointerInfo.nearInteractionPickingInfo;
-                        }
-                        else {
-                            originalScenePick = new PickingInfo();
-                        }
-                    } else {
-                        originalScenePick = prePointerInfo.ray ? originalScene.pickWithRay(prePointerInfo.ray) : originalScene.pick(originalScene.pointerX, originalScene.pointerY);
-                    }
-
+                    let originalScenePick = getNearPickDataForScene(originalScene);
                     let pointerEvent = <PointerEvent>prePointerInfo.event;
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
