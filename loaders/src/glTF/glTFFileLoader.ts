@@ -14,7 +14,7 @@ import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Logger } from 'babylonjs/Misc/logger';
 import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { GLTFValidation } from './glTFValidation';
-import { RequestFileError } from 'babylonjs/Misc/fileTools';
+import { FileTools, LoadFileError } from 'babylonjs/Misc/fileTools';
 import { StringTools } from 'babylonjs/Misc/stringTools';
 
 interface IFileRequestInfo extends IFileRequest {
@@ -498,7 +498,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /** @hidden */
-    public requestFile(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest {
+    public loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: any, responseURL?: string) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
         this._progressCallback = onProgress;
 
         if (useArrayBuffer) {
@@ -515,7 +515,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 const dataBuffer = {
                     readAsync: (byteOffset: number, byteLength: number) => {
                         return new Promise<ArrayBufferView>((resolve, reject) => {
-                            this._requestFile(url, scene, (data) => {
+                            this._loadFile(scene, fileOrUrl, (data) => {
                                 resolve(new Uint8Array(data as ArrayBuffer));
                             }, true, (error) => {
                                 reject(error);
@@ -535,38 +535,26 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 return fileRequest;
             }
 
-            return this._requestFile(url, scene, (data, request) => {
+            return this._loadFile(scene, fileOrUrl, (data) => {
                 const arrayBuffer = data as ArrayBuffer;
                 this._unpackBinaryAsync(new DataReader({
                     readAsync: (byteOffset, byteLength) => Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength)),
                     byteLength: arrayBuffer.byteLength
                 })).then((loaderData) => {
-                    onSuccess(loaderData, request);
+                    onSuccess(loaderData);
                 }, onError);
             }, true, onError);
         }
 
-        return this._requestFile(url, scene, (data, request) => {
-            this._validate(scene, data, Tools.GetFolderPath(url), Tools.GetFilename(url));
-            onSuccess({ json: this._parseJson(data as string) }, request);
-        }, useArrayBuffer, onError);
-    }
-
-    /** @hidden */
-    public readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest {
-        return scene._readFile(file, (data) => {
-            this._validate(scene, data, "file:", file.name);
-            if (useArrayBuffer) {
-                const arrayBuffer = data as ArrayBuffer;
-                this._unpackBinaryAsync(new DataReader({
-                    readAsync: (byteOffset, byteLength) => Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength)),
-                    byteLength: arrayBuffer.byteLength
-                })).then(onSuccess, onError);
+        return this._loadFile(scene, fileOrUrl, (data) => {
+            if (fileOrUrl instanceof File) {
+                this._validate(scene, data, "file:", fileOrUrl.name);
             }
             else {
-                onSuccess({ json: this._parseJson(data as string) });
+                this._validate(scene, data, Tools.GetFolderPath(fileOrUrl), Tools.GetFilename(fileOrUrl));
             }
-        }, onProgress, useArrayBuffer, onError);
+            onSuccess({ json: this._parseJson(data as string) });
+        }, useArrayBuffer, onError);
     }
 
     /** @hidden */
@@ -638,17 +626,17 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /** @hidden */
     public canDirectLoad(data: string): boolean {
         return (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1)
-                || StringTools.StartsWith(data, "data:base64," + GLTFFileLoader.magicBase64Encoded)
-                || StringTools.StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded)
-                || StringTools.StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded);
+            || StringTools.StartsWith(data, "data:;base64," + GLTFFileLoader.magicBase64Encoded)
+            || StringTools.StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded)
+            || StringTools.StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded);
     }
 
     /** @hidden */
     public directLoad(scene: Scene, data: string): Promise<any> {
-        if (StringTools.StartsWith(data, "base64," + GLTFFileLoader.magicBase64Encoded) ||
+        if (StringTools.StartsWith(data, ";base64," + GLTFFileLoader.magicBase64Encoded) ||
             StringTools.StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded) ||
             StringTools.StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded)) {
-            const arrayBuffer = Tools.DecodeBase64(data);
+            const arrayBuffer = FileTools.DecodeBase64UrlToBinary(data);
 
             this._validate(scene, arrayBuffer);
             return this._unpackBinaryAsync(new DataReader({
@@ -697,20 +685,8 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /** @hidden */
-    public _loadFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void): IFileRequest {
-        const request = scene._loadFile(url, onSuccess, (event) => {
-            this._onProgress(event, request);
-        }, true, useArrayBuffer, onError) as IFileRequestInfo;
-        request.onCompleteObservable.add((request) => {
-            this._requests.splice(this._requests.indexOf(request), 1);
-        });
-        this._requests.push(request);
-        return request;
-    }
-
-    /** @hidden */
-    public _requestFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
-        const request = scene._requestFile(url, onSuccess, (event) => {
+    public _loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
+        const request = scene._loadFile(fileOrUrl, onSuccess, (event) => {
             this._onProgress(event, request);
         }, true, useArrayBuffer, onError, onOpened) as IFileRequestInfo;
         request.onCompleteObservable.add((request) => {
