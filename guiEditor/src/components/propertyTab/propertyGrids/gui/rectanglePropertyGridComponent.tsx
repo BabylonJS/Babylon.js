@@ -31,10 +31,10 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={rectangle} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr></hr>
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
-                <CheckBoxLineComponent icon={clipContentsIcon} label=" " target={rectangle} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent icon={clipContentsIcon} label="" target={rectangle} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <div className="divider">
                 <FloatLineComponent icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={rectangle} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent icon={conerRadiusIcon} lockObject={this.props.lockObject} label=" " target={rectangle} propertyName="cornerRadius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent icon={conerRadiusIcon} lockObject={this.props.lockObject} label="" target={rectangle} propertyName="cornerRadius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
             </div>
         );

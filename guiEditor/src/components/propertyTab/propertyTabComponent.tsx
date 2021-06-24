@@ -255,17 +255,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
             case "Button": {
                 const control = this.state.currentNode as Control;
-                const button = this.state.currentNode as Button;
-                var buttonMenu = [];
-                buttonMenu.push(<ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-                if (button.textBlock) {
-                    buttonMenu.push(<TextBlockPropertyGridComponent key="textBlockMenu" textBlock={button.textBlock} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-                }
-                if (button.image) {
-                    buttonMenu.push(<ImagePropertyGridComponent key="imageMenu" image={button.image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-                }
-
-                return buttonMenu;
+                return <ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
         }
 
