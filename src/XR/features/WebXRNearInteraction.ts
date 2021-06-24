@@ -370,10 +370,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 return result;
             };
 
-            let pick = null;
-
-            // near interaction hover
+            // Reuse the old pick info if we are grabbing, to maintain our position on the target mesh and prevent ourselves from triggering other interactions
+            if (!controllerData.grabInteraction)
             {
+                let pick = null;
+
+                // near interaction hover
                 let utilitySceneHoverPick = null;
                 if (this._options.useUtilityLayer && this._utilityLayerScene) {
                     utilitySceneHoverPick = this._pickWithSphere(controllerData, this._hoverRadius, this._utilityLayerScene, (mesh: AbstractMesh) =>
@@ -389,40 +391,41 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         controllerData.hoverInteraction = true;
                     }
                 }
-            }
 
-            // near interaction pick
-            if (controllerData.pickIndexMeshTip && controllerData.hoverInteraction) {
-                let utilitySceneNearPick = null;
-                if (this._options.useUtilityLayer && this._utilityLayerScene) {
-                    utilitySceneNearPick = this._pickWithSphere(controllerData, this._pickRadius, this._utilityLayerScene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
+                // near interaction pick
+                if (controllerData.pickIndexMeshTip && controllerData.hoverInteraction) {
+                    let utilitySceneNearPick = null;
+                    if (this._options.useUtilityLayer && this._utilityLayerScene) {
+                        utilitySceneNearPick = this._pickWithSphere(controllerData, this._pickRadius, this._utilityLayerScene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
+                    }
+                    let originalSceneNearPick = this._pickWithSphere(controllerData, this._pickRadius, this._scene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
+                    let pickInfo = accuratePickInfo(originalSceneNearPick, utilitySceneNearPick);
+                    const nearPick = populateNearInteractionInfo(pickInfo);
+                    if (nearPick.hit) {
+                        // Near pick takes precedence over hover interaction
+                        pick = nearPick;
+                        controllerData.nearInteraction = true;
+                    }
                 }
-                let originalSceneNearPick = this._pickWithSphere(controllerData, this._pickRadius, this._scene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
-                let pickInfo = accuratePickInfo(originalSceneNearPick, utilitySceneNearPick);
-                const nearPick = populateNearInteractionInfo(pickInfo);
-                if (nearPick.hit) {
-                    // Near pick takes precedence over hover interaction
-                    pick = nearPick;
-                    controllerData.nearInteraction = true;
-                }
-            }
-            controllerData.pick = pick;
 
-            // Update mesh under pointer
-            if (controllerData.pick && controllerData.pick.pickedPoint && controllerData.pick.hit) {
-                controllerData.meshUnderPointer = controllerData.pick.pickedMesh;
-                controllerData.pickedPointVisualCue.position.copyFrom(controllerData.pick.pickedPoint);
-                controllerData.pickedPointVisualCue.isVisible = true;
+                controllerData.pick = pick;
 
-                if (this._farInteractionFeature) {
-                    this._farInteractionFeature.detach();
-                }
-            } else {
-                controllerData.meshUnderPointer = null;
-                controllerData.pickedPointVisualCue.isVisible = false;
+                // Update mesh under pointer
+                if (controllerData.pick && controllerData.pick.pickedPoint && controllerData.pick.hit) {
+                    controllerData.meshUnderPointer = controllerData.pick.pickedMesh;
+                    controllerData.pickedPointVisualCue.position.copyFrom(controllerData.pick.pickedPoint);
+                    controllerData.pickedPointVisualCue.isVisible = true;
 
-                if (this._farInteractionFeature) {
-                    this._farInteractionFeature.attach();
+                    if (this._farInteractionFeature) {
+                        this._farInteractionFeature.detach();
+                    }
+                } else {
+                    controllerData.meshUnderPointer = null;
+                    controllerData.pickedPointVisualCue.isVisible = false;
+
+                    if (this._farInteractionFeature) {
+                        this._farInteractionFeature.attach();
+                    }
                 }
             }
         });
