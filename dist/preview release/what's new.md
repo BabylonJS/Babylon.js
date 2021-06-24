@@ -5,6 +5,7 @@
 - Infinite Morph Targets: When supported (WebGL2+) you are no more limited to 4 morph targets per mesh ([Deltakosh](https://github.com/deltakosh))
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
+- Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
@@ -258,6 +259,7 @@
 - Fix NativeEngine not setting default depth test function to LEQUAL ([rgerd](https://github.com/rgerd))
 - Fix an exception where loading a very small STL file could result in attempting to read outside the files range ([CoPrez](https://github.com/CoPrez))
 - Fix support of `useReverseDepthBuffer` throughout the engine ([Popov72](https://github.com/Popov72))
+- Fix issue with handling of negative Pointer IDs in DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 

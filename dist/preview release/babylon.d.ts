@@ -1217,57 +1217,61 @@ declare module BABYLON {
          */
         static readonly PERSPECTIVE_CAMERA: number;
         /**
-         * This helps creating camera with an orthographic mode.
-         * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
-         */
+          * This helps creating camera with an orthographic mode.
+          * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
+          */
         static readonly ORTHOGRAPHIC_CAMERA: number;
         /**
-         * This is the default FOV mode for perspective cameras.
-         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
-         */
+          * This is the default FOV mode for perspective cameras.
+          * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+          */
         static readonly FOVMODE_VERTICAL_FIXED: number;
         /**
-         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
-         */
+          * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+          */
         static readonly FOVMODE_HORIZONTAL_FIXED: number;
         /**
-         * This specifies there is no need for a camera rig.
-         * Basically only one eye is rendered corresponding to the camera.
-         */
+          * This specifies there is no need for a camera rig.
+          * Basically only one eye is rendered corresponding to the camera.
+          */
         static readonly RIG_MODE_NONE: number;
         /**
-         * Simulates a camera Rig with one blue eye and one red eye.
-         * This can be use with 3d blue and red glasses.
-         */
+          * Simulates a camera Rig with one blue eye and one red eye.
+          * This can be use with 3d blue and red glasses.
+          */
         static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH: number;
         /**
-         * Defines that both eyes of the camera will be rendered side by side with a parallel target.
-         */
+          * Defines that both eyes of the camera will be rendered side by side with a parallel target.
+          */
         static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: number;
         /**
-         * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
-         */
+          * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
+          */
         static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
         /**
-         * Defines that both eyes of the camera will be rendered over under each other.
-         */
+          * Defines that both eyes of the camera will be rendered over under each other.
+          */
         static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
         /**
-         * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
-         */
+          * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+          */
         static readonly RIG_MODE_STEREOSCOPIC_INTERLACED: number;
         /**
-         * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
-         */
+          * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
+          */
         static readonly RIG_MODE_VR: number;
         /**
-         * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
-         */
+          * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
+          */
         static readonly RIG_MODE_WEBVR: number;
         /**
-         * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
-         */
+          * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
+          */
         static readonly RIG_MODE_CUSTOM: number;
+        /**
+         * Maximum number of uv sets supported
+         */
+        static readonly MAX_SUPPORTED_UV_SETS: number;
     }
 }
 declare module BABYLON {
@@ -18099,6 +18103,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var samplerFragmentDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var bumpFragmentFunctions: {
         name: string;
         shader: string;
@@ -21067,6 +21078,11 @@ declare module BABYLON {
         NORMAL: boolean;
         TANGENT: boolean;
         UV1: boolean;
+        UV2: boolean;
+        UV3: boolean;
+        UV4: boolean;
+        UV5: boolean;
+        UV6: boolean;
         USE_REVERSE_DEPTHBUFFER: boolean;
         /** BONES */
         NUM_BONE_INFLUENCERS: number;
@@ -30157,6 +30173,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var mainUVVaryingDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var lightFragmentDeclaration: {
         name: string;
         shader: string;
@@ -30234,7 +30257,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var uvAttributeDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var prePassVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var samplerVertexDeclaration: {
         name: string;
         shader: string;
     };
@@ -30263,6 +30300,20 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var prePassVertex: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var uvVariableDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var samplerVertexImplementation: {
         name: string;
         shader: string;
     };
@@ -30446,6 +30497,10 @@ declare module BABYLON {
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialDetailMapDefines {
         MAINUV1: boolean;
         MAINUV2: boolean;
+        MAINUV3: boolean;
+        MAINUV4: boolean;
+        MAINUV5: boolean;
+        MAINUV6: boolean;
         DIFFUSE: boolean;
         DIFFUSEDIRECTUV: number;
         DETAIL: boolean;
@@ -30488,6 +30543,10 @@ declare module BABYLON {
         TANGENT: boolean;
         UV1: boolean;
         UV2: boolean;
+        UV3: boolean;
+        UV4: boolean;
+        UV5: boolean;
+        UV6: boolean;
         VERTEXCOLOR: boolean;
         VERTEXALPHA: boolean;
         NUM_BONE_INFLUENCERS: number;
@@ -43658,6 +43717,8 @@ declare module BABYLON {
         private _wheelEventName;
         private _mouseId;
         private _isUsingFirefox;
+        private _activeTouchIds;
+        private _rollingTouchId;
         private _pointerWheelClearObserver;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
@@ -65260,6 +65321,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var samplerFragmentAlternateDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var pbrFragmentSamplersDeclaration: {
         name: string;
         shader: string;
@@ -65514,8 +65582,16 @@ declare module BABYLON {
         REALTIME_FILTERING: boolean;
         MAINUV1: boolean;
         MAINUV2: boolean;
+        MAINUV3: boolean;
+        MAINUV4: boolean;
+        MAINUV5: boolean;
+        MAINUV6: boolean;
         UV1: boolean;
         UV2: boolean;
+        UV3: boolean;
+        UV4: boolean;
+        UV5: boolean;
+        UV6: boolean;
         ALBEDO: boolean;
         GAMMAALBEDO: boolean;
         ALBEDODIRECTUV: number;
