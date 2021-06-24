@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
 
-interface IGraphComponentProps {
+interface ICanvasGraphComponentProps {
     id: string;
 }
 
-export const CanvasGraphComponent: React.FC<IGraphComponentProps> = (props: IGraphComponentProps) => {
+export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {
     const { id } = props;
     const canvasRef: React.MutableRefObject<HTMLCanvasElement | null>  = useRef(null);
     useEffect(() => {
