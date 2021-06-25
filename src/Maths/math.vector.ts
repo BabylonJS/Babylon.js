@@ -2220,9 +2220,66 @@ export class Vector3 {
         p2.subtractToRef(p0, p2p0);
         p2.subtractToRef(p1, p2p1);
 
-        const p1p0L = Math.max(p1p0.length(), Epsilon);
-        const p2p0L = Math.max(p2p0.length(), Epsilon);
-        const p2p1L = Math.max(p2p1.length(), Epsilon);
+        let p1p0L = p1p0.length();
+        let p2p0L = p2p0.length();
+        let p2p1L = p2p1.length();
+
+        // Special case if all vertices are in the same position
+        if (p1p0L == 0 && p2p0L == 0 && p2p1L == 0) {
+            ref.copyFrom(p0);
+            vector.subtractToRef(p0, vectorp0);
+            return vectorp0.length();
+        }
+
+        // Special case if all vertices lie on a line
+        if (p1p0L == 0) {
+            vector.subtractToRef(p0, vectorp0);
+            const unitVector = MathTmp.Vector3[5];
+            p2p0.normalizeToRef(unitVector);
+            const cosAvectorp0 = Vector3.Dot(vectorp0, unitVector);
+
+            const projVector = MathTmp.Vector3[6];
+            unitVector.scaleToRef(cosAvectorp0, projVector);
+
+            const projPoint = MathTmp.Vector3[7];
+            p0.addToRef(projVector, projPoint);
+
+            const p0pp = MathTmp.Vector3[8];
+            const p2pp = MathTmp.Vector3[9];
+            projPoint.subtractToRef(p0, p0pp);
+            projPoint.subtractToRef(p2, p2pp);
+
+            // Let s move on the line with origin p0.
+            const p0X = Vector3.Dot(p0pp.normalizeToNew(), unitVector);
+            const p2X = Vector3.Dot(p2pp.normalizeToNew(), unitVector);
+
+            if (p0X * p2X < 0) {
+                ref.copyFrom(projPoint);
+            }
+            else if (p0pp.length() < p2pp.length()) {
+                ref.copyFrom(p0);
+            }
+            else {
+                ref.copyFrom(p2);
+            }
+
+            return Vector3.Distance(vector, ref);
+        }
+        if (p2p0L == 0) {
+            console.log('p2p0L');
+        }
+        if (p2p1L == 0) {
+            console.log('p2p1L');
+        }
+
+        // ref.x = +Infinity;
+        // ref.y = +Infinity;
+        // ref.z = +Infinity;
+        // return +Infinity;
+
+        p1p0L = Math.max(p1p0L, Epsilon);
+        p2p0L = Math.max(p2p0L, Epsilon);
+        p2p1L = Math.max(p2p1L, Epsilon);
 
         // Compute normal and vector to p0
         vector.subtractToRef(p0, vectorp0);
