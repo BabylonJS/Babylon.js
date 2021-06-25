@@ -185,6 +185,62 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/booleanLineComponen
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/sharedUiComponents/lines/buttonLineComponent" {
+    import * as React from "react";
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+        icon?: string;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
+    import * as React from 'react';
+    interface ICanvasGraphComponentProps {
+        id: string;
+    }
+    export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
+}
+declare module "babylonjs-inspector/components/popupComponent" {
+    import * as React from "react";
+    interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen?: (window: Window) => void;
+        onClose: (window: Window) => void;
+        onResize?: () => void;
+        onKeyUp?: (evt: KeyboardEvent) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        private _host;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        getWindow(): Window | null;
+        render(): React.ReactPortal | null;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerComponent" {
+    import { Scene } from "babylonjs/scene";
+    import * as React from "react";
+    interface IPerformanceViewerComponentProps {
+        scene: Scene;
+    }
+    export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/statisticsTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class StatisticsTabComponent extends PaneComponent {
@@ -669,47 +725,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cus
         constructor(props: ICustomPropertyGridComponentProps);
         renderInspectable(inspectable: IInspectable): JSX.Element | null;
         render(): JSX.Element | null;
-    }
-}
-declare module "babylonjs-inspector/sharedUiComponents/lines/buttonLineComponent" {
-    import * as React from "react";
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-        icon?: string;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/popupComponent" {
-    import * as React from "react";
-    interface IPopupComponentProps {
-        id: string;
-        title: string;
-        size: {
-            width: number;
-            height: number;
-        };
-        onOpen?: (window: Window) => void;
-        onClose: (window: Window) => void;
-        onResize?: () => void;
-        onKeyUp?: (evt: KeyboardEvent) => void;
-    }
-    export class PopupComponent extends React.Component<IPopupComponentProps, {
-        isComponentMounted: boolean;
-        blockedByBrowser: boolean;
-    }> {
-        private _container;
-        private _window;
-        private _host;
-        constructor(props: IPopupComponentProps);
-        componentDidMount(): void;
-        openPopup(): void;
-        componentWillUnmount(): void;
-        getWindow(): Window | null;
-        render(): React.ReactPortal | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/curve" {
@@ -4422,6 +4437,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { IToolData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
     export const Contrast: IToolData;
 }
+interface IDataset {
+}
 declare module "babylonjs-inspector/legacy/legacy" {
     export * from "babylonjs-inspector/index";
 }
@@ -4620,6 +4637,57 @@ declare module INSPECTOR {
         constructor(props: IBooleanLineComponentProps);
         render(): JSX.Element;
     }
+}
+declare module INSPECTOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+        icon?: string;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ICanvasGraphComponentProps {
+        id: string;
+    }
+    export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
+}
+declare module INSPECTOR {
+    interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen?: (window: Window) => void;
+        onClose: (window: Window) => void;
+        onResize?: () => void;
+        onKeyUp?: (evt: KeyboardEvent) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        private _host;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        getWindow(): Window | null;
+        render(): React.ReactPortal | null;
+    }
+}
+declare module INSPECTOR {
+    interface IPerformanceViewerComponentProps {
+        scene: BABYLON.Scene;
+    }
+    export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
 }
 declare module INSPECTOR {
     export class StatisticsTabComponent extends PaneComponent {
@@ -5058,45 +5126,6 @@ declare module INSPECTOR {
         constructor(props: ICustomPropertyGridComponentProps);
         renderInspectable(inspectable: BABYLON.IInspectable): JSX.Element | null;
         render(): JSX.Element | null;
-    }
-}
-declare module INSPECTOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-        icon?: string;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IPopupComponentProps {
-        id: string;
-        title: string;
-        size: {
-            width: number;
-            height: number;
-        };
-        onOpen?: (window: Window) => void;
-        onClose: (window: Window) => void;
-        onResize?: () => void;
-        onKeyUp?: (evt: KeyboardEvent) => void;
-    }
-    export class PopupComponent extends React.Component<IPopupComponentProps, {
-        isComponentMounted: boolean;
-        blockedByBrowser: boolean;
-    }> {
-        private _container;
-        private _window;
-        private _host;
-        constructor(props: IPopupComponentProps);
-        componentDidMount(): void;
-        openPopup(): void;
-        componentWillUnmount(): void;
-        getWindow(): Window | null;
-        render(): React.ReactPortal | null;
     }
 }
 declare module INSPECTOR {
@@ -8116,6 +8145,8 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Contrast: IToolData;
+}
+interface IDataset {
 }
 declare module INSPECTOR {
     export interface IButtonLineComponentProps {

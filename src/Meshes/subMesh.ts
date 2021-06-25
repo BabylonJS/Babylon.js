@@ -710,6 +710,7 @@ export class SubMesh implements ICullable {
             if (tmpDist < distance) {
                 proj.copyFrom(tmp);
                 distance = tmpDist;
+                console.log(tmpDist);
             }
         }
 

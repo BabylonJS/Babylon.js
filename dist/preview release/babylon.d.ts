@@ -2065,43 +2065,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to inline functions in shader code
-    */
-    export class ShaderCodeInliner {
-        private static readonly _RegexpFindFunctionNameAndType;
-        private _sourceCode;
-        private _functionDescr;
-        private _numMaxIterations;
-        /** Gets or sets the token used to mark the functions to inline */
-        inlineToken: string;
-        /** Gets or sets the debug mode */
-        debug: boolean;
-        /** Gets the code after the inlining process */
-        get code(): string;
-        /**
-         * Initializes the inliner
-         * @param sourceCode shader code source to inline
-         * @param numMaxIterations maximum number of iterations (used to detect recursive calls)
-         */
-        constructor(sourceCode: string, numMaxIterations?: number);
-        /**
-         * Start the processing of the shader code
-         */
-        processCode(): void;
-        private _collectFunctions;
-        private _processInlining;
-        private _extractBetweenMarkers;
-        private _skipWhitespaces;
-        private _isIdentifierChar;
-        private _removeComments;
-        private _replaceFunctionCallsByCode;
-        private _findBackward;
-        private _escapeRegExp;
-        private _replaceNames;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to enable access to offline support
      * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
@@ -40153,6 +40116,12 @@ declare module BABYLON {
          */
         createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
         /**
+         * Inline functions in shader code that are marked to be inlined
+         * @param code code to inline
+         * @returns inlined code
+         */
+        inlineShaderCode(code: string): string;
+        /**
          * Creates a new pipeline context
          * @param shaderProcessingContext defines the shader processing context used during the processing if available
          * @returns the new pipeline
@@ -61166,6 +61135,43 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Class used to inline functions in shader code
+    */
+    export class ShaderCodeInliner {
+        private static readonly _RegexpFindFunctionNameAndType;
+        private _sourceCode;
+        private _functionDescr;
+        private _numMaxIterations;
+        /** Gets or sets the token used to mark the functions to inline */
+        inlineToken: string;
+        /** Gets or sets the debug mode */
+        debug: boolean;
+        /** Gets the code after the inlining process */
+        get code(): string;
+        /**
+         * Initializes the inliner
+         * @param sourceCode shader code source to inline
+         * @param numMaxIterations maximum number of iterations (used to detect recursive calls)
+         */
+        constructor(sourceCode: string, numMaxIterations?: number);
+        /**
+         * Start the processing of the shader code
+         */
+        processCode(): void;
+        private _collectFunctions;
+        private _processInlining;
+        private _extractBetweenMarkers;
+        private _skipWhitespaces;
+        private _isIdentifierChar;
+        private _removeComments;
+        private _replaceFunctionCallsByCode;
+        private _findBackward;
+        private _escapeRegExp;
+        private _replaceNames;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var clearQuadVertexShader: {
         name: string;
@@ -61617,6 +61623,12 @@ declare module BABYLON {
         createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
         /** @hidden */
         createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        /**
+         * Inline functions in shader code that are marked to be inlined
+         * @param code code to inline
+         * @returns inlined code
+         */
+        inlineShaderCode(code: string): string;
         /**
          * Creates a new pipeline context
          * @param shaderProcessingContext defines the shader processing context used during the processing if available
@@ -62362,6 +62374,12 @@ declare module BABYLON {
         _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void): void;
         createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): any;
         createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): any;
+        /**
+         * Inline functions in shader code that are marked to be inlined
+         * @param code code to inline
+         * @returns inlined code
+         */
+        inlineShaderCode(code: string): string;
         protected _setProgram(program: WebGLProgram): void;
         _releaseEffect(effect: Effect): void;
         _deletePipelineContext(pipelineContext: IPipelineContext): void;
@@ -70772,7 +70790,7 @@ declare module BABYLON {
      * The PBR material of BJS following the metal roughness convention.
      *
      * This fits to the PBR convention in the GLTF definition:
-     * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
+     * https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness
      */
     export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
         /**
