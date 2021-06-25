@@ -24,7 +24,6 @@ export class CanvasGraphService {
         this.datasets = settings.datasets;
     }
 
-
     /**
      * This method draws the data and sets up the appropriate scales.
      */
