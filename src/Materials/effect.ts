@@ -307,6 +307,8 @@ export class Effect implements IDisposable {
             platformName: this._engine.shaderPlatformName,
             processingContext: this._processingContext,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
+            useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+            needFrameBufferYInversion: this._engine.needFrameBufferYInversion,
         };
 
         let shaderCodes : [string | undefined, string | undefined] = [undefined, undefined];

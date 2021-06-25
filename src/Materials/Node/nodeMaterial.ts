@@ -70,7 +70,6 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public NORMAL = false;
     public TANGENT = false;
     public UV1 = false;
-    public USE_REVERSE_DEPTHBUFFER = false;
 
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
@@ -1055,8 +1054,6 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.blocksWithDefines.forEach((b) => {
             b.prepareDefines(mesh, this, defines, useInstances, subMesh);
         });
-
-        defines.setValue("USE_REVERSE_DEPTHBUFFER", this.getScene().getEngine().useReverseDepthBuffer, true);
 
         // Need to recompile?
         if (defines.isDirty) {

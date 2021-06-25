@@ -19,4 +19,6 @@ export interface ProcessingOptions {
     lookForClosingBracketForUniformBuffer?: boolean;
     processingContext: Nullable<ShaderProcessingContext>;
     isNDCHalfZRange: boolean;
+    useReverseDepthBuffer: boolean;
+    needFrameBufferYInversion: boolean;
 }

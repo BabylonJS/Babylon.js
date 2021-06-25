@@ -115,7 +115,6 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public REFLECTIONMAP_OPPOSITEZ = false;
     public INVERTCUBICMAP = false;
     public LOGARITHMICDEPTH = false;
-    public USE_REVERSE_DEPTHBUFFER = false;
     public REFRACTION = false;
     public REFRACTIONMAP_3D = false;
     public REFLECTIONOVERALPHA = false;

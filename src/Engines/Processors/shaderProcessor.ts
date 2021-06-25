@@ -280,6 +280,16 @@ export class ShaderProcessor {
         } else {
             delete preprocessors["IS_NDC_HALF_ZRANGE"];
         }
+        if (options.useReverseDepthBuffer) {
+            preprocessors["USE_REVERSE_DEPTHBUFFER"] = "";
+        } else {
+            delete preprocessors["USE_REVERSE_DEPTHBUFFER"];
+        }
+        if (options.needFrameBufferYInversion) {
+            preprocessors["NEED_FRAMEBUFFER_YINVERSION"] = "";
+        } else {
+            delete preprocessors["NEED_FRAMEBUFFER_YINVERSION"];
+        }
 
         return preprocessors;
     }
