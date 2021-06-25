@@ -41,13 +41,11 @@ export class TouchButton3D extends Button3D {
         this._collidableFrontDirection = frontWorldDir.normalize();
 
         if (this._collisionMesh) {
-            const transformedDirection = TmpVectors.Vector3[0];
             const invert = TmpVectors.Matrix[0];
 
             invert.copyFrom(this._collisionMesh.getWorldMatrix());
             invert.invert();
-            Vector3.TransformNormalToRef(this._collidableFrontDirection, invert, transformedDirection);
-            this._collidableFrontDirection = transformedDirection.clone();
+            Vector3.TransformNormalToRef(this._collidableFrontDirection, invert, this._collidableFrontDirection);
         }
     }
 
@@ -102,13 +100,13 @@ export class TouchButton3D extends Button3D {
 
     /** hidden */
     public _generatePointerEventType(providedType: number, nearMeshPosition: Vector3, activeInteractionCount: number): number {
-        if (providedType == PointerEventTypes.POINTERDOWN) {
+        if (providedType === PointerEventTypes.POINTERDOWN) {
             if (!this._isInteractionInFrontOfButton(nearMeshPosition)) {
                 // Near interaction mesh is behind the button, don't send a pointer down
                 return PointerEventTypes.POINTERMOVE;
             }
         }
-        if (providedType == PointerEventTypes.POINTERUP) {
+        if (providedType === PointerEventTypes.POINTERUP) {
             if (activeInteractionCount == 0) {
                 // We get the release for the down we swallowed earlier, swallow as well
                 return PointerEventTypes.POINTERMOVE;
