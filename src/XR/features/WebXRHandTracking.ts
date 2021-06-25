@@ -304,7 +304,7 @@ export class WebXRHand implements IDisposable {
     }
 
     /**
-     * Retrieves a mesh linked to a named joint in the hand. 
+     * Retrieves a mesh linked to a named joint in the hand.
      * @param jointName The name of the joint.
      * @returns An AbstractMesh whose position corresponds with the joint position.
      */
@@ -415,6 +415,7 @@ export class WebXRHand implements IDisposable {
             return;
         }
 
+        // TODO: Modify webxr.d.ts to better match WebXR IDL so we don't need this any cast.
         const anyHand: any = hand;
         const jointSpaces: XRJointSpace[] = handJointReferenceArray.map((jointName) => anyHand[jointName] || hand.get(jointName));
         let trackingSuccessful = false;
@@ -715,6 +716,41 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "hand-tracking";
+
+        // Support legacy versions of the options object by copying over joint mesh properties
+        const anyOptions = options as any;
+        const anyJointMeshOptions = anyOptions.jointMeshes;
+        if (anyJointMeshOptions) {
+            if (typeof anyJointMeshOptions.disableDefaultHandMesh !== "undefined") {
+                options.handMeshes = options.handMeshes || {};
+                options.handMeshes.disableDefaultMeshes = anyJointMeshOptions.disableDefaultHandMesh;
+            }
+            if (typeof anyJointMeshOptions.handMeshes !== "undefined") {
+                options.handMeshes = options.handMeshes || {};
+                options.handMeshes.customMeshes = anyJointMeshOptions.handMeshes;
+            }
+            if (typeof anyJointMeshOptions.leftHandedSystemMeshes !== "undefined") {
+                options.handMeshes = options.handMeshes || {};
+                options.handMeshes.meshesUseLeftHandedCoordinates = anyJointMeshOptions.leftHandedSystemMeshes;
+            }
+            if (typeof anyJointMeshOptions.rigMapping !== "undefined") {
+                options.handMeshes = options.handMeshes || {};
+                let leftRigMapping = {};
+                let rightRigMapping = {};
+                [[anyJointMeshOptions.rigMapping.left, leftRigMapping],
+                [anyJointMeshOptions.rigMapping.right, rightRigMapping]].forEach((rigMappingTuple) => {
+                    const legacyRigMapping = rigMappingTuple[0] as string[];
+                    const rigMapping = rigMappingTuple[1] as XRHandMeshRigMapping;
+                    legacyRigMapping.forEach((modelJointName, index) => {
+                        rigMapping[handJointReferenceArray[index]] = modelJointName;
+                    });
+                });
+                options.handMeshes.customRigMappings = {
+                    left: leftRigMapping as XRHandMeshRigMapping,
+                    right: rightRigMapping as XRHandMeshRigMapping
+                };
+            }
+        }
     }
 
     /**
