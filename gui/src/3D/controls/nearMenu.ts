@@ -110,7 +110,7 @@ export class NearMenu extends TouchHolographicMenu {
      * Creates a near menu GUI 3D control
      * @param name name of the near menu
      */
-    constructor(name: string) {
+    constructor(name?: string) {
         super(name);
 
         this._defaultBehavior = new DefaultBehavior();
