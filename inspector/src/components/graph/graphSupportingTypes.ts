@@ -1,10 +1,8 @@
 /**
  * Defines what data is needed to graph a point on the graph.
- *
- * @interface IPoint
  */
 interface IPoint {
-    x: number; // This will need to become a date of some kind with real data.
+    x: number; // This will probably need to become a date when we have real data.
     y: number;
 }
 
