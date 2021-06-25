@@ -1,4 +1,4 @@
-import { Nullable, FloatArray, IndicesArray } from "../types";
+import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { _DevTools } from '../Misc/devTools';
@@ -7,6 +7,9 @@ import { Logger } from '../Misc/logger';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
+
+/** @hidden */
+declare const _native: any;
 
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 
@@ -401,6 +404,22 @@ export class VertexData {
         return this;
     }
 
+    private static TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>) {
+        if (typeof _native !== 'undefined') {
+            _native.TransformVector3Coordinates(coordinates, transformation);
+        } else {
+            const coordinate = Vector3.Zero();
+            const transformedCoordinate = Vector3.Zero(); // TmpVectors
+            for (let index = 0; index < coordinates.length; index += 3) {
+                Vector3.FromArrayToRef(coordinates, index, coordinate);
+                Vector3.TransformCoordinatesToRef(coordinate, transformation, transformedCoordinate);
+                coordinates[index] = transformedCoordinate.x;
+                coordinates[index + 1] = transformedCoordinate.y;
+                coordinates[index + 2] = transformedCoordinate.z;
+            }
+        }
+    }
+
     /**
      * Transforms each position and each normal of the vertexData according to the passed Matrix
      * @param matrix the transforming matrix
@@ -411,16 +430,7 @@ export class VertexData {
         var transformed = Vector3.Zero();
         var index: number;
         if (this.positions) {
-            var position = Vector3.Zero();
-
-            for (index = 0; index < this.positions.length; index += 3) {
-                Vector3.FromArrayToRef(this.positions, index, position);
-
-                Vector3.TransformCoordinatesToRef(position, matrix, transformed);
-                this.positions[index] = transformed.x;
-                this.positions[index + 1] = transformed.y;
-                this.positions[index + 2] = transformed.z;
-            }
+            VertexData.TransformVector3Coordinates(this.positions, matrix);
         }
 
         if (this.normals) {
