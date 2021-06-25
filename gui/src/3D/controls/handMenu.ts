@@ -31,7 +31,7 @@ export class HandMenu extends TouchHolographicMenu {
      * Creates a hand menu GUI 3D control
      * @param name name of the hand menu
      */
-    constructor(name: string, xr: WebXRExperienceHelper) {
+    constructor(xr: WebXRExperienceHelper, name?: string) {
         super(name);
 
         this._handConstraintBehavior = new HandConstraintBehavior();
