@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
 import { CanvasGraphComponent } from "../../../graph/canvasGraphComponent";
 import { CanvasGraphService } from "../../../graph/canvasGraphService";
+import { IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { PopupComponent } from "../../../popupComponent";
 
 interface IPerformanceViewerComponentProps {
@@ -18,7 +19,6 @@ const isEnabled = false;
 
 export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps> = (props: IPerformanceViewerComponentProps) => {
     const [isOpen, setIsOpen] = useState(false);
-
     // do cleanup when the window is closed
     const onClosePerformanceViewer = (window: Window | null) => {
         if (window) {
@@ -36,6 +36,8 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     }
 
     const canvasServiceCallback = (canvasService: CanvasGraphService) => {
+        const data: IPerfPoint[] = [];
+        canvasService.datasets.push({data});
         canvasService.draw();
     };
 
