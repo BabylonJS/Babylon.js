@@ -16,7 +16,6 @@ export class TouchMeshButton3D extends TouchButton3D {
      * Creates a new 3D button based on a mesh
      * @param mesh mesh to become a 3D button. By default this is also the mesh for near interaction collision checking
      * @param name defines the control name
-     * @param collisionMesh mesh to track collisions with
      */
     constructor(mesh: Mesh, name?: string) {
         super(name, mesh);

@@ -187,8 +187,7 @@ export class UtilityLayerRenderer implements IDisposable {
                     return;
                 }
 
-
-                let getNearPickDataForScene = (scene: Scene)=>{
+                let getNearPickDataForScene = (scene: Scene) => {
                     let scenePick = null;
 
                     if (prePointerInfo.nearInteractionPickingInfo) {
