@@ -370,7 +370,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 return result;
             };
 
-            // Reuse the old pick info if we are grabbing, to maintain our position on the target mesh and prevent ourselves from triggering other interactions
+            // Don't perform touch logic while grabbing, to prevent triggering touch interactions while in the middle of a grab interaction
+            // Dont update cursor logic either - the cursor should already be visible for the grab to be in range,
+            // and in order to maintain its position on the target mesh it is parented for the duration of the grab.
             if (!controllerData.grabInteraction)
             {
                 let pick = null;
@@ -494,10 +496,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
                 if (pressed && controllerData.pick && controllerData.meshUnderPointer && this._nearGrabPredicate(controllerData.meshUnderPointer)) {
                     controllerData.grabInteraction = true;
+                    controllerData.pickedPointVisualCue.setParent(controllerData.meshUnderPointer);
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 } else if (!pressed && controllerData.pick && controllerData.grabInteraction) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.grabInteraction = false;
+                    controllerData.pickedPointVisualCue.setParent(null);
                 }
             } else {
                 if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
@@ -543,6 +547,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     this._nearGrabPredicate(controllerData.meshUnderPointer)
                 ) {
                     controllerData.grabInteraction = true;
+                    controllerData.pickedPointVisualCue.setParent(controllerData.meshUnderPointer);
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 }
             };
@@ -551,6 +556,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick && !this._farInteractionFeature?.attached) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.grabInteraction = false;
+                    controllerData.pickedPointVisualCue.setParent(null);
                 }
             };
 
@@ -711,7 +717,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             pi.hit = true;
             pi.distance = distance;
             pi.pickedMesh = mesh;
-            pi.pickedPoint = result;
+            pi.pickedPoint = result.clone();
         }
 
         return pi;
