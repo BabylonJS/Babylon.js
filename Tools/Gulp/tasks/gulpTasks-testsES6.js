@@ -42,11 +42,13 @@ gulp.task("tests-es6Modules", function(done) {
         }
 
         colorConsole.log("Bundle test app with webpack");
+        shelljs.config.fatal = false;  // Special error reporting below.
         webpack_result = shelljs.exec("npx webpack", {cwd: es6TestsFolder});
-        if (webpack_result.stdout)
+        if (webpack_result.code != 0) {
             colorConsole.error(`webpack stdout:\n${webpack_result.stdout}`);
-        if (webpack_result.stderr)
             colorConsole.error(`webpack stderr:\n${webpack_result.stderr}`);
+            throw "webpack operation failed in tests-es6Modules";
+        }
     }
     finally {
         Object.assign(shelljs.config, savedShellConfig);
