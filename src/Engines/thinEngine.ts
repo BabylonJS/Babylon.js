@@ -179,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.27";
+        return "babylonjs@5.0.0-alpha.29";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.27";
+        return "5.0.0-alpha.29";
     }
 
     /**
@@ -2527,6 +2527,16 @@ export class ThinEngine {
         var fragmentShader = this._compileShader(fragmentCode, "fragment", defines, shaderVersion);
 
         return this._createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+    }
+
+    /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public inlineShaderCode(code: string): string {
+        // no inlining needed in the WebGL engine
+        return code;
     }
 
     /**
