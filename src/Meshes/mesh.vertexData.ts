@@ -9,7 +9,7 @@ declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import { GeoData } from "./geoMesh";
+import { PolyhedronData } from "./geoMesh";
 
 /**
  * Define an interface for all classes that will get and set the data on vertices
@@ -1062,7 +1062,7 @@ export class VertexData {
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the Polyhedron
      */
-     public static CreateGeodesic(options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+     public static CreateGeodesicSphere(options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _DevTools.WarnImport("geoBuilder");
     }
 
@@ -1098,7 +1098,7 @@ export class VertexData {
             updatable?: boolean;
             sideOrientation?: number;
         },
-        goldBergData: GeoData
+        goldBergData: PolyhedronData
     ): VertexData {
         throw _DevTools.WarnImport("MeshBuilder");
     }
