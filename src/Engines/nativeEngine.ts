@@ -1180,6 +1180,18 @@ export class NativeEngine extends Engine {
         return program;
     }
 
+    /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public inlineShaderCode(code: string): string {
+        const sci = new ShaderCodeInliner(code);
+        sci.debug = false;
+        sci.processCode();
+        return sci.code;
+    }
+
     protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
             this._native.setProgram(program);
