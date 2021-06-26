@@ -9849,11 +9849,12 @@ var GLTFFileLoader = /** @class */ (function () {
             }, true, onError);
         }
         return this._loadFile(scene, fileOrUrl, function (data) {
-            if (fileOrUrl instanceof File) {
+            if (fileOrUrl.name) {
                 _this._validate(scene, data, "file:", fileOrUrl.name);
             }
             else {
-                _this._validate(scene, data, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].GetFolderPath(fileOrUrl), babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].GetFilename(fileOrUrl));
+                var url = fileOrUrl;
+                _this._validate(scene, data, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].GetFolderPath(url), babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].GetFilename(url));
             }
             onSuccess({ json: _this._parseJson(data) });
         }, useArrayBuffer, onError);

@@ -8,6 +8,7 @@ interface ICommandDropdownComponentProps {
     icon?: string; 
     tooltip: string;
     defaultValue?: string;
+    hamburgerMode?: boolean;
     items: {
         label: string, 
         onClick?: () => void, 
@@ -68,7 +69,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                             </div>
                         }
                         {
-                            !this.props.icon &&
+                            (!this.props.icon || this.props.hamburgerMode) &&
                             <div className="command-dropdown-active">
                                 {
                                     this.state.activeState === "Latest" ? engineVersion : this.state.activeState
@@ -97,7 +98,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                 }
                                             }} title={m.label}>
                                                 <div className="command-dropdown-label-text">
-                                                    {(m.isActive ? "> " : "") + m.label}
+                                                    {(m.isActive && !this.props.hamburgerMode ? "> " : "") + m.label}
                                                 </div>
                                                 {
                                                     m.onCheck && 
