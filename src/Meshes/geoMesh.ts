@@ -678,8 +678,8 @@ export class GeoData extends PolyhedronData{
     }
 
     public _toGoldbergData(): PolyhedronData {
-        const GoldbergData: PolyhedronData = new PolyhedronData("GeoDual", "Goldberg", [], []);
-        GoldbergData.name = "GD dual";
+        const goldbergData: PolyhedronData = new PolyhedronData("GeoDual", "Goldberg", [], []);
+        goldbergData.name = "GD dual";
         const verticesNb: number = this.vertex.length;
         const map = new Array(verticesNb);
         for (let v = 0; v < verticesNb; v++) {
@@ -696,7 +696,7 @@ export class GeoData extends PolyhedronData{
         let face = [];
         let vertex = [];
         for(let m = 0; m < map.length; m++) {
-            GoldbergData.face[m] = this._setOrder(m, map[m].concat([]));
+            goldbergData.face[m] = this._setOrder(m, map[m].concat([]));
             map[m].forEach((el: number) => {
                 cx = 0;
                 cy = 0;
@@ -708,10 +708,10 @@ export class GeoData extends PolyhedronData{
                     cy += vertex[1];
                     cz += vertex[2];
                 }
-                GoldbergData.vertex[el] = [cx / 3, cy / 3, cz / 3];  
+                goldbergData.vertex[el] = [cx / 3, cy / 3, cz / 3];  
             });
         }
-        return GoldbergData;
+        return goldbergData;
     }
 
 

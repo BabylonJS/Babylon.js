@@ -5,17 +5,17 @@ import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
-import { Primary, GeoData} from "../geoMesh"
+import { Primary, GeoData, PolyhedronData} from "../geoMesh"
 
-VertexData.CreateGoldbergSphere= function(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, goldbergData: GeoData): VertexData {
+VertexData.CreateGoldbergSphere= function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, goldbergData: PolyhedronData): VertexData {
 
     var size = options.size;
     var sizeX: number = options.sizeX || size || 1;
     var sizeY: number = options.sizeY || size || 1;
     var sizeZ: number = options.sizeZ || size || 1;
-    var data: { vertex: number[][], face: number[][], name?: string, category?: string };
-    var nbfaces = data.face.length;
-    var faceUV = options.faceUV || new Array(nbfaces);
+    //var data: { vertex: number[][], face: number[][], name?: string, category?: string };
+    //var nbfaces = data.face.length;
+    //var faceUV = options.faceUV || new Array(nbfaces);
     var faceColors = options.faceColors;
     var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
@@ -24,7 +24,7 @@ VertexData.CreateGoldbergSphere= function(options: { type?: number, size?: numbe
     var normals = new Array<number>();
     var uvs = new Array<number>();
     var colors = new Array<number>();
-    var u: number, v: number, ang: number, x: number, y: number, tmp: number;
+    //var u: number, v: number, ang: number, x: number, y: number, tmp: number;
 
     let index: number = 0;
     for (let f = 0; f < goldbergData.face.length; f++) {
@@ -38,15 +38,17 @@ VertexData.CreateGoldbergSphere= function(options: { type?: number, size?: numbe
         for (let v = 0; v < verts.length; v++) {
             normals.push(norm.x, norm.y, norm.z);
             const pdata = goldbergData.vertex[verts[v]];
-            positions.push(pdata[0], pdata[1], pdata[2]);
+            positions.push(pdata[0] * sizeX, pdata[1] * sizeY, pdata[2] * sizeZ);
         }
         for (let v = 0; v < verts.length - 2; v++) {
             indices.push(index, index + v + 2, index + v + 1);
         }
-        index += verts.length; 
+        index += verts.length;
+        if (faceColors) {
+            colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
+        }
     }
 
-    VertexData.ComputeNormals(positions, indices, normals);
     VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
     var vertexData = new VertexData();
@@ -60,8 +62,8 @@ VertexData.CreateGoldbergSphere= function(options: { type?: number, size?: numbe
     return vertexData;
 };
 
-Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
-    return GoldbergBuilder.CreateGoldberg(name, options, scene);
+Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
+    return GoldbergBuilder.CreateGoldbergSphere(name, options, scene);
 };
 
 /**
@@ -87,7 +89,7 @@ Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, siz
      * @param scene defines the hosting scene 
      * @returns Geodesic mesh
      */
-    public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+    public static CreateGoldbergSphere(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
         let m: number = options.m || 1;
         if (m !== Math.floor(m)) {
             m === Math.floor(m);
@@ -113,9 +115,9 @@ Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, siz
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
         goldberg._originalBuilderSideOrientation = options.sideOrientation;
         
-        geoData._toGoldbergData();
+        const goldData = geoData._toGoldbergData();
 
-        const vertexData = VertexData.CreateGoldbergSphere(options, geoData)
+        const vertexData = VertexData.CreateGoldbergSphere(options, goldData)
 
         vertexData.applyToMesh(goldberg, options.updatable);
 

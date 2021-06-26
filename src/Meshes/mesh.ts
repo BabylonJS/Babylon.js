@@ -4491,7 +4491,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param scene defines the hosting scene 
      * @returns Geodesic mesh
      */
-     public static CreateGeodesic(
+     public static CreateGeodesicSphere(
         name: string,
         options: {
             m?: number;
