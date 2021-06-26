@@ -305,7 +305,8 @@ export class Effect implements IDisposable {
             includesShadersStore: Effect.IncludesShadersStore,
             version: (this._engine.version * 100).toString(),
             platformName: this._engine.shaderPlatformName,
-            processingContext: this._processingContext
+            processingContext: this._processingContext,
+            isNDCHalfZRange: this._engine.isNDCHalfZRange,
         };
 
         let shaderCodes : [string | undefined, string | undefined] = [undefined, undefined];

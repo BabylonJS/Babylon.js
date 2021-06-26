@@ -179,7 +179,7 @@ export class DirectionalLight extends ShadowLight {
         }
 
         Matrix.OrthoLHToRef(this.shadowFrustumSize, this.shadowFrustumSize,
-            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix, this.getScene().getEngine().isNDCHalfZRange);
     }
 
     /**
@@ -258,7 +258,7 @@ export class DirectionalLight extends ShadowLight {
 
         Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
             this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-            useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix);
+            useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix, this.getScene().getEngine().isNDCHalfZRange);
     }
 
     protected _buildUniformLayout(): void {
@@ -300,11 +300,13 @@ export class DirectionalLight extends ShadowLight {
      *
      * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
      * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+     * (when not using reverse depth buffer / NDC half Z range)
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
     public getDepthMinZ(activeCamera: Camera): number {
-        return 1;
+        const engine = this._scene.getEngine();
+        return !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
     }
 
     /**
@@ -312,11 +314,13 @@ export class DirectionalLight extends ShadowLight {
      *
      * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
      * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+     * (when not using reverse depth buffer / NDC half Z range)
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
     public getDepthMaxZ(activeCamera: Camera): number {
-        return 1;
+        const engine = this._scene.getEngine();
+        return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
     }
 
     /**

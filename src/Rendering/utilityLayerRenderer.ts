@@ -16,8 +16,10 @@ import { Color3 } from "../Maths/math.color";
 export class UtilityLayerRenderer implements IDisposable {
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _lastPointerEvents: { [pointerId: number]: boolean } = {};
-    private static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer> = null;
-    private static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer> = null;
+    /** @hidden */
+    public static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer> = null;
+    /** @hidden */
+    public static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private _sharedGizmoLight: Nullable<HemisphericLight> = null;
 
     private _renderCamera: Nullable<Camera> = null;

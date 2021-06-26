@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-inspector",
     "description": "The Babylon.js inspector.",
-    "version": "5.0.0-alpha.25",
+    "version": "5.0.0-alpha.29",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -29,12 +29,12 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "babylonjs": "5.0.0-alpha.25",
-        "babylonjs-gui": "5.0.0-alpha.25",
-        "babylonjs-loaders": "5.0.0-alpha.25",
-        "babylonjs-materials": "5.0.0-alpha.25",
-        "babylonjs-serializers": "5.0.0-alpha.25",
-        "babylonjs-gltf2interface": "5.0.0-alpha.25"
+        "babylonjs": "5.0.0-alpha.29",
+        "babylonjs-gui": "5.0.0-alpha.29",
+        "babylonjs-loaders": "5.0.0-alpha.29",
+        "babylonjs-materials": "5.0.0-alpha.29",
+        "babylonjs-serializers": "5.0.0-alpha.29",
+        "babylonjs-gltf2interface": "5.0.0-alpha.29"
     },
     "peerDependencies": {
         "@types/react": ">=16.7.3",
