@@ -496,12 +496,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
                 if (pressed && controllerData.pick && controllerData.meshUnderPointer && this._nearGrabPredicate(controllerData.meshUnderPointer)) {
                     controllerData.grabInteraction = true;
-                    controllerData.pickedPointVisualCue.setParent(controllerData.meshUnderPointer);
+                    controllerData.pickedPointVisualCue.isVisible = false;
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 } else if (!pressed && controllerData.pick && controllerData.grabInteraction) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.grabInteraction = false;
-                    controllerData.pickedPointVisualCue.setParent(null);
+                    controllerData.pickedPointVisualCue.isVisible = true;
                 }
             } else {
                 if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
@@ -547,7 +547,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     this._nearGrabPredicate(controllerData.meshUnderPointer)
                 ) {
                     controllerData.grabInteraction = true;
-                    controllerData.pickedPointVisualCue.setParent(controllerData.meshUnderPointer);
+                    controllerData.pickedPointVisualCue.isVisible = false;
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 }
             };
@@ -556,7 +556,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick && !this._farInteractionFeature?.attached) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.grabInteraction = false;
-                    controllerData.pickedPointVisualCue.setParent(null);
+                    controllerData.pickedPointVisualCue.isVisible = true;
                 }
             };
 
