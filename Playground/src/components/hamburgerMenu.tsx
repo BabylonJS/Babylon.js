@@ -3,8 +3,12 @@ import { GlobalState } from '../globalState';
 import { CommandButtonComponent } from './commandButtonComponent';
 
 import HambugerButton from "../imgs/hamburger.svg";
+import { CommandDropdownComponent } from "./commandDropdownComponent";
+import { Utilities } from "../tools/utilities";
 
 require("../scss/hamburgerMenu.scss");
+
+declare var Versions: any;
 
 interface IHamburgerMenuComponentProps {
     globalState: GlobalState;
@@ -67,6 +71,59 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
     }
 
     public render() {
+
+        let activeVersion = Utilities.ReadStringFromStore("version", "Latest");
+        let activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
+
+        if (location.href.indexOf("webgpu") !== -1 && !!navigator.gpu) {
+            activeEngineVersion = "WebGPU";
+            Utilities.StoreStringToStore("Engine", "WebGPU");
+        }
+
+        var versionOptions = Object.keys(Versions).map(key => {
+            return { 
+                label: key,
+                storeKey: "version",
+                isActive: activeVersion === key,
+                onClick: () => {
+                    Utilities.StoreStringToStore("version", key);
+                    window.location.reload();
+                }
+            }
+        });
+
+        var engineOptions = [
+            {
+                label: "WebGL2",
+                storeKey: "engineVersion",
+                isActive: activeEngineVersion === "WebGL2",
+                onClick: () => {
+                    Utilities.StoreStringToStore("engineVersion", "WebGL2");
+                    window.location.reload();
+                }
+            },
+            {
+                label: "WebGL",
+                storeKey: "engineVersion",
+                isActive: activeEngineVersion === "WebGL",
+                onClick: () => {
+                    Utilities.StoreStringToStore("engineVersion", "WebGL");
+                    window.location.reload();
+                }
+            }
+        ];
+
+        if (!!navigator.gpu) {
+            engineOptions.splice(0,0, {
+                label: "WebGPU",
+                storeKey: "engineVersion",
+                isActive: activeEngineVersion === "WebGPU",
+                onClick: () => {
+                    Utilities.StoreStringToStore("engineVersion", "WebGPU");
+                    window.location.reload();
+                }
+            });
+        }        
         return (
             <>
                 {
@@ -87,6 +144,8 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Format code" icon="options" isActive={false} onClick={()=> this.onFormatCode()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Metadata" icon="options" isActive={false} onClick={()=> this.onMetadata()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={()=> this.onExamples()} isActive={false}/>
+                    <CommandDropdownComponent globalState={this.props.globalState} hamburgerMode={true} icon="" defaultValue={activeEngineVersion} tooltip="Engine" toRight={true} items={engineOptions} />                    
+                    <CommandDropdownComponent globalState={this.props.globalState} hamburgerMode={true} icon="" defaultValue={activeVersion} tooltip="Versions" toRight={true} items={versionOptions} />   
                 </div>
             </>
         );
