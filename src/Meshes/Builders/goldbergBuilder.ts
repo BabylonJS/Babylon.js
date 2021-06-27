@@ -6,6 +6,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { Primary, GeoData, PolyhedronData} from "../geoMesh"
+import { VertexBuffer } from "../../Buffers";
 
 VertexData.CreateGoldbergSphere= function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, goldbergData: PolyhedronData): VertexData {
 
@@ -62,7 +63,53 @@ VertexData.CreateGoldbergSphere= function(options: { size?: number, sizeX?: numb
     return vertexData;
 };
 
-Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
+/**
+ * Class add properties and methods to a Goldberg Sphere Mesh
+ * @hidden
+ */
+export class GDMesh extends Mesh {
+
+    public faceColors: Color4[] = [];  
+    public faceCenters: Vector3[] = [];
+    public faceZaxis: Vector3[] = [];
+    public faceXaxis: Vector3[] = [];
+    public faceYaxis: Vector3[] = [];
+
+    private _changeFaceColors = (colorRange : any[][]): number[] => {
+        for ( let i = 0; i < colorRange.length; i++) {
+            const min: number = colorRange[i][0];
+            const max: number = colorRange[i][1];
+            const col: Color4 = colorRange[i][2];
+            for ( let f = min; f < max + 1; f++ ) {
+                this.faceColors[f] = col;
+            }
+        }
+        const newCols: number[] = [];
+        for (let f = 0; f < 12; f++) {
+            for (let i = 0; i < 5; i++) {
+                newCols.push(this.faceColors[f].r, this.faceColors[f].g, this.faceColors[f].b, this.faceColors[f].a)
+            }
+        }
+        for (let f = 12; f < this.faceColors.length; f++) {
+            for (let i = 0; i < 6; i++) {
+                newCols.push(this.faceColors[f].r, this.faceColors[f].g, this.faceColors[f].b, this.faceColors[f].a)
+            }
+        }
+        return newCols;
+    }
+
+    public setFaceColors = (colorRange : any[][]) => {
+        const newCols = this._changeFaceColors(colorRange);
+        this.setVerticesData(VertexBuffer.ColorKind, newCols);
+    };
+
+    public updateFaceColors = (colorRange : any[][]) => {
+        const newCols = this._changeFaceColors(colorRange);
+        this.updateVerticesData(VertexBuffer.ColorKind, newCols);
+    }
+};
+
+Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): GDMesh => {
     return GoldbergBuilder.CreateGoldbergSphere(name, options, scene);
 };
 
@@ -89,7 +136,7 @@ Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, siz
      * @param scene defines the hosting scene 
      * @returns Geodesic mesh
      */
-    public static CreateGoldbergSphere(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+    public static CreateGoldbergSphere(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): GDMesh {
         let m: number = options.m || 1;
         if (m !== Math.floor(m)) {
             m === Math.floor(m);
@@ -110,7 +157,7 @@ Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, siz
         primTri.build(m, n);
         const geoData = GeoData.BuildGeoData(primTri);
 
-        const goldberg = new Mesh(name, scene);
+        const goldberg = new GDMesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
         goldberg._originalBuilderSideOrientation = options.sideOrientation;
