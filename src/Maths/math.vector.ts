@@ -3518,10 +3518,10 @@ export class Quaternion {
 
     /**
      * Returns a new Vector3 set with the Euler angles translated from the current quaternion
-     * @param order is a reserved parameter and is ignored for now
      * @returns a new Vector3 containing the Euler angles
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
      */
-    public toEulerAngles(order = "YZX"): Vector3 {
+    public toEulerAngles(): Vector3 {
         var result = Vector3.Zero();
         this.toEulerAnglesToRef(result);
         return result;
@@ -3531,6 +3531,7 @@ export class Quaternion {
      * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
      * @param result defines the vector which will be filled with the Euler angles
      * @returns the current unchanged quaternion
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
      */
     public toEulerAnglesToRef(result: Vector3): Quaternion {
 

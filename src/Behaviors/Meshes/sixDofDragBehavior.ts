@@ -64,6 +64,8 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     public attach(ownerNode: Mesh): void {
         super.attach(ownerNode);
 
+        ownerNode.isNearGrabbable = true;
+
         // Node that will save the owner's transform
         this._virtualTransformNode = new TransformNode("virtual_sixDof", BaseSixDofDragBehavior._virtualScene);
         this._virtualTransformNode.rotationQuaternion = Quaternion.Identity();
@@ -113,7 +115,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         if (this.rotateDraggedObject) {
             if (this.rotateAroundYOnly) {
                 // Convert change in rotation to only y axis rotation
-                Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
+                Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles().y, 0, 0, TmpVectors.Quaternion[0]);
             } else {
                 TmpVectors.Quaternion[0].copyFrom(worldDeltaRotation);
             }
@@ -186,7 +188,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                     Quaternion.FromLookDirectionLHToRef(toCamera, new Vector3(0, 1, 0), quat);
                 }
                 quat.normalize();
-                Quaternion.RotationYawPitchRollToRef(quat.toEulerAngles("xyz").y, 0, 0, TmpVectors.Quaternion[0]);
+                Quaternion.RotationYawPitchRollToRef(quat.toEulerAngles().y, 0, 0, TmpVectors.Quaternion[0]);
                 this._targetOrientation.copyFrom(TmpVectors.Quaternion[0]);
             }
             this._startingPosition.copyFrom(this._targetPosition);
@@ -228,6 +230,8 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
      */
     public detach(): void {
         super.detach();
+
+        (this._ownerNode as Mesh).isNearGrabbable = false;
 
         if (this._ownerNode) {
             this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);

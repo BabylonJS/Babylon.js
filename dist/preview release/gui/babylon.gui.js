@@ -16669,6 +16669,9 @@ var Control3D = /** @class */ (function () {
     Control3D.prototype._affectMaterial = function (mesh) {
         mesh.material = null;
     };
+    Control3D.prototype._IsTouchButton3D = function (control) {
+        return control._generatePointerEventType !== undefined;
+    };
     // Pointers
     /** @hidden */
     Control3D.prototype._onPointerMove = function (target, coordinates) {
@@ -16754,7 +16757,10 @@ var Control3D = /** @class */ (function () {
         }
     };
     /** @hidden */
-    Control3D.prototype._processObservables = function (type, pickedPoint, pointerId, buttonIndex) {
+    Control3D.prototype._processObservables = function (type, pickedPoint, originMeshPosition, pointerId, buttonIndex) {
+        if (this._IsTouchButton3D(this) && originMeshPosition) {
+            type = this._generatePointerEventType(type, originMeshPosition, this._downCount);
+        }
         if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE) {
             this._onPointerMove(this, pickedPoint);
             var previousControlOver = this._host._lastControlOver[pointerId];
@@ -16922,9 +16928,10 @@ var HandMenu = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HandMenu, _super);
     /**
      * Creates a hand menu GUI 3D control
+     * @param xr the WebXRExperienceHelper used to link this control to the enabled WebXRHandTracking feature
      * @param name name of the hand menu
      */
-    function HandMenu(name, xr) {
+    function HandMenu(xr, name) {
         var _this = _super.call(this, name) || this;
         _this._handConstraintBehavior = new babylonjs_Behaviors_Meshes_handConstraintBehavior__WEBPACK_IMPORTED_MODULE_2__["HandConstraintBehavior"]();
         _this._handConstraintBehavior.linkToXRExperience(xr);
@@ -17844,7 +17851,7 @@ var HolographicSlate = /** @class */ (function (_super) {
 /*!******************************!*\
   !*** ./3D/controls/index.ts ***!
   \******************************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17895,8 +17902,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _stackPanel3D__WEBPACK_IMPORTED_MODULE_14__["StackPanel3D"]; });
 
 /* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_15__["ButtonState"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_15__["TouchButton3D"]; });
 
 /* harmony import */ var _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./touchMeshButton3D */ "./3D/controls/touchMeshButton3D.ts");
@@ -18096,6 +18101,7 @@ var NearMenu = /** @class */ (function (_super) {
         control.onPointerClickObservable.add(function () { return (_this.isPinned = !_this.isPinned); });
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
+            control.scaling.scaleInPlace(NearMenu.NEAR_BUTTON_SCALE);
             this._pinMaterial = control.backMaterial;
             this._pinMaterial.diffuseColor.copyFromFloats(0, 0, 0);
             if (control.node) {
@@ -18103,6 +18109,27 @@ var NearMenu = /** @class */ (function (_super) {
             }
         }
         return control;
+    };
+    /**
+     * Adds a button to the menu.
+     * Please note that the back material of the button will be set to transparent as it is attached to the menu.
+     *
+     * @param button Button to add
+     * @returns This menu
+     */
+    NearMenu.prototype.addButton = function (button) {
+        // Block updating the layout until the button is resized (which has to happen after node creation)
+        var wasLayoutBlocked = this.blockLayout;
+        if (!wasLayoutBlocked) {
+            this.blockLayout = true;
+        }
+        _super.prototype.addButton.call(this, button);
+        button.scaling.scaleInPlace(NearMenu.NEAR_BUTTON_SCALE);
+        // Unblocking the layout triggers the pending layout update that uses the size of the buttons to determine the size of the backing mesh
+        if (!wasLayoutBlocked) {
+            this.blockLayout = false;
+        }
+        return this;
     };
     NearMenu.prototype._createNode = function (scene) {
         var node = _super.prototype._createNode.call(this, scene);
@@ -18138,6 +18165,10 @@ var NearMenu = /** @class */ (function (_super) {
      * File name for the close icon.
      */
     NearMenu.PIN_ICON_FILENAME = "IconPin.png";
+    /**
+     * Scale for the buttons added to the near menu
+     */
+    NearMenu.NEAR_BUTTON_SCALE = 0.32;
     return NearMenu;
 }(_touchHolographicMenu__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicMenu"]));
 
@@ -18770,12 +18801,11 @@ var StackPanel3D = /** @class */ (function (_super) {
 /*!**************************************!*\
   !*** ./3D/controls/touchButton3D.ts ***!
   \**************************************/
-/*! exports provided: ButtonState, TouchButton3D */
+/*! exports provided: TouchButton3D */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return ButtonState; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return TouchButton3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
@@ -18786,19 +18816,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-/**
- * Enum for Button States
- */
-/** @hidden */
-var ButtonState;
-(function (ButtonState) {
-    /** None */
-    ButtonState[ButtonState["None"] = 0] = "None";
-    /** Pointer Entered */
-    ButtonState[ButtonState["Hover"] = 1] = "Hover";
-    /** Pointer Down */
-    ButtonState[ButtonState["Press"] = 2] = "Press";
-})(ButtonState || (ButtonState = {}));
+
 /**
  * Class used to create a touchable button in 3D
  */
@@ -18811,14 +18829,7 @@ var TouchButton3D = /** @class */ (function (_super) {
      */
     function TouchButton3D(name, collisionMesh) {
         var _this = _super.call(this, name) || this;
-        _this._collidableInitialized = false;
-        _this._frontOffset = 0;
-        _this._backOffset = 0;
-        _this._hoverOffset = 0;
-        _this._pushThroughBackOffset = 0;
-        _this._activeInteractions = new Map();
-        _this._previousHeight = new Map();
-        _this._tempButtonForwardRay = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Ray"](babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero());
+        _this.collidableFrontDirection = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
         if (collisionMesh) {
             _this.collisionMesh = collisionMesh;
         }
@@ -18826,25 +18837,33 @@ var TouchButton3D = /** @class */ (function (_super) {
     }
     Object.defineProperty(TouchButton3D.prototype, "collidableFrontDirection", {
         /**
-         * Sets the front-facing direction of the button
+         * Returns the front-facing direction of the button, or Vector3.Zero if there is no 'front'
+         */
+        get: function () {
+            if (this._collisionMesh) {
+                // Update the front direction to reflect any rotations of the collision mesh
+                var transformedDirection = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[0];
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(this._collidableFrontDirection, this._collisionMesh.getWorldMatrix(), transformedDirection);
+                return transformedDirection;
+            }
+            return this._collidableFrontDirection;
+        },
+        /**
+         * Sets the front-facing direction of the button. Pass in Vector3.Zero to allow interactions from any direction
          * @param frontDir the forward direction of the button
          */
         set: function (frontWorldDir) {
             this._collidableFrontDirection = frontWorldDir.normalize();
-            // Zero out the scale to force it to be proplerly updated in _updateDistanceOffsets
-            this._lastKnownCollidableScale = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
-            this._updateDistanceOffsets();
+            if (this._collisionMesh) {
+                var invert = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Matrix[0];
+                invert.copyFrom(this._collisionMesh.getWorldMatrix());
+                invert.invert();
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(this._collidableFrontDirection, invert, this._collidableFrontDirection);
+            }
         },
         enumerable: false,
         configurable: true
     });
-    TouchButton3D.prototype._getWorldMatrixData = function (mesh) {
-        var translation = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
-        var rotation = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].Identity();
-        var scale = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
-        mesh.getWorldMatrix().decompose(scale, rotation, translation);
-        return { translation: translation, rotation: rotation, scale: scale };
-    };
     Object.defineProperty(TouchButton3D.prototype, "collisionMesh", {
         /**
          * Sets the mesh used for testing input collision
@@ -18860,210 +18879,38 @@ var TouchButton3D = /** @class */ (function (_super) {
             }
             this._collisionMesh = collisionMesh;
             this._injectGUI3DReservedDataStore(this._collisionMesh).control = this;
+            this._collisionMesh.isNearPickable = true;
             this.collidableFrontDirection = collisionMesh.forward;
-            this._collidableInitialized = true;
         },
         enumerable: false,
         configurable: true
     });
-    /*
-     * Given a point, and two points on a line, this returns the distance between
-     * the point and the closest point on the line. The closest point on the line
-     * does not have to be between the two given points.
-     *
-     * Based off the 3D point-line distance equation
-     *
-     * Assumes lineDirection is normalized
-     */
-    TouchButton3D.prototype._getShortestDistancePointToLine = function (point, linePoint, lineDirection) {
-        var pointToLine = linePoint.subtract(point);
-        var cross = lineDirection.cross(pointToLine);
-        return cross.length();
+    // Returns true if the collidable is in front of the button, or if the button has no front direction
+    TouchButton3D.prototype._isInteractionInFrontOfButton = function (collidablePos) {
+        var frontDir = this.collidableFrontDirection;
+        if (frontDir.length() === 0) {
+            // The button has no front, just return the distance to the center
+            return true;
+        }
+        var d = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(this._collisionMesh.getAbsolutePosition(), frontDir);
+        var abc = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(collidablePos, frontDir);
+        return abc > d;
     };
-    /*
-     * Checks to see if collidable is in a position to interact with the button
-     *   - check if collidable has a plane height off the button that is within range
-     *   - check that collidable + normal ray intersect the bounding sphere
-     */
-    TouchButton3D.prototype._isPrimedForInteraction = function (collidable) {
-        // Check if the collidable has an appropriate planar height
-        var heightFromCenter = this._getHeightFromButtonCenter(collidable);
-        if (heightFromCenter > this._hoverOffset || heightFromCenter < this._pushThroughBackOffset) {
-            return false;
-        }
-        // Check if the collidable or its hover ray lands within the bounding sphere of the button
-        var distanceFromCenter = this._getShortestDistancePointToLine(this._collisionMesh.getAbsolutePosition(), collidable, this._collidableFrontDirection);
-        return distanceFromCenter <= this._collisionMesh.getBoundingInfo().boundingSphere.radiusWorld;
-    };
-    /*
-     * Returns a Vector3 of the collidable's projected position on the button
-     * Returns the collidable's position if it is inside the button
-     */
-    TouchButton3D.prototype._getPointOnButton = function (collidable) {
-        var heightFromCenter = this._getHeightFromButtonCenter(collidable);
-        if (heightFromCenter <= this._frontOffset && heightFromCenter >= this._backOffset) {
-            // The collidable is in the button, return its position
-            return collidable;
-        }
-        else if (heightFromCenter > this._frontOffset) {
-            // The collidable is in front of the button, project it to the surface
-            var collidableDistanceToFront = (this._frontOffset - heightFromCenter);
-            return collidable.add(this._collidableFrontDirection.scale(collidableDistanceToFront));
-        }
-        else {
-            // The collidable is behind the button, project it to its back
-            var collidableDistanceToBack = (this._backOffset - heightFromCenter);
-            return collidable.add(this._collidableFrontDirection.scale(collidableDistanceToBack));
-        }
-    };
-    /*
-     * Updates the distance values.
-     * Should be called when the front direction changes, or the mesh size changes
-     *
-     * Sets the following values:
-     *    _frontOffset
-     *    _backOffset
-     *    _hoverOffset
-     *    _pushThroughBackOffset
-     *
-     * Requires population of:
-     *    _collisionMesh
-     *    _collidableFrontDirection
-     */
-    TouchButton3D.prototype._updateDistanceOffsets = function () {
-        var worldMatrixData = this._getWorldMatrixData(this._collisionMesh);
-        if (!worldMatrixData.scale.equalsWithEpsilon(this._lastKnownCollidableScale)) {
-            var collisionMeshPos = this._collisionMesh.getAbsolutePosition();
-            this._tempButtonForwardRay.origin = collisionMeshPos;
-            this._tempButtonForwardRay.direction = this._collidableFrontDirection;
-            var frontPickingInfo = this._tempButtonForwardRay.intersectsMesh(this._collisionMesh);
-            this._tempButtonForwardRay.direction = this._tempButtonForwardRay.direction.negate();
-            var backPickingInfo = this._tempButtonForwardRay.intersectsMesh(this._collisionMesh);
-            this._frontOffset = 0;
-            this._backOffset = 0;
-            if (frontPickingInfo.hit && backPickingInfo.hit) {
-                this._frontOffset = this._getDistanceOffPlane(frontPickingInfo.pickedPoint, this._collidableFrontDirection, collisionMeshPos);
-                this._backOffset = this._getDistanceOffPlane(backPickingInfo.pickedPoint, this._collidableFrontDirection, collisionMeshPos);
-            }
-            // For now, set the hover height equal to the thickness of the button
-            var buttonThickness = this._frontOffset - this._backOffset;
-            this._hoverOffset = this._frontOffset + (buttonThickness * 1.25);
-            this._pushThroughBackOffset = this._backOffset - (buttonThickness * 1.5);
-            this._lastKnownCollidableScale = this._getWorldMatrixData(this._collisionMesh).scale;
-        }
-    };
-    // Returns the distance in front of the center of the button
-    // Returned value is negative when collidable is past the center
-    TouchButton3D.prototype._getHeightFromButtonCenter = function (collidablePos) {
-        return this._getDistanceOffPlane(collidablePos, this._collidableFrontDirection, this._collisionMesh.getAbsolutePosition());
-    };
-    // Returns the distance from pointOnPlane to point along planeNormal
-    TouchButton3D.prototype._getDistanceOffPlane = function (point, planeNormal, pointOnPlane) {
-        var d = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(pointOnPlane, planeNormal);
-        var abc = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(point, planeNormal);
-        return abc - d;
-    };
-    // Updates the stored state of the button, and fire pointer events
-    TouchButton3D.prototype._updateButtonState = function (uniqueId, newState, pointOnButton) {
-        var buttonStateForId = this._activeInteractions.get(uniqueId) || ButtonState.None;
-        if (buttonStateForId != newState) {
-            if (newState == ButtonState.None) {
-                this._activeInteractions.delete(uniqueId);
-            }
-            else {
-                this._activeInteractions.set(uniqueId, newState);
-            }
-        }
-        this._firePointerEvents(uniqueId, newState, buttonStateForId, pointOnButton);
-    };
-    TouchButton3D.prototype._firePointerEvents = function (pointerId, newButtonState, previousButtonState, pointOnButton) {
-        var buttonIndex = 0; // Left click
-        if (newButtonState == ButtonState.Press) {
-            if (previousButtonState == ButtonState.Hover) {
-                this._onPointerDown(this, pointOnButton, pointerId, buttonIndex);
-            }
-            else if (previousButtonState == ButtonState.Press) {
-                this._onPointerMove(this, pointOnButton);
-            }
-        }
-        else if (newButtonState == ButtonState.Hover) {
-            if (previousButtonState == ButtonState.None) {
-                this._onPointerEnter(this);
-            }
-            else if (previousButtonState == ButtonState.Press) {
-                this._onPointerUp(this, pointOnButton, pointerId, buttonIndex, false);
-            }
-            else {
-                this._onPointerMove(this, pointOnButton);
-            }
-        }
-        else if (newButtonState == ButtonState.None) {
-            if (previousButtonState == ButtonState.Hover) {
-                this._onPointerOut(this);
-            }
-            else if (previousButtonState == ButtonState.Press) {
-                this._onPointerUp(this, pointOnButton, pointerId, buttonIndex, false);
-                this._onPointerOut(this);
-            }
-        }
-    };
-    // Decides whether to change button state based on the planar depth of the input source
     /** @hidden */
-    TouchButton3D.prototype._collisionCheckForStateChange = function (meshPos, uniqueId, forceExit) {
-        if (forceExit === void 0) { forceExit = false; }
-        if (this._collidableInitialized) {
-            this._updateDistanceOffsets();
-            var inRange = this._isPrimedForInteraction(meshPos);
-            var activeInteraction = this._activeInteractions.get(uniqueId);
-            if (inRange && !forceExit) {
-                var pointOnButton = this._getPointOnButton(meshPos);
-                var heightFromCenter_1 = this._getHeightFromButtonCenter(meshPos);
-                var flickerDelta_1 = 0.003;
-                this._lastTouchPoint = pointOnButton;
-                var isGreater = function (compareHeight) {
-                    return heightFromCenter_1 >= (compareHeight + flickerDelta_1);
-                };
-                var isLower = function (compareHeight) {
-                    return heightFromCenter_1 <= (compareHeight - flickerDelta_1);
-                };
-                // Update button state and fire events
-                switch (activeInteraction || ButtonState.None) {
-                    case ButtonState.None:
-                        if (isGreater(this._frontOffset) &&
-                            isLower(this._hoverOffset)) {
-                            this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
-                        }
-                        break;
-                    case ButtonState.Hover:
-                        if (isGreater(this._hoverOffset)) {
-                            this._updateButtonState(uniqueId, ButtonState.None, pointOnButton);
-                        }
-                        else if (isLower(this._frontOffset)) {
-                            this._updateButtonState(uniqueId, ButtonState.Press, pointOnButton);
-                        }
-                        else {
-                            this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
-                        }
-                        break;
-                    case ButtonState.Press:
-                        if (isGreater(this._frontOffset)) {
-                            this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
-                        }
-                        else if (isLower(this._pushThroughBackOffset)) {
-                            this._updateButtonState(uniqueId, ButtonState.None, pointOnButton);
-                        }
-                        else {
-                            this._updateButtonState(uniqueId, ButtonState.Press, pointOnButton);
-                        }
-                        break;
-                }
-                this._previousHeight.set(uniqueId, heightFromCenter_1);
-            }
-            else if ((activeInteraction != undefined) && (activeInteraction != ButtonState.None)) {
-                this._updateButtonState(uniqueId, ButtonState.None, this._lastTouchPoint);
-                this._previousHeight.delete(uniqueId);
+    TouchButton3D.prototype._generatePointerEventType = function (providedType, nearMeshPosition, activeInteractionCount) {
+        if (providedType === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN) {
+            if (!this._isInteractionInFrontOfButton(nearMeshPosition)) {
+                // Near interaction mesh is behind the button, don't send a pointer down
+                return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE;
             }
         }
+        if (providedType === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP) {
+            if (activeInteractionCount == 0) {
+                // We get the release for the down we swallowed earlier, swallow as well
+                return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE;
+            }
+        }
+        return providedType;
     };
     TouchButton3D.prototype._getTypeName = function () {
         return "TouchButton3D";
@@ -19356,7 +19203,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.scaling = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.032, 0.032, 0.016);
+        collisionMesh.scaling = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 1, 0.5);
         babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["SceneLoader"].ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene)
             .then(function (result) {
             var importedFrontPlate = result.meshes[1];
@@ -19496,12 +19343,11 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
      * @param name name of the menu
      */
     function TouchHolographicMenu(name) {
-        var _this = _super.call(this) || this;
+        var _this = _super.call(this, name) || this;
         /**
          * Margin size of the backplate in button size units (setting this to 1, will make the backPlate margin the size of 1 button)
          */
         _this.backPlateMargin = 1.25;
-        _this.name = name;
         return _this;
     }
     TouchHolographicMenu.prototype._createNode = function (scene) {
@@ -19615,20 +19461,11 @@ var TouchMeshButton3D = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TouchMeshButton3D, _super);
     /**
      * Creates a new 3D button based on a mesh
-     * @param mesh mesh to become a 3D button
-     * @param collisionMesh mesh to track collisions with
+     * @param mesh mesh to become a 3D button. By default this is also the mesh for near interaction collision checking
      * @param name defines the control name
      */
-    function TouchMeshButton3D(mesh, options, name) {
-        var _this = this;
-        if (options.useDynamicMesh) {
-            _this = _super.call(this, name, options.collisionMesh) || this;
-        }
-        else {
-            var newCollisionMesh = options.collisionMesh.clone("", options.collisionMesh.parent);
-            newCollisionMesh.isVisible = false;
-            _this = _super.call(this, name, newCollisionMesh) || this;
-        }
+    function TouchMeshButton3D(mesh, name) {
+        var _this = _super.call(this, name, mesh) || this;
         _this._currentMesh = mesh;
         /**
          * Provides a default behavior on hover/out & up/down
@@ -19783,8 +19620,8 @@ var VolumeBasedPanel = /** @class */ (function (_super) {
     /**
      * Creates new VolumeBasedPanel
      */
-    function VolumeBasedPanel() {
-        var _this = _super.call(this) || this;
+    function VolumeBasedPanel(name) {
+        var _this = _super.call(this, name) || this;
         _this._columns = 10;
         _this._rows = 0;
         _this._rowThenColum = true;
@@ -20591,8 +20428,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _controls_container3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./controls/container3D */ "./3D/controls/container3D.ts");
-/* harmony import */ var _controls_touchButton3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./controls/touchButton3D */ "./3D/controls/touchButton3D.ts");
-
 
 
 
@@ -20611,8 +20446,6 @@ var GUI3DManager = /** @class */ (function () {
      */
     function GUI3DManager(scene) {
         var _this = this;
-        this._touchableButtons = new Set();
-        this._touchIds = new Map();
         /** @hidden */
         this._lastControlOver = {};
         /** @hidden */
@@ -20630,40 +20463,6 @@ var GUI3DManager = /** @class */ (function () {
         this._sharedMaterials = {};
         /** @hidden */
         this._touchSharedMaterials = {};
-        this._processTouchControls = function () {
-            var utilityLayerScene = _this._utilityLayer ? _this._utilityLayer.utilityLayerScene : null;
-            if (utilityLayerScene) {
-                var touchMeshes_1 = utilityLayerScene.getMeshesByTags("touchEnabled");
-                // Remove stale meshes
-                _this._touchIds.forEach(function (uniqueId, controllerName) {
-                    var objectExists = false;
-                    touchMeshes_1.forEach(function (mesh) {
-                        if (mesh.name === controllerName) {
-                            objectExists = true;
-                        }
-                    });
-                    if (!objectExists) {
-                        _this._touchableButtons.forEach(function (button) {
-                            button._collisionCheckForStateChange(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), uniqueId, true);
-                        });
-                        _this._touchIds.delete(controllerName);
-                    }
-                });
-                // Add new meshes
-                touchMeshes_1.forEach(function (mesh) {
-                    var controllerName = mesh.name;
-                    if (!_this._touchIds.has(controllerName)) {
-                        _this._touchIds.set(controllerName, GUI3DManager._touchIdCounter++);
-                    }
-                });
-                _this._touchableButtons.forEach(function (button) {
-                    touchMeshes_1.forEach(function (mesh) {
-                        var uniqueId = _this._touchIds.get(mesh.name);
-                        button._collisionCheckForStateChange(mesh.getAbsolutePosition(), uniqueId);
-                    });
-                });
-            }
-        };
         this._scene = scene || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["EngineStore"].LastCreatedScene;
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
             _this._sceneDisposeObserver = null;
@@ -20724,7 +20523,7 @@ var GUI3DManager = /** @class */ (function () {
         this.onPickedPointChangedObservable.notifyObservers(null);
     };
     GUI3DManager.prototype._doPicking = function (pi) {
-        var _a, _b;
+        var _a, _b, _c;
         if (!this._utilityLayer || !this._utilityLayer.shouldRender || !this._utilityLayer.utilityLayerScene.activeCamera) {
             return false;
         }
@@ -20743,7 +20542,7 @@ var GUI3DManager = /** @class */ (function () {
             this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
         }
         var control = (_b = (_a = pickingInfo.pickedMesh.reservedDataStore) === null || _a === void 0 ? void 0 : _a.GUI3D) === null || _b === void 0 ? void 0 : _b.control;
-        if (!!control && !control._processObservables(pi.type, pickingInfo.pickedPoint, pointerId, buttonIndex)) {
+        if (!!control && !control._processObservables(pi.type, pickingInfo.pickedPoint, ((_c = pickingInfo.originMesh) === null || _c === void 0 ? void 0 : _c.position) || null, pointerId, buttonIndex)) {
             if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
@@ -20787,13 +20586,6 @@ var GUI3DManager = /** @class */ (function () {
      */
     GUI3DManager.prototype.addControl = function (control) {
         this._rootContainer.addControl(control);
-        var utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
-        if (utilityLayerScene && control instanceof _controls_touchButton3D__WEBPACK_IMPORTED_MODULE_2__["TouchButton3D"]) {
-            if (this._touchableButtons.size == 0) {
-                utilityLayerScene.registerBeforeRender(this._processTouchControls);
-            }
-            this._touchableButtons.add(control);
-        }
         return this;
     };
     /**
@@ -20803,13 +20595,6 @@ var GUI3DManager = /** @class */ (function () {
      */
     GUI3DManager.prototype.removeControl = function (control) {
         this._rootContainer.removeControl(control);
-        var utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
-        if (utilityLayerScene && control instanceof _controls_touchButton3D__WEBPACK_IMPORTED_MODULE_2__["TouchButton3D"]) {
-            this._touchableButtons.delete(control);
-            if (this._touchableButtons.size == 0) {
-                utilityLayerScene.unregisterBeforeRender(this._processTouchControls);
-            }
-        }
         return this;
     };
     /**
@@ -20839,9 +20624,6 @@ var GUI3DManager = /** @class */ (function () {
         this.onPickingObservable.clear();
         var utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
         if (utilityLayerScene) {
-            if (this._touchableButtons.size != 0) {
-                utilityLayerScene.unregisterBeforeRender(this._processTouchControls);
-            }
             if (this._pointerObserver) {
                 utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
                 this._pointerObserver = null;
@@ -20857,7 +20639,6 @@ var GUI3DManager = /** @class */ (function () {
             this._utilityLayer.dispose();
         }
     };
-    GUI3DManager._touchIdCounter = 300;
     return GUI3DManager;
 }());
 
@@ -20869,7 +20650,7 @@ var GUI3DManager = /** @class */ (function () {
 /*!*********************!*\
   !*** ./3D/index.ts ***!
   \*********************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20904,8 +20685,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["SpherePanel"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["StackPanel3D"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ButtonState"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchButton3D"]; });
 
@@ -22733,7 +22512,7 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22858,8 +22637,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["StackPanel3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["ButtonState"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchMeshButton3D"]; });
@@ -22908,7 +22685,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23031,8 +22808,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["SpherePanel"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["StackPanel3D"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["ButtonState"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TouchButton3D"]; });
 
