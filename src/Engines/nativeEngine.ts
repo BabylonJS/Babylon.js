@@ -2303,36 +2303,36 @@ export class NativeEngine extends Engine {
     }
 
     public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
-    let fullOptions = {
-        generateMipMaps: true,
-        generateDepthBuffer: true,
-        generateStencilBuffer: false,
-        type: Constants.TEXTURETYPE_UNSIGNED_INT,
-        samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        format: Constants.TEXTUREFORMAT_RGBA,
-        ...options
-    };
-    fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
+        const fullOptions = {
+            generateMipMaps: true,
+            generateDepthBuffer: true,
+            generateStencilBuffer: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            ...options
+        };
+        fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
-    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-        // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    }
-    else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-        // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    }
-    const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+        else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
-    const framebuffer = this._native.createCubeFrameBuffer(
-        texture._hardwareTexture!.underlyingResource,
-        size,
-        this._getNativeTextureFormat(fullOptions.format, fullOptions.type),
-        fullOptions.generateStencilBuffer ? true : false,
-        fullOptions.generateDepthBuffer,
-        fullOptions.generateMipMaps ? true : false);
+        const framebuffer = this._native.createCubeFrameBuffer(
+            texture._hardwareTexture!.underlyingResource,
+            size,
+            this._getNativeTextureFormat(fullOptions.format, fullOptions.type),
+            fullOptions.generateStencilBuffer ? true : false,
+            fullOptions.generateDepthBuffer,
+            fullOptions.generateMipMaps ? true : false);
 
-    texture._framebuffer = framebuffer;
+        texture._framebuffer = framebuffer;
         texture.width = size;
         texture.height = size;
         texture.isReady = true;
