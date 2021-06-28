@@ -668,7 +668,7 @@ export class ThinEngine {
             return;
         }
 
-        adaptToDeviceRatio = adaptToDeviceRatio ?? options.adaptToDeviceRatio ?? false;
+        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
 
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
