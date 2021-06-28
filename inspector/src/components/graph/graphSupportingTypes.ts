@@ -8,6 +8,22 @@ import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
     max: number;
 }
 
+export interface INiceTicks {
+    ticks: number[];
+    niceMin: number;
+    niceMax: number;
+}
+
+/**
+ * Defines a structure defining the available space in a drawable area.
+ */
+export interface IDrawableArea {
+    top: number;
+    left: number;
+    bottom: number;
+    right: number;
+}
+
 /**
  * Defines what settings our canvas graphing service accepts
  */
