@@ -193,8 +193,9 @@ interface INativeEngine {
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number) : Uint8Array;
 
     createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
+    createCubeFrameBuffer(texture: WebGLTexture, size: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
     deleteFrameBuffer(framebuffer: WebGLFramebuffer): void;
-    bindFrameBuffer(framebuffer: WebGLFramebuffer): void;
+    bindFrameBuffer(framebuffer: WebGLFramebuffer, faceIndex?: number): void;
     unbindFrameBuffer(framebuffer: WebGLFramebuffer): void;
 
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
@@ -965,14 +966,14 @@ export class NativeEngine extends Engine {
      * @param depth
      * @param stencil
      */
-    public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
+    public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>, faceIndex?: number) {
         if (this._currentFramebuffer !== framebuffer) {
             if (this._currentFramebuffer) {
                 this._native.unbindFrameBuffer(this._currentFramebuffer!);
             }
 
             if (framebuffer) {
-                this._native.bindFrameBuffer(framebuffer);
+                this._native.bindFrameBuffer(framebuffer, faceIndex);
             }
 
             this._currentFramebuffer = framebuffer;
@@ -2301,6 +2302,63 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
+    public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+    let fullOptions = {
+        generateMipMaps: true,
+        generateDepthBuffer: true,
+        generateStencilBuffer: false,
+        type: Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        format: Constants.TEXTUREFORMAT_RGBA,
+        ...options
+    };
+    fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
+
+    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    }
+    else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    }
+    const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+
+    const framebuffer = this._native.createCubeFrameBuffer(
+        texture._hardwareTexture!.underlyingResource,
+        size,
+        this._getNativeTextureFormat(fullOptions.format, fullOptions.type),
+        fullOptions.generateStencilBuffer ? true : false,
+        fullOptions.generateDepthBuffer,
+        fullOptions.generateMipMaps ? true : false);
+
+    texture._framebuffer = framebuffer;
+        texture.width = size;
+        texture.height = size;
+        texture.isReady = true;
+        texture.isCube = true;
+        texture.samples = 1;
+        texture.generateMipMaps = fullOptions.generateMipMaps;
+        texture.samplingMode = fullOptions.samplingMode;
+        texture.type = fullOptions.type;
+        texture.format = fullOptions.format;
+        texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+        texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
+
+        this._internalTexturesCache.push(texture);
+
+        return texture;
+    }
+
+    /**
+     * Force the mipmap generation for the given render target texture
+     * @param texture defines the render target texture to use
+     * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
+     */
+    public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
+        // todo
+    }
+
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         if (texture._hardwareTexture) {
             var filter = this._getNativeSamplingMode(samplingMode);
@@ -2310,10 +2368,6 @@ export class NativeEngine extends Engine {
     }
 
     public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
-        if (faceIndex) {
-            throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
-        }
-
         if (requiredWidth || requiredHeight) {
             throw new Error("Required width/height for frame buffers not yet supported in NativeEngine.");
         }
@@ -2323,17 +2377,13 @@ export class NativeEngine extends Engine {
         }
 
         if (texture._depthStencilTexture) {
-            this._bindUnboundFramebuffer(texture._depthStencilTexture._framebuffer);
+            this._bindUnboundFramebuffer(texture._depthStencilTexture._framebuffer, faceIndex);
         } else {
-            this._bindUnboundFramebuffer(texture._framebuffer);
+            this._bindUnboundFramebuffer(texture._framebuffer, faceIndex);
         }
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-        if (disableGenerateMipMaps) {
-            Logger.Warn("Disabling mipmap generation not yet supported in NativeEngine. Ignoring.");
-        }
-
         if (onBeforeUnbind) {
             onBeforeUnbind();
         }
