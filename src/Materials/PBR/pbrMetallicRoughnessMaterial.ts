@@ -9,7 +9,7 @@ import { _TypeStore } from '../../Misc/typeStore';
  * The PBR material of BJS following the metal roughness convention.
  *
  * This fits to the PBR convention in the GLTF definition:
- * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
+ * https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness
  */
 export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 

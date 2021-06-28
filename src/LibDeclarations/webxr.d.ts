@@ -147,6 +147,7 @@ interface XRWorldInformation {
 interface XRFrame {
     readonly session: XRSession;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+    fillPoses?(spaces: XRSpace[], baseSpace: XRSpace, transforms: Float32Array): boolean;
     getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
 
     // AR
@@ -160,6 +161,7 @@ interface XRFrame {
     detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
+    fillJointRadii?(jointSpaces: XRJointSpace[], radii: Float32Array): boolean;
     // Image tracking
     getImageTrackingResults?(): Array<XRImageTrackingResult>;
 }

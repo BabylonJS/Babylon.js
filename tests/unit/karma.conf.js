@@ -25,6 +25,7 @@ module.exports = function(config) {
             './tests/unit/babylon/src/Animations/babylon.animationGroup.tests.js',
             './tests/unit/babylon/src/Cameras/babylon.pointerInput.tests.js',
             './tests/unit/babylon/src/Culling/babylon.ray.tests.js',
+            './tests/unit/babylon/src/Loading/babylon.sceneLoader.testData.js',
             './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
             './tests/unit/babylon/src/PostProcesses/babylon.postProcess.tests.js',
             './tests/unit/babylon/src/Materials/babylon.material.tests.js',

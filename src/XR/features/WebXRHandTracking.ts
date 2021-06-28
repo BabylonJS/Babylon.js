@@ -3,10 +3,9 @@ import { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRFeatureName } from "../webXRFeaturesManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
 import { WebXRInput } from "../webXRInput";
 import { WebXRInputSource } from "../webXRInputSource";
-import { Quaternion } from "../../Maths/math.vector";
+import { Matrix, Quaternion } from "../../Maths/math.vector";
 import { Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/physicsImpostor";
 import { WebXRFeaturesManager } from "../webXRFeaturesManager";
@@ -19,10 +18,9 @@ import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
 import { InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
 import { Material } from "../../Materials/material";
 import { Engine } from "../../Engines/engine";
-import { Tools } from "../../Misc/tools";
-import { Axis } from "../../Maths/math.axis";
+import { IcoSphereBuilder } from "../../Meshes/Builders/icoSphereBuilder";
 import { TransformNode } from "../../Meshes/transformNode";
-import { Bone } from "../../Bones/bone";
+import { Axis } from "../../Maths/math.axis";
 
 declare const XRHand: XRHand;
 
@@ -36,34 +34,32 @@ export interface IWebXRHandTrackingOptions {
     xrInput: WebXRInput;
 
     /**
-     * Configuration object for the joint meshes
+     * Configuration object for the joint meshes.
      */
     jointMeshes?: {
         /**
-         * Should the meshes created be invisible (defaults to false)
+         * Should the meshes created be invisible (defaults to false).
          */
         invisible?: boolean;
         /**
-         * A source mesh to be used to create instances. Defaults to a sphere.
+         * A source mesh to be used to create instances. Defaults to an icosphere with two subdivisions and smooth lighting.
          * This mesh will be the source for all other (25) meshes.
-         * It should have the general size of a single unit, as the instances will be scaled according to the provided radius
+         * It should have the general size of a single unit, as the instances will be scaled according to the provided radius.
          */
         sourceMesh?: Mesh;
-
         /**
          * This function will be called after a mesh was created for a specific joint.
          * Using this function you can either manipulate the instance or return a new mesh.
-         * When returning a new mesh the instance created before will be disposed
+         * When returning a new mesh the instance created before will be disposed.
+         * @param meshInstance An instance of the original joint mesh being used for the joint.
+         * @param jointId The joint's index, see https://immersive-web.github.io/webxr-hand-input/#skeleton-joints-section for more info.
+         * @param hand Which hand ("left", "right") the joint will be on.
          */
-        onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => AbstractMesh | undefined;
+        onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, hand: XRHandedness) => AbstractMesh | undefined;
         /**
-         * Should the source mesh stay visible. Defaults to false
+         * Should the source mesh stay visible (defaults to false).
          */
         keepOriginalVisible?: boolean;
-        /**
-         * Scale factor for all instances (defaults to 2)
-         */
-        scaleFactor?: number;
         /**
          * Should each instance have its own physics impostor
          */
@@ -73,27 +69,37 @@ export interface IWebXRHandTrackingOptions {
          */
         physicsProps?: { friction?: number; restitution?: number; impostorType?: number };
         /**
+         * Scale factor for all joint meshes (defaults to 1)
+         */
+        scaleFactor?: number;
+    };
+
+    /**
+     * Configuration object for the hand meshes.
+     */
+    handMeshes?: {
+        /**
          * Should the default hand mesh be disabled. In this case, the spheres will be visible (unless set invisible).
          */
-        disableDefaultHandMesh?: boolean;
+        disableDefaultMeshes?: boolean;
         /**
-         * a rigged hand-mesh that will be updated according to the XRHand data provided. This will override the default hand mesh
+         * Rigged hand meshes that will be tracked to the user's hands. This will override the default hand mesh.
          */
-        handMeshes?: {
+        customMeshes?: {
             right: AbstractMesh;
             left: AbstractMesh;
-        };
+        }
         /**
          * Are the meshes prepared for a left-handed system. Default hand meshes are right-handed.
          */
-        leftHandedSystemMeshes?: boolean;
+        meshesUseLeftHandedCoordinates?: boolean;
         /**
          * If a hand mesh was provided, this array will define what axis will update which node. This will override the default hand mesh
          */
-        rigMapping?: {
-            right: string[];
-            left: string[];
-        };
+        customRigMappings?: {
+            right: XRHandMeshRigMapping;
+            left: XRHandMeshRigMapping;
+        }
     };
 }
 
@@ -127,168 +133,223 @@ export const enum HandPart {
     LITTLE = "little",
 }
 
-enum XRHandJoint {
-    "wrist" = "wrist",
+/**
+ * Joints of the hand as defined by the WebXR specification.
+ * https://immersive-web.github.io/webxr-hand-input/#skeleton-joints-section
+ */
+export const enum XRHandJoint {
+    /** Wrist */
+    WRIST = "wrist",
 
-    "thumb-metacarpal" = "thumb-metacarpal",
-    "thumb-phalanx-proximal" = "thumb-phalanx-proximal",
-    "thumb-phalanx-distal" = "thumb-phalanx-distal",
-    "thumb-tip" = "thumb-tip",
+    /** Thumb near wrist */
+    THUMB_METACARPAL = "thumb-metacarpal",
+    /** Thumb first knuckle */
+    THUMB_PHALANX_PROXIMAL = "thumb-phalanx-proximal",
+    /** Thumb second knuckle */
+    THUMB_PHALANX_DISTAL = "thumb-phalanx-distal",
+    /** Thumb tip */
+    THUMB_TIP = "thumb-tip",
 
-    "index-finger-metacarpal" = "index-finger-metacarpal",
-    "index-finger-phalanx-proximal" = "index-finger-phalanx-proximal",
-    "index-finger-phalanx-intermediate" = "index-finger-phalanx-intermediate",
-    "index-finger-phalanx-distal" = "index-finger-phalanx-distal",
-    "index-finger-tip" = "index-finger-tip",
+    /** Index finger near wrist */
+    INDEX_FINGER_METACARPAL = "index-finger-metacarpal",
+    /** Index finger first knuckle */
+    INDEX_FINGER_PHALANX_PROXIMAL = "index-finger-phalanx-proximal",
+    /** Index finger second knuckle */
+    INDEX_FINGER_PHALANX_INTERMEDIATE = "index-finger-phalanx-intermediate",
+    /** Index finger third knuckle */
+    INDEX_FINGER_PHALANX_DISTAL = "index-finger-phalanx-distal",
+    /** Index finger tip */
+    INDEX_FINGER_TIP = "index-finger-tip",
 
-    "middle-finger-metacarpal" = "middle-finger-metacarpal",
-    "middle-finger-phalanx-proximal" = "middle-finger-phalanx-proximal",
-    "middle-finger-phalanx-intermediate" = "middle-finger-phalanx-intermediate",
-    "middle-finger-phalanx-distal" = "middle-finger-phalanx-distal",
-    "middle-finger-tip" = "middle-finger-tip",
+    /** Middle finger near wrist */
+    MIDDLE_FINGER_METACARPAL = "middle-finger-metacarpal",
+    /** Middle finger first knuckle */
+    MIDDLE_FINGER_PHALANX_PROXIMAL = "middle-finger-phalanx-proximal",
+    /** Middle finger second knuckle */
+    MIDDLE_FINGER_PHALANX_INTERMEDIATE = "middle-finger-phalanx-intermediate",
+    /** Middle finger third knuckle */
+    MIDDLE_FINGER_PHALANX_DISTAL = "middle-finger-phalanx-distal",
+    /** Middle finger tip */
+    MIDDLE_FINGER_TIP = "middle-finger-tip",
 
-    "ring-finger-metacarpal" = "ring-finger-metacarpal",
-    "ring-finger-phalanx-proximal" = "ring-finger-phalanx-proximal",
-    "ring-finger-phalanx-intermediate" = "ring-finger-phalanx-intermediate",
-    "ring-finger-phalanx-distal" = "ring-finger-phalanx-distal",
-    "ring-finger-tip" = "ring-finger-tip",
+    /** Ring finger near wrist */
+    RING_FINGER_METACARPAL = "ring-finger-metacarpal",
+    /** Ring finger first knuckle */
+    RING_FINGER_PHALANX_PROXIMAL = "ring-finger-phalanx-proximal",
+    /** Ring finger second knuckle */
+    RING_FINGER_PHALANX_INTERMEDIATE = "ring-finger-phalanx-intermediate",
+    /** Ring finger third knuckle */
+    RING_FINGER_PHALANX_DISTAL = "ring-finger-phalanx-distal",
+    /** Ring finger tip */
+    RING_FINGER_TIP = "ring-finger-tip",
 
-    "pinky-finger-metacarpal" = "pinky-finger-metacarpal",
-    "pinky-finger-phalanx-proximal" = "pinky-finger-phalanx-proximal",
-    "pinky-finger-phalanx-intermediate" = "pinky-finger-phalanx-intermediate",
-    "pinky-finger-phalanx-distal" = "pinky-finger-phalanx-distal",
-    "pinky-finger-tip" = "pinky-finger-tip",
+    /** Pinky finger near wrist */
+    PINKY_FINGER_METACARPAL = "pinky-finger-metacarpal",
+    /** Pinky finger first knuckle */
+    PINKY_FINGER_PHALANX_PROXIMAL = "pinky-finger-phalanx-proximal",
+    /** Pinky finger second knuckle */
+    PINKY_FINGER_PHALANX_INTERMEDIATE = "pinky-finger-phalanx-intermediate",
+    /** Pinky finger third knuckle */
+    PINKY_FINGER_PHALANX_DISTAL = "pinky-finger-phalanx-distal",
+    /** Pinky finger tip */
+    PINKY_FINGER_TIP = "pinky-finger-tip",
 }
 
+/** A type encapsulating a dictionary mapping WebXR joints to bone names in a rigged hand mesh.  */
+export type XRHandMeshRigMapping = { [webXRJointName in XRHandJoint]: string };
+
 const handJointReferenceArray: XRHandJoint[] = [
-    XRHandJoint.wrist,
-    XRHandJoint["thumb-metacarpal"],
-    XRHandJoint["thumb-phalanx-proximal"],
-    XRHandJoint["thumb-phalanx-distal"],
-    XRHandJoint["thumb-tip"],
-    XRHandJoint["index-finger-metacarpal"],
-    XRHandJoint["index-finger-phalanx-proximal"],
-    XRHandJoint["index-finger-phalanx-intermediate"],
-    XRHandJoint["index-finger-phalanx-distal"],
-    XRHandJoint["index-finger-tip"],
-    XRHandJoint["middle-finger-metacarpal"],
-    XRHandJoint["middle-finger-phalanx-proximal"],
-    XRHandJoint["middle-finger-phalanx-intermediate"],
-    XRHandJoint["middle-finger-phalanx-distal"],
-    XRHandJoint["middle-finger-tip"],
-    XRHandJoint["ring-finger-metacarpal"],
-    XRHandJoint["ring-finger-phalanx-proximal"],
-    XRHandJoint["ring-finger-phalanx-intermediate"],
-    XRHandJoint["ring-finger-phalanx-distal"],
-    XRHandJoint["ring-finger-tip"],
-    XRHandJoint["pinky-finger-metacarpal"],
-    XRHandJoint["pinky-finger-phalanx-proximal"],
-    XRHandJoint["pinky-finger-phalanx-intermediate"],
-    XRHandJoint["pinky-finger-phalanx-distal"],
-    XRHandJoint["pinky-finger-tip"],
+    XRHandJoint.WRIST,
+    XRHandJoint.THUMB_METACARPAL,
+    XRHandJoint.THUMB_PHALANX_PROXIMAL,
+    XRHandJoint.THUMB_PHALANX_DISTAL,
+    XRHandJoint.THUMB_TIP,
+    XRHandJoint.INDEX_FINGER_METACARPAL,
+    XRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL,
+    XRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE,
+    XRHandJoint.INDEX_FINGER_PHALANX_DISTAL,
+    XRHandJoint.INDEX_FINGER_TIP,
+    XRHandJoint.MIDDLE_FINGER_METACARPAL,
+    XRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL,
+    XRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE,
+    XRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL,
+    XRHandJoint.MIDDLE_FINGER_TIP,
+    XRHandJoint.RING_FINGER_METACARPAL,
+    XRHandJoint.RING_FINGER_PHALANX_PROXIMAL,
+    XRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE,
+    XRHandJoint.RING_FINGER_PHALANX_DISTAL,
+    XRHandJoint.RING_FINGER_TIP,
+    XRHandJoint.PINKY_FINGER_METACARPAL,
+    XRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL,
+    XRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE,
+    XRHandJoint.PINKY_FINGER_PHALANX_DISTAL,
+    XRHandJoint.PINKY_FINGER_TIP,
 ];
+
+const handPartsDefinition: { [key in HandPart]: XRHandJoint[] } = {
+    [HandPart.WRIST]: [XRHandJoint.WRIST],
+    [HandPart.THUMB]: [XRHandJoint.THUMB_METACARPAL, XRHandJoint.THUMB_PHALANX_PROXIMAL, XRHandJoint.THUMB_PHALANX_DISTAL, XRHandJoint.THUMB_TIP],
+    [HandPart.INDEX]: [
+        XRHandJoint.INDEX_FINGER_METACARPAL,
+        XRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL,
+        XRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE,
+        XRHandJoint.INDEX_FINGER_PHALANX_DISTAL,
+        XRHandJoint.INDEX_FINGER_TIP,
+    ],
+    [HandPart.MIDDLE]: [
+        XRHandJoint.MIDDLE_FINGER_METACARPAL,
+        XRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL,
+        XRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE,
+        XRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL,
+        XRHandJoint.MIDDLE_FINGER_TIP,
+    ],
+    [HandPart.RING]: [
+        XRHandJoint.RING_FINGER_METACARPAL,
+        XRHandJoint.RING_FINGER_PHALANX_PROXIMAL,
+        XRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE,
+        XRHandJoint.RING_FINGER_PHALANX_DISTAL,
+        XRHandJoint.RING_FINGER_TIP,
+    ],
+    [HandPart.LITTLE]: [
+        XRHandJoint.PINKY_FINGER_METACARPAL,
+        XRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL,
+        XRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE,
+        XRHandJoint.PINKY_FINGER_PHALANX_DISTAL,
+        XRHandJoint.PINKY_FINGER_TIP,
+    ],
+};
 
 /**
  * Representing a single hand (with its corresponding native XRHand object)
  */
 export class WebXRHand implements IDisposable {
     private _scene: Scene;
-    private _defaultHandMesh: boolean = false;
-    private _transformNodeMapping: TransformNode[] = [];
-    private _boneMapping: Bone[] = [];
-    private _useBones = false;
-    /**
-     * Hand-parts definition (key is HandPart)
-     */
-    public handPartsDefinition: { [key: string]: string[] };
 
     /**
-     * Observers will be triggered when the mesh for this hand was initialized.
+     * Transform nodes that will directly receive the transforms from the WebXR matrix data.
      */
-    public onHandMeshReadyObservable: Observable<WebXRHand> = new Observable();
+    private _jointTransforms = new Array<TransformNode>(handJointReferenceArray.length);
 
     /**
-     * Populate the HandPartsDefinition object.
-     * This is called as a side effect since certain browsers don't have XRHand defined.
+     * The float array that will directly receive the transform matrix data from WebXR.
      */
-    private generateHandPartsDefinition() {
-        return {
-            [HandPart.WRIST]: [XRHandJoint.wrist],
-            [HandPart.THUMB]: [XRHandJoint["thumb-metacarpal"], XRHandJoint["thumb-phalanx-proximal"], XRHandJoint["thumb-phalanx-distal"], XRHandJoint["thumb-tip"]],
-            [HandPart.INDEX]: [
-                XRHandJoint["index-finger-metacarpal"],
-                XRHandJoint["index-finger-phalanx-proximal"],
-                XRHandJoint["index-finger-phalanx-intermediate"],
-                XRHandJoint["index-finger-phalanx-distal"],
-                XRHandJoint["index-finger-tip"],
-            ],
-            [HandPart.MIDDLE]: [
-                XRHandJoint["middle-finger-metacarpal"],
-                XRHandJoint["middle-finger-phalanx-proximal"],
-                XRHandJoint["middle-finger-phalanx-intermediate"],
-                XRHandJoint["middle-finger-phalanx-distal"],
-                XRHandJoint["middle-finger-tip"],
-            ],
-            [HandPart.RING]: [
-                XRHandJoint["ring-finger-metacarpal"],
-                XRHandJoint["ring-finger-phalanx-proximal"],
-                XRHandJoint["ring-finger-phalanx-intermediate"],
-                XRHandJoint["ring-finger-phalanx-distal"],
-                XRHandJoint["ring-finger-tip"],
-            ],
-            [HandPart.LITTLE]: [
-                XRHandJoint["pinky-finger-metacarpal"],
-                XRHandJoint["pinky-finger-phalanx-proximal"],
-                XRHandJoint["pinky-finger-phalanx-intermediate"],
-                XRHandJoint["pinky-finger-phalanx-distal"],
-                XRHandJoint["pinky-finger-tip"],
-            ],
-        };
+    private _jointTransformMatrices = new Float32Array(handJointReferenceArray.length * 16);
+
+    private _tempJointMatrix = new Matrix();
+
+    /**
+     * The float array that will directly receive the joint radii from WebXR.
+     */
+    private _jointRadii = new Float32Array(handJointReferenceArray.length);
+
+    /**
+     * Get the hand mesh.
+     */
+    public get handMesh(): Nullable<AbstractMesh> {
+        return this._handMesh;
+    }
+
+    /**
+     * Get meshes of part of the hand.
+     * @param part The part of hand to get.
+     * @returns An array of meshes that correlate to the hand part requested.
+     */
+    public getHandPartMeshes(part: HandPart): AbstractMesh[] {
+        return handPartsDefinition[part].map((name) => this._jointMeshes[handJointReferenceArray.indexOf(name)]!);
+    }
+
+    /**
+     * Retrieves a mesh linked to a named joint in the hand.
+     * @param jointName The name of the joint.
+     * @returns An AbstractMesh whose position corresponds with the joint position.
+     */
+    public getJointMesh(jointName: XRHandJoint): AbstractMesh {
+        return this._jointMeshes[handJointReferenceArray.indexOf(jointName)!];
     }
 
     /**
      * Construct a new hand object
-     * @param xrController the controller to which the hand correlates
-     * @param trackedMeshes the meshes to be used to track the hand joints
-     * @param _handMesh an optional hand mesh. if not provided, ours will be used
-     * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
-     * @param disableDefaultHandMesh should the default mesh creation be disabled
-     * @param _leftHandedMeshes are the hand meshes left-handed-system meshes
+     * @param xrController The controller to which the hand correlates.
+     * @param _jointMeshes The meshes to be used to track the hand joints.
+     * @param _handMesh An optional hand mesh.
+     * @param rigMapping An optional rig mapping for the hand mesh.
+     *                   If not provided (but a hand mesh is provided),
+     *                   it will be assumed that the hand mesh's bones are named
+     *                   directly after the WebXR bone names.
+     * @param _leftHandedMeshes Are the hand meshes left-handed-system meshes
+     * @param _jointsInvisible Are the tracked joint meshes visible
+     * @param _jointScaleFactor Scale factor for all joint meshes
      */
     constructor(
-        /** the controller to which the hand correlates */
+        /** The controller to which the hand correlates. */
         public readonly xrController: WebXRInputSource,
-        /** the meshes to be used to track the hand joints */
-        public readonly trackedMeshes: Map<string, AbstractMesh>,
-        private _handMesh?: AbstractMesh,
-        private _rigMapping?: string[],
-        disableDefaultHandMesh?: boolean,
-        private _leftHandedMeshes?: boolean
+        private readonly _jointMeshes: AbstractMesh[],
+        private _handMesh: Nullable<AbstractMesh>,
+        /** An optional rig mapping for the hand mesh. If not provided (but a hand mesh is provided),
+          * it will be assumed that the hand mesh's bones are named directly after the WebXR bone names. */
+        readonly rigMapping: Nullable<XRHandMeshRigMapping>,
+        private readonly _leftHandedMeshes: boolean = false,
+        private readonly _jointsInvisible: boolean = false,
+        private readonly _jointScaleFactor: number = 1
     ) {
-        this.handPartsDefinition = this.generateHandPartsDefinition();
-        this._scene = trackedMeshes.get("wrist")!.getScene();
-        this.onHandMeshReadyObservable.add(() => {
-            // check if we should use bones or transform nodes
-            if (!this._rigMapping || !this._handMesh) {
-                return;
-            }
-            const transformNode = this._scene.getTransformNodeByName(this._rigMapping[0]);
-            if (!transformNode) {
-                const bone = this._scene.getBoneByName(this._rigMapping[0]);
-                if (bone) {
-                    this._useBones = true;
-                }
-            }
-            this._handMesh.alwaysSelectAsActiveMesh = true;
-            this._handMesh.getChildMeshes().forEach((m) => (m.alwaysSelectAsActiveMesh = true));
-        });
-        if (this._handMesh && this._rigMapping) {
-            this._defaultHandMesh = false;
-            this.onHandMeshReadyObservable.notifyObservers(this);
-        } else {
-            if (!disableDefaultHandMesh) {
-                this._generateDefaultHandMesh();
-            }
+        this._scene = _jointMeshes[0].getScene();
+
+        // Initialize the joint transform quaternions and link the transforms to the bones.
+        for (let jointIdx = 0; jointIdx < this._jointTransforms.length; jointIdx++) {
+            const jointTransform = this._jointTransforms[jointIdx] = new TransformNode(handJointReferenceArray[jointIdx], this._scene);
+            jointTransform.rotationQuaternion = new Quaternion();
+
+            // Set the rotation quaternion so we can use it later for tracking.
+            _jointMeshes[jointIdx].rotationQuaternion = new Quaternion();
+        }
+
+        if (_handMesh) {
+            // Note that this logic needs to happen after we initialize the joint tracking transform nodes.
+            this.setHandMesh(_handMesh, rigMapping);
+
+            // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
+            _handMesh.alwaysSelectAsActiveMesh = true;
+            _handMesh.getChildMeshes().forEach((mesh) => (mesh.alwaysSelectAsActiveMesh = true));
         }
 
         // hide the motion controller, if available/loaded
@@ -317,105 +378,184 @@ export class WebXRHand implements IDisposable {
     }
 
     /**
-     * Get the hand mesh. It is possible that the hand mesh is not yet ready!
+     * Sets the current hand mesh to render for the WebXRHand.
+     * @param handMesh The rigged hand mesh that will be tracked to the user's hand.
+     * @param rigMapping The mapping from XRHandJoint to bone names to use with the mesh.
      */
-    public get handMesh() {
-        return this._handMesh;
+    public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>) {
+        this._handMesh = handMesh;
+
+        // Link the bones in the hand mesh to the transform nodes that will be bound to the WebXR tracked joints.
+        if (this._handMesh.skeleton) {
+            const handMeshSkeleton = this._handMesh.skeleton;
+            handJointReferenceArray.forEach((jointName, jointIdx) => {
+                const jointBoneIdx = handMeshSkeleton.getBoneIndexByName(rigMapping ? rigMapping[jointName] : jointName);
+                if (jointBoneIdx !== -1) {
+                    handMeshSkeleton.bones[jointBoneIdx].linkTransformNode(this._jointTransforms[jointIdx]);
+                }
+            });
+        }
     }
 
     /**
-     * Update this hand from the latest xr frame
-     * @param xrFrame xrFrame to update from
-     * @param referenceSpace The current viewer reference space
-     * @param scaleFactor optional scale factor for the meshes
+     * Update this hand from the latest xr frame.
+     * @param xrFrame The latest frame received from WebXR.
+     * @param referenceSpace The current viewer reference space.
      */
-    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, scaleFactor: number = 2) {
+    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
         const hand = this.xrController.inputSource.hand;
         if (!hand) {
             return;
         }
-        this.trackedMeshes.forEach((mesh, name) => {
-            const xrJoint = hand.get(name);
-            if (xrJoint) {
-                let pose = xrFrame.getJointPose!(xrJoint, referenceSpace);
-                if (!pose || !pose.transform) {
-                    return;
-                }
-                // get the transformation. can be done with matrix decomposition as well
-                const pos = pose.transform.position;
-                const orientation = pose.transform.orientation;
-                mesh.position.set(pos.x, pos.y, pos.z);
-                mesh.rotationQuaternion!.set(orientation.x, orientation.y, orientation.z, orientation.w);
-                // left handed system conversion
-                // get the radius of the joint. In general it is static, but just in case it does change we update it on each frame.
-                const radius = (pose.radius || 0.008) * scaleFactor;
-                mesh.scaling.set(radius, radius, radius);
 
-                // if we are using left-handed meshes, transform before applying to the hand mesh
-                if (this._leftHandedMeshes && !mesh.getScene().useRightHandedSystem) {
-                    mesh.position.z *= -1;
-                    mesh.rotationQuaternion!.z *= -1;
-                    mesh.rotationQuaternion!.w *= -1;
-                }
+        // TODO: Modify webxr.d.ts to better match WebXR IDL so we don't need this any cast.
+        const anyHand: any = hand;
+        const jointSpaces: XRJointSpace[] = handJointReferenceArray.map((jointName) => anyHand[jointName] || hand.get(jointName));
+        let trackingSuccessful = false;
 
-                // now check for the hand mesh
-                if (this._handMesh && this._rigMapping) {
-                    const idx = handJointReferenceArray.indexOf(name as XRHandJoint);
-                    if (this._rigMapping[idx]) {
-                        if (this._useBones) {
-                            this._boneMapping[idx] = this._boneMapping[idx] || this._scene.getBoneByName(this._rigMapping[idx]);
-                            if (this._boneMapping[idx]) {
-                                this._boneMapping[idx].setPosition(mesh.position);
-                                this._boneMapping[idx].setRotationQuaternion(mesh.rotationQuaternion!);
-                                mesh.isVisible = false;
-                            }
-                        } else {
-                            this._transformNodeMapping[idx] = this._transformNodeMapping[idx] || this._scene.getTransformNodeByName(this._rigMapping[idx]);
-                            if (this._transformNodeMapping[idx]) {
-                                this._transformNodeMapping[idx].position.copyFrom(mesh.position);
-                                this._transformNodeMapping[idx].rotationQuaternion!.copyFrom(mesh.rotationQuaternion!);
-                                // no scaling at the moment
-                                // this._transformNodeMapping[idx].scaling.copyFrom(mesh.scaling).scaleInPlace(20);
-                                mesh.isVisible = false;
-                            }
-                        }
-                    }
+        if (xrFrame.fillPoses && xrFrame.fillJointRadii) {
+            trackingSuccessful = xrFrame.fillPoses(jointSpaces, referenceSpace, this._jointTransformMatrices) &&
+                xrFrame.fillJointRadii(jointSpaces, this._jointRadii);
+        } else if (xrFrame.getJointPose) {
+            trackingSuccessful = true;
+            // Warning: This codepath is slow by comparison, only here for compat.
+            for (let jointIdx = 0; jointIdx < jointSpaces.length; jointIdx++) {
+                const jointPose = xrFrame.getJointPose(jointSpaces[jointIdx], referenceSpace);
+                if (jointPose) {
+                    this._jointTransformMatrices.set(jointPose.transform.matrix, jointIdx * 16);
+                    this._jointRadii[jointIdx] = jointPose.radius || 0.008;
+                } else {
+                    trackingSuccessful = false;
+                    break;
                 }
-                if (!this._leftHandedMeshes && !mesh.getScene().useRightHandedSystem) {
-                    mesh.position.z *= -1;
-                    mesh.rotationQuaternion!.z *= -1;
-                    mesh.rotationQuaternion!.w *= -1;
+            }
+        }
+
+        if (!trackingSuccessful) {
+            return;
+        }
+
+        handJointReferenceArray.forEach((jointName, jointIdx) => {
+            const jointTransform = this._jointTransforms[jointIdx];
+            Matrix.FromArrayToRef(this._jointTransformMatrices, jointIdx * 16, this._tempJointMatrix);
+            this._tempJointMatrix.decompose(undefined, jointTransform.rotationQuaternion!, jointTransform.position);
+
+            // The radius we need to make the joint in order for it to roughly cover the joints of the user's real hand.
+            const scaledJointRadius = this._jointRadii[jointIdx] * this._jointScaleFactor;
+
+            const jointMesh = this._jointMeshes[jointIdx];
+            jointMesh.isVisible = !this._handMesh && !this._jointsInvisible;
+            jointMesh.position.copyFrom(jointTransform.position);
+            jointMesh.rotationQuaternion!.copyFrom(jointTransform.rotationQuaternion!);
+            jointMesh.scaling.copyFromFloats(scaledJointRadius, scaledJointRadius, scaledJointRadius);
+
+            // The WebXR data comes as right-handed, so we might need to do some conversions.
+            if (!this._scene.useRightHandedSystem) {
+                jointMesh.position.z *= -1;
+                jointMesh.rotationQuaternion!.z *= -1;
+                jointMesh.rotationQuaternion!.w *= -1;
+
+                if (this._leftHandedMeshes && this._handMesh) {
+                    jointTransform.position.z *= -1;
+                    jointTransform.rotationQuaternion!.z *= -1;
+                    jointTransform.rotationQuaternion!.w *= -1;
                 }
             }
         });
-    }
 
-    /**
-     * Get meshes of part of the hand
-     * @param part the part of hand to get
-     * @returns An array of meshes that correlate to the hand part requested
-     */
-    public getHandPartMeshes(part: HandPart): AbstractMesh[] {
-        return this.handPartsDefinition[part].map((name) => this.trackedMeshes.get(name)!);
+        if (this._handMesh) {
+            this._handMesh.isVisible = true;
+        }
     }
 
     /**
      * Dispose this Hand object
      */
     public dispose() {
-        this.trackedMeshes.forEach((mesh) => mesh.dispose(true)); // spare anything which might have been parented to one
-        this.onHandMeshReadyObservable.clear();
-        // dispose the hand mesh, if it is the default one
-        if (this._defaultHandMesh && this._handMesh) {
-            this._handMesh.dispose();
+        if (this._handMesh) {
+            this._handMesh.isVisible = false;
         }
     }
+}
 
-    private async _generateDefaultHandMesh() {
-        try {
-            const handedness = this.xrController.inputSource.handedness === "right" ? "right" : "left";
-            const filename = `${handedness === "right" ? "r" : "l"}_hand_rhs.glb`;
-            const loaded = await SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/HandMeshes/", filename, this._scene);
+/**
+ * WebXR Hand Joint tracking feature, available for selected browsers and devices
+ */
+export class WebXRHandTracking extends WebXRAbstractFeature {
+    /**
+     * The module's name
+     */
+    public static readonly Name = WebXRFeatureName.HAND_TRACKING;
+    /**
+     * The (Babylon) version of this module.
+     * This is an integer representing the implementation version.
+     * This number does not correspond to the WebXR specs version
+     */
+    public static readonly Version = 1;
+
+    /** The base URL for the default hand model. */
+    public static DEFAULT_HAND_MODEL_BASE_URL = "https://assets.babylonjs.com/meshes/HandMeshes/";
+    /** The filename to use for the default right hand model. */
+    public static DEFAULT_HAND_MODEL_RIGHT_FILENAME = "r_hand_rhs.glb";
+    /** The filename to use for the default left hand model. */
+    public static DEFAULT_HAND_MODEL_LEFT_FILENAME = "l_hand_rhs.glb";
+    /** The URL pointing to the default hand model NodeMaterial shader. */
+    public static DEFAULT_HAND_MODEL_SHADER_URL = "https://assets.babylonjs.com/meshes/HandMeshes/handsShader.json";
+
+    // We want to use lightweight models, diameter will initially be 1 but scaled to the values returned from WebXR.
+    private static readonly _ICOSPHERE_PARAMS = { radius: 0.5, flat: false, subdivisions: 2 };
+
+    private static _generateTrackedJointMeshes(featureOptions: IWebXRHandTrackingOptions): { left: AbstractMesh[], right: AbstractMesh[] } {
+        const meshes: { [handedness: string]: AbstractMesh[] } = {};
+        ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
+            const trackedMeshes = [];
+            const originalMesh = featureOptions.jointMeshes?.sourceMesh || IcoSphereBuilder.CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS);
+            originalMesh.isVisible = !!featureOptions.jointMeshes?.keepOriginalVisible;
+            for (let i = 0; i < handJointReferenceArray.length; ++i) {
+                let newInstance: AbstractMesh = originalMesh.createInstance(`${handedness}-handJoint-${i}`);
+                if (featureOptions.jointMeshes?.onHandJointMeshGenerated) {
+                    const returnedMesh = featureOptions.jointMeshes.onHandJointMeshGenerated(newInstance as InstancedMesh, i, handedness);
+                    if (returnedMesh) {
+                        if (returnedMesh !== newInstance) {
+                            newInstance.dispose();
+                            newInstance = returnedMesh;
+                        }
+                    }
+                }
+                newInstance.isPickable = false;
+                if (featureOptions.jointMeshes?.enablePhysics) {
+                    const props = featureOptions.jointMeshes?.physicsProps || {};
+                    const type = props.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
+                    newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, { mass: 0, ...props });
+                }
+                newInstance.rotationQuaternion = new Quaternion();
+                newInstance.isVisible = false;
+                trackedMeshes.push(newInstance);
+            }
+
+            meshes[handedness] = trackedMeshes;
+        });
+        return { left: meshes.left, right: meshes.right };
+    }
+
+    private static _generateDefaultHandMeshesAsync(scene: Scene): Promise<{ left: AbstractMesh, right: AbstractMesh }> {
+        return new Promise(async (resolve) => {
+            const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
+
+            const rightHandGLB = await SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_RIGHT_FILENAME, scene);
+            const leftHandGLB = await SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_LEFT_FILENAME, scene);
+
+            const handShader = new NodeMaterial("handShader", scene, { emitComments: false });
+            await handShader.loadAsync(WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL);
+
+            // depth prepass and alpha mode
+            handShader.needDepthPrePass = true;
+            handShader.transparencyMode = Material.MATERIAL_ALPHABLEND;
+            handShader.alphaMode = Engine.ALPHA_COMBINE;
+
+            // build node materials
+            handShader.build(false);
+
             // shader
             const handColors = {
                 base: Color3.FromInts(116, 63, 203),
@@ -423,16 +563,6 @@ export class WebXRHand implements IDisposable {
                 fingerColor: Color3.FromInts(177, 130, 255),
                 tipFresnel: Color3.FromInts(220, 200, 255),
             };
-
-            const handShader = new NodeMaterial("leftHandShader", this._scene, { emitComments: false });
-            await handShader.loadAsync("https://assets.babylonjs.com/meshes/HandMeshes/handsShader.json");
-            // build node materials
-            handShader.build(false);
-
-            // depth prepass and alpha mode
-            handShader.needDepthPrePass = true;
-            handShader.transparencyMode = Material.MATERIAL_ALPHABLEND;
-            handShader.alphaMode = Engine.ALPHA_COMBINE;
 
             const handNodes = {
                 base: handShader.getBlockByName("baseColor") as InputBlock,
@@ -446,70 +576,76 @@ export class WebXRHand implements IDisposable {
             handNodes.fingerColor.value = handColors.fingerColor;
             handNodes.tipFresnel.value = handColors.tipFresnel;
 
-            loaded.meshes[1].material = handShader;
-            loaded.meshes[1].alwaysSelectAsActiveMesh = true;
+            ["left", "right"].forEach((handedness) => {
+                const handGLB = handedness == "left" ? leftHandGLB : rightHandGLB;
 
-            this._defaultHandMesh = true;
-            this._handMesh = loaded.meshes[0];
-            this._rigMapping = [
-                "wrist_",
-                "thumb_metacarpal_",
-                "thumb_proxPhalanx_",
-                "thumb_distPhalanx_",
-                "thumb_tip_",
-                "index_metacarpal_",
-                "index_proxPhalanx_",
-                "index_intPhalanx_",
-                "index_distPhalanx_",
-                "index_tip_",
-                "middle_metacarpal_",
-                "middle_proxPhalanx_",
-                "middle_intPhalanx_",
-                "middle_distPhalanx_",
-                "middle_tip_",
-                "ring_metacarpal_",
-                "ring_proxPhalanx_",
-                "ring_intPhalanx_",
-                "ring_distPhalanx_",
-                "ring_tip_",
-                "little_metacarpal_",
-                "little_proxPhalanx_",
-                "little_intPhalanx_",
-                "little_distPhalanx_",
-                "little_tip_",
-            ].map((joint) => `${joint}${handedness === "right" ? "R" : "L"}`);
-            // single change for left handed systems
-            if (!this._scene.useRightHandedSystem) {
-                const tm = this._scene.getTransformNodeByName(this._rigMapping[0]);
-                if (!tm) {
-                    throw new Error("could not find the wrist node");
-                } else {
-                    tm.parent && (tm.parent as AbstractMesh).rotate(Axis.Y, Math.PI);
+                const handMesh = handGLB.meshes[1];
+                handMesh._internalAbstractMeshDataInfo._computeBonesUsingShaders = true;
+                handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
+                handMesh.isVisible = false;
+
+                riggedMeshes[handedness] = handMesh;
+
+                // single change for left handed systems
+                if (!scene.useRightHandedSystem) {
+                    handGLB.transformNodes[0].rotate(Axis.Y, Math.PI);
                 }
-            }
-            this.onHandMeshReadyObservable.notifyObservers(this);
-        } catch (e) {
-            Tools.Error("error loading hand mesh");
-            console.log(e);
-        }
-    }
-}
+            });
 
-/**
- * WebXR Hand Joint tracking feature, available for selected browsers and devices
- */
-export class WebXRHandTracking extends WebXRAbstractFeature {
-    private static _idCounter = 0;
+            handShader.dispose();
+            resolve({ left: riggedMeshes.left, right: riggedMeshes.right });
+        });
+    }
+
     /**
-     * The module's name
+     * Generates a mapping from XRHandJoint to bone name for the default hand mesh.
+     * @param handedness The handedness being mapped for.
      */
-    public static readonly Name = WebXRFeatureName.HAND_TRACKING;
-    /**
-     * The (Babylon) version of this module.
-     * This is an integer representing the implementation version.
-     * This number does not correspond to the WebXR specs version
-     */
-    public static readonly Version = 1;
+    private static _generateDefaultHandMeshRigMapping(handedness: XRHandedness): XRHandMeshRigMapping {
+        const H = handedness == "right" ? "R" : "L";
+        return {
+            [XRHandJoint.WRIST]: `wrist_${H}`,
+            [XRHandJoint.THUMB_METACARPAL]: `thumb_metacarpal_${H}`,
+            [XRHandJoint.THUMB_PHALANX_PROXIMAL]: `thumb_proxPhalanx_${H}`,
+            [XRHandJoint.THUMB_PHALANX_DISTAL]: `thumb_distPhalanx_${H}`,
+            [XRHandJoint.THUMB_TIP]: `thumb_tip_${H}`,
+            [XRHandJoint.INDEX_FINGER_METACARPAL]: `index_metacarpal_${H}`,
+            [XRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL]: `index_proxPhalanx_${H}`,
+            [XRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE]: `index_intPhalanx_${H}`,
+            [XRHandJoint.INDEX_FINGER_PHALANX_DISTAL]: `index_distPhalanx_${H}`,
+            [XRHandJoint.INDEX_FINGER_TIP]: `index_tip_${H}`,
+            [XRHandJoint.MIDDLE_FINGER_METACARPAL]: `middle_metacarpal_${H}`,
+            [XRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL]: `middle_proxPhalanx_${H}`,
+            [XRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE]: `middle_intPhalanx_${H}`,
+            [XRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL]: `middle_distPhalanx_${H}`,
+            [XRHandJoint.MIDDLE_FINGER_TIP]: `middle_tip_${H}`,
+            [XRHandJoint.RING_FINGER_METACARPAL]: `ring_metacarpal_${H}`,
+            [XRHandJoint.RING_FINGER_PHALANX_PROXIMAL]: `ring_proxPhalanx_${H}`,
+            [XRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE]: `ring_intPhalanx_${H}`,
+            [XRHandJoint.RING_FINGER_PHALANX_DISTAL]: `ring_distPhalanx_${H}`,
+            [XRHandJoint.RING_FINGER_TIP]: `ring_tip_${H}`,
+            [XRHandJoint.PINKY_FINGER_METACARPAL]: `little_metacarpal_${H}`,
+            [XRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL]: `little_proxPhalanx_${H}`,
+            [XRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE]: `little_intPhalanx_${H}`,
+            [XRHandJoint.PINKY_FINGER_PHALANX_DISTAL]: `little_distPhalanx_${H}`,
+            [XRHandJoint.PINKY_FINGER_TIP]: `little_tip_${H}`,
+        };
+    }
+
+    private _attachedHands: {
+        [uniqueId: string]: WebXRHand
+    } = {};
+
+    private _trackingHands: {
+        left: Nullable<WebXRHand>,
+        right: Nullable<WebXRHand>
+    } = { left: null, right: null };
+
+    private _handResources: {
+        jointMeshes: Nullable<{ left: AbstractMesh[], right: AbstractMesh[] }>,
+        handMeshes: Nullable<{ left: AbstractMesh, right: AbstractMesh }>,
+        rigMappings: Nullable<{ left: XRHandMeshRigMapping, right: XRHandMeshRigMapping }>,
+    } = { jointMeshes: null, handMeshes: null, rigMappings: null };
 
     /**
      * This observable will notify registered observers when a new hand object was added and initialized
@@ -520,29 +656,6 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      */
     public onHandRemovedObservable: Observable<WebXRHand> = new Observable();
 
-    private _hands: {
-        [controllerId: string]: {
-            id: number;
-            handObject: WebXRHand;
-        };
-    } = {};
-
-    /**
-     * Creates a new instance of the hit test feature
-     * @param _xrSessionManager an instance of WebXRSessionManager
-     * @param options options to use when constructing this feature
-     */
-    constructor(
-        _xrSessionManager: WebXRSessionManager,
-        /**
-         * options to use when constructing this feature
-         */
-        public readonly options: IWebXRHandTrackingOptions
-    ) {
-        super(_xrSessionManager);
-        this.xrNativeFeatureName = "hand-tracking";
-    }
-
     /**
      * Check if the needed objects are defined.
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
@@ -552,58 +665,12 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 
     /**
-     * attach this feature
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    public attach(): boolean {
-        if (!super.attach()) {
-            return false;
-        }
-        this.options.xrInput.controllers.forEach(this._attachHand);
-        this._addNewAttachObserver(this.options.xrInput.onControllerAddedObservable, this._attachHand);
-        this._addNewAttachObserver(this.options.xrInput.onControllerRemovedObservable, (controller) => {
-            // REMOVE the controller
-            this._detachHand(controller.uniqueId);
-        });
-
-        return true;
-    }
-
-    /**
-     * detach this feature.
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    public detach(): boolean {
-        if (!super.detach()) {
-            return false;
-        }
-
-        Object.keys(this._hands).forEach((controllerId) => {
-            this._detachHand(controllerId);
-        });
-
-        return true;
-    }
-
-    /**
-     * Dispose this feature and all of the resources attached
-     */
-    public dispose(): void {
-        super.dispose();
-        this.onHandAddedObservable.clear();
-    }
-
-    /**
      * Get the hand object according to the controller id
      * @param controllerId the controller id to which we want to get the hand
      * @returns null if not found or the WebXRHand object if found
      */
     public getHandByControllerId(controllerId: string): Nullable<WebXRHand> {
-        return this._hands[controllerId]?.handObject || null;
+        return this._attachedHands[controllerId];
     }
 
     /**
@@ -612,89 +679,178 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * @returns null if not found or the WebXRHand object if found
      */
     public getHandByHandedness(handedness: XRHandedness): Nullable<WebXRHand> {
-        let found = null;
+        if (handedness == "none") {
+            return null;
+        }
+        return this._trackingHands[handedness];
+    }
 
-        for (const key in this._hands) {
-            if (this._hands[key].handObject.xrController.inputSource.handedness === handedness) {
-                found = this._hands[key];
+    /**
+     * Creates a new instance of the XR hand tracking feature.
+     * @param _xrSessionManager An instance of WebXRSessionManager.
+     * @param options Options to use when constructing this feature.
+     */
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        /** Options to use when constructing this feature. */
+        public readonly options: IWebXRHandTrackingOptions
+    ) {
+        super(_xrSessionManager);
+        this.xrNativeFeatureName = "hand-tracking";
+
+        // Support legacy versions of the options object by copying over joint mesh properties
+        const anyOptions = options as any;
+        const anyJointMeshOptions = anyOptions.jointMeshes;
+        if (anyJointMeshOptions) {
+            if (typeof anyJointMeshOptions.disableDefaultHandMesh !== "undefined") {
+                options.handMeshes = options.handMeshes || {};
+                options.handMeshes.disableDefaultMeshes = anyJointMeshOptions.disableDefaultHandMesh;
+            }
+            if (typeof anyJointMeshOptions.handMeshes !== "undefined") {
+                options.handMeshes = options.handMeshes || {};
+                options.handMeshes.customMeshes = anyJointMeshOptions.handMeshes;
+            }
+            if (typeof anyJointMeshOptions.leftHandedSystemMeshes !== "undefined") {
+                options.handMeshes = options.handMeshes || {};
+                options.handMeshes.meshesUseLeftHandedCoordinates = anyJointMeshOptions.leftHandedSystemMeshes;
+            }
+            if (typeof anyJointMeshOptions.rigMapping !== "undefined") {
+                options.handMeshes = options.handMeshes || {};
+                let leftRigMapping = {};
+                let rightRigMapping = {};
+                [[anyJointMeshOptions.rigMapping.left, leftRigMapping],
+                [anyJointMeshOptions.rigMapping.right, rightRigMapping]].forEach((rigMappingTuple) => {
+                    const legacyRigMapping = rigMappingTuple[0] as string[];
+                    const rigMapping = rigMappingTuple[1] as XRHandMeshRigMapping;
+                    legacyRigMapping.forEach((modelJointName, index) => {
+                        rigMapping[handJointReferenceArray[index]] = modelJointName;
+                    });
+                });
+                options.handMeshes.customRigMappings = {
+                    left: leftRigMapping as XRHandMeshRigMapping,
+                    right: rightRigMapping as XRHandMeshRigMapping
+                };
             }
         }
+    }
 
-        if (found) {
-            return found.handObject;
+    /**
+     * Attach this feature.
+     * Will usually be called by the features manager.
+     *
+     * @returns true if successful.
+     */
+    public attach(): boolean {
+        if (!super.attach()) {
+            return false;
         }
 
-        return null;
+        this._handResources = {
+            jointMeshes: WebXRHandTracking._generateTrackedJointMeshes(this.options),
+            handMeshes: this.options.handMeshes?.customMeshes || null,
+            rigMappings: this.options.handMeshes?.customRigMappings || null,
+        };
+
+        // If they didn't supply custom meshes and are not disabling the default meshes...
+        if (!this.options.handMeshes?.customMeshes && !this.options.handMeshes?.disableDefaultMeshes) {
+            WebXRHandTracking._generateDefaultHandMeshesAsync(Engine.LastCreatedScene!).then((defaultHandMeshes) => {
+                this._handResources.handMeshes = defaultHandMeshes;
+                this._handResources.rigMappings = {
+                    left: WebXRHandTracking._generateDefaultHandMeshRigMapping("left"),
+                    right: WebXRHandTracking._generateDefaultHandMeshRigMapping("right"),
+                };
+
+                // Apply meshes to existing hands if already tracking.
+                this._trackingHands.left?.setHandMesh(this._handResources.handMeshes.left, this._handResources.rigMappings.left);
+                this._trackingHands.right?.setHandMesh(this._handResources.handMeshes.right, this._handResources.rigMappings.right);
+            });
+        }
+
+        this.options.xrInput.controllers.forEach(this._attachHand);
+        this._addNewAttachObserver(this.options.xrInput.onControllerAddedObservable, this._attachHand);
+        this._addNewAttachObserver(this.options.xrInput.onControllerRemovedObservable, this._detachHand);
+
+        return true;
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
-        // iterate over the hands object
-        Object.keys(this._hands).forEach((id) => {
-            this._hands[id].handObject.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace, this.options.jointMeshes?.scaleFactor);
-        });
+        this._trackingHands.left?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace);
+        this._trackingHands.right?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace);
     }
 
     private _attachHand = (xrController: WebXRInputSource) => {
-        if (!xrController.inputSource.hand || this._hands[xrController.uniqueId]) {
-            // already attached
+        if (!xrController.inputSource.hand ||
+            xrController.inputSource.handedness == "none" ||
+            !this._handResources.jointMeshes) {
             return;
         }
 
-        const hand = xrController.inputSource.hand;
-        const trackedMeshes = new Map();
-        const originalMesh = this.options.jointMeshes?.sourceMesh || SphereBuilder.CreateSphere("jointParent", { diameter: 1 });
-        originalMesh.scaling.set(0.01, 0.01, 0.01);
-        originalMesh.isVisible = !!this.options.jointMeshes?.keepOriginalVisible;
-        for (let i = 0; i < hand.size; ++i) {
-            let newInstance: AbstractMesh = originalMesh.createInstance(`${xrController.uniqueId}-handJoint-${i}`);
-            if (this.options.jointMeshes?.onHandJointMeshGenerated) {
-                const returnedMesh = this.options.jointMeshes.onHandJointMeshGenerated(newInstance as InstancedMesh, i, xrController.uniqueId);
-                if (returnedMesh) {
-                    if (returnedMesh !== newInstance) {
-                        newInstance.dispose();
-                        newInstance = returnedMesh;
-                    }
-                }
-            }
-            newInstance.isPickable = false;
-            if (this.options.jointMeshes?.enablePhysics) {
-                const props = this.options.jointMeshes.physicsProps || {};
-                const type = props.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
-                newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, { mass: 0, ...props });
-            }
-            newInstance.rotationQuaternion = new Quaternion();
-            if (this.options.jointMeshes?.invisible) {
-                newInstance.isVisible = false;
-            }
-            trackedMeshes.set(handJointReferenceArray[i], newInstance);
-        }
-
-        const handedness = xrController.inputSource.handedness === "right" ? "right" : "left";
-        const handMesh = this.options.jointMeshes?.handMeshes && this.options.jointMeshes?.handMeshes[handedness];
-        const rigMapping = this.options.jointMeshes?.rigMapping && this.options.jointMeshes?.rigMapping[handedness];
+        const handedness = xrController.inputSource.handedness;
         const webxrHand = new WebXRHand(
             xrController,
-            trackedMeshes,
-            handMesh,
-            rigMapping,
-            this.options.jointMeshes?.disableDefaultHandMesh,
-            this.options.jointMeshes?.leftHandedSystemMeshes
+            this._handResources.jointMeshes[handedness],
+            this._handResources.handMeshes && this._handResources.handMeshes[handedness],
+            this._handResources.rigMappings && this._handResources.rigMappings[handedness],
+            this.options.handMeshes?.meshesUseLeftHandedCoordinates,
+            this.options.jointMeshes?.invisible,
+            this.options.jointMeshes?.scaleFactor
         );
 
-        // get two new meshes
-        this._hands[xrController.uniqueId] = {
-            handObject: webxrHand,
-            id: WebXRHandTracking._idCounter++,
-        };
+        this._attachedHands[xrController.uniqueId] = webxrHand;
+        this._trackingHands[handedness] = webxrHand;
 
         this.onHandAddedObservable.notifyObservers(webxrHand);
-    };
+    }
 
-    private _detachHand(controllerId: string) {
-        if (this._hands[controllerId]) {
-            this.onHandRemovedObservable.notifyObservers(this._hands[controllerId].handObject);
-            this._hands[controllerId].handObject.dispose();
-            delete this._hands[controllerId];
+    private _detachHandById(controllerId: string) {
+        const hand = this.getHandByControllerId(controllerId);
+        if (hand) {
+            const handedness = hand.xrController.inputSource.handedness == "left" ? "left" : "right";
+            if (this._trackingHands[handedness]?.xrController.uniqueId === controllerId) {
+                this._trackingHands[handedness] = null;
+            }
+            this.onHandRemovedObservable.notifyObservers(hand);
+            hand.dispose();
+            delete this._attachedHands[controllerId];
+        }
+    }
+
+    private _detachHand = (xrController: WebXRInputSource) => {
+        this._detachHandById(xrController.uniqueId);
+    }
+
+    /**
+     * Detach this feature.
+     * Will usually be called by the features manager.
+     *
+     * @returns true if successful.
+     */
+    public detach(): boolean {
+        if (!super.detach()) {
+            return false;
+        }
+
+        Object.keys(this._attachedHands).forEach((uniqueId) => this._detachHandById(uniqueId));
+
+        return true;
+    }
+
+    /**
+     * Dispose this feature and all of the resources attached.
+     */
+    public dispose(): void {
+        super.dispose();
+        this.onHandAddedObservable.clear();
+        this.onHandRemovedObservable.clear();
+
+        if (this._handResources.handMeshes && !this.options.handMeshes?.customMeshes) {
+            this._handResources.handMeshes.left.dispose();
+            this._handResources.handMeshes.right.dispose();
+        }
+
+        if (this._handResources.jointMeshes) {
+            this._handResources.jointMeshes.left.forEach((trackedMesh) => trackedMesh.dispose());
+            this._handResources.jointMeshes.right.forEach((trackedMesh) => trackedMesh.dispose());
         }
     }
 }
