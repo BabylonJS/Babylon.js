@@ -99,10 +99,8 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
      * Creates a holographic menu GUI 3D control
      * @param name name of the menu
      */
-    constructor(name = "") {
-        super();
-
-        this.name = name;
+    constructor(name?: string) {
+        super(name);
     }
 
     /**
