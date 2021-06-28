@@ -1,4 +1,5 @@
-import { ICanvasGraphServiceSettings, IPerfDataset } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings } from "./graphSupportingTypes";
+import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer";
 
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
