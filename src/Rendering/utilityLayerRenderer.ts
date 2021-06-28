@@ -243,7 +243,6 @@ export class UtilityLayerRenderer implements IDisposable {
                         prePointerInfo.skipOnPointerObservable = true;
                     }
                 } else {
-
                     let originalScenePick = getNearPickDataForScene(originalScene);
                     let pointerEvent = <PointerEvent>prePointerInfo.event;
 
