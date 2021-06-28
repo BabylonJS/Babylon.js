@@ -85812,23 +85812,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * Defines what data is needed to graph a point on the graph.
-     */
-    export interface IPerfPoint {
-        x: number;
-        y: number;
-    }
-    /**
-     * Defines the shape of a dataset that our graphing service uses for drawing purposes.
-     */
-    export interface IPerfDataset {
-        color?: string;
-        data: IPerfPoint[];
-        hidden?: boolean;
-    }
-}
-declare module BABYLON {
     /** @hidden */
     export var blurPixelShader: {
         name: string;
