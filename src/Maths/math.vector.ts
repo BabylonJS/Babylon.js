@@ -3518,10 +3518,9 @@ export class Quaternion {
 
     /**
      * Returns a new Vector3 set with the Euler angles translated from the current quaternion
-     * @param order is a reserved parameter and is ignored for now
      * @returns a new Vector3 containing the Euler angles
      */
-    public toEulerAngles(order = "YZX"): Vector3 {
+    public toEulerAngles(): Vector3 {
         var result = Vector3.Zero();
         this.toEulerAnglesToRef(result);
         return result;
