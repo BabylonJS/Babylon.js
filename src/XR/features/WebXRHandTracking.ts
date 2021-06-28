@@ -18,7 +18,6 @@ import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
 import { InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
 import { Material } from "../../Materials/material";
 import { Engine } from "../../Engines/engine";
-import { Tags } from "../../Misc/tags";
 import { IcoSphereBuilder } from "../../Meshes/Builders/icoSphereBuilder";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
@@ -69,10 +68,6 @@ export interface IWebXRHandTrackingOptions {
          * If enabled, override default physics properties
          */
         physicsProps?: { friction?: number; restitution?: number; impostorType?: number };
-        /**
-         * The utilityLayer scene that contains the 3D UI elements. Passing this in turns on near interactions with the index finger tip
-         */
-        sceneForNearInteraction?: Scene;
         /**
          * Scale factor for all joint meshes (defaults to 1)
          */
@@ -321,7 +316,6 @@ export class WebXRHand implements IDisposable {
      *                   If not provided (but a hand mesh is provided),
      *                   it will be assumed that the hand mesh's bones are named
      *                   directly after the WebXR bone names.
-     * @param _nearInteractionMesh As optional mesh used for near interaction collision checking
      * @param _leftHandedMeshes Are the hand meshes left-handed-system meshes
      * @param _jointsInvisible Are the tracked joint meshes visible
      * @param _jointScaleFactor Scale factor for all joint meshes
@@ -334,7 +328,6 @@ export class WebXRHand implements IDisposable {
         /** An optional rig mapping for the hand mesh. If not provided (but a hand mesh is provided),
           * it will be assumed that the hand mesh's bones are named directly after the WebXR bone names. */
         readonly rigMapping: Nullable<XRHandMeshRigMapping>,
-        private readonly _nearInteractionMesh?: Nullable<AbstractMesh>,
         private readonly _leftHandedMeshes: boolean = false,
         private readonly _jointsInvisible: boolean = false,
         private readonly _jointScaleFactor: number = 1
@@ -468,15 +461,6 @@ export class WebXRHand implements IDisposable {
                     jointTransform.rotationQuaternion!.w *= -1;
                 }
             }
-
-            // Update the invisible fingertip collidable
-            if (this._nearInteractionMesh && jointName == "index-finger-tip") {
-                this._nearInteractionMesh.position.copyFrom(jointTransform.position);
-                this._nearInteractionMesh.scaling.copyFromFloats(scaledJointRadius, scaledJointRadius, scaledJointRadius);
-                if (!this._scene.useRightHandedSystem) {
-                    this._nearInteractionMesh.position.z *= -1;
-                }
-            }
         });
 
         if (this._handMesh) {
@@ -488,9 +472,6 @@ export class WebXRHand implements IDisposable {
      * Dispose this Hand object
      */
     public dispose() {
-        if (this._nearInteractionMesh) {
-            this._nearInteractionMesh.dispose();
-        }
         if (this._handMesh) {
             this._handMesh.isVisible = false;
         }
@@ -804,20 +785,12 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             return;
         }
 
-        let touchMesh: Nullable<AbstractMesh> = null;
-        if (this.options.jointMeshes?.sceneForNearInteraction) {
-            touchMesh = IcoSphereBuilder.CreateIcoSphere(`${xrController.uniqueId}-handJoint-indexCollidable`, WebXRHandTracking._ICOSPHERE_PARAMS, this.options.jointMeshes.sceneForNearInteraction);
-            touchMesh.isVisible = false;
-            Tags.AddTagsTo(touchMesh, "touchEnabled");
-        }
-
         const handedness = xrController.inputSource.handedness;
         const webxrHand = new WebXRHand(
             xrController,
             this._handResources.jointMeshes[handedness],
             this._handResources.handMeshes && this._handResources.handMeshes[handedness],
             this._handResources.rigMappings && this._handResources.rigMappings[handedness],
-            touchMesh,
             this.options.handMeshes?.meshesUseLeftHandedCoordinates,
             this.options.jointMeshes?.invisible,
             this.options.jointMeshes?.scaleFactor

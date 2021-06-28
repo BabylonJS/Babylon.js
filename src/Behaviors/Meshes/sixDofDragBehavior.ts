@@ -64,6 +64,8 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     public attach(ownerNode: Mesh): void {
         super.attach(ownerNode);
 
+        ownerNode.isNearGrabbable = true;
+
         // Node that will save the owner's transform
         this._virtualTransformNode = new TransformNode("virtual_sixDof", BaseSixDofDragBehavior._virtualScene);
         this._virtualTransformNode.rotationQuaternion = Quaternion.Identity();
@@ -228,6 +230,8 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
      */
     public detach(): void {
         super.detach();
+
+        (this._ownerNode as Mesh).isNearGrabbable = false;
 
         if (this._ownerNode) {
             this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);
