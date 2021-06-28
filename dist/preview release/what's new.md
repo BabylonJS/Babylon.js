@@ -119,7 +119,7 @@
 - Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
 - Added `ToggleButton` GUI control ([kintz09](https://github.com/kintz09))
 - Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class ([kintz09](https://github.com/kintz09))
-- Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
+- Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`. `TouchMeshButton3D`'s near interaction mesh can be customized with the `collisionMesh` property ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 - Added `imageWidth()` and `imageHeight()` to access the source image dimensions of `Image` ([Queatz](https://github.com/Queatz))
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
 - Added property `renderToIntermediateTexture` to `Container` which when set to true, will render children to an intermediate texture rather than direct to host allowing for DOM style alpha blending ([BlindingHues](https://github.com/blindinghues))
@@ -136,6 +136,7 @@
 - Added `draggableMeshes` property in `SixDoFDragBehavior` list in order to have only a subset of descendant meshes take pointer events into account ([CraigFeldspar](https://github.com/CraigFeldspar))
 - `SixDoFDragBehavior` can now handle multiple pointers at the same time to scale/rotate the owner mesh ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `HandConstraintBehavior`, to make the assigned mesh follow the hand pose. This behavior requires to be linked to a XR experience with the `HandTracking` feature activated. ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Updated `SixDofDragBehavior` and `PointerDragBehavior` to respond to grabs made with the `WebXRNearInteraction` feature ([rickfromwork](https://github.com/rickfromwork))
 
 ### WebXR
 
@@ -156,6 +157,7 @@
 - Added support for `xr-dom-overlay` ([#8996](https://github.com/BabylonJS/Babylon.js/issues/8996)) ([brianzinn](https://github.com/brianzinn))
 - Added near interaction events (hover, grab, and near-pick) ([satyapoojasama](https://github.com/satyapoojasama))
 - Added XR Movement Controller feature for ([#7442](https://github.com/BabylonJS/Babylon.js/issues/7442)) ([brianzinn](https://github.com/brianzinn))
+- Improved functionality of `WebXRNearInteraction` and updated coverage to be enabled on Behaviors and Gizmos ([rickfromwork](https://github.com/rickfromwork))
 
 ### Gizmos
 
@@ -164,6 +166,7 @@
 - Exposed `scaleRatio` for GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added constructor parameters to customize colors for rotation gizmos on RotationGizmo ([jekelija](https://github.com/jekelija))
 - Added constructor parameters to allow turning off updateScale on RotationGizmo ([jekelija](https://github.com/jekelija))
+- Gizmos that have draggable components now support near interactions via `WebXRNearInteraction` ([rickfromwork](https://github.com/rickfromwork)) 
 
 ### Viewer
 
@@ -252,6 +255,10 @@
 - Fix for disabledColor not working for Button ([msDestiny14](https://github.com/msDestiny14))
 - Fix NativeEngine not setting default depth test function to LEQUAL ([rgerd](https://github.com/rgerd))
 - Fix support of `useReverseDepthBuffer` throughout the engine ([Popov72](https://github.com/Popov72))
+- Fix `WebXRNearInteraction` feature's cursor positioning on meshes ([rickfromwork](https://github.com/rickfromwork))
+- Fix scaling discrepancy between `TouchHolographicButton` and other 3D controls ([rickfromwork](https://github.com/rickfromwork))
+- Fix for triggering interactions on nearby meshes when performing a near interaction grab ([rickfromwork](https://github.com/rickfromwork))
+- Fix for near interaction failing when multiple utility layers are present ([rickfromwork](https://github.com/rickfromwork))
 
 ## Breaking changes
 
