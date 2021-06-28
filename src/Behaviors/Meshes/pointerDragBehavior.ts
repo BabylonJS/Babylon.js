@@ -186,6 +186,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public attach(ownerNode: AbstractMesh, predicate?: (m: AbstractMesh) => boolean): void {
         this._scene = ownerNode.getScene();
+        ownerNode.isNearGrabbable = true;
         this.attachedNode = ownerNode;
 
         // Initialize drag plane to not interfere with existing scene
@@ -484,6 +485,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      *  Detaches the behavior from the mesh
      */
     public detach(): void {
+        this.attachedNode.isNearGrabbable = false;
+
         if (this._pointerObserver) {
             this._scene.onPointerObservable.remove(this._pointerObserver);
         }
