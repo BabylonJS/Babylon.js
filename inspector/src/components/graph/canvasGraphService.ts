@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IMinMax } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IMinMax, INiceTicks, IDrawableArea } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 
 /**
@@ -38,33 +38,51 @@ export class CanvasGraphService {
         // First we clear the canvas so we can draw our data!
         this.clear();
 
-        // Get global min max (across all datasets).
+        // Get global min max of x axis (across all datasets).
         let globalMinMaxX = {min: Infinity, max: 0};
-        let globalMinMaxY = {min: Infinity, max: 0};
 
-        this.datasets.forEach((dataset: IPerfDataset) => {
-            const minMaxX = this._getMinMax(dataset.data.map((point: IPoint) => point.x));
-            const minMaxY = this._getMinMax(dataset.data.map((point: IPoint) => point.y));
-            
+        // TODO: Make better sliding window code.
+        const datasets = this.datasets.map((dataset: IPerfDataset) => ({
+            ...dataset,
+            data: dataset.data.slice(Math.max(dataset.data.length - 300, 0))
+        }));
+
+        datasets.forEach((dataset: IPerfDataset) => {
+            if (!!dataset.hidden) {
+                return;
+            }
+            const minMaxX = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.x));            
             globalMinMaxX = {min: Math.min(minMaxX.min, globalMinMaxX.min), max: Math.max(minMaxX.max, globalMinMaxX.max)};
-            globalMinMaxY = {min: Math.min(minMaxY.min, globalMinMaxY.min), max: Math.max(minMaxY.max, globalMinMaxY.max)};
         });
 
+        const drawableArea: IDrawableArea = {
+            top: 0,
+            left: 0,
+            bottom: this._height,
+            right: this._width,
+        };
+
         // TODO: Draw axis, and get area we can draw in.
-        this._drawAxis(globalMinMaxX, globalMinMaxY);
+        this._drawXAxis(globalMinMaxX, drawableArea);
 
         // TODO: Draw each dataset
-        this.datasets.forEach((dataset: IPerfDataset) => {
+        datasets.forEach((dataset: IPerfDataset) => {
             // ignore hidden data!
             if (!!dataset.hidden) {
                 return;
             }
 
-            const drawablePoints = dataset.data.map((point: IPoint) => this._getPixelPointFromDataPoint(point, globalMinMaxX, globalMinMaxY));
-            let prevPoint: IPoint = {x: 0, y: 0};
+            const minMaxY = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.y));
+            const drawablePoints = dataset.data.map((point: IPerfPoint) => this._getPixelPointFromDataPoint(point, globalMinMaxX, minMaxY, drawableArea));
+           
+            if (drawablePoints.length === 0) {
+                return;
+            }
+
+            let prevPoint: IPerfPoint = drawablePoints[0];
             ctx.beginPath();
             
-            drawablePoints.forEach((point: IPoint) => {
+            drawablePoints.forEach((point: IPerfPoint) => {
                 ctx.moveTo(prevPoint.x, prevPoint.y);
                 ctx.lineTo(point.x, point.y);
                 prevPoint = point;
@@ -74,8 +92,94 @@ export class CanvasGraphService {
     }
 
     
-    private _drawAxis(minMaxX: IMinMax, minMaxY: IMinMax) {
+    private _drawXAxis(minMaxX: IMinMax, drawableArea: IDrawableArea) {
+        const { _ctx: ctx } = this;
 
+        if (!ctx) {
+            return;
+        }
+
+        const { ticks, niceMin, niceMax } = this._getTicks(minMaxX, drawableArea.right - drawableArea.left);
+
+        if (Number.isNaN(niceMin) || Number.isNaN(niceMax)) {
+            return;
+        }
+
+        const axisHeight = 100;
+
+        // remove the height of the axis from the available drawable area.
+        drawableArea.bottom -= axisHeight;
+
+        // draw x axis line
+        ctx.beginPath();
+        ctx.moveTo(drawableArea.left, drawableArea.bottom);
+        ctx.lineTo(drawableArea.right, drawableArea.bottom);
+
+        ticks.forEach((tick: number) => {
+            const position = this._getPixelForNumber(tick, minMaxX, drawableArea.left, drawableArea.right - drawableArea.left, false);
+            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+        });
+        ctx.stroke();
+
+    }
+
+
+    private _getTicks(minMax: IMinMax, spaceAvailable: number): INiceTicks {
+        const { min, max } = minMax;
+        const minTickSpacing = 40; 
+
+        let ticks: number[] = [];
+
+        const maxTickCount = Math.ceil(spaceAvailable / minTickSpacing);
+        const range = this._niceNumber(max - min, false);
+        const spacing = this._niceNumber(range/(maxTickCount - 1), true);
+        const niceMin = Math.floor(min/spacing) * spacing;
+        const niceMax = Math.floor(max/spacing) * spacing;
+
+        // const numDigits = Math.max(-Math.floor(Math.log10(spacing)), 0);
+
+        for (let i = niceMin; i <= niceMax + 0.5 * spacing; i += spacing) {
+            ticks.push(i);
+        }
+
+        return {ticks, niceMin, niceMax: niceMax};
+    }
+
+    /**
+     * Nice number algorithm based on psueudo code defined in "Graphics Gems" by Andrew S. Glassner.
+     * This will find a "nice" number approximately equal to num.
+     * 
+     * @param num The number we want to get close to.
+     * @param shouldRound if true we will round the number, otherwise we will get the ceiling.
+     * @returns a "nice" number approximately equal to num.
+     */
+    private _niceNumber(num: number, shouldRound: boolean) {
+        const exp = Math.floor(Math.log10(num));
+        const fraction = num / Math.pow(10, exp);
+        let niceFraction: number;
+        if (shouldRound) {
+            if (fraction < 1.5) {
+                niceFraction = 1;
+            } else if (fraction < 3) {
+                niceFraction = 2;
+            } else if (fraction < 7) {
+                niceFraction = 5;
+            } else {
+                niceFraction = 10;
+            }
+        } else {
+            if (fraction <= 1) {
+                niceFraction = 1;
+            } else if (fraction <= 2) {
+                niceFraction = 2;
+            } else if (fraction <= 5) {
+                niceFraction = 5;
+            } else {
+                niceFraction = 10;
+            }
+        }
+    
+        return niceFraction * Math.pow(10, exp);
     }
 
     private _getMinMax(values: number[]): IMinMax {
@@ -97,26 +201,29 @@ export class CanvasGraphService {
         }
     }
     
-    private _getPixelPointFromDataPoint(point: IPoint, minMaxX: IMinMax, minMaxY: IMinMax): IPoint {
+    private _getPixelPointFromDataPoint(point: IPerfPoint, minMaxX: IMinMax, minMaxY: IMinMax, drawableArea: IDrawableArea): IPerfPoint {
         const {x, y} = point;
-        const {min: minX, max: maxX} = minMaxX;
-        const {min: minY, max: maxY} = minMaxY;
-        // When we begin drawing the y-axis left may become non 0 and bottom will need to be modified to not include the x axis area, or perhaps the height will need to be modified.
-        const top = 0;
-        const left = 0;
-        const bottom = top + this._height;
-        const right = left + this._width;
-        
-        // Perform a min-max normalization to rescale the x and y values onto a [0, 1] scale.
-        const normalizedX = (x-minX)/(maxX - minX);
-        const normalizedY = (y-minY)/(maxY - minY);
+
+        const {top, left, bottom, right} = drawableArea;
         
 
-        // multiply the normalized value with the length of available space
         return {
-            x: left + normalizedX * (right - left),
-            y: top + (1 - normalizedY) * (bottom - top)
+            x: this._getPixelForNumber(x, minMaxX, left, right - left, false),
+            y: this._getPixelForNumber(y, minMaxY, top, bottom - top, true)
         };
+    }
+    
+    private _getPixelForNumber(value: number, minMax: IMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
+        const {min, max} = minMax;
+        // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
+        let normalizedValue = (value - min)/(max - min);
+
+        // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
+        if (shouldFlipValue) {
+            normalizedValue = 1 - normalizedValue;
+        }
+
+        return startingPixel + normalizedValue * spaceAvailable;
     }
     
     /**
