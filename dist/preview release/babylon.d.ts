@@ -35870,14 +35870,15 @@ declare module BABYLON {
         normalize(): Quaternion;
         /**
          * Returns a new Vector3 set with the Euler angles translated from the current quaternion
-         * @param order is a reserved parameter and is ignored for now
          * @returns a new Vector3 containing the Euler angles
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
          */
-        toEulerAngles(order?: string): Vector3;
+        toEulerAngles(): Vector3;
         /**
          * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
          * @param result defines the vector which will be filled with the Euler angles
          * @returns the current unchanged quaternion
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
          */
         toEulerAnglesToRef(result: Vector3): Quaternion;
         /**
@@ -51449,10 +51450,6 @@ declare module BABYLON {
                 impostorType?: number;
             };
             /**
-             * The utilityLayer scene that contains the 3D UI elements. Passing this in turns on near interactions with the index finger tip
-             */
-            sceneForNearInteraction?: Scene;
-            /**
              * Scale factor for all joint meshes (defaults to 1)
              */
             scaleFactor?: number;
@@ -51585,7 +51582,6 @@ declare module BABYLON {
         /** An optional rig mapping for the hand mesh. If not provided (but a hand mesh is provided),
           * it will be assumed that the hand mesh's bones are named directly after the WebXR bone names. */
         readonly rigMapping: Nullable<XRHandMeshRigMapping>;
-        private readonly _nearInteractionMesh?;
         private readonly _leftHandedMeshes;
         private readonly _jointsInvisible;
         private readonly _jointScaleFactor;
@@ -51628,7 +51624,6 @@ declare module BABYLON {
          *                   If not provided (but a hand mesh is provided),
          *                   it will be assumed that the hand mesh's bones are named
          *                   directly after the WebXR bone names.
-         * @param _nearInteractionMesh As optional mesh used for near interaction collision checking
          * @param _leftHandedMeshes Are the hand meshes left-handed-system meshes
          * @param _jointsInvisible Are the tracked joint meshes visible
          * @param _jointScaleFactor Scale factor for all joint meshes
@@ -51638,7 +51633,7 @@ declare module BABYLON {
         xrController: WebXRInputSource, _jointMeshes: AbstractMesh[], _handMesh: Nullable<AbstractMesh>, 
         /** An optional rig mapping for the hand mesh. If not provided (but a hand mesh is provided),
           * it will be assumed that the hand mesh's bones are named directly after the WebXR bone names. */
-        rigMapping: Nullable<XRHandMeshRigMapping>, _nearInteractionMesh?: Nullable<AbstractMesh> | undefined, _leftHandedMeshes?: boolean, _jointsInvisible?: boolean, _jointScaleFactor?: number);
+        rigMapping: Nullable<XRHandMeshRigMapping>, _leftHandedMeshes?: boolean, _jointsInvisible?: boolean, _jointScaleFactor?: number);
         /**
          * Sets the current hand mesh to render for the WebXRHand.
          * @param handMesh The rigged hand mesh that will be tracked to the user's hand.
@@ -55418,7 +55413,7 @@ declare module BABYLON {
         private _generateVisualCue;
         private _attachNearInteractionMode;
         private _detachController;
-        private _generateNewHandTipMeshes;
+        private _generateNewHandTipMesh;
         private _pickWithSphere;
         /**
          * Picks a mesh with a sphere
