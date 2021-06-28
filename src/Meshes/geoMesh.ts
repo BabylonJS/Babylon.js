@@ -536,9 +536,12 @@ export class PolyhedronData {
 
 export class GeoData extends PolyhedronData{
 
-    public _edgematch: any[][];    
+    public _edgematch: any[][];
+    
+    public _sharedNodes: number;
+    public _poleNodes: number;
 
-    public _InnerToData(face : number, primTri: Primary) {
+    public _innerToData(face : number, primTri: Primary) {
         for (let i = 0; i < primTri._innerFacets.length; i++) {
             this.face.push(primTri._innerFacets[i].map((el) => primTri._vecToIdx[face + el]));
         }
@@ -624,32 +627,32 @@ export class GeoData extends PolyhedronData{
             
         };
    
-       for (let j = 0; j < nearTo[12].length; j++) {
+        for (let j = 0; j < nearTo[12].length; j++) {
            near[nearTo[12][j][0]] = nearIndex++;
-       }
+        }
    
-       for (let i = 0; i < this.vertex.length; i++) {
-           this.vertex[i].push(near[i]);
-       }
+        for (let i = 0; i < this.vertex.length; i++) {
+            this.vertex[i].push(near[i]);
+        }
        
-       this.vertex.sort((a, b) => {
-           return a[3] - b[3];
-       });
+        this.vertex.sort((a, b) => {
+            return a[3] - b[3];
+        });
        
    
-       for (let i = 0; i < this.vertex.length; i++) {
-           this.vertex[i].pop();
-       }
+        for (let i = 0; i < this.vertex.length; i++) {
+            this.vertex[i].pop();
+        }
    
-       for (let i = 0; i < this.face.length; i++) {
-           for (let j = 0; j < this.face[i].length; j++) {
-               this.face[i][j] = near[this.face[i][j]];
-           }
-       }
-   
-       let nbToCol = this.vertex.length - nearTo[12].length;
-        
-        return nbToCol;
+        for (let i = 0; i < this.face.length; i++) {
+            for (let j = 0; j < this.face[i].length; j++) {
+                this.face[i][j] = near[this.face[i][j]];
+            }
+        }
+
+        this._sharedNodes = nearTo[12].length
+        this._poleNodes = this.vertex.length - this._sharedNodes;
+
     }
 
     //Puts vertices of a face for GP in correct order for mesh construction
@@ -735,7 +738,7 @@ export class GeoData extends PolyhedronData{
 
         for (let f = 0; f < primTri._IDATA.face.length; f++) {
             primTri._MapToFace(f, geoDATA);
-            geoDATA._InnerToData(f, primTri);
+            geoDATA._innerToData(f, primTri);
             if(primTri._IDATA._edgematch[f][1] === "B") {
                 geoDATA._mapABOBtoDATA(f, primTri);
             };

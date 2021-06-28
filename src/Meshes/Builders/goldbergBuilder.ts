@@ -69,11 +69,86 @@ VertexData.CreateGoldbergSphere= function(options: { size?: number, sizeX?: numb
  */
 export class GDMesh extends Mesh {
 
-    public faceColors: Color4[] = [];  
-    public faceCenters: Vector3[] = [];
-    public faceZaxis: Vector3[] = [];
-    public faceXaxis: Vector3[] = [];
-    public faceYaxis: Vector3[] = [];
+    constructor(
+        name: string,
+        scene: Nullable<Scene> = null,
+        geoData: GeoData,
+        goldbergData: PolyhedronData
+    ) {
+        super(name, scene);
+
+        scene = this.getScene();
+
+        this._nbSharedFaces = geoData._sharedNodes;
+        this._nbUnsharedFaces = geoData._poleNodes;
+        this._nbFacesAtPole = (this._nbUnsharedFaces - 12) / 12;
+        for (let f = 0; f < geoData.vertex.length; f++) {
+            this._faceCenters.push(Vector3.FromArray(geoData.vertex[f]));
+        };
+        for (let f = 0; f < goldbergData.face.length; f++) {
+            const verts = goldbergData.face[f];
+            const a = Vector3.FromArray(goldbergData.vertex[verts[0]]);
+            const b = Vector3.FromArray(goldbergData.vertex[verts[2]]);
+            const c = Vector3.FromArray(goldbergData.vertex[verts[1]]);
+            const ba = b.subtract(a);
+            const ca = c.subtract(a);
+            const norm = Vector3.Cross(ca, ba).normalize();
+            const z = Vector3.Cross(ca, norm).normalize();
+            this._faceXaxis.push(ca.normalize());
+            this._faceYaxis.push(norm);
+            this._faceZaxis.push(z);
+        };
+        this._setMetadata();
+    }
+
+    private _faceColors: Color4[] = [];  
+    private _faceCenters: Vector3[] = [];
+    public _faceZaxis: Vector3[] = [];
+    public _faceXaxis: Vector3[] = [];
+    public _faceYaxis: Vector3[] = [];
+    private _nbSharedFaces: number;
+    private _nbUnsharedFaces: number;
+    private _nbFacesAtPole: number;
+
+    private _setMetadata = () => {
+        this.metadata = {
+            nbSharedFaces: this._nbSharedFaces,
+            nbUnsharedFaces: this._nbUnsharedFaces,
+            nbFacesAtPole: this._nbFacesAtPole,
+            faceCenters: this._faceCenters,
+            faceXaxis: this._faceXaxis,
+            faceYaxis: this._faceYaxis,
+            faceZaxis: this._faceZaxis
+        }
+    }
+
+    public get nbSharedFaces() {
+        return this._nbSharedFaces;
+    }
+
+    public get nbUnsharedFaces() {
+        return this._nbUnsharedFaces;
+    }
+
+    public get nbFacesAtPole() {
+        return this._nbFacesAtPole;
+    }
+
+    public get faceCenters() {
+        return this._faceCenters;
+    }
+
+    
+    //after loading
+    public updateFaceInfo = () => {
+        this._nbSharedFaces = this.metadata.nbSharedFaces;
+        this._nbUnsharedFaces = this.metadata.nbUnsharedFaces;
+        this._nbFacesAtPole = this.metadata.nbFacesAtPole;
+        this._faceCenters = this.metadata.faceCenters,
+        this._faceXaxis = this.metadata.faceXaxis,
+        this._faceYaxis = this.metadata.faceYaxis,
+        this._faceZaxis = this.metadata.faceZaxis
+    }
 
     private _changeFaceColors = (colorRange : any[][]): number[] => {
         for ( let i = 0; i < colorRange.length; i++) {
@@ -81,18 +156,18 @@ export class GDMesh extends Mesh {
             const max: number = colorRange[i][1];
             const col: Color4 = colorRange[i][2];
             for ( let f = min; f < max + 1; f++ ) {
-                this.faceColors[f] = col;
+                this._faceColors[f] = col;
             }
         }
         const newCols: number[] = [];
         for (let f = 0; f < 12; f++) {
             for (let i = 0; i < 5; i++) {
-                newCols.push(this.faceColors[f].r, this.faceColors[f].g, this.faceColors[f].b, this.faceColors[f].a)
+                newCols.push(this._faceColors[f].r, this._faceColors[f].g, this._faceColors[f].b, this._faceColors[f].a)
             }
         }
-        for (let f = 12; f < this.faceColors.length; f++) {
+        for (let f = 12; f < this._faceColors.length; f++) {
             for (let i = 0; i < 6; i++) {
-                newCols.push(this.faceColors[f].r, this.faceColors[f].g, this.faceColors[f].b, this.faceColors[f].a)
+                newCols.push(this._faceColors[f].r, this._faceColors[f].g, this._faceColors[f].b, this._faceColors[f].a)
             }
         }
         return newCols;
@@ -103,10 +178,16 @@ export class GDMesh extends Mesh {
         this.setVerticesData(VertexBuffer.ColorKind, newCols);
     };
 
+    public getFaceColors = () => {
+        return this._faceColors;
+    }
+
     public updateFaceColors = (colorRange : any[][]) => {
         const newCols = this._changeFaceColors(colorRange);
         this.updateVerticesData(VertexBuffer.ColorKind, newCols);
     }
+
+    
 };
 
 Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): GDMesh => {
@@ -156,15 +237,16 @@ Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, siz
         const primTri: Primary = new Primary;
         primTri.build(m, n);
         const geoData = GeoData.BuildGeoData(primTri);
+        const goldbergData = geoData._toGoldbergData();
 
-        const goldberg = new GDMesh(name, scene);
+        const goldberg = new GDMesh(name, scene, geoData, goldbergData);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
         goldberg._originalBuilderSideOrientation = options.sideOrientation;
         
-        const goldData = geoData._toGoldbergData();
+        
 
-        const vertexData = VertexData.CreateGoldbergSphere(options, goldData)
+        const vertexData = VertexData.CreateGoldbergSphere(options, goldbergData)
 
         vertexData.applyToMesh(goldberg, options.updatable);
 
