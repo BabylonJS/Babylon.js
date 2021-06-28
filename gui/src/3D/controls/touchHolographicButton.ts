@@ -271,7 +271,7 @@ export class TouchHolographicButton extends TouchButton3D {
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
+        collisionMesh.scaling = new Vector3(1, 1, 0.5);
 
         SceneLoader.ImportMeshAsync(
             undefined,
