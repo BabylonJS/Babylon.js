@@ -55220,6 +55220,31 @@ var BlockTools = /** @class */ (function () {
                 meshUV.setAsAttribute("uv");
                 return meshUV;
             }
+            case "UV2Block": {
+                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv2");
+                meshUV.setAsAttribute("uv2");
+                return meshUV;
+            }
+            case "UV3Block": {
+                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv3");
+                meshUV.setAsAttribute("uv3");
+                return meshUV;
+            }
+            case "UV4Block": {
+                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv'");
+                meshUV.setAsAttribute("uv'");
+                return meshUV;
+            }
+            case "UV5Block": {
+                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv5");
+                meshUV.setAsAttribute("uv5");
+                return meshUV;
+            }
+            case "UV6Block": {
+                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv6");
+                meshUV.setAsAttribute("uv6");
+                return meshUV;
+            }
             case "ColorBlock": {
                 var meshColor = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("color");
                 meshColor.setAsAttribute("color");
@@ -55694,7 +55719,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock", "MatrixBuilderBlock"],
-            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
+            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "UV2Block", "UV3Block", "UV4Block", "UV5Block", "UV6Block", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
@@ -55784,7 +55809,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         "SubtractBlock": "Subtracts the right input from the left input of the same type",
         "GradientBlock": "Returns the color in the gradient represented by the target value of the input",
         "PosterizeBlock": "Reduces the number of values in each channel to the number in the corresponding channel of steps",
-        "ReplaceColorBlock": "Replaces a reference color in value with the color in replacement blended by distance",
+        "ReplaceColorBlock": "Outputs the replacement color if the distance between value and reference is less than distance, else outputs the value color",
         "ColorMergerBlock": "Combines float input channels into a color",
         "ColorSplitterBlock": "Separates color input channels into individual floats",
         "VectorMergerBlock": "Combines up to four input floats into a vector",
@@ -55816,6 +55841,11 @@ var NodeListComponent = /** @class */ (function (_super) {
         "PositionBlock": "A Vector3 representing the position of each vertex of the attached mesh",
         "TangentBlock": "A Vector3 representing the tangent of each vertex of the attached mesh",
         "UVBlock": "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
+        "UV2Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 2)",
+        "UV3Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 3)",
+        "UV4Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 4)",
+        "UV5Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 5)",
+        "UV6Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 6)",
         "WorldNormal": "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
         "WorldTangent": "A Vector4 representing the tangent of each vertex of the attached mesh transformed into world space",
         "PerturbNormalBlock": "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
@@ -60519,7 +60549,9 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.serializePortData = function (exposedPorts) {
         if (exposedPorts.length > 0) {
             for (var i = 0; i < exposedPorts.length; ++i) {
-                exposedPorts[i].exposedPortPosition = i;
+                if (exposedPorts[i]) {
+                    exposedPorts[i].exposedPortPosition = i;
+                }
             }
         }
     };

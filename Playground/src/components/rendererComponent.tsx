@@ -141,7 +141,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 globalObject.createDefaultEngine = async function () {
                     var engine = new WebGPUEngine(canvas, {
                         deviceDescriptor: {
-                            nonGuaranteedFeatures: [
+                            requiredFeatures: [
                                 "texture-compression-bc",
                                 "timestamp-query",
                                 "pipeline-statistics-query",

@@ -224,7 +224,7 @@ export class SpriteRenderer {
         const culling = engine.depthCullingState.cull || true;
         const zOffset = engine.depthCullingState.zOffset;
 
-        this._scene!.getEngine().setState(culling, zOffset, false, false);
+        engine.setState(culling, zOffset, false, false);
 
         // Render
         engine.enableEffect(drawWrapper);

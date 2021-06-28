@@ -683,7 +683,7 @@ declare module BABYLON.GUI {
         * LayerMask is set through advancedTexture.layer.layerMask
         * @param name defines name for the texture
         * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-        * @param scene defines the hsoting scene
+        * @param scene defines the hosting scene
         * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
         * @returns a new AdvancedDynamicTexture
         */

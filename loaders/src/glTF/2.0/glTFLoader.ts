@@ -30,7 +30,7 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { IDataBuffer } from 'babylonjs/Misc/dataReader';
-import { LoadFileError } from 'babylonjs/Misc/fileTools';
+import { FileTools, LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs/Misc/logger';
 import { Light } from 'babylonjs/Lights/light';
 import { TmpVectors } from 'babylonjs/Maths/math.vector';
@@ -2132,8 +2132,8 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: '${uri}' is invalid`);
         }
 
-        if (Tools.IsBase64(uri)) {
-            const data = new Uint8Array(Tools.DecodeBase64(uri));
+        if (FileTools.IsBase64DataUrl(uri)) {
+            const data = new Uint8Array(FileTools.DecodeBase64UrlToBinary(uri));
             this.log(`${context}: Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
             return Promise.resolve(data);
         }
@@ -2142,7 +2142,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         return this._parent.preprocessUrlAsync(this._rootUrl + uri).then((url) => {
             return new Promise((resolve, reject) => {
-                this._parent._loadFile(url, this._babylonScene, (data) => {
+                this._parent._loadFile(this._babylonScene, url, (data) => {
                     if (!this._disposed) {
                         this.log(`${context}: Loaded ${uri} (${(data as ArrayBuffer).byteLength} bytes)`);
                         resolve(new Uint8Array(data as ArrayBuffer));
