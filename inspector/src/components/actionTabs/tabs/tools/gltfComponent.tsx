@@ -149,7 +149,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                     <CheckBoxLineComponent label="MSFT_audio_emitter" isSelected={() => extensionStates["MSFT_audio_emitter"].enabled} onSelect={(value) => (extensionStates["MSFT_audio_emitter"].enabled = value)} />
                     <MessageLineComponent text="You need to reload your file to see these changes" />
                 </LineContainerComponent>
-                {loaderState["validate"] && this.props.globalState.validationResults && this.renderValidation()}
+                {this.props.globalState.validationResults && this.renderValidation()}
             </div>
         );
     }

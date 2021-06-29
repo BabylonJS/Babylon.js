@@ -51,11 +51,19 @@ declare module "../abstractScene" {
         getLensFlareSystemByName(name: string): Nullable<LensFlareSystem>;
 
         /**
-         * Gets a lens flare system using its id
-         * @param id defines the id to look for
+         * Gets a lens flare system using its Id
+         * @param id defines the Id to look for
          * @returns the lens flare system or null if not found
+         * @deprecated Please use getLensFlareSystemById instead
          */
         getLensFlareSystemByID(id: string): Nullable<LensFlareSystem>;
+
+        /**
+         * Gets a lens flare system using its Id
+         * @param id defines the Id to look for
+         * @returns the lens flare system or null if not found
+         */
+        getLensFlareSystemById(id: string): Nullable<LensFlareSystem>;
     }
 }
 
@@ -69,7 +77,7 @@ AbstractScene.prototype.getLensFlareSystemByName = function(name: string): Nulla
     return null;
 };
 
-AbstractScene.prototype.getLensFlareSystemByID = function(id: string): Nullable<LensFlareSystem> {
+AbstractScene.prototype.getLensFlareSystemById = function(id: string): Nullable<LensFlareSystem> {
     for (var index = 0; index < this.lensFlareSystems.length; index++) {
         if (this.lensFlareSystems[index].id === id) {
             return this.lensFlareSystems[index];
@@ -77,6 +85,10 @@ AbstractScene.prototype.getLensFlareSystemByID = function(id: string): Nullable<
     }
 
     return null;
+};
+
+AbstractScene.prototype.getLensFlareSystemByID = function(id: string): Nullable<LensFlareSystem> {
+    return this.getLensFlareSystemById(id);
 };
 
 AbstractScene.prototype.removeLensFlareSystem = function(toRemove: LensFlareSystem): number {

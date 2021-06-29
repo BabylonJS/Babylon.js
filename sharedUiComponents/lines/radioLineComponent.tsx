@@ -7,6 +7,7 @@ interface IRadioButtonLineComponentProps {
     label: string;
     isSelected: () => boolean;
     onSelect: () => void;
+    icon? : string;
 }
 
 export class RadioButtonLineComponent extends React.Component<IRadioButtonLineComponentProps, { isSelected: boolean }> {
@@ -39,6 +40,7 @@ export class RadioButtonLineComponent extends React.Component<IRadioButtonLineCo
     render() {
         return (
             <div className="radioLine">
+                {this.props.icon && <img src={this.props.icon} className="icon"/>}
                 <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>

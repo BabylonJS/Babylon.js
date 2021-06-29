@@ -2,6 +2,7 @@ import * as React from "react";
 import { GlobalState } from "../globalState";
 
 import { Engine } from "babylonjs/Engines/engine";
+import { WebGPUEngine } from "babylonjs/Engines/webgpuEngine";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
 import { GLTFFileLoader } from "babylonjs-loaders/glTF/glTFFileLoader";
 import { Scene } from "babylonjs/scene";
@@ -50,9 +51,26 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         super(props);
     }
 
-    initEngine() {
+    async initEngine() {
+        let useWebGPU = location.href.indexOf("webgpu") !== -1 && !!navigator.gpu;
+
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
-        this._engine = new Engine(this._canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+        if (useWebGPU) {
+            this._engine = new WebGPUEngine(this._canvas, {
+                deviceDescriptor: {
+                    requiredFeatures: [
+                        "texture-compression-bc",
+                        "timestamp-query",
+                        "pipeline-statistics-query",
+                        "depth-clamping",
+                        "depth24unorm-stencil8",
+                        "depth32float-stencil8"
+                    ]
+            }});
+            await (this._engine as WebGPUEngine).initAsync();
+        } else {
+            this._engine = new Engine(this._canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+        }
 
         this._engine.loadingUIBackgroundColor = "#2A2342";
 
@@ -216,7 +234,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this._scene.environmentTexture = EnvironmentTools.LoadSkyboxPathTexture(this._scene);
             }
 
-            if (this._scene.environmentTexture) {
+            if (this._scene.environmentTexture && this.props.globalState.skybox) {
                 this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera!.maxZ - this._scene.activeCamera!.minZ) / 2, 0.3, false);
             }
         } else {
@@ -342,6 +360,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             this._currentPluginName = plugin.name;
             if (this._currentPluginName === "gltf") {
                 let loader = plugin as GLTFFileLoader;
+
+                loader.validate = true;
 
                 loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {       
                     this.props.globalState.glTFLoaderExtensions[extension.name] = extension;

@@ -4,9 +4,10 @@ import { Tools } from "../Misc/tools";
 import { Nullable } from "../types";
 import { Color4 } from "../Maths/math.color";
 import { MaterialDefines } from "../Materials/materialDefines";
-import { Effect } from "../Materials/effect";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { ColorCurves } from "../Materials/colorCurves";
+
+declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
+declare type Effect = import("../Materials/effect").Effect;
 
 /**
  * Interface to follow in your material defines to integrate easily the

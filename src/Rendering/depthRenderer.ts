@@ -95,11 +95,11 @@ export class DepthRenderer {
         });
 
         this._depthMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup("depth renderer", 1);
+            engine._debugPushGroup?.("depth renderer", 1);
         });
 
         this._depthMap.onAfterUnbindObservable.add(() => {
-            engine._debugPopGroup(1);
+            engine._debugPopGroup?.(1);
         });
 
         // Custom render function
@@ -145,7 +145,17 @@ export class DepthRenderer {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
-                effect.setFloat2("depthValues", cameraIsOrtho ? 1 : camera.minZ, cameraIsOrtho ? 2 : camera.minZ + camera.maxZ);
+                let minZ : number, maxZ: number;
+
+                if (cameraIsOrtho) {
+                    minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+                    maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+                } else {
+                    minZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? camera.minZ : engine.isNDCHalfZRange ? 0 : camera.minZ;
+                    maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : camera.maxZ;
+                }
+
+                effect.setFloat2("depthValues", minZ, minZ + maxZ);
 
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
@@ -222,6 +232,7 @@ export class DepthRenderer {
         var defines = [];
 
         const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
+        const engine = this._scene.getEngine();
 
         let effect = subMeshEffect.effect!;
         let cachedDefines = subMeshEffect.defines;
@@ -294,11 +305,16 @@ export class DepthRenderer {
             defines.push("#define PACKED");
         }
 
+        // Reverse depth buffer
+        if (engine.useReverseDepthBuffer) {
+            defines.push("#define USE_REVERSE_DEPTHBUFFER");
+        }
+
         // Get correct effect
         var join = defines.join("\n");
         if (cachedDefines !== join) {
             cachedDefines = join;
-            effect = this._scene.getEngine().createEffect("depth",
+            effect = engine.createEffect("depth",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "morphTargets"], join,

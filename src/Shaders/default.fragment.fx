@@ -26,13 +26,7 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#ifdef MAINUV1
-	varying vec2 vMainUV1;
-#endif
-
-#ifdef MAINUV2
-	varying vec2 vMainUV2;
-#endif
+#include<mainUVVaryingDeclaration>[1..7]
 
 // Helper functions
 #include<helperFunctions>
@@ -44,60 +38,11 @@ varying vec4 vColor;
 #include<shadowsFragmentFunctions>
 
 // Samplers
-#ifdef DIFFUSE
-	#if DIFFUSEDIRECTUV == 1
-		#define vDiffuseUV vMainUV1
-	#elif DIFFUSEDIRECTUV == 2
-		#define vDiffuseUV vMainUV2
-	#else
-		varying vec2 vDiffuseUV;
-	#endif
-	uniform sampler2D diffuseSampler;
-#endif
-
-#ifdef AMBIENT
-	#if AMBIENTDIRECTUV == 1
-		#define vAmbientUV vMainUV1
-	#elif AMBIENTDIRECTUV == 2
-		#define vAmbientUV vMainUV2
-	#else
-		varying vec2 vAmbientUV;
-	#endif
-	uniform sampler2D ambientSampler;
-#endif
-
-#ifdef OPACITY	
-	#if OPACITYDIRECTUV == 1
-		#define vOpacityUV vMainUV1
-	#elif OPACITYDIRECTUV == 2
-		#define vOpacityUV vMainUV2
-	#else
-		varying vec2 vOpacityUV;
-	#endif
-	uniform sampler2D opacitySampler;
-#endif
-
-#ifdef EMISSIVE
-	#if EMISSIVEDIRECTUV == 1
-		#define vEmissiveUV vMainUV1
-	#elif EMISSIVEDIRECTUV == 2
-		#define vEmissiveUV vMainUV2
-	#else
-		varying vec2 vEmissiveUV;
-	#endif
-	uniform sampler2D emissiveSampler;
-#endif
-
-#ifdef LIGHTMAP
-	#if LIGHTMAPDIRECTUV == 1
-		#define vLightmapUV vMainUV1
-	#elif LIGHTMAPDIRECTUV == 2
-		#define vLightmapUV vMainUV2
-	#else
-		varying vec2 vLightmapUV;
-	#endif
-	uniform sampler2D lightmapSampler;
-#endif
+#include<samplerFragmentDeclaration>(_DEFINENAME_,DIFFUSE,_VARYINGNAME_,Diffuse,_SAMPLERNAME_,diffuse)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient,_SAMPLERNAME_,ambient)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_SAMPLERNAME_,opacity)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive,_SAMPLERNAME_,emissive)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,LIGHTMAP,_VARYINGNAME_,Lightmap,_SAMPLERNAME_,lightmap)
 
 #ifdef REFRACTION
 
@@ -109,15 +54,8 @@ uniform sampler2D refraction2DSampler;
 
 #endif
 
-#if defined(SPECULAR) && defined(SPECULARTERM)
-	#if SPECULARDIRECTUV == 1
-		#define vSpecularUV vMainUV1
-	#elif SPECULARDIRECTUV == 2
-		#define vSpecularUV vMainUV2
-	#else
-		varying vec2 vSpecularUV;
-	#endif
-	uniform sampler2D specularSampler;
+#if defined(SPECULARTERM)
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,SPECULAR,_VARYINGNAME_,Specular,_SAMPLERNAME_,specular)
 #endif
 
 // Fresnel

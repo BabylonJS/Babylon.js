@@ -2,6 +2,7 @@ import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
 import { Constants } from "../../Engines/constants";
+import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 import { _DevTools } from '../../Misc/devTools';
 import { Engine } from '../../Engines/engine';
 import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
@@ -184,9 +185,9 @@ export class InternalTexture {
     /** @hidden */
     public _files: Nullable<string[]> = null;
     /** @hidden */
-    public _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas> = null;
+    public _workingCanvas: Nullable<ICanvas> = null;
     /** @hidden */
-    public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D> = null;
+    public _workingContext: Nullable<ICanvasRenderingContext> = null;
     /** @hidden */
     public _framebuffer: Nullable<WebGLFramebuffer> = null;
     /** @hidden */
@@ -231,6 +232,8 @@ export class InternalTexture {
     public _lodGenerationOffset: number = 0;
     /** @hidden */
     public _depthStencilTexture: Nullable<InternalTexture>;
+    /** @hidden */
+    public _useSRGBBuffer: boolean = false;
 
     // Multiview
     /** @hidden */
@@ -362,7 +365,7 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
                     rebuildSamples();
                     this.isReady = true;
-                }, null, this._buffer, undefined, this.format);
+                }, null, this._buffer, undefined, this.format, undefined, undefined, undefined, undefined, this._useSRGBBuffer);
                 return;
 
             case InternalTextureSource.Raw:
@@ -488,7 +491,7 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
                     rebuildSamples();
                     this.isReady = true;
-                }, null, this.format, this._extension);
+                }, null, this.format, this._extension, false, 0, 0, null, undefined, this._useSRGBBuffer);
                 return;
 
             case InternalTextureSource.CubeRaw:

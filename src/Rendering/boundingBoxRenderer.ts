@@ -276,9 +276,15 @@ export class BoundingBoxRenderer implements ISceneComponent {
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
 
+            const useReverseDepthBuffer = engine.useReverseDepthBuffer;
+
             if (this.showBackLines) {
                 // Back
-                engine.setDepthFunctionToGreaterOrEqual();
+                if (useReverseDepthBuffer) {
+                    engine.setDepthFunctionToLessOrEqual();
+                } else {
+                    engine.setDepthFunctionToGreaterOrEqual();
+                }
                 this.scene.resetCachedMaterial();
                 this._colorShader.setColor4("color", this.backColor.toColor4());
                 this._colorShader.bind(worldMatrix);
@@ -288,7 +294,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
             }
 
             // Front
-            engine.setDepthFunctionToLess();
+            if (useReverseDepthBuffer) {
+                engine.setDepthFunctionToGreater();
+            } else {
+                engine.setDepthFunctionToLess();
+            }
             this.scene.resetCachedMaterial();
             this._colorShader.setColor4("color", this.frontColor.toColor4());
             this._colorShader.bind(worldMatrix);

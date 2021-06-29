@@ -1,6 +1,7 @@
 import { WebGPUBufferManager } from './webgpuBufferManager';
 import * as WebGPUConstants from './webgpuConstants';
 import { PerfCounter } from "../../Misc/perfCounter";
+import { WebGPUQuerySet } from "./webgpuQuerySet";
 
 /** @hidden */
 export class WebGPUTimestampQuery {
@@ -50,7 +51,7 @@ export class WebGPUTimestampQuery {
         if (this._measureDurationState === 1) {
             this._measureDurationState = 2;
             this._measureDuration.stop(commandEncoder).then((duration) => {
-                if (duration >= 0) {
+                if (duration !== null && duration >= 0) {
                     this._gpuFrameTimeCounter.fetchNewFrame();
                     this._gpuFrameTimeCounter.addCount(duration, true);
                 }
@@ -63,52 +64,23 @@ export class WebGPUTimestampQuery {
 /** @hidden */
 export class WebGPUDurationMeasure {
 
-    private _device: GPUDevice;
-    private _bufferManager: WebGPUBufferManager;
-
-    private _querySet: GPUQuerySet;
-    private _queryBuffer: GPUBuffer;
-    private _dstBuffer: GPUBuffer;
+    private _querySet: WebGPUQuerySet;
 
     constructor(device: GPUDevice, bufferManager: WebGPUBufferManager) {
-        this._device = device;
-        this._bufferManager = bufferManager;
-
-        this._querySet = device.createQuerySet({
-            type: WebGPUConstants.QueryType.Timestamp,
-            count: 2,
-        });
-        this._queryBuffer = bufferManager.createRawBuffer(8 * 2, WebGPUConstants.BufferUsage.QueryResolve | WebGPUConstants.BufferUsage.CopySrc);
-        this._dstBuffer = bufferManager.createRawBuffer(8 * 2, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst);
+        this._querySet = new WebGPUQuerySet(2, WebGPUConstants.QueryType.Timestamp, device, bufferManager);
     }
 
     public start(encoder: GPUCommandEncoder): void {
-        encoder.writeTimestamp(this._querySet, 0);
+        encoder.writeTimestamp(this._querySet.querySet, 0);
     }
 
-    public async stop(encoder: GPUCommandEncoder): Promise<number> {
-        encoder.writeTimestamp(this._querySet, 1);
+    public async stop(encoder: GPUCommandEncoder): Promise<number | null> {
+        encoder.writeTimestamp(this._querySet.querySet, 1);
 
-        const encoderResult = this._device.createCommandEncoder();
-
-        encoderResult.resolveQuerySet(this._querySet, 0, 2, this._queryBuffer, 0);
-        encoderResult.copyBufferToBuffer(this._queryBuffer, 0, this._dstBuffer, 0, 8 * 2);
-
-        this._device.queue.submit([encoderResult.finish()]);
-
-        await this._dstBuffer.mapAsync(WebGPUConstants.MapMode.Read);
-
-        const arrayBuf = new BigUint64Array(this._dstBuffer.getMappedRange());
-        const timeElapsedNanos = Number((arrayBuf[1] - arrayBuf[0]));
-
-        this._dstBuffer.unmap();
-
-        return timeElapsedNanos;
+        return this._querySet.readTwoValuesAndSubtract(0);
     }
 
     public dispose() {
-        this._querySet.destroy();
-        this._bufferManager.releaseBuffer(this._queryBuffer);
-        this._bufferManager.releaseBuffer(this._dstBuffer);
+        this._querySet.dispose();
     }
 }

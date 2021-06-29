@@ -1,0 +1,21 @@
+{
+  "name": "babylon-reflector",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --mode=development",
+    "start": "node ./dist/bundle.js"
+  },
+  "devDependencies": {
+    "@types/ws": "^7.4.0",
+    "ts-loader": "^8.0.18",
+    "typescript": "^4.2.3",
+    "webpack": "^5.27.2",
+    "webpack-cli": "^4.5.0"
+  },
+  "dependencies": {
+    "bufferutil": "^4.0.3",
+    "utf-8-validate": "^5.0.4",
+    "ws": "^7.4.4"
+  }
+}

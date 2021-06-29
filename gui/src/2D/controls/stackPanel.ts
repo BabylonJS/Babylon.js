@@ -6,6 +6,7 @@ import { Control } from "./control";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create a 2D stack panel container
@@ -96,7 +97,7 @@ export class StackPanel extends Container {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         for (var child of this._children) {
             if (this._isVertical) {
                 child.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
@@ -108,7 +109,7 @@ export class StackPanel extends Container {
         super._preMeasure(parentMeasure, context);
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(parentMeasure);

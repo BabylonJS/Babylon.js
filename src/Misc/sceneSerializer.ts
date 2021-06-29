@@ -29,7 +29,7 @@ var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
     // Geometry
     var geometry = mesh._geometry;
     if (geometry) {
-        if (!mesh.getScene().getGeometryByID(geometry.id)) {
+        if (!mesh.getScene().getGeometryById(geometry.id)) {
             // Geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
             serializeGeometry(geometry, serializationScene.geometries);
         }

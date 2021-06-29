@@ -131,7 +131,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         };
 
         if (this._attachedController) {
-            if (!this._options.enablePointerSelectionOnAllControllers && this._options.preferredHandedness && xrController.inputSource.handedness === this._options.preferredHandedness) {
+            if (
+                !this._options.enablePointerSelectionOnAllControllers &&
+                this._options.preferredHandedness &&
+                xrController.inputSource.handedness === this._options.preferredHandedness
+            ) {
                 this._attachedController = xrController.uniqueId;
             }
         } else {
@@ -366,7 +370,26 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     scene.pointerY = this._screenCoordinatesRef.y;
                 }
             }
-            controllerData.pick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
+
+            let utilityScenePick = null;
+            if (this._utilityLayerScene) {
+                utilityScenePick = this._utilityLayerScene.pickWithRay(controllerData.tmpRay, this._utilityLayerScene.pointerMovePredicate || this.raySelectionPredicate);
+            }
+
+            let originalScenePick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
+            if (!utilityScenePick || !utilityScenePick.hit) {
+                // No hit in utility scene
+                controllerData.pick = originalScenePick;
+            } else if (!originalScenePick || !originalScenePick.hit) {
+                // No hit in original scene
+                controllerData.pick = utilityScenePick;
+            } else if (utilityScenePick.distance < originalScenePick.distance) {
+                // Hit is closer in utility scene
+                controllerData.pick = utilityScenePick;
+            } else {
+                // Hit is closer in original scene
+                controllerData.pick = originalScenePick;
+            }
 
             const pick = controllerData.pick;
 
@@ -400,11 +423,15 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         });
     }
 
+    private get _utilityLayerScene() {
+        return this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene;
+    }
+
     private _attachGazeMode(xrController?: WebXRInputSource) {
         const controllerData = this._controllers[(xrController && xrController.uniqueId) || "camera"];
         // attached when touched, detaches when raised
         const timeToSelect = this._options.timeToSelect || 3000;
-        const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
+        const sceneToRenderTo = this._options.useUtilityLayer ? this._utilityLayerScene : this._scene;
         let oldPick = new PickingInfo();
         let discMesh = TorusBuilder.CreateTorus(
             "selection",
@@ -623,6 +650,14 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 }
             });
         }
+
+        // Fire a pointerup
+        const pointerEventInit: PointerEventInit = {
+            pointerId: controllerData.id,
+            pointerType: "xr",
+        };
+        this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+
         controllerData.selectionMesh.dispose();
         controllerData.laserPointer.dispose();
         // remove from the map

@@ -41,6 +41,10 @@ const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: 
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialDetailMapDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
+    public MAINUV3 = false;
+    public MAINUV4 = false;
+    public MAINUV5 = false;
+    public MAINUV6 = false;
     public DIFFUSE = false;
     public DIFFUSEDIRECTUV = 0;
     public DETAIL = false;
@@ -80,8 +84,13 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public EMISSIVEFRESNEL = false;
     public FRESNEL = false;
     public NORMAL = false;
+    public TANGENT = false;
     public UV1 = false;
     public UV2 = false;
+    public UV3 = false;
+    public UV4 = false;
+    public UV5 = false;
+    public UV6 = false;
     public VERTEXCOLOR = false;
     public VERTEXALPHA = false;
     public NUM_BONE_INFLUENCERS = 0;
@@ -114,6 +123,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public REFLECTIONMAP_OPPOSITEZ = false;
     public INVERTCUBICMAP = false;
     public LOGARITHMICDEPTH = false;
+    public USE_REVERSE_DEPTHBUFFER = false;
     public REFRACTION = false;
     public REFRACTIONMAP_3D = false;
     public REFLECTIONOVERALPHA = false;
@@ -879,8 +889,9 @@ export class StandardMaterial extends PushMaterial {
         // Textures
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
-            defines.MAINUV1 = false;
-            defines.MAINUV2 = false;
+            for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+                defines["MAINUV" + i] = false;
+            }
             if (scene.texturesEnabled) {
                 if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     if (!this._diffuseTexture.isReadyOrNotBlocking()) {
@@ -1191,8 +1202,14 @@ export class StandardMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.NormalKind);
             }
 
-            if (defines.UV1) {
-                attribs.push(VertexBuffer.UVKind);
+            if (defines.TANGENT) {
+                attribs.push(VertexBuffer.TangentKind);
+            }
+
+            for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+                if (defines["UV" + i]) {
+                    attribs.push(`uv${i === 1 ? "" : i}`);
+                }
             }
 
             if (defines.UV2) {

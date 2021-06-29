@@ -256,20 +256,35 @@ export class PhysicsViewer {
                     // Handle compound impostors
                     var childMeshes = targetMesh.getChildMeshes().filter((c) => { return c.physicsImpostor ? 1 : 0; });
                     childMeshes.forEach((m) => {
-                        mesh = this._getDebugBoxMesh(utilityLayerScene);
-                        if (m.physicsImpostor &&  m.physicsImpostor.type === PhysicsImpostor.BoxImpostor && m.getClassName() === "Mesh") {
+                        if (m.physicsImpostor && m.getClassName() === "Mesh") {
                             const boundingInfo = m.getBoundingInfo();
                             const min = boundingInfo.boundingBox.minimum;
                             const max = boundingInfo.boundingBox.maximum;
-                            mesh.position.copyFrom(min);
-
-                            mesh.position.addInPlace(max);
-                            mesh.position.scaleInPlace(0.5);
-                            mesh.scaling.x = max.x - min.x;
-                            mesh.scaling.y = max.y - min.y;
-                            mesh.scaling.z = max.z - min.z;
+                            switch (m.physicsImpostor.type)
+                            {
+                                case PhysicsImpostor.BoxImpostor:
+                                    mesh = this._getDebugBoxMesh(utilityLayerScene);
+                                    mesh.position.copyFrom(min);
+                                    mesh.position.addInPlace(max);
+                                    mesh.position.scaleInPlace(0.5);
+                                    break;
+                                case PhysicsImpostor.SphereImpostor:
+                                    mesh = this._getDebugSphereMesh(utilityLayerScene);
+                                    break;
+                                case PhysicsImpostor.CylinderImpostor:
+                                    mesh = this._getDebugCylinderMesh(utilityLayerScene);
+                                    break;
+                                default:
+                                    mesh = null;
+                                    break;
+                            }
+                            if (mesh) {
+                                mesh.scaling.x = max.x - min.x;
+                                mesh.scaling.y = max.y - min.y;
+                                mesh.scaling.z = max.z - min.z;
+                                mesh.parent = m;
+                            }
                         }
-                        mesh.parent = m;
                     });
                 }
                 mesh = null;

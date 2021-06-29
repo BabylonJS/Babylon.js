@@ -335,7 +335,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         const getUniqueName = (name: string) : string => {
             let idSubscript = 1;
-            while (scene.getMaterialByID(name)) {
+            while (scene.getMaterialById(name)) {
                 name = name + " " + idSubscript++;
             }
             return name;
@@ -431,7 +431,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 }
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups}
                     contextMenuItems={pipelineContextMenus}
-                    selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />                               
+                    selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />
                 {
                     scene.effectLayers && scene.effectLayers.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.effectLayers} label="Effect layers" offset={1} filter={this.state.filter} />
@@ -450,7 +450,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 {
                     scene.animationGroups.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.animationGroups} label="Animation groups" offset={1} filter={this.state.filter} />
-                }                
+                }
                 {
                     scene.mainSoundTrack && scene.mainSoundTrack.soundCollection.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.mainSoundTrack.soundCollection} label="Sounds" offset={1} filter={this.state.filter} />

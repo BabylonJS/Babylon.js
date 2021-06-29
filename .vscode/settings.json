@@ -28,11 +28,13 @@
         "proceduralTexturesLibrary/**/*.js.map": true,
         "serielazers/**/*.js.map": true,
         "**/*.js.fx": true,
+        "**/*.js.wgsl": true,
         "**/*.js": {
             "when": "$(basename).ts"
         },
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
+        "**/*.compute.ts": true,
         "**/ShadersInclude/**/*.ts": true
     },
     "files.associations": {
@@ -52,6 +54,7 @@
         "dist/**/*.d.ts": true,
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
+        "**/*.compute.ts": true,
         "**/ShadersInclude/**/*.ts": true,
         "assets": true,
         "**/babylonWeb**": true,

@@ -273,6 +273,11 @@ export class ShaderProcessor {
         }
         preprocessors["__VERSION__"] = options.version;
         preprocessors[options.platformName] = "true";
+        if (options.isNDCHalfZRange) {
+            preprocessors["IS_NDC_HALF_ZRANGE"] = "";
+        } else {
+            delete preprocessors["IS_NDC_HALF_ZRANGE"];
+        }
 
         return preprocessors;
     }
@@ -306,6 +311,11 @@ export class ShaderProcessor {
             preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
         }
 
+        // Inline functions tagged with #define inline
+        if (engine._features.needShaderCodeInlining) {
+            preparedSourceCode = engine.inlineShaderCode(preparedSourceCode);
+        }
+
         return preparedSourceCode;
     }
 
@@ -326,6 +336,11 @@ export class ShaderProcessor {
         // Post processing
         if (options.processor?.postProcessor) {
             preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
+        }
+
+        // Inline functions tagged with #define inline
+        if (engine._features.needShaderCodeInlining) {
+            preparedSourceCode = engine.inlineShaderCode(preparedSourceCode);
         }
 
         return preparedSourceCode;

@@ -18,6 +18,7 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { TouchButton3D } from "./touchButton3D";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+import { DomManagement } from "babylonjs/Misc/domManagement";
 
 /**
  * Class used to create a holographic button in 3D
@@ -26,11 +27,11 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Base Url for the button model.
      */
-    public static MODEL_BASE_URL: string = 'https://assets.babylonjs.com/meshes/MRTK/';
+    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
     /**
      * File name for the button model.
      */
-    public static MODEL_FILENAME: string = 'mrtk-fluent-button.glb';
+    public static MODEL_FILENAME: string = "mrtk-fluent-button.glb";
 
     private _backPlate: Mesh;
     private _textPlate: Mesh;
@@ -236,14 +237,16 @@ export class TouchHolographicButton extends TouchButton3D {
         let panel = new StackPanel();
         panel.isVertical = true;
 
-        if (this._imageUrl) {
-            let image = new Image();
-            image.source = this._imageUrl;
-            image.paddingTop = "40px";
-            image.height = "180px";
-            image.width = "100px";
-            image.paddingBottom = "40px";
-            panel.addControl(image);
+        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
+            if (this._imageUrl) {
+                let image = new Image();
+                image.source = this._imageUrl;
+                image.paddingTop = "40px";
+                image.height = "180px";
+                image.width = "100px";
+                image.paddingBottom = "40px";
+                panel.addControl(image);
+            }
         }
 
         if (this._text) {
@@ -255,11 +258,7 @@ export class TouchHolographicButton extends TouchButton3D {
             panel.addControl(text);
         }
 
-        // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
-        if (!!document.createElement)
-        {
-            this.content = panel;
-        }
+        this.content = panel;
     }
 
     // Mesh association
@@ -270,8 +269,9 @@ export class TouchHolographicButton extends TouchButton3D {
             depth: 1.0,
         }, scene);
         collisionMesh.isPickable = true;
+        collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
+        collisionMesh.scaling = new Vector3(1, 1, 0.5);
 
         SceneLoader.ImportMeshAsync(
             undefined,
@@ -290,11 +290,15 @@ export class TouchHolographicButton extends TouchButton3D {
             });
 
         const backPlateDepth = 0.04;
-        this._backPlate = BoxBuilder.CreateBox(this.name + "BackMesh", {
-            width: 1.0,
-            height: 1.0,
-            depth: backPlateDepth
-        }, scene);
+        this._backPlate = BoxBuilder.CreateBox(
+            this.name + "BackMesh",
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: backPlateDepth,
+            },
+            scene
+        );
 
         this._backPlate.parent = collisionMesh;
         this._backPlate.position.z = 0.5 - backPlateDepth / 2;

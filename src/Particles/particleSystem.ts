@@ -113,7 +113,6 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _indexBuffer: Nullable<DataBuffer>;
     private _drawWrapper: DrawWrapper;
     private _customWrappers: { [blendMode: number] : Nullable<DrawWrapper> };
-    private _cachedDefines: string;
     private _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
     private _scaledDirection = Vector3.Zero();
@@ -296,7 +295,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._scene.particleSystems.push(this);
         } else {
             this._engine = (sceneOrEngine as ThinEngine);
-            this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100);
+            this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100, this._engine.isNDCHalfZRange);
         }
 
         if (this._engine.getCaps().vertexArrayObject) {
@@ -1746,8 +1745,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Effect
         var join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
+        if (this._drawWrapper.defines !== join) {
+            this._drawWrapper.defines = join;
 
             var attributesNamesOrOptions: Array<string> = [];
             var effectCreationOption: Array<string> = [];
@@ -2545,7 +2544,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             particleSystem.emitter = Vector3.Zero();
         }
         else if (parsedParticleSystem.emitterId && scene) {
-            particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            particleSystem.emitter = scene.getLastMeshById(parsedParticleSystem.emitterId);
         } else {
             particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
         }

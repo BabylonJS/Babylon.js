@@ -66,7 +66,8 @@ module.exports = function defaultConfig(options) {
             new webpack.WatchIgnorePlugin([
                 /\.js$/,
                 /\.d\.ts$/,
-                /\.fx$/
+                /\.fx$/,
+                /\.wgsl$/
             ]),
             ...options.plugins
         ]
