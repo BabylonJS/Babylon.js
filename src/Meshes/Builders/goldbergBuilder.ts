@@ -81,7 +81,8 @@ export class GDMesh extends Mesh {
 
         this._nbSharedFaces = geoData._sharedNodes;
         this._nbUnsharedFaces = geoData._poleNodes;
-        this._nbFacesAtPole = (this._nbUnsharedFaces - 12) / 12;
+        this._nbFaces = this._nbSharedFaces + this._nbUnsharedFaces;
+        this._nbFacesAtPole = (this._nbUnsharedFaces - 12) / 12 - 1;
         for (let f = 0; f < geoData.vertex.length; f++) {
             this._faceCenters.push(Vector3.FromArray(geoData.vertex[f]));
         };
@@ -108,6 +109,7 @@ export class GDMesh extends Mesh {
     public _faceYaxis: Vector3[] = [];
     private _nbSharedFaces: number;
     private _nbUnsharedFaces: number;
+    private _nbFaces: number;
     private _nbFacesAtPole: number;
 
     private _setMetadata = () => {
@@ -128,6 +130,10 @@ export class GDMesh extends Mesh {
 
     public get nbUnsharedFaces() {
         return this._nbUnsharedFaces;
+    }
+
+    public get nbFaces() {
+        return this._nbFaces;
     }
 
     public get nbFacesAtPole() {
