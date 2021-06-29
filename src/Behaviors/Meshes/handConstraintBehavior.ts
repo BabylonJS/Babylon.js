@@ -1,7 +1,7 @@
 import { TransformNode } from "../../Meshes/transformNode";
 import { Nullable } from "../../types";
 import { WebXRFeatureName } from "../../XR/webXRFeaturesManager";
-import { WebXRHandTracking } from "../../XR/features/WebXRHandTracking";
+import { WebXRHandTracking, XRHandJoint } from "../../XR/features/WebXRHandTracking";
 import { WebXRExperienceHelper } from "../../XR/webXRExperienceHelper";
 import { Behavior } from "../behavior";
 import { Observer } from "../../Misc/observable";
@@ -114,9 +114,9 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         }
 
         if (hand) {
-            const pinkyMetacarpal = hand.trackedMeshes.get("pinky-finger-metacarpal");
-            const middleMetacarpal = hand.trackedMeshes.get("middle-finger-metacarpal");
-            const wrist = hand.trackedMeshes.get("wrist");
+            const pinkyMetacarpal = hand.getJointMesh(XRHandJoint.PINKY_FINGER_METACARPAL);
+            const middleMetacarpal = hand.getJointMesh(XRHandJoint.MIDDLE_FINGER_METACARPAL);
+            const wrist = hand.getJointMesh(XRHandJoint.WRIST);
 
             if (wrist && middleMetacarpal && pinkyMetacarpal) {
                 // palm forward
@@ -135,6 +135,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 return {
                     quaternion,
                     position: middleMetacarpal.absolutePosition,
+                    controllerId: hand.xrController.uniqueId
                 };
             }
         }
@@ -162,6 +163,10 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         let lastTick = Date.now();
         this._scene.onBeforeRenderObservable.add(() => {
             const pose = this._getHandPose();
+
+            this._node.reservedDataStore = this._node.reservedDataStore || {};
+            this._node.reservedDataStore.nearInteraction = this._node.reservedDataStore.nearInteraction || {};
+            this._node.reservedDataStore.nearInteraction.excludedControllerId = null;
 
             if (pose) {
                 const zoneOffset = TmpVectors.Vector3[0];
@@ -204,6 +209,8 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
 
                 Vector3.SmoothToRef(this._node.position, targetPosition, elapsed, this.lerpTime, this._node.position);
                 Quaternion.SmoothToRef(this._node.rotationQuaternion!, targetRotation, elapsed, this.lerpTime, this._node.rotationQuaternion!);
+
+                this._node.reservedDataStore.nearInteraction.excludedControllerId = pose.controllerId;
             }
 
             lastTick = Date.now();

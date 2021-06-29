@@ -45,6 +45,7 @@ import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 import { ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
+import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -485,6 +486,8 @@ export class WebGPUEngine extends Engine {
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
 
+        (this.isNDCHalfZRange as any) = true;
+
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
@@ -569,8 +572,8 @@ export class WebGPUEngine extends Engine {
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
-                if (deviceDescriptor?.nonGuaranteedFeatures) {
-                    const requestedExtensions = deviceDescriptor.nonGuaranteedFeatures;
+                if (deviceDescriptor?.requiredFeatures) {
+                    const requestedExtensions = deviceDescriptor.requiredFeatures;
                     const validExtensions: GPUFeatureName[] = [];
 
                     for (let extension of requestedExtensions) {
@@ -579,7 +582,7 @@ export class WebGPUEngine extends Engine {
                         }
                     }
 
-                    deviceDescriptor.nonGuaranteedFeatures = validExtensions;
+                    deviceDescriptor.requiredFeatures = validExtensions;
                 }
 
                 return this._adapter.requestDevice(this._options.deviceDescriptor);
@@ -806,7 +809,7 @@ export class WebGPUEngine extends Engine {
             mainColorAttachments = [{
                 view: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
-                storeOp: WebGPUConstants.StoreOp.Clear
+                storeOp: WebGPUConstants.StoreOp.Store // don't use StoreOp.Clear, else using several cameras with different viewports or using scissors will fail because we call beginRenderPass / endPass several times for the same color attachment!
             }];
         } else {
             mainColorAttachments = [{
@@ -1479,6 +1482,18 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public inlineShaderCode(code: string): string {
+        const sci = new ShaderCodeInliner(code);
+        sci.debug = false;
+        sci.processCode();
+        return sci.code;
+    }
+
+    /**
      * Creates a new pipeline context
      * @param shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
@@ -2112,7 +2127,9 @@ export class WebGPUEngine extends Engine {
         this._timestampQuery.endFrame(this._renderEncoder);
 
         if (this._invertYFinalFramebuffer) {
-            this._textureHelper.copyWithInvertY(this._mainTextureLastCopy.createView(), this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format, this._mainRenderPassCopyWrapper.renderPassDescriptor!, this._renderEncoder);
+            if (this._mainRenderPassCopyWrapper.renderPassDescriptor!.colorAttachments[0].view) {
+                this._textureHelper.copyWithInvertY(this._mainTextureLastCopy.createView(), this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format, this._mainRenderPassCopyWrapper.renderPassDescriptor!, this._renderEncoder);
+            }
         }
 
         this.flushFramebuffer(false);

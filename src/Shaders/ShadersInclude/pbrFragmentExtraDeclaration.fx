@@ -5,13 +5,7 @@ varying vec3 vPositionW;
     varying vec4 vClipSpacePosition;
 #endif
 
-#ifdef MAINUV1
-    varying vec2 vMainUV1;
-#endif 
-
-#ifdef MAINUV2 
-    varying vec2 vMainUV2;
-#endif 
+#include<mainUVVaryingDeclaration>[1..7]
 
 #ifdef NORMAL
     varying vec3 vNormalW;

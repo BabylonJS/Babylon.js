@@ -130,7 +130,8 @@ class _InternalMeshDataInfo {
 
     public _preActivateId: number = -1;
     public _LODLevels = new Array<MeshLODLevel>();
-
+    /** Alternative definition of LOD level, using screen coverage instead of distance */
+    public _useLODScreenCoverage: boolean = false;
     public _checkReadinessObserver: Nullable<Observer<Scene>>;
 
     public _onMeshReadyObserverAdded: (observer: Observer<Mesh>) => void;
@@ -245,6 +246,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Internal data
     private _internalMeshDataInfo = new _InternalMeshDataInfo();
+
+    /**
+     * Determines if the LOD levels are intended to be calculated using screen coverage (surface area ratio) instead of distance
+     */
+    public get useLODScreenCoverage() {
+        return this._internalMeshDataInfo._useLODScreenCoverage;
+    }
+
+    public set useLODScreenCoverage(value: boolean) {
+        this._internalMeshDataInfo._useLODScreenCoverage = value;
+    }
 
     /**
      * Will notify when the mesh is completely ready, including materials.
@@ -784,12 +796,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     private _sortLODLevels(): void {
+        const sortingOrderFactor = this._internalMeshDataInfo._useLODScreenCoverage ? -1 : 1;
         this._internalMeshDataInfo._LODLevels.sort((a, b) => {
-            if (a.distance < b.distance) {
-                return 1;
+            if (a.distanceOrScreenCoverage < b.distanceOrScreenCoverage) {
+                return sortingOrderFactor;
             }
-            if (a.distance > b.distance) {
-                return -1;
+            if (a.distanceOrScreenCoverage > b.distanceOrScreenCoverage) {
+                return -sortingOrderFactor;
             }
 
             return 0;
@@ -799,17 +812,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Add a mesh as LOD level triggered at the given distance.
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
-     * @param distance The distance from the center of the object to show this level
+     * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`.
+     * If screen coverage, value is a fraction of the screen's total surface, between 0 and 1.
      * @param mesh The mesh to be added as LOD level (can be null)
      * @return This mesh (for chaining)
      */
-    public addLODLevel(distance: number, mesh: Nullable<Mesh>): Mesh {
+    public addLODLevel(distanceOrScreenCoverage: number, mesh: Nullable<Mesh>): Mesh {
         if (mesh && mesh._masterMesh) {
             Logger.Warn("You cannot use a mesh as LOD level twice");
             return this;
         }
 
-        var level = new MeshLODLevel(distance, mesh);
+        var level = new MeshLODLevel(distanceOrScreenCoverage, mesh);
         this._internalMeshDataInfo._LODLevels.push(level);
 
         if (mesh) {
@@ -832,7 +846,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var index = 0; index < internalDataInfo._LODLevels.length; index++) {
             var level = internalDataInfo._LODLevels[index];
 
-            if (level.distance === distance) {
+            if (level.distanceOrScreenCoverage === distance) {
                 return level.mesh;
             }
         }
@@ -884,10 +898,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
+        const useScreenCoverage = internalDataInfo._useLODScreenCoverage;
+        let compareValue = distanceToCamera;
+        let compareSign = 1;
 
-        if (internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distance > distanceToCamera) {
+        if (useScreenCoverage) {
+            const screenArea = camera.screenArea;
+            let meshArea = bSphere.radiusWorld * camera.minZ / distanceToCamera;
+            meshArea = meshArea * meshArea * Math.PI;
+            compareValue = meshArea / screenArea;
+            compareSign = -1;
+        }
+
+        if (compareSign * internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distanceOrScreenCoverage > compareSign * compareValue) {
             if (this.onLODLevelSelection) {
-                this.onLODLevelSelection(distanceToCamera, this, this);
+                this.onLODLevelSelection(compareValue, this, this);
             }
             return this;
         }
@@ -895,7 +920,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var index = 0; index < internalDataInfo._LODLevels.length; index++) {
             var level = internalDataInfo._LODLevels[index];
 
-            if (level.distance < distanceToCamera) {
+            if (compareSign * level.distanceOrScreenCoverage < compareSign * compareValue) {
                 if (level.mesh) {
                     if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
                         level.mesh._checkDelayState();
@@ -911,7 +936,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
 
                 if (this.onLODLevelSelection) {
-                    this.onLODLevelSelection(distanceToCamera, this, level.mesh);
+                    this.onLODLevelSelection(compareValue, this, level.mesh);
                 }
 
                 return level.mesh;
@@ -919,7 +944,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (this.onLODLevelSelection) {
-            this.onLODLevelSelection(distanceToCamera, this, this);
+            this.onLODLevelSelection(compareValue, this, this);
         }
         return this;
     }
