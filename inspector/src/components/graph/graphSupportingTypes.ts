@@ -1,3 +1,7 @@
-interface IDataset {
-    // empty for now, but will contain the shape of what a data set is.
+import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
+/**
+ * Defines what settings our canvas graphing service accepts
+ */
+export interface ICanvasGraphServiceSettings {
+    datasets: IPerfDataset[];
 }
