@@ -26,7 +26,7 @@ import { InternalTexture, InternalTextureSource } from '../../Materials/Textures
 import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
-import { EngineStore } from '../engineStore';
+import { EngineStore } from "../engineStore";
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
@@ -176,7 +176,7 @@ export class WebGPUTextureHelper {
                     defines += "#define INVERTY\r\n";
                 }
                 if (params!.premultiplyAlpha) {
-                    defines += "define PREMULTIPLYALPHA\r\n";
+                    defines += "#define PREMULTIPLYALPHA\r\n";
                 }
             }
 
@@ -248,7 +248,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC4RUnorm:
             case WebGPUConstants.TextureFormat.BC4RSnorm:
-            case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
                 return Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
@@ -378,7 +378,7 @@ export class WebGPUTextureHelper {
 
             case WebGPUConstants.TextureFormat.BC4RUnorm:
             case WebGPUConstants.TextureFormat.BC4RSnorm:
-            case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
                 return { width: 4, height: 4, length: 8 };
         }
@@ -444,14 +444,14 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
-            case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
                 return true;
         }
 
         return false;
     }
 
-    public static GetWebGPUTextureFormat(type: number, format: number): GPUTextureFormat {
+    public static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer = false): GPUTextureFormat {
         switch (format) {
             case Constants.TEXTUREFORMAT_DEPTH24_STENCIL8:
                 return WebGPUConstants.TextureFormat.Depth24PlusStencil8;
@@ -459,17 +459,17 @@ export class WebGPUTextureHelper {
                 return WebGPUConstants.TextureFormat.Depth32Float;
 
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
-                return WebGPUConstants.TextureFormat.BC7RGBAUnorm;
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC7RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
                 return WebGPUConstants.TextureFormat.BC6HRGBUFloat;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
                 return WebGPUConstants.TextureFormat.BC6HRGBFloat;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
-                return WebGPUConstants.TextureFormat.BC3RGBAUnorm;
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC3RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC3RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
-                return WebGPUConstants.TextureFormat.BC2RGBAUnorm;
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC2RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
-                return WebGPUConstants.TextureFormat.BC1RGBAUNorm;
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC1RGBAUnorm;
         }
 
         switch (type) {
@@ -501,9 +501,9 @@ export class WebGPUTextureHelper {
                     case Constants.TEXTUREFORMAT_RGB:
                         throw "TEXTUREFORMAT_RGB format not supported in WebGPU";
                     case Constants.TEXTUREFORMAT_RGBA:
-                        return WebGPUConstants.TextureFormat.RGBA8Unorm;
+                        return useSRGBBuffer ? WebGPUConstants.TextureFormat.RGBA8UnormSRGB : WebGPUConstants.TextureFormat.RGBA8Unorm;
                     case Constants.TEXTUREFORMAT_BGRA:
-                        return WebGPUConstants.TextureFormat.BGRA8Unorm;
+                        return useSRGBBuffer ? WebGPUConstants.TextureFormat.BGRA8UnormSRGB : WebGPUConstants.TextureFormat.BGRA8Unorm;
                     case Constants.TEXTUREFORMAT_RED_INTEGER:
                         return WebGPUConstants.TextureFormat.R8Uint;
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
@@ -620,7 +620,7 @@ export class WebGPUTextureHelper {
                 }
         }
 
-        return WebGPUConstants.TextureFormat.RGBA8Unorm;
+        return useSRGBBuffer ? WebGPUConstants.TextureFormat.RGBA8UnormSRGB : WebGPUConstants.TextureFormat.RGBA8Unorm;
     }
 
     public invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex= 0, commandEncoder?: GPUCommandEncoder): void {
@@ -632,7 +632,7 @@ export class WebGPUTextureHelper {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup(`internal process texture - invertY=${invertY} premultiplyAlpha=${premultiplyAlpha}`);
+        commandEncoder!.pushDebugGroup?.(`internal process texture - invertY=${invertY} premultiplyAlpha=${premultiplyAlpha}`);
 
         const outputTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.Sampled);
 
@@ -692,7 +692,44 @@ export class WebGPUTextureHelper {
 
         this._deferredReleaseTextures.push([outputTexture, null, null]);
 
-        commandEncoder!.popDebugGroup();
+        commandEncoder!.popDebugGroup?.();
+
+        if (useOwnCommandEncoder) {
+            this._device.queue.submit([commandEncoder!.finish()]);
+            commandEncoder = null as any;
+        }
+    }
+
+    public copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void {
+        const useOwnCommandEncoder = commandEncoder === undefined;
+        const pipeline = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY: true, premultiplyAlpha: false });
+        const bindGroupLayout = pipeline.getBindGroupLayout(0);
+
+        if (useOwnCommandEncoder) {
+            commandEncoder = this._device.createCommandEncoder({});
+        }
+
+        commandEncoder!.pushDebugGroup?.(`internal copy texture with invertY`);
+
+        const passEncoder = commandEncoder!.beginRenderPass(renderPassDescriptor);
+
+        const bindGroup = this._device.createBindGroup({
+            layout: bindGroupLayout,
+            entries: [{
+                binding: 0,
+                resource: this._invertYPreMultiplyAlphaSampler,
+            }, {
+                binding: 1,
+                resource: srcTextureView,
+            }],
+        });
+
+        passEncoder.setPipeline(pipeline);
+        passEncoder.setBindGroup(0, bindGroup);
+        passEncoder.draw(4, 1, 0, 0);
+        passEncoder.endPass();
+
+        commandEncoder!.popDebugGroup?.();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
@@ -801,13 +838,13 @@ export class WebGPUTextureHelper {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup(`create cube mipmaps - ${mipLevelCount} levels`);
+        commandEncoder!.pushDebugGroup?.(`create cube mipmaps - ${mipLevelCount} levels`);
 
         for (let f = 0; f < 6; ++f) {
             this.generateMipmaps(gpuTexture, format, mipLevelCount, f, commandEncoder);
         }
 
-        commandEncoder!.popDebugGroup();
+        commandEncoder!.popDebugGroup?.();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
@@ -824,7 +861,7 @@ export class WebGPUTextureHelper {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup(`create mipmaps for face #${faceIndex} - ${mipLevelCount} levels`);
+        commandEncoder!.pushDebugGroup?.(`create mipmaps for face #${faceIndex} - ${mipLevelCount} levels`);
 
         for (let i = 1; i < mipLevelCount; ++i) {
             const passEncoder = commandEncoder!.beginRenderPass({
@@ -866,7 +903,7 @@ export class WebGPUTextureHelper {
             passEncoder.endPass();
         }
 
-        commandEncoder!.popDebugGroup();
+        commandEncoder!.popDebugGroup?.();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
@@ -891,7 +928,7 @@ export class WebGPUTextureHelper {
 
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
-        gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format);
+        gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
 
         gpuTextureWrapper.textureUsages =
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :
@@ -980,9 +1017,10 @@ export class WebGPUTextureHelper {
     }
 
     // TODO WEBGPU handle data source not being in the same format than the destination texture?
-    public updateTexture(imageBitmap: ImageBitmap | Uint8Array, gpuTexture: GPUTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
+    public updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void
     {
+        const gpuTexture = WebGPUTextureHelper._IsInternalTexture(texture) ? (texture._hardwareTexture as WebGPUHardwareTexture).underlyingResource! : texture;
         const blockInformation = WebGPUTextureHelper._GetBlockInformationFromFormat(format);
 
         const textureCopyView: GPUImageCopyTexture = {
@@ -1057,6 +1095,56 @@ export class WebGPUTextureHelper {
             } else {
                 this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
             }
+
+            /*imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
+
+            if (invertY || premultiplyAlpha) {
+                // we must preprocess the image
+                if (WebGPUTextureHelper._IsInternalTexture(texture) && offsetX === 0 && offsetY === 0 && width === texture.width && height === texture.height) {
+                    // optimization when the source image is the same size than the destination texture and offsets X/Y == 0:
+                    // we simply copy the source to the destination and we apply the preprocessing on the destination
+                    this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
+
+                    // note that we have to use a new command encoder and submit it just right away so that the copy (see line above) and the preprocessing render pass happens in the right order!
+                    // if we don't create a new command encoder, we could end up calling copyExternalImageToTexture / invertYPreMultiplyAlpha / copyExternalImageToTexture / invertYPreMultiplyAlpha in the same frame,
+                    // in which case it would be executed as copyExternalImageToTexture / copyExternalImageToTexture / invertYPreMultiplyAlpha / invertYPreMultiplyAlpha because the command encoder we are passed in
+                    // is submitted at the end of the frame
+                    commandEncoder = this._device.createCommandEncoder({});
+                    this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, 0, commandEncoder);
+                    this._device.queue.submit([commandEncoder!.finish()]);
+                    commandEncoder = null as any;
+                } else {
+                    // we must apply the preprocessing on the source image before copying it into the destination texture
+                    const useOwnCommandEncoder = commandEncoder === undefined;
+
+                    if (useOwnCommandEncoder) {
+                        commandEncoder = this._device.createCommandEncoder({});
+                    }
+
+                    // create a temp texture and copy the image to it
+                    const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.Sampled);
+
+                    this._deferredReleaseTextures.push([srcTexture, null, null]);
+
+                    textureExtent.depthOrArrayLayers = 1;
+                    this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, { texture: srcTexture }, textureExtent);
+                    textureExtent.depthOrArrayLayers = layers || 1;
+
+                    // apply the preprocessing to this temp texture
+                    this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, 0, commandEncoder);
+
+                    // copy the temp texture to the destination texture
+                    commandEncoder!.copyTextureToTexture({ texture: srcTexture }, textureCopyView, textureExtent);
+
+                    if (useOwnCommandEncoder) {
+                        this._device.queue.submit([commandEncoder!.finish()]);
+                        commandEncoder = null as any;
+                    }
+                }
+            } else {
+                // no preprocessing: direct copy to destination texture
+                this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
+            }*/
         }
     }
 

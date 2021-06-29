@@ -24,4 +24,11 @@ WebGPUEngine.prototype.updateDynamicTexture = function(texture: Nullable<Interna
 
         texture.isReady = true;
     });
+
+    /*this._textureHelper.updateTexture(canvas, texture, width, height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
+    if (texture.generateMipMaps) {
+        this._generateMipmaps(texture, this._uploadEncoder);
+    }*/
+
+    texture.isReady = true;
 };

@@ -18,7 +18,7 @@ export class StorageBuffer {
      * @param size The size of the buffer in bytes
      * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added.
      */
-    constructor(engine: ThinEngine, size: number, creationFlags = Constants.BUFFER_CREATIONFLAG_READ | Constants.BUFFER_CREATIONFLAG_WRITE) {
+    constructor(engine: ThinEngine, size: number, creationFlags = Constants.BUFFER_CREATIONFLAG_READWRITE) {
         this._engine = engine;
         this._engine._storageBuffers.push(this);
         this._create(size, creationFlags);

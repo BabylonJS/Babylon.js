@@ -2,7 +2,6 @@ import * as React from "react";
 import { GlobalState } from "../../globalState";
 import { Nullable } from "babylonjs/types";
 import { ButtonLineComponent } from "../../sharedUiComponents/lines/buttonLineComponent";
-import { LineContainerComponent } from "../../sharedUiComponents/lines/lineContainerComponent";
 import { FileButtonLineComponent } from "../../sharedUiComponents/lines/fileButtonLineComponent";
 import { Tools } from "babylonjs/Misc/tools";
 import { CheckBoxLineComponent } from "../../sharedUiComponents/lines/checkBoxLineComponent";
@@ -10,13 +9,11 @@ import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Observer } from "babylonjs/Misc/observable";
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { StringTools } from "../../sharedUiComponents/stringTools";
-import { Engine } from "babylonjs/Engines/engine";
 import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { SliderPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent";
+import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
-import { LinePropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent";
-import { RadioButtonPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent";
-
+import { LinePropertyGridComponent } from "./propertyGrids/gui/linePropertyGridComponent";
+import { RadioButtonPropertyGridComponent } from "./propertyGrids/gui/radioButtonPropertyGridComponent";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
@@ -30,26 +27,32 @@ import { Line } from "babylonjs-gui/2D/controls/line";
 import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
-import { TextBlockPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent";
-import { InputTextPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent";
-import { ColorPickerPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent";
-import { ImagePropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent";
-import { ImageBasedSliderPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent";
-import { RectanglePropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent";
-import { StackPanelPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent";
-import { GridPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent";
-import { ScrollViewerPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent";
-import { EllipsePropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent";
-import { CheckboxPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent";
+import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPropertyGridComponent";
+import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
+import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
+import { ImagePropertyGridComponent } from "./propertyGrids/gui/imagePropertyGridComponent";
+import { ImageBasedSliderPropertyGridComponent } from "./propertyGrids/gui/imageBasedSliderPropertyGridComponent";
+import { RectanglePropertyGridComponent } from "./propertyGrids/gui/rectanglePropertyGridComponent";
+import { StackPanelPropertyGridComponent } from "./propertyGrids/gui/stackPanelPropertyGridComponent";
+import { GridPropertyGridComponent } from "./propertyGrids/gui/gridPropertyGridComponent";
+import { ScrollViewerPropertyGridComponent } from "./propertyGrids/gui/scrollViewerPropertyGridComponent";
+import { EllipsePropertyGridComponent } from "./propertyGrids/gui/ellipsePropertyGridComponent";
+import { CheckboxPropertyGridComponent } from "./propertyGrids/gui/checkboxPropertyGridComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { ControlPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/controlPropertyGridComponent";
+import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropertyGridComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Vector2LineComponent } from "../../sharedUiComponents/lines/vector2LineComponent";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Button } from "babylonjs-gui/2D/controls/button";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
+import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
+import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 
 require("./propertyTab.scss");
+const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
+const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
+const canvasSizeIcon: string = require("../../../public/imgs/canvasSizeIcon.svg");
+const artboardColorIcon: string = require("../../../public/imgs/artboardColorIcon.svg");
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -64,6 +67,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
     private _lockObject = new LockObject();
+    private _sizeOption: number = 2;
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
@@ -183,12 +187,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     loadFromSnippet() {
-        const snippedID = window.prompt("Please enter the snippet ID to use");
+        const snippedId = window.prompt("Please enter the snippet ID to use");
 
-        if (!snippedID) {
+        if (!snippedId) {
             return;
         }
-        this.props.globalState.workbench.loadFromSnippet(snippedID);
+        this.props.globalState.workbench.loadFromSnippet(snippedId);
     }
 
     renderProperties() {
@@ -278,8 +282,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
-                        <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                        <div id="title">GUI EDITOR</div>
+                        <img id="logo" src={adtIcon} />
+                        <div id="title">{this.state.currentNode.name}</div>
                     </div>
                     {this.renderProperties()}
                     <ParentingPropertyGridComponent guiNode={this.state.currentNode} guiNodes={this.props.globalState.guiTexture.getChildren()[0].children} globalState={this.props.globalState}></ParentingPropertyGridComponent>
@@ -294,54 +298,83 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             );
         }
 
+        const sizeOptions = [
+            { label: "Web (1920)", value: 0 },
+            { label: "Phone (720)", value: 1 },
+            { label: "Square (1200)", value: 2 },
+            { label: "Custom", value: 3 }];
+        const sizeValues = [
+            new Vector2(1920, 1080),
+            new Vector2(750, 1334),
+            new Vector2(1200, 1200)];
+
         return (
             <div id="ge-propertyTab">
                 <div id="header">
-                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">GUI EDITOR</div>
+                    <img id="logo" src={adtIcon} />
+                    <div id="title">AdvanceDyanamicTexture</div>
                 </div>
                 <div>
-                    <LineContainerComponent title="GENERAL">
-                        <TextLineComponent label="Version" value={Engine.Version} />
-                        <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open("https://doc.babylonjs.com", "_blank")} />
-                    </LineContainerComponent>
-                    <LineContainerComponent title="OPTIONS">
+                    <TextLineComponent label="ART BOARD" value=" " color="grey"></TextLineComponent>
+                    {
+                        this.props.globalState.workbench.artBoardBackground !== undefined &&
+                        <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                    }
+                    <hr></hr>
+                    <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
+                    <CheckBoxLineComponent
+                        label="Responsive"
+                        icon={responsiveIcon}
+                        isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
+                        onSelect={(value: boolean) => {
+                            this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
+                            DataStorage.WriteBoolean("Responsive", value);
+                        }}
+                    />
+                    <OptionsLineComponent
+                        label="Size"
+                        options={sizeOptions}
+                        icon={canvasSizeIcon}
+                        target={this}
+                        propertyName={"_sizeOption"}
+                        noDirectUpdate={true}
+                        onSelect={(value: any) => {
+                            this._sizeOption = value;
+                            if (this._sizeOption != (sizeOptions.length - 1)) {
+                                const newSize = sizeValues[this._sizeOption];
+                                this.props.globalState.workbench.resizeGuiTexture(newSize);
+                            }
+                            this.forceUpdate();
+                        }}
+                    />
+                    {this._sizeOption == (sizeOptions.length - 1) &&
                         <Vector2LineComponent
-                            label="GUI Canvas Size"
+                            label="Custom Size"
                             target={this.state}
                             propertyName="textureSize"
                             onChange={(newvalue) => {
                                 this.props.globalState.workbench.resizeGuiTexture(newvalue);
                             }}
                         ></Vector2LineComponent>
-                        <CheckBoxLineComponent
-                            label="Show grid"
-                            isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
-                            onSelect={(value: boolean) => {
-                                DataStorage.WriteBoolean("ShowGrid", value);
-                            }}
-                        />
-                    </LineContainerComponent>
-                    <LineContainerComponent title="FILE">
-                        <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
-                        <ButtonLineComponent
-                            label="Save"
-                            onClick={() => {
-                                this.save();
-                            }}
-                        />
-                    </LineContainerComponent>
-                    {
-                        <LineContainerComponent title="SNIPPET">
-                            <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
-                            <ButtonLineComponent
-                                label="Save to snippet server"
-                                onClick={() => {
-                                    this.saveToSnippetServer();
-                                }}
-                            />
-                        </LineContainerComponent>
                     }
+                    <hr></hr>
+                    <TextLineComponent label="FILE" value=" " color="grey"></TextLineComponent>
+                    <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
+                    <ButtonLineComponent
+                        label="Save"
+                        onClick={() => {
+                            this.save();
+                        }}
+                    />
+                    <hr></hr>
+                    <TextLineComponent label="SNIPPET" value=" " color="grey"></TextLineComponent>
+                    <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
+                    <ButtonLineComponent
+                        label="Save to snippet server"
+                        onClick={() => {
+                            this.saveToSnippetServer();
+                        }}
+                    />
                 </div>
             </div>
         );

@@ -139,12 +139,14 @@ export class NullEngine extends Engine {
             depthTextureExtension: false,
             vertexArrayObject: false,
             instancedArrays: false,
+            supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             maxMSAASamples: 1,
             blendMinMax: false,
             canUseGLInstanceID: false,
             canUseGLVertexID: false,
             supportComputeShaders: false,
+            supportSRGBBuffers: false,
         };
 
         this._features = {
@@ -167,6 +169,7 @@ export class NullEngine extends Engine {
             supportSyncTextureRead: false,
             needsInvertingBitmap: false,
             useUBOBindingCache: false,
+            needShaderCodeInlining: false,
             _collectUbosUpdatedInFrame: false,
         };
 

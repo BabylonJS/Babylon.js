@@ -7,6 +7,8 @@ import { LinesMesh } from "../../Meshes/linesMesh";
 import { Scene } from "../../scene";
 import { VertexBuffer } from "../../Buffers/buffer";
 
+declare type Material = import("../../Materials/material").Material;
+
 VertexData.CreateLineSystem = function(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
     var indices = [];
     var positions = [];
@@ -116,6 +118,7 @@ export class LinesBuilder {
      * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
      * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
      * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+     * * The optional parameter `material` is the material to use to draw the lines if provided. If not, a default material will be created
      * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
      * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
      * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
@@ -125,7 +128,7 @@ export class LinesBuilder {
      * @param scene defines the hosting scene
      * @returns a new line system mesh
      */
-    public static CreateLineSystem(name: string, options: { lines: Vector3[][], updatable?: boolean, instance?: Nullable<LinesMesh>, colors?: Nullable<Color4[][]>, useVertexAlpha?: boolean }, scene: Nullable<Scene>): LinesMesh {
+    public static CreateLineSystem(name: string, options: { lines: Vector3[][], updatable?: boolean, instance?: Nullable<LinesMesh>, colors?: Nullable<Color4[][]>, useVertexAlpha?: boolean; material?: Material }, scene: Nullable<Scene>): LinesMesh {
         var instance = options.instance;
         var lines = options.lines;
         var colors = options.colors;
@@ -165,7 +168,7 @@ export class LinesBuilder {
 
         // line system creation
         var useVertexColor = (colors) ? true : false;
-        var lineSystem = new LinesMesh(name, scene, null, undefined, undefined, useVertexColor, options.useVertexAlpha);
+        var lineSystem = new LinesMesh(name, scene, null, undefined, undefined, useVertexColor, options.useVertexAlpha, options.material);
         var vertexData = VertexData.CreateLineSystem(options);
         vertexData.applyToMesh(lineSystem, options.updatable);
         return lineSystem;
@@ -179,6 +182,7 @@ export class LinesBuilder {
      * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
      * * The optional parameter `colors` is an array of successive Color4, one per line point
      * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
+     * * The optional parameter `material` is the material to use to draw the lines if provided. If not, a default material will be created
      * * When updating an instance, remember that only point positions can change, not the number of points
      * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
      * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
@@ -187,9 +191,9 @@ export class LinesBuilder {
      * @param scene defines the hosting scene
      * @returns a new line mesh
      */
-    public static CreateLines(name: string, options: { points: Vector3[], updatable?: boolean, instance?: Nullable<LinesMesh>, colors?: Color4[], useVertexAlpha?: boolean }, scene: Nullable<Scene> = null): LinesMesh {
+    public static CreateLines(name: string, options: { points: Vector3[], updatable?: boolean, instance?: Nullable<LinesMesh>, colors?: Color4[], useVertexAlpha?: boolean, material?: Material }, scene: Nullable<Scene> = null): LinesMesh {
         var colors = (options.colors) ? [options.colors] : null;
-        var lines = LinesBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance, colors: colors, useVertexAlpha: options.useVertexAlpha }, scene);
+        var lines = LinesBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance, colors: colors, useVertexAlpha: options.useVertexAlpha, material: options.material }, scene);
         return lines;
     }
 
@@ -203,6 +207,7 @@ export class LinesBuilder {
      * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
      * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
      * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+     * * The optional parameter `material` is the material to use to draw the lines if provided. If not, a default material will be created
      * * When updating an instance, remember that only point positions can change, not the number of points
      * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
      * @param name defines the name of the mesh
@@ -211,7 +216,7 @@ export class LinesBuilder {
      * @returns the dashed line mesh
      * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
      */
-    public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh, useVertexAlpha?: boolean }, scene: Nullable<Scene> = null): LinesMesh {
+    public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh, useVertexAlpha?: boolean, material?: Material }, scene: Nullable<Scene> = null): LinesMesh {
         var points = options.points;
         var instance = options.instance;
         var gapSize = options.gapSize || 1;
@@ -265,7 +270,7 @@ export class LinesBuilder {
             return instance;
         }
         // dashed lines creation
-        var dashedLines = new LinesMesh(name, scene, null, undefined, undefined, undefined, options.useVertexAlpha);
+        var dashedLines = new LinesMesh(name, scene, null, undefined, undefined, undefined, options.useVertexAlpha, options.material);
         var vertexData = VertexData.CreateDashedLines(options);
         vertexData.applyToMesh(dashedLines, options.updatable);
 

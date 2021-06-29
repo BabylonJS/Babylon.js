@@ -1,4 +1,5 @@
 export * from "./engine.alpha";
+export * from "./engine.debugging";
 export * from "./engine.query";
 export * from "./engine.transformFeedback";
 export * from "./engine.multiview";

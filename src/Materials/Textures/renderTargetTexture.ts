@@ -671,7 +671,7 @@ export class RenderTargetTexture extends Texture {
             this.renderList = [];
             for (var index = 0; index < this._waitingRenderList.length; index++) {
                 var id = this._waitingRenderList[index];
-                let mesh = scene.getMeshByID(id);
+                let mesh = scene.getMeshById(id);
                 if (mesh) {
                     this.renderList.push(mesh);
                 }
@@ -899,7 +899,7 @@ export class RenderTargetTexture extends Texture {
             return;
         }
 
-        engine._debugPushGroup(`render to face #${faceIndex} layer #${layer}`, 1);
+        engine._debugPushGroup?.(`render to face #${faceIndex} layer #${layer}`, 1);
 
         // Bind
         this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
@@ -997,7 +997,7 @@ export class RenderTargetTexture extends Texture {
             engine.generateMipMapsForCubemap(this._texture);
         }
 
-        engine._debugPopGroup(1);
+        engine._debugPopGroup?.(1);
     }
 
     /**

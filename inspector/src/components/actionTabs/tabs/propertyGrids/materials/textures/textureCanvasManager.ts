@@ -87,6 +87,8 @@ export class TextureCanvasManager {
 
     /** Tracks which keys are currently pressed */
     private _keyMap : any = {};
+    /** Tracks which mouse buttons are currently pressed */
+    private _buttonsPressed = 0;
 
     private readonly ZOOM_MOUSE_SPEED : number = 0.001;
     private readonly ZOOM_KEYBOARD_SPEED : number = 0.4;
@@ -94,7 +96,7 @@ export class TextureCanvasManager {
     private readonly ZOOM_OUT_KEY : string = '-';
 
     private readonly PAN_SPEED : number = 0.003;
-    private readonly PAN_MOUSE_BUTTON : number = 1; // MMB
+    private readonly PAN_KEY = 'Space';
 
     private readonly MIN_SCALE : number = 0.01;
     private readonly GRID_SCALE : number = 0.047;
@@ -267,23 +269,25 @@ export class TextureCanvasManager {
         });
 
         this._scene.onPointerObservable.add((pointerInfo) => {
+            const leftButtonPressed = pointerInfo.event.buttons & 1;
+            const middleButtonPressed = pointerInfo.event.buttons & 4;
+            if (!this._isPanning) {
+                if ((leftButtonPressed && !(this._buttonsPressed & 1) && this._keyMap[this.PAN_KEY]) || middleButtonPressed) {
+                    this._isPanning = true;
+                        this._mouseX = pointerInfo.event.x;
+                        this._mouseY = pointerInfo.event.y;
+                }
+                if (middleButtonPressed) {
+                    this._isPanning = true;
+                }
+            }
+            else if ((!leftButtonPressed || !this._keyMap[this.PAN_KEY]) && !middleButtonPressed) {
+                this._isPanning = false;
+            }
             switch (pointerInfo.type) {
                 case PointerEventTypes.POINTERWHEEL:
                     const event = pointerInfo.event as IWheelEvent;
                     this._scale -= (event.deltaY * this.ZOOM_MOUSE_SPEED * this._scale);
-                    break;
-                case PointerEventTypes.POINTERDOWN:
-                    if (pointerInfo.event.button === this.PAN_MOUSE_BUTTON) {
-                        this._isPanning = true;
-                        this._mouseX = pointerInfo.event.x;
-                        this._mouseY = pointerInfo.event.y;
-                        pointerInfo.event.preventDefault();
-                    }
-                    break;
-                case PointerEventTypes.POINTERUP:
-                    if (pointerInfo.event.button === this.PAN_MOUSE_BUTTON) {
-                        this._isPanning = false;
-                    }
                     break;
                 case PointerEventTypes.POINTERMOVE:
                     if (this._isPanning) {
@@ -301,6 +305,7 @@ export class TextureCanvasManager {
                     }
                     break;
             }
+            this._buttonsPressed = pointerInfo.event.buttons;
         });
 
         this._scene.onKeyboardObservable.add((kbInfo) => {
@@ -665,6 +670,10 @@ export class TextureCanvasManager {
         Tools.ToBlob(canvas, (blob) => {
             Tools.Download(blob!, this._originalTexture.name);
         });
+    }
+
+    public toolInteractionEnabled() {
+        return !(this._keyMap[this.PAN_KEY] || this._isPanning);
     }
 
     public dispose() {

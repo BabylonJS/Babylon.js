@@ -79,6 +79,7 @@ import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialMo
 import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoordBlock';
 import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
 import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilderBlock';
+import { SceneDepthBlock } from 'babylonjs/Materials/Node/Blocks/Dual/sceneDepthBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -363,6 +364,31 @@ export class BlockTools {
                 meshUV.setAsAttribute("uv");
                 return meshUV;
             }
+            case "UV2Block": {
+                let meshUV = new InputBlock("uv2");
+                meshUV.setAsAttribute("uv2");
+                return meshUV;
+            }
+            case "UV3Block": {
+                let meshUV = new InputBlock("uv3");
+                meshUV.setAsAttribute("uv3");
+                return meshUV;
+            }
+            case "UV4Block": {
+                let meshUV = new InputBlock("uv'");
+                meshUV.setAsAttribute("uv'");
+                return meshUV;
+            }
+            case "UV5Block": {
+                let meshUV = new InputBlock("uv5");
+                meshUV.setAsAttribute("uv5");
+                return meshUV;
+            }
+            case "UV6Block": {
+                let meshUV = new InputBlock("uv6");
+                meshUV.setAsAttribute("uv6");
+                return meshUV;
+            }
             case "ColorBlock": {
                 let meshColor = new InputBlock("color");
                 meshColor.setAsAttribute("color");
@@ -504,6 +530,8 @@ export class BlockTools {
                 return new FragCoordBlock("FragCoord");
             case "ScreenSizeBlock":
                 return new ScreenSizeBlock("ScreenSize");
+            case "SceneDepthBlock":
+                return new SceneDepthBlock("SceneDepth");
             case "EqualBlock":
                 let equalBlock = new ConditionalBlock("Equal");
                 equalBlock.condition = ConditionalBlockConditions.Equal;

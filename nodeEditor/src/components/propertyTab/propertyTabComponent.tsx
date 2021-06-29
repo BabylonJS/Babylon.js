@@ -250,15 +250,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const material = this.props.globalState.nodeMaterial;
         const scene = material.getScene();
 
-        let snippedID = window.prompt("Please enter the snippet ID to use");
+        let snippedId = window.prompt("Please enter the snippet ID to use");
 
-        if (!snippedID) {
+        if (!snippedId) {
             return;
         }
 
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-        NodeMaterial.ParseFromSnippetAsync(snippedID, scene, "", material).then(() => {
+        NodeMaterial.ParseFromSnippetAsync(snippedId, scene, "", material).then(() => {
             material.build();
             if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
                 this.props.globalState.onResetRequiredObservable.notifyObservers();

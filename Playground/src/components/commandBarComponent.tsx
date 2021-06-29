@@ -56,10 +56,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
         if (location.href.indexOf("webgpu") !== -1 && !!navigator.gpu) {
             activeEngineVersion = "WebGPU";
+            Utilities.StoreStringToStore("Engine", "WebGPU");
         }
 
         var versionOptions = Object.keys(Versions).map(key => {
-            return {
+            return { 
                 label: key,
                 storeKey: "version",
                 isActive: activeVersion === key,

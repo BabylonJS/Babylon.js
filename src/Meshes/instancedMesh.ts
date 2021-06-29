@@ -294,15 +294,16 @@ export class InstancedMesh extends AbstractMesh {
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
      * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+     * @param applyMorph  defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false): InstancedMesh {
+    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): InstancedMesh {
         if (this._boundingInfo && this._boundingInfo.isLocked) {
             return this;
         }
 
         const bias = this._sourceMesh.geometry ? this._sourceMesh.geometry.boundingBias : null;
-        this._refreshBoundingInfo(this._sourceMesh._getPositionData(applySkeleton), bias);
+        this._refreshBoundingInfo(this._sourceMesh._getPositionData(applySkeleton, applyMorph), bias);
         return this;
     }
 

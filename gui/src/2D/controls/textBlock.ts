@@ -5,6 +5,8 @@ import { Control } from "./control";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { Nullable } from "babylonjs/types";
 import { serialize } from 'babylonjs/Misc/decorators';
+import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
+import { Engine } from 'babylonjs/Engines/engine';
 
 /**
  * Enum that determines the text-wrapping mode to use.
@@ -284,7 +286,7 @@ export class TextBlock extends Control {
         return "TextBlock";
     }
 
-    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (!this._fontOffset) {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
@@ -333,7 +335,7 @@ export class TextBlock extends Control {
         }
     }
 
-    private _drawText(text: string, textWidth: number, y: number, context: CanvasRenderingContext2D): void {
+    private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext): void {
         var width = this._currentMeasure.width;
         var x = 0;
         switch (this._textHorizontalAlignment) {
@@ -380,7 +382,7 @@ export class TextBlock extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
@@ -391,7 +393,7 @@ export class TextBlock extends Control {
         context.restore();
     }
 
-    protected _applyStates(context: CanvasRenderingContext2D): void {
+    protected _applyStates(context: ICanvasRenderingContext): void {
         super._applyStates(context);
         if (this.outlineWidth) {
             context.lineWidth = this.outlineWidth;
@@ -401,7 +403,7 @@ export class TextBlock extends Control {
         }
     }
 
-    protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[] {
+    protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
         var lines = [];
         var _lines = this.text.split("\n");
 
@@ -422,11 +424,11 @@ export class TextBlock extends Control {
         return lines;
     }
 
-    protected _parseLine(line: string = "", context: CanvasRenderingContext2D): object {
+    protected _parseLine(line: string = "", context: ICanvasRenderingContext): object {
         return { text: line, width: context.measureText(line).width };
     }
 
-    protected _parseLineEllipsis(line: string = "", width: number, context: CanvasRenderingContext2D): object {
+    protected _parseLineEllipsis(line: string = "", width: number, context: ICanvasRenderingContext): object {
         var lineWidth = context.measureText(line).width;
 
         if (lineWidth > width) {
@@ -452,7 +454,7 @@ export class TextBlock extends Control {
         return { text: line, width: lineWidth };
     }
 
-    protected _parseLineWordWrap(line: string = "", width: number, context: CanvasRenderingContext2D): object[] {
+    protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext): object[] {
         var lines = [];
         var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
         var lineWidth = 0;
@@ -475,7 +477,7 @@ export class TextBlock extends Control {
         return lines;
     }
 
-    protected _renderLines(context: CanvasRenderingContext2D): void {
+    protected _renderLines(context: ICanvasRenderingContext): void {
         var height = this._currentMeasure.height;
         var rootY = 0;
         switch (this._textVerticalAlignment) {
@@ -514,7 +516,8 @@ export class TextBlock extends Control {
      */
     public computeExpectedHeight(): number {
         if (this.text && this.widthInPixels) {
-            const context = document.createElement("canvas").getContext("2d");
+            // Shoudl abstract platform instead of using LastCreatedEngine
+            const context = Engine.LastCreatedEngine?.createCanvas(0, 0).getContext("2d");
             if (context) {
                 this._applyStates(context);
                 if (!this._fontOffset) {

@@ -43,11 +43,13 @@ function compare(renderData, referenceCanvas, threshold, errorRatio) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
+    var curErrorRatio = (differencesCount * 100) / (width * height);
+
     if (differencesCount) {
-        console.log("%c Pixel difference: " + differencesCount + " pixels.", 'color: orange');
+        console.log("%c Pixel difference: " + differencesCount + " pixels. Error ratio=" + curErrorRatio.toFixed(4) + "%", 'color: orange');
     }
 
-    return (differencesCount * 100) / (width * height) > errorRatio;
+    return curErrorRatio > errorRatio;
 }
 
 async function getRenderData(canvas, engine) {
@@ -148,7 +150,11 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     currentScene.dispose();
     currentScene = null;
     engine.setHardwareScalingLevel(1);
-    engine.setDepthFunction(BABYLON.Constants.LEQUAL);
+    if (engine.useReverseDepthBuffer) {
+        engine.setDepthFunction(BABYLON.Constants.GEQUAL);
+    } else {
+        engine.setDepthFunction(BABYLON.Constants.LEQUAL);
+    }
 
     engine.applyStates();
 
@@ -216,7 +222,7 @@ function runTest(index, done, listname) {
         done(true);
         return;
     }
-    
+
     // Clear the plugin activated observables in case it is registered in the test.
     BABYLON.SceneLoader.OnPluginActivatedObservable.clear();
 
@@ -427,7 +433,7 @@ function GetAbsoluteUrl(url) {
     return a.href;
 }
 
-function init(_engineName) {
+function init(_engineName, useReverseDepthBuffer) {
     _engineName = _engineName ? _engineName.toLowerCase() : "webgl2";
     if (window.disableWebGL2Support) {
         _engineName = "webgl1";
@@ -484,7 +490,7 @@ function init(_engineName) {
 
         const options = {
             deviceDescriptor: {
-                nonGuaranteedFeatures: [
+                requiredFeatures: [
                     "texture-compression-bc",
                     "timestamp-query",
                     "pipeline-statistics-query",
@@ -498,6 +504,8 @@ function init(_engineName) {
 
         engine = new BABYLON.WebGPUEngine(canvas, options);
         engine.enableOfflineSupport = false;
+        engine.useReverseDepthBuffer = useReverseDepthBuffer == 1 || useReverseDepthBuffer == "true";
+        if (engine.useReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
         return new Promise((resolve) => {
             engine.initAsync(glslangOptions).then(() => resolve());
         });
@@ -505,6 +513,8 @@ function init(_engineName) {
         engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: engineName === "webgl1" ? true : false });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
+        engine.useReverseDepthBuffer = useReverseDepthBuffer == 1 || useReverseDepthBuffer == "true";
+        if (engine.useReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
         return Promise.resolve();
     }
 }

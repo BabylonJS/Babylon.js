@@ -72,7 +72,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
         this._adtInstrumentation!.captureRenderTime = true;
         this._adtInstrumentation!.captureLayoutTime = true;
-        
+
         this.onOpenTextureEditor.bind(this);
         this.onCloseTextureEditor.bind(this);
         this.openTextureEditor.bind(this);
@@ -91,9 +91,9 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             var blob = new Blob([data], { type: "octet/stream" });
 
             var reader = new FileReader();
-            reader.readAsDataURL(blob); 
+            reader.readAsDataURL(blob);
             reader.onloadend = () => {
-                let base64data = reader.result as string;     
+                let base64data = reader.result as string;
 
                 if (texture.isCube) {
                     let extension: string | undefined = undefined;
@@ -124,7 +124,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
     }
 
     onOpenTextureEditor(window: Window) {}
-    
+
     onCloseTextureEditor(callback?: {() : void}) {
         this.setState({
             isTextureEditorOpen: false,
@@ -224,17 +224,17 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                             let scene = texture.getScene()!;
                             texture.scale(2);
                             setTimeout(() => {
-                                this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueID(texture.uniqueId));
+                                this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));
                             });
                         }} />
                     }
                     {
                         texture.isRenderTarget &&
-                        <ButtonLineComponent label="Scale down" onClick={() => {                            
+                        <ButtonLineComponent label="Scale down" onClick={() => {
                             let scene = texture.getScene()!;
                             texture.scale(0.5);
                             setTimeout(() => {
-                                this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueID(texture.uniqueId));
+                                this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));
                             });
                         }} />
                     }
@@ -243,6 +243,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <TextLineComponent label="File format" value={extension} />
                     }
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
+                    <TextLineComponent label="Internal Unique ID" value={texture._texture?.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
                     <TextLineComponent label="Is 3D" value={texture.is3D ? "Yes" : "No"} />
@@ -250,7 +251,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
                     {
-                        (texture instanceof Texture) && 
+                        (texture instanceof Texture) &&
                         <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />
                     }
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />

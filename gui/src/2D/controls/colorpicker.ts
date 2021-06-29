@@ -13,11 +13,13 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
+import { ICanvas, ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { Engine } from "babylonjs/Engines/engine";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
     private static _Epsilon = 0.000001;
-    private _colorWheelCanvas: HTMLCanvasElement;
+    private _colorWheelCanvas: ICanvas;
 
     private _value: Color3 = Color3.Red();
     private _tmpColor = new Color3();
@@ -33,7 +35,7 @@ export class ColorPicker extends Control {
     private _s = 1;
     private _v = 1;
 
-    private _lastPointerDownID = -1;
+    private _lastPointerDownId = -1;
 
     /**
      * Observable raised when the value changes
@@ -155,7 +157,7 @@ export class ColorPicker extends Control {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
 
         if (parentMeasure.width < parentMeasure.height) {
             this._currentMeasure.height = parentMeasure.width;
@@ -176,7 +178,7 @@ export class ColorPicker extends Control {
         this._squareSize = squareSize;
     }
 
-    private _drawGradientSquare(hueValue: number, left: number, top: number, width: number, height: number, context: CanvasRenderingContext2D) {
+    private _drawGradientSquare(hueValue: number, left: number, top: number, width: number, height: number, context: ICanvasRenderingContext) {
         var lgh = context.createLinearGradient(left, top, width + left, top);
         lgh.addColorStop(0, '#fff');
         lgh.addColorStop(1, 'hsl(' + hueValue + ', 100%, 50%)');
@@ -192,7 +194,7 @@ export class ColorPicker extends Control {
         context.fillRect(left, top, width, height);
     }
 
-    private _drawCircle(centerX: number, centerY: number, radius: number, context: CanvasRenderingContext2D) {
+    private _drawCircle(centerX: number, centerY: number, radius: number, context: ICanvasRenderingContext) {
         context.beginPath();
         context.arc(centerX, centerY, radius + 1, 0, 2 * Math.PI, false);
         context.lineWidth = 3;
@@ -205,11 +207,14 @@ export class ColorPicker extends Control {
         context.stroke();
     }
 
-    private _createColorWheelCanvas(radius: number, thickness: number): HTMLCanvasElement {
-        var canvas = document.createElement("canvas");
-        canvas.width = radius * 2;
-        canvas.height = radius * 2;
-        var context = <CanvasRenderingContext2D>canvas.getContext("2d");
+    private _createColorWheelCanvas(radius: number, thickness: number): ICanvas {
+        // Shoudl abstract platform instead of using LastCreatedEngine
+        const engine = Engine.LastCreatedEngine;
+        if (!engine) {
+            throw new Error("Invalid engine. Unable to create a canvas.");
+        }
+        var canvas = engine.createCanvas(radius * 2, radius * 2);
+        var context = canvas.getContext("2d");
         var image = context.getImageData(0, 0, radius * 2, radius * 2);
         var data = image.data;
 
@@ -273,7 +278,7 @@ export class ColorPicker extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -411,13 +416,13 @@ export class ColorPicker extends Control {
 
         this._updateValueFromPointer(x, y);
         this._host._capturingControl[pointerId] = this;
-        this._lastPointerDownID = pointerId;
+        this._lastPointerDownId = pointerId;
         return true;
     }
 
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
-        if (pointerId != this._lastPointerDownID) {
+        if (pointerId != this._lastPointerDownId) {
             return;
         }
         // Invert transform

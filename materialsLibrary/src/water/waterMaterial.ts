@@ -50,6 +50,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public INSTANCES = false;
     public SPECULARTERM = false;
     public LOGARITHMICDEPTH = false;
+    public USE_REVERSE_DEPTHBUFFER = false;
     public FRESNELSEPARATE = false;
     public BUMPSUPERIMPOSE = false;
     public BUMPAFFECTSREFLECTION = false;
@@ -386,7 +387,7 @@ export class WaterMaterial extends PushMaterial {
 
         if (this._waitingRenderList) {
             for (var i = 0; i < this._waitingRenderList.length; i++) {
-                this.addToRenderList(scene.getNodeByID(this._waitingRenderList[i]));
+                this.addToRenderList(scene.getNodeById(this._waitingRenderList[i]));
             }
 
             this._waitingRenderList = null;

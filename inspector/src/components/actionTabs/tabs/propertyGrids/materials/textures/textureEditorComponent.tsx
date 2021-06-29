@@ -63,6 +63,8 @@ export interface IToolParameters {
     updatePainting: () => void;
     /** Call this when you are finished painting. */
     stopPainting: () => void;
+    /** Returns whether the tool should be allowed to interact */
+    interactionEnabled: () => boolean;
 }
 
 export interface IToolGUIProps {
@@ -235,6 +237,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             metadata: this.state.metadata,
             setMetadata: (data : any) => this.setMetadata(data),
             getMouseCoordinates: (pointerInfo : PointerInfo) => this._textureCanvasManager.getMouseCoordinates(pointerInfo),
+            interactionEnabled: () => this._textureCanvasManager.toolInteractionEnabled(),
             BABYLON: BABYLON,
         };
     }
@@ -286,7 +289,10 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
     render() {
         const currentTool : ITool | undefined = this.state.tools[this.state.activeToolIndex];
         let cursor = `initial`;
-        if (currentTool && currentTool.cursor) {
+        if (!this._textureCanvasManager?.toolInteractionEnabled()) {
+            cursor = `pointer`;
+        }
+        else if (currentTool && currentTool.cursor) {
             cursor = `url(data:image/png;base64,${currentTool.cursor}) 10 10, auto`;
         }
 
