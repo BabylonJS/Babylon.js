@@ -2335,7 +2335,7 @@ export class Vector3 {
         const e0projL = e0proj.length();
         if (e0projL < Epsilon) {
             // Proj is e0
-            ref.copyFrom(e0)
+            ref.copyFrom(e0);
             return Vector3.Distance(vector, e0);
         }
         e0proj.normalizeFromLength(e0projL);
