@@ -2220,15 +2220,36 @@ export class Vector3 {
         p2.subtractToRef(p0, p2p0);
         p2.subtractToRef(p1, p2p1);
 
-        const p1p0L = Math.max(p1p0.length(), Epsilon);
-        const p2p0L = Math.max(p2p0.length(), Epsilon);
-        const p2p1L = Math.max(p2p1.length(), Epsilon);
+        const p1p0L = p1p0.length();
+        const p2p0L = p2p0.length();
+        const p2p1L = p2p1.length();
+
+        if (p1p0L < Epsilon ||
+            p2p0L < Epsilon ||
+            p2p1L < Epsilon) {
+            // This is a degenerate triangle. As we assume this is part of a non-degenerate mesh,
+            // we will find a better intersection later.
+            // Let's just return one of the extremities
+            ref.copyFrom(p0);
+            return Vector3.Distance(vector, p0);
+        }
 
         // Compute normal and vector to p0
         vector.subtractToRef(p0, vectorp0);
         Vector3.CrossToRef(p1p0, p2p0, normal);
-        normal.normalize();
+        const nl = normal.length();
+        if (nl < Epsilon) {
+            // Extremities are aligned, we are back on the case of a degenerate triangle
+            ref.copyFrom(p0);
+            return Vector3.Distance(vector, p0);
+        }
+        normal.normalizeFromLength(nl);
         let l = vectorp0.length();
+        if (l < Epsilon) {
+            // Vector is p0
+            ref.copyFrom(p0);
+            return 0;
+        }
         vectorp0.normalizeFromLength(l);
 
         // Project to "proj" that lies on the triangle plane
@@ -2312,6 +2333,11 @@ export class Vector3 {
         const e0proj = MathTmp.Vector3[9];
         e0proj.copyFrom(e0).subtractInPlace(proj);
         const e0projL = e0proj.length();
+        if (e0projL < Epsilon) {
+            // Proj is e0
+            ref.copyFrom(e0)
+            return Vector3.Distance(vector, e0);
+        }
         e0proj.normalizeFromLength(e0projL);
         const cosG = Vector3.Dot(r, e0proj);
         const triProj = MathTmp.Vector3[7];
