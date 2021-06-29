@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IMinMax, IDrawableArea } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 
 /**
@@ -54,7 +54,7 @@ export class CanvasGraphService {
             globalMinMaxX = {min: Math.min(minMaxX.min, globalMinMaxX.min), max: Math.max(minMaxX.max, globalMinMaxX.max)};
         });
 
-        const drawableArea: IDrawableArea = {
+        const drawableArea: IGraphDrawableArea = {
             top: 0,
             left: 0,
             bottom: this._height,
@@ -85,7 +85,7 @@ export class CanvasGraphService {
      * @param minMaxX the minimum and maximum for the x axis. 
      * @param drawableArea the current allocated drawable area. 
      */
-    private _drawXAxis(minMaxX: IMinMax, drawableArea: IDrawableArea) {
+    private _drawXAxis(minMaxX: IPerfMinMax, drawableArea: IGraphDrawableArea) {
         const { _ctx: ctx } = this;
 
         if (!ctx) {
@@ -130,7 +130,7 @@ export class CanvasGraphService {
      * @param spaceAvailable the total amount of space we have allocated to our axis
      * @returns a list of "nice" tickS.
      */
-    private _getTicks(minMax: IMinMax, spaceAvailable: number): number[] {
+    private _getTicks(minMax: IPerfMinMax, spaceAvailable: number): number[] {
         const { min, max } = minMax;
         const minTickSpacing = 40; 
 
@@ -192,7 +192,7 @@ export class CanvasGraphService {
      * @param values the array of numbers to get the min and max for.
      * @returns the min and max of the array.
      */
-    private _getMinMax(values: number[]): IMinMax {
+    private _getMinMax(values: number[]): IPerfMinMax {
         let min = Infinity, max = 0;
 
         for (const val of values) {
@@ -220,7 +220,7 @@ export class CanvasGraphService {
      * @param drawableArea The allowed drawable area.
      * @returns 
      */
-    private _getPixelPointFromDataPoint(point: IPerfPoint, minMaxX: IMinMax, minMaxY: IMinMax, drawableArea: IDrawableArea): IPerfPoint {
+    private _getPixelPointFromDataPoint(point: IPerfPoint, minMaxX: IPerfMinMax, minMaxY: IPerfMinMax, drawableArea: IGraphDrawableArea): IPerfPoint {
         const {x, y} = point;
 
         const {top, left, bottom, right} = drawableArea;
@@ -242,7 +242,7 @@ export class CanvasGraphService {
      * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
      * @returns the pixel coordinate of the value in a single axis.
      */
-    private _getPixelForNumber(value: number, minMax: IMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
+    private _getPixelForNumber(value: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
         const {min, max} = minMax;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
         let normalizedValue = (value - min)/(max - min);
