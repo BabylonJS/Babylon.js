@@ -3,6 +3,7 @@ import * as React from "react";
 import { useState } from "react";
 import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
 import { CanvasGraphComponent } from "../../../graph/canvasGraphComponent";
+import { CanvasGraphService } from "../../../graph/canvasGraphService";
 import { PopupComponent } from "../../../popupComponent";
 
 interface IPerformanceViewerComponentProps {
@@ -34,6 +35,10 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         // do nothing for now.
     }
 
+    const canvasServiceCallback = (canvasService: CanvasGraphService) => {
+        canvasService.draw();
+    };
+
     return (
         <>
             {
@@ -51,7 +56,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                 >
                     <div id="performance-viewer">
                         <>
-                            <CanvasGraphComponent id="myChart" />
+                            <CanvasGraphComponent id="myChart" canvasServiceCallback={canvasServiceCallback} />
                         </>
                     </div>
                 </PopupComponent>
