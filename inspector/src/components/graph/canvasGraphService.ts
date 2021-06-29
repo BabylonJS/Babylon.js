@@ -39,8 +39,8 @@ export class CanvasGraphService {
         // First we clear the canvas so we can draw our data!
         this.clear();
 
-        // Get global min max of x axis (across all datasets).
-        let globalMinMaxX = {min: Infinity, max: 0};
+        // Get global min max of time axis (across all datasets).
+        let globalTimeMinMax = {min: Infinity, max: 0};
 
         // TODO: Make better sliding window code (accounting for zoom and pan).
         // Keep only visible and non empty datasets and get a certain window of items.
@@ -50,8 +50,8 @@ export class CanvasGraphService {
         }));
 
         datasets.forEach((dataset: IPerfDataset) => {
-            const minMaxX = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.x));            
-            globalMinMaxX = {min: Math.min(minMaxX.min, globalMinMaxX.min), max: Math.max(minMaxX.max, globalMinMaxX.max)};
+            const timeMinMax = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.timestamp));            
+            globalTimeMinMax = {min: Math.min(timeMinMax.min, globalTimeMinMax.min), max: Math.max(timeMinMax.max, globalTimeMinMax.max)};
         });
 
         const drawableArea: IGraphDrawableArea = {
@@ -61,18 +61,18 @@ export class CanvasGraphService {
             right: this._width,
         };
 
-        this._drawXAxis(globalMinMaxX, drawableArea);
+        this._drawTimeAxis(globalTimeMinMax, drawableArea);
 
         datasets.forEach((dataset: IPerfDataset) => {
-            const minMaxY = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.y));
-            const drawablePoints = dataset.data.map((point: IPerfPoint) => this._getPixelPointFromDataPoint(point, globalMinMaxX, minMaxY, drawableArea));
+            const valueMinMax = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.value));
+            const drawablePoints = dataset.data.map((point: IPerfPoint) => this._getPixelPointFromDataPoint(point, globalTimeMinMax, valueMinMax, drawableArea));
 
             let prevPoint: IPerfPoint = drawablePoints[0];
             ctx.beginPath();
             
             drawablePoints.forEach((point: IPerfPoint) => {
-                ctx.moveTo(prevPoint.x, prevPoint.y);
-                ctx.lineTo(point.x, point.y);
+                ctx.moveTo(prevPoint.timestamp, prevPoint.value);
+                ctx.lineTo(point.timestamp, point.value);
                 prevPoint = point;
             });
             ctx.stroke();
@@ -80,12 +80,12 @@ export class CanvasGraphService {
     }
 
     /**
-     * Draws the x axis, adjusts the drawable area for the graph.
+     * Draws the time axis, adjusts the drawable area for the graph.
      * 
-     * @param minMaxX the minimum and maximum for the x axis. 
+     * @param timeMinMax the minimum and maximum for the time axis. 
      * @param drawableArea the current allocated drawable area. 
      */
-    private _drawXAxis(minMaxX: IPerfMinMax, drawableArea: IGraphDrawableArea) {
+    private _drawTimeAxis(timeMinMax: IPerfMinMax, drawableArea: IGraphDrawableArea) {
         const { _ctx: ctx } = this;
 
         if (!ctx) {
@@ -93,24 +93,25 @@ export class CanvasGraphService {
         }
         const spaceAvailable = drawableArea.right - drawableArea.left;
 
-        const ticks = this._getTicks(minMaxX, spaceAvailable);
+        const ticks = this._getTicks(timeMinMax, spaceAvailable);
 
         const axisHeight = 100;
 
         // remove the height of the axis from the available drawable area.
         drawableArea.bottom -= axisHeight;
 
-        // draw x axis line
+        // draw time axis line
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(drawableArea.left, drawableArea.bottom);
         ctx.lineTo(drawableArea.right, drawableArea.bottom);
         
+        // draw ticks and text.
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
         ticks.forEach((tick: number) => {
-            let position = this._getPixelForNumber(tick, minMaxX, drawableArea.left, spaceAvailable, false);
+            let position = this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
                 position = spaceAvailable;
             }
@@ -189,19 +190,19 @@ export class CanvasGraphService {
     /**
      * Gets the min and max as a single object from an array of numbers. 
      * 
-     * @param values the array of numbers to get the min and max for.
+     * @param items the array of numbers to get the min and max for.
      * @returns the min and max of the array.
      */
-    private _getMinMax(values: number[]): IPerfMinMax {
+    private _getMinMax(items: number[]): IPerfMinMax {
         let min = Infinity, max = 0;
 
-        for (const val of values) {
-            if (val < min) {
-                min = val;
+        for (const item of items) {
+            if (item < min) {
+                min = item;
             }
 
-            if (val > max) {
-                max = val;
+            if (item > max) {
+                max = item;
             }
         }
 
@@ -215,37 +216,37 @@ export class CanvasGraphService {
      * Converts a data point to a point on the canvas (a pixel coordinate).
      * 
      * @param point The datapoint
-     * @param minMaxX The minimum and maximum in the x axis.
-     * @param minMaxY The minimum and maximum in the y axis for the dataset.
+     * @param timeMinMax The minimum and maximum in the time axis.
+     * @param valueMinMax The minimum and maximum in the value axis for the dataset.
      * @param drawableArea The allowed drawable area.
      * @returns 
      */
-    private _getPixelPointFromDataPoint(point: IPerfPoint, minMaxX: IPerfMinMax, minMaxY: IPerfMinMax, drawableArea: IGraphDrawableArea): IPerfPoint {
-        const {x, y} = point;
+    private _getPixelPointFromDataPoint(point: IPerfPoint, timeMinMax: IPerfMinMax, valueMinMax: IPerfMinMax, drawableArea: IGraphDrawableArea): IPerfPoint {
+        const {timestamp, value} = point;
 
         const {top, left, bottom, right} = drawableArea;
         
 
         return {
-            x: this._getPixelForNumber(x, minMaxX, left, right - left, false),
-            y: this._getPixelForNumber(y, minMaxY, top, bottom - top, true)
+            timestamp: this._getPixelForNumber(timestamp, timeMinMax, left, right - left, false),
+            value: this._getPixelForNumber(value, valueMinMax, top, bottom - top, true)
         };
     }
     
     /**
      * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
      * 
-     * @param value the number we want to get the pixel coordinate for
+     * @param num the number we want to get the pixel coordinate for
      * @param minMax the min and max of the dataset in the axis we want the pixel coordinate for.
      * @param startingPixel the starting pixel coordinate (this means it takes account for any offset).
      * @param spaceAvailable the total space available in this axis.
      * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
      * @returns the pixel coordinate of the value in a single axis.
      */
-    private _getPixelForNumber(value: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
+    private _getPixelForNumber(num: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
         const {min, max} = minMax;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
-        let normalizedValue = (value - min)/(max - min);
+        let normalizedValue = (num - min)/(max - min);
 
         // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
         if (shouldFlipValue) {
