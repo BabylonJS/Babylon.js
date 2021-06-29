@@ -1,26 +1,21 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
+import { CanvasGraphService } from './canvasGraphService';
 
 interface ICanvasGraphComponentProps {
     id: string;
+    canvasServiceCallback: (canvasService: CanvasGraphService) => void;
 }
 
 export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {
-    const { id } = props;
+    const { id, canvasServiceCallback } = props;
     const canvasRef: React.MutableRefObject<HTMLCanvasElement | null>  = useRef(null);
     useEffect(() => {
         if (!canvasRef.current) {
             return;
         }
-        const ctx = canvasRef.current.getContext("2d");
-        if (!ctx) {
-            return;
-        }
-        // for now just draw a line on the screen a simple step 1.
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(100, 100);
-        ctx.stroke();
+        // temporarily set empty array, will eventually be passed by props!
+        canvasServiceCallback(new CanvasGraphService(canvasRef.current, {datasets: []}));
     }, [canvasRef])
    
     return (

@@ -173,8 +173,43 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    /**
+     * Defines what settings our canvas graphing service accepts
+     */
+    export interface ICanvasGraphServiceSettings {
+        datasets: BABYLON.IPerfDataset[];
+    }
+}
+declare module INSPECTOR {
+    /**
+     * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
+     * let it know something has been resized, etc!
+     */
+    export class CanvasGraphService {
+        private _ctx;
+        private _width;
+        private _height;
+        readonly datasets: BABYLON.IPerfDataset[];
+        /**
+         * Creates an instance of CanvasGraphService.
+         * @param canvas a pointer to the canvas dom element we would like to write to.
+         * @param settings settings for our service.
+         */
+        constructor(canvas: HTMLCanvasElement, settings: ICanvasGraphServiceSettings);
+        /**
+         * This method draws the data and sets up the appropriate scales.
+         */
+        draw(): void;
+        /**
+         * This method clears the canvas
+         */
+        clear(): void;
+    }
+}
+declare module INSPECTOR {
     interface ICanvasGraphComponentProps {
         id: string;
+        canvasServiceCallback: (canvasService: CanvasGraphService) => void;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -3668,8 +3703,6 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Contrast: IToolData;
-}
-interface IDataset {
 }
 declare module INSPECTOR {
     export interface IButtonLineComponentProps {
