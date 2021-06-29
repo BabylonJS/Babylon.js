@@ -3,7 +3,7 @@ import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
 /**
  * Defines a structure to hold max and min.
  */
- export interface IMinMax {
+ export interface IPerfMinMax {
     min: number;
     max: number;
 }
@@ -11,7 +11,7 @@ import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
 /**
  * Defines a structure defining the available space in a drawable area.
  */
-export interface IDrawableArea {
+export interface IGraphDrawableArea {
     top: number;
     left: number;
     bottom: number;
