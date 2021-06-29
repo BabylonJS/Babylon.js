@@ -146,7 +146,7 @@ export class GDMesh extends Mesh {
 
     
     //after loading
-    public updateFaceInfo = () => {
+    public refreshFaceData = () => {
         this._nbSharedFaces = this.metadata.nbSharedFaces;
         this._nbUnsharedFaces = this.metadata.nbUnsharedFaces;
         this._nbFacesAtPole = this.metadata.nbFacesAtPole;
