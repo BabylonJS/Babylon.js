@@ -5,6 +5,7 @@
 - Infinite Morph Targets: When supported (WebGL2+) you are no more limited to 4 morph targets per mesh ([Deltakosh](https://github.com/deltakosh))
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
+- Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
@@ -28,8 +29,11 @@
 - Added support for clip planes to the edge renderer ([#10053](https://github.com/BabylonJS/Babylon.js/issues/10053)) ([Popov72](https://github.com/Popov72))
 - Added support for [cannon-es](https://github.com/pmndrs/cannon-es) to the cannonJSPlugin. ([frankieali](https://github.com/frankieali))
 - Added check for duplicates in addShadowCaster ([ivankoleda](https://github.com/ivankoleda))
+- Added observable for PointerDragBehavior enable state ([cedricguillemet](https://github.com/cedricguillemet))
 - spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the correspondgin `xxxById` ([barroij](https://github.com/barroij))
 - Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
+- Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
+- Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### Engine
 
@@ -51,6 +55,9 @@
 - Added support for more uv sets to glTF loader. ([bghgary](https://github.com/bghgary))
 - Added support for KHR_materials_volume for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Added support for custom timeout in WebRequest. ([jamidwyer](https://github.com/jamidwyer/))
+- Improved support for MSFT_lod, now LOD levels are loaded and accurately displayed according to screen coverage ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Added support for direct loading [base64 data URLs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for all loader ([CoPrez](https://github.com/CoPrez))
+- Added DO_NOT_ALTER_FILE_COORDINATES flag to STL loader ([AlbertoPa](https://github.com/AlbertoPa))
 
 ### Navigation
 
@@ -68,6 +75,7 @@
 - Added the `cullBackFaces` property to `Material` ([Popov72](https://github.com/Popov72))
 - Added the `stencil` object property to `Material` ([Popov72](https://github.com/Popov72))
 - Set the `metadata` property on `Material` to be serializable, so that it can be properly loaded from .babylon files ([jlivak](https://github.com/jlivak))
+- Add `mesh.visibility` support to grid material ([bghgary](https://github.com/bghgary))
 
 ### Meshes
 
@@ -116,7 +124,7 @@
 - Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
 - Added `ToggleButton` GUI control ([kintz09](https://github.com/kintz09))
 - Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class ([kintz09](https://github.com/kintz09))
-- Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
+- Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`. `TouchMeshButton3D`'s near interaction mesh can be customized with the `collisionMesh` property ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 - Added `imageWidth()` and `imageHeight()` to access the source image dimensions of `Image` ([Queatz](https://github.com/Queatz))
 - Added a `FluentButtonMaterial` to give the `TouchHolographicButton` the same look and feel as the HoloLens 2 shell ([rgerd](https://github.com/rgerd))
 - Added property `renderToIntermediateTexture` to `Container` which when set to true, will render children to an intermediate texture rather than direct to host allowing for DOM style alpha blending ([BlindingHues](https://github.com/blindinghues))
@@ -124,6 +132,7 @@
 - Added `HolographicBackplate` to serve as a flexible panel in GUI controls using the MRTK design language ([rgerd](https://github.com/rgerd))
 - Added `NearMenu` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `HandMenu`, a simple menu that uses `HandConstraintBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
+- `VolumeBasedPanel`'s constructor now accepts a name parameter, similar to other controls ([rickfromwork](https://github.com/rickfromwork))
 
 ### Behaviors
 
@@ -133,6 +142,7 @@
 - Added `draggableMeshes` property in `SixDoFDragBehavior` list in order to have only a subset of descendant meshes take pointer events into account ([CraigFeldspar](https://github.com/CraigFeldspar))
 - `SixDoFDragBehavior` can now handle multiple pointers at the same time to scale/rotate the owner mesh ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `HandConstraintBehavior`, to make the assigned mesh follow the hand pose. This behavior requires to be linked to a XR experience with the `HandTracking` feature activated. ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Updated `SixDofDragBehavior` and `PointerDragBehavior` to respond to grabs made with the `WebXRNearInteraction` feature ([rickfromwork](https://github.com/rickfromwork))
 
 ### WebXR
 
@@ -153,6 +163,9 @@
 - Added support for `xr-dom-overlay` ([#8996](https://github.com/BabylonJS/Babylon.js/issues/8996)) ([brianzinn](https://github.com/brianzinn))
 - Added near interaction events (hover, grab, and near-pick) ([satyapoojasama](https://github.com/satyapoojasama))
 - Added XR Movement Controller feature for ([#7442](https://github.com/BabylonJS/Babylon.js/issues/7442)) ([brianzinn](https://github.com/brianzinn))
+- Fixed an issue with superfluous reloading of the hand tracking models ([#10453](https://github.com/BabylonJS/Babylon.js/issues/10453)) ([rgerd](https://github.com/rgerd))
+- Added support for XRFrame.fillPoses and XRFrame.fillJointRadii ([#10454](https://github.com/BabylonJS/Babylon.js/issues/10454)) ([rgerd](https://github.com/rgerd))
+- Improved functionality of `WebXRNearInteraction` and updated coverage to be enabled on Behaviors and Gizmos ([rickfromwork](https://github.com/rickfromwork))
 
 ### Gizmos
 
@@ -161,6 +174,7 @@
 - Exposed `scaleRatio` for GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added constructor parameters to customize colors for rotation gizmos on RotationGizmo ([jekelija](https://github.com/jekelija))
 - Added constructor parameters to allow turning off updateScale on RotationGizmo ([jekelija](https://github.com/jekelija))
+- Gizmos that have draggable components now support near interactions via `WebXRNearInteraction` ([rickfromwork](https://github.com/rickfromwork)) 
 
 ### Viewer
 
@@ -169,6 +183,7 @@
 ### Math
 
 - Faster scalar's WithinEpsilon with Math.abs ([nekochanoide](https://github.com/nekochanoide))
+- Added decomposeToTransformNode ([RaananW](https://github.com/RaananW))
 
 ### Serializers
 
@@ -248,7 +263,13 @@
 - Fix issue with DeviceInputSystem where Mouse was being deregistered on Safari/MacOS ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix for disabledColor not working for Button ([msDestiny14](https://github.com/msDestiny14))
 - Fix NativeEngine not setting default depth test function to LEQUAL ([rgerd](https://github.com/rgerd))
+- Fix an exception where loading a very small STL file could result in attempting to read outside the files range ([CoPrez](https://github.com/CoPrez))
 - Fix support of `useReverseDepthBuffer` throughout the engine ([Popov72](https://github.com/Popov72))
+- Fix issue with handling of negative Pointer IDs in DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix `WebXRNearInteraction` feature's cursor positioning on meshes ([rickfromwork](https://github.com/rickfromwork))
+- Fix scaling discrepancy between `TouchHolographicButton` and other 3D controls ([rickfromwork](https://github.com/rickfromwork))
+- Fix for triggering interactions on nearby meshes when performing a near interaction grab ([rickfromwork](https://github.com/rickfromwork))
+- Fix for near interaction failing when multiple utility layers are present ([rickfromwork](https://github.com/rickfromwork))
 
 ## Breaking changes
 
@@ -267,3 +288,6 @@
 - By default, the glTF loader now uses sRGB buffers for gamma encoded textures (when supported by the GPU), which is more accurate than using regular buffers. However, it can lead to small visual differences. You can disable usage of sRGB buffers by setting `glTFFileLoader.useSRGBBuffers` to `false` ([Popov72](https://github.com/Popov72))
 - 4th (`isAnimationSheetEnabled`) and 5th (`customEffect`) parameters of `GPUParticleSystem` constructor have been inverted to match `ParticleSystem` constructor ([Popov72](https://github.com/Popov72))
 - `PBRSubSurfaceConfiguration.useGltfStyleThicknessTexture` has been renamed to `PBRSubSurfaceConfiguration.useGltfStyleTextures` ([Popov72](https://github.com/Popov72))
+- Properties in `IWebXRHandTrackingOptions` related to hand and joint meshes have been moved into `jointMeshes` and `handMeshes` members, respectively ([rgerd](https://github.com/rgerd))
+- `IWebXRHandTrackingOptions.jointMeshes.onHandJointMeshGenerated()` provides a `hand` instead of a `controllerId` in the parameters, since the tracked joint meshes are pre-generated ([rgerd](https://github.com/rgerd))
+- You should now access joint meshes from `WebXRHand` through the `getJointMesh()` function ([rgerd](https://github.com/rgerd))

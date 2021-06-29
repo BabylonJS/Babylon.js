@@ -22,6 +22,10 @@ export class NearMenu extends TouchHolographicMenu {
      * File name for the close icon.
      */
     private static PIN_ICON_FILENAME: string = "IconPin.png";
+    /**
+     * Scale for the buttons added to the near menu
+     */
+    private static NEAR_BUTTON_SCALE: number = 0.32;
 
     private _pinButton: TouchHolographicButton;
     private _pinMaterial: StandardMaterial;
@@ -70,6 +74,7 @@ export class NearMenu extends TouchHolographicMenu {
 
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
+            control.scaling.scaleInPlace(NearMenu.NEAR_BUTTON_SCALE);
             this._pinMaterial = control.backMaterial;
             this._pinMaterial.diffuseColor.copyFromFloats(0, 0, 0);
 
@@ -81,6 +86,31 @@ export class NearMenu extends TouchHolographicMenu {
         return control;
     }
 
+    /**
+     * Adds a button to the menu.
+     * Please note that the back material of the button will be set to transparent as it is attached to the menu.
+     *
+     * @param button Button to add
+     * @returns This menu
+     */
+    public addButton(button: TouchHolographicButton): TouchHolographicMenu {
+        // Block updating the layout until the button is resized (which has to happen after node creation)
+        let wasLayoutBlocked = this.blockLayout;
+        if (!wasLayoutBlocked) {
+            this.blockLayout = true;
+        }
+
+        super.addButton(button);
+        button.scaling.scaleInPlace(NearMenu.NEAR_BUTTON_SCALE);
+
+        // Unblocking the layout triggers the pending layout update that uses the size of the buttons to determine the size of the backing mesh
+        if (!wasLayoutBlocked) {
+            this.blockLayout = false;
+        }
+
+        return this;
+    }
+
     protected _createNode(scene: Scene): Nullable<TransformNode> {
         const node = super._createNode(scene)! as Mesh;
 
@@ -88,6 +118,13 @@ export class NearMenu extends TouchHolographicMenu {
         this.isPinned = false;
 
         this._defaultBehavior.attach(node, [this._backPlate]);
+        this._defaultBehavior.followBehavior.ignoreCameraPitchAndRoll = true;
+        this._defaultBehavior.followBehavior.pitchOffset = -15;
+        this._defaultBehavior.followBehavior.minimumDistance = 0.3;
+        this._defaultBehavior.followBehavior.defaultDistance = 0.4;
+        this._defaultBehavior.followBehavior.maximumDistance = 0.6;
+
+        this._backPlate.isNearGrabbable = true;
         node.isVisible = false;
 
         return node;
@@ -97,17 +134,13 @@ export class NearMenu extends TouchHolographicMenu {
         super._finalProcessing();
 
         this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
-
-        this._defaultBehavior.followBehavior.minimumDistance = this._backPlate.scaling.x * 0.5 * this.scaling.length();
-        this._defaultBehavior.followBehavior.maximumDistance = this._backPlate.scaling.x * 1.5 * this.scaling.length();
-        this._defaultBehavior.followBehavior.defaultDistance = this._backPlate.scaling.x * this.scaling.length();
     }
 
     /**
      * Creates a near menu GUI 3D control
      * @param name name of the near menu
      */
-    constructor(name: string) {
+    constructor(name?: string) {
         super(name);
 
         this._defaultBehavior = new DefaultBehavior();

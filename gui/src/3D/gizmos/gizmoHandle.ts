@@ -187,6 +187,7 @@ export class SideHandle extends GizmoHandle {
 
         const mat = this._createMaterial();
         verticalBox.material = mat;
+        verticalBox.isNearGrabbable = true;
         this._materials.push(mat);
 
         return sideNode;
@@ -212,6 +213,8 @@ export class CornerHandle extends GizmoHandle {
 
         horizontalBox.material = this._createMaterial(new Vector3(1, 0, 0));
         verticalBox.material = this._createMaterial(new Vector3(0, 1, 0));
+        verticalBox.isNearGrabbable = true;
+        horizontalBox.isNearGrabbable = true;
 
         this._materials.push(horizontalBox.material as HandleMaterial);
         this._materials.push(verticalBox.material as HandleMaterial);

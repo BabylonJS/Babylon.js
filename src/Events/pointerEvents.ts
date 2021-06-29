@@ -56,8 +56,8 @@ export class PointerInfoBase {
         /**
          * Defines the related dom event
          */
-        public event: IMouseEvent) {
-    }
+        public event: IMouseEvent
+    ) {}
 }
 
 /**
@@ -66,9 +66,14 @@ export class PointerInfoBase {
  */
 export class PointerInfoPre extends PointerInfoBase {
     /**
-     * Ray from a pointer if availible (eg. 6dof controller)
+     * Ray from a pointer if available (eg. 6dof controller)
      */
     public ray: Nullable<Ray> = null;
+
+    /**
+     * Defines picking info coming from a near interaction (proximity instead of ray-based picking)
+     */
+    public nearInteractionPickingInfo: Nullable<PickingInfo>;
 
     /**
      * Defines the local position of the pointer on the canvas.
@@ -105,12 +110,14 @@ export class PointerInfo extends PointerInfoBase {
      * @param event Defines the related dom event
      * @param pickInfo Defines the picking info associated to the info (if any)\
      */
-    constructor(type: number,
+    constructor(
+        type: number,
         event: IMouseEvent,
         /**
          * Defines the picking info associated to the info (if any)\
          */
-        public pickInfo: Nullable<PickingInfo>) {
+        public pickInfo: Nullable<PickingInfo>
+    ) {
         super(type, event);
     }
 }

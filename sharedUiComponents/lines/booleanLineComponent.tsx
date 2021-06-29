@@ -5,6 +5,7 @@ import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 export interface IBooleanLineComponentProps {
     label: string;
     value: boolean;
+    icon? : string;
 }
 
 export class BooleanLineComponent extends React.Component<IBooleanLineComponentProps> {
@@ -19,6 +20,7 @@ export class BooleanLineComponent extends React.Component<IBooleanLineComponentP
 
         return (
             <div className="textLine">
+                {this.props.icon && <img src={this.props.icon} className="icon"/>}
                 <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>

@@ -683,7 +683,7 @@ declare module BABYLON.GUI {
         * LayerMask is set through advancedTexture.layer.layerMask
         * @param name defines name for the texture
         * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-        * @param scene defines the hsoting scene
+        * @param scene defines the hosting scene
         * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
         * @returns a new AdvancedDynamicTexture
         */
@@ -3798,96 +3798,6 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
-     * Class used to create a button in 3D
-     */
-    export class Button3D extends AbstractButton3D {
-        /** @hidden */
-        protected _currentMaterial: BABYLON.Material;
-        /**
-         * Creates a new button
-         * @param name defines the control name
-         */
-        constructor(name?: string);
-        /**
-         * Apply the facade texture (created from the content property).
-         * @param facadeTexture defines the AdvancedDynamicTexture to use
-         */
-        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Enum for Button States
-     */
-    /** @hidden */
-    export enum ButtonState {
-        /** None */
-        None = 0,
-        /** Pointer Entered */
-        Hover = 1,
-        /** Pointer Down */
-        Press = 2
-    }
-    /**
-     * Class used to create a touchable button in 3D
-     */
-    export class TouchButton3D extends Button3D {
-        private _collisionMesh;
-        private _collidableFrontDirection;
-        private _lastTouchPoint;
-        private _tempButtonForwardRay;
-        private _lastKnownCollidableScale;
-        private _collidableInitialized;
-        private _frontOffset;
-        private _backOffset;
-        private _hoverOffset;
-        private _pushThroughBackOffset;
-        private _activeInteractions;
-        private _previousHeight;
-        /**
-         * Creates a new touchable button
-         * @param name defines the control name
-         * @param collisionMesh mesh to track collisions with
-         */
-        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
-        /**
-         * Sets the front-facing direction of the button
-         * @param frontDir the forward direction of the button
-         */
-        set collidableFrontDirection(frontWorldDir: BABYLON.Vector3);
-        private _getWorldMatrixData;
-        /**
-         * Sets the mesh used for testing input collision
-         * @param collisionMesh the new collision mesh for the button
-         */
-        set collisionMesh(collisionMesh: BABYLON.Mesh);
-        private _getShortestDistancePointToLine;
-        private _isPrimedForInteraction;
-        private _getPointOnButton;
-        private _updateDistanceOffsets;
-        private _getHeightFromButtonCenter;
-        private _getDistanceOffPlane;
-        private _updateButtonState;
-        private _firePointerEvents;
-        /** @hidden */
-        _collisionCheckForStateChange(meshPos: BABYLON.Vector3, uniqueId: number, forceExit?: boolean): void;
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
      * Class used to manage 3D user interface
      * @see https://doc.babylonjs.com/how_to/gui3d
      */
@@ -3898,9 +3808,6 @@ declare module BABYLON.GUI {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
-        private _touchableButtons;
-        private _touchIds;
-        private static _touchIdCounter;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -3938,7 +3845,6 @@ declare module BABYLON.GUI {
         constructor(scene?: BABYLON.Scene);
         private _handlePointerOut;
         private _doPicking;
-        private _processTouchControls;
         /**
          * Gets the root container
          */
@@ -3982,6 +3888,70 @@ declare module BABYLON.GUI {
         constructor(source: BABYLON.Vector3, 
         /** defines the current mouse button index */
         buttonIndex?: number);
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a button in 3D
+     */
+    export class Button3D extends AbstractButton3D {
+        /** @hidden */
+        protected _currentMaterial: BABYLON.Material;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Apply the facade texture (created from the content property).
+         * @param facadeTexture defines the AdvancedDynamicTexture to use
+         */
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a touchable button in 3D
+     */
+    export class TouchButton3D extends Button3D {
+        private _collisionMesh;
+        private _collidableFrontDirection;
+        /**
+         * Creates a new touchable button
+         * @param name defines the control name
+         * @param collisionMesh mesh to track collisions with
+         */
+        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        /**
+         * Sets the front-facing direction of the button. Pass in BABYLON.Vector3.Zero to allow interactions from any direction
+         * @param frontDir the forward direction of the button
+         */
+        set collidableFrontDirection(frontWorldDir: BABYLON.Vector3);
+        /**
+         * Returns the front-facing direction of the button, or BABYLON.Vector3.Zero if there is no 'front'
+         */
+        get collidableFrontDirection(): BABYLON.Vector3;
+        /**
+         * Sets the mesh used for testing input collision
+         * @param collisionMesh the new collision mesh for the button
+         */
+        set collisionMesh(collisionMesh: BABYLON.Mesh);
+        private _isInteractionInFrontOfButton;
+        /** @hidden */
+        _generatePointerEventType(providedType: number, nearMeshPosition: BABYLON.Vector3, activeInteractionCount: number): number;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -4116,6 +4086,7 @@ declare module BABYLON.GUI {
          * @param mesh defines the mesh which will represent the control
          */
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        private _IsTouchButton3D;
         /** @hidden */
         _onPointerMove(target: Control3D, coordinates: BABYLON.Vector3): void;
         /** @hidden */
@@ -4129,7 +4100,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
-        _processObservables(type: number, pickedPoint: BABYLON.Vector3, pointerId: number, buttonIndex: number): boolean;
+        _processObservables(type: number, pickedPoint: BABYLON.Vector3, originMeshPosition: BABYLON.Nullable<BABYLON.Vector3>, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
         _disposeNode(): void;
         /**
@@ -4223,7 +4194,7 @@ declare module BABYLON.GUI {
         /**
          * Creates new VolumeBasedPanel
          */
-        constructor();
+        constructor(name?: string);
         protected _arrangeChildren(): void;
         /** Child classes must implement this function to provide correct control positioning */
         protected abstract _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
@@ -4934,7 +4905,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Default behavior for 3D UI elements.
-     * Handles a BABYLON.FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+     * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
      */
     export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
         private _scene;
@@ -5287,7 +5258,7 @@ declare module BABYLON.GUI {
          * Creates a holographic menu GUI 3D control
          * @param name name of the menu
          */
-        constructor(name: string);
+        constructor(name?: string);
         /**
          * Adds a button to the menu.
          * Please note that the back material of the button will be set to transparent as it is attached to the menu.
@@ -5322,9 +5293,10 @@ declare module BABYLON.GUI {
         protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
         /**
          * Creates a hand menu GUI 3D control
+         * @param xr the BABYLON.WebXRExperienceHelper used to link this control to the enabled WebXRHandTracking feature
          * @param name name of the hand menu
          */
-        constructor(name: string, xr: BABYLON.WebXRExperienceHelper);
+        constructor(xr: BABYLON.WebXRExperienceHelper, name?: string);
         /**
          * Disposes the hand menu
          */
@@ -5362,6 +5334,10 @@ declare module BABYLON.GUI {
          * File name for the close icon.
          */
         private static PIN_ICON_FILENAME;
+        /**
+         * Scale for the buttons added to the near menu
+         */
+        private static NEAR_BUTTON_SCALE;
         private _pinButton;
         private _pinMaterial;
         private _dragObserver;
@@ -5377,13 +5353,21 @@ declare module BABYLON.GUI {
         get isPinned(): boolean;
         set isPinned(value: boolean);
         private _createPinButton;
+        /**
+         * Adds a button to the menu.
+         * Please note that the back material of the button will be set to transparent as it is attached to the menu.
+         *
+         * @param button Button to add
+         * @returns This menu
+         */
+        addButton(button: TouchHolographicButton): TouchHolographicMenu;
         protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
         protected _finalProcessing(): void;
         /**
          * Creates a near menu GUI 3D control
          * @param name name of the near menu
          */
-        constructor(name: string);
+        constructor(name?: string);
         /**
          * Disposes the near menu
          */
@@ -5518,14 +5502,10 @@ declare module BABYLON.GUI {
         protected _currentMesh: BABYLON.Mesh;
         /**
          * Creates a new 3D button based on a mesh
-         * @param mesh mesh to become a 3D button
-         * @param collisionMesh mesh to track collisions with
+         * @param mesh mesh to become a 3D button. By default this is also the mesh for near interaction collision checking
          * @param name defines the control name
          */
-        constructor(mesh: BABYLON.Mesh, options: {
-            collisionMesh: BABYLON.Mesh;
-            useDynamicMesh?: boolean;
-        }, name?: string);
+        constructor(mesh: BABYLON.Mesh, name?: string);
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;

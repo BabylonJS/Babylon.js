@@ -595,7 +595,7 @@ declare module "../scene" {
     }
 }
 
-Scene.prototype.createPickingRay = function (x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
+Scene.prototype.createPickingRay = function (x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
     let result = Ray.Zero();
 
     this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
@@ -603,7 +603,7 @@ Scene.prototype.createPickingRay = function (x: number, y: number, world: Matrix
     return result;
 };
 
-Scene.prototype.createPickingRayToRef = function (x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
+Scene.prototype.createPickingRayToRef = function (x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
     var engine = this.getEngine();
 
     if (!camera) {
