@@ -283,10 +283,10 @@ export class ShaderProcessor {
         } else {
             delete preprocessors["USE_REVERSE_DEPTHBUFFER"];
         }
-        if (options.needFrameBufferYInversion) {
-            preprocessors["NEED_FRAMEBUFFER_YINVERSION"] = "";
+        if (options.hasOriginBottomLeft) {
+            preprocessors["HAS_ORIGIN_BOTTOM_LEFT"] = "";
         } else {
-            delete preprocessors["NEED_FRAMEBUFFER_YINVERSION"];
+            delete preprocessors["HAS_ORIGIN_BOTTOM_LEFT"];
         }
 
         return preprocessors;

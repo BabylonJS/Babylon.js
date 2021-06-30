@@ -375,7 +375,7 @@ export class EnvironmentTextureTools {
                         // Uncompress the data to a RTT
                         rgbdPostProcess!.onApply = (effect) => {
                             effect._bindTexture("textureSampler", tempTexture);
-                            effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && (image instanceof ImageBitmap) ? -1 : 1);
+                            effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && (image instanceof ImageBitmap) || !engine.hasOriginBottomLeft ? -1 : 1);
                         };
 
                         if (!engine.scenes.length) {
@@ -428,6 +428,8 @@ export class EnvironmentTextureTools {
         let cubeRtt: Nullable<InternalTexture> = null;
         let lodTextures: Nullable<{ [lod: number]: BaseTexture }> = null;
         let caps = engine.getCaps();
+
+        const hasOriginBottomLeft = engine.hasOriginBottomLeft;
 
         texture.format = Constants.TEXTUREFORMAT_RGBA;
         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -526,7 +528,8 @@ export class EnvironmentTextureTools {
             // All faces
             for (let face = 0; face < 6; face++) {
                 // Constructs an image element from image data
-                let bytes = imageData[i][face];
+                const faceIndex = hasOriginBottomLeft ? face : face === 2 ? 3 : face === 3 ? 2 : face;
+                let bytes = imageData[i][faceIndex];
                 let blob = new Blob([bytes], { type: 'image/png' });
                 let url = URL.createObjectURL(blob);
                 let promise: Promise<void>;

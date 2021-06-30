@@ -23,12 +23,22 @@ float mt;
 const float fdStep = 1. / 4.;
 const float aFrameSteps = 1. / MAX_ANIMATION_FRAMES;
 
+#ifndef HAS_ORIGIN_BOTTOM_LEFT
+    vec2 _forceFlipY(vec2 uv) {
+        return vec2(uv.x, 1.0 - uv.y);
+    }
+#else
+    vec2 _forceFlipY(vec2 uv) {
+        return uv;
+    }
+#endif
+
 mat4 getFrameData(float frameID){
     float fX = frameID / spriteCount;
     return mat4(
-        texture2D(frameMap, vec2(fX, 0.), 0.),
-        texture2D(frameMap, vec2(fX, fdStep * 1.), 0.),
-        texture2D(frameMap, vec2(fX, fdStep * 2.), 0.),
+        texture2D(frameMap, _forceFlipY(vec2(fX, 0.)), 0.),
+        texture2D(frameMap, _forceFlipY(vec2(fX, fdStep * 1.)), 0.),
+        texture2D(frameMap, _forceFlipY(vec2(fX, fdStep * 2.)), 0.),
         vec4(0.)
     );
 }
@@ -49,7 +59,7 @@ void main(){
         float frameID;
         #define LAYER_ID_SWITCH
 
-        vec4 animationData = texture2D(animationMap, vec2((frameID + 0.5) / spriteCount, 0.), 0.); 
+        vec4 animationData = texture2D(animationMap, _forceFlipY(vec2((frameID + 0.5) / spriteCount, 0.)), 0.); 
         
         if(animationData.y > 0.) {
 
@@ -60,7 +70,7 @@ void main(){
                     break;
                 }
                 
-                animationData = texture2D(animationMap, vec2((frameID + 0.5) / spriteCount, aFrameSteps * f), 0.); 
+                animationData = texture2D(animationMap, _forceFlipY(vec2((frameID + 0.5) / spriteCount, aFrameSteps * f)), 0.); 
             }
         }
 

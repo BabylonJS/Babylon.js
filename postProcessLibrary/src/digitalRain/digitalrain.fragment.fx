@@ -28,9 +28,15 @@ void main(void)
     float screeny = digitalRainOptions.y;
     float ratio = screeny / fonty;
 
+    #ifdef HAS_ORIGIN_BOTTOM_LEFT
+        float coordY = gl_FragCoord.y;
+    #else
+        float coordY = screeny - gl_FragCoord.y;
+    #endif
+    
     float columnx = float(floor((gl_FragCoord.x) / caracterSize));
     float tileX = float(floor((gl_FragCoord.x) / caracterSize)) * caracterSize / screenx;
-    float tileY = float(floor((gl_FragCoord.y) / caracterSize)) * caracterSize / screeny;
+    float tileY = float(floor((coordY) / caracterSize)) * caracterSize / screeny;
 
     vec2 tileUV = vec2(tileX, tileY);
     vec4 tileColor = texture2D(textureSampler, tileUV);
@@ -41,7 +47,7 @@ void main(void)
     int st = int(mod(columnx, 4.0));
     float speed = cosTimeZeroOne * (sin(tileX * 314.5) * 0.5 + 0.6); 
     float x = float(mod(gl_FragCoord.x, caracterSize)) / fontx;
-    float y = float(mod(speed + gl_FragCoord.y / screeny, 1.0));
+    float y = float(mod(speed + coordY / screeny, 1.0));
     y *= ratio;
 
     vec4 finalColor =  texture2D(digitalRainFont, vec2(x, 1.0 - y));

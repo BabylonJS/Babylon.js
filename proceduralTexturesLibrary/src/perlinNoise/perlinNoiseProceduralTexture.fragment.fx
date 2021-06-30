@@ -87,7 +87,9 @@ float perlinNoise(vec3 p)
 void main(void)
 {
     vec2 uv = gl_FragCoord.xy + translationSpeed;
-
+    #ifndef HAS_ORIGIN_BOTTOM_LEFT
+        uv.y = size - uv.y;
+    #endif
     float dis = (
         1.0 + perlinNoise(vec3(uv / vec2(size, size), time * 0.05) * 8.0))
         * (1.0 + (worley(uv, 32.0)+ 0.5 * worley(2.0 * uv, 32.0) + 0.25 * worley(4.0 * uv, 32.0))

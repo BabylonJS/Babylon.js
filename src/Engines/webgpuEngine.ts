@@ -487,6 +487,7 @@ export class WebGPUEngine extends Engine {
         super(null);
 
         (this.isNDCHalfZRange as any) = true;
+        this.hasOriginBottomLeft = false;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
@@ -537,8 +538,8 @@ export class WebGPUEngine extends Engine {
 
         this._shaderProcessor = this._getShaderProcessor();
 
-        this._invertYFinalFramebuffer = (!!this._options.forceCopyForInvertYFinalFramebuffer || !this._canvas.style) && !this._options.disableCopyForInvertYFinalFramebuffer;
-        if (!this._invertYFinalFramebuffer) {
+        this._invertYFinalFramebuffer = (!!this._options.forceCopyForInvertYFinalFramebuffer || !this._canvas.style) && !this._options.disableCopyForInvertYFinalFramebuffer && this.hasOriginBottomLeft;
+        if (!this._invertYFinalFramebuffer && this.hasOriginBottomLeft) {
             // if style does not exist, we are probably using an offscreen canvas
             if (this._canvas.style) {
                 this._canvas.style.transform = "scaleY(-1)";
@@ -612,7 +613,7 @@ export class WebGPUEngine extends Engine {
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
-                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
+                this._textureHelper = new WebGPUTextureHelper(this, this._device, this._glslang, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
@@ -1715,6 +1716,10 @@ export class WebGPUEngine extends Engine {
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture {
 
+        if (!this.hasOriginBottomLeft) {
+            invertY = !invertY;
+        }
+
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
             (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
@@ -2684,7 +2689,7 @@ export class WebGPUEngine extends Engine {
 
         // Front face
         // var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
-        var frontFace = reverseSide ? 1 : 2;
+        var frontFace = reverseSide ? (!this.hasOriginBottomLeft ? 2 : 1) : (!this.hasOriginBottomLeft ? 1 : 2);
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }

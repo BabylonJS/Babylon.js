@@ -111,6 +111,7 @@ export class ReflectionProbe {
         const useReverseDepthBuffer = scene.getEngine().useReverseDepthBuffer;
 
         this._renderTargetTexture.onBeforeRenderObservable.add((faceIndex: number) => {
+            const yMul = scene.getEngine().hasOriginBottomLeft ? 1 : -1;
             switch (faceIndex) {
                 case 0:
                     this._add.copyFromFloats(1, 0, 0);
@@ -119,10 +120,10 @@ export class ReflectionProbe {
                     this._add.copyFromFloats(-1, 0, 0);
                     break;
                 case 2:
-                    this._add.copyFromFloats(0, this._invertYAxis ? 1 : -1, 0);
+                    this._add.copyFromFloats(0, this._invertYAxis ? 1 * yMul : -1 * yMul, 0);
                     break;
                 case 3:
-                    this._add.copyFromFloats(0, this._invertYAxis ? -1 : 1, 0);
+                    this._add.copyFromFloats(0, this._invertYAxis ? -1 * yMul : 1 * yMul, 0);
                     break;
                 case 4:
                     this._add.copyFromFloats(0, 0, scene.useRightHandedSystem ? -1 : 1);

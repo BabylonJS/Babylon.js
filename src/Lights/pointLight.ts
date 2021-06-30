@@ -112,15 +112,16 @@ export class PointLight extends ShadowLight {
             return super.getShadowDirection(faceIndex);
         }
         else {
+            const hasOriginBottomLeft = this._scene.getEngine().hasOriginBottomLeft;
             switch (faceIndex) {
                 case 0:
                     return new Vector3(1.0, 0.0, 0.0);
                 case 1:
                     return new Vector3(-1.0, 0.0, 0.0);
                 case 2:
-                    return new Vector3(0.0, -1.0, 0.0);
+                    return new Vector3(0.0, hasOriginBottomLeft ? -1.0 : 1.0, 0.0);
                 case 3:
-                    return new Vector3(0.0, 1.0, 0.0);
+                    return new Vector3(0.0, hasOriginBottomLeft ? 1.0 : -1.0, 0.0);
                 case 4:
                     return new Vector3(0.0, 0.0, 1.0);
                 case 5:

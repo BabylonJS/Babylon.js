@@ -10,6 +10,10 @@ declare type Scene = import("../../../scene").Scene;
 WebGPUEngine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
     compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags: number = 0): InternalTexture
 {
+    if (!this.hasOriginBottomLeft) {
+        invertY = !invertY;
+    }
+
     const texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -40,6 +44,10 @@ WebGPUEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTex
         return;
     }
 
+    if (!this.hasOriginBottomLeft) {
+        invertY = !invertY;
+    }
+
     if (!this._doNotHandleContextLost) {
         texture._bufferView = bufferView;
         texture.invertY = invertY;
@@ -68,6 +76,10 @@ WebGPUEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTex
 WebGPUEngine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
     compression: Nullable<string> = null): InternalTexture
 {
+    if (!this.hasOriginBottomLeft) {
+        invertY = !invertY;
+    }
+
     const texture = new InternalTexture(this, InternalTextureSource.CubeRaw);
     texture.isCube = true;
     texture.format = format === Constants.TEXTUREFORMAT_RGB ? Constants.TEXTUREFORMAT_RGBA : format;
@@ -92,6 +104,10 @@ WebGPUEngine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBuffe
 };
 
 WebGPUEngine.prototype.updateRawCubeTexture = function(texture: InternalTexture, bufferView: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level: number = 0): void {
+    if (!this.hasOriginBottomLeft) {
+        invertY = !invertY;
+    }
+
     texture._bufferViewArray = bufferView;
     texture.invertY = invertY;
     texture._compression = compression;
@@ -148,6 +164,10 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene
         const faces = [0, 2, 4, 1, 3, 5];
 
         if (mipmapGenerator) {
+            if (!this.hasOriginBottomLeft) {
+                invertY = !invertY;
+            }
+        
             const needConversion = format === Constants.TEXTUREFORMAT_RGB;
             const mipData = mipmapGenerator(faceDataArrays);
             const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
@@ -191,6 +211,10 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene
 WebGPUEngine.prototype.createRawTexture3D = function(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
     compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags: number = 0): InternalTexture
 {
+    if (!this.hasOriginBottomLeft) {
+        invertY = !invertY;
+    }
+
     const source = InternalTextureSource.Raw3D;
     const texture = new InternalTexture(this, source);
 
@@ -220,6 +244,10 @@ WebGPUEngine.prototype.createRawTexture3D = function(data: Nullable<ArrayBufferV
 };
 
 WebGPUEngine.prototype.updateRawTexture3D = function(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+    if (!this.hasOriginBottomLeft) {
+        invertY = !invertY;
+    }
+
     if (!this._doNotHandleContextLost) {
         texture._bufferView = bufferView;
         texture.format = format;
@@ -249,8 +277,12 @@ WebGPUEngine.prototype.updateRawTexture3D = function(texture: InternalTexture, b
 WebGPUEngine.prototype.createRawTexture2DArray = function(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
     compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags: number = 0): InternalTexture
 {
-    var source = InternalTextureSource.Raw2DArray;
-    var texture = new InternalTexture(this, source);
+    if (!this.hasOriginBottomLeft) {
+        invertY = !invertY;
+    }
+
+    const source = InternalTextureSource.Raw2DArray;
+    const texture = new InternalTexture(this, source);
 
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -278,6 +310,10 @@ WebGPUEngine.prototype.createRawTexture2DArray = function(data: Nullable<ArrayBu
 };
 
 WebGPUEngine.prototype.updateRawTexture2DArray = function(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+    if (!this.hasOriginBottomLeft) {
+        invertY = !invertY;
+    }
+
     if (!this._doNotHandleContextLost) {
         texture._bufferView = bufferView;
         texture.format = format;

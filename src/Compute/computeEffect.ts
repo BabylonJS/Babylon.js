@@ -141,7 +141,7 @@ export class ComputeEffect {
             processingContext: null,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
             useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
-            needFrameBufferYInversion: this._engine.needFrameBufferYInversion,
+            hasOriginBottomLeft: this._engine.hasOriginBottomLeft,
         };
 
         this._loadShader(computeSource, "Compute", "", (computeCode) => {

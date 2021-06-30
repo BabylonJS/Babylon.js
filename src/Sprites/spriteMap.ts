@@ -229,13 +229,13 @@ export class SpriteMap implements ISpriteMap {
         if (!scene.getEngine()._features.supportSwitchCaseInShader) {
             layerSampleString = "";
             for (let i = 0; i < options.layerCount; i++) {
-                layerSampleString += `if (${i} == i) { frameID = texture2D(tileMaps[${i}], (tileID + 0.5) / stageSize, 0.).x; }`;
+                layerSampleString += `if (${i} == i) { frameID = texture2D(tileMaps[${i}], _forceFlipY((tileID + 0.5) / stageSize), 0.).x; }`;
             }
         }
         else {
             layerSampleString = "switch(i) {";
             for (let i = 0; i < options.layerCount; i++) {
-                layerSampleString += "case " + i + " : frameID = texture(tileMaps[" + i + "], (tileID + 0.5) / stageSize, 0.).x;";
+                layerSampleString += "case " + i + " : frameID = texture2D(tileMaps[" + i + "], _forceFlipY((tileID + 0.5) / stageSize), 0.).x;";
                 layerSampleString += "break;";
             }
             layerSampleString += "}";

@@ -24,8 +24,14 @@ void main(void)
     float screenx = asciiArtOptions.x;
     float screeny = asciiArtOptions.y;
 
+    #ifdef HAS_ORIGIN_BOTTOM_LEFT
+        float coordY = gl_FragCoord.y;
+    #else
+        float coordY = screeny - gl_FragCoord.y;
+    #endif
+
     float tileX = float(floor((gl_FragCoord.x) / caracterSize)) * caracterSize / screenx;
-    float tileY = float(floor((gl_FragCoord.y) / caracterSize)) * caracterSize / screeny;
+    float tileY = float(floor((coordY) / caracterSize)) * caracterSize / screeny;
 
     vec2 tileUV = vec2(tileX, tileY);
     vec4 tileColor = texture2D(textureSampler, tileUV);
@@ -37,7 +43,7 @@ void main(void)
     float offsety = 0.0;
 
     float x = float(mod(gl_FragCoord.x, caracterSize)) / fontx;
-    float y = float(mod(gl_FragCoord.y, caracterSize)) / fonty;
+    float y = float(mod(coordY, caracterSize)) / fonty;
 
     vec4 finalColor =  texture2D(asciiArtFont, vec2(offsetx + x, offsety + (caracterSize / fonty - y)));
     finalColor.rgb *= tileColor.rgb;

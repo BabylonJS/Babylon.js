@@ -20,5 +20,5 @@ export interface ProcessingOptions {
     processingContext: Nullable<ShaderProcessingContext>;
     isNDCHalfZRange: boolean;
     useReverseDepthBuffer: boolean;
-    needFrameBufferYInversion: boolean;
+    hasOriginBottomLeft: boolean;
 }

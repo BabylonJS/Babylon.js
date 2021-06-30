@@ -59,17 +59,19 @@ async function getRenderData(canvas, engine) {
     return new Promise((resolve) => {
         engine.onEndFrameObservable.addOnce(async () => {
             var renderData = await engine.readPixels(0, 0, width, height);
-            var numberOfChannelsByLine = width * 4;
-            var halfHeight = height / 2;
-            for (var i = 0; i < halfHeight; i++) {
-                for (var j = 0; j < numberOfChannelsByLine; j++) {
-                    var currentCell = j + i * numberOfChannelsByLine;
-                    var targetLine = height - i - 1;
-                    var targetCell = j + targetLine * numberOfChannelsByLine;
+            if (engine.hasOriginBottomLeft) {
+                var numberOfChannelsByLine = width * 4;
+                var halfHeight = height / 2;
+                for (var i = 0; i < halfHeight; i++) {
+                    for (var j = 0; j < numberOfChannelsByLine; j++) {
+                        var currentCell = j + i * numberOfChannelsByLine;
+                        var targetLine = height - i - 1;
+                        var targetCell = j + targetLine * numberOfChannelsByLine;
 
-                    var temp = renderData[currentCell];
-                    renderData[currentCell] = renderData[targetCell];
-                    renderData[targetCell] = temp;
+                        var temp = renderData[currentCell];
+                        renderData[currentCell] = renderData[targetCell];
+                        renderData[targetCell] = temp;
+                    }
                 }
             }
             if (engine.isWebGPU) {

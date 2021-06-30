@@ -545,7 +545,12 @@ export class DDSTools {
         }
 
         const startFace = currentFace || 0;
+        const hasOriginBottomLeft = engine.hasOriginBottomLeft;
+        if (!hasOriginBottomLeft) {
+            texture.invertY = true;
+        }
         for (var face = startFace; face < faces; face++) {
+            const faceIndex = hasOriginBottomLeft ? face : face === 2 ? 3 : face === 3 ? 2 : face;
             width = header[off_width];
             height = header[off_height];
 
@@ -598,7 +603,7 @@ export class DDSTools {
                         }
 
                         if (floatArray) {
-                            engine._uploadDataToTextureDirectly(texture, floatArray, face, i);
+                            engine._uploadDataToTextureDirectly(texture, floatArray, faceIndex, i);
                         }
                     } else if (info.isRGB) {
                         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -606,12 +611,14 @@ export class DDSTools {
                             texture.format = Constants.TEXTUREFORMAT_RGB;
                             dataLength = width * height * 3;
                             byteArray = DDSTools._GetRGBArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset);
-                            engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
+                            console.log("b");
+                            engine._uploadDataToTextureDirectly(texture, byteArray, faceIndex, i);
                         } else { // 32
                             texture.format = Constants.TEXTUREFORMAT_RGBA;
                             dataLength = width * height * 4;
                             byteArray = DDSTools._GetRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset, aOffset);
-                            engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
+                            console.log("c");
+                            engine._uploadDataToTextureDirectly(texture, byteArray, faceIndex, i);
                         }
                     } else if (info.isLuminance) {
                         var unpackAlignment = engine._getUnpackAlignement();
@@ -623,13 +630,13 @@ export class DDSTools {
                         texture.format = Constants.TEXTUREFORMAT_LUMINANCE;
                         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
 
-                        engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
+                        engine._uploadDataToTextureDirectly(texture, byteArray, faceIndex, i);
                     } else {
                         dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
                         byteArray = new Uint8Array(data.buffer, data.byteOffset + dataOffset, dataLength);
 
                         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-                        engine._uploadCompressedDataToTextureDirectly(texture, internalCompressedFormat, width, height, byteArray, face, i);
+                        engine._uploadCompressedDataToTextureDirectly(texture, internalCompressedFormat, width, height, byteArray, faceIndex, i);
                     }
                 }
                 dataOffset += bpp ? (width * height * (bpp / 8)) : dataLength;
