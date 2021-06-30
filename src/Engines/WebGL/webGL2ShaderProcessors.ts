@@ -1,7 +1,7 @@
 import { Nullable } from '../../types';
 import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from '../Processors/shaderProcessingOptions';
-import { FlipInjector, ModificationType } from "../WebGPU/webgpuFlipInjector";
+import { ShaderFlipInjector, ModificationType } from "../Processors/shaderFlipInjector";
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
@@ -19,7 +19,7 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         if (!engine.hasOriginBottomLeft) {
-            const fi = new FlipInjector(code);
+            const fi = new ShaderFlipInjector(code);
             fi.processCode("texture2DLodEXT", ModificationType.flipY);
             fi.processCode("texture2D", ModificationType.flipY);
             fi.processCode("textureCubeLodEXT", ModificationType.negateY);

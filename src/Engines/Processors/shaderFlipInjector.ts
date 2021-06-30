@@ -8,7 +8,7 @@ export enum ModificationType {
 }
 
 /** @hidden */
-export class FlipInjector extends CodeParserHelper {
+export class ShaderFlipInjector extends CodeParserHelper {
     private _functionName: string;
     private _modificationType: ModificationType;
     private _paramPosition: number;

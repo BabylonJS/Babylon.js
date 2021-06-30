@@ -5,7 +5,7 @@ import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext }
 import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
-import { FlipInjector, ModificationType } from "./webgpuFlipInjector";
+import { ShaderFlipInjector, ModificationType } from "../Processors/shaderFlipInjector";
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
@@ -342,7 +342,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         if (!engine.hasOriginBottomLeft) {
-            const fi = new FlipInjector(code);
+            const fi = new ShaderFlipInjector(code);
             fi.processCode("texture2DLodEXT", ModificationType.flipY);
             fi.processCode("texture2D", ModificationType.flipY);
             fi.processCode("textureCubeLodEXT", ModificationType.negateY);
