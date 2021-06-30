@@ -1,3 +1,5 @@
+import { CodeParserHelper } from "../../Misc/codeParserHelper";
+
 interface IInlineFunctionDescr {
     name: string;
     type: string;
@@ -9,24 +11,15 @@ interface IInlineFunctionDescr {
 /**
  * Class used to inline functions in shader code
 */
-export class ShaderCodeInliner {
+export class ShaderCodeInliner extends CodeParserHelper {
 
     private static readonly _RegexpFindFunctionNameAndType = /((\s+?)(\w+)\s+(\w+)\s*?)$/;
 
-    private _sourceCode: string;
     private _functionDescr: IInlineFunctionDescr[];
     private _numMaxIterations: number;
 
     /** Gets or sets the token used to mark the functions to inline */
     public inlineToken: string;
-
-    /** Gets or sets the debug mode */
-    public debug: boolean = false;
-
-    /** Gets the code after the inlining process */
-    public get code(): string {
-        return this._sourceCode;
-    }
 
     /**
      * Initializes the inliner
@@ -34,24 +27,15 @@ export class ShaderCodeInliner {
      * @param numMaxIterations maximum number of iterations (used to detect recursive calls)
      */
     constructor(sourceCode: string, numMaxIterations = 20) {
-        this._sourceCode = sourceCode;
+        super(sourceCode);
         this._numMaxIterations = numMaxIterations;
         this._functionDescr = [];
         this.inlineToken = "#define inline";
     }
 
-    /**
-     * Start the processing of the shader code
-     */
-    public processCode() {
-        if (this.debug) {
-            console.log(`Start inlining process (code size=${this._sourceCode.length})...`);
-        }
+    protected _internalProcess() {
         this._collectFunctions();
         this._processInlining(this._numMaxIterations);
-        if (this.debug) {
-            console.log("End of inlining process.");
-        }
     }
 
     private _collectFunctions() {
@@ -84,7 +68,7 @@ export class ShaderCodeInliner {
             const [funcType, funcName] = [funcNameMatch[3], funcNameMatch[4]];
 
             // extract the parameters of the function as a whole string (without the leading / trailing parenthesis)
-            const funcParamsEndIndex = this._extractBetweenMarkers('(', ')', this._sourceCode, funcParamsStartIndex);
+            const funcParamsEndIndex = CodeParserHelper.ExtractBetweenMarkers('(', ')', this._sourceCode, funcParamsStartIndex);
             if (funcParamsEndIndex < 0) {
                 if (this.debug) {
                     console.warn(`Could not extract the parameters the function '${funcName}' (type=${funcType}). funcParamsStartIndex=${funcParamsStartIndex}`);
@@ -95,7 +79,7 @@ export class ShaderCodeInliner {
             const funcParams = this._sourceCode.substring(funcParamsStartIndex + 1, funcParamsEndIndex);
 
             // extract the body of the function (with the curly brackets)
-            const funcBodyStartIndex = this._skipWhitespaces(this._sourceCode, funcParamsEndIndex + 1);
+            const funcBodyStartIndex = CodeParserHelper.SkipWhitespaces(this._sourceCode, funcParamsEndIndex + 1);
             if (funcBodyStartIndex === this._sourceCode.length) {
                 if (this.debug) {
                     console.warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcParamsEndIndex=${funcParamsEndIndex}`);
@@ -104,7 +88,7 @@ export class ShaderCodeInliner {
                 continue;
             }
 
-            const funcBodyEndIndex = this._extractBetweenMarkers('{', '}', this._sourceCode, funcBodyStartIndex);
+            const funcBodyEndIndex = CodeParserHelper.ExtractBetweenMarkers('{', '}', this._sourceCode, funcBodyStartIndex);
             if (funcBodyEndIndex < 0) {
                 if (this.debug) {
                     console.warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcBodyStartIndex=${funcBodyStartIndex}`);
@@ -115,7 +99,7 @@ export class ShaderCodeInliner {
             const funcBody = this._sourceCode.substring(funcBodyStartIndex, funcBodyEndIndex + 1);
 
             // process the parameters: extract each names
-            const params = this._removeComments(funcParams).split(",");
+            const params = CodeParserHelper.RemoveComments(funcParams).split(",");
             const paramNames = [];
 
             for (let p = 0; p < params.length; ++p) {
@@ -171,142 +155,6 @@ export class ShaderCodeInliner {
         return numMaxIterations >= 0;
     }
 
-    private _extractBetweenMarkers(markerOpen: string, markerClose: string, block: string, startIndex: number): number {
-        let currPos = startIndex,
-            openMarkers = 0,
-            waitForChar = '';
-
-        while (currPos < block.length) {
-            let currChar = block.charAt(currPos);
-
-            if (!waitForChar) {
-                switch (currChar) {
-                    case markerOpen:
-                        openMarkers++;
-                        break;
-                    case markerClose:
-                        openMarkers--;
-                        break;
-                    case '"':
-                    case "'":
-                    case "`":
-                        waitForChar = currChar;
-                        break;
-                    case '/':
-                        if (currPos + 1 < block.length) {
-                            const nextChar = block.charAt(currPos + 1);
-                            if (nextChar === '/') {
-                                waitForChar = '\n';
-                            } else if (nextChar === '*') {
-                                waitForChar = '*/';
-                            }
-                        }
-                        break;
-                }
-            } else {
-                if (currChar === waitForChar) {
-                    if (waitForChar === '"' || waitForChar === "'") {
-                        block.charAt(currPos - 1) !== '\\' && (waitForChar = '');
-                    } else {
-                        waitForChar = '';
-                    }
-                } else if (waitForChar === '*/' && currChar === '*' && currPos + 1 < block.length) {
-                    block.charAt(currPos + 1) === '/' && (waitForChar = '');
-                    if (waitForChar === '') {
-                        currPos++;
-                    }
-                }
-            }
-
-            currPos++ ;
-            if (openMarkers === 0) {
-                break;
-            }
-        }
-
-        return openMarkers === 0 ? currPos - 1 : -1;
-    }
-
-    private _skipWhitespaces(s: string, index: number): number {
-        while (index < s.length) {
-            const c = s[index];
-            if (c !== ' ' && c !== '\n' && c !== '\r' && c !== '\t' && c !== '\u000a' && c !== '\u00a0') {
-                break;
-            }
-            index++;
-        }
-
-        return index;
-    }
-
-    private _isIdentifierChar(c: string): boolean {
-        const v = c.charCodeAt(0);
-        return (v >= 48 && v <= 57) || // 0-9
-            (v >= 65 && v <= 90) || // A-Z
-            (v >= 97 && v <= 122) || // a-z
-            (v == 95); // _
-    }
-
-    private _removeComments(block: string): string {
-        let currPos = 0,
-            waitForChar = '',
-            inComments = false,
-            s = [];
-
-        while (currPos < block.length) {
-            let currChar = block.charAt(currPos);
-
-            if (!waitForChar) {
-                switch (currChar) {
-                    case '"':
-                    case "'":
-                    case "`":
-                        waitForChar = currChar;
-                        break;
-                    case '/':
-                        if (currPos + 1 < block.length) {
-                            const nextChar = block.charAt(currPos + 1);
-                            if (nextChar === '/') {
-                                waitForChar = '\n';
-                                inComments = true;
-                            } else if (nextChar === '*') {
-                                waitForChar = '*/';
-                                inComments = true;
-                            }
-                        }
-                        break;
-                }
-                if (!inComments) {
-                    s.push(currChar);
-                }
-            } else {
-                if (currChar === waitForChar) {
-                    if (waitForChar === '"' || waitForChar === "'") {
-                        block.charAt(currPos - 1) !== '\\' && (waitForChar = '');
-                        s.push(currChar);
-                    } else {
-                        waitForChar = '';
-                        inComments = false;
-                    }
-                } else if (waitForChar === '*/' && currChar === '*' && currPos + 1 < block.length) {
-                    block.charAt(currPos + 1) === '/' && (waitForChar = '');
-                    if (waitForChar === '') {
-                        inComments = false;
-                        currPos++;
-                    }
-                } else {
-                    if (!inComments) {
-                        s.push(currChar);
-                    }
-                }
-            }
-
-            currPos++ ;
-        }
-
-        return s.join('');
-    }
-
     private _replaceFunctionCallsByCode(): boolean {
         let doAgain = false;
 
@@ -324,20 +172,20 @@ export class ShaderCodeInliner {
                 }
 
                 // Make sure "name" is not part of a bigger string
-                if (functionCallIndex === 0 || this._isIdentifierChar(this._sourceCode.charAt(functionCallIndex - 1))) {
+                if (functionCallIndex === 0 || CodeParserHelper.IsIdentifierChar(this._sourceCode.charAt(functionCallIndex - 1))) {
                     startIndex = functionCallIndex + name.length;
                     continue;
                 }
 
                 // Find the opening parenthesis
-                const callParamsStartIndex = this._skipWhitespaces(this._sourceCode, functionCallIndex + name.length);
+                const callParamsStartIndex = CodeParserHelper.SkipWhitespaces(this._sourceCode, functionCallIndex + name.length);
                 if (callParamsStartIndex === this._sourceCode.length || this._sourceCode.charAt(callParamsStartIndex) !== '(') {
                     startIndex = functionCallIndex + name.length;
                     continue;
                 }
 
                 // extract the parameters of the function call as a whole string (without the leading / trailing parenthesis)
-                const callParamsEndIndex = this._extractBetweenMarkers('(', ')', this._sourceCode, callParamsStartIndex);
+                const callParamsEndIndex = CodeParserHelper.ExtractBetweenMarkers('(', ')', this._sourceCode, callParamsStartIndex);
                 if (callParamsEndIndex < 0) {
                     if (this.debug) {
                         console.warn(`Could not extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}`);
@@ -347,33 +195,7 @@ export class ShaderCodeInliner {
                 }
                 const callParams = this._sourceCode.substring(callParamsStartIndex + 1, callParamsEndIndex);
 
-                // process the parameter call: extract each names
-
-                // this function split the parameter list used in the function call at ',' boundaries by taking care of potential parenthesis like in:
-                //      myfunc(a, vec2(1., 0.), 4.)
-                const splitParameterCall = (s: string) => {
-                    const parameters = [];
-                    let curIdx = 0, startParamIdx = 0;
-                    while (curIdx < s.length) {
-                        if (s.charAt(curIdx) === '(') {
-                            const idx2 = this._extractBetweenMarkers('(', ')', s, curIdx);
-                            if (idx2 < 0) {
-                                return null;
-                            }
-                            curIdx = idx2;
-                        } else if (s.charAt(curIdx) === ',') {
-                            parameters.push(s.substring(startParamIdx, curIdx));
-                            startParamIdx = curIdx + 1;
-                        }
-                        curIdx++;
-                    }
-                    if (startParamIdx < curIdx) {
-                        parameters.push(s.substring(startParamIdx, curIdx));
-                    }
-                    return parameters;
-                };
-
-                const params = splitParameterCall(this._removeComments(callParams));
+                const params = CodeParserHelper.SplitParameters(CodeParserHelper.RemoveComments(callParams));
 
                 if (params === null) {
                     if (this.debug) {
@@ -417,7 +239,7 @@ export class ShaderCodeInliner {
                     // FUNCTYPE retParamName;
                     // {function body}
                     // and replace the function call by retParamName
-                    const injectDeclarationIndex = this._findBackward(this._sourceCode, functionCallIndex - 1, '\n');
+                    const injectDeclarationIndex = CodeParserHelper.FindBackward(this._sourceCode, functionCallIndex - 1, '\n');
 
                     partBefore = this._sourceCode.substring(0, injectDeclarationIndex + 1);
                     let partBetween = this._sourceCode.substring(injectDeclarationIndex + 1, functionCallIndex);
@@ -445,28 +267,16 @@ export class ShaderCodeInliner {
         return doAgain;
     }
 
-    private _findBackward(s: string, index: number, c: string): number {
-        while (index >= 0 && s.charAt(index) !== c) {
-            index--;
-        }
-
-        return index;
-    }
-
-    private _escapeRegExp(s: string): string {
-        return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
     private _replaceNames(code: string, sources: string[], destinations: string[]): string {
         for (let i = 0; i < sources.length; ++i) {
-            const source = new RegExp(this._escapeRegExp(sources[i]), 'g'),
+            const source = new RegExp(CodeParserHelper.EscapeRegExp(sources[i]), 'g'),
                   sourceLen = sources[i].length,
                   destination = destinations[i];
 
             code = code.replace(source, (match, ...args) => {
                 const offset: number = args[0];
                 // Make sure "source" is not part of a bigger identifier (for eg, if source=view and we matched it with viewDirection)
-                if (this._isIdentifierChar(code.charAt(offset - 1)) || this._isIdentifierChar(code.charAt(offset + sourceLen))) {
+                if (CodeParserHelper.IsIdentifierChar(code.charAt(offset - 1)) || CodeParserHelper.IsIdentifierChar(code.charAt(offset + sourceLen))) {
                     return sources[i];
                 }
                 return destination;
