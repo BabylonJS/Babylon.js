@@ -11,7 +11,7 @@ export class CanvasGraphService {
     private _width: number;
     private _height: number;
     public readonly datasets: IPerfDataset[];
-
+    private _sizeOfWindow: number = 300;
     private _ticks: number[];
 
     /**
@@ -24,9 +24,9 @@ export class CanvasGraphService {
         this._ctx = canvas.getContext && canvas.getContext("2d");
         this._width = canvas.width;
         this._height = canvas.height;
-
         this.datasets = settings.datasets;
         this._ticks = [];
+        this._attachEventListeners(canvas);
     }
 
     /**
@@ -49,7 +49,7 @@ export class CanvasGraphService {
         // Keep only visible and non empty datasets and get a certain window of items.
         const datasets = this.datasets.filter((dataset: IPerfDataset) => !dataset.hidden && dataset.data.length > 0).map((dataset: IPerfDataset) => ({
             ...dataset,
-            data: dataset.data.slice(Math.max(dataset.data.length - 300, 0))
+            data: dataset.data.slice(Math.max(dataset.data.length - this._sizeOfWindow, 0))
         }));
 
         datasets.forEach((dataset: IPerfDataset) => {
@@ -126,7 +126,6 @@ export class CanvasGraphService {
         ctx.stroke();
         ctx.restore();
     }
-
 
     /**
      * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
@@ -255,6 +254,24 @@ export class CanvasGraphService {
         }
 
         return startingPixel + normalizedValue * spaceAvailable;
+    }
+
+    private _attachEventListeners(canvas: HTMLCanvasElement) {
+        canvas.addEventListener("wheel", this._handleZoom.bind(this));
+    }
+
+
+    private _handleZoom(event: WheelEvent) {
+        event.preventDefault();
+        
+        if (!event.deltaY) {
+            return;
+        }
+
+        const amount = (event.deltaY * -0.01 | 0) * 100;
+        this._sizeOfWindow = Math.max(this._sizeOfWindow - amount, 60);
+        console.log(this._sizeOfWindow);
+        return;
     }
     
     /**
