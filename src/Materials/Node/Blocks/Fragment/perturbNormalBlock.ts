@@ -223,8 +223,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
-                { search: /varying vec2 vBumpUV;/g, replace: ""},
-                { search: /uniform sampler2D bumpSampler;/g, replace: ""},
+                { search: /#include<samplerFragmentDeclaration>\(_DEFINENAME_,BUMP,_VARYINGNAME_,Bump,_SAMPLERNAME_,bump\)/g, replace: ""},
                 { search: /vec2 parallaxOcclusion\(vec3 vViewDirCoT,vec3 vNormalCoT,vec2 texCoord,float parallaxScale\)/g, replace: "#define inline\r\nvec2 parallaxOcclusion(vec3 vViewDirCoT, vec3 vNormalCoT, vec2 texCoord, float parallaxScale, sampler2D bumpSampler)" },
                 { search : /vec2 parallaxOffset\(vec3 viewDir,float heightScale\)/g, replace: "vec2 parallaxOffset(vec3 viewDir, float heightScale, float height_)" },
                 { search: /texture2D\(bumpSampler,vBumpUV\)\.w/g, replace: "height_" },
