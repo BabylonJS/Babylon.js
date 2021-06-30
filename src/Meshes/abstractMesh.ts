@@ -2031,7 +2031,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             data.facetParameters.distanceTo = data.facetDepthSortOrigin;
         }
         data.facetParameters.depthSortedFacets = data.depthSortedFacets;
-        VertexData.ComputeNormals(positions, indices, normals, data.facetParameters);
+        if (normals) {
+            VertexData.ComputeNormals(positions, indices, normals, data.facetParameters);
+        }
 
         if (data.facetDepthSort && data.facetDepthSortEnabled) {
             data.depthSortedFacets.sort(data.facetDepthSortFunction);
