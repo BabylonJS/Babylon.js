@@ -1,6 +1,7 @@
 import { Nullable } from '../../types';
 import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from '../Processors/shaderProcessingOptions';
+import { FlipInjector, ModificationType } from "../WebGPU/webgpuFlipInjector";
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
@@ -16,6 +17,41 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
 
     public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
+
+        if (!engine.hasOriginBottomLeft) {
+            const fi = new FlipInjector(code);
+            fi.processCode("texture2DLodEXT", ModificationType.flipY);
+            fi.processCode("texture2D", ModificationType.flipY);
+            fi.processCode("textureCubeLodEXT", ModificationType.negateY);
+            fi.processCode("textureCube", ModificationType.negateY);
+            fi.processCode("dFdy", ModificationType.negate, 0);
+            code = `
+                vec4 _flipY(vec4 uv)
+                {
+                    return vec4(uv.x, 1. - uv.y, uv.z, uv.w);
+                }
+                vec3 _flipY(vec3 uv)
+                {
+                    return vec3(uv.x, 1. - uv.y, uv.z);
+                }
+                vec2 _flipY(vec2 uv)
+                {
+                    return vec2(uv.x, 1. - uv.y);
+                }
+                vec4 _negateY(vec4 uv)
+                {
+                    return vec4(uv.x, -uv.y, uv.z, uv.w);
+                }
+                vec3 _negateY(vec3 uv)
+                {
+                    return vec3(uv.x, -uv.y, uv.z);
+                }
+                vec2 _negateY(vec2 uv)
+                {
+                    return vec2(uv.x, -uv.y);
+                }
+            ` + fi.code;
+        }
 
         // Remove extensions
         var regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
