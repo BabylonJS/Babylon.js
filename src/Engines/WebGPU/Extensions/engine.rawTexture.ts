@@ -167,7 +167,7 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene
             if (!this.hasOriginBottomLeft) {
                 invertY = !invertY;
             }
-        
+
             const needConversion = format === Constants.TEXTUREFORMAT_RGB;
             const mipData = mipmapGenerator(faceDataArrays);
             const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
