@@ -49,7 +49,7 @@ export const canvasShader = {
                     pattern = 0.7;
                 }
                 vec4 bg = vec4(pattern, pattern, pattern, 1.0);
-                vec4 col = texture(textureSampler, vUV);
+                vec4 col = texture2D(textureSampler, vUV);
                 if (!r && !g && !b) {
                     if (a) {
                         col = vec4(col.a, col.a, col.a, 1.0);
