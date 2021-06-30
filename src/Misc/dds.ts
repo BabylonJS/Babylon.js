@@ -546,7 +546,7 @@ export class DDSTools {
 
         const startFace = currentFace || 0;
         const hasOriginBottomLeft = engine.hasOriginBottomLeft;
-        if (!hasOriginBottomLeft) {
+        if (!hasOriginBottomLeft && faces === 6) {
             texture.invertY = true;
         }
         for (var face = startFace; face < faces; face++) {
