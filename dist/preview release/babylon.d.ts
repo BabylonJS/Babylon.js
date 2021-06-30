@@ -41835,6 +41835,10 @@ declare module BABYLON {
          */
         readonly onInputChangedObservable: Observable<IDeviceEvent>;
         /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
+        /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
          * @param deviceSlot "Slot" or index that device is referenced in
@@ -43630,6 +43634,10 @@ declare module BABYLON {
         private _nativeInput;
         constructor(nativeInput: INativeInput);
         /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
+        /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
          * @param deviceSlot "Slot" or index that device is referenced in
@@ -43698,6 +43706,10 @@ declare module BABYLON {
         static MAX_POINTER_INPUTS: number;
         private _eventPrefix;
         constructor(engine: Engine);
+        /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -43778,6 +43790,10 @@ declare module BABYLON {
          * @returns DeviceType interpreted from event
          */
         private _getPointerType;
+        /**
+         * Remove events from active input element
+         */
+        private _removeEvents;
     }
 }
 declare module BABYLON {

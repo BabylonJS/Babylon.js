@@ -144,8 +144,8 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Format code" icon="options" isActive={false} onClick={()=> this.onFormatCode()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Metadata" icon="options" isActive={false} onClick={()=> this.onMetadata()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={()=> this.onExamples()} isActive={false}/>
-                    <CommandDropdownComponent globalState={this.props.globalState} hamburgerMode={true} icon="" defaultValue={activeEngineVersion} tooltip="Engine" toRight={true} items={engineOptions} />                    
-                    <CommandDropdownComponent globalState={this.props.globalState} hamburgerMode={true} icon="" defaultValue={activeVersion} tooltip="Versions" toRight={true} items={versionOptions} />   
+                    <CommandDropdownComponent globalState={this.props.globalState} hamburgerMode={true} icon="engineVersion" defaultValue={activeEngineVersion} tooltip="Engine" toRight={true} items={engineOptions} />                    
+                    <CommandDropdownComponent globalState={this.props.globalState} hamburgerMode={true} icon="renderer" defaultValue={activeVersion} tooltip="Versions" toRight={true} items={versionOptions} />   
                 </div>
             </>
         );
