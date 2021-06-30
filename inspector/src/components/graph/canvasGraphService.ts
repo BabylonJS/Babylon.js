@@ -129,11 +129,10 @@ export class CanvasGraphService {
 
 
     /**
-     * Gets a list of ticks given the min and max of the axis, and the space available in the axis.
+     * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
      * 
      * @param minMax the minimum and maximum values of the axis
      * @param spaceAvailable the total amount of space we have allocated to our axis
-     * @returns a list of "nice" tickS.
      */
     private _generateTicks(minMax: IPerfMinMax, spaceAvailable: number) {
         const { min, max } = minMax;
