@@ -64,13 +64,13 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
      * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
      */
      @serialize()
-     public keysRotateLeft: number[] = []; // 37
+     public keysRotateLeft: number[] = [];
 
      /**
      * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
      */
     @serialize()
-    public keysRotateRight: number[] = []; // 39
+    public keysRotateRight: number[] = [];
 
     private _keys = new Array<number>();
     private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
