@@ -260,6 +260,7 @@
 - Fix an exception where loading a very small STL file could result in attempting to read outside the files range ([CoPrez](https://github.com/CoPrez))
 - Fix support of `useReverseDepthBuffer` throughout the engine ([Popov72](https://github.com/Popov72))
 - Fix issue with handling of negative Pointer IDs in DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix handling of events to support multiple canvas scenarios DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 
