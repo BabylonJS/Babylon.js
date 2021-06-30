@@ -1543,6 +1543,10 @@ export class ThinEngine {
         var x = viewport.x || 0;
         var y = viewport.y || 0;
 
+        if (!this.hasOriginBottomLeft) {
+            y = 1 - (y + viewport.height);
+        }
+
         this._cachedViewport = viewport;
 
         this._viewport(x * width, y * height, width * viewport.width, height * viewport.height);
