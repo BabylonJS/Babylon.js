@@ -763,7 +763,7 @@ export class NodeMaterial extends PushMaterial {
         let uvChanged = false;
         for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
             let oldUV = defines["UV" + i];
-            defines["UV" + i] = mesh.isVerticesDataPresent(`uv${i === 0 ? "" : i}`);
+            defines["UV" + i] = mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`);
             uvChanged = uvChanged || defines["UV" + i] !== oldUV;
         }
 
