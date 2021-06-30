@@ -10,7 +10,9 @@ export class CanvasGraphService {
     private _ctx: CanvasRenderingContext2D | null;
     private _width: number;
     private _height: number;
-    public readonly datasets: IPerfDataset[]; 
+    public readonly datasets: IPerfDataset[];
+
+    private _ticks: number[];
 
     /**
      * Creates an instance of CanvasGraphService.
@@ -24,6 +26,7 @@ export class CanvasGraphService {
         this._height = canvas.height;
 
         this.datasets = settings.datasets;
+        this._ticks = [];
     }
 
     /**
@@ -51,7 +54,8 @@ export class CanvasGraphService {
 
         datasets.forEach((dataset: IPerfDataset) => {
             const timeMinMax = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.timestamp));            
-            globalTimeMinMax = {min: Math.min(timeMinMax.min, globalTimeMinMax.min), max: Math.max(timeMinMax.max, globalTimeMinMax.max)};
+            globalTimeMinMax.min = Math.min(timeMinMax.min, globalTimeMinMax.min);
+            globalTimeMinMax.max = Math.max(timeMinMax.max, globalTimeMinMax.max);
         });
 
         const drawableArea: IGraphDrawableArea = {
@@ -93,7 +97,7 @@ export class CanvasGraphService {
         }
         const spaceAvailable = drawableArea.right - drawableArea.left;
 
-        const ticks = this._getTicks(timeMinMax, spaceAvailable);
+        this._generateTicks(timeMinMax, spaceAvailable);
 
         const axisHeight = 100;
 
@@ -110,7 +114,7 @@ export class CanvasGraphService {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        ticks.forEach((tick: number) => {
+        this._ticks.forEach((tick: number) => {
             let position = this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
                 position = spaceAvailable;
@@ -131,11 +135,11 @@ export class CanvasGraphService {
      * @param spaceAvailable the total amount of space we have allocated to our axis
      * @returns a list of "nice" tickS.
      */
-    private _getTicks(minMax: IPerfMinMax, spaceAvailable: number): number[] {
+    private _generateTicks(minMax: IPerfMinMax, spaceAvailable: number) {
         const { min, max } = minMax;
         const minTickSpacing = 40; 
 
-        let ticks: number[] = [];
+        this._ticks.length = 0;
 
         const maxTickCount = Math.ceil(spaceAvailable / minTickSpacing);
         const range = this._niceNumber(max - min, false);
@@ -144,10 +148,8 @@ export class CanvasGraphService {
         const niceMax = Math.floor(max/spacing) * spacing;
         
         for (let i = niceMin; i <= niceMax + 0.5 * spacing; i += spacing) {
-            ticks.push(i);
+            this._ticks.push(i);
         }
-
-        return ticks;
     }
 
     /**
