@@ -45872,6 +45872,61 @@ var GradientStepComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx":
+/*!*************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx ***!
+  \*************************************************************************************/
+/*! exports provided: PerformanceViewerComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerComponent", function() { return PerformanceViewerComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+
+
+
+
+
+// aribitrary window size
+var initialWindowSize = { width: 1024, height: 512 };
+// Note this should be false when committed until the feature is fully working.
+var isEnabled = false;
+var PerformanceViewerComponent = function (props) {
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    // do cleanup when the window is closed
+    var onClosePerformanceViewer = function (window) {
+        if (window) {
+            window.close();
+        }
+        setIsOpen(false);
+    };
+    var onPerformanceButtonClick = function () {
+        setIsOpen(true);
+    };
+    var onResize = function () {
+        // do nothing for now.
+    };
+    var canvasServiceCallback = function (canvasService) {
+        canvasService.draw();
+    };
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+        isEnabled &&
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
+        isOpen &&
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, onResize: onResize, onClose: onClosePerformanceViewer },
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "performance-viewer" },
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__["CanvasGraphComponent"], { id: "myChart", canvasServiceCallback: canvasServiceCallback }))))));
+};
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGridTabComponent.tsx":
 /*!*****************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGridTabComponent.tsx ***!
@@ -57873,6 +57928,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/booleanLineComponent */ "./sharedUiComponents/lines/booleanLineComponent.tsx");
+/* harmony import */ var _performanceViewer_performanceViewerComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./performanceViewer/performanceViewerComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx");
+
 
 
 
@@ -57929,6 +57986,7 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Version", value: babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__["Engine"].Version, color: "rgb(113, 159, 255)" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "FPS", value: engine.getFps(), fractionDigits: 0 }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewer_performanceViewerComponent__WEBPACK_IMPORTED_MODULE_8__["PerformanceViewerComponent"], { scene: scene }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "COUNT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Total meshes", value: scene.meshes.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Active meshes", value: scene.getActiveMeshes().length.toString() }),
@@ -58846,6 +58904,106 @@ var GlobalState = /** @class */ (function () {
         }
     };
     return GlobalState;
+}());
+
+
+
+/***/ }),
+
+/***/ "./components/graph/canvasGraphComponent.tsx":
+/*!***************************************************!*\
+  !*** ./components/graph/canvasGraphComponent.tsx ***!
+  \***************************************************/
+/*! exports provided: CanvasGraphComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphComponent", function() { return CanvasGraphComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./canvasGraphService */ "./components/graph/canvasGraphService.ts");
+
+
+
+var CanvasGraphComponent = function (props) {
+    var id = props.id, canvasServiceCallback = props.canvasServiceCallback;
+    var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
+    Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+        if (!canvasRef.current) {
+            return;
+        }
+        // temporarily set empty array, will eventually be passed by props!
+        canvasServiceCallback(new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] }));
+    }, [canvasRef]);
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("canvas", { id: id, ref: canvasRef }));
+};
+
+
+/***/ }),
+
+/***/ "./components/graph/canvasGraphService.ts":
+/*!************************************************!*\
+  !*** ./components/graph/canvasGraphService.ts ***!
+  \************************************************/
+/*! exports provided: CanvasGraphService */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
+/**
+ * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
+ * let it know something has been resized, etc!
+ */
+var CanvasGraphService = /** @class */ (function () {
+    /**
+     * Creates an instance of CanvasGraphService.
+     * @param canvas a pointer to the canvas dom element we would like to write to.
+     * @param settings settings for our service.
+     */
+    function CanvasGraphService(canvas, settings) {
+        this._ctx = canvas.getContext && canvas.getContext("2d");
+        this._width = canvas.width;
+        this._height = canvas.height;
+        this.datasets = settings.datasets;
+    }
+    /**
+     * This method draws the data and sets up the appropriate scales.
+     */
+    CanvasGraphService.prototype.draw = function () {
+        var ctx = this._ctx;
+        if (!ctx) {
+            return;
+        }
+        // First we clear the canvas so we can draw our data!
+        this.clear();
+        // TODO: Draw each dataset
+        this.datasets.forEach(function (dataset) {
+            // do drawing
+        });
+        // TODO: Remove this code after dataset drawing is implemented.
+        ctx.beginPath();
+        ctx.moveTo(100, 100);
+        ctx.lineTo(200, 0);
+        ctx.stroke();
+    };
+    /**
+     * This method clears the canvas
+     */
+    CanvasGraphService.prototype.clear = function () {
+        var _a = this, ctx = _a._ctx, _width = _a._width, _height = _a._height;
+        // If we do not have a context we can't really do much here!
+        if (!ctx) {
+            return;
+        }
+        // save the transformation matrix, clear the canvas then restore.
+        ctx.save();
+        ctx.resetTransform();
+        ctx.clearRect(0, 0, _width, _height);
+        ctx.restore();
+    };
+    return CanvasGraphService;
 }());
 
 

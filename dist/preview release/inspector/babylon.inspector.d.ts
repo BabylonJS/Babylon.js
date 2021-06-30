@@ -162,6 +162,92 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+        icon?: string;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    /**
+     * Defines what settings our canvas graphing service accepts
+     */
+    export interface ICanvasGraphServiceSettings {
+        datasets: BABYLON.IPerfDataset[];
+    }
+}
+declare module INSPECTOR {
+    /**
+     * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
+     * let it know something has been resized, etc!
+     */
+    export class CanvasGraphService {
+        private _ctx;
+        private _width;
+        private _height;
+        readonly datasets: BABYLON.IPerfDataset[];
+        /**
+         * Creates an instance of CanvasGraphService.
+         * @param canvas a pointer to the canvas dom element we would like to write to.
+         * @param settings settings for our service.
+         */
+        constructor(canvas: HTMLCanvasElement, settings: ICanvasGraphServiceSettings);
+        /**
+         * This method draws the data and sets up the appropriate scales.
+         */
+        draw(): void;
+        /**
+         * This method clears the canvas
+         */
+        clear(): void;
+    }
+}
+declare module INSPECTOR {
+    interface ICanvasGraphComponentProps {
+        id: string;
+        canvasServiceCallback: (canvasService: CanvasGraphService) => void;
+    }
+    export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
+}
+declare module INSPECTOR {
+    interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen?: (window: Window) => void;
+        onClose: (window: Window) => void;
+        onResize?: () => void;
+        onKeyUp?: (evt: KeyboardEvent) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        private _host;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        getWindow(): Window | null;
+        render(): React.ReactPortal | null;
+    }
+}
+declare module INSPECTOR {
+    interface IPerformanceViewerComponentProps {
+        scene: BABYLON.Scene;
+    }
+    export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
+}
+declare module INSPECTOR {
     export class StatisticsTabComponent extends PaneComponent {
         private _sceneInstrumentation;
         private _engineInstrumentation;
@@ -598,45 +684,6 @@ declare module INSPECTOR {
         constructor(props: ICustomPropertyGridComponentProps);
         renderInspectable(inspectable: BABYLON.IInspectable): JSX.Element | null;
         render(): JSX.Element | null;
-    }
-}
-declare module INSPECTOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-        icon?: string;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IPopupComponentProps {
-        id: string;
-        title: string;
-        size: {
-            width: number;
-            height: number;
-        };
-        onOpen?: (window: Window) => void;
-        onClose: (window: Window) => void;
-        onResize?: () => void;
-        onKeyUp?: (evt: KeyboardEvent) => void;
-    }
-    export class PopupComponent extends React.Component<IPopupComponentProps, {
-        isComponentMounted: boolean;
-        blockedByBrowser: boolean;
-    }> {
-        private _container;
-        private _window;
-        private _host;
-        constructor(props: IPopupComponentProps);
-        componentDidMount(): void;
-        openPopup(): void;
-        componentWillUnmount(): void;
-        getWindow(): Window | null;
-        render(): React.ReactPortal | null;
     }
 }
 declare module INSPECTOR {

@@ -106,7 +106,7 @@ export class InputManager {
     private _startingPointerTime = 0;
     private _previousStartingPointerTime = 0;
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
-    private _meshUnderPointerId: Nullable<AbstractMesh>[] = [];
+    private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
 
     // Keyboard
     private _onKeyDown: (evt: IKeyboardEvent) => void;
@@ -136,7 +136,7 @@ export class InputManager {
      * @returns The mesh under this pointer id or null if not found
      */
     public getMeshUnderPointerByPointerId(pointerId: number): Nullable<AbstractMesh> {
-        return this._meshUnderPointerId[pointerId];
+        return this._meshUnderPointerId[pointerId] || null;
     }
 
     /**
@@ -919,10 +919,6 @@ export class InputManager {
      * @param pointerId optional pointer id when using more than one pointer. Defaults to 0
      */
     public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0): void {
-        // Sanity check
-        if (pointerId < 0) {
-            pointerId = 0;
-        }
         if (this._meshUnderPointerId[pointerId] === mesh) {
             return;
         }
@@ -937,15 +933,17 @@ export class InputManager {
             }
         }
 
-        this._meshUnderPointerId[pointerId] = mesh;
-        this._pointerOverMesh = mesh;
+        if (mesh) {
+            this._meshUnderPointerId[pointerId] = mesh;
+            this._pointerOverMesh = mesh;
 
-        underPointerMesh = this._meshUnderPointerId[pointerId];
-        if (underPointerMesh) {
-            actionManager = underPointerMesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOverTrigger);
+            actionManager = mesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOverTrigger);
             if (actionManager) {
-                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(underPointerMesh, undefined, { pointerId }));
+                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(mesh, undefined, { pointerId }));
             }
+        } else {
+            delete this._meshUnderPointerId[pointerId];
+            this._pointerOverMesh = null;
         }
     }
 
@@ -968,9 +966,9 @@ export class InputManager {
         if (this._pickedUpMesh === mesh) {
             this._pickedUpMesh = null;
         }
-        for (let i = 0; i < this._meshUnderPointerId.length; ++i) {
-            if (this._meshUnderPointerId[i] === mesh) {
-                this._meshUnderPointerId[i] = null;
+        for (const pointerId in this._meshUnderPointerId) {
+            if (this._meshUnderPointerId[pointerId] === mesh) {
+                delete this._meshUnderPointerId[pointerId];
             }
         }
     }
