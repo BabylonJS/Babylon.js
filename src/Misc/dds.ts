@@ -611,13 +611,11 @@ export class DDSTools {
                             texture.format = Constants.TEXTUREFORMAT_RGB;
                             dataLength = width * height * 3;
                             byteArray = DDSTools._GetRGBArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset);
-                            console.log("b");
                             engine._uploadDataToTextureDirectly(texture, byteArray, faceIndex, i);
                         } else { // 32
                             texture.format = Constants.TEXTUREFORMAT_RGBA;
                             dataLength = width * height * 4;
                             byteArray = DDSTools._GetRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset, aOffset);
-                            console.log("c");
                             engine._uploadDataToTextureDirectly(texture, byteArray, faceIndex, i);
                         }
                     } else if (info.isLuminance) {
