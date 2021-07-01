@@ -79,7 +79,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
             }}
             >
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
-                {(this.state.isHovered || this.state.isSelected || this.dragOverHover) && <>
+                {(this.state.isHovered || this.dragOverHover) && <>
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
                         <img src={makeComponentIcon} />
                     </div>
