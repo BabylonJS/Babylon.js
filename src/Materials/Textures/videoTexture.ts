@@ -81,14 +81,14 @@ export class VideoTexture extends Texture {
         this._errorFound = true;
         if (this._onError) {
             this._onError(reason?.message);
-        } else {                        
+        } else {
             Logger.Error(reason?.message);
         }
     }
 
     private _handlePlay() {
         this._errorFound = false;
-        this.video.play().catch(reason => {
+        this.video.play().catch((reason) => {
             if (reason?.name === "NotAllowedError") {
                 if (this._onUserActionRequestedObservable && this._onUserActionRequestedObservable.hasObservers()) {
                     this._onUserActionRequestedObservable.notifyObservers(this);
@@ -97,11 +97,11 @@ export class VideoTexture extends Texture {
                     Logger.Warn("Unable to autoplay a video with sound. Trying again with muted turned true");
                     this.video.muted = true;
                     this._errorFound = false;
-                    this.video.play().catch(otherReason => {
-                        this._processError(otherReason);  
+                    this.video.play().catch((otherReason) => {
+                        this._processError(otherReason);
                     });
                     return;
-                }                
+                }
             }
 
             this._processError(reason);
@@ -139,7 +139,7 @@ export class VideoTexture extends Texture {
                 autoPlay: true,
                 loop: true,
                 autoUpdateTexture: true,
-            }
+            };
         }
 
         this._onError = onError;
