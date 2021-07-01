@@ -683,7 +683,7 @@ declare module BABYLON.GUI {
         * LayerMask is set through advancedTexture.layer.layerMask
         * @param name defines name for the texture
         * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-        * @param scene defines the hsoting scene
+        * @param scene defines the hosting scene
         * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
         * @returns a new AdvancedDynamicTexture
         */
@@ -1246,35 +1246,35 @@ declare module BABYLON.GUI {
         /** @hidden */
         _link(host: AdvancedDynamicTexture): void;
         /** @hidden */
-        protected _transform(context?: CanvasRenderingContext2D): void;
+        protected _transform(context?: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _renderHighlight(context: CanvasRenderingContext2D): void;
+        _renderHighlight(context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+        _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        protected _applyStates(context: CanvasRenderingContext2D): void;
+        protected _applyStates(context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        _layout(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): boolean;
         /** @hidden */
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         protected _evaluateClippingState(parentMeasure: Measure): void;
         /** @hidden */
         _measure(): void;
         /** @hidden */
-        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _computeAlignment(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _clipForChildren(context: BABYLON.ICanvasRenderingContext): void;
         private static _ClipMeasure;
         private _tmpMeasureA;
         private _clip;
         /** @hidden */
-        _render(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): boolean;
+        _render(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): boolean;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /**
          * Tests if a given coordinates belong to the current control
          * @param x defines x coordinate to test
@@ -1359,7 +1359,7 @@ declare module BABYLON.GUI {
             controlFirst: boolean;
         }) => any;
         /** @hidden */
-        protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void;
+        protected static drawEllipse(x: number, y: number, width: number, height: number, context: BABYLON.ICanvasRenderingContext): void;
     }
 }
 declare module BABYLON.GUI {
@@ -1457,23 +1457,23 @@ declare module BABYLON.GUI {
         /** @hidden */
         _markAllAsDirty(): void;
         /** @hidden */
-        protected _localDraw(context: CanvasRenderingContext2D): void;
+        protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
         _link(host: AdvancedDynamicTexture): void;
         /** @hidden */
         protected _beforeLayout(): void;
         /** @hidden */
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        _layout(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): boolean;
         protected _postMeasure(): void;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
         _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /**
         * Serializes the current control
         * @param serializationObject defined the JSON serialized object
@@ -1503,10 +1503,10 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        protected _localDraw(context: CanvasRenderingContext2D): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _drawRoundedRect;
-        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _clipForChildren(context: BABYLON.ICanvasRenderingContext): void;
     }
 }
 declare module BABYLON.GUI {
@@ -1653,16 +1653,16 @@ declare module BABYLON.GUI {
          */
         name?: string | undefined, text?: string);
         protected _getTypeName(): string;
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _drawText;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
-        protected _applyStates(context: CanvasRenderingContext2D): void;
-        protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
-        protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
-        protected _parseLineEllipsis(line: string | undefined, width: number, context: CanvasRenderingContext2D): object;
-        protected _parseLineWordWrap(line: string | undefined, width: number, context: CanvasRenderingContext2D): object[];
-        protected _renderLines(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        protected _applyStates(context: BABYLON.ICanvasRenderingContext): void;
+        protected _breakLines(refWidth: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _parseLine(line: string | undefined, context: BABYLON.ICanvasRenderingContext): object;
+        protected _parseLineEllipsis(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object;
+        protected _parseLineWordWrap(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _renderLines(context: BABYLON.ICanvasRenderingContext): void;
         /**
          * Given a width constraint applied on the text block, find the expected height
          * @returns expected height
@@ -1847,10 +1847,10 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         /** Force the control to synchronize with its content */
         synchronizeSizeWithContent(): void;
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _prepareWorkingCanvasForOpaqueDetection;
         private _drawImage;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         private _renderNinePatch;
         dispose(): void;
         /** STRETCH_NONE */
@@ -1985,8 +1985,8 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         protected _postMeasure(): void;
         /**
          * Serializes the current control
@@ -2030,7 +2030,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
@@ -2314,7 +2314,7 @@ declare module BABYLON.GUI {
         private _onCutText;
         /** @hidden */
         private _onPasteText;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
@@ -2436,9 +2436,9 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _getGridDefinitions(definitionCallback: (lefts: number[], tops: number[], widths: number[], heights: number[]) => void): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         _flagDescendantsAsMatrixDirty(): void;
-        _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+        _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
     }
@@ -2490,13 +2490,13 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _updateSquareProps;
         private _drawGradientSquare;
         private _drawCircle;
         private _createColorWheelCanvas;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         private _pointerIsDown;
         private _updateValueFromPointer;
         private _isPointOnSquare;
@@ -2541,9 +2541,9 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        protected _localDraw(context: CanvasRenderingContext2D): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
+        protected _clipForChildren(context: BABYLON.ICanvasRenderingContext): void;
     }
 }
 declare module BABYLON.GUI {
@@ -2644,9 +2644,9 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         _measure(): void;
-        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _computeAlignment(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /**
          * Move one end of the line given 3D cartesian coordinates.
          * @param position Targeted world position
@@ -2772,10 +2772,10 @@ declare module BABYLON.GUI {
         set horizontalAlignment(value: number);
         set verticalAlignment(value: number);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         _measure(): void;
-        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _computeAlignment(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         dispose(): void;
     }
 }
@@ -2811,7 +2811,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
          * Utility function to easily create a radio button with a header
@@ -2931,7 +2931,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -3177,13 +3177,13 @@ declare module BABYLON.GUI {
         constructor(name?: string);
         protected _getTypeName(): string;
         /** @hidden */
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /** @hidden */
-        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        _layout(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): boolean;
         private _scrollChildren;
         private _scrollChildrenWithBuckets;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: Measure): void;
         protected _postMeasure(): void;
     }
 }
@@ -3209,7 +3209,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _getThumbThickness(): number;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         private _first;
         private _originX;
         private _originY;
@@ -3266,7 +3266,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _getThumbThickness(): number;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: BABYLON.ICanvasRenderingContext): void;
         private _first;
         private _originX;
         private _originY;
@@ -3376,7 +3376,7 @@ declare module BABYLON.GUI {
         resetWindow(): void;
         protected _getTypeName(): string;
         private _buildClientSizes;
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         protected _postMeasure(): void;
         /**
          * Gets or sets the mouse wheel precision
@@ -3437,7 +3437,7 @@ declare module BABYLON.GUI {
         private _addBar;
         /** @hidden */
         private _attachWheel;
-        _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+        _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
     }
@@ -3580,7 +3580,7 @@ declare module BABYLON.GUI {
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
@@ -3617,7 +3617,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -3798,96 +3798,6 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
-     * Class used to create a button in 3D
-     */
-    export class Button3D extends AbstractButton3D {
-        /** @hidden */
-        protected _currentMaterial: BABYLON.Material;
-        /**
-         * Creates a new button
-         * @param name defines the control name
-         */
-        constructor(name?: string);
-        /**
-         * Apply the facade texture (created from the content property).
-         * @param facadeTexture defines the AdvancedDynamicTexture to use
-         */
-        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Enum for Button States
-     */
-    /** @hidden */
-    export enum ButtonState {
-        /** None */
-        None = 0,
-        /** Pointer Entered */
-        Hover = 1,
-        /** Pointer Down */
-        Press = 2
-    }
-    /**
-     * Class used to create a touchable button in 3D
-     */
-    export class TouchButton3D extends Button3D {
-        private _collisionMesh;
-        private _collidableFrontDirection;
-        private _lastTouchPoint;
-        private _tempButtonForwardRay;
-        private _lastKnownCollidableScale;
-        private _collidableInitialized;
-        private _frontOffset;
-        private _backOffset;
-        private _hoverOffset;
-        private _pushThroughBackOffset;
-        private _activeInteractions;
-        private _previousHeight;
-        /**
-         * Creates a new touchable button
-         * @param name defines the control name
-         * @param collisionMesh mesh to track collisions with
-         */
-        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
-        /**
-         * Sets the front-facing direction of the button
-         * @param frontDir the forward direction of the button
-         */
-        set collidableFrontDirection(frontWorldDir: BABYLON.Vector3);
-        private _getWorldMatrixData;
-        /**
-         * Sets the mesh used for testing input collision
-         * @param collisionMesh the new collision mesh for the button
-         */
-        set collisionMesh(collisionMesh: BABYLON.Mesh);
-        private _getShortestDistancePointToLine;
-        private _isPrimedForInteraction;
-        private _getPointOnButton;
-        private _updateDistanceOffsets;
-        private _getHeightFromButtonCenter;
-        private _getDistanceOffPlane;
-        private _updateButtonState;
-        private _firePointerEvents;
-        /** @hidden */
-        _collisionCheckForStateChange(meshPos: BABYLON.Vector3, uniqueId: number, forceExit?: boolean): void;
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
      * Class used to manage 3D user interface
      * @see https://doc.babylonjs.com/how_to/gui3d
      */
@@ -3898,9 +3808,6 @@ declare module BABYLON.GUI {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
-        private _touchableButtons;
-        private _touchIds;
-        private static _touchIdCounter;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -3915,6 +3822,10 @@ declare module BABYLON.GUI {
          * BABYLON.Observable raised when the point picked by the pointer events changed
          */
         onPickedPointChangedObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector3>>;
+        /**
+         * BABYLON.Observable raised when a picking happens
+         */
+        onPickingObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.AbstractMesh>>;
         /** @hidden */
         _sharedMaterials: {
             [key: string]: BABYLON.Material;
@@ -3934,7 +3845,6 @@ declare module BABYLON.GUI {
         constructor(scene?: BABYLON.Scene);
         private _handlePointerOut;
         private _doPicking;
-        private _processTouchControls;
         /**
          * Gets the root container
          */
@@ -3978,6 +3888,70 @@ declare module BABYLON.GUI {
         constructor(source: BABYLON.Vector3, 
         /** defines the current mouse button index */
         buttonIndex?: number);
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a button in 3D
+     */
+    export class Button3D extends AbstractButton3D {
+        /** @hidden */
+        protected _currentMaterial: BABYLON.Material;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Apply the facade texture (created from the content property).
+         * @param facadeTexture defines the AdvancedDynamicTexture to use
+         */
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a touchable button in 3D
+     */
+    export class TouchButton3D extends Button3D {
+        private _collisionMesh;
+        private _collidableFrontDirection;
+        /**
+         * Creates a new touchable button
+         * @param name defines the control name
+         * @param collisionMesh mesh to track collisions with
+         */
+        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        /**
+         * Sets the front-facing direction of the button. Pass in BABYLON.Vector3.Zero to allow interactions from any direction
+         * @param frontDir the forward direction of the button
+         */
+        set collidableFrontDirection(frontWorldDir: BABYLON.Vector3);
+        /**
+         * Returns the front-facing direction of the button, or BABYLON.Vector3.Zero if there is no 'front'
+         */
+        get collidableFrontDirection(): BABYLON.Vector3;
+        /**
+         * Sets the mesh used for testing input collision
+         * @param collisionMesh the new collision mesh for the button
+         */
+        set collisionMesh(collisionMesh: BABYLON.Mesh);
+        private _isInteractionInFrontOfButton;
+        /** @hidden */
+        _generatePointerEventType(providedType: number, nearMeshPosition: BABYLON.Vector3, activeInteractionCount: number): number;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -4112,6 +4086,7 @@ declare module BABYLON.GUI {
          * @param mesh defines the mesh which will represent the control
          */
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        private _IsTouchButton3D;
         /** @hidden */
         _onPointerMove(target: Control3D, coordinates: BABYLON.Vector3): void;
         /** @hidden */
@@ -4125,7 +4100,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
-        _processObservables(type: number, pickedPoint: BABYLON.Vector3, pointerId: number, buttonIndex: number): boolean;
+        _processObservables(type: number, pickedPoint: BABYLON.Vector3, originMeshPosition: BABYLON.Nullable<BABYLON.Vector3>, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
         _disposeNode(): void;
         /**
@@ -4219,7 +4194,7 @@ declare module BABYLON.GUI {
         /**
          * Creates new VolumeBasedPanel
          */
-        constructor();
+        constructor(name?: string);
         protected _arrangeChildren(): void;
         /** Child classes must implement this function to provide correct control positioning */
         protected abstract _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
@@ -4692,22 +4667,202 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** @hidden */
+    export var handleVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var handlePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render gizmo handles with fluent design
+     */
+    export class HandleMaterial extends BABYLON.ShaderMaterial {
+        private _hover;
+        private _drag;
+        private _onBeforeRender;
+        private _color;
+        private _scale;
+        private _targetColor;
+        private _targetScale;
+        private _lastTick;
+        /**
+         * Is the material indicating hovering state
+         */
+        get hover(): boolean;
+        set hover(b: boolean);
+        /**
+         * Is the material indicating drag state
+         */
+        get drag(): boolean;
+        set drag(b: boolean);
+        /**
+         * Length of animation
+         */
+        animationLength: number;
+        /**
+         * Color of the handle when hovered
+         */
+        hoverColor: BABYLON.Color3;
+        /**
+         * Color of the handle when idle
+         */
+        baseColor: BABYLON.Color3;
+        /**
+         * Scale of the handle when hovered
+         */
+        hoverScale: number;
+        /**
+         * Scale of the handle when idle
+         */
+        baseScale: number;
+        /**
+         * Scale of the handle when dragged
+         */
+        dragScale: number;
+        /**
+         * @hidden
+         */
+        _positionOffset: BABYLON.Vector3;
+        /**
+         * Creates a handle material
+         * @param name Name of the material
+         * @param scene BABYLON.Scene
+         */
+        constructor(name: string, scene: BABYLON.Scene);
+        private _updateInterpolationTarget;
+        /**
+         * Disposes the handle material
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * State of the handle regarding user interaction
+     */
+    export enum HandleState {
+        /**
+         * Handle is idle
+         */
+        IDLE = 0,
+        /**
+         * Handle is hovered
+         */
+        HOVER = 1,
+        /**
+         * Handle is dragged
+         */
+        DRAG = 2
+    }
+    /**
+     * Base class for SlateGizmo handles
+     */
+    export abstract class GizmoHandle {
+        protected _scene: BABYLON.Scene;
+        protected _state: HandleState;
+        protected _materials: HandleMaterial[];
+        private _dragStartObserver;
+        private _draggingObserver;
+        private _dragEndObserver;
+        /**
+         * @hidden
+         */
+        _dragBehavior: BABYLON.BaseSixDofDragBehavior;
+        /**
+         * The current state of the handle
+         */
+        get state(): HandleState;
+        private _gizmo;
+        /**
+         * Returns the gizmo carrying this handle
+         */
+        get gizmo(): SlateGizmo;
+        /**
+         * Sets hover state
+         */
+        set hover(value: boolean);
+        /**
+         * Sets drag state
+         */
+        set drag(value: boolean);
+        /**
+         * Node of this handle
+         */
+        node: BABYLON.TransformNode;
+        /**
+         * Creates a handle for a SlateGizmo
+         * @param gizmo associated SlateGizmo
+         * @param scene scene
+         */
+        constructor(gizmo: SlateGizmo, scene: BABYLON.Scene);
+        protected _createMaterial(positionOffset?: BABYLON.Vector3): HandleMaterial;
+        private _updateMaterial;
+        /**
+         * Binds callbacks from dragging interaction
+         * @param dragStartFn Function to call on drag start
+         * @param dragFn Function to call on drag
+         * @param dragEndFn Function to call on drag end
+         */
+        setDragBehavior(dragStartFn: (event: {
+            position: BABYLON.Vector3;
+        }) => void, dragFn: (event: {
+            position: BABYLON.Vector3;
+        }) => void, dragEndFn: () => void): void;
+        /**
+         * Creates the meshes and parent node of the handle
+         * Should be overriden by child classes
+         * @returns created node
+         */
+        abstract createNode(): BABYLON.TransformNode;
+        /**
+         * Disposes the handle
+         */
+        dispose(): void;
+    }
+    /**
+     * Side handle class that rotates the slate
+     */
+    export class SideHandle extends GizmoHandle {
+        /**
+         * Creates the meshes and parent node of the handle
+         * @returns created node
+         */
+        createNode(): BABYLON.TransformNode;
+    }
+    /**
+     * Corner handle that resizes the slate
+     */
+    export class CornerHandle extends GizmoHandle {
+        /**
+         * Creates the meshes and parent node of the handle
+         * @returns created node
+         */
+        createNode(): BABYLON.TransformNode;
+    }
+}
+declare module BABYLON.GUI {
     /**
      * BABYLON.Gizmo to resize 2D slates
      */
     export class SlateGizmo extends BABYLON.Gizmo {
         private _boundingDimensions;
-        private _dragPlaneNormal;
+        private _pickedPointObserver;
         private _tmpQuaternion;
         private _tmpVector;
         private _corners;
         private _sides;
         private _handlesParent;
+        private _handleHovered;
+        private _handleDragged;
         private _boundingBoxGizmo;
-        private _dragStartObserver;
-        private _draggingObserver;
-        private _dragEndObserver;
-        private _dragBehavior;
         /**
          * Value we use to offset handles from mesh
          */
@@ -4722,7 +4877,7 @@ declare module BABYLON.GUI {
          */
         fixedScreenSizeDistanceFactor: number;
         /**
-         * Size of the handles
+         * Size of the handles (meters in XR)
          */
         handleSize: number;
         /**
@@ -4735,9 +4890,8 @@ declare module BABYLON.GUI {
         private _keepAspectRatio;
         private _clampDimensions;
         private _moveHandle;
-        private _assignDragBehavior;
-        private _createAngleMesh;
-        private _createSideMesh;
+        private _assignDragBehaviorCorners;
+        private _assignDragBehaviorSides;
         protected _attachedNodeChanged(value: BABYLON.Nullable<BABYLON.AbstractMesh>): void;
         /**
          * Updates the bounding box information for the gizmo
@@ -4751,13 +4905,15 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Default behavior for 3D UI elements.
-     * Handles a BABYLON.FollowBehavior, SixDofBehavior and MultiPointerScaleBehavior
+     * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
      */
     export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
         private _scene;
         private _followBehavior;
         private _sixDofDragBehavior;
-        private _onBeforeRender;
+        private _surfaceMagnetismBehavior;
+        private _onBeforeRenderObserver;
+        private _onDragObserver;
         /**
          * Instantiates the default behavior
          */
@@ -4779,6 +4935,10 @@ declare module BABYLON.GUI {
          */
         get sixDofDragBehavior(): BABYLON.SixDofDragBehavior;
         /**
+         * The surface magnetism behavior
+         */
+        get surfaceMagnetismBehavior(): BABYLON.SurfaceMagnetismBehavior;
+        /**
          * Enables the follow behavior
          */
         followBehaviorEnabled: boolean;
@@ -4787,360 +4947,26 @@ declare module BABYLON.GUI {
          */
         sixDofDragBehaviorEnabled: boolean;
         /**
+         * Enables the surface magnetism behavior
+         */
+        surfaceMagnetismBehaviorEnabled: boolean;
+        /**
          *  Initializes the behavior
          */
         init(): void;
         /**
          * Attaches the default behavior
          * @param ownerMesh The top level mesh
-         * @param sixDofAnchorMesh A mesh that should behave as an anchor for the sixDof interaction. If unset, the top level mesh will be used
+         * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
+         * @param sceneUnderstandingMeshes Meshes from the scene understanding that will be used for surface magnetism
          */
-        attach(ownerMesh: BABYLON.Mesh, sixDofAnchorMesh?: BABYLON.Mesh): void;
+        attach(ownerMesh: BABYLON.Mesh, draggablesMeshes?: BABYLON.Mesh[], sceneUnderstandingMeshes?: BABYLON.AbstractMesh[]): void;
         /**
          *  Detaches the behavior from the mesh
          */
         detach(): void;
         private _addObservables;
         private _removeObservables;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a holographic slate
-     */
-    export class HolographicSlate extends ContentDisplay3D {
-        /**
-         * Base Url for the assets.
-         */
-        static ASSETS_BASE_URL: string;
-        /**
-         * File name for the close icon.
-         */
-        static CLOSE_ICON_FILENAME: string;
-        /**
-         * File name for the close icon.
-         */
-        static FOLLOW_ICON_FILENAME: string;
-        /**
-         * Dimensions of the slate
-         */
-        dimensions: BABYLON.Vector3;
-        /**
-         * Minimum dimensions of the slate
-         */
-        minDimensions: BABYLON.Vector3;
-        /**
-         * Dimensions of the backplate
-         */
-        backplateDimensions: BABYLON.Vector3;
-        /**
-         * Margin between backplate and contentplate
-         */
-        backPlateMargin: number;
-        /**
-         * Origin in local coordinates (top left corner)
-         */
-        origin: BABYLON.Vector3;
-        private _backPlateMaterial;
-        private _contentMaterial;
-        private _pickedPointObserver;
-        private _imageUrl;
-        /** @hidden */
-        _defaultBehavior: DefaultBehavior;
-        /** @hidden */
-        _gizmo: SlateGizmo;
-        protected _backPlate: BABYLON.Mesh;
-        protected _contentPlate: BABYLON.Mesh;
-        protected _followButton: TouchHolographicButton;
-        protected _closeButton: TouchHolographicButton;
-        protected _contentScaleRatio: number;
-        /**
-         * Rendering ground id of all the mesh in the button
-         */
-        set renderingGroupId(id: number);
-        get renderingGroupId(): number;
-        /**
-         * Gets or sets the image url for the button
-         */
-        get imageUrl(): string;
-        set imageUrl(value: string);
-        /**
-         * Creates a new slate
-         * @param name defines the control name
-         */
-        constructor(name?: string);
-        /**
-         * Apply the facade texture (created from the content property).
-         * This function can be overloaded by child classes
-         * @param facadeTexture defines the AdvancedDynamicTexture to use
-         */
-        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
-        private _rebuildContent;
-        private _addControl;
-        protected _getTypeName(): string;
-        /**
-         * @hidden
-         */
-        _positionElements(): void;
-        /**
-         * @hidden
-         */
-        _updatePivot(): void;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        /** @hidden **/
-        _prepareNode(scene: BABYLON.Scene): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
-     */
-    export class MeshButton3D extends Button3D {
-        /** @hidden */
-        protected _currentMesh: BABYLON.Mesh;
-        /**
-         * Creates a new 3D button based on a mesh
-         * @param mesh mesh to become a 3D button
-         * @param name defines the control name
-         */
-        constructor(mesh: BABYLON.Mesh, name?: string);
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * NearMenu that displays buttons and follows the camera
-     */
-    export class NearMenu extends VolumeBasedPanel {
-        /**
-         * Base Url for the assets.
-         */
-        private static ASSETS_BASE_URL;
-        /**
-         * File name for the close icon.
-         */
-        private static PIN_ICON_FILENAME;
-        private _pinButton;
-        private _backPlate;
-        private _backPlateMaterial;
-        private _pinMaterial;
-        private _pickedPointObserver;
-        private _defaultBehavior;
-        private _currentMin;
-        private _currentMax;
-        private _isPinned;
-        /**
-         * Indicates if the near menu is world-pinned
-         */
-        get isPinned(): boolean;
-        set isPinned(value: boolean);
-        private _createPinButton;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
-        protected _finalProcessing(): void;
-        /**
-         * Creates a near menu GUI 3D control
-         * @param name name of the near menu
-         */
-        constructor(name: string);
-        /**
-         * Adds a button to the near menu.
-         * Please note that the back material of the button will be set to transparent as it is attached to the near menu.
-         *
-         * @param button Button to add
-         * @returns This near menu
-         */
-        addButton(button: TouchHolographicButton): NearMenu;
-        /**
-         * This method should not be used directly. It is inherited from `Container3D`.
-         * Please use `addButton` instead.
-         * @param _control
-         * @returns
-         */
-        addControl(_control: Control3D): Container3D;
-        /**
-         * Disposes the near menu
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a container panel deployed on the surface of a plane
-     */
-    export class PlanePanel extends VolumeBasedPanel {
-        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a container panel where items get randomized planar mapping
-     */
-    export class ScatterPanel extends VolumeBasedPanel {
-        private _iteration;
-        /**
-         * Gets or sets the number of iteration to use to scatter the controls (100 by default)
-         */
-        get iteration(): BABYLON.float;
-        set iteration(value: BABYLON.float);
-        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
-        private _scatterMapping;
-        protected _finalProcessing(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a slider in 3D
-     */
-    export class Slider3D extends Control3D {
-        private _sliderBarMaterial;
-        private _sliderThumbMaterial;
-        private _sliderThumb;
-        private _sliderBar;
-        private _minimum;
-        private _maximum;
-        private _value;
-        private _step;
-        /** BABYLON.Observable raised when the sldier value changes */
-        onValueChangedObservable: BABYLON.Observable<number>;
-        /**
-         * Creates a new slider
-         * @param name defines the control name
-         */
-        constructor(name?: string);
-        /**
-         * Gets the mesh used to render this control
-         */
-        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
-        /** Gets or sets minimum value */
-        get minimum(): number;
-        set minimum(value: number);
-        /** Gets or sets maximum value */
-        get maximum(): number;
-        set maximum(value: number);
-        /** Gets or sets step value */
-        get step(): number;
-        set step(value: number);
-        /** Gets or sets current value */
-        get value(): number;
-        set value(value: number);
-        protected get start(): number;
-        protected get end(): number;
-        /**
-         * Gets the slider bar material used by this control
-         */
-        get sliderBarMaterial(): BABYLON.StandardMaterial;
-        /**
-         * Gets the slider thumb material used by this control
-         */
-        get sliderThumbMaterial(): BABYLON.StandardMaterial;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        private _createBehavior;
-        private _convertToPosition;
-        private _convertToValue;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a container panel deployed on the surface of a sphere
-     */
-    export class SpherePanel extends VolumeBasedPanel {
-        private _radius;
-        /**
-         * Gets or sets the radius of the sphere where to project controls (5 by default)
-         */
-        get radius(): BABYLON.float;
-        set radius(value: BABYLON.float);
-        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
-        private _sphericalMapping;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a stack panel in 3D on XY plane
-     */
-    export class StackPanel3D extends Container3D {
-        private _isVertical;
-        /**
-         * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
-         */
-        get isVertical(): boolean;
-        set isVertical(value: boolean);
-        /**
-         * Gets or sets the distance between elements
-         */
-        margin: number;
-        /**
-         * Creates new StackPanel
-         * @param isVertical
-         */
-        constructor(isVertical?: boolean);
-        protected _arrangeChildren(): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create an interactable object. It's a touchable 3D button using a mesh coming from the current scene
-     */
-    export class TouchMeshButton3D extends TouchButton3D {
-        /** @hidden */
-        protected _currentMesh: BABYLON.Mesh;
-        /**
-         * Creates a new 3D button based on a mesh
-         * @param mesh mesh to become a 3D button
-         * @param collisionMesh mesh to track collisions with
-         * @param name defines the control name
-         */
-        constructor(mesh: BABYLON.Mesh, options: {
-            collisionMesh: BABYLON.Mesh;
-            useDynamicMesh?: boolean;
-        }, name?: string);
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used as base class for touch-enabled toggleable buttons
-     */
-    export class TouchToggleButton3D extends TouchButton3D {
-        private _isPressed;
-        /**
-         * An event triggered when the button is toggled on
-         */
-        onToggleOnObservable: BABYLON.Observable<BABYLON.Vector3>;
-        /**
-         * An event triggered when the button is toggled off
-         */
-        onToggleOffObservable: BABYLON.Observable<BABYLON.Vector3>;
-        /**
-         * Creates a new button
-         * @param name defines the control name
-         * @param collisionMesh defines the mesh to track near interactions with
-         */
-        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
-        private _onToggle;
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -5299,6 +5125,420 @@ declare module BABYLON.GUI {
         serialize(): any;
         getClassName(): string;
         static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentBackplateMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a holographic slate
+     */
+    export class HolographicSlate extends ContentDisplay3D {
+        /**
+         * Base Url for the assets.
+         */
+        static ASSETS_BASE_URL: string;
+        /**
+         * File name for the close icon.
+         */
+        static CLOSE_ICON_FILENAME: string;
+        /**
+         * File name for the close icon.
+         */
+        static FOLLOW_ICON_FILENAME: string;
+        /**
+         * Dimensions of the slate
+         */
+        dimensions: BABYLON.Vector3;
+        /**
+         * Minimum dimensions of the slate
+         */
+        minDimensions: BABYLON.Vector3;
+        /**
+         * Default dimensions of the slate
+         */
+        readonly defaultDimensions: BABYLON.Vector3;
+        /**
+         * Dimensions of the backplate
+         */
+        backplateDimensions: BABYLON.Vector3;
+        /**
+         * Margin between backplate and contentplate
+         */
+        backPlateMargin: number;
+        /**
+         * Origin in local coordinates (top left corner)
+         */
+        origin: BABYLON.Vector3;
+        private _backPlateMaterial;
+        private _contentMaterial;
+        private _pickedPointObserver;
+        private _positionChangedObserver;
+        private _imageUrl;
+        private _contentViewport;
+        private _contentDragBehavior;
+        private _defaultBehavior;
+        /**
+         * Regroups all mesh behaviors for the slate
+         */
+        get defaultBehavior(): DefaultBehavior;
+        /** @hidden */
+        _gizmo: SlateGizmo;
+        protected _backPlate: BABYLON.Mesh;
+        protected _contentPlate: BABYLON.Mesh;
+        protected _followButton: TouchHolographicButton;
+        protected _closeButton: TouchHolographicButton;
+        protected _contentScaleRatio: number;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        set renderingGroupId(id: number);
+        get renderingGroupId(): number;
+        /**
+         * Gets or sets the image url for the button
+         */
+        get imageUrl(): string;
+        set imageUrl(value: string);
+        /**
+         * Creates a new slate
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Apply the facade texture (created from the content property).
+         * This function can be overloaded by child classes
+         * @param facadeTexture defines the AdvancedDynamicTexture to use
+         */
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+        private _rebuildContent;
+        private _addControl;
+        protected _getTypeName(): string;
+        /**
+         * @hidden
+         */
+        _positionElements(): void;
+        private _applyContentViewport;
+        private _resetContentPositionAndZoom;
+        /**
+         * @hidden
+         */
+        _updatePivot(): void;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        private _attachContentPlateBehavior;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        /** @hidden **/
+        _prepareNode(scene: BABYLON.Scene): void;
+        /**
+         * Resets the aspect and pose of the slate so it is right in front of the active camera, facing towards it.
+         */
+        resetDefaultAspectAndPose(): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Simple menu that can contain holographic buttons
+     */
+    export class TouchHolographicMenu extends VolumeBasedPanel {
+        protected _backPlate: BABYLON.Mesh;
+        private _backPlateMaterial;
+        private _pickedPointObserver;
+        private _currentMin;
+        private _currentMax;
+        /**
+         * Margin size of the backplate in button size units (setting this to 1, will make the backPlate margin the size of 1 button)
+         */
+        backPlateMargin: number;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
+        protected _finalProcessing(): void;
+        /**
+         * Creates a holographic menu GUI 3D control
+         * @param name name of the menu
+         */
+        constructor(name?: string);
+        /**
+         * Adds a button to the menu.
+         * Please note that the back material of the button will be set to transparent as it is attached to the menu.
+         *
+         * @param button Button to add
+         * @returns This menu
+         */
+        addButton(button: TouchHolographicButton): TouchHolographicMenu;
+        /**
+         * This method should not be used directly. It is inherited from `Container3D`.
+         * Please use `addButton` instead.
+         * @param _control
+         * @returns
+         */
+        addControl(_control: Control3D): Container3D;
+        /**
+         * Disposes the menu
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Hand menu that displays buttons and floats around the hand.
+     */
+    export class HandMenu extends TouchHolographicMenu {
+        private _handConstraintBehavior;
+        /**
+         * The hand constraint behavior setting the transformation of this node
+         */
+        get handConstraintBehavior(): BABYLON.HandConstraintBehavior;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
+        /**
+         * Creates a hand menu GUI 3D control
+         * @param xr the BABYLON.WebXRExperienceHelper used to link this control to the enabled WebXRHandTracking feature
+         * @param name name of the hand menu
+         */
+        constructor(xr: BABYLON.WebXRExperienceHelper, name?: string);
+        /**
+         * Disposes the hand menu
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
+     */
+    export class MeshButton3D extends Button3D {
+        /** @hidden */
+        protected _currentMesh: BABYLON.Mesh;
+        /**
+         * Creates a new 3D button based on a mesh
+         * @param mesh mesh to become a 3D button
+         * @param name defines the control name
+         */
+        constructor(mesh: BABYLON.Mesh, name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * NearMenu that displays buttons and follows the camera
+     */
+    export class NearMenu extends TouchHolographicMenu {
+        /**
+         * Base Url for the assets.
+         */
+        private static ASSETS_BASE_URL;
+        /**
+         * File name for the close icon.
+         */
+        private static PIN_ICON_FILENAME;
+        /**
+         * Scale for the buttons added to the near menu
+         */
+        private static NEAR_BUTTON_SCALE;
+        private _pinButton;
+        private _pinMaterial;
+        private _dragObserver;
+        private _defaultBehavior;
+        /**
+         * Regroups all mesh behaviors for the near menu
+         */
+        get defaultBehavior(): DefaultBehavior;
+        private _isPinned;
+        /**
+         * Indicates if the near menu is world-pinned
+         */
+        get isPinned(): boolean;
+        set isPinned(value: boolean);
+        private _createPinButton;
+        /**
+         * Adds a button to the menu.
+         * Please note that the back material of the button will be set to transparent as it is attached to the menu.
+         *
+         * @param button Button to add
+         * @returns This menu
+         */
+        addButton(button: TouchHolographicButton): TouchHolographicMenu;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
+        protected _finalProcessing(): void;
+        /**
+         * Creates a near menu GUI 3D control
+         * @param name name of the near menu
+         */
+        constructor(name?: string);
+        /**
+         * Disposes the near menu
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel deployed on the surface of a plane
+     */
+    export class PlanePanel extends VolumeBasedPanel {
+        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel where items get randomized planar mapping
+     */
+    export class ScatterPanel extends VolumeBasedPanel {
+        private _iteration;
+        /**
+         * Gets or sets the number of iteration to use to scatter the controls (100 by default)
+         */
+        get iteration(): BABYLON.float;
+        set iteration(value: BABYLON.float);
+        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
+        private _scatterMapping;
+        protected _finalProcessing(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a slider in 3D
+     */
+    export class Slider3D extends Control3D {
+        private _sliderBarMaterial;
+        private _sliderThumbMaterial;
+        private _sliderThumb;
+        private _sliderBar;
+        private _minimum;
+        private _maximum;
+        private _value;
+        private _step;
+        /** BABYLON.Observable raised when the sldier value changes */
+        onValueChangedObservable: BABYLON.Observable<number>;
+        /**
+         * Creates a new slider
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        /** Gets or sets minimum value */
+        get minimum(): number;
+        set minimum(value: number);
+        /** Gets or sets maximum value */
+        get maximum(): number;
+        set maximum(value: number);
+        /** Gets or sets step value */
+        get step(): number;
+        set step(value: number);
+        /** Gets or sets current value */
+        get value(): number;
+        set value(value: number);
+        protected get start(): number;
+        protected get end(): number;
+        /**
+         * Gets the slider bar material used by this control
+         */
+        get sliderBarMaterial(): BABYLON.StandardMaterial;
+        /**
+         * Gets the slider thumb material used by this control
+         */
+        get sliderThumbMaterial(): BABYLON.StandardMaterial;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        private _createBehavior;
+        private _convertToPosition;
+        private _convertToValue;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel deployed on the surface of a sphere
+     */
+    export class SpherePanel extends VolumeBasedPanel {
+        private _radius;
+        /**
+         * Gets or sets the radius of the sphere where to project controls (5 by default)
+         */
+        get radius(): BABYLON.float;
+        set radius(value: BABYLON.float);
+        protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
+        private _sphericalMapping;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a stack panel in 3D on XY plane
+     */
+    export class StackPanel3D extends Container3D {
+        private _isVertical;
+        /**
+         * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
+         */
+        get isVertical(): boolean;
+        set isVertical(value: boolean);
+        /**
+         * Gets or sets the distance between elements
+         */
+        margin: number;
+        /**
+         * Creates new StackPanel
+         * @param isVertical
+         */
+        constructor(isVertical?: boolean);
+        protected _arrangeChildren(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create an interactable object. It's a touchable 3D button using a mesh coming from the current scene
+     */
+    export class TouchMeshButton3D extends TouchButton3D {
+        /** @hidden */
+        protected _currentMesh: BABYLON.Mesh;
+        /**
+         * Creates a new 3D button based on a mesh
+         * @param mesh mesh to become a 3D button. By default this is also the mesh for near interaction collision checking
+         * @param name defines the control name
+         */
+        constructor(mesh: BABYLON.Mesh, name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used as base class for touch-enabled toggleable buttons
+     */
+    export class TouchToggleButton3D extends TouchButton3D {
+        private _isPressed;
+        /**
+         * An event triggered when the button is toggled on
+         */
+        onToggleOnObservable: BABYLON.Observable<BABYLON.Vector3>;
+        /**
+         * An event triggered when the button is toggled off
+         */
+        onToggleOffObservable: BABYLON.Observable<BABYLON.Vector3>;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         * @param collisionMesh defines the mesh to track near interactions with
+         */
+        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        private _onToggle;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON.GUI {

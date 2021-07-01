@@ -10,6 +10,7 @@ import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { Texture } from '../Materials/Textures/texture';
 import { ProceduralTexture } from '../Materials/Textures/Procedurals/proceduralTexture';
+import { Camera } from "../Cameras/camera";
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -289,8 +290,12 @@ export class SpotLight extends ShadowLight {
         this._shadowAngleScale = this._shadowAngleScale || 1;
         var angle = this._shadowAngleScale * this._angle;
 
-        Matrix.PerspectiveFovLHToRef(angle, 1.0,
-            this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+
+        const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
+
+        Matrix.PerspectiveFovLHToRef(angle, 1.0, useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix, true, this._scene.getEngine().isNDCHalfZRange);
     }
 
     protected _computeProjectionTextureViewLightMatrix(): void {
@@ -453,6 +458,30 @@ export class SpotLight extends ShadowLight {
         if (this._projectionTexture) {
             this._projectionTexture.dispose();
         }
+    }
+
+    /**
+     * Gets the minZ used for shadow according to both the scene and the light.
+     * @param activeCamera The camera we are returning the min for
+     * @returns the depth min z
+     */
+     public getDepthMinZ(activeCamera: Camera): number {
+        const engine = this._scene.getEngine();
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+
+        return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? minZ : this._scene.getEngine().isNDCHalfZRange ? 0 : minZ;
+    }
+
+    /**
+     * Gets the maxZ used for shadow according to both the scene and the light.
+     * @param activeCamera The camera we are returning the max for
+     * @returns the depth max z
+     */
+    public getDepthMaxZ(activeCamera: Camera): number {
+        const engine = this._scene.getEngine();
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+
+        return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : maxZ;
     }
 
     /**

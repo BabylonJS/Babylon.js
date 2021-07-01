@@ -78,6 +78,32 @@ export class StringTools {
     }
 
     /**
+     * Converts a given base64 string as an ASCII encoded stream of data
+     * @param base64Data The base64 encoded string to decode
+     * @returns Decoded ASCII string
+     */
+    public static DecodeBase64ToString(base64Data: string) : string {
+        return atob(base64Data);
+    }
+
+    /**
+     * Converts a given base64 string into an ArrayBuffer of raw byte data
+     * @param base64Data The base64 encoded string to decode
+     * @returns ArrayBuffer of byte data
+     */
+    public static DecodeBase64ToBinary(base64Data: string) : ArrayBuffer {
+        const decodedString = StringTools.DecodeBase64ToString(base64Data);
+        const bufferLength = decodedString.length;
+        const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+        for (let i = 0; i < bufferLength; i++) {
+            bufferView[i] = decodedString.charCodeAt(i);
+        }
+
+        return bufferView.buffer;
+    }
+
+    /**
     * Converts a number to string and pads with preceding zeroes until it is of specified length.
     * @param num the number to convert and pad
     * @param length the expected length of the string

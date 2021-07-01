@@ -48,6 +48,13 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
         };
     }
 
+    /**
+     * Configures events to work with an engine's active element
+     */
+    public configureEvents(): void {
+        // Do nothing
+    }
+
     // Public functions
     /**
      * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.

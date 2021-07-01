@@ -5,7 +5,6 @@ import { Vector3 } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
-import { LinesMesh } from "../Meshes/linesMesh";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo, GizmoAxisCache } from "./gizmo";
@@ -175,13 +174,12 @@ export class AxisDragGizmo extends Gizmo {
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 const material = this.dragBehavior.enabled ? (this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial) : this._disableMaterial;
-                cache.gizmoMeshes.forEach((m: Mesh) => {
-                    m.material = material;
-                    if ((<LinesMesh>m).color && this.dragBehavior.enabled) {
-                        (<LinesMesh>m).color = material.diffuseColor;
-                    }
-                });
+                this._setGizmoMeshMaterial(cache.gizmoMeshes, material);
             }
+        });
+
+        this.dragBehavior.onEnabledObservable.add((newState) => {
+            this._setGizmoMeshMaterial(cache.gizmoMeshes, newState ? cache.material : cache.disableMaterial);
         });
     }
     protected _attachedNodeChanged(value: Nullable<Node>) {

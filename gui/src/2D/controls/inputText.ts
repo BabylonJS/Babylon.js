@@ -13,6 +13,7 @@ import { Measure } from '../measure';
 import { TextWrapper } from './textWrapper';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { IKeyboardEvent } from 'babylonjs/Events/deviceInputEvents';
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create input text control
@@ -843,7 +844,7 @@ export class InputText extends Control implements IFocusableControl {
         this._textHasChanged();
     }
 
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
