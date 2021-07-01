@@ -80,16 +80,16 @@ export class VideoTexture extends Texture {
     private _processError(reason: any) {
         this._errorFound = true;
         if (this._onError) {
-            this._onError(reason.message);
+            this._onError(reason?.message);
         } else {                        
-            Logger.Error(reason.message);
+            Logger.Error(reason?.message);
         }
     }
 
     private _handlePlay() {
         this._errorFound = false;
         this.video.play().catch(reason => {
-            if (reason.name === "NotAllowedError") {
+            if (reason?.name === "NotAllowedError") {
                 if (this._onUserActionRequestedObservable && this._onUserActionRequestedObservable.hasObservers()) {
                     this._onUserActionRequestedObservable.notifyObservers(this);
                     return;
