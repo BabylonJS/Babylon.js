@@ -21880,6 +21880,18 @@ declare module BABYLON {
          * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
          */
         keysRight: number[];
+        /**
+         * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
+         */
+        rotationSpeed: number;
+        /**
+         * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
+         */
+        keysRotateLeft: number[];
+        /**
+        * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+        */
+        keysRotateRight: number[];
         private _keys;
         private _onCanvasBlurObserver;
         private _onKeyboardObserver;
@@ -21911,6 +21923,7 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
+        private _getLocalRotation;
     }
 }
 declare module BABYLON {
@@ -22557,6 +22570,16 @@ declare module BABYLON {
          */
         get keysRight(): number[];
         set keysRight(value: number[]);
+        /**
+         * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
+         */
+        get keysRotateLeft(): number[];
+        set keysRotateLeft(value: number[]);
+        /**
+         * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+         */
+        get keysRotateRight(): number[];
+        set keysRotateRight(value: number[]);
         /**
          * Event raised when the camera collide with a mesh in the scene.
          */
@@ -24023,7 +24046,7 @@ declare module BABYLON {
          */
         dispose(camera?: Camera): void;
         /**
-         * Serializes the particle system to a JSON object
+         * Serializes the post process to a JSON object
          * @returns the JSON object
          */
         serialize(): any;
@@ -39188,6 +39211,10 @@ declare module BABYLON {
         private _createInternalTextureOnEvent;
         private _frameId;
         private _currentSrc;
+        private _onError?;
+        private _errorFound;
+        private _processError;
+        private _handlePlay;
         /**
          * Creates a video texture.
          * If you want to display a video in your scene, this is the special texture for that.
@@ -39200,8 +39227,9 @@ declare module BABYLON {
          * @param invertY is false by default but can be used to invert video on Y axis
          * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
          * @param settings allows finer control over video usage
+         * @param onError defines a callback triggered when an error occurred during the loading session
          */
-        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings);
+        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings, onError?: Nullable<(message?: string, exception?: any) => void>);
         /**
          * Get the current class name of the video texture useful for serialization or dynamic coding.
          * @returns "VideoTexture"
