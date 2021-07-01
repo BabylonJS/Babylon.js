@@ -136,7 +136,7 @@ export class SolidParser {
      * @param textureVectorFromOBJ Vector3 The value of uvs
      * @param normalsVectorFromOBJ Vector3 The value of normals at index objNormale
      */
-        private _setData(indicePositionFromObj: number, indiceUvsFromObj: number, indiceNormalFromObj: number, positionVectorFromOBJ: Vector3, textureVectorFromOBJ: Vector2, normalsVectorFromOBJ: Vector3, positionColorsFromOBJ?: Color4) {
+    private _setData(indicePositionFromObj: number, indiceUvsFromObj: number, indiceNormalFromObj: number, positionVectorFromOBJ: Vector3, textureVectorFromOBJ: Vector2, normalsVectorFromOBJ: Vector3, positionColorsFromOBJ?: Color4) {
         //Check if this tuple already exists in the list of tuples
         var _index: number;
         if (this._loadingOptions.optimizeWithUV) {
@@ -196,7 +196,7 @@ export class SolidParser {
     /**
      * Transform Vector() and BABYLON.Color() objects into numbers in an array
      */
-        private _unwrapData() {
+    private _unwrapData() {
         //Every array has the same length
         for (var l = 0; l < this._wrappedPositionForBabylon.length; l++) {
             //Push the x, y, z values of each element in the unwrapped array
