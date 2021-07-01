@@ -307,7 +307,6 @@ export class CanvasGraphService {
 
         // Bind the zoom between [minZoom, maxZoom]
         this._sizeOfWindow = Math.min(Math.max(this._sizeOfWindow - amount, minZoom), maxZoom);
-        console.log(this._sizeOfWindow);
     }
 
     /**
