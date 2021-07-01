@@ -14,8 +14,11 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
         if (!canvasRef.current) {
             return;
         }
+
         // temporarily set empty array, will eventually be passed by props!
-        canvasServiceCallback(new CanvasGraphService(canvasRef.current, {datasets: []}));
+        const canvasGraphService = new CanvasGraphService(canvasRef.current, {datasets: []});
+        canvasServiceCallback(canvasGraphService);
+        return () => canvasGraphService.destroy();
     }, [canvasRef])
    
     return (
