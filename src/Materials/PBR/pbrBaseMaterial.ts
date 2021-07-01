@@ -325,6 +325,7 @@ export class PBRMaterialDefines extends MaterialDefines
         super.reset();
         this.ALPHATESTVALUE = "0.5";
         this.PBR = true;
+        this.NORMALXYSCALE = true;
     }
 }
 
