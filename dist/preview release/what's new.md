@@ -34,6 +34,7 @@
 - Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
 - Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
 
 ### Engine
 
@@ -58,6 +59,7 @@
 - Improved support for MSFT_lod, now LOD levels are loaded and accurately displayed according to screen coverage ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for direct loading [base64 data URLs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for all loader ([CoPrez](https://github.com/CoPrez))
 - Added DO_NOT_ALTER_FILE_COORDINATES flag to STL loader ([AlbertoPa](https://github.com/AlbertoPa))
+- Added support for pure geometry files to OBJ loader ([Deltakosh](https://github.com/deltakosh))
 
 ### Navigation
 

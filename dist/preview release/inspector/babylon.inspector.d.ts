@@ -174,6 +174,22 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     /**
+     * Defines a structure to hold max and min.
+     */
+    export interface IPerfMinMax {
+        min: number;
+        max: number;
+    }
+    /**
+     * Defines a structure defining the available space in a drawable area.
+     */
+    export interface IGraphDrawableArea {
+        top: number;
+        left: number;
+        bottom: number;
+        right: number;
+    }
+    /**
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
@@ -190,8 +206,10 @@ declare module INSPECTOR {
         private _width;
         private _height;
         readonly datasets: BABYLON.IPerfDataset[];
+        private _ticks;
         /**
          * Creates an instance of CanvasGraphService.
+         *
          * @param canvas a pointer to the canvas dom element we would like to write to.
          * @param settings settings for our service.
          */
@@ -200,6 +218,57 @@ declare module INSPECTOR {
          * This method draws the data and sets up the appropriate scales.
          */
         draw(): void;
+        /**
+         * Draws the time axis, adjusts the drawable area for the graph.
+         *
+         * @param timeMinMax the minimum and maximum for the time axis.
+         * @param drawableArea the current allocated drawable area.
+         */
+        private _drawTimeAxis;
+        /**
+         * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
+         *
+         * @param minMax the minimum and maximum values of the axis
+         * @param spaceAvailable the total amount of space we have allocated to our axis
+         */
+        private _generateTicks;
+        /**
+         * Nice number algorithm based on psueudo code defined in "Graphics Gems" by Andrew S. Glassner.
+         * This will find a "nice" number approximately equal to num.
+         *
+         * @param num The number we want to get close to.
+         * @param shouldRound if true we will round the number, otherwise we will get the ceiling.
+         * @returns a "nice" number approximately equal to num.
+         */
+        private _niceNumber;
+        /**
+         * Gets the min and max as a single object from an array of numbers.
+         *
+         * @param items the array of numbers to get the min and max for.
+         * @returns the min and max of the array.
+         */
+        private _getMinMax;
+        /**
+         * Converts a data point to a point on the canvas (a pixel coordinate).
+         *
+         * @param point The datapoint
+         * @param timeMinMax The minimum and maximum in the time axis.
+         * @param valueMinMax The minimum and maximum in the value axis for the dataset.
+         * @param drawableArea The allowed drawable area.
+         * @returns
+         */
+        private _getPixelPointFromDataPoint;
+        /**
+         * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
+         *
+         * @param num the number we want to get the pixel coordinate for
+         * @param minMax the min and max of the dataset in the axis we want the pixel coordinate for.
+         * @param startingPixel the starting pixel coordinate (this means it takes account for any offset).
+         * @param spaceAvailable the total space available in this axis.
+         * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
+         * @returns the pixel coordinate of the value in a single axis.
+         */
+        private _getPixelForNumber;
         /**
          * This method clears the canvas
          */

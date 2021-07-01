@@ -84076,17 +84076,17 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines what data is needed to graph a point on the graph.
+     * Defines what data is needed to graph a point on the performance graph.
      */
     export interface IPerfPoint {
         /**
-         * The x coordinate of the point.
+         * The timestamp of the point.
          */
-        x: number;
+        timestamp: number;
         /**
-         * The y coordinate of the point.
+         * The value of the point.
          */
-        y: number;
+        value: number;
     }
     /**
      * Defines the shape of a dataset that our graphing service uses for drawing purposes.
