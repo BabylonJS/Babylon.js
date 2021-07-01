@@ -1,5 +1,6 @@
 import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
+import { Scalar } from "babylonjs/Maths/math.scalar";
 
 const defaultColor = "#000";
 const futureBoxColor = "#dfe9ed";
@@ -316,7 +317,7 @@ export class CanvasGraphService {
                         }, 0);
 
         // Bind the zoom between [minZoom, maxZoom]
-        this._sizeOfWindow = BABYLON.Scalar.Clamp(this._sizeOfWindow - amount, minZoom, maxZoom);
+        this._sizeOfWindow = Scalar.Clamp(this._sizeOfWindow - amount, minZoom, maxZoom);
     }
 
     /**
