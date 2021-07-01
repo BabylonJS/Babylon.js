@@ -775,7 +775,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should direct load a glTF file without specifying a pluginExtension', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${gltfRaw}`, scene, undefined).then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${gltfRaw}`, scene).then((result) => {
                 expect(result.meshes.length).to.eq(2);
                 expect(result.meshes[1].getTotalVertices()).to.eq(3);
             });
@@ -800,6 +800,14 @@ describe('Babylon Scene Loader', function() {
         it('should direct load a base64 encoded glb with an invalid mime type and pluginExtension specified', () => {
             const scene = new BABYLON.Scene(subject);
             return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:image/jpg;base64,${glbBase64}`, scene, undefined, ".glb").then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(24);
+            });
+        });
+
+        it('should direct load an incorrectly formatted base64 encoded glb (backcompat)', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:base64,${glbBase64}`, scene).then((result) => {
                 expect(result.meshes.length).to.eq(2);
                 expect(result.meshes[1].getTotalVertices()).to.eq(24);
             });

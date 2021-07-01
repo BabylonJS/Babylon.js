@@ -10,6 +10,7 @@ import { Engine } from "babylonjs/Engines/engine";
 
 import { ValueLineComponent } from "../../../sharedUiComponents/lines/valueLineComponent";
 import { BooleanLineComponent } from "../../../sharedUiComponents/lines/booleanLineComponent";
+import { PerformanceViewerComponent } from "./performanceViewer/performanceViewerComponent";
 
 export class StatisticsTabComponent extends PaneComponent {
     private _sceneInstrumentation: Nullable<SceneInstrumentation>;
@@ -72,6 +73,7 @@ export class StatisticsTabComponent extends PaneComponent {
             <div className="pane">
                 <TextLineComponent label="Version" value={Engine.Version} color="rgb(113, 159, 255)" />
                 <ValueLineComponent label="FPS" value={engine.getFps()} fractionDigits={0} />
+                <PerformanceViewerComponent scene={scene} />
                 <LineContainerComponent title="COUNT">
                     <TextLineComponent label="Total meshes" value={scene.meshes.length.toString()} />
                     <TextLineComponent label="Active meshes" value={scene.getActiveMeshes().length.toString()} />

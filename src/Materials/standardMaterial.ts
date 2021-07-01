@@ -1211,10 +1211,6 @@ export class StandardMaterial extends PushMaterial {
                 }
             }
 
-            if (defines.UV2) {
-                attribs.push(VertexBuffer.UV2Kind);
-            }
-
             if (defines.VERTEXCOLOR) {
                 attribs.push(VertexBuffer.ColorKind);
             }
