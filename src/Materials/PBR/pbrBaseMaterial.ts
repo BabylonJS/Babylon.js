@@ -65,8 +65,16 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public MAINUV1 = false;
     public MAINUV2 = false;
+    public MAINUV3 = false;
+    public MAINUV4 = false;
+    public MAINUV5 = false;
+    public MAINUV6 = false;
     public UV1 = false;
     public UV2 = false;
+    public UV3 = false;
+    public UV4 = false;
+    public UV5 = false;
+    public UV6 = false;
 
     public ALBEDO = false;
     public GAMMAALBEDO = false;
@@ -227,6 +235,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public POINTSIZE = false;
     public FOG = false;
     public LOGARITHMICDEPTH = false;
+    public USE_REVERSE_DEPTHBUFFER = false;
 
     public FORCENORMALFORWARD = false;
 
@@ -269,12 +278,18 @@ export class PBRMaterialDefines extends MaterialDefines
     public SUBSURFACE = false;
 
     public SS_REFRACTION = false;
+    public SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = false;
     public SS_TRANSLUCENCY = false;
+    public SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
     public SS_SCATTERING = false;
 
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
     public SS_HAS_THICKNESS = false;
+    public SS_REFRACTIONINTENSITY_TEXTURE = false;
+    public SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV = 0;
+    public SS_TRANSLUCENCYINTENSITY_TEXTURE = false;
+    public SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV = 0;
 
     public SS_REFRACTIONMAP_3D = false;
     public SS_REFRACTIONMAP_OPPOSITEZ = false;
@@ -289,7 +304,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_USE_THICKNESS_AS_DEPTH = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
-    public SS_USE_GLTF_THICKNESS_TEXTURE = false;
+    public SS_USE_GLTF_TEXTURES = false;
 
     public UNLIT = false;
 
@@ -1347,12 +1362,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             attribs.push(VertexBuffer.TangentKind);
         }
 
-        if (defines.UV1) {
-            attribs.push(VertexBuffer.UVKind);
-        }
-
-        if (defines.UV2) {
-            attribs.push(VertexBuffer.UV2Kind);
+        for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            if (defines["UV" + i]) {
+                attribs.push(`uv${i === 1 ? "" : i}`);
+            }
         }
 
         if (defines.VERTEXCOLOR) {

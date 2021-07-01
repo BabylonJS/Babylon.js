@@ -892,9 +892,10 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _createTargetRenderTexture(): void {
-        if (this._scene.getEngine()._features.supportDepthStencilTexture) {
+        const engine = this._scene.getEngine();
+        if (engine._features.supportDepthStencilTexture) {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube(), undefined, false, false);
-            this._shadowMap.createDepthStencilTexture(Constants.LESS, true);
+            this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
         }
         else {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
@@ -1324,6 +1325,8 @@ export class ShadowGenerator implements IShadowGenerator {
         defines.push("#define SM_ESM " + (this.useExponentialShadowMap || this.useBlurExponentialShadowMap ? "1" : "0"));
 
         defines.push("#define SM_DEPTHTEXTURE " + (this.usePercentageCloserFiltering || this.useContactHardeningShadow ? "1" : "0"));
+
+        defines.push("#define SM_USE_REVERSE_DEPTHBUFFER " + (this._scene.getEngine().useReverseDepthBuffer ? "1" : "0"));
 
         var mesh = subMesh.getMesh();
 

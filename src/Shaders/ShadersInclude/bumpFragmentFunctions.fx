@@ -1,23 +1,9 @@
 #if defined(BUMP)
-	#if BUMPDIRECTUV == 1
-		#define vBumpUV vMainUV1
-	#elif BUMPDIRECTUV == 2
-		#define vBumpUV vMainUV2
-	#else
-		varying vec2 vBumpUV;
-	#endif
-	uniform sampler2D bumpSampler;
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,BUMP,_VARYINGNAME_,Bump,_SAMPLERNAME_,bump)
 #endif
 
 #if defined(DETAIL)
-	#if DETAILDIRECTUV == 1
-		#define vDetailUV vMainUV1
-	#elif DETAILDIRECTUV == 2
-		#define vDetailUV vMainUV2
-	#else
-		varying vec2 vDetailUV;
-	#endif
-	uniform sampler2D detailSampler;
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_SAMPLERNAME_,detail)
 #endif
 
 #if defined(BUMP) && defined(PARALLAX)

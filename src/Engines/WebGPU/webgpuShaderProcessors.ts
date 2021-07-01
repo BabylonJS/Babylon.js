@@ -3,10 +3,8 @@ import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
-import { ShaderCodeInliner } from '../Processors/shaderCodeInliner';
 import { Logger } from '../../Misc/logger';
-
-const dbgShowDebugInliningProcess = false;
+import { ThinEngine } from "../thinEngine";
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
@@ -339,7 +337,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     //     return closingBracketLine;
     // }
 
-    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
+    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         // Remove extensions
@@ -369,13 +367,14 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         if (!isFragment) {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);
-            code += "gl_Position.y *= -1.;\ngl_Position.z = (gl_Position.z + gl_Position.w) / 2.0; }";
+            code += "gl_Position.y *= -1.;\n";
+            if (!engine.isNDCHalfZRange) {
+                code += "gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;\n";
+            }
+            code += "}";
         }
 
-        let sci = new ShaderCodeInliner(code);
-        sci.debug = dbgShowDebugInliningProcess;
-        sci.processCode();
-        return sci.code;
+        return code;
     }
 
     private _applyTextureArrayProcessing(code: string, name: string): string {

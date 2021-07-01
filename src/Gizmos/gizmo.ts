@@ -322,6 +322,21 @@ export class Gizmo implements IDisposable {
     }
 
     /**
+     * refresh gizmo mesh material
+     * @param material material to apply
+     */
+    protected _setGizmoMeshMaterial(gizmoMeshes: Mesh[], material: StandardMaterial) {
+        if (gizmoMeshes) {
+            gizmoMeshes.forEach((m: Mesh) => {
+                m.material = material;
+                if ((<LinesMesh>m).color) {
+                    (<LinesMesh>m).color = material.diffuseColor;
+                }
+            });
+        }
+    }
+
+    /**
      * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param gizmoAxisCache Gizmo axis definition used for reactive gizmo UI
