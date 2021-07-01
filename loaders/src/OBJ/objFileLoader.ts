@@ -1,6 +1,6 @@
 import { FloatArray, IndicesArray, Nullable } from "babylonjs/types";
 import { Vector3, Vector2 } from "babylonjs/Maths/math.vector";
-import { Color4 } from 'babylonjs/Maths/math.color';
+import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
 import { Geometry } from "babylonjs/Meshes/geometry";
@@ -13,6 +13,8 @@ import { Scene } from "babylonjs/scene";
 import { WebRequest } from 'babylonjs/Misc/webRequest';
 import { MTLFileLoader } from './mtlFileLoader';
 import { VertexBuffer } from "babylonjs/Buffers/buffer";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Material } from "babylonjs/Materials/material";
 
 type MeshObject = {
     name: string;
@@ -22,6 +24,7 @@ type MeshObject = {
     colors?: Array<number>;
     uvs?: Array<number>;
     materialName: string;
+    directMaterial?: Nullable<Material>;
 };
 
 /**
@@ -768,11 +771,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
                 if (this._meshLoadOptions.ImportVertexColors === true) {
                     if (result.length >= 7) {
-                        // TODO: if these numbers are > 1 we can use Color4.FromInts(r,g,b,a)
+                        const r = parseFloat(result[4]);
+                        const g = parseFloat(result[5]);
+                        const b = parseFloat(result[6]);
+
                         colors.push(new Color4(
-                            parseFloat(result[4]),
-                            parseFloat(result[5]),
-                            parseFloat(result[6]),
+                            r > 1 ? r / 255 : r,
+                            g > 1 ? g / 255 : g,
+                            b > 1 ? b / 255 : b,
                             (result.length === 7 || result[7] === undefined) ? 1 : parseFloat(result[7])
                         ));
                     } else {
@@ -854,11 +860,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     1
                 );
 
-                //Define a mesh or an object
-                //Each time this keyword is analysed, create a new Object with all data for creating a babylonMesh
+            // Define a mesh or an object
+            // Each time this keyword is analysed, create a new Object with all data for creating a babylonMesh
             } else if (this.group.test(line) || this.obj.test(line)) {
-                //Create a new mesh corresponding to the name of the group.
-                //Definition of the mesh
+                // Create a new mesh corresponding to the name of the group.
+                // Definition of the mesh
                 var objMesh: MeshObject = {
                     name: line.substring(2).trim(), //Set the name of the current obj mesh
                     indices: undefined,
@@ -927,9 +933,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
         }
 
-        //At the end of the file, add the last mesh into the meshesFromObj array
+        // At the end of the file, add the last mesh into the meshesFromObj array
         if (hasMeshes) {
-            //Set the data for the last mesh
+            // Set the data for the last mesh
             handledMesh = meshesFromObj[meshesFromObj.length - 1];
 
             //Reverse indices for displaying faces in the good sense
@@ -947,12 +953,53 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
         }
 
-        //If any o or g keyword found, create a mesh with a random id
+        // If any o or g keyword not found, create a mesh with a random id
         if (!hasMeshes) {
-            // reverse tab of indices
-            indicesForBabylon.reverse();
-            //Get positions normals uvs
-            unwrapData();
+            let newMaterial: Nullable<StandardMaterial> = null;
+            if (indicesForBabylon.length) {
+                // reverse tab of indices
+                indicesForBabylon.reverse();
+                //Get positions normals uvs
+                unwrapData();
+            } else {
+                // There is no indices in the file. We will have to switch to point cloud rendering
+                for (var pos of positions) {
+                    unwrappedPositionsForBabylon.push(pos.x, pos.y, pos.z);
+                }
+
+                if (normals.length) {
+                    for (var normal of normals) {
+                        unwrappedNormalsForBabylon.push(normal.x, normal.y, normal.z);
+                    }
+                }
+
+                if (uvs.length) {
+                    for (var uv of uvs) {
+                        unwrappedUVForBabylon.push(uv.x, uv.y);
+                    }
+                }
+
+                if (colors.length) {
+                    for (var color of colors) {
+                        unwrappedColorsForBabylon.push(color.r, color.g, color.b, color.a);
+                    }
+                }
+
+                if (!materialNameFromObj) {
+                    // Create a material with point cloud on
+                    newMaterial = new StandardMaterial(Geometry.RandomId(), scene);
+
+                    newMaterial.pointsCloud = true;
+
+                    materialNameFromObj = newMaterial.name;
+
+                    if (!normals.length) {
+                        newMaterial.disableLighting = true;
+                        newMaterial.emissiveColor = Color3.White();
+                    }
+                }
+            }
+
             //Set data for one mesh
             meshesFromObj.push({
                 name: Geometry.RandomId(),
@@ -961,7 +1008,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 colors: unwrappedColorsForBabylon,
                 normals: unwrappedNormalsForBabylon,
                 uvs: unwrappedUVForBabylon,
-                materialName: materialNameFromObj
+                materialName: materialNameFromObj,
+                directMaterial: newMaterial
             });
         }
 
@@ -1026,6 +1074,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
             //Push the mesh into an array
             babylonMeshesArray.push(babylonMesh);
+
+            if (handledMesh.directMaterial) {
+                babylonMesh.material = handledMesh.directMaterial;
+            }
         }
 
         let mtlPromises: Array<Promise<void>> = [];
@@ -1059,7 +1111,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                             } else {
                                 for (var o = 0; o < _indices.length; o++) {
                                     //Apply the material to the Mesh for each mesh with the material
-                                    babylonMeshesArray[_indices[o]].material = materialsFromMTLFile.materials[n];
+                                    const mesh =  babylonMeshesArray[_indices[o]];
+                                    const material = materialsFromMTLFile.materials[n];
+                                    mesh.material = material;
+
+                                    if (!mesh.getTotalIndices()) {
+                                        // No indices, we need to turn on point cloud
+                                        material.pointsCloud = true;
+                                    }
                                 }
                             }
                         }
