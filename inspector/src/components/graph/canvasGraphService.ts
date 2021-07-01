@@ -2,6 +2,15 @@ import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea } from "./
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 
 const defaultColor = "#000";
+const futureBoxColor = "#dfe9ed";
+const dividerColor = "#0a3066";
+const playheadColor = "#b9dbef";
+
+const playheadSize = 8;
+const dividerSize = 2;
+
+// Currently the scale factor is a constant but when we add panning this may become formula based.
+const scaleFactor = 0.8;
 
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
@@ -12,9 +21,10 @@ export class CanvasGraphService {
     private _ctx: CanvasRenderingContext2D | null;
     private _width: number;
     private _height: number;
-    public readonly datasets: IPerfDataset[];
     private _sizeOfWindow: number = 300;
     private _ticks: number[];
+
+    public readonly datasets: IPerfDataset[];
 
     /**
      * Creates an instance of CanvasGraphService.
@@ -26,8 +36,10 @@ export class CanvasGraphService {
         this._ctx = canvas.getContext && canvas.getContext("2d");
         this._width = canvas.width;
         this._height = canvas.height;
-        this.datasets = settings.datasets;
         this._ticks = [];
+
+        this.datasets = settings.datasets;
+
         this._attachEventListeners(canvas);
     }
 
@@ -48,6 +60,7 @@ export class CanvasGraphService {
         let globalTimeMinMax = {min: Infinity, max: 0};
 
         // TODO: Make better sliding window code (accounting for zoom and pan).
+        // TODO: Perhaps see if i can reduce the number of allocations.
         // Keep only visible and non empty datasets and get a certain window of items.
         const datasets = this.datasets.filter((dataset: IPerfDataset) => !dataset.hidden && dataset.data.length > 0).map((dataset: IPerfDataset) => ({
             ...dataset,
@@ -68,8 +81,6 @@ export class CanvasGraphService {
         };
 
         // we will now rescale the maximum for the playhead.
-        // Currently the scale factor is a constant but when we add panning this may become formula based.
-        const scaleFactor = 0.8;
         globalTimeMinMax.max = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min)/scaleFactor + globalTimeMinMax.min);
 
         this._drawTimeAxis(globalTimeMinMax, drawableArea);
@@ -236,7 +247,6 @@ export class CanvasGraphService {
 
         const {top, left, bottom, right} = drawableArea;
         
-
         return {
             timestamp: this._getPixelForNumber(timestamp, timeMinMax, left, right - left, false),
             value: this._getPixelForNumber(value, valueMinMax, top, bottom - top, true)
@@ -306,7 +316,7 @@ export class CanvasGraphService {
                         }, 0);
 
         // Bind the zoom between [minZoom, maxZoom]
-        this._sizeOfWindow = Math.min(Math.max(this._sizeOfWindow - amount, minZoom), maxZoom);
+        this._sizeOfWindow = BABYLON.Scalar.Clamp(this._sizeOfWindow - amount, minZoom, maxZoom);
     }
 
     /**
@@ -322,19 +332,11 @@ export class CanvasGraphService {
             return;
         }
 
-        const dividerSize = 2;
         const dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
-
-        const playheadSize = 8;
         const playheadPos = dividerXPos - playheadSize; 
-        
         const futureBoxPos = dividerXPos + dividerSize;
-        
+
         const rectangleHeight = drawableArea.bottom - drawableArea.top - 1;
-        
-        const futureBoxColor = "#dfe9ed";
-        const dividerColor = "#0a3066";
-        const playheadColor = "#b9dbef";
 
         ctx.save();
         
