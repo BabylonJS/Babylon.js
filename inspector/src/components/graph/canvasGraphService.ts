@@ -1,6 +1,8 @@
 import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 
+const defaultColor = "#000";
+
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc! 
@@ -65,15 +67,22 @@ export class CanvasGraphService {
             right: this._width,
         };
 
-        this._drawTimeAxis(globalTimeMinMax, drawableArea);
+        // we will now rescale the maximum for the playhead.
+        // Currently the scale factor is a constant but when we add panning this may become formula based.
+        const scaleFactor = 0.8;
+        globalTimeMinMax.max = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min)/scaleFactor + globalTimeMinMax.min);
 
+        this._drawTimeAxis(globalTimeMinMax, drawableArea);
+        this._drawPlayheadRegion(drawableArea, scaleFactor);
+
+        // process, and then draw our points
         datasets.forEach((dataset: IPerfDataset) => {
             const valueMinMax = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.value));
             const drawablePoints = dataset.data.map((point: IPerfPoint) => this._getPixelPointFromDataPoint(point, globalTimeMinMax, valueMinMax, drawableArea));
 
             let prevPoint: IPerfPoint = drawablePoints[0];
             ctx.beginPath();
-            
+            ctx.strokeStyle = dataset.color ?? defaultColor;
             drawablePoints.forEach((point: IPerfPoint) => {
                 ctx.moveTo(prevPoint.timestamp, prevPoint.value);
                 ctx.lineTo(point.timestamp, point.value);
@@ -107,6 +116,7 @@ export class CanvasGraphService {
         // draw time axis line
         ctx.save();
         ctx.beginPath();
+        ctx.strokeStyle = defaultColor;
         ctx.moveTo(drawableArea.left, drawableArea.bottom);
         ctx.lineTo(drawableArea.right, drawableArea.bottom);
         
@@ -256,12 +266,30 @@ export class CanvasGraphService {
         return startingPixel + normalizedValue * spaceAvailable;
     }
 
+    /**
+     * Add in any necessary event listeners.
+     * 
+     * @param canvas The canvas we want to attach listeners to.
+     */
     private _attachEventListeners(canvas: HTMLCanvasElement) {
-        canvas.addEventListener("wheel", this._handleZoom.bind(this));
+        canvas.addEventListener("wheel", this._handleZoom);
     }
 
+    /**
+     * We remove all event listeners we added.
+     * 
+     * @param canvas The canvas we want to remove listeners from.
+     */
+    private _removeEventListeners(canvas: HTMLCanvasElement) {
+        canvas.removeEventListener("wheel", this._handleZoom);
+    }
 
-    private _handleZoom(event: WheelEvent) {
+    /**
+     * The handler for when we want to zoom in and out of the graph.
+     * 
+     * @param event a mouse wheel event.
+     */
+    private _handleZoom = (event: WheelEvent) => {
         event.preventDefault();
         
         if (!event.deltaY) {
@@ -269,9 +297,71 @@ export class CanvasGraphService {
         }
 
         const amount = (event.deltaY * -0.01 | 0) * 100;
-        this._sizeOfWindow = Math.max(this._sizeOfWindow - amount, 60);
+        const minZoom = 60;
+
+        // The max zoom is the largest dataset's length.      
+        const maxZoom = this.datasets.map((dataset: IPerfDataset) => dataset.data.length)
+                        .reduce((maxLengthSoFar: number, currLength: number) => {
+                            return Math.max(currLength, maxLengthSoFar)
+                        }, 0);
+
+        // Bind the zoom between [minZoom, maxZoom]
+        this._sizeOfWindow = Math.min(Math.max(this._sizeOfWindow - amount, minZoom), maxZoom);
         console.log(this._sizeOfWindow);
-        return;
+    }
+
+    /**
+     * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
+     * 
+     * @param drawableArea The remaining drawable area.
+     * @param scaleFactor The Percentage between 0.0 and 1.0 of the canvas the data gets drawn on.  
+     */
+    private _drawPlayheadRegion(drawableArea: IGraphDrawableArea, scaleFactor: number) {
+        const { _ctx: ctx } = this;
+       
+        if (!ctx) {
+            return;
+        }
+
+        const dividerSize = 2;
+        const dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
+
+        const playheadSize = 8;
+        const playheadPos = dividerXPos - playheadSize; 
+        
+        const futureBoxPos = dividerXPos + dividerSize;
+        
+        const rectangleHeight = drawableArea.bottom - drawableArea.top - 1;
+        
+        const futureBoxColor = "#dfe9ed";
+        const dividerColor = "#0a3066";
+        const playheadColor = "#b9dbef";
+
+        ctx.save();
+        
+        ctx.fillStyle = futureBoxColor;
+        ctx.fillRect(futureBoxPos, drawableArea.top, drawableArea.right - futureBoxPos, rectangleHeight);
+        
+        ctx.fillStyle = dividerColor;
+        ctx.fillRect(dividerXPos, drawableArea.top, dividerSize, rectangleHeight);
+        
+        ctx.fillStyle = playheadColor;
+        ctx.fillRect(playheadPos, drawableArea.top, playheadSize, rectangleHeight);
+        
+        ctx.restore();
+    }
+
+    /**
+     *  Method to do cleanup when the object is done being used.
+     *
+     */
+    public destroy() {
+        if (!this._ctx || !this._ctx.canvas) {
+            return;
+        }
+
+        this._removeEventListeners(this._ctx.canvas);
+        this._ctx = null;
     }
     
     /**
