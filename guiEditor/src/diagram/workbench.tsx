@@ -51,7 +51,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
-    public artBoardBackground : Rectangle;
+    public artBoardBackground: Rectangle;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
@@ -185,7 +185,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     loadToEditor() {
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
-            if(guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle"){
+            if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
                 this.artBoardBackground = guiElement as Rectangle;
                 return;
             }
@@ -289,10 +289,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 (draggedControl.parent as Container).removeControl(draggedControl);
                 this.props.globalState.guiTexture.addControl(draggedControl);
             }
-            if (control != null && this.props.globalState.workbench.isContainer(control)) {
+            if (control != null) {
                 this.props.globalState.guiTexture.removeControl(draggedControl);
-                (control as Container).addControl(draggedControl);
+
+                if (this.props.globalState.workbench.isContainer(control)) {
+                    this.props.globalState.guiTexture.removeControl(draggedControl);
+                    (control as Container).addControl(draggedControl);
+                }
+                else {
+                    let index = this.props.globalState.guiTexture.getChildren()[0].children.indexOf(control);
+                    console.log(index);
+                    this.props.globalState.guiTexture.getChildren()[0].children.splice(index+1, 0, draggedControl);
+                }
             }
+
+
         }
         this.globalState.draggedControl = null;
     }

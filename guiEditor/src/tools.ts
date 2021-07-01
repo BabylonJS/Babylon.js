@@ -41,16 +41,17 @@ export class Tools {
         if (parent && parent.reservedDataStore && parent.reservedDataStore.detachedChildren) {
             finalArray.push(...parent.reservedDataStore.detachedChildren);
         }
+        return finalArray.reverse();
 
         return finalArray.sort((a: any, b: any) => {
-            const lowerCaseA = (a.name || "").toLowerCase();
-            const lowerCaseB = (b.name || "").toLowerCase();
+            const aIndex = a.zIndex;
+            const bIndex = b.zIndex;
 
-            if (lowerCaseA === lowerCaseB) {
+            if (aIndex === bIndex) {
                 return 0;
             }
 
-            if (lowerCaseA > lowerCaseB) {
+            if (aIndex > bIndex) {
                 return 1;
             }
 
