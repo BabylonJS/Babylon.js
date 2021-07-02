@@ -233,8 +233,9 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _ctx;
         private _width;
         private _height;
-        readonly datasets: IPerfDataset[];
+        private _sizeOfWindow;
         private _ticks;
+        readonly datasets: IPerfDataset[];
         /**
          * Creates an instance of CanvasGraphService.
          *
@@ -297,6 +298,36 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * @returns the pixel coordinate of the value in a single axis.
          */
         private _getPixelForNumber;
+        /**
+         * Add in any necessary event listeners.
+         *
+         * @param canvas The canvas we want to attach listeners to.
+         */
+        private _attachEventListeners;
+        /**
+         * We remove all event listeners we added.
+         *
+         * @param canvas The canvas we want to remove listeners from.
+         */
+        private _removeEventListeners;
+        /**
+         * The handler for when we want to zoom in and out of the graph.
+         *
+         * @param event a mouse wheel event.
+         */
+        private _handleZoom;
+        /**
+         * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
+         *
+         * @param drawableArea The remaining drawable area.
+         * @param scaleFactor The Percentage between 0.0 and 1.0 of the canvas the data gets drawn on.
+         */
+        private _drawPlayheadRegion;
+        /**
+         *  Method to do cleanup when the object is done being used.
+         *
+         */
+        destroy(): void;
         /**
          * This method clears the canvas
          */
@@ -4788,8 +4819,9 @@ declare module INSPECTOR {
         private _ctx;
         private _width;
         private _height;
-        readonly datasets: BABYLON.IPerfDataset[];
+        private _sizeOfWindow;
         private _ticks;
+        readonly datasets: BABYLON.IPerfDataset[];
         /**
          * Creates an instance of CanvasGraphService.
          *
@@ -4852,6 +4884,36 @@ declare module INSPECTOR {
          * @returns the pixel coordinate of the value in a single axis.
          */
         private _getPixelForNumber;
+        /**
+         * Add in any necessary event listeners.
+         *
+         * @param canvas The canvas we want to attach listeners to.
+         */
+        private _attachEventListeners;
+        /**
+         * We remove all event listeners we added.
+         *
+         * @param canvas The canvas we want to remove listeners from.
+         */
+        private _removeEventListeners;
+        /**
+         * The handler for when we want to zoom in and out of the graph.
+         *
+         * @param event a mouse wheel event.
+         */
+        private _handleZoom;
+        /**
+         * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
+         *
+         * @param drawableArea The remaining drawable area.
+         * @param scaleFactor The Percentage between 0.0 and 1.0 of the canvas the data gets drawn on.
+         */
+        private _drawPlayheadRegion;
+        /**
+         *  Method to do cleanup when the object is done being used.
+         *
+         */
+        destroy(): void;
         /**
          * This method clears the canvas
          */

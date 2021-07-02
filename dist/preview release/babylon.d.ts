@@ -37855,6 +37855,8 @@ declare module BABYLON {
         protected _sizeRatio: Nullable<number>;
         /** @hidden */
         _generateMipMaps: boolean;
+        /** @hidden */
+        _cleared: boolean;
         protected _renderingManager: RenderingManager;
         /** @hidden */
         _waitingRenderList?: string[];
@@ -39919,6 +39921,8 @@ declare module BABYLON {
         getZOffset(): number;
         /** @hidden */
         _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
+        /** @hidden */
+        _currentFrameBufferIsDefaultFrameBuffer(): boolean;
         /**
          * Unbind the current render target texture from the webGL context
          * @param texture defines the render target texture to unbind
@@ -44966,6 +44970,7 @@ declare module BABYLON {
         private _frameId;
         private _executeWhenReadyTimeoutId;
         private _intermediateRendering;
+        private _defaultFrameBufferCleared;
         private _viewUpdateFlag;
         private _projectionUpdateFlag;
         /** @hidden */
@@ -46100,10 +46105,11 @@ declare module BABYLON {
          */
         updateTransformMatrix(force?: boolean): void;
         private _bindFrameBuffer;
+        private _clearFrameBuffer;
         /** @hidden */
         _allowPostProcessClearColor: boolean;
         /** @hidden */
-        _renderForCamera(camera: Camera, rigParent?: Camera): void;
+        _renderForCamera(camera: Camera, rigParent?: Camera, bindFrameBuffer?: boolean): void;
         private _processSubCameras;
         private _checkIntersections;
         /** @hidden */
@@ -61961,6 +61967,8 @@ declare module BABYLON {
          * @param reopenPass true to reopen at the end of the function the pass that was active when entering the function
          */
         flushFramebuffer(reopenPass?: boolean): void;
+        /** @hidden */
+        _currentFrameBufferIsDefaultFrameBuffer(): boolean;
         private _startRenderTargetRenderPass;
         /** @hidden */
         _endRenderTargetRenderPass(): void;
