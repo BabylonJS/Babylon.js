@@ -274,6 +274,7 @@
 - Fix for triggering interactions on nearby meshes when performing a near interaction grab ([rickfromwork](https://github.com/rickfromwork))
 - Fix for near interaction failing when multiple utility layers are present ([rickfromwork](https://github.com/rickfromwork))
 - Fix handling of events to support multiple canvas scenarios DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix support for camera output render targets ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
