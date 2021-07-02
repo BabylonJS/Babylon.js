@@ -58,7 +58,7 @@ export class CanvasGraphService {
         this.clear();
 
         // Get global min max of time axis (across all datasets).
-        let globalTimeMinMax = {min: Infinity, max: 0};
+        const globalTimeMinMax = {min: Infinity, max: 0};
 
         // TODO: Make better sliding window code (accounting for zoom and pan).
         // TODO: Perhaps see if i can reduce the number of allocations.
@@ -68,10 +68,10 @@ export class CanvasGraphService {
             data: dataset.data.slice(Math.max(dataset.data.length - this._sizeOfWindow, 0))
         }));
 
+        // timestamps will be in sorted order so we can simply do the following.
         datasets.forEach((dataset: IPerfDataset) => {
-            const timeMinMax = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.timestamp));            
-            globalTimeMinMax.min = Math.min(timeMinMax.min, globalTimeMinMax.min);
-            globalTimeMinMax.max = Math.max(timeMinMax.max, globalTimeMinMax.max);
+            globalTimeMinMax.min = Math.min(dataset.data[0].timestamp, globalTimeMinMax.min);
+            globalTimeMinMax.max = Math.max(dataset.data[dataset.data.length - 1].timestamp, globalTimeMinMax.max);
         });
 
         const drawableArea: IGraphDrawableArea = {
