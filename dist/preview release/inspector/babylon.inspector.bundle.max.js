@@ -58934,7 +58934,9 @@ var CanvasGraphComponent = function (props) {
             return;
         }
         // temporarily set empty array, will eventually be passed by props!
-        canvasServiceCallback(new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] }));
+        var canvasGraphService = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] });
+        canvasServiceCallback(canvasGraphService);
+        return function () { return canvasGraphService.destroy(); };
     }, [canvasRef]);
     return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("canvas", { id: id, ref: canvasRef }));
 };
@@ -58953,7 +58955,18 @@ var CanvasGraphComponent = function (props) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__);
 
+
+var defaultColor = "#000";
+var futureBoxColor = "#dfe9ed";
+var dividerColor = "#0a3066";
+var playheadColor = "#b9dbef";
+var playheadSize = 8;
+var dividerSize = 2;
+// Currently the scale factor is a constant but when we add panning this may become formula based.
+var scaleFactor = 0.8;
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc!
@@ -58966,11 +58979,34 @@ var CanvasGraphService = /** @class */ (function () {
      * @param settings settings for our service.
      */
     function CanvasGraphService(canvas, settings) {
+        var _this = this;
+        this._sizeOfWindow = 300;
+        /**
+         * The handler for when we want to zoom in and out of the graph.
+         *
+         * @param event a mouse wheel event.
+         */
+        this._handleZoom = function (event) {
+            event.preventDefault();
+            if (!event.deltaY) {
+                return;
+            }
+            var amount = (event.deltaY * -0.01 | 0) * 100;
+            var minZoom = 60;
+            // The max zoom is the largest dataset's length.      
+            var maxZoom = _this.datasets.map(function (dataset) { return dataset.data.length; })
+                .reduce(function (maxLengthSoFar, currLength) {
+                return Math.max(currLength, maxLengthSoFar);
+            }, 0);
+            // Bind the zoom between [minZoom, maxZoom]
+            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+        };
         this._ctx = canvas.getContext && canvas.getContext("2d");
         this._width = canvas.width;
         this._height = canvas.height;
-        this.datasets = settings.datasets;
         this._ticks = [];
+        this.datasets = settings.datasets;
+        this._attachEventListeners(canvas);
     }
     /**
      * This method draws the data and sets up the appropriate scales.
@@ -58986,8 +59022,9 @@ var CanvasGraphService = /** @class */ (function () {
         // Get global min max of time axis (across all datasets).
         var globalTimeMinMax = { min: Infinity, max: 0 };
         // TODO: Make better sliding window code (accounting for zoom and pan).
+        // TODO: Perhaps see if i can reduce the number of allocations.
         // Keep only visible and non empty datasets and get a certain window of items.
-        var datasets = this.datasets.filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; }).map(function (dataset) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(Math.max(dataset.data.length - 300, 0)) })); });
+        var datasets = this.datasets.filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; }).map(function (dataset) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(Math.max(dataset.data.length - _this._sizeOfWindow, 0)) })); });
         datasets.forEach(function (dataset) {
             var timeMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.timestamp; }));
             globalTimeMinMax.min = Math.min(timeMinMax.min, globalTimeMinMax.min);
@@ -58999,12 +59036,18 @@ var CanvasGraphService = /** @class */ (function () {
             bottom: this._height,
             right: this._width,
         };
+        // we will now rescale the maximum for the playhead.
+        globalTimeMinMax.max = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min) / scaleFactor + globalTimeMinMax.min);
         this._drawTimeAxis(globalTimeMinMax, drawableArea);
+        this._drawPlayheadRegion(drawableArea, scaleFactor);
+        // process, and then draw our points
         datasets.forEach(function (dataset) {
+            var _a;
             var valueMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.value; }));
             var drawablePoints = dataset.data.map(function (point) { return _this._getPixelPointFromDataPoint(point, globalTimeMinMax, valueMinMax, drawableArea); });
             var prevPoint = drawablePoints[0];
             ctx.beginPath();
+            ctx.strokeStyle = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
             drawablePoints.forEach(function (point) {
                 ctx.moveTo(prevPoint.timestamp, prevPoint.value);
                 ctx.lineTo(point.timestamp, point.value);
@@ -59033,6 +59076,7 @@ var CanvasGraphService = /** @class */ (function () {
         // draw time axis line
         ctx.save();
         ctx.beginPath();
+        ctx.strokeStyle = defaultColor;
         ctx.moveTo(drawableArea.left, drawableArea.bottom);
         ctx.lineTo(drawableArea.right, drawableArea.bottom);
         // draw ticks and text.
@@ -59169,6 +59213,57 @@ var CanvasGraphService = /** @class */ (function () {
             normalizedValue = 1 - normalizedValue;
         }
         return startingPixel + normalizedValue * spaceAvailable;
+    };
+    /**
+     * Add in any necessary event listeners.
+     *
+     * @param canvas The canvas we want to attach listeners to.
+     */
+    CanvasGraphService.prototype._attachEventListeners = function (canvas) {
+        canvas.addEventListener("wheel", this._handleZoom);
+    };
+    /**
+     * We remove all event listeners we added.
+     *
+     * @param canvas The canvas we want to remove listeners from.
+     */
+    CanvasGraphService.prototype._removeEventListeners = function (canvas) {
+        canvas.removeEventListener("wheel", this._handleZoom);
+    };
+    /**
+     * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
+     *
+     * @param drawableArea The remaining drawable area.
+     * @param scaleFactor The Percentage between 0.0 and 1.0 of the canvas the data gets drawn on.
+     */
+    CanvasGraphService.prototype._drawPlayheadRegion = function (drawableArea, scaleFactor) {
+        var ctx = this._ctx;
+        if (!ctx) {
+            return;
+        }
+        var dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
+        var playheadPos = dividerXPos - playheadSize;
+        var futureBoxPos = dividerXPos + dividerSize;
+        var rectangleHeight = drawableArea.bottom - drawableArea.top - 1;
+        ctx.save();
+        ctx.fillStyle = futureBoxColor;
+        ctx.fillRect(futureBoxPos, drawableArea.top, drawableArea.right - futureBoxPos, rectangleHeight);
+        ctx.fillStyle = dividerColor;
+        ctx.fillRect(dividerXPos, drawableArea.top, dividerSize, rectangleHeight);
+        ctx.fillStyle = playheadColor;
+        ctx.fillRect(playheadPos, drawableArea.top, playheadSize, rectangleHeight);
+        ctx.restore();
+    };
+    /**
+     *  Method to do cleanup when the object is done being used.
+     *
+     */
+    CanvasGraphService.prototype.destroy = function () {
+        if (!this._ctx || !this._ctx.canvas) {
+            return;
+        }
+        this._removeEventListeners(this._ctx.canvas);
+        this._ctx = null;
     };
     /**
      * This method clears the canvas

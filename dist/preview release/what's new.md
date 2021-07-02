@@ -102,6 +102,7 @@
 - NME `TextureBlock`: add an output for the texture level and a switch to disable the internal multiplication (level * texture) ([#10192](https://github.com/BabylonJS/Babylon.js/pull/10192)) ([rassie](https://github.com/rassie))
 - Added support for parallax / parallax occlusion to the `PerturbNormal` block ([Popov72](https://github.com/Popov72))
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
+- Fixed Conditional Block output when pressing the 'Generate Code' button. ([PirateJC](https://github.com/piratejc))
 
 ### GUIEditor
 
@@ -273,6 +274,7 @@
 - Fix for triggering interactions on nearby meshes when performing a near interaction grab ([rickfromwork](https://github.com/rickfromwork))
 - Fix for near interaction failing when multiple utility layers are present ([rickfromwork](https://github.com/rickfromwork))
 - Fix handling of events to support multiple canvas scenarios DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix support for camera output render targets ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
