@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import { DragOverLocation, GlobalState } from "../globalState";
 import { Nullable } from "babylonjs/types";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
@@ -285,7 +285,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const draggedControl = this.props.globalState.draggedControl;
 
         if (draggedControl != null) {
-            
+
             if (draggedControl.parent) {
                 (draggedControl.parent as Container).removeControl(draggedControl);
             }
@@ -298,17 +298,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     this.props.globalState.guiTexture.removeControl(draggedControl);
                     (control as Container).addControl(draggedControl);
                 }
-                else if(control.parent)
-                {
+                else if (control.parent) {
                     let index = control.parent.children.indexOf(control);
-                    console.log(index);
-                    control.parent.children.splice(index+1, 0, draggedControl);
+                    index = this._adjustParentingIndex(index);
+                    control.parent.children.splice(index, 0, draggedControl);
                     draggedControl.parent = control.parent;
                 }
                 else {
                     let index = this.props.globalState.guiTexture.getChildren()[0].children.indexOf(control);
-                    console.log(index);
-                    this.props.globalState.guiTexture.getChildren()[0].children.splice(index+1, 0, draggedControl);
+                    index = this._adjustParentingIndex(index);
+                    this.props.globalState.guiTexture.getChildren()[0].children.splice(index, 0, draggedControl);
                 }
             }
             else {
@@ -316,6 +315,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
         this.globalState.draggedControl = null;
+    }
+
+    private _adjustParentingIndex(index: number) {
+        switch (this.props.globalState.draggedControlDirection) {
+            case DragOverLocation.ABOVE:
+                return index + 1;
+            case DragOverLocation.BELOW:
+            case DragOverLocation.CENTER:
+                return index;
+        }
+        return index;
     }
 
     public isSelected(value: boolean, guiNode: Control) {
