@@ -1643,7 +1643,7 @@ export class NodeMaterial extends PushMaterial {
 
         let alreadyDumped: NodeMaterialBlock[] = [];
         let vertexBlocks: NodeMaterialBlock[] = [];
-        let uniqueNames: string[] = [];
+        let uniqueNames: string[] = ["const", "var", "let"];
         // Gets active blocks
         for (var outputNode of this._vertexOutputNodes) {
             this._gatherBlocks(outputNode, vertexBlocks);

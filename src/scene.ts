@@ -23,7 +23,6 @@ import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction,
 import { Engine } from "./Engines/engine";
 import { Constants } from "./Engines/constants";
 import { DomManagement } from "./Misc/domManagement";
-import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
@@ -1206,6 +1205,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _frameId = 0;
     private _executeWhenReadyTimeoutId = -1;
     private _intermediateRendering = false;
+    private _defaultFrameBufferCleared = false;
 
     private _viewUpdateFlag = -1;
     private _projectionUpdateFlag = -1;
@@ -3965,30 +3965,47 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
     }
 
-    private _bindFrameBuffer(camera: Nullable<Camera>) {
+    private _bindFrameBuffer(camera: Nullable<Camera>, clear = true) {
         if (camera && camera._multiviewTexture) {
             camera._multiviewTexture._bindFrameBuffer();
         } else if (camera && camera.outputRenderTarget) {
-            var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
-            if (useMultiview) {
-                camera.outputRenderTarget._bindFrameBuffer();
+            camera.outputRenderTarget._bindFrameBuffer();
+        } else {
+            if (!this._engine._currentFrameBufferIsDefaultFrameBuffer()) {
+                this._engine.restoreDefaultFramebuffer();
+            }
+        }
+        if (clear) {
+            this._clearFrameBuffer(camera);
+        }
+    }
+
+    private _clearFrameBuffer(camera: Nullable<Camera>) {
+        // we assume the framebuffer currently bound is the right one
+        if (camera && camera._multiviewTexture) {
+            // no clearing?
+        } if (camera && camera.outputRenderTarget) {
+            const rtt = camera.outputRenderTarget;
+            if (rtt.onClearObservable.hasObservers()) {
+                rtt.onClearObservable.notifyObservers(this._engine);
             } else {
-                var internalTexture = camera.outputRenderTarget.getInternalTexture();
-                if (internalTexture) {
-                    this.getEngine().bindFramebuffer(internalTexture);
-                } else {
-                    Logger.Error("Camera contains invalid customDefaultRenderTarget");
-                }
+                this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
+                rtt._cleared = true;
             }
         } else {
-            this.getEngine().restoreDefaultFramebuffer(); // Restore back buffer if needed
+            if (!this._defaultFrameBufferCleared) {
+                this._defaultFrameBufferCleared = true;
+                this._clear();
+            } else {
+                this._engine.clear(null, false, true, true);
+            }
         }
     }
 
     /** @hidden */
     public _allowPostProcessClearColor = true;
     /** @hidden */
-    public _renderForCamera(camera: Camera, rigParent?: Camera): void {
+    public _renderForCamera(camera: Camera, rigParent?: Camera, bindFrameBuffer = true): void {
         if (camera && camera._skipRendering) {
             return;
         }
@@ -4008,6 +4025,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Camera
         this.resetCachedMaterial();
         this._renderId++;
+
+        if (!this.prePass && bindFrameBuffer) {
+            this._bindFrameBuffer(this._activeCamera);
+        }
 
         var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
         if (useMultiview) {
@@ -4069,16 +4090,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             this._intermediateRendering = false;
-
-            // Need to bind if sub-camera has an outputRenderTarget eg. for webXR
-            if (this.activeCamera && this.activeCamera.outputRenderTarget) {
-                needRebind = true;
-            }
         }
 
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
-            this._bindFrameBuffer(this._activeCamera);
+            this._bindFrameBuffer(this._activeCamera, false);
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4120,9 +4136,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onAfterCameraRenderObservable.notifyObservers(this.activeCamera);
     }
 
-    private _processSubCameras(camera: Camera): void {
+    private _processSubCameras(camera: Camera, bindFrameBuffer = true): void {
         if (camera.cameraRigMode === Constants.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
-            this._renderForCamera(camera);
+            this._renderForCamera(camera, undefined, bindFrameBuffer);
             this.onAfterRenderCameraObservable.notifyObservers(camera);
             return;
         }
@@ -4282,6 +4298,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._frameId++;
+        this._defaultFrameBufferCleared = false;
+        if (this._activeCamera?.outputRenderTarget) {
+            this._activeCamera.outputRenderTarget._cleared = false;
+        }
+        if (this.activeCameras?.length) {
+            for (let i = 0; i < this.activeCameras.length; ++i) {
+                const rtt = this.activeCameras[i].outputRenderTarget;
+                if (rtt) {
+                    rtt._cleared = false;
+                }
+            }
+        }
 
         // Register components that have been associated lately to the scene.
         this._registerTransientComponents();
@@ -4342,7 +4370,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Customs render targets
         this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
 
-        var currentActiveCamera = this.activeCamera;
+        var currentActiveCamera = this.activeCameras?.length ? this.activeCameras[0] : this.activeCamera;
         if (this.renderTargetsEnabled) {
             Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
             this._intermediateRendering = true;
@@ -4375,7 +4403,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.activeCamera = currentActiveCamera;
         let frameBufferBound = false;
         if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
-            this._bindFrameBuffer(this._activeCamera);
+            this._bindFrameBuffer(this._activeCamera, false);
             frameBufferBound = true;
         }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4388,10 +4416,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (!frameBufferBound && this.activeCamera && this.activeCamera._rigCameras.length > 0) {
             for (const rigCamera of this.activeCamera._rigCameras) {
                 this._bindFrameBuffer(rigCamera);
-                this._clear();
             }
         } else {
-            this._clear();
+            this._clearFrameBuffer(this.activeCamera);
         }
 
         // Collects render targets from external components.
@@ -4402,18 +4429,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Multi-cameras?
         if (this.activeCameras && this.activeCameras.length > 0) {
             for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                if (cameraIndex > 0) {
-                    this._engine.clear(null, false, true, true);
-                }
-
-                this._processSubCameras(this.activeCameras[cameraIndex]);
+                this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
             }
         } else {
             if (!this.activeCamera) {
                 throw new Error("No camera defined");
             }
 
-            this._processSubCameras(this.activeCamera);
+            this._processSubCameras(this.activeCamera, false);
         }
 
         // Intersection checks
@@ -4450,6 +4473,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._activeBones.addCount(0, true);
         this._activeIndices.addCount(0, true);
         this._activeParticles.addCount(0, true);
+
+        this._engine.restoreDefaultFramebuffer();
     }
 
     /**
