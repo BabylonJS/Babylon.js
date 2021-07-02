@@ -274,7 +274,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div id="title">{`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}</div>
                     </div>
                     {this.renderProperties()}
-                   <hr></hr>
+                   <hr/>
                     <ButtonLineComponent
                         label="REMOVE ELEMENT"
                         onClick={() => {
@@ -308,7 +308,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
                         <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
-                    <hr></hr>
+                    <hr/>
                     <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
                         label="Responsive"
@@ -357,7 +357,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             ></FloatLineComponent>
                         </div>
                     }
-                    <hr></hr>
+                    <hr/>
                     <TextLineComponent label="FILE" value=" " color="grey"></TextLineComponent>
                     <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                     <ButtonLineComponent
@@ -366,7 +366,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.save();
                         }}
                     />
-                    <hr></hr>
+                    <hr/>
                     <TextLineComponent label="SNIPPET" value=" " color="grey"></TextLineComponent>
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent

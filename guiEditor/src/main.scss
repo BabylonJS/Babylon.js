@@ -1,3 +1,7 @@
+:root {
+    --blackBarHeight: 55px;
+}
+
 #gui-editor-workbench-root {
     display: grid;
     grid-template-rows: calc(100% - 120px) 120px;
@@ -58,7 +62,7 @@
     display: grid;
     grid-template-rows: 1fr 40px auto 40px;
     grid-template-columns: 100%;
-    height: calc(100% - 55px);
+    height: calc(100% - var(--blackBarHeight));
     overflow-y: auto;
 
     #propertyTab {

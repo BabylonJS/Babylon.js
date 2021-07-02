@@ -38,7 +38,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={image} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr></hr>
+                <hr/>
                 <TextLineComponent label="IMAGE" value=" " color="grey"></TextLineComponent>
                 <TextInputLineComponent lockObject={this.props.lockObject} label="Source" target={image} propertyName="source" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <div className="divider">
@@ -51,7 +51,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 </div>
                 <CheckBoxLineComponent label="Autoscale" target={image} propertyName="autoScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <OptionsLineComponent label="Stretch" options={stretchOptions} target={image} propertyName="stretch" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ mode: value })} />
-                <hr></hr>
+                <hr/>
                 <TextLineComponent label="ANIMATION SHEET" value=" " color="grey"></TextLineComponent>
                 <FloatLineComponent lockObject={this.props.lockObject} label="Cell Id" isInteger={true} target={image} propertyName="cellId" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <div className="divider">

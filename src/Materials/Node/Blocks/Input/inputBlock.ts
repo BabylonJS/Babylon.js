@@ -117,6 +117,10 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case "uv":
                     case "uv2":
+                    case "uv3":
+                    case "uv4":
+                    case "uv5":
+                    case "uv6":
                     case "position2d":
                     case "particle_uv":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;

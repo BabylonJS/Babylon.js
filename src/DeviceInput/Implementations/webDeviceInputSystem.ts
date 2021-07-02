@@ -44,6 +44,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _mouseId = -1;
     private _isUsingFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
 
+    // Array to store active Pointer ID values; prevents issues with negative pointerIds
+    private _activeTouchIds: Array<number> = [];
+    private _rollingTouchId: number = 0; // Rolling ID number to assign; emulates Chrome assignment
+
     private _pointerWheelClearObserver: Nullable<Observer<Engine>> = null;
 
     private _gamepadConnectedEvent = (evt: any) => { };
@@ -57,7 +61,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _eventPrefix: string;
 
     constructor(engine: Engine) {
-        const inputElement = engine.getInputElement();
         this._eventPrefix = Tools.GetPointerPrefix(engine);
         this._engine = engine;
 
@@ -79,10 +82,23 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onDeviceDisconnectedObservable = new Observable();
         this.onInputChangedObservable = new Observable();
 
-        if (inputElement) {
+        this.configureEvents();
+    }
+
+    /**
+     * Configures events to work with an engine's active element
+     */
+    public configureEvents() {
+        const inputElement = this._engine.getInputElement();
+        if (inputElement && this._elementToAttachTo !== inputElement) {
+            // If the engine's input element has changed, unregister events from previous element
+            if (this._elementToAttachTo) {
+                this._removeEvents();
+            }
+
             this._elementToAttachTo = inputElement;
             // Set tab index for the inputElement to the engine's canvasTabIndex, if and only if the element's tab index is -1
-            this._elementToAttachTo.tabIndex = (this._elementToAttachTo.tabIndex !== -1) ? this._elementToAttachTo.tabIndex : engine.canvasTabIndex;
+            this._elementToAttachTo.tabIndex = (this._elementToAttachTo.tabIndex !== -1) ? this._elementToAttachTo.tabIndex : this._engine.canvasTabIndex;
             this._handleKeyActions();
             this._handlePointerActions();
             this._handleGamepadActions();
@@ -138,27 +154,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onInputChangedObservable.clear();
 
         if (this._elementToAttachTo) {
-            // Blur Events
-            this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
-            this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
-
-            // Keyboard Events
-            if (this._keyboardActive) {
-                this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
-                this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
-            }
-
-            // Pointer Events
-            if (this._pointerActive) {
-                this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
-                this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-                this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
-                this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
-
-                if (this._pointerWheelClearObserver) {
-                    this._engine.onEndFrameObservable.remove(this._pointerWheelClearObserver);
-                }
-            }
+            this._removeEvents();
 
             // Gamepad Events
             window.removeEventListener("gamepadconnected", this._gamepadConnectedEvent);
@@ -335,7 +331,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _handlePointerActions() {
         this._pointerMoveEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
-            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
+            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = {};
@@ -411,7 +407,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._pointerDownEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
-            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
+            let deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
+
+            if (deviceType === DeviceType.Touch) {
+                deviceSlot = this._rollingTouchId++;
+                this._activeTouchIds[deviceSlot] = evt.pointerId;
+            }
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = {};
@@ -479,7 +480,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._pointerUpEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
-            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
+            const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
 
             const pointer = this._inputs[deviceType]?.[deviceSlot];
             if (pointer && pointer[evt.button + 2] !== 0) {
@@ -525,6 +526,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
                 if (deviceType !== DeviceType.Mouse) {
+                    let idToRemove = this._activeTouchIds.indexOf(evt.pointerId);
+                    delete this._activeTouchIds[idToRemove];
                     this._unregisterDevice(deviceType, deviceSlot);
                 }
             }
@@ -587,17 +590,19 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             if (this.isDeviceAvailable(DeviceType.Touch)) {
                 const pointer = this._inputs[DeviceType.Touch];
 
-                for (const deviceSlotKey in pointer) {
+                // Get list of active touch ids and clear each one in the inputs array
+                for (const deviceSlotKey in Object.keys(this._activeTouchIds)) {
                     const deviceSlot = +deviceSlotKey;
+                    const pointerId = this._activeTouchIds[deviceSlot];
 
-                    if (this._elementToAttachTo.hasPointerCapture(deviceSlot)) {
-                        this._elementToAttachTo.releasePointerCapture(deviceSlot);
+                    if (this._elementToAttachTo.hasPointerCapture(pointerId)) {
+                        this._elementToAttachTo.releasePointerCapture(pointerId);
                     }
 
                     if (pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
                         pointer[deviceSlot][PointerInput.LeftClick] = 0;
 
-                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 1, this, this._elementToAttachTo);
+                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, pointerId, PointerInput.LeftClick, 1, this, this._elementToAttachTo);
                         const deviceEvent = evt as IDeviceEvent;
                         deviceEvent.deviceType = DeviceType.Mouse;
                         deviceEvent.deviceSlot = deviceSlot;
@@ -609,6 +614,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         this._unregisterDevice(DeviceType.Touch, deviceSlot);
                     }
                 }
+                // Clear all active touches
+                while (this._activeTouchIds.pop() !== undefined) { }
             }
         });
 
@@ -754,5 +761,32 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         }
 
         return deviceType;
+    }
+
+    /**
+     * Remove events from active input element
+     */
+    private _removeEvents() {
+        // Blur Events
+        this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
+        this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
+
+        // Keyboard Events
+        if (this._keyboardActive) {
+            this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
+            this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
+        }
+
+        // Pointer Events
+        if (this._pointerActive) {
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+            this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
+
+            if (this._pointerWheelClearObserver) {
+                this._engine.onEndFrameObservable.remove(this._pointerWheelClearObserver);
+            }
+        }
     }
 }

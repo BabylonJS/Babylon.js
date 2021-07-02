@@ -45,6 +45,7 @@ import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 import { ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
+import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -1481,6 +1482,18 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public inlineShaderCode(code: string): string {
+        const sci = new ShaderCodeInliner(code);
+        sci.debug = false;
+        sci.processCode();
+        return sci.code;
+    }
+
+    /**
      * Creates a new pipeline context
      * @param shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
@@ -2212,6 +2225,11 @@ export class WebGPUEngine extends Engine {
                 this._startMainRenderPass(false);
             }
         }
+    }
+
+    /** @hidden */
+    public _currentFrameBufferIsDefaultFrameBuffer() {
+        return this._currentRenderTarget === null;
     }
 
     //------------------------------------------------------------------------------

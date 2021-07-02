@@ -156,6 +156,8 @@ Engine.prototype._renderViews = function() {
         // Render the frame
         this._renderFrame();
 
+        this.flushFramebuffer();
+
         // Copy to target
         if (view.clearBeforeCopy) {
             context.clearRect(0, 0, parent.width, parent.height);

@@ -24,7 +24,7 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={colorPicker} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr></hr>
+                <hr/>
                 <TextLineComponent label="COLORPICKER" value=" " color="grey"></TextLineComponent>
                 <Color3LineComponent label="Color" target={colorPicker} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
