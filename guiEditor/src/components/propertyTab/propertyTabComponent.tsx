@@ -42,7 +42,6 @@ import { Control } from "babylonjs-gui/2D/controls/control";
 import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropertyGridComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Vector2 } from "babylonjs/Maths/math.vector";
-import { Button } from "babylonjs-gui/2D/controls/button";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
