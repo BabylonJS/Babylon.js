@@ -1040,7 +1040,14 @@ export class WebGPUEngine extends Engine {
     }
 
     private _applyViewport(renderPass: GPURenderPassEncoder): void {
-        renderPass.setViewport(Math.floor(this._viewportCached.x), Math.floor(this._viewportCached.y), Math.floor(this._viewportCached.z), Math.floor(this._viewportCached.w), 0, 1);
+        let y = Math.floor(this._viewportCached.y);
+        const h = Math.floor(this._viewportCached.w);
+
+        if (!this.hasOriginBottomLeft) {
+            y = this.getRenderHeight() - y - h;
+        }
+
+        renderPass.setViewport(Math.floor(this._viewportCached.x), y, Math.floor(this._viewportCached.z), h, 0, 1);
 
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
@@ -1091,7 +1098,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _applyScissor(renderPass: GPURenderPassEncoder): void {
-        renderPass.setScissorRect(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w);
+        renderPass.setScissorRect(this._scissorCached.x, this.hasOriginBottomLeft ? this._scissorCached.y : this.getRenderHeight() - this._scissorCached.w - this._scissorCached.y, this._scissorCached.z, this._scissorCached.w);
 
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
