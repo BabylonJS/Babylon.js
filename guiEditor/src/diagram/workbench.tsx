@@ -285,16 +285,25 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const draggedControl = this.props.globalState.draggedControl;
 
         if (draggedControl != null) {
+            
             if (draggedControl.parent) {
                 (draggedControl.parent as Container).removeControl(draggedControl);
-                this.props.globalState.guiTexture.addControl(draggedControl);
             }
-            if (control != null) {
+            else {
                 this.props.globalState.guiTexture.removeControl(draggedControl);
+            }
 
+            if (control != null) {
                 if (this.props.globalState.workbench.isContainer(control)) {
                     this.props.globalState.guiTexture.removeControl(draggedControl);
                     (control as Container).addControl(draggedControl);
+                }
+                else if(control.parent)
+                {
+                    let index = control.parent.children.indexOf(control);
+                    console.log(index);
+                    control.parent.children.splice(index+1, 0, draggedControl);
+                    draggedControl.parent = control.parent;
                 }
                 else {
                     let index = this.props.globalState.guiTexture.getChildren()[0].children.indexOf(control);
@@ -302,8 +311,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     this.props.globalState.guiTexture.getChildren()[0].children.splice(index+1, 0, draggedControl);
                 }
             }
-
-
+            else {
+                this.props.globalState.guiTexture.getChildren()[0].children.unshift(draggedControl);
+            }
         }
         this.globalState.draggedControl = null;
     }
