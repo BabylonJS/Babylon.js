@@ -126,7 +126,6 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["uv2"] = 0;
         this.variableNames["uv3"] = 0;
         this.variableNames["uv4"] = 0;
-        this.variableNames["uv4"] = 0;
         this.variableNames["uv5"] = 0;
         this.variableNames["uv6"] = 0;
         this.variableNames["color"] = 0;
