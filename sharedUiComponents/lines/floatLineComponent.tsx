@@ -144,7 +144,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                     !this.props.useEuler &&
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
                         {this.props.icon && <img src={this.props.icon} className="icon" />}
-                        {(!this.props.icon || (this.props.icon && this.props.label != "")) &&
+                        {(!this.props.icon || this.props.label != "") &&
                             <div className="label" title={this.props.label}>
                                 {this.props.label}
                             </div>

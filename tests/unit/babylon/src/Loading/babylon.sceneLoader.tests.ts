@@ -735,7 +735,7 @@ describe('Babylon Scene Loader', function() {
     describe('#DirectLoad', () => {
         it('should load a raw obj with no mime type', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:${objRaw}`, undefined, scene, undefined, ".obj").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${objRaw}`, scene, undefined, ".obj").then((result) => {
                 expect(result.meshes.length).to.eq(1);
                 expect(result.meshes[0].getTotalVertices()).to.eq(4);
             });
@@ -743,7 +743,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should load a base64 encoded obj with no mime type', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:;base64,${objBase64}`, undefined, scene, undefined, ".obj").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${objBase64}`, scene, undefined, ".obj").then((result) => {
                 expect(result.meshes.length).to.eq(1);
                 expect(result.meshes[0].getTotalVertices()).to.eq(4);
             });
@@ -751,7 +751,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should load a base64 encoded obj with a valid mime type', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:model/obj;base64,${objBase64}`, undefined, scene, undefined, ".obj").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:model/obj;base64,${objBase64}`, scene, undefined, ".obj").then((result) => {
                 expect(result.meshes.length).to.eq(1);
                 expect(result.meshes[0].getTotalVertices()).to.eq(4);
             });
@@ -759,7 +759,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should load a base64 encoded obj with an invalid mime type', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:foo/bar;base64,${objBase64}`, undefined, scene, undefined, ".obj").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:foo/bar;base64,${objBase64}`, scene, undefined, ".obj").then((result) => {
                 expect(result.meshes.length).to.eq(1);
                 expect(result.meshes[0].getTotalVertices()).to.eq(4);
             });
@@ -767,7 +767,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should load a base64 encoded obj with an invalid mime type', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:foo/bar;base64,${objBase64}`, undefined, scene, undefined, ".obj").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:foo/bar;base64,${objBase64}`, scene, undefined, ".obj").then((result) => {
                 expect(result.meshes.length).to.eq(1);
                 expect(result.meshes[0].getTotalVertices()).to.eq(4);
             });
@@ -775,7 +775,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should direct load a glTF file without specifying a pluginExtension', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:${gltfRaw}`, undefined, scene, undefined).then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${gltfRaw}`, scene).then((result) => {
                 expect(result.meshes.length).to.eq(2);
                 expect(result.meshes[1].getTotalVertices()).to.eq(3);
             });
@@ -783,7 +783,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should direct load a base64 encoded glTF file', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:;base64,${gltfBase64}`, undefined, scene, undefined, ".gltf").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${gltfBase64}`, scene, undefined, ".gltf").then((result) => {
                 expect(result.meshes.length).to.eq(2);
                 expect(result.meshes[1].getTotalVertices()).to.eq(3);
             });
@@ -791,7 +791,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should direct load a base64 encoded glb with a valid mime type and no pluginExtension', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:model/gltf-binary;base64,${glbBase64}`, undefined, scene, undefined).then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:model/gltf-binary;base64,${glbBase64}`, scene, undefined).then((result) => {
                 expect(result.meshes.length).to.eq(2);
                 expect(result.meshes[1].getTotalVertices()).to.eq(24);
             });
@@ -799,7 +799,15 @@ describe('Babylon Scene Loader', function() {
 
         it('should direct load a base64 encoded glb with an invalid mime type and pluginExtension specified', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:image/jpg;base64,${glbBase64}`, undefined, scene, undefined, ".glb").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:image/jpg;base64,${glbBase64}`, scene, undefined, ".glb").then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(24);
+            });
+        });
+
+        it('should direct load an incorrectly formatted base64 encoded glb (backcompat)', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:base64,${glbBase64}`, scene).then((result) => {
                 expect(result.meshes.length).to.eq(2);
                 expect(result.meshes[1].getTotalVertices()).to.eq(24);
             });
@@ -807,7 +815,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should direct load an ascii stl file', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:${stlAsciiRaw}`, undefined, scene, undefined, ".stl").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${stlAsciiRaw}`, scene, undefined, ".stl").then((result) => {
                 expect(result.meshes.length).to.eq(1);
                 expect(result.meshes[0].getTotalVertices()).to.eq(3);
             });
@@ -815,7 +823,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should direct load a base64 encoded ascii stl file', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:;base64,${stlAsciiBase64}`, undefined, scene, undefined, ".stl").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${stlAsciiBase64}`, scene, undefined, ".stl").then((result) => {
                 expect(result.meshes.length).to.eq(1);
                 expect(result.meshes[0].getTotalVertices()).to.eq(3);
             });
@@ -823,7 +831,7 @@ describe('Babylon Scene Loader', function() {
 
         it('should direct load a base64 encoded binary stl file', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync('', `data:;base64,${stlBinaryBase64}`, undefined, scene, undefined, ".stl").then((result) => {
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${stlBinaryBase64}`, scene, undefined, ".stl").then((result) => {
                 expect(result.meshes.length).to.eq(1);
                 expect(result.meshes[0].getTotalVertices()).to.eq(3);
             });

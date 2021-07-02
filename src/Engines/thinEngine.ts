@@ -179,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.28";
+        return "babylonjs@5.0.0-alpha.30";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.28";
+        return "5.0.0-alpha.30";
     }
 
     /**
@@ -668,7 +668,7 @@ export class ThinEngine {
             return;
         }
 
-        adaptToDeviceRatio = adaptToDeviceRatio ?? options.adaptToDeviceRatio ?? false;
+        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
 
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
@@ -1722,6 +1722,11 @@ export class ThinEngine {
         }
     }
 
+    /** @hidden */
+    public _currentFrameBufferIsDefaultFrameBuffer() {
+        return this._currentFramebuffer === null;
+    }
+
     /**
      * Unbind the current render target texture from the webGL context
      * @param texture defines the render target texture to unbind
@@ -2527,6 +2532,16 @@ export class ThinEngine {
         var fragmentShader = this._compileShader(fragmentCode, "fragment", defines, shaderVersion);
 
         return this._createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+    }
+
+    /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public inlineShaderCode(code: string): string {
+        // no inlining needed in the WebGL engine
+        return code;
     }
 
     /**

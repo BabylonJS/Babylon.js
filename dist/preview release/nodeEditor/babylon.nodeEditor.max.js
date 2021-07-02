@@ -62191,6 +62191,10 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                 attributeOptions = [
                     { label: "uv", value: "uv" },
                     { label: "uv2", value: "uv2" },
+                    { label: "uv3", value: "uv3" },
+                    { label: "uv4", value: "uv4" },
+                    { label: "uv5", value: "uv5" },
+                    { label: "uv6", value: "uv6" },
                 ];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector3:
@@ -65516,6 +65520,12 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         }
         if (this.props.propertyName) {
             this.props.target[this.props.propertyName] = value;
+            if (this.props.propertyName === "name") {
+                if (this.props.target[this.props.propertyName] !== value) {
+                    // Name was rejected
+                    this.setState({ value: this.props.target[this.props.propertyName] });
+                }
+            }
         }
     };
     TextInputLineComponent.prototype.render = function () {

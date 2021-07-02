@@ -11,6 +11,8 @@ import { GUI3DManager } from "../gui3DManager";
 import { Vector3WithInfo } from "../vector3WithInfo";
 import { Container3D } from "./container3D";
 
+declare type TouchButton3D = import("./touchButton3D").TouchButton3D;
+
 /**
  * Class used as base class for controls
  */
@@ -295,6 +297,10 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
         mesh.material = null;
     }
 
+    private _IsTouchButton3D(control: Control3D): control is TouchButton3D {
+        return (control as TouchButton3D)._generatePointerEventType !== undefined;
+    }
+
     // Pointers
 
     /** @hidden */
@@ -402,7 +408,11 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /** @hidden */
-    public _processObservables(type: number, pickedPoint: Vector3, pointerId: number, buttonIndex: number): boolean {
+    public _processObservables(type: number, pickedPoint: Vector3, originMeshPosition: Nullable<Vector3>, pointerId: number, buttonIndex: number): boolean {
+        if (this._IsTouchButton3D(this) && originMeshPosition) {
+            type = this._generatePointerEventType(type, originMeshPosition, this._downCount);
+        }
+
         if (type === PointerEventTypes.POINTERMOVE) {
             this._onPointerMove(this, pickedPoint);
 

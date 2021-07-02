@@ -1,11 +1,17 @@
 // Dependecies.
 const fs = require('fs-extra');
+const minimist = require("minimist");
 const rmDir = require("../../NodeHelpers/rmDir");
 const colorConsole = require("../../NodeHelpers/colorConsole");
 var shelljs = require("shelljs");
 
 // Global Variables.
 const config = require("../../Config/config.js");
+
+// Parse Command Line.
+const commandLineOptions = minimist(process.argv.slice(2), {
+    boolean: ["noGlobalInstall"],
+});
 
 /**
  * Prepare a Additional Dev folder npm linked for test purpose.
@@ -23,15 +29,17 @@ function prepareAdditionalDevPackages() {
         colorConsole.log("    Copy Package folder " + packagePath.cyan + " to " + packageDevPath.cyan);
         fs.copySync(packagePath, packageDevPath);
 
-        colorConsole.log("    Execute Npm Link command");
-        const command = `npm link`;
-        const result = shelljs.exec(command, { 
-            async: false,
-            cwd: packageDevPath
-        });
+        if (!commandLineOptions.noGlobalInstall) {
+            colorConsole.log("    Install Global Package Link (npm link)");
 
-        if (result.code != 0) {
-            throw "Failed to link the ES6 package."
+            const savedShellConfig = {...shelljs.config};
+            try {
+                Object.assign(shelljs.config, {verbose: true, silent: false, fatal: true});
+                shelljs.exec('npm link', {cwd: packageDevPath});
+            }
+            finally {
+                Object.assign(shelljs.config, savedShellConfig);
+            }
         }
 
         colorConsole.emptyLine();

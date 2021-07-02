@@ -70,6 +70,11 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public NORMAL = false;
     public TANGENT = false;
     public UV1 = false;
+    public UV2 = false;
+    public UV3 = false;
+    public UV4 = false;
+    public UV5 = false;
+    public UV6 = false;
     public USE_REVERSE_DEPTHBUFFER = false;
 
     /** BONES */
@@ -750,15 +755,19 @@ export class NodeMaterial extends PushMaterial {
     private _prepareDefinesForAttributes(mesh: AbstractMesh, defines: NodeMaterialDefines) {
         let oldNormal = defines["NORMAL"];
         let oldTangent = defines["TANGENT"];
-        let oldUV1 = defines["UV1"];
 
         defines["NORMAL"] = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
 
         defines["TANGENT"] = mesh.isVerticesDataPresent(VertexBuffer.TangentKind);
 
-        defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
+        let uvChanged = false;
+        for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            let oldUV = defines["UV" + i];
+            defines["UV" + i] = mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`);
+            uvChanged = uvChanged || defines["UV" + i] !== oldUV;
+        }
 
-        if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldUV1 !== defines["UV1"]) {
+        if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || uvChanged) {
             defines.markAsAttributesDirty();
         }
     }
@@ -1634,7 +1643,7 @@ export class NodeMaterial extends PushMaterial {
 
         let alreadyDumped: NodeMaterialBlock[] = [];
         let vertexBlocks: NodeMaterialBlock[] = [];
-        let uniqueNames: string[] = [];
+        let uniqueNames: string[] = ["const", "var", "let"];
         // Gets active blocks
         for (var outputNode of this._vertexOutputNodes) {
             this._gatherBlocks(outputNode, vertexBlocks);
