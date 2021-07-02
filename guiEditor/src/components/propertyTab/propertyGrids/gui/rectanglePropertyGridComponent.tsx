@@ -29,7 +29,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={rectangle} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr></hr>
+                <hr/>
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
                 <CheckBoxLineComponent icon={clipContentsIcon} label="" target={rectangle} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <div className="divider">

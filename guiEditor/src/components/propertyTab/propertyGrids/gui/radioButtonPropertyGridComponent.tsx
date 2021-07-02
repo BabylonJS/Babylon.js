@@ -30,7 +30,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={radioButton} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr></hr>
+                <hr/>
                 <TextLineComponent label="RADIO BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="divider">
                 <FloatLineComponent icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

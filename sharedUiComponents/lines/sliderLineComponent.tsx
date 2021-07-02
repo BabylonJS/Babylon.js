@@ -111,7 +111,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         return (
             <div className="sliderLine">
                 {this.props.icon && <img src={this.props.icon} className="icon"/>}
-                {(!this.props.icon || (this.props.icon && this.props.label != "")) &&
+                {(!this.props.icon || this.props.label != "") &&
                     <div className={this.props.margin ? "label withMargins" : "label"}  title={this.props.label}>
                         {this.props.label}
                     </div>
