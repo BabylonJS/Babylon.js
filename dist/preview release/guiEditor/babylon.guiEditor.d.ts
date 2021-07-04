@@ -704,50 +704,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    interface IVector2LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: BABYLON.Vector2) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        icon?: string;
-    }
-    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector2;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector2LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector2;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IParentingPropertyGridComponentProps {
-        guiNode: Control;
-        guiNodes: Control[];
-        globalState: GlobalState;
-    }
-    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
-        constructor(props: IParentingPropertyGridComponentProps);
-        parentIndex: number;
-        addChildGui(childNode: Control, parentNode: Control): void;
-        removeChildGui(childNode: Control, parentNode: Control): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -768,7 +724,7 @@ declare module GUIEDITOR {
         save(): void;
         saveToSnippetServer(): void;
         loadFromSnippet(): void;
-        renderProperties(): JSX.Element | JSX.Element[] | null;
+        renderProperties(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -1139,6 +1095,20 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IParentingPropertyGridComponentProps {
+        guiNode: Control;
+        guiNodes: Control[];
+        globalState: GlobalState;
+    }
+    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
+        constructor(props: IParentingPropertyGridComponentProps);
+        parentIndex: number;
+        addChildGui(childNode: Control, parentNode: Control): void;
+        removeChildGui(childNode: Control, parentNode: Control): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     export interface IButtonLineComponentProps {
         data: string;
         tooltip: string;
@@ -1478,6 +1448,36 @@ declare module GUIEDITOR {
     }
     export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
         constructor(props: IValueLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector2) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        icon?: string;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector2;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
         render(): JSX.Element;
     }
 }
