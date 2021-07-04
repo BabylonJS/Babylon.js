@@ -227,7 +227,7 @@ export class XmlLoader {
             let isArray = true;
             let splittedSource = dataSource.split(" in ");
             if (splittedSource.length < 2) {
-                throw "XmlLoader Exception : Malformed XML, Data Source must an iterator and a source";
+                throw "XmlLoader Exception : Malformed XML, Data Source must have an iterator and a source";
             }
             let source = splittedSource[1];
             if (source.startsWith("{") && source.endsWith("}")) {
@@ -315,11 +315,12 @@ export class XmlLoader {
      * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
      * @param callback defines the callback called on layout load.
      */
-    public loadLayout(xmlFile: any, rootNode: any, callback: any): void {
+    public loadLayout(xmlFile: any, rootNode: any, onSuccess: any = null, onError: any = null): void {
 
         let xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = () => {
-            if (xhttp.readyState == 4 && xhttp.status == 200) {
+      
+        xhttp.onload = () => {
+            if (xhttp.readyState === 4 && xhttp.status === 200) {
                 if (!xhttp.responseXML) {
                     throw "XmlLoader Exception : XML file is malformed or corrupted.";
                 }
@@ -327,9 +328,16 @@ export class XmlLoader {
                 let xmlDoc = xhttp.responseXML.documentElement;
                 this._parseXml(xmlDoc.firstChild, rootNode);
                 this._isLoaded = true;
-                if (callback) {
-                    callback();
+
+                if (onSuccess) {
+                    onSuccess();
                 }
+            }
+        };
+
+        xhttp.onerror = function () {
+            if (onError) {
+                onError("an error occurred during loading the layout");
             }
         };
 
@@ -343,29 +351,10 @@ export class XmlLoader {
      * @returns Promise
 
      */
-    public async loadLayoutAsync(xmlFile: any, rootNode: any): Promise<boolean> {
+    public async loadLayoutAsync(xmlFile: any, rootNode: any): Promise<any> {
 
         return new Promise((resolve: any, reject: any) => {
-            let xhttp = new XMLHttpRequest();
-            xhttp.onload = () => {
-            if (xhttp.readyState == 4 && xhttp.status == 200) {
-                if (!xhttp.responseXML) {
-                    throw "XmlLoader Exception : XML file is malformed or corrupted.";
-                }
-
-                let xmlDoc = xhttp.responseXML.documentElement;
-                this._parseXml(xmlDoc.firstChild, rootNode);
-                this._isLoaded = true;
-                resolve(true);
-                }
-            };
-
-            xhttp.onerror = function () {
-                reject(false);
-            };
-
-            xhttp.open("GET", xmlFile, true);
-            xhttp.send();
+            this.loadLayout(xmlFile, rootNode, resolve, reject);
         });
     }
 }
