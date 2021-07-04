@@ -4,9 +4,9 @@ import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyCha
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 interface ICheckboxPropertyGridComponentProps {
     checkbox: Checkbox;
@@ -25,10 +25,10 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={checkbox} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="CHECKBOX">
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Check size ratio" target={checkbox} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Checked" target={checkbox} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
+                <hr/>
+                <TextLineComponent label="CHECKBOX" value=" " color="grey"></TextLineComponent>
+                <FloatLineComponent lockObject={this.props.lockObject} label="Check size ratio" target={checkbox} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent label="Checked" target={checkbox} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }
