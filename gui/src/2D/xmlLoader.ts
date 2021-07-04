@@ -28,13 +28,14 @@ export class XmlLoader {
     * Create a new xml loader
     * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
     */
-    constructor(parentClass = null) {
+    constructor(parentClass: any = null) {
         if (parentClass) {
             this._parentClass = parentClass;
         }
     }
 
     private _getChainElement(attributeValue: any): any {
+
         let element: any = window;
 
         if (this._parentClass) {
@@ -47,7 +48,6 @@ export class XmlLoader {
             element = element[value[i]];
         }
         return element;
-
     }
 
     private _getClassAttribute(attributeName: string): any {
@@ -57,6 +57,7 @@ export class XmlLoader {
     }
 
     private _createGuiElement(node: any, parent: any, linkParent: boolean = true): void {
+
         try {
             let className = _TypeStore.GetClass("BABYLON.GUI." + node.nodeName);
             let guiNode = new className();
@@ -114,8 +115,8 @@ export class XmlLoader {
             }
             return guiNode;
 
-        } catch (e) {
-            throw "XmlLoader Exception : Error parsing Control " + node.nodeName + "," + e + ".";
+        } catch (exception) {
+            throw "XmlLoader Exception : Error parsing Control " + node.nodeName + "," + exception + ".";
         }
     }
 
@@ -217,7 +218,9 @@ export class XmlLoader {
     }
 
     private _parseElementsFromSource(node: any, guiNode: any, parent: any): void {
+
         let dataSource = node.attributes.getNamedItem("dataSource").value;
+
         if (!dataSource.includes(" in ")) {
             throw "XmlLoader Exception : Malformed XML, Data Source must include an in";
         } else {
@@ -313,8 +316,9 @@ export class XmlLoader {
      * @param callback defines the callback called on layout load.
      */
     public loadLayout(xmlFile: any, rootNode: any, callback: any): void {
+
         let xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function(this: XmlLoader) {
+        xhttp.onreadystatechange = () => {
             if (xhttp.readyState == 4 && xhttp.status == 200) {
                 if (!xhttp.responseXML) {
                     throw "XmlLoader Exception : XML file is malformed or corrupted.";
@@ -327,9 +331,41 @@ export class XmlLoader {
                     callback();
                 }
             }
-        }.bind(this);
+        };
 
         xhttp.open("GET", xmlFile, true);
         xhttp.send();
+    }
+    /**
+     * Initiates the xml layout loading asynchronously
+     * @param xmlFile defines the xml layout to load
+     * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+     * @returns Promise
+
+     */
+    public async loadLayoutAsync(xmlFile: any, rootNode: any): Promise<boolean> {
+
+        return new Promise((resolve: any, reject: any) => {
+            let xhttp = new XMLHttpRequest();
+            xhttp.onload = () => {
+            if (xhttp.readyState == 4 && xhttp.status == 200) {
+                if (!xhttp.responseXML) {
+                    throw "XmlLoader Exception : XML file is malformed or corrupted.";
+                }
+
+                let xmlDoc = xhttp.responseXML.documentElement;
+                this._parseXml(xmlDoc.firstChild, rootNode);
+                this._isLoaded = true;
+                resolve(true);
+                }
+            };
+
+            xhttp.onerror = function () {
+                reject(false);
+            };
+
+            xhttp.open("GET", xmlFile, true);
+            xhttp.send();
+        });
     }
 }
