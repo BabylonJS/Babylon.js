@@ -1,11 +1,13 @@
 :root {
     --backgroundGrey: #aaaaaa;
-    --spacingHeight: 40px;
+    --spacingHeight: 30px;
 }
 
 
 #ge-propertyTab {
     $line-padding-left: 5px;
+    $line-padding-bottom: 0px;
+    $line-padding-top: 0px;
     color:black;
     background: #e2e2e2;
     font-family: "acumin-pro-condensed";
@@ -67,7 +69,7 @@
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        background: rgb(51, 122, 183);
+        background: rgb(0, 0, 0);
         cursor: pointer;
     }
     
@@ -75,7 +77,7 @@
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        background: rgb(51, 122, 183);
+        background: rgb(0, 0, 0);
         cursor: pointer;
     }
 
@@ -95,32 +97,44 @@
 
     .sliderLine {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);;
         display: grid;
         grid-template-rows: 100%;
-        grid-template-columns: 1fr 40px;
+        grid-template-columns: auto auto auto 1fr;
 
-        .label { 
+        .label {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            min-width: 15px;
+        }
+
+        .img {
             grid-column: 1;
             display: flex;
             align-items: center;
         }
 
+
         .slider {
-            grid-column: 3;
+            grid-column: 4;
             grid-row: 1;
             margin-right: 5px;
             width: 90%;
             display: flex;
             align-items: center;
+            padding-left: 5px;
         }
 
         .floatLine {
-            padding-left: $line-padding-left;
-    
+            grid-column: 3;
+            padding-left: 15px;
+            
             .label {
                 grid-column: 1;
-                display: flex;
+                display: none;
                 align-items: center;
             }
         
@@ -130,7 +144,13 @@
                 align-items: center;
                 
                 input {
-                    width: 27px;
+                    width: 40px;
+                    background-color: transparent;
+                    outline-color: transparent;
+                    border-left: transparent;
+                    border-right: transparent;
+                    border-top: transparent;
+                    outline-width: 0px
                 }
                 
                 input::-webkit-outer-spin-button,
@@ -146,16 +166,24 @@
         }  
     }     
 
+    .divider {
+        display: grid;
+        grid-template-columns: auto auto;
+    }
+
     .textInputLine {
         padding-left: $line-padding-left;
-        height: var(--spacingHeight);;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
+        height: var(--spacingHeight);
         display: grid;
-        grid-template-columns: auto auto 15px 75px 2fr;
-
+        grid-template-columns: auto auto 2fr 1fr;
         .label {
             grid-column: 2;
+            padding-left: 5px;
             display: flex;
             align-items: center;
+            min-width: 15px;
         }
 
         .img {
@@ -167,7 +195,8 @@
         .value {                        
             display: flex;
             align-items: center;
-            grid-column: 4;
+            padding-left: 15px;
+            grid-column: 3;
             background: transparent;
             input {
                 width: calc(100% - 5px);
@@ -251,7 +280,9 @@
                 display: grid;
                 grid-template-columns: 1fr auto;
                 background: #cccccc;    
-                height: var(--spacingHeight);;   
+                height: var(--spacingHeight);
+                padding-bottom: $line-padding-bottom;
+                padding-top: $line-padding-top;
                 padding-right: 5px;                        
                 cursor: pointer;
                 
@@ -389,25 +420,39 @@
 
     .floatLine {
         padding-left: $line-padding-left;
-        height: var(--spacingHeight);;
+        height: var(--spacingHeight);
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         display: grid;
-        grid-template-columns: 1fr 120px;
-
+        grid-template-columns: auto auto 2fr 1fr;
 
         .label {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            min-width: 15px;
+        }
+
+        .img {
             grid-column: 1;
             display: flex;
             align-items: center;
         }
 
-        .value {
-            grid-column: 2;
-            
+        .value {                        
             display: flex;
+            padding-left: 15px;
             align-items: center;
-            
+            grid-column: 3;
+            background: transparent;
             input {
-                width: 110px;
+                width: calc(100% - 5px);
+                background-color: transparent;
+                outline-color: transparent;
+                border-left: transparent;
+                border-right: transparent;
+                border-top: transparent;
+                outline-width: 0px
             }
         }
 
@@ -434,13 +479,14 @@
     }
 
     .vector3Line {
-        padding-left:$line-padding-left;                    
+        padding-left:$line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;      
         display: grid;
-
         .firstLine {
             display: grid;
             grid-template-columns: 1fr auto 20px;
-            height: var(--spacingHeight);;
+            height: var(--spacingHeight);
 
             .label {
                 grid-column: 1;
@@ -500,6 +546,8 @@
 
     .buttonLine {
         height: var(--spacingHeight);
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         display: grid;
         align-items: center;
         justify-items: stretch;
@@ -557,6 +605,8 @@
 
     .numeric {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);;
         display: grid;
         grid-template-columns: 1fr 120px auto;
@@ -581,6 +631,8 @@
     
     .checkBoxLine {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: auto 1fr auto ;
@@ -665,6 +717,8 @@
 
     .listLine {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: auto 1fr auto ;
@@ -699,6 +753,8 @@
                     
     .color3Line {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         display: grid;
 
         .firstLine {
@@ -782,6 +838,8 @@
     
     .textLine {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: 1fr auto;

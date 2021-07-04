@@ -63495,7 +63495,8 @@ var FloatLineComponent = /** @class */ (function (_super) {
             !this.props.useEuler &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
                     this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+                    (!this.props.icon || this.props.label != "") &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || this.props.isInteger ? "1" : "0.01", className: "numeric-input", onKeyDown: function (evt) {
                                 if (evt.keyCode !== 13) {
@@ -64200,7 +64201,8 @@ var SliderLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
+            (!this.props.icon || this.props.label != "") &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
@@ -64281,7 +64283,8 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textInputLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "black", className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+            (!this.props.icon || (this.props.icon && this.props.label != "")) &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return _this.props.lockObject.lock = false; }, onFocus: function () { return _this.props.lockObject.lock = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };
