@@ -23,6 +23,8 @@ export class XmlLoader {
         "stretch": 5,
     };
 
+    private _rootNode : any;
+
     private _parentClass: any;
 
     /**
@@ -276,6 +278,10 @@ export class XmlLoader {
 
         let guiNode = this._createGuiElement(node, parent);
 
+        if (!this._rootNode) {
+            this._rootNode = guiNode;
+        }
+
         if (node.nodeName == "Grid") {
             this._parseGrid(node, guiNode, parent);
         } else if (!node.attributes.getNamedItem("dataSource")) {
@@ -308,6 +314,15 @@ export class XmlLoader {
     */
     public getNodes(): any {
         return this._nodes;
+    }
+    /**
+     * Disposes the loaded layout
+    */
+    public dispose(): void {
+        if (this._rootNode) {
+            this._rootNode.dispose();
+            this._rootNode = null;
+        }
     }
 
     /**
