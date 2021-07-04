@@ -322,6 +322,7 @@ export class XmlLoader {
         if (this._rootNode) {
             this._rootNode.dispose();
             this._rootNode = null;
+            this._nodes = {};
         }
     }
 
