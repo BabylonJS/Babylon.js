@@ -1,4 +1,5 @@
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Nullable } from 'babylonjs/types';
 
 /**
 * Class used to load GUI via XML.
@@ -315,10 +316,9 @@ export class XmlLoader {
      * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
      * @param callback defines the callback called on layout load.
      */
-    public loadLayout(xmlFile: any, rootNode: any, onSuccess: any = null, onError: any = null): void {
+    public loadLayout(xmlFile: any, rootNode: any, onSuccess: Nullable<() => void> = null, onError: Nullable<(error: string) => void> = null): void {
 
         let xhttp = new XMLHttpRequest();
-      
         xhttp.onload = () => {
             if (xhttp.readyState === 4 && xhttp.status === 200) {
                 if (!xhttp.responseXML) {
