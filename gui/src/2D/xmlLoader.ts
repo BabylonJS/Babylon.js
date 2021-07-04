@@ -314,7 +314,8 @@ export class XmlLoader {
      * Initiates the xml layout loading
      * @param xmlFile defines the xml layout to load
      * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
-     * @param callback defines the callback called on layout load.
+     * @param onSuccess defines the callback called on layout load successfully.
+     * @param onError defines the callback called on layout load failure.
      */
     public loadLayout(xmlFile: any, rootNode: any, onSuccess: Nullable<() => void> = null, onError: Nullable<(error: string) => void> = null): void {
 
