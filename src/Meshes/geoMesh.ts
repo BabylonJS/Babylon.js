@@ -751,6 +751,17 @@ export class GeoData extends PolyhedronData{
         };
 
         geoDATA._orderData(primTri);
+        const radius = 1;
+        geoDATA.vertex = geoDATA.vertex.map(function (el) {
+            var a = el[0];
+            var b = el[1];
+            var c = el[2];
+            var d = Math.sqrt(a * a + b * b + c * c);
+            el[0] *= radius / d;
+            el[1] *= radius / d;
+            el[2] *= radius / d;
+            return el;
+        });
 
         return geoDATA;
     }

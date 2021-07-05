@@ -144,6 +144,20 @@ export class GDMesh extends Mesh {
         return this._faceCenters;
     }
 
+    public get faceXaxis() {
+        return this._faceXaxis;
+    }
+
+    public get faceYaxis() {
+        return this._faceYaxis;
+    }
+
+    public get faceZaxis() {
+        return this._faceZaxis;
+    }
+
+   
+
     
     //after loading
     public refreshFaceData = () => {
