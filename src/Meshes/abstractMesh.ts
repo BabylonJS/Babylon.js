@@ -361,7 +361,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         this._internalAbstractMeshDataInfo._visibility = value;
 
-        if (oldValue === 1 && value < 1 || oldValue < 1 && value === 1) {
+        if (oldValue === 1 && value !== 1 || oldValue !== 1 && value === 1) {
             this._markSubMeshesAsMiscDirty();
         }
     }
