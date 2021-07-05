@@ -1964,6 +1964,7 @@ declare module BABYLON {
         lookForClosingBracketForUniformBuffer?: boolean;
         processingContext: Nullable<ShaderProcessingContext>;
         isNDCHalfZRange: boolean;
+        useReverseDepthBuffer: boolean;
     }
 }
 declare module BABYLON {
@@ -21046,7 +21047,6 @@ declare module BABYLON {
         UV4: boolean;
         UV5: boolean;
         UV6: boolean;
-        USE_REVERSE_DEPTHBUFFER: boolean;
         /** BONES */
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -30565,7 +30565,6 @@ declare module BABYLON {
         REFLECTIONMAP_OPPOSITEZ: boolean;
         INVERTCUBICMAP: boolean;
         LOGARITHMICDEPTH: boolean;
-        USE_REVERSE_DEPTHBUFFER: boolean;
         REFRACTION: boolean;
         REFRACTIONMAP_3D: boolean;
         REFLECTIONOVERALPHA: boolean;
@@ -40104,6 +40103,10 @@ declare module BABYLON {
         _releaseEffect(effect: Effect): void;
         /** @hidden */
         _deletePipelineContext(pipelineContext: IPipelineContext): void;
+        /** @hidden */
+        _getGlobalDefines(defines?: {
+            [key: string]: string;
+        }): string | undefined;
         /**
          * Create a new effect (used to store vertex/fragment shaders)
          * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
@@ -60896,7 +60899,7 @@ declare module BABYLON {
         setCommandEncoder(encoder: GPUCommandEncoder): void;
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
-        invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
+        invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder): void;
         copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -65918,7 +65921,6 @@ declare module BABYLON {
         POINTSIZE: boolean;
         FOG: boolean;
         LOGARITHMICDEPTH: boolean;
-        USE_REVERSE_DEPTHBUFFER: boolean;
         FORCENORMALFORWARD: boolean;
         SPECULARAA: boolean;
         CLEARCOAT: boolean;
