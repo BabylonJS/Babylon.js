@@ -6,5 +6,5 @@ uniform int imageIndex;
 
 void main(void)
 {
-	gl_FragColor = texture(multiviewSampler, vec3(vUV, imageIndex));
+	gl_FragColor = texture2D(multiviewSampler, vec3(vUV, imageIndex));
 }

@@ -79,7 +79,7 @@ void Blob_Fragment_B39(
     out vec4 Blob_Color)
 {
     float k = dot(UV,UV);
-    Blob_Color = Blob_Info.y * texture(Blob_Texture,vec2(vec2(sqrt(k),Blob_Info.x).x,1.0-vec2(sqrt(k),Blob_Info.x).y))*(1.0-clamp(k, 0.0, 1.0));
+    Blob_Color = Blob_Info.y * texture2D(Blob_Texture,vec2(vec2(sqrt(k),Blob_Info.x).x,1.0-vec2(sqrt(k),Blob_Info.x).y))*(1.0-clamp(k, 0.0, 1.0));
 }
 //BLOCK_END Blob_Fragment
 
@@ -161,7 +161,7 @@ void main()
     vec4 Blob_Color_Q39;
     float k = dot(vUV,vUV);
     vec2 blobTextureCoord = vec2(vec2(sqrt(k),vTangent.x).x,1.0-vec2(sqrt(k),vTangent.x).y);
-    vec4 blobColor = mix(vec4(1.0, 1.0, 1.0, 1.0) * step(1.0 - vTangent.x, clamp(sqrt(k) + 0.1, 0.0, 1.0)), texture(_Blob_Texture_,blobTextureCoord), float(_Use_Blob_Texture_));
+    vec4 blobColor = mix(vec4(1.0, 1.0, 1.0, 1.0) * step(1.0 - vTangent.x, clamp(sqrt(k) + 0.1, 0.0, 1.0)), texture2D(_Blob_Texture_,blobTextureCoord), float(_Use_Blob_Texture_));
     Blob_Color_Q39 = vTangent.y * blobColor * (1.0-clamp(k, 0.0, 1.0));
 
     // Is_Quad (#24)

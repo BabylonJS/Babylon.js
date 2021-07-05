@@ -125,8 +125,8 @@ struct Particle {
 };
 
 [[binding(0), group(0)]] var<uniform> params : SimParams;
-[[binding(1), group(0)]] var<storage> particlesIn : [[access(read)]] Particles;
-[[binding(2), group(0)]] var<storage> particlesOut : [[access(read_write)]] Particles;
+[[binding(1), group(0)]] var<storage, read> particlesIn : Particles;
+[[binding(2), group(0)]] var<storage, read_write> particlesOut : Particles;
 [[binding(3), group(0)]] var randomSampler : sampler;
 [[binding(4), group(0)]] var randomTexture : texture_2d<f32>;
 [[binding(5), group(0)]] var randomSampler2 : sampler;

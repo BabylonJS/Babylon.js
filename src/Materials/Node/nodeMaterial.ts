@@ -1065,8 +1065,6 @@ export class NodeMaterial extends PushMaterial {
             b.prepareDefines(mesh, this, defines, useInstances, subMesh);
         });
 
-        defines.setValue("USE_REVERSE_DEPTHBUFFER", this.getScene().getEngine().useReverseDepthBuffer, true);
-
         // Need to recompile?
         if (defines.isDirty) {
             const lightDisposed = defines._areLightsDisposed;

@@ -40,7 +40,7 @@ void main(void)
 
 	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 	
-    #if USE_REVERSE_DEPTHBUFFER
+    #ifdef USE_REVERSE_DEPTHBUFFER
 	    vDepthMetric = ((-gl_Position.z + depthValues.x) / (depthValues.y));
     #else
 	    vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));

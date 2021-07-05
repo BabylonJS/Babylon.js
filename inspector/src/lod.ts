@@ -10,9 +10,18 @@ varying vec2 vUV;
 uniform sampler2D textureSampler;
 uniform float lod;
 uniform vec2 texSize;
+#ifndef HAS_ORIGIN_BOTTOM_LEFT
+    vec2 _forceFlipY(vec2 uv) {
+        return vec2(uv.x, 1.0 - uv.y);
+    }
+#else
+    vec2 _forceFlipY(vec2 uv) {
+        return uv;
+    }
+#endif
 void main(void)
 {
-    gl_FragColor = textureLod(textureSampler,vUV,lod);
+    gl_FragColor = texture2DLodEXT(textureSampler,_forceFlipY(vUV),lod);
 }`;
 
 Effect.ShadersStore[name] = shader;

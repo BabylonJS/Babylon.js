@@ -16,7 +16,7 @@ varying vec4 vColor;
 void main() {
 	#include<clipPlaneFragment> 
 
-	vec4 textureColor = texture(diffuseSampler, vUV);
+	vec4 textureColor = texture2D(diffuseSampler, vUV);
   	gl_FragColor = textureColor * vColor;
 
 	#ifdef BLENDMULTIPLYMODE

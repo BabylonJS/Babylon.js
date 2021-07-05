@@ -339,7 +339,7 @@ export class FluentBackplateMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

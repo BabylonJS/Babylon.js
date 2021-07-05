@@ -269,7 +269,7 @@
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
-            float shadow = texture(shadowSampler, uvDepthLayer);
+            float shadow = texture2D(shadowSampler, uvDepthLayer);
             shadow = mix(darkness, 1., shadow);
             return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
         }
@@ -615,7 +615,7 @@
             float sumBlockerDepth = 0.0;
             float numBlocker = 0.0;
             for (int i = 0; i < searchTapCount; i ++) {
-                blockerDepth = texture(depthSampler, vec3(uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer)).r;
+                blockerDepth = texture2D(depthSampler, vec3(uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer)).r;
                 if (blockerDepth < depthMetric) {
                     sumBlockerDepth += blockerDepth;
                     numBlocker++;
@@ -681,7 +681,7 @@
                 float sumBlockerDepth = 0.0;
                 float numBlocker = 0.0;
                 for (int i = 0; i < searchTapCount; i ++) {
-                    blockerDepth = texture(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy)).r;
+                    blockerDepth = texture2D(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy)).r;
                     if (blockerDepth < depthMetric) {
                         sumBlockerDepth += blockerDepth;
                         numBlocker++;

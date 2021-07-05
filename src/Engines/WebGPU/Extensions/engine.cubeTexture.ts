@@ -39,29 +39,33 @@ WebGPUEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Null
          rootUrl, scene, files, !!noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback,
          null,
          (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
-             const imageBitmaps = imgs as ImageBitmap[]; // we will always get an ImageBitmap array in WebGPU
-             const width = imageBitmaps[0].width;
-             const height = width;
+            const imageBitmaps = imgs as ImageBitmap[]; // we will always get an ImageBitmap array in WebGPU
+            const width = imageBitmaps[0].width;
+            const height = width;
 
-             this._setCubeMapTextureParams(texture, !noMipmap);
-             texture.format = format ?? -1;
+            if (!this.hasOriginBottomLeft) {
+                texture.invertY = true;
+            }
 
-             const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
+            this._setCubeMapTextureParams(texture, !noMipmap);
+            texture.format = format ?? -1;
 
-             this._textureHelper.updateCubeTextures(imageBitmaps, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, false, false, 0, 0, this._uploadEncoder);
+            const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
 
-             if (!noMipmap) {
+            this._textureHelper.updateCubeTextures(imageBitmaps, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, texture.invertY, false, 0, 0, this._uploadEncoder);
+
+            if (!noMipmap) {
                  this._generateMipmaps(texture, this._uploadEncoder);
-             }
+            }
 
-             texture.isReady = true;
+            texture.isReady = true;
 
-             texture.onLoadedObservable.notifyObservers(texture);
-             texture.onLoadedObservable.clear();
+            texture.onLoadedObservable.notifyObservers(texture);
+            texture.onLoadedObservable.clear();
 
-             if (onLoad) {
-                 onLoad();
-             }
+            if (onLoad) {
+                onLoad();
+            }
          }, !!useSRGBBuffer
      );
 };

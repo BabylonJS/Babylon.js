@@ -1326,8 +1326,6 @@ export class ShadowGenerator implements IShadowGenerator {
 
         defines.push("#define SM_DEPTHTEXTURE " + (this.usePercentageCloserFiltering || this.useContactHardeningShadow ? "1" : "0"));
 
-        defines.push("#define SM_USE_REVERSE_DEPTHBUFFER " + (this._scene.getEngine().useReverseDepthBuffer ? "1" : "0"));
-
         var mesh = subMesh.getMesh();
 
         // Normal bias.

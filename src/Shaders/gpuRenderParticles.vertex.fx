@@ -104,7 +104,7 @@ void main() {
 	#endif
   float ratio = age / life;
 #ifdef COLORGRADIENTS
-	vColor = texture(colorGradientSampler, vec2(ratio, 0));
+	vColor = texture2D(colorGradientSampler, vec2(ratio, 0));
 #else
 	vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
 #endif

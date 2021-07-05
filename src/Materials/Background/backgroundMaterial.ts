@@ -166,7 +166,6 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public LOGARITHMICDEPTH = false;
     public NONUNIFORMSCALING = false;
     public ALPHATEST = false;
-    public USE_REVERSE_DEPTHBUFFER = false;
 
     /**
      * Constructor of the defines.

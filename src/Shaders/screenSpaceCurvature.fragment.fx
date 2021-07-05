@@ -23,8 +23,13 @@ float curvature_soft_clamp(float curvature, float control)
 
 float calculate_curvature(ivec2 texel, float ridge, float valley)
 {
+#ifndef HAS_ORIGIN_BOTTOM_LEFT
+    vec2 normal_up    = texelFetchOffset(normalSampler, texel, 0, ivec2(0, -CURVATURE_OFFSET)).rb;
+    vec2 normal_down  = texelFetchOffset(normalSampler, texel, 0, ivec2(0,  CURVATURE_OFFSET)).rb;
+#else
     vec2 normal_up    = texelFetchOffset(normalSampler, texel, 0, ivec2(0,  CURVATURE_OFFSET)).rb;
     vec2 normal_down  = texelFetchOffset(normalSampler, texel, 0, ivec2(0, -CURVATURE_OFFSET)).rb;
+#endif
     vec2 normal_left  = texelFetchOffset(normalSampler, texel, 0, ivec2(-CURVATURE_OFFSET, 0)).rb;
     vec2 normal_right = texelFetchOffset(normalSampler, texel, 0, ivec2( CURVATURE_OFFSET, 0)).rb;
 

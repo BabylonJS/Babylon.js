@@ -305,11 +305,6 @@ export class DepthRenderer {
             defines.push("#define PACKED");
         }
 
-        // Reverse depth buffer
-        if (engine.useReverseDepthBuffer) {
-            defines.push("#define USE_REVERSE_DEPTHBUFFER");
-        }
-
         // Get correct effect
         var join = defines.join("\n");
         if (cachedDefines !== join) {

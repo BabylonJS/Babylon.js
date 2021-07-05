@@ -487,6 +487,7 @@ export class WebGPUEngine extends Engine {
         super(null);
 
         (this.isNDCHalfZRange as any) = true;
+        this.hasOriginBottomLeft = false;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
@@ -537,8 +538,8 @@ export class WebGPUEngine extends Engine {
 
         this._shaderProcessor = this._getShaderProcessor();
 
-        this._invertYFinalFramebuffer = (!!this._options.forceCopyForInvertYFinalFramebuffer || !this._canvas.style) && !this._options.disableCopyForInvertYFinalFramebuffer;
-        if (!this._invertYFinalFramebuffer) {
+        this._invertYFinalFramebuffer = (!!this._options.forceCopyForInvertYFinalFramebuffer || !this._canvas.style) && !this._options.disableCopyForInvertYFinalFramebuffer && this.hasOriginBottomLeft;
+        if (!this._invertYFinalFramebuffer && this.hasOriginBottomLeft) {
             // if style does not exist, we are probably using an offscreen canvas
             if (this._canvas.style) {
                 this._canvas.style.transform = "scaleY(-1)";
@@ -612,7 +613,7 @@ export class WebGPUEngine extends Engine {
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
-                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
+                this._textureHelper = new WebGPUTextureHelper(this, this._device, this._glslang, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
@@ -1039,7 +1040,14 @@ export class WebGPUEngine extends Engine {
     }
 
     private _applyViewport(renderPass: GPURenderPassEncoder): void {
-        renderPass.setViewport(Math.floor(this._viewportCached.x), Math.floor(this._viewportCached.y), Math.floor(this._viewportCached.z), Math.floor(this._viewportCached.w), 0, 1);
+        let y = Math.floor(this._viewportCached.y);
+        const h = Math.floor(this._viewportCached.w);
+
+        if (!this.hasOriginBottomLeft) {
+            y = this.getRenderHeight() - y - h;
+        }
+
+        renderPass.setViewport(Math.floor(this._viewportCached.x), y, Math.floor(this._viewportCached.z), h, 0, 1);
 
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
@@ -1090,7 +1098,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _applyScissor(renderPass: GPURenderPassEncoder): void {
-        renderPass.setScissorRect(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w);
+        renderPass.setScissorRect(this._scissorCached.x, this.hasOriginBottomLeft ? this._scissorCached.y : this.getRenderHeight() - this._scissorCached.w - this._scissorCached.y, this._scissorCached.z, this._scissorCached.w);
 
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
@@ -1714,6 +1722,10 @@ export class WebGPUEngine extends Engine {
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture {
+
+        if (!this.hasOriginBottomLeft) {
+            invertY = !invertY;
+        }
 
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
@@ -2684,7 +2696,7 @@ export class WebGPUEngine extends Engine {
 
         // Front face
         // var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
-        var frontFace = reverseSide ? 1 : 2;
+        var frontFace = reverseSide ? (!this.hasOriginBottomLeft ? 2 : 1) : (!this.hasOriginBottomLeft ? 1 : 2);
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }

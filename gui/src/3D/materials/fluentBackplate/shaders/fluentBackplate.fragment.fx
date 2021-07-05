@@ -100,7 +100,7 @@ void Blob_Fragment_B71(
     float k1 = dot(Blob_Info1.xy,Blob_Info1.xy);
     float k2 = dot(Blob_Info2.xy,Blob_Info2.xy);
     vec3 closer = k1<k2 ? vec3(k1,Blob_Info1.z,Blob_Info1.w) : vec3(k2,Blob_Info2.z,Blob_Info2.w);
-    Blob_Color = closer.z * texture(Blob_Texture,vec2(vec2(sqrt(closer.x),closer.y).x,1.0-vec2(sqrt(closer.x),closer.y).y))*clamp(1.0-closer.x, 0.0, 1.0);
+    Blob_Color = closer.z * texture2D(Blob_Texture,vec2(vec2(sqrt(closer.x),closer.y).x,1.0-vec2(sqrt(closer.x),closer.y).y))*clamp(1.0-closer.x, 0.0, 1.0);
     
 }
 //BLOCK_END Blob_Fragment
@@ -160,7 +160,7 @@ void main()
       float k1 = dot(vExtra2.xy,vExtra2.xy);
       float k2 = dot(vExtra3.xy,vExtra3.xy);
       vec3 closer = k1<k2 ? vec3(k1,vExtra2.z,vExtra2.w) : vec3(k2,vExtra3.z,vExtra3.w);
-      Blob_Color_Q71 = closer.z * texture(_Blob_Texture_,vec2(vec2(sqrt(closer.x),closer.y).x,1.0-vec2(sqrt(closer.x),closer.y).y))*clamp(1.0-closer.x, 0.0, 1.0);
+      Blob_Color_Q71 = closer.z * texture2D(_Blob_Texture_,vec2(vec2(sqrt(closer.x),closer.y).x,1.0-vec2(sqrt(closer.x),closer.y).y))*clamp(1.0-closer.x, 0.0, 1.0);
     #else
       Blob_Color_Q71 = vec4(0,0,0,0);
     #endif
@@ -213,7 +213,7 @@ void main()
     // Color_Texture (#58)
     vec4 Color_Q58;
     #if IRIDESCENT_MAP_ENABLE
-      Color_Q58 = texture(_Iridescent_Map_,Vec2_Q65);
+      Color_Q58 = texture2D(_Iridescent_Map_,Vec2_Q65);
     #else
       Color_Q58 = vec4(0,0,0,0);
     #endif
