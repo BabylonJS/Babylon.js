@@ -2432,6 +2432,35 @@ export class ThinEngine {
         }
     }
 
+    /** @hidden */
+    public _getGlobalDefines(defines?: { [key: string]: string }): string | undefined {
+        if (defines) {
+            if (this.isNDCHalfZRange) {
+                defines["IS_NDC_HALF_ZRANGE"] = "";
+            } else {
+                delete defines["IS_NDC_HALF_ZRANGE"];
+            }
+            if (this.useReverseDepthBuffer) {
+                defines["USE_REVERSE_DEPTHBUFFER"] = "";
+            } else {
+                delete defines["USE_REVERSE_DEPTHBUFFER"];
+            }
+            return;
+        } else {
+            let s = "";
+            if (this.isNDCHalfZRange) {
+                s += "#define IS_NDC_HALF_ZRANGE";
+            }
+            if (this.useReverseDepthBuffer) {
+                if (s) {
+                    s += "\n";
+                }
+                s += "#define USE_REVERSE_DEPTHBUFFER";
+            }
+            return s;
+        }
+    }
+
     /**
      * Create a new effect (used to store vertex/fragment shaders)
      * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
@@ -2450,8 +2479,15 @@ export class ThinEngine {
         onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
+        const globalDefines = this._getGlobalDefines()!;
 
-        var name = vertex + "+" + fragment + "@" + (defines ? defines : (<IEffectCreationOptions>attributesNamesOrOptions).defines);
+        let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
+
+        if (globalDefines) {
+            fullDefines += globalDefines;
+        }
+
+        var name = vertex + "+" + fragment + "@" + fullDefines;
         if (this._compiledEffects[name]) {
             var compiledEffect = <Effect>this._compiledEffects[name];
             if (onCompiled && compiledEffect.isReady()) {
