@@ -136,6 +136,7 @@
 - Added `NearMenu` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `HandMenu`, a simple menu that uses `HandConstraintBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
 - `VolumeBasedPanel`'s constructor now accepts a name parameter, similar to other controls ([rickfromwork](https://github.com/rickfromwork))
+- Added loadLayoutAsync in the XmlLoader. Now the layouts can be loaded asynchronously rather than providing a callback.
 
 ### Behaviors
 

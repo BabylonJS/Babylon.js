@@ -258,7 +258,7 @@ export class ShaderProcessor {
         return rootNode.process(preprocessors, options);
     }
 
-    private static _PreparePreProcessors(options: ProcessingOptions, addGLES = true): { [key: string]: string } {
+    private static _PreparePreProcessors(options: ProcessingOptions, engine: ThinEngine, addGLES = true): { [key: string]: string } {
         let defines = options.defines;
         let preprocessors: { [key: string]: string } = {};
 
@@ -273,11 +273,8 @@ export class ShaderProcessor {
         }
         preprocessors["__VERSION__"] = options.version;
         preprocessors[options.platformName] = "true";
-        if (options.isNDCHalfZRange) {
-            preprocessors["IS_NDC_HALF_ZRANGE"] = "";
-        } else {
-            delete preprocessors["IS_NDC_HALF_ZRANGE"];
-        }
+
+        engine._getGlobalDefines(preprocessors);
 
         return preprocessors;
     }
@@ -297,7 +294,7 @@ export class ShaderProcessor {
 
         let defines = options.defines;
 
-        let preprocessors = this._PreparePreProcessors(options);
+        let preprocessors = this._PreparePreProcessors(options, engine);
 
         // General pre processing
         if (options.processor.preProcessor) {
@@ -324,7 +321,7 @@ export class ShaderProcessor {
 
         const defines = options.defines;
 
-        let preprocessors = this._PreparePreProcessors(options, false);
+        let preprocessors = this._PreparePreProcessors(options, engine, false);
 
         // General pre processing
         if (options.processor?.preProcessor) {

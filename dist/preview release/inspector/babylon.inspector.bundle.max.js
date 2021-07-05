@@ -54641,7 +54641,6 @@ var TextureEditorComponent = /** @class */ (function (_super) {
         });
         newTools = this.state.tools.concat(newTools);
         this.setState({ tools: newTools });
-        console.log(newTools);
     };
     TextureEditorComponent.prototype.getToolParameters = function () {
         var _this = this;
