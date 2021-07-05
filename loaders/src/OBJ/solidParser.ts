@@ -791,6 +791,12 @@ export class SolidParser {
             //This is indispensable for the importMesh function
             this._materialToUse.push(this._meshesFromObj[j].materialName);
 
+            if (this._handledMesh.positions?.length === 0) {
+                //Push the mesh into an array
+                this._babylonMeshesArray.push(babylonMesh);
+                continue;
+            }
+
             var vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh
             vertexData.uvs = this._handledMesh.uvs as FloatArray;
