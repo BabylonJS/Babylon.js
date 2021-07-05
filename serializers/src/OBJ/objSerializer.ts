@@ -92,8 +92,8 @@ export class OBJExport {
 
                 for (i = 0; i < trunkUV.length; i += 2) {
                     output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                    currentTextureV++;
                 }
-                currentTextureV++;
             }
 
             for (i = 0; i < trunkFaces.length; i += 3) {
