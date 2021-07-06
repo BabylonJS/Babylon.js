@@ -50,6 +50,7 @@ export class GlobalState {
     onOutlinesObservable = new Observable<void>();
     onResponsiveChangeObservable = new Observable<boolean>();
     onParentingChangeObservable = new Observable<Nullable<Control>>();
+    onDraggingEndObservable = new Observable<void>();
     draggedControl: Nullable<Control>;
     draggedControlDirection: DragOverLocation;
     storeEditorData: (serializationObject: any) => void;

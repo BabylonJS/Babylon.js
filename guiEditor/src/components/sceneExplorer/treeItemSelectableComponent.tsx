@@ -144,18 +144,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
         return (
             <div>
-                <div className="spacer"
-                    onDragOver={event => {
-                        event.preventDefault();
-                        this.dragOverHover = true;
-                        this.forceUpdate();
-                    }}
-                    onDragLeave={event => {
-                        this.dragOverHover = false;
-                        this.forceUpdate();
-                    }}>
-                    {this.props.globalState.draggedControl?.name}
-                </div>
                 <div className={this.state.isSelected ? "itemContainer selected" : "itemContainer"} style={marginStyle} >
                     {
                         hasChildren &&
