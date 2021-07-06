@@ -1116,6 +1116,7 @@ var SolidParser = /** @class */ (function () {
      * @param onFileToLoadFound defines a callback that will be called if a MTL file is found
      */
     SolidParser.prototype.parse = function (meshesNames, data, scene, assetContainer, onFileToLoadFound) {
+        var _a;
         // Split the file into lines
         var lines = data.split('\n');
         // Look at each line
@@ -1295,25 +1296,25 @@ var SolidParser = /** @class */ (function () {
             }
             else {
                 // There is no indices in the file. We will have to switch to point cloud rendering
-                for (var _i = 0, _a = this._positions; _i < _a.length; _i++) {
-                    var pos = _a[_i];
+                for (var _i = 0, _b = this._positions; _i < _b.length; _i++) {
+                    var pos = _b[_i];
                     this._unwrappedPositionsForBabylon.push(pos.x, pos.y, pos.z);
                 }
                 if (this._normals.length) {
-                    for (var _b = 0, _c = this._normals; _b < _c.length; _b++) {
-                        var normal = _c[_b];
+                    for (var _c = 0, _d = this._normals; _c < _d.length; _c++) {
+                        var normal = _d[_c];
                         this._unwrappedNormalsForBabylon.push(normal.x, normal.y, normal.z);
                     }
                 }
                 if (this._uvs.length) {
-                    for (var _d = 0, _e = this._uvs; _d < _e.length; _d++) {
-                        var uv = _e[_d];
+                    for (var _e = 0, _f = this._uvs; _e < _f.length; _e++) {
+                        var uv = _f[_e];
                         this._unwrappedUVForBabylon.push(uv.x, uv.y);
                     }
                 }
                 if (this._colors.length) {
-                    for (var _f = 0, _g = this._colors; _f < _g.length; _f++) {
-                        var color = _g[_f];
+                    for (var _g = 0, _h = this._colors; _g < _h.length; _g++) {
+                        var color = _h[_g];
                         this._unwrappedColorsForBabylon.push(color.r, color.g, color.b, color.a);
                     }
                 }
@@ -1366,6 +1367,11 @@ var SolidParser = /** @class */ (function () {
             //Push the name of the material to an array
             //This is indispensable for the importMesh function
             this._materialToUse.push(this._meshesFromObj[j].materialName);
+            if (((_a = this._handledMesh.positions) === null || _a === void 0 ? void 0 : _a.length) === 0) {
+                //Push the mesh into an array
+                this._babylonMeshesArray.push(babylonMesh);
+                continue;
+            }
             var vertexData = new babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0__["VertexData"](); //The container for the values
             //Set the data for the babylonMesh
             vertexData.uvs = this._handledMesh.uvs;

@@ -9119,7 +9119,7 @@ declare module BABYLON {
         diffuse: Color3;
         /**
          * Specular produces a highlight color on an object.
-         * Note: This is note affecting PBR materials.
+         * Note: This is not affecting PBR materials.
          */
         specular: Color3;
         /**
@@ -58571,6 +58571,7 @@ declare module BABYLON.Debug {
         private _utilityLayer;
         private _debugBoxMesh;
         private _debugSphereMesh;
+        private _debugCapsuleMesh;
         private _debugCylinderMesh;
         private _debugMaterial;
         private _debugMeshMeshes;
@@ -58596,6 +58597,7 @@ declare module BABYLON.Debug {
         private _getDebugMaterial;
         private _getDebugBoxMesh;
         private _getDebugSphereMesh;
+        private _getDebugCapsuleMesh;
         private _getDebugCylinderMesh;
         private _getDebugMeshMesh;
         private _getDebugMesh;
