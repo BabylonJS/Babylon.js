@@ -8,6 +8,11 @@ import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
     max: number;
 }
 
+export interface IPerfMousePosition {
+    xPos: number;
+    delta: number;
+}
+
 /**
  * Defines a structure defining the available space in a drawable area.
  */
