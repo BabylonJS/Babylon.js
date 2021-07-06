@@ -22,7 +22,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
     dragOverHover: boolean;
     dragOverLocation: DragOverLocation;
     private _onSelectionChangedObservable: Nullable<Observer<any>>;
-    private _onParentingChangeObservable: Nullable<Observer<any>>;
+    private _onDraggingEndObservable: Nullable<Observer<any>>;
 
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
@@ -33,7 +33,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
             this.setState({ isSelected: selection === this.props.control });
         });
 
-        this._onParentingChangeObservable = props.globalState.onParentingChangeObservable.add((selection) => {
+        this._onDraggingEndObservable = props.globalState.onDraggingEndObservable.add(() => {
             this.dragOverLocation = DragOverLocation.NONE;
             this.forceUpdate();
         });
@@ -42,7 +42,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
 
     componentWillUnmount() {
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
-        this.props.globalState.onParentingChangeObservable.remove(this._onParentingChangeObservable);
+        this.props.globalState.onParentingChangeObservable.remove(this._onDraggingEndObservable);
     }
 
     highlight() {
@@ -69,7 +69,8 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                 draggable={true}
                 onDragStart={event => {
                     this.props.globalState.draggedControl = control;
-                }} onDrop={event => {
+                }} 
+                onDrop={event => {
                     if (this.props.globalState.draggedControl != control) {
                         this.dragOverHover = false;
                         this.props.globalState.draggedControlDirection = this.dragOverLocation;
@@ -77,6 +78,9 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                         this.forceUpdate();
                     }
                     this.dragOverLocation = DragOverLocation.NONE;
+                }}
+                onDragEnd={event => {
+                    this.props.globalState.onDraggingEndObservable.notifyObservers();
                 }}
                 onDragOver={event => {
                     //check the positiions of the mouse cursor.
