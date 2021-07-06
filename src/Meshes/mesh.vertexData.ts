@@ -526,20 +526,20 @@ export class VertexData {
             }
         }
 
-        this.positions = VertexData._mergeElement(this.positions, others.map(other => other.positions));
-        this.normals = VertexData._mergeElement(this.normals, others.map(other => other.normals));
-        this.tangents = VertexData._mergeElement(this.tangents, others.map(other => other.tangents));
-        this.uvs = VertexData._mergeElement(this.uvs, others.map(other => other.uvs));
-        this.uvs2 = VertexData._mergeElement(this.uvs2, others.map(other => other.uvs2));
-        this.uvs3 = VertexData._mergeElement(this.uvs3, others.map(other => other.uvs3));
-        this.uvs4 = VertexData._mergeElement(this.uvs4, others.map(other => other.uvs4));
-        this.uvs5 = VertexData._mergeElement(this.uvs5, others.map(other => other.uvs5));
-        this.uvs6 = VertexData._mergeElement(this.uvs6, others.map(other => other.uvs6));
-        this.colors = VertexData._mergeElement(this.colors, others.map(other => other.colors));
-        this.matricesIndices = VertexData._mergeElement(this.matricesIndices, others.map(other => other.matricesIndices));
-        this.matricesWeights = VertexData._mergeElement(this.matricesWeights, others.map(other => other.matricesWeights));
-        this.matricesIndicesExtra = VertexData._mergeElement(this.matricesIndicesExtra, others.map(other => other.matricesIndicesExtra));
-        this.matricesWeightsExtra = VertexData._mergeElement(this.matricesWeightsExtra, others.map(other => other.matricesWeightsExtra));
+        this.positions = VertexData._mergeElement(this.positions, others.map((other) => other.positions));
+        this.normals = VertexData._mergeElement(this.normals, others.map((other) => other.normals));
+        this.tangents = VertexData._mergeElement(this.tangents, others.map((other) => other.tangents));
+        this.uvs = VertexData._mergeElement(this.uvs, others.map((other) => other.uvs));
+        this.uvs2 = VertexData._mergeElement(this.uvs2, others.map((other) => other.uvs2));
+        this.uvs3 = VertexData._mergeElement(this.uvs3, others.map((other) => other.uvs3));
+        this.uvs4 = VertexData._mergeElement(this.uvs4, others.map((other) => other.uvs4));
+        this.uvs5 = VertexData._mergeElement(this.uvs5, others.map((other) => other.uvs5));
+        this.uvs6 = VertexData._mergeElement(this.uvs6, others.map((other) => other.uvs6));
+        this.colors = VertexData._mergeElement(this.colors, others.map((other) => other.colors));
+        this.matricesIndices = VertexData._mergeElement(this.matricesIndices, others.map((other) => other.matricesIndices));
+        this.matricesWeights = VertexData._mergeElement(this.matricesWeights, others.map((other) => other.matricesWeights));
+        this.matricesIndicesExtra = VertexData._mergeElement(this.matricesIndicesExtra, others.map((other) => other.matricesIndicesExtra));
+        this.matricesWeightsExtra = VertexData._mergeElement(this.matricesWeightsExtra, others.map((other) => other.matricesWeightsExtra));
 
         return this;
     }
