@@ -839,57 +839,6 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/co
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/vector2LineComponent" {
-    import * as React from "react";
-    import { Vector2 } from "babylonjs/Maths/math.vector";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    interface IVector2LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: Vector2) => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        icon?: string;
-    }
-    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
-        isExpanded: boolean;
-        value: Vector2;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector2LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: Vector2;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Vector2): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/parentingPropertyGridComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Control } from "babylonjs-gui/2D/controls/control";
-    interface IParentingPropertyGridComponentProps {
-        guiNode: Control;
-        guiNodes: Control[];
-        globalState: GlobalState;
-    }
-    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
-        constructor(props: IParentingPropertyGridComponentProps);
-        parentIndex: number;
-        addChildGui(childNode: Control, parentNode: Control): void;
-        removeChildGui(childNode: Control, parentNode: Control): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
@@ -916,7 +865,7 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
         save(): void;
         saveToSnippetServer(): void;
         loadFromSnippet(): void;
-        renderProperties(): JSX.Element | JSX.Element[] | null;
+        renderProperties(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -1342,6 +1291,23 @@ declare module "babylonjs-gui-editor/nodeLocationInfo" {
         };
     }
 }
+declare module "babylonjs-gui-editor/components/parentingPropertyGridComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    interface IParentingPropertyGridComponentProps {
+        guiNode: Control;
+        guiNodes: Control[];
+        globalState: GlobalState;
+    }
+    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
+        constructor(props: IParentingPropertyGridComponentProps);
+        parentIndex: number;
+        addChildGui(childNode: Control, parentNode: Control): void;
+        removeChildGui(childNode: Control, parentNode: Control): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/draggableLineComponent" {
     import * as React from "react";
     export interface IButtonLineComponentProps {
@@ -1720,6 +1686,40 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/valueLineComponent
     }
     export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
         constructor(props: IValueLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/vector2LineComponent" {
+    import * as React from "react";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: Vector2) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        icon?: string;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: Vector2;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
         render(): JSX.Element;
     }
 }
@@ -2770,50 +2770,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    interface IVector2LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: BABYLON.Vector2) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        icon?: string;
-    }
-    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector2;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector2LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector2;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IParentingPropertyGridComponentProps {
-        guiNode: Control;
-        guiNodes: Control[];
-        globalState: GlobalState;
-    }
-    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
-        constructor(props: IParentingPropertyGridComponentProps);
-        parentIndex: number;
-        addChildGui(childNode: Control, parentNode: Control): void;
-        removeChildGui(childNode: Control, parentNode: Control): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -2834,7 +2790,7 @@ declare module GUIEDITOR {
         save(): void;
         saveToSnippetServer(): void;
         loadFromSnippet(): void;
-        renderProperties(): JSX.Element | JSX.Element[] | null;
+        renderProperties(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -3205,6 +3161,20 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IParentingPropertyGridComponentProps {
+        guiNode: Control;
+        guiNodes: Control[];
+        globalState: GlobalState;
+    }
+    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
+        constructor(props: IParentingPropertyGridComponentProps);
+        parentIndex: number;
+        addChildGui(childNode: Control, parentNode: Control): void;
+        removeChildGui(childNode: Control, parentNode: Control): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     export interface IButtonLineComponentProps {
         data: string;
         tooltip: string;
@@ -3544,6 +3514,36 @@ declare module GUIEDITOR {
     }
     export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
         constructor(props: IValueLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector2) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        icon?: string;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector2;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
         render(): JSX.Element;
     }
 }

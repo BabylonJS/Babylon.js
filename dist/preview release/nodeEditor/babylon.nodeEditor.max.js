@@ -55220,31 +55220,6 @@ var BlockTools = /** @class */ (function () {
                 meshUV.setAsAttribute("uv");
                 return meshUV;
             }
-            case "UV2Block": {
-                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv2");
-                meshUV.setAsAttribute("uv2");
-                return meshUV;
-            }
-            case "UV3Block": {
-                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv3");
-                meshUV.setAsAttribute("uv3");
-                return meshUV;
-            }
-            case "UV4Block": {
-                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv'");
-                meshUV.setAsAttribute("uv'");
-                return meshUV;
-            }
-            case "UV5Block": {
-                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv5");
-                meshUV.setAsAttribute("uv5");
-                return meshUV;
-            }
-            case "UV6Block": {
-                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv6");
-                meshUV.setAsAttribute("uv6");
-                return meshUV;
-            }
             case "ColorBlock": {
                 var meshColor = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("color");
                 meshColor.setAsAttribute("color");
@@ -55719,7 +55694,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock", "MatrixBuilderBlock"],
-            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "UV2Block", "UV3Block", "UV4Block", "UV5Block", "UV6Block", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
+            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
@@ -55841,11 +55816,6 @@ var NodeListComponent = /** @class */ (function (_super) {
         "PositionBlock": "A Vector3 representing the position of each vertex of the attached mesh",
         "TangentBlock": "A Vector3 representing the tangent of each vertex of the attached mesh",
         "UVBlock": "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
-        "UV2Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 2)",
-        "UV3Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 3)",
-        "UV4Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 4)",
-        "UV5Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 5)",
-        "UV6Block": "A Vector2 representing the UV coordinates of each vertex of the attached mesh (set 6)",
         "WorldNormal": "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
         "WorldTangent": "A Vector4 representing the tangent of each vertex of the attached mesh transformed into world space",
         "PerturbNormalBlock": "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
@@ -62221,6 +62191,10 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                 attributeOptions = [
                     { label: "uv", value: "uv" },
                     { label: "uv2", value: "uv2" },
+                    { label: "uv3", value: "uv3" },
+                    { label: "uv4", value: "uv4" },
+                    { label: "uv5", value: "uv5" },
+                    { label: "uv6", value: "uv6" },
                 ];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector3:
@@ -65546,6 +65520,12 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         }
         if (this.props.propertyName) {
             this.props.target[this.props.propertyName] = value;
+            if (this.props.propertyName === "name") {
+                if (this.props.target[this.props.propertyName] !== value) {
+                    // Name was rejected
+                    this.setState({ value: this.props.target[this.props.propertyName] });
+                }
+            }
         }
     };
     TextInputLineComponent.prototype.render = function () {

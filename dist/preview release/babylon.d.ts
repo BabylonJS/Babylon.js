@@ -1964,6 +1964,7 @@ declare module BABYLON {
         lookForClosingBracketForUniformBuffer?: boolean;
         processingContext: Nullable<ShaderProcessingContext>;
         isNDCHalfZRange: boolean;
+        useReverseDepthBuffer: boolean;
     }
 }
 declare module BABYLON {
@@ -9118,7 +9119,7 @@ declare module BABYLON {
         diffuse: Color3;
         /**
          * Specular produces a highlight color on an object.
-         * Note: This is note affecting PBR materials.
+         * Note: This is not affecting PBR materials.
          */
         specular: Color3;
         /**
@@ -21046,7 +21047,6 @@ declare module BABYLON {
         UV4: boolean;
         UV5: boolean;
         UV6: boolean;
-        USE_REVERSE_DEPTHBUFFER: boolean;
         /** BONES */
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -21880,6 +21880,18 @@ declare module BABYLON {
          * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
          */
         keysRight: number[];
+        /**
+         * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
+         */
+        rotationSpeed: number;
+        /**
+         * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
+         */
+        keysRotateLeft: number[];
+        /**
+        * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+        */
+        keysRotateRight: number[];
         private _keys;
         private _onCanvasBlurObserver;
         private _onKeyboardObserver;
@@ -21911,6 +21923,7 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
+        private _getLocalRotation;
     }
 }
 declare module BABYLON {
@@ -22557,6 +22570,16 @@ declare module BABYLON {
          */
         get keysRight(): number[];
         set keysRight(value: number[]);
+        /**
+         * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
+         */
+        get keysRotateLeft(): number[];
+        set keysRotateLeft(value: number[]);
+        /**
+         * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+         */
+        get keysRotateRight(): number[];
+        set keysRotateRight(value: number[]);
         /**
          * Event raised when the camera collide with a mesh in the scene.
          */
@@ -24023,7 +24046,7 @@ declare module BABYLON {
          */
         dispose(camera?: Camera): void;
         /**
-         * Serializes the particle system to a JSON object
+         * Serializes the post process to a JSON object
          * @returns the JSON object
          */
         serialize(): any;
@@ -30542,7 +30565,6 @@ declare module BABYLON {
         REFLECTIONMAP_OPPOSITEZ: boolean;
         INVERTCUBICMAP: boolean;
         LOGARITHMICDEPTH: boolean;
-        USE_REVERSE_DEPTHBUFFER: boolean;
         REFRACTION: boolean;
         REFRACTIONMAP_3D: boolean;
         REFLECTIONOVERALPHA: boolean;
@@ -35870,14 +35892,15 @@ declare module BABYLON {
         normalize(): Quaternion;
         /**
          * Returns a new Vector3 set with the Euler angles translated from the current quaternion
-         * @param order is a reserved parameter and is ignored for now
          * @returns a new Vector3 containing the Euler angles
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
          */
-        toEulerAngles(order?: string): Vector3;
+        toEulerAngles(): Vector3;
         /**
          * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
          * @param result defines the vector which will be filled with the Euler angles
          * @returns the current unchanged quaternion
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
          */
         toEulerAnglesToRef(result: Vector3): Quaternion;
         /**
@@ -39187,6 +39210,10 @@ declare module BABYLON {
         private _createInternalTextureOnEvent;
         private _frameId;
         private _currentSrc;
+        private _onError?;
+        private _errorFound;
+        private _processError;
+        private _handlePlay;
         /**
          * Creates a video texture.
          * If you want to display a video in your scene, this is the special texture for that.
@@ -39199,8 +39226,9 @@ declare module BABYLON {
          * @param invertY is false by default but can be used to invert video on Y axis
          * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
          * @param settings allows finer control over video usage
+         * @param onError defines a callback triggered when an error occurred during the loading session
          */
-        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings);
+        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings, onError?: Nullable<(message?: string, exception?: any) => void>);
         /**
          * Get the current class name of the video texture useful for serialization or dynamic coding.
          * @returns "VideoTexture"
@@ -40075,6 +40103,10 @@ declare module BABYLON {
         _releaseEffect(effect: Effect): void;
         /** @hidden */
         _deletePipelineContext(pipelineContext: IPipelineContext): void;
+        /** @hidden */
+        _getGlobalDefines(defines?: {
+            [key: string]: string;
+        }): string | undefined;
         /**
          * Create a new effect (used to store vertex/fragment shaders)
          * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
@@ -41833,6 +41865,10 @@ declare module BABYLON {
          * Observable for changes to device input
          */
         readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -43629,6 +43665,10 @@ declare module BABYLON {
         private _nativeInput;
         constructor(nativeInput: INativeInput);
         /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
+        /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
          * @param deviceSlot "Slot" or index that device is referenced in
@@ -43697,6 +43737,10 @@ declare module BABYLON {
         static MAX_POINTER_INPUTS: number;
         private _eventPrefix;
         constructor(engine: Engine);
+        /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -43777,6 +43821,10 @@ declare module BABYLON {
          * @returns DeviceType interpreted from event
          */
         private _getPointerType;
+        /**
+         * Remove events from active input element
+         */
+        private _removeEvents;
     }
 }
 declare module BABYLON {
@@ -51449,10 +51497,6 @@ declare module BABYLON {
                 impostorType?: number;
             };
             /**
-             * The utilityLayer scene that contains the 3D UI elements. Passing this in turns on near interactions with the index finger tip
-             */
-            sceneForNearInteraction?: Scene;
-            /**
              * Scale factor for all joint meshes (defaults to 1)
              */
             scaleFactor?: number;
@@ -51585,7 +51629,6 @@ declare module BABYLON {
         /** An optional rig mapping for the hand mesh. If not provided (but a hand mesh is provided),
           * it will be assumed that the hand mesh's bones are named directly after the WebXR bone names. */
         readonly rigMapping: Nullable<XRHandMeshRigMapping>;
-        private readonly _nearInteractionMesh?;
         private readonly _leftHandedMeshes;
         private readonly _jointsInvisible;
         private readonly _jointScaleFactor;
@@ -51628,7 +51671,6 @@ declare module BABYLON {
          *                   If not provided (but a hand mesh is provided),
          *                   it will be assumed that the hand mesh's bones are named
          *                   directly after the WebXR bone names.
-         * @param _nearInteractionMesh As optional mesh used for near interaction collision checking
          * @param _leftHandedMeshes Are the hand meshes left-handed-system meshes
          * @param _jointsInvisible Are the tracked joint meshes visible
          * @param _jointScaleFactor Scale factor for all joint meshes
@@ -51638,7 +51680,7 @@ declare module BABYLON {
         xrController: WebXRInputSource, _jointMeshes: AbstractMesh[], _handMesh: Nullable<AbstractMesh>, 
         /** An optional rig mapping for the hand mesh. If not provided (but a hand mesh is provided),
           * it will be assumed that the hand mesh's bones are named directly after the WebXR bone names. */
-        rigMapping: Nullable<XRHandMeshRigMapping>, _nearInteractionMesh?: Nullable<AbstractMesh> | undefined, _leftHandedMeshes?: boolean, _jointsInvisible?: boolean, _jointScaleFactor?: number);
+        rigMapping: Nullable<XRHandMeshRigMapping>, _leftHandedMeshes?: boolean, _jointsInvisible?: boolean, _jointScaleFactor?: number);
         /**
          * Sets the current hand mesh to render for the WebXRHand.
          * @param handMesh The rigged hand mesh that will be tracked to the user's hand.
@@ -55418,7 +55460,7 @@ declare module BABYLON {
         private _generateVisualCue;
         private _attachNearInteractionMode;
         private _detachController;
-        private _generateNewHandTipMeshes;
+        private _generateNewHandTipMesh;
         private _pickWithSphere;
         /**
          * Picks a mesh with a sphere
@@ -58529,6 +58571,7 @@ declare module BABYLON.Debug {
         private _utilityLayer;
         private _debugBoxMesh;
         private _debugSphereMesh;
+        private _debugCapsuleMesh;
         private _debugCylinderMesh;
         private _debugMaterial;
         private _debugMeshMeshes;
@@ -58554,6 +58597,7 @@ declare module BABYLON.Debug {
         private _getDebugMaterial;
         private _getDebugBoxMesh;
         private _getDebugSphereMesh;
+        private _getDebugCapsuleMesh;
         private _getDebugCylinderMesh;
         private _getDebugMeshMesh;
         private _getDebugMesh;
@@ -60857,7 +60901,7 @@ declare module BABYLON {
         setCommandEncoder(encoder: GPUCommandEncoder): void;
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
-        invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
+        invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder): void;
         copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -65879,7 +65923,6 @@ declare module BABYLON {
         POINTSIZE: boolean;
         FOG: boolean;
         LOGARITHMICDEPTH: boolean;
-        USE_REVERSE_DEPTHBUFFER: boolean;
         FORCENORMALFORWARD: boolean;
         SPECULARAA: boolean;
         CLEARCOAT: boolean;
@@ -84061,6 +84104,38 @@ declare module BABYLON {
          * @private
          */
         private static _getScreenshotSize;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines what data is needed to graph a point on the performance graph.
+     */
+    export interface IPerfPoint {
+        /**
+         * The timestamp of the point.
+         */
+        timestamp: number;
+        /**
+         * The value of the point.
+         */
+        value: number;
+    }
+    /**
+     * Defines the shape of a dataset that our graphing service uses for drawing purposes.
+     */
+    export interface IPerfDataset {
+        /**
+         * The color of the line to be drawn.
+         */
+        color?: string;
+        /**
+         * The data to be processed by the performance graph.
+         */
+        data: IPerfPoint[];
+        /**
+         * Specifies if data should be hidden, falsey by default.
+         */
+        hidden?: boolean;
     }
 }
 declare module BABYLON {

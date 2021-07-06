@@ -33,7 +33,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             return true;
         }
 
-        const newValue = nextProps.value  !== undefined  ? nextProps.value : nextProps.target[nextProps.propertyName!];
+        const newValue = nextProps.value !== undefined ? nextProps.value : nextProps.target[nextProps.propertyName!];
         if (newValue !== nextState.value) {
             nextState.value = newValue || "";
             return true;
@@ -75,10 +75,12 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     render() {
         return (
             <div className="textInputLine">
-                {this.props.icon && <img src={this.props.icon} color="black" className="icon"/>}
-                <div className="label" title={this.props.label}>
-                    {this.props.label}
-                </div>
+                {this.props.icon && <img src={this.props.icon} color="black" className="icon" />}
+                {(!this.props.icon || (this.props.icon && this.props.label != "")) &&
+                    <div className="label" title={this.props.label}>
+                        {this.props.label}
+                    </div>
+                }
                 <div className="value">
                     <input value={this.state.value} onBlur={() => this.props.lockObject.lock = false} onFocus={() => this.props.lockObject.lock = true} onChange={evt => this.updateValue(evt.target.value)} />
                 </div>
