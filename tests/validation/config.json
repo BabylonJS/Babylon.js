@@ -159,7 +159,7 @@
         {
             "title": "GUI Near Menu",
             "renderCount": 60,
-            "playgroundId":"#2YZFA0#180",
+            "playgroundId":"#2YZFA0#240",
             "referenceImage": "guiNearMenu.png",
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
