@@ -117,6 +117,7 @@ export class GDMesh extends Mesh {
             nbSharedFaces: this._nbSharedFaces,
             nbUnsharedFaces: this._nbUnsharedFaces,
             nbFacesAtPole: this._nbFacesAtPole,
+            nbFaces: this._nbFaces,
             faceCenters: this._faceCenters,
             faceXaxis: this._faceXaxis,
             faceYaxis: this._faceYaxis,
@@ -164,6 +165,7 @@ export class GDMesh extends Mesh {
         this._nbSharedFaces = this.metadata.nbSharedFaces;
         this._nbUnsharedFaces = this.metadata.nbUnsharedFaces;
         this._nbFacesAtPole = this.metadata.nbFacesAtPole;
+        this._nbFaces = this.metadata.nbFaces;
         this._faceCenters = this.metadata.faceCenters,
         this._faceXaxis = this.metadata.faceXaxis,
         this._faceYaxis = this.metadata.faceYaxis,
@@ -207,7 +209,11 @@ export class GDMesh extends Mesh {
         this.updateVerticesData(VertexBuffer.ColorKind, newCols);
     }
 
-    
+    public placeOnFaceAt = (mesh: Mesh, face: number, position: Vector3) => {
+		const orientation = Vector3.RotationFromAxis(this._faceXaxis[face], this._faceYaxis[face], this._faceZaxis[face]);
+		mesh.rotation = orientation;
+		mesh.position = this._faceCenters[face].add(this._faceXaxis[face].scale(position.x)).add(this._faceYaxis[face].scale(position.y)).add(this._faceZaxis[face].scale(position.z));
+	}
 };
 
 Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): GDMesh => {
