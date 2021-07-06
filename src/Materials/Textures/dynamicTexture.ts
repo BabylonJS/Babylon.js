@@ -56,8 +56,12 @@ export class DynamicTexture extends Texture {
 
         var textureSize = this.getSize();
 
-        this._canvas.width = textureSize.width;
-        this._canvas.height = textureSize.height;
+        if (this._canvas.width !== textureSize.width) {
+            this._canvas.width = textureSize.width;
+        }
+        if (this._canvas.height !== textureSize.height) {
+            this._canvas.height = textureSize.height;
+        }
         this._context = this._canvas.getContext("2d");
     }
 

@@ -504,7 +504,7 @@ AbstractMesh.prototype._checkOcclusionQuery = function() {
                 dataStorage.isOccluded = dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : dataStorage.isOccluded;
             }
             else {
-                return false;
+                return dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : dataStorage.isOccluded;
             }
         }
     }

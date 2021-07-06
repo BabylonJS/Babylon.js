@@ -45872,6 +45872,61 @@ var GradientStepComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx":
+/*!*************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx ***!
+  \*************************************************************************************/
+/*! exports provided: PerformanceViewerComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerComponent", function() { return PerformanceViewerComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+
+
+
+
+
+// aribitrary window size
+var initialWindowSize = { width: 1024, height: 512 };
+// Note this should be false when committed until the feature is fully working.
+var isEnabled = false;
+var PerformanceViewerComponent = function (props) {
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    // do cleanup when the window is closed
+    var onClosePerformanceViewer = function (window) {
+        if (window) {
+            window.close();
+        }
+        setIsOpen(false);
+    };
+    var onPerformanceButtonClick = function () {
+        setIsOpen(true);
+    };
+    var onResize = function () {
+        // do nothing for now.
+    };
+    var canvasServiceCallback = function (canvasService) {
+        canvasService.draw();
+    };
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+        isEnabled &&
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
+        isOpen &&
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, onResize: onResize, onClose: onClosePerformanceViewer },
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "performance-viewer" },
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__["CanvasGraphComponent"], { id: "myChart", canvasServiceCallback: canvasServiceCallback }))))));
+};
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGridTabComponent.tsx":
 /*!*****************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGridTabComponent.tsx ***!
@@ -54586,7 +54641,6 @@ var TextureEditorComponent = /** @class */ (function (_super) {
         });
         newTools = this.state.tools.concat(newTools);
         this.setState({ tools: newTools });
-        console.log(newTools);
     };
     TextureEditorComponent.prototype.getToolParameters = function () {
         var _this = this;
@@ -57873,6 +57927,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/booleanLineComponent */ "./sharedUiComponents/lines/booleanLineComponent.tsx");
+/* harmony import */ var _performanceViewer_performanceViewerComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./performanceViewer/performanceViewerComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx");
+
 
 
 
@@ -57929,6 +57985,7 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Version", value: babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__["Engine"].Version, color: "rgb(113, 159, 255)" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "FPS", value: engine.getFps(), fractionDigits: 0 }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewer_performanceViewerComponent__WEBPACK_IMPORTED_MODULE_8__["PerformanceViewerComponent"], { scene: scene }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "COUNT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Total meshes", value: scene.meshes.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Active meshes", value: scene.getActiveMeshes().length.toString() }),
@@ -58846,6 +58903,383 @@ var GlobalState = /** @class */ (function () {
         }
     };
     return GlobalState;
+}());
+
+
+
+/***/ }),
+
+/***/ "./components/graph/canvasGraphComponent.tsx":
+/*!***************************************************!*\
+  !*** ./components/graph/canvasGraphComponent.tsx ***!
+  \***************************************************/
+/*! exports provided: CanvasGraphComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphComponent", function() { return CanvasGraphComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./canvasGraphService */ "./components/graph/canvasGraphService.ts");
+
+
+
+var CanvasGraphComponent = function (props) {
+    var id = props.id, canvasServiceCallback = props.canvasServiceCallback;
+    var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
+    Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+        if (!canvasRef.current) {
+            return;
+        }
+        // temporarily set empty array, will eventually be passed by props!
+        var canvasGraphService = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] });
+        canvasServiceCallback(canvasGraphService);
+        return function () { return canvasGraphService.destroy(); };
+    }, [canvasRef]);
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("canvas", { id: id, ref: canvasRef }));
+};
+
+
+/***/ }),
+
+/***/ "./components/graph/canvasGraphService.ts":
+/*!************************************************!*\
+  !*** ./components/graph/canvasGraphService.ts ***!
+  \************************************************/
+/*! exports provided: CanvasGraphService */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var defaultColor = "#000";
+var futureBoxColor = "#dfe9ed";
+var dividerColor = "#0a3066";
+var playheadColor = "#b9dbef";
+var playheadSize = 8;
+var dividerSize = 2;
+// Currently the scale factor is a constant but when we add panning this may become formula based.
+var scaleFactor = 0.8;
+/**
+ * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
+ * let it know something has been resized, etc!
+ */
+var CanvasGraphService = /** @class */ (function () {
+    /**
+     * Creates an instance of CanvasGraphService.
+     *
+     * @param canvas a pointer to the canvas dom element we would like to write to.
+     * @param settings settings for our service.
+     */
+    function CanvasGraphService(canvas, settings) {
+        var _this = this;
+        this._sizeOfWindow = 300;
+        /**
+         * The handler for when we want to zoom in and out of the graph.
+         *
+         * @param event a mouse wheel event.
+         */
+        this._handleZoom = function (event) {
+            event.preventDefault();
+            if (!event.deltaY) {
+                return;
+            }
+            var amount = (event.deltaY * -0.01 | 0) * 100;
+            var minZoom = 60;
+            // The max zoom is the largest dataset's length.      
+            var maxZoom = _this.datasets.map(function (dataset) { return dataset.data.length; })
+                .reduce(function (maxLengthSoFar, currLength) {
+                return Math.max(currLength, maxLengthSoFar);
+            }, 0);
+            // Bind the zoom between [minZoom, maxZoom]
+            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+        };
+        this._ctx = canvas.getContext && canvas.getContext("2d");
+        this._width = canvas.width;
+        this._height = canvas.height;
+        this._ticks = [];
+        this.datasets = settings.datasets;
+        this._attachEventListeners(canvas);
+    }
+    /**
+     * This method draws the data and sets up the appropriate scales.
+     */
+    CanvasGraphService.prototype.draw = function () {
+        var _this = this;
+        var ctx = this._ctx;
+        if (!ctx) {
+            return;
+        }
+        // First we clear the canvas so we can draw our data!
+        this.clear();
+        // Get global min max of time axis (across all datasets).
+        var globalTimeMinMax = { min: Infinity, max: 0 };
+        // TODO: Make better sliding window code (accounting for zoom and pan).
+        // TODO: Perhaps see if i can reduce the number of allocations.
+        // Keep only visible and non empty datasets and get a certain window of items.
+        var datasets = this.datasets.filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; }).map(function (dataset) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(Math.max(dataset.data.length - _this._sizeOfWindow, 0)) })); });
+        datasets.forEach(function (dataset) {
+            var timeMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.timestamp; }));
+            globalTimeMinMax.min = Math.min(timeMinMax.min, globalTimeMinMax.min);
+            globalTimeMinMax.max = Math.max(timeMinMax.max, globalTimeMinMax.max);
+        });
+        var drawableArea = {
+            top: 0,
+            left: 0,
+            bottom: this._height,
+            right: this._width,
+        };
+        // we will now rescale the maximum for the playhead.
+        globalTimeMinMax.max = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min) / scaleFactor + globalTimeMinMax.min);
+        this._drawTimeAxis(globalTimeMinMax, drawableArea);
+        this._drawPlayheadRegion(drawableArea, scaleFactor);
+        // process, and then draw our points
+        datasets.forEach(function (dataset) {
+            var _a;
+            var valueMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.value; }));
+            var drawablePoints = dataset.data.map(function (point) { return _this._getPixelPointFromDataPoint(point, globalTimeMinMax, valueMinMax, drawableArea); });
+            var prevPoint = drawablePoints[0];
+            ctx.beginPath();
+            ctx.strokeStyle = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
+            drawablePoints.forEach(function (point) {
+                ctx.moveTo(prevPoint.timestamp, prevPoint.value);
+                ctx.lineTo(point.timestamp, point.value);
+                prevPoint = point;
+            });
+            ctx.stroke();
+        });
+    };
+    /**
+     * Draws the time axis, adjusts the drawable area for the graph.
+     *
+     * @param timeMinMax the minimum and maximum for the time axis.
+     * @param drawableArea the current allocated drawable area.
+     */
+    CanvasGraphService.prototype._drawTimeAxis = function (timeMinMax, drawableArea) {
+        var _this = this;
+        var ctx = this._ctx;
+        if (!ctx) {
+            return;
+        }
+        var spaceAvailable = drawableArea.right - drawableArea.left;
+        this._generateTicks(timeMinMax, spaceAvailable);
+        var axisHeight = 100;
+        // remove the height of the axis from the available drawable area.
+        drawableArea.bottom -= axisHeight;
+        // draw time axis line
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = defaultColor;
+        ctx.moveTo(drawableArea.left, drawableArea.bottom);
+        ctx.lineTo(drawableArea.right, drawableArea.bottom);
+        // draw ticks and text.
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        this._ticks.forEach(function (tick) {
+            var position = _this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
+            if (position > spaceAvailable) {
+                position = spaceAvailable;
+            }
+            ctx.moveTo(position, drawableArea.bottom);
+            ctx.lineTo(position, drawableArea.bottom + 10);
+            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+        });
+        ctx.stroke();
+        ctx.restore();
+    };
+    /**
+     * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
+     *
+     * @param minMax the minimum and maximum values of the axis
+     * @param spaceAvailable the total amount of space we have allocated to our axis
+     */
+    CanvasGraphService.prototype._generateTicks = function (minMax, spaceAvailable) {
+        var min = minMax.min, max = minMax.max;
+        var minTickSpacing = 40;
+        this._ticks.length = 0;
+        var maxTickCount = Math.ceil(spaceAvailable / minTickSpacing);
+        var range = this._niceNumber(max - min, false);
+        var spacing = this._niceNumber(range / (maxTickCount - 1), true);
+        var niceMin = Math.floor(min / spacing) * spacing;
+        var niceMax = Math.floor(max / spacing) * spacing;
+        for (var i = niceMin; i <= niceMax + 0.5 * spacing; i += spacing) {
+            this._ticks.push(i);
+        }
+    };
+    /**
+     * Nice number algorithm based on psueudo code defined in "Graphics Gems" by Andrew S. Glassner.
+     * This will find a "nice" number approximately equal to num.
+     *
+     * @param num The number we want to get close to.
+     * @param shouldRound if true we will round the number, otherwise we will get the ceiling.
+     * @returns a "nice" number approximately equal to num.
+     */
+    CanvasGraphService.prototype._niceNumber = function (num, shouldRound) {
+        var exp = Math.floor(Math.log10(num));
+        var fraction = num / Math.pow(10, exp);
+        var niceFraction;
+        if (shouldRound) {
+            if (fraction < 1.5) {
+                niceFraction = 1;
+            }
+            else if (fraction < 3) {
+                niceFraction = 2;
+            }
+            else if (fraction < 7) {
+                niceFraction = 5;
+            }
+            else {
+                niceFraction = 10;
+            }
+        }
+        else {
+            if (fraction <= 1) {
+                niceFraction = 1;
+            }
+            else if (fraction <= 2) {
+                niceFraction = 2;
+            }
+            else if (fraction <= 5) {
+                niceFraction = 5;
+            }
+            else {
+                niceFraction = 10;
+            }
+        }
+        return niceFraction * Math.pow(10, exp);
+    };
+    /**
+     * Gets the min and max as a single object from an array of numbers.
+     *
+     * @param items the array of numbers to get the min and max for.
+     * @returns the min and max of the array.
+     */
+    CanvasGraphService.prototype._getMinMax = function (items) {
+        var min = Infinity, max = 0;
+        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+            var item = items_1[_i];
+            if (item < min) {
+                min = item;
+            }
+            if (item > max) {
+                max = item;
+            }
+        }
+        return {
+            min: min,
+            max: max
+        };
+    };
+    /**
+     * Converts a data point to a point on the canvas (a pixel coordinate).
+     *
+     * @param point The datapoint
+     * @param timeMinMax The minimum and maximum in the time axis.
+     * @param valueMinMax The minimum and maximum in the value axis for the dataset.
+     * @param drawableArea The allowed drawable area.
+     * @returns
+     */
+    CanvasGraphService.prototype._getPixelPointFromDataPoint = function (point, timeMinMax, valueMinMax, drawableArea) {
+        var timestamp = point.timestamp, value = point.value;
+        var top = drawableArea.top, left = drawableArea.left, bottom = drawableArea.bottom, right = drawableArea.right;
+        return {
+            timestamp: this._getPixelForNumber(timestamp, timeMinMax, left, right - left, false),
+            value: this._getPixelForNumber(value, valueMinMax, top, bottom - top, true)
+        };
+    };
+    /**
+     * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
+     *
+     * @param num the number we want to get the pixel coordinate for
+     * @param minMax the min and max of the dataset in the axis we want the pixel coordinate for.
+     * @param startingPixel the starting pixel coordinate (this means it takes account for any offset).
+     * @param spaceAvailable the total space available in this axis.
+     * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
+     * @returns the pixel coordinate of the value in a single axis.
+     */
+    CanvasGraphService.prototype._getPixelForNumber = function (num, minMax, startingPixel, spaceAvailable, shouldFlipValue) {
+        var min = minMax.min, max = minMax.max;
+        // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
+        var normalizedValue = (num - min) / (max - min);
+        // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
+        if (shouldFlipValue) {
+            normalizedValue = 1 - normalizedValue;
+        }
+        return startingPixel + normalizedValue * spaceAvailable;
+    };
+    /**
+     * Add in any necessary event listeners.
+     *
+     * @param canvas The canvas we want to attach listeners to.
+     */
+    CanvasGraphService.prototype._attachEventListeners = function (canvas) {
+        canvas.addEventListener("wheel", this._handleZoom);
+    };
+    /**
+     * We remove all event listeners we added.
+     *
+     * @param canvas The canvas we want to remove listeners from.
+     */
+    CanvasGraphService.prototype._removeEventListeners = function (canvas) {
+        canvas.removeEventListener("wheel", this._handleZoom);
+    };
+    /**
+     * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
+     *
+     * @param drawableArea The remaining drawable area.
+     * @param scaleFactor The Percentage between 0.0 and 1.0 of the canvas the data gets drawn on.
+     */
+    CanvasGraphService.prototype._drawPlayheadRegion = function (drawableArea, scaleFactor) {
+        var ctx = this._ctx;
+        if (!ctx) {
+            return;
+        }
+        var dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
+        var playheadPos = dividerXPos - playheadSize;
+        var futureBoxPos = dividerXPos + dividerSize;
+        var rectangleHeight = drawableArea.bottom - drawableArea.top - 1;
+        ctx.save();
+        ctx.fillStyle = futureBoxColor;
+        ctx.fillRect(futureBoxPos, drawableArea.top, drawableArea.right - futureBoxPos, rectangleHeight);
+        ctx.fillStyle = dividerColor;
+        ctx.fillRect(dividerXPos, drawableArea.top, dividerSize, rectangleHeight);
+        ctx.fillStyle = playheadColor;
+        ctx.fillRect(playheadPos, drawableArea.top, playheadSize, rectangleHeight);
+        ctx.restore();
+    };
+    /**
+     *  Method to do cleanup when the object is done being used.
+     *
+     */
+    CanvasGraphService.prototype.destroy = function () {
+        if (!this._ctx || !this._ctx.canvas) {
+            return;
+        }
+        this._removeEventListeners(this._ctx.canvas);
+        this._ctx = null;
+    };
+    /**
+     * This method clears the canvas
+     */
+    CanvasGraphService.prototype.clear = function () {
+        var _a = this, ctx = _a._ctx, _width = _a._width, _height = _a._height;
+        // If we do not have a context we can't really do much here!
+        if (!ctx) {
+            return;
+        }
+        // save the transformation matrix, clear the canvas then restore.
+        ctx.save();
+        ctx.resetTransform();
+        ctx.clearRect(0, 0, _width, _height);
+        ctx.restore();
+    };
+    return CanvasGraphService;
 }());
 
 
@@ -63060,7 +63494,8 @@ var FloatLineComponent = /** @class */ (function (_super) {
             !this.props.useEuler &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
                     this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+                    (!this.props.icon || this.props.label != "") &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || this.props.isInteger ? "1" : "0.01", className: "numeric-input", onKeyDown: function (evt) {
                                 if (evt.keyCode !== 13) {
@@ -63765,7 +64200,8 @@ var SliderLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
+            (!this.props.icon || this.props.label != "") &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
@@ -63846,7 +64282,8 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textInputLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "black", className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+            (!this.props.icon || (this.props.icon && this.props.label != "")) &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return _this.props.lockObject.lock = false; }, onFocus: function () { return _this.props.lockObject.lock = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };

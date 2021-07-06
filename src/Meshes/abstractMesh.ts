@@ -357,8 +357,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return;
         }
 
+        const oldValue = this._internalAbstractMeshDataInfo._visibility;
+
         this._internalAbstractMeshDataInfo._visibility = value;
-        this._markSubMeshesAsMiscDirty();
+
+        if (oldValue === 1 && value !== 1 || oldValue !== 1 && value === 1) {
+            this._markSubMeshesAsMiscDirty();
+        }
     }
 
     /** Gets or sets the alpha index used to sort transparent meshes
@@ -2031,7 +2036,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             data.facetParameters.distanceTo = data.facetDepthSortOrigin;
         }
         data.facetParameters.depthSortedFacets = data.depthSortedFacets;
-        VertexData.ComputeNormals(positions, indices, normals, data.facetParameters);
+        if (normals) {
+            VertexData.ComputeNormals(positions, indices, normals, data.facetParameters);
+        }
 
         if (data.facetDepthSort && data.facetDepthSortEnabled) {
             data.depthSortedFacets.sort(data.facetDepthSortFunction);
