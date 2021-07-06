@@ -75,7 +75,6 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public UV4 = false;
     public UV5 = false;
     public UV6 = false;
-    public USE_REVERSE_DEPTHBUFFER = false;
 
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
@@ -763,7 +762,7 @@ export class NodeMaterial extends PushMaterial {
         let uvChanged = false;
         for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
             let oldUV = defines["UV" + i];
-            defines["UV" + i] = mesh.isVerticesDataPresent(`uv${i === 0 ? "" : i}`);
+            defines["UV" + i] = mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`);
             uvChanged = uvChanged || defines["UV" + i] !== oldUV;
         }
 
@@ -1064,8 +1063,6 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.blocksWithDefines.forEach((b) => {
             b.prepareDefines(mesh, this, defines, useInstances, subMesh);
         });
-
-        defines.setValue("USE_REVERSE_DEPTHBUFFER", this.getScene().getEngine().useReverseDepthBuffer, true);
 
         // Need to recompile?
         if (defines.isDirty) {
@@ -1643,7 +1640,7 @@ export class NodeMaterial extends PushMaterial {
 
         let alreadyDumped: NodeMaterialBlock[] = [];
         let vertexBlocks: NodeMaterialBlock[] = [];
-        let uniqueNames: string[] = [];
+        let uniqueNames: string[] = ["const", "var", "let"];
         // Gets active blocks
         for (var outputNode of this._vertexOutputNodes) {
             this._gatherBlocks(outputNode, vertexBlocks);

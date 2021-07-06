@@ -4,7 +4,11 @@ uniform vec3 cameraPosition;
 
 attribute vec3 position;
 attribute vec3 normal;
+#ifdef TANGENT
 attribute vec3 tangent;
+#else
+const vec3 tangent = vec3(0.);
+#endif
 
 uniform float _Radius_;
 uniform float _Line_Width_;

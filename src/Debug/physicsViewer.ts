@@ -13,6 +13,7 @@ import { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { CylinderBuilder } from '../Meshes/Builders/cylinderBuilder';
+import { CapsuleBuilder, ICreateCapsuleOptions } from '../Meshes/Builders/capsuleBuilder';
 
 /**
      * Used to show the physics impostor around the specific mesh
@@ -34,6 +35,7 @@ export class PhysicsViewer {
 
     private _debugBoxMesh: Mesh;
     private _debugSphereMesh: Mesh;
+    private _debugCapsuleMesh: Mesh;
     private _debugCylinderMesh: Mesh;
     private _debugMaterial: StandardMaterial;
     private _debugMeshMeshes = new Array<Mesh>();
@@ -196,7 +198,18 @@ export class PhysicsViewer {
             this._debugSphereMesh.setEnabled(false);
         }
 
-        return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
+        return this._debugSphereMesh.createInstance('physicsBodySphereViewInstance');
+    }
+
+    private _getDebugCapsuleMesh(scene: Scene): AbstractMesh {
+        if (!this._debugCapsuleMesh) {
+            this._debugCapsuleMesh = CapsuleBuilder.CreateCapsule('physicsBodyCapsuleViewMesh', { height: 1 } as ICreateCapsuleOptions, scene);
+            this._debugCapsuleMesh.rotationQuaternion = Quaternion.Identity();
+            this._debugCapsuleMesh.material = this._getDebugMaterial(scene);
+            this._debugCapsuleMesh.setEnabled(false);
+        }
+
+        return this._debugCapsuleMesh.createInstance('physicsBodyCapsuleViewInstance');
     }
 
     private _getDebugCylinderMesh(scene: Scene): AbstractMesh {
@@ -207,7 +220,7 @@ export class PhysicsViewer {
             this._debugCylinderMesh.setEnabled(false);
         }
 
-        return this._debugCylinderMesh.createInstance('physicsBodyBoxViewInstance');
+        return this._debugCylinderMesh.createInstance('physicsBodyCylinderViewInstance');
     }
 
     private _getDebugMeshMesh(mesh: Mesh, scene: Scene): AbstractMesh {
@@ -245,6 +258,13 @@ export class PhysicsViewer {
                 mesh.scaling.x = radius * 2;
                 mesh.scaling.y = radius * 2;
                 mesh.scaling.z = radius * 2;
+                break;
+            case PhysicsImpostor.CapsuleImpostor:
+                mesh = this._getDebugCapsuleMesh(utilityLayerScene);
+                var bi = impostor.object.getBoundingInfo();
+                mesh.scaling.x = (bi.boundingBox.maximum.x - bi.boundingBox.minimum.x) * 2 * impostor.object.scaling.x;
+                mesh.scaling.y = (bi.boundingBox.maximum.y - bi.boundingBox.minimum.y) * impostor.object.scaling.y;
+                mesh.scaling.z = (bi.boundingBox.maximum.z - bi.boundingBox.minimum.z) * 2 * impostor.object.scaling.z;
                 break;
             case PhysicsImpostor.MeshImpostor:
                 if (targetMesh) {
@@ -292,9 +312,9 @@ export class PhysicsViewer {
             case PhysicsImpostor.CylinderImpostor:
                 mesh = this._getDebugCylinderMesh(utilityLayerScene);
                 var bi = impostor.object.getBoundingInfo();
-                mesh.scaling.x = bi.boundingBox.maximum.x - bi.boundingBox.minimum.x;
-                mesh.scaling.y = bi.boundingBox.maximum.y - bi.boundingBox.minimum.y;
-                mesh.scaling.z = bi.boundingBox.maximum.z - bi.boundingBox.minimum.z;
+                mesh.scaling.x = (bi.boundingBox.maximum.x - bi.boundingBox.minimum.x) * impostor.object.scaling.x;
+                mesh.scaling.y = (bi.boundingBox.maximum.y - bi.boundingBox.minimum.y) * impostor.object.scaling.y;
+                mesh.scaling.z = (bi.boundingBox.maximum.z - bi.boundingBox.minimum.z) * impostor.object.scaling.z;
                 break;
         }
         return mesh;

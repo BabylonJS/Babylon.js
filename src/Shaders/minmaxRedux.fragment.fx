@@ -64,7 +64,7 @@ void main(void)
 #elif defined(LAST)
 void main(void)
 {
-    discard;
     glFragColor = vec4(0.);
+    discard;
 }
 #endif
