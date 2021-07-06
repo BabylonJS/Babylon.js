@@ -41,6 +41,7 @@ export * from "./fileRequest";
 export * from "./customAnimationFrameRequester";
 export * from "./retryStrategy";
 export * from "./interfaces/screenshotSize";
+export * from "./interfaces/iPerfViewer";
 export * from "./fileTools";
 export * from "./stringTools";
 export * from "./dataReader";
