@@ -22,6 +22,15 @@ declare module "../../Engines/thinEngine" {
         createRenderTargetTexture(size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): InternalTexture;
 
         /**
+         * Creates an internal texture without binding it to a framebuffer
+         * @param size defines the size of the texture
+         * @param options defines the options used to create the texture
+         * @hidden
+         * @returns a new render target texture stored in an InternalTexture
+         */
+        _createInternalTexture(size: RenderTargetTextureSize, options: RenderTargetCreationOptions): InternalTexture;
+
+        /**
          * Creates a depth stencil texture.
          * This is only available in WebGL 2 or with the depth texture extension available.
          * @param size The size of face edge in the texture.
@@ -38,16 +47,46 @@ declare module "../../Engines/thinEngine" {
 ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): InternalTexture {
     const fullOptions = new RenderTargetCreationOptions();
     if (options !== undefined && typeof options === "object") {
-        fullOptions.generateMipMaps = options.generateMipMaps;
         fullOptions.generateDepthBuffer = !!options.generateDepthBuffer;
         fullOptions.generateStencilBuffer = !!options.generateStencilBuffer;
+    } else {
+        fullOptions.generateDepthBuffer = true;
+        fullOptions.generateStencilBuffer = false;
+    }
+
+    const texture = this._createInternalTexture(size, fullOptions);
+
+    const currentFrameBuffer = this._currentFramebuffer;
+    const gl = this._gl;
+
+    // Create the framebuffer
+    const framebuffer = gl.createFramebuffer();
+    this._bindUnboundFramebuffer(framebuffer);
+    texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, width, height);
+
+    // No need to rebind on every frame
+    if (!texture.is2DArray) {
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource, 0);
+    }
+
+    this._bindUnboundFramebuffer(currentFrameBuffer);
+
+    texture._framebuffer = framebuffer;
+    texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+    texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+
+    return texture;
+};
+
+ThinEngine.prototype._createInternalTexture = function(this: ThinEngine, size: RenderTargetTextureSize, options: RenderTargetCreationOptions): InternalTexture {
+    const fullOptions = new RenderTargetCreationOptions();
+    if (options !== undefined && typeof options === "object") {
+        fullOptions.generateMipMaps = options.generateMipMaps;
         fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
         fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
         fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
     } else {
         fullOptions.generateMipMaps = <boolean>options;
-        fullOptions.generateDepthBuffer = true;
-        fullOptions.generateStencilBuffer = false;
         fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
         fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
@@ -67,6 +106,7 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
     }
 
     const gl = this._gl;
+    // TODO add a new source "free texture"
     const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
     const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
     const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
@@ -100,21 +140,7 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
 
     this._bindTextureDirectly(target, null);
 
-    const currentFrameBuffer = this._currentFramebuffer;
-
-    // Create the framebuffer
-    const framebuffer = gl.createFramebuffer();
-    this._bindUnboundFramebuffer(framebuffer);
-    texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, width, height);
-
-    // No need to rebind on every frame
-    if (!texture.is2DArray) {
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource, 0);
-    }
-
-    this._bindUnboundFramebuffer(currentFrameBuffer);
-
-    texture._framebuffer = framebuffer;
+    texture._framebuffer = null;
     texture.baseWidth = width;
     texture.baseHeight = height;
     texture.width = width;
@@ -126,13 +152,11 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
     texture.samplingMode = fullOptions.samplingMode;
     texture.type = fullOptions.type;
     texture.format = fullOptions.format;
-    texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-    texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
     this._internalTexturesCache.push(texture);
 
     return texture;
-};
+}
 
 ThinEngine.prototype.createDepthStencilTexture = function(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture {
     if (options.isCube) {
