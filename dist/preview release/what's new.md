@@ -120,6 +120,7 @@
 - Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
 - Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
 - Added navigation hotkeys ([msDestiny14](https://github.com/msDestiny14))
+- Added mouse contraints using the shift key ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 

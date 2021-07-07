@@ -38,7 +38,7 @@ export const isFramePortData = (variableToCheck: any): variableToCheck is FrameP
 
 export enum ConstraintDirection {
     NONE = 0,
-    SET = 1, 
+    SET = 1,
     X = 2,
     Y = 3,
 }
@@ -59,7 +59,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
-    public artBoardBackground : Rectangle;
+    public artBoardBackground: Rectangle;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
@@ -165,9 +165,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     ctrlEvent = (evt: KeyboardEvent) => {
         this._ctrlKeyIsPressed = evt.ctrlKey;
-        this._constraintDirection = evt.shiftKey ? 
-        (this._constraintDirection > ConstraintDirection.SET ? this._constraintDirection : ConstraintDirection.SET)
-        : ConstraintDirection.NONE;
+        this._constraintDirection = evt.shiftKey ?
+            (this._constraintDirection > ConstraintDirection.SET ? this._constraintDirection : ConstraintDirection.SET)
+            : ConstraintDirection.NONE;
     };
 
     ctrlFalseEvent = () => {
@@ -195,7 +195,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     loadToEditor() {
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
-            if(guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle"){
+            if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
                 this.artBoardBackground = guiElement as Rectangle;
                 return;
             }
@@ -317,6 +317,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
+        if (this._constraintDirection === ConstraintDirection.SET) {
+            this._constraintDirection = Math.abs(newX) >= Math.abs(newY) ? ConstraintDirection.X : ConstraintDirection.Y;
+        }
+        if (this._constraintDirection == ConstraintDirection.X) {
+            newY = 0;
+        }
+        else if (this._constraintDirection == ConstraintDirection.Y) {
+            newX = 0;
+        }
+
         if (guiControl.typeName === "Line") {
             let line = (guiControl as Line);
             const x1 = (line.x1 as string).substr(0, (line.x1 as string).length - 2); //removing the 'px'
@@ -357,20 +367,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.selectedGuiNodes.forEach((element) => {
                 ;
                 if (pos) {
-                    if(this._constraintDirection === ConstraintDirection.SET) {
-
+                    if (this._constraintDirection === ConstraintDirection.SET) {
                         let newX = pos.x - x;
                         let newY = -pos.z - y;
-                        this._constraintDirection = Math.abs(newX) >=  Math.abs(newY) ? ConstraintDirection.X : ConstraintDirection.Y;
-                        console.log(Math.abs(newX) + " vs " + Math.abs(newY));
+                        this._constraintDirection = Math.abs(newX) >= Math.abs(newY) ? ConstraintDirection.X : ConstraintDirection.Y;
                     }
-                    
-                    if(this._constraintDirection == ConstraintDirection.X) {
-                        pos.z = -y;
-                    }
-                    else if(this._constraintDirection == ConstraintDirection.Y) {
-                        pos.x = x;
-                    }
+
                     selected =
                         this._onMove(
                             element,
@@ -415,7 +417,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onUp(evt: React.PointerEvent) {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
-        if(this._constraintDirection > ConstraintDirection.SET) {
+        if (this._constraintDirection > ConstraintDirection.SET) {
             this._constraintDirection = ConstraintDirection.SET;
         }
         this._rootContainer.current?.releasePointerCapture(evt.pointerId);
