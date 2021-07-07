@@ -64,7 +64,11 @@ export class CanvasGraphService {
 
         // TODO: Perhaps see if i can reduce the number of allocations.
         // Keep only visible and non empty datasets and get a certain window of items.
-        const datasets = this.datasets.filter((dataset: IPerfDataset) => !dataset.hidden && dataset.data.length > 0).map((dataset: IPerfDataset) => {
+        const datasets = this.datasets.map((dataset: IPerfDataset) => {
+            // skip hidden and empty datasets!
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return dataset;
+            }
             const pos = this._positions.get(dataset.id) ?? dataset.data.length - 1;
             let start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
             let startOverflow = 0;
@@ -89,7 +93,7 @@ export class CanvasGraphService {
                 ...dataset,
                 data: dataset.data.slice(start, end)
             }
-        });
+        }).filter((dataset: IPerfDataset) => !dataset.hidden && dataset.data.length > 0);
 
         // timestamps will be in sorted order so we can simply do the following.
         datasets.forEach((dataset: IPerfDataset) => {
