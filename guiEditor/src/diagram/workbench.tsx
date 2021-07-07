@@ -365,7 +365,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             var y = this._mouseStartPointY;
             let selected = false;
             this.selectedGuiNodes.forEach((element) => {
-                ;
                 if (pos) {
                     selected =
                         this._onMove(
