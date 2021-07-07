@@ -221,7 +221,6 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         });
         newTools = this.state.tools.concat(newTools);
         this.setState({tools: newTools});
-        console.log(newTools);
     }
 
     getToolParameters() : IToolParameters {

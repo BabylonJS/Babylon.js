@@ -153,16 +153,14 @@
             "renderCount": 60,
             "playgroundId": "#2YZFA0#211",
             "referenceImage": "guiSlate.png",
-            "excludedEngines": ["webgl1"],
-            "excludeFromAutomaticTesting": true
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "GUI Near Menu",
             "renderCount": 60,
-            "playgroundId":"#2YZFA0#180",
+            "playgroundId":"#2YZFA0#243",
             "referenceImage": "guiNearMenu.png",
-            "excludedEngines": ["webgl1"],
-            "excludeFromAutomaticTesting": true
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Camera rig",
@@ -1343,12 +1341,6 @@
             "excludedEngines": ["webgl1", "webgl2"],
             "referenceImage": "reverseDepthBufferFixFlicker.png",
             "errorRatio": 2
-        },
-        {
-            "title": "Multi cameras and output render target",
-            "renderCount": 2,
-            "playgroundId": "#BCYE7J#17",
-            "referenceImage": "multiCamerasOutputRenderTarget.png"
         }
     ]
 }
