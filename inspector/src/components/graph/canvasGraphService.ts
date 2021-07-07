@@ -62,13 +62,29 @@ export class CanvasGraphService {
         // Get global min max of time axis (across all datasets).
         const globalTimeMinMax = {min: Infinity, max: 0};
 
-        // TODO: Make better sliding window code (accounting for zoom and pan).
         // TODO: Perhaps see if i can reduce the number of allocations.
         // Keep only visible and non empty datasets and get a certain window of items.
         const datasets = this.datasets.filter((dataset: IPerfDataset) => !dataset.hidden && dataset.data.length > 0).map((dataset: IPerfDataset) => {
             const pos = this._positions.get(dataset.id) ?? dataset.data.length - 1;
-            const start = Math.max(pos - Math.ceil(this._sizeOfWindow * scaleFactor), 0);
-            const end = Math.min(Math.ceil(pos + this._sizeOfWindow * (1-scaleFactor)), dataset.data.length);
+            let start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
+            let startOverflow = 0;
+            
+            // account for overflow from start.
+            if (start < 0) {
+                startOverflow = 0 - start;
+                start = 0; 
+            }
+
+            let end = Math.ceil(pos + this._sizeOfWindow * (1-scaleFactor) + startOverflow);
+            
+            // account for overflow from end.
+            if (end > dataset.data.length) {
+                const endOverflow = end - dataset.data.length;
+                end = dataset.data.length;
+
+                start = Math.max(start - endOverflow, 0);
+            }
+
             return {
                 ...dataset,
                 data: dataset.data.slice(start, end)
@@ -333,6 +349,11 @@ export class CanvasGraphService {
         this._sizeOfWindow = Scalar.Clamp(this._sizeOfWindow - amount, minZoom, maxZoom);
     }
 
+    /**
+     * Initializes the panning object and attaches appropriate listener.
+     * 
+     * @param event the mouse event containing positional information.
+     */
     private _handlePanStart = (event: MouseEvent) => {
         const {_ctx: ctx} = this;
         if (!ctx || !ctx.canvas) {
@@ -347,6 +368,11 @@ export class CanvasGraphService {
         canvas.addEventListener("mousemove", this._handlePan)
     }
 
+    /**
+     * While panning this event will keep track of the delta and update the "positions".
+     * 
+     * @param event The mouse event that contains positional information.
+     */
     private _handlePan = (event: MouseEvent) => {
         if (!this._panStart) {
             return;
@@ -366,7 +392,6 @@ export class CanvasGraphService {
             this._positions.set(id, Scalar.Clamp(pos - itemsDelta, Math.floor(this._sizeOfWindow * scaleFactor), dataset.data.length - Math.floor(this._sizeOfWindow * (1-scaleFactor))));
         });
 
-
         if (itemsDelta === 0) {
             this._panStart.delta += pixelDelta;
         } else {
@@ -377,6 +402,11 @@ export class CanvasGraphService {
 
     }
 
+    /**
+     * Clears the panning object and removes the appropriate listener.
+     * 
+     * @param event the mouse event containing positional information.
+     */
     private _handlePanStop = () => {
         const {_ctx: ctx} = this;
         if (!ctx || !ctx.canvas) {
@@ -393,6 +423,11 @@ export class CanvasGraphService {
         this._panStart = null;
     }
 
+    /**
+     * Method which returns true if the data should become realtime, false otherwise.
+     * 
+     * @returns if the data should become realtime or not.
+     */
     private _shouldBecomeRealtime(): boolean {
         if (this.datasets.length === 0) {
             return false;
@@ -400,6 +435,7 @@ export class CanvasGraphService {
         let latestDataset: IPerfDataset = this.datasets[0];
         
         this.datasets.forEach((dataset: IPerfDataset) => {
+            // skip over empty and hidden data!
             if (dataset.data.length === 0 || !!dataset.hidden) {
                 return;
             }
@@ -413,10 +449,12 @@ export class CanvasGraphService {
         if (pos ===  undefined) {
             return false;
         }
-        
-        const rightmostPos = Math.min(pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestDataset.data.length - 1);
-        console.log(latestDataset.data[rightmostPos].timestamp/latestDataset.data[latestDataset.data.length - 1].timestamp);
-        return latestDataset.data[rightmostPos].timestamp/latestDataset.data[latestDataset.data.length - 1].timestamp > 0.99;
+
+        // account for overflow on the left side only as it will be the one interacting with the playhead.
+        const overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
+        const rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestDataset.data.length - 1);
+
+        return latestDataset.data[rightmostPos].timestamp/latestDataset.data[latestDataset.data.length - 1].timestamp > 0.998;
     }
 
     /**
