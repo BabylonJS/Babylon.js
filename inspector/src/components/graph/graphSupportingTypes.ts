@@ -8,7 +8,10 @@ import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
     max: number;
 }
 
-export interface IPerfMousePosition {
+/**
+ * Defines structure of the object which contains information related to panning.
+ */
+export interface IPerfMousePanningPosition {
     xPos: number;
     delta: number;
 }

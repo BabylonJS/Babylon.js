@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePosition } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 
@@ -23,7 +23,7 @@ export class CanvasGraphService {
     private _height: number;
     private _sizeOfWindow: number = 300;
     private _ticks: number[];
-    private _panStart: IPerfMousePosition | null;
+    private _panPosition: IPerfMousePanningPosition | null;
     private _positions: Map<string, number>;
     public readonly datasets: IPerfDataset[];
 
@@ -38,7 +38,7 @@ export class CanvasGraphService {
         this._width = canvas.width;
         this._height = canvas.height;
         this._ticks = [];
-        this._panStart = null;
+        this._panPosition = null;
         this._positions = new Map<string, number>();
         
         this.datasets = settings.datasets;
@@ -365,7 +365,7 @@ export class CanvasGraphService {
         }
         const canvas = ctx.canvas;
 
-        this._panStart = {
+        this._panPosition = {
             xPos: event.clientX,
             delta: 0,
         };
@@ -378,11 +378,11 @@ export class CanvasGraphService {
      * @param event The mouse event that contains positional information.
      */
     private _handlePan = (event: MouseEvent) => {
-        if (!this._panStart) {
+        if (!this._panPosition) {
             return;
         }
 
-        const pixelDelta = this._panStart.delta + event.clientX - this._panStart.xPos;
+        const pixelDelta = this._panPosition.delta + event.clientX - this._panPosition.xPos;
         const pixelsPerItem = this._width / this._sizeOfWindow;
         const itemsDelta = pixelDelta / pixelsPerItem | 0;
 
@@ -406,12 +406,12 @@ export class CanvasGraphService {
         });
 
         if (itemsDelta === 0) {
-            this._panStart.delta += pixelDelta;
+            this._panPosition.delta += pixelDelta;
         } else {
-            this._panStart.delta = 0;
+            this._panPosition.delta = 0;
         }
 
-        this._panStart.xPos = event.clientX;
+        this._panPosition.xPos = event.clientX;
 
     }
 
@@ -433,7 +433,7 @@ export class CanvasGraphService {
 
         const canvas = ctx.canvas;
         canvas.removeEventListener("mousemove", this._handlePan);
-        this._panStart = null;
+        this._panPosition = null;
     }
 
     /**
