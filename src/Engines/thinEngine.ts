@@ -1605,6 +1605,26 @@ export class ThinEngine {
     }
 
     /**
+     * Binds a texture to a framebuffer on a specific attachment
+     * @param framebuffer The framebuffer
+     * @param texture The texture to bind to the framebuffer
+     * @param attachmentIndex Index of the attachment
+     * @param faceIndex The face of the texture to render to in case of cube texture
+     * @param lodLevel defines the lod level to bind to the frame buffer
+     */
+    public bindTextureFramebuffer(framebuffer: WebGLFramebuffer, texture: InternalTexture, attachmentIndex: number = 0, faceIndex: number = -1, lodLevel: number = 0) {
+        const gl = this._gl;
+
+        const currentFB = this._currentFramebuffer;
+        this._bindUnboundFramebuffer(framebuffer);
+        const attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + attachmentIndex : "COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
+        const target = faceIndex !== -1 ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex : gl.TEXTURE_2D;
+        
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, target, texture._hardwareTexture?.underlyingResource, lodLevel);
+        this._bindUnboundFramebuffer(currentFB);
+    }
+
+    /**
      * Binds the frame buffer to the specified texture.
      * @param texture The texture to render to or null for the default canvas
      * @param faceIndex The face of the texture to render to in case of cube texture

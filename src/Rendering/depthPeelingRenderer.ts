@@ -6,8 +6,8 @@ import { Scene } from "../scene";
 export class DepthPeelingRenderer {
     private _scene: Scene;
     private _engine: Engine;
-    private _depthMrt: MultiRenderTarget[];
-    private _colorMrt: MultiRenderTarget[];
+    private _depthMrts: MultiRenderTarget[];
+    private _colorMrts: MultiRenderTarget[];
     private _blendBackMrt: MultiRenderTarget;
 
     private _depthLayersCount: number;
@@ -26,8 +26,8 @@ export class DepthPeelingRenderer {
         };
 
         // 2 for ping pong
-        this._depthMrt = [new MultiRenderTarget("depthPeelingDepth0", size, 0, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 0, this._scene)];
-        this._colorMrt = [new MultiRenderTarget("depthPeelingColor0", size, 0, this._scene), new MultiRenderTarget("depthPeelingColor1", size, 0, this._scene)];
+        this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 0, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 0, this._scene)];
+        this._colorMrts = [new MultiRenderTarget("depthPeelingColor0", size, 0, this._scene), new MultiRenderTarget("depthPeelingColor1", size, 0, this._scene)];
         this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 0, this._scene);
 
         // 0 is a depth texture
@@ -49,9 +49,18 @@ export class DepthPeelingRenderer {
             const depthTexture = this._engine._createInternalTexture(size, optionsArray[0]);
             const frontColorTexture = this._engine._createInternalTexture(size, optionsArray[1]);
             const backColorTexture = this._engine._createInternalTexture(size, optionsArray[1]);
+
+            // TODO : lower level (move in engine.multiRender)
+            this._engine.bindTextureFramebuffer(this._depthMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, depthTexture);
+            this._engine.bindTextureFramebuffer(this._depthMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, frontColorTexture, 1);
+            this._engine.bindTextureFramebuffer(this._depthMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, backColorTexture, 2);
+
+            this._engine.bindTextureFramebuffer(this._colorMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, frontColorTexture);
+            this._engine.bindTextureFramebuffer(this._colorMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, backColorTexture, 1);
         }
 
         const blendBackTexture = this._engine._createInternalTexture(size, optionsArray[1]);
+        this._engine.bindTextureFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer, blendBackTexture);
     }
 
     private _updateSize() {

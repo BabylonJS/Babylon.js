@@ -55,6 +55,8 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
     }
 
     const texture = this._createInternalTexture(size, fullOptions);
+    const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
+    const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
 
     const currentFrameBuffer = this._currentFramebuffer;
     const gl = this._gl;
