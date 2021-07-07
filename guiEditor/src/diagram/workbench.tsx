@@ -367,12 +367,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.selectedGuiNodes.forEach((element) => {
                 ;
                 if (pos) {
-                    if (this._constraintDirection === ConstraintDirection.SET) {
-                        let newX = pos.x - x;
-                        let newY = -pos.z - y;
-                        this._constraintDirection = Math.abs(newX) >= Math.abs(newY) ? ConstraintDirection.X : ConstraintDirection.Y;
-                    }
-
                     selected =
                         this._onMove(
                             element,
