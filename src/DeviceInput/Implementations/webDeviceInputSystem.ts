@@ -395,10 +395,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     fireFakeMove = false;
                 }
                 // Lets Propagate the event for move with same position.
-                if (fireFakeMove) {
+                if (fireFakeMove && evt.button !== -1) {
                     deviceEvent.inputIndex = PointerInput.FakeMove;
                     deviceEvent.previousState = 0;
                     deviceEvent.currentState = 0;
+                    pointer[evt.button + 2] =  Math.abs(pointer[evt.button + 2] - 1); // Reverse state of button if evt.button has value
 
                     this.onInputChangedObservable.notifyObservers(deviceEvent);
                 }
