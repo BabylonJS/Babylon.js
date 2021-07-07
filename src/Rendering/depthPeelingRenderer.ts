@@ -1,6 +1,7 @@
 import { Constants, Engine } from "../Engines";
 import { IMultiRenderTargetOptions, MultiRenderTarget, Texture } from "../Materials";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { Color4 } from "../Maths";
 import { Scene } from "../scene";
 
 export class DepthPeelingRenderer {
@@ -10,12 +11,12 @@ export class DepthPeelingRenderer {
     private _colorMrts: MultiRenderTarget[];
     private _blendBackMrt: MultiRenderTarget;
 
-    private _depthLayersCount: number;
+    private _passCount: number;
 
-    constructor(scene: Scene, depthLayersCount: number = 5) {
+    constructor(scene: Scene, passCount: number = 5) {
         this._scene = scene;
         this._engine = scene.getEngine();
-        this._depthLayersCount = depthLayersCount;
+        this._passCount = passCount;
         this._createTexturesAndFrameBuffers();
     }
 
@@ -65,6 +66,73 @@ export class DepthPeelingRenderer {
 
     private _updateSize() {
         // TODO
+    }
+
+    public render() {
+        const DEPTH_CLEAR_VALUE = -99999.0;
+        const MIN_DEPTH = 0;
+        const MAX_DEPTH = 1;
+
+        // Clears
+        this._engine._bindUnboundFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
+
+        this._engine._bindUnboundFramebuffer(this._depthMrts[0].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        let attachments = this._engine.buildTextureLayout([true]);
+        this._engine.bindAttachments(attachments);
+        this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
+
+        this._engine._bindUnboundFramebuffer(this._depthMrts[1].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        this._engine.clear(new Color4(-MIN_DEPTH, MAX_DEPTH, 0, 0), true, false, false);
+
+        this._engine._bindUnboundFramebuffer(this._colorMrts[0].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        attachments = this._engine.buildTextureLayout([true, true]);
+        this._engine.bindAttachments(attachments);
+        this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
+
+        this._engine._bindUnboundFramebuffer(this._colorMrts[1].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
+
+        // Draw depth for first pass
+        this._engine._bindUnboundFramebuffer(this._depthMrts[0].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        attachments = this._engine.buildTextureLayout([true]);
+
+        // TODO add method in engine
+        const gl = this._engine._gl;
+        gl.blendEquation(gl.MAX);
+
+        // Bind textures on depth peel shader
+        // Render mesh
+
+        // depth peeling ping-pong
+        let readId;
+        let writeId;
+
+        for (let i = 0; i < this._passCount; i++) {
+            readId = i % 2;
+            writeId = 1 - readId;
+
+            this._engine._bindUnboundFramebuffer(this._depthMrts[writeId].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+            attachments = this._engine.buildTextureLayout([true]);
+            this._engine.bindAttachments(attachments);
+            this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
+
+            this._engine._bindUnboundFramebuffer(this._colorMrts[writeId].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+            attachments = this._engine.buildTextureLayout([true, true]);
+            this._engine.bindAttachments(attachments);
+            this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
+
+            this._engine._bindUnboundFramebuffer(this._depthMrts[writeId].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+            attachments = this._engine.buildTextureLayout([true, true, true]);
+            this._engine.bindAttachments(attachments);
+            gl.blendEquation(gl.MAX);
+
+            // TODO : Set texture uniform
+
+            // TODO : draw mesh
+
+            // Back color
+        }
     }
 
     public dispose() {}
