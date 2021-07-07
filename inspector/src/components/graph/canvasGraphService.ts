@@ -308,7 +308,7 @@ export class CanvasGraphService {
     private _attachEventListeners(canvas: HTMLCanvasElement) {
         canvas.addEventListener("wheel", this._handleZoom);
         canvas.addEventListener("mousedown", this._handlePanStart);
-        // The user may stop panning outside of the canvas size so we should add the event listner to the document.
+        // The user may stop panning outside of the canvas size so we should add the event listener to the document.
         canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
     }
 
@@ -389,7 +389,16 @@ export class CanvasGraphService {
 
             const { id } = dataset;
             const pos = this._positions.get(id) ?? (dataset.data.length - 1)
-            this._positions.set(id, Scalar.Clamp(pos - itemsDelta, Math.floor(this._sizeOfWindow * scaleFactor), dataset.data.length - Math.floor(this._sizeOfWindow * (1-scaleFactor))));
+            
+            // update our position without allowing the user to pan more than they need to (approximation) 
+            this._positions.set(
+                                id, 
+                                Scalar.Clamp(
+                                                pos - itemsDelta, 
+                                                Math.floor(this._sizeOfWindow * scaleFactor), 
+                                                dataset.data.length - Math.floor(this._sizeOfWindow * (1-scaleFactor))
+                                            )
+                                );
         });
 
         if (itemsDelta === 0) {
@@ -432,6 +441,8 @@ export class CanvasGraphService {
         if (this.datasets.length === 0) {
             return false;
         }
+
+        // We first get the latest dataset, because this is where the real time data is!
         let latestDataset: IPerfDataset = this.datasets[0];
         
         this.datasets.forEach((dataset: IPerfDataset) => {
@@ -445,16 +456,17 @@ export class CanvasGraphService {
         });
 
         const pos = this._positions.get(latestDataset.id);
-        
+        const latestElementPos = latestDataset.data.length - 1;
+
         if (pos ===  undefined) {
             return false;
         }
 
-        // account for overflow on the left side only as it will be the one interacting with the playhead.
+        // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
         const overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
-        const rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestDataset.data.length - 1);
+        const rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
 
-        return latestDataset.data[rightmostPos].timestamp/latestDataset.data[latestDataset.data.length - 1].timestamp > 0.998;
+        return latestDataset.data[rightmostPos].timestamp/latestDataset.data[latestElementPos].timestamp > 0.998;
     }
 
     /**
