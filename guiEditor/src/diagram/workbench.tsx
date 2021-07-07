@@ -36,6 +36,13 @@ export const isFramePortData = (variableToCheck: any): variableToCheck is FrameP
     } else return false;
 };
 
+export enum ConstraintDirection {
+    NONE = 0,
+    SET = 1, 
+    X = 2,
+    Y = 3,
+}
+
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
     private _rootContainer: React.RefObject<HTMLCanvasElement>;;
     private _mouseStartPointX: Nullable<number> = null;
@@ -44,6 +51,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _scene: Scene;
     private _selectedGuiNodes: Control[] = [];
     private _ctrlKeyIsPressed = false;
+    private _constraintDirection = ConstraintDirection.NONE;
     private _forcePanning = false;
     private _forceZooming = false;
     private _forceSelecting = false;
@@ -157,7 +165,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     ctrlEvent = (evt: KeyboardEvent) => {
         this._ctrlKeyIsPressed = evt.ctrlKey;
-
+        this._constraintDirection = evt.shiftKey ? 
+        (this._constraintDirection > ConstraintDirection.SET ? this._constraintDirection : ConstraintDirection.SET)
+        : ConstraintDirection.NONE;
     };
 
     ctrlFalseEvent = () => {
@@ -345,13 +355,26 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             var y = this._mouseStartPointY;
             let selected = false;
             this.selectedGuiNodes.forEach((element) => {
-                //var zoom = this._camera.radius;
-
+                ;
                 if (pos) {
+                    if(this._constraintDirection === ConstraintDirection.SET) {
+
+                        let newX = pos.x - x;
+                        let newY = -pos.z - y;
+                        this._constraintDirection = Math.abs(newX) >=  Math.abs(newY) ? ConstraintDirection.X : ConstraintDirection.Y;
+                        console.log(Math.abs(newX) + " vs " + Math.abs(newY));
+                    }
+                    
+                    if(this._constraintDirection == ConstraintDirection.X) {
+                        pos.z = -y;
+                    }
+                    else if(this._constraintDirection == ConstraintDirection.Y) {
+                        pos.x = x;
+                    }
                     selected =
                         this._onMove(
                             element,
-                            new Vector2(pos.x, -pos.z), //need to add zoom factor here.
+                            new Vector2(pos.x, -pos.z),
                             new Vector2(x, y),
                             false
                         ) || selected;
@@ -392,6 +415,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onUp(evt: React.PointerEvent) {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
+        if(this._constraintDirection > ConstraintDirection.SET) {
+            this._constraintDirection = ConstraintDirection.SET;
+        }
         this._rootContainer.current?.releasePointerCapture(evt.pointerId);
         this.isUp = true;
     }
