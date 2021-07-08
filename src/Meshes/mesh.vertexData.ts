@@ -471,7 +471,7 @@ export class VertexData {
     public merge(others: VertexData | VertexData[], use32BitsIndices = false): VertexData {
         this._validate();
 
-        others = others instanceof VertexData ? [others] : others;
+        others = Array.isArray(others) ? others : [others];
 
         for (const other of others) {
             other._validate();
@@ -493,14 +493,14 @@ export class VertexData {
             }
         }
 
-        const totalIndices = (this.indices?.length || 0) + others.reduce((othersSumLen, other) => othersSumLen += (other.indices?.length || 0), 0);
+        const totalIndices = others.reduce((indexSum, vertexData) => indexSum + (vertexData.indices?.length ?? 0), this.indices?.length ?? 0);
         if (totalIndices > 0) {
+
+            let indicesOffset = this.indices?.length ?? 0;
 
             if (!this.indices) {
                 this.indices = new Array<number>(totalIndices);
             }
-
-            let indicesOffset = this.indices.length;
 
             if (this.indices.length !== totalIndices) {
                 if (Array.isArray(this.indices)) {
@@ -552,10 +552,10 @@ export class VertexData {
         }
 
         if (!source) {
-            return this._mergeElement(nonNullOthers[1], nonNullOthers.slice(1));
+            return this._mergeElement(nonNullOthers[0], nonNullOthers.slice(1));
         }
 
-        const len = source.length + nonNullOthers.reduce((othersSumLen, other) => othersSumLen += other.length, 0);
+        const len = nonNullOthers.reduce((sumLen, elements) => sumLen + elements.length, source.length);
 
         if (source instanceof Float32Array) {
             // use non-loop method when the source is Float32Array
