@@ -16,6 +16,9 @@ export interface IPerfMousePanningPosition {
     delta: number;
 }
 
+/**
+ * Defines structure of the object which contains information regarding the bounds of each dataset we want to consider.
+ */
 export interface IPerfIndexBounds {
     start: number;
     end: number;
