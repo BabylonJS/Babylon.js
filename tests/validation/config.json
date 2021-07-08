@@ -408,7 +408,8 @@
             "title": "Self shadowing",
             "scriptToRun": "/Demos/SelfShadowing/shadows.js",
             "functionToCall": "CreateShadowsTestScene",
-            "referenceImage": "selfShadowing.png"
+            "referenceImage": "selfShadowing.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Advanced shadows",
