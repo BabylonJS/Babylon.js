@@ -32,7 +32,7 @@ export interface WebGPUBindingDescription {
     usedInFragment: boolean;
 
     isSampler: boolean;
-    isComparisonSampler?: boolean;
+    samplerBindingType?: GPUSamplerBindingType;
 
     isTexture: boolean;
     sampleType?: GPUTextureSampleType;

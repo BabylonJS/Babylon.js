@@ -5,6 +5,7 @@ import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext }
 import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
+import { ShaderCodeInliner } from "../Processors/shaderCodeInliner";
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
@@ -69,6 +70,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     protected _missingVaryings: Array<string> = [];
     protected _textureArrayProcessing: Array<string> = [];
     protected _preProcessors: { [key: string]: string };
+    protected _unfilteredSamplers: { [name: string]: boolean };
 
     private _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number] {
         let length = 0;
@@ -210,6 +212,9 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
                 webgpuProcessingContext.availableSamplers[name] = samplerInfo;
 
+                const unfilteredSampler = this._unfilteredSamplers[name];
+                const samplerBindingType = unfilteredSampler ? WebGPUConstants.SamplerBindingType.NonFiltering : isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
+
                 if (!webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex]) {
                     webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex] = [];
                 }
@@ -217,11 +222,13 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                     webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex] = {
                         isSampler: true,
                         isTexture: false,
-                        isComparisonSampler,
+                        samplerBindingType,
                         usedInVertex: false,
                         usedInFragment: false,
                         name,
                     };
+                } else if (unfilteredSampler) {
+                    webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex].samplerBindingType = samplerBindingType;
                 }
 
                 if (isFragment) {
@@ -241,7 +248,8 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                         webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
                             isSampler: false,
                             isTexture: true,
-                            sampleType: isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
+                            sampleType: unfilteredSampler ? WebGPUConstants.TextureSampleType.UnfilterableFloat :
+                                        isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
                                         componentType === 'u' ? WebGPUConstants.TextureSampleType.Uint :
                                         componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float,
                             textureDimension,
@@ -332,10 +340,24 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         return uniformBuffer;
     }
 
-    // public endOfUniformBufferProcessor(closingBracketLine: string, isFragment: boolean): string {
-    //     console.log("uniformBuffer closingBracketLine ", closingBracketLine);
-    //     return closingBracketLine;
-    // }
+    public preProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string {
+        const regex = /texelFetch\s*\(\s*(.*?)\s*,/g;
+        let match;
+
+        this._unfilteredSamplers = {};
+
+        const sci = new ShaderCodeInliner(code);
+        sci.debug = false;
+        sci.processCode();
+
+        while ((match = regex.exec(sci.code)) !== null) {
+            const samplerName = match[1];
+
+            this._unfilteredSamplers[samplerName] = true;
+        }
+
+        return code;
+    }
 
     public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
