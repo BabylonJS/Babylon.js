@@ -324,7 +324,7 @@ export class CanvasGraphService {
     private _removeEventListeners(canvas: HTMLCanvasElement) {
         canvas.removeEventListener("wheel", this._handleZoom);
         canvas.removeEventListener("mousedown", this._handlePanStart);
-        canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
+        canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
     }
 
     /**
