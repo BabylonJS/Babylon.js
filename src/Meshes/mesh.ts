@@ -4789,6 +4789,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         subdivideWithSubMeshes?: boolean,
         multiMultiMaterials?: boolean
     ): Nullable<Mesh> {
+        // Remove any null/undefined entries from the mesh array
+        meshes = meshes.filter(Boolean);
+
         if (meshes.length === 0) {
             return null;
         }
@@ -4799,13 +4802,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             // Counting vertices
             for (index = 0; index < meshes.length; index++) {
-                if (meshes[index]) {
-                    totalVertices += meshes[index].getTotalVertices();
+                totalVertices += meshes[index].getTotalVertices();
 
-                    if (totalVertices >= 65536) {
-                        Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
-                        return null;
-                    }
+                if (totalVertices >= 65536) {
+                    Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                    return null;
                 }
             }
         }
@@ -4820,44 +4821,42 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Merge
         var indiceArray: Array<number> = new Array<number>();
         for (index = 0; index < meshes.length; index++) {
-            if (meshes[index]) {
-                var mesh = meshes[index];
-                if (mesh.isAnInstance) {
-                    Logger.Warn("Cannot merge instance meshes.");
-                    return null;
-                }
+            var mesh = meshes[index];
+            if (mesh.isAnInstance) {
+                Logger.Warn("Cannot merge instance meshes.");
+                return null;
+            }
 
-                if (subdivideWithSubMeshes) {
-                    indiceArray.push(mesh.getTotalIndices());
-                }
+            if (subdivideWithSubMeshes) {
+                indiceArray.push(mesh.getTotalIndices());
+            }
 
-                if (multiMultiMaterials) {
-                    if (mesh.material) {
-                        var material = mesh.material;
-                        if (material instanceof MultiMaterial) {
-                            for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
-                                if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
-                                    materialArray.push(<Material>material.subMaterials[matIndex]);
-                                }
-                            }
-                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
-                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
-                            }
-                        } else {
-                            if (materialArray.indexOf(<Material>material) < 0) {
-                                materialArray.push(<Material>material);
-                            }
-                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                                materialIndexArray.push(materialArray.indexOf(<Material>material));
-                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+            if (multiMultiMaterials) {
+                if (mesh.material) {
+                    var material = mesh.material;
+                    if (material instanceof MultiMaterial) {
+                        for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
+                            if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
+                                materialArray.push(<Material>material.subMaterials[matIndex]);
                             }
                         }
-                    } else {
                         for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(0);
+                            materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
                             indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                         }
+                    } else {
+                        if (materialArray.indexOf(<Material>material) < 0) {
+                            materialArray.push(<Material>material);
+                        }
+                        for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            materialIndexArray.push(materialArray.indexOf(<Material>material));
+                            indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                        }
+                    }
+                } else {
+                    for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                        materialIndexArray.push(0);
+                        indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                     }
                 }
             }
@@ -4886,9 +4885,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Cleaning
         if (disposeSource) {
             for (index = 0; index < meshes.length; index++) {
-                if (meshes[index]) {
-                    meshes[index].dispose();
-                }
+                meshes[index].dispose();
             }
         }
 
