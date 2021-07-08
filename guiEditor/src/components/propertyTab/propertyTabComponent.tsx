@@ -282,6 +282,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                         }}
                     />
+                    <ButtonLineComponent
+                        label="COPY ELEMENT"
+                        onClick={() => {
+                            let serializationObject = {};
+                            this.state.currentNode?.serialize(serializationObject);
+                            let newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
+                            
+                            if(newControl) { //insert the new control into the adt
+                            this.props.globalState.workbench.appendBlock(newControl);
+                            this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+                            }
+                        }}
+                    />
                 </div>
             );
         }
