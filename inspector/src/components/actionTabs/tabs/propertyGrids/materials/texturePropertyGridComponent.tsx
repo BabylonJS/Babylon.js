@@ -6,6 +6,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
+import { Constants } from "babylonjs/Engines/constants";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
@@ -41,6 +42,50 @@ interface ITexturePropertyGridComponentState {
     isTextureEditorOpen : boolean,
     textureEditing : Nullable<BaseTexture>
 }
+
+const textureFormat = [
+    { label: "Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_ALPHA },
+    { label: "Luminance", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE },
+    { label: "Luminance/Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE_ALPHA },
+    { label: "RGB", normalizable: 1, value: Constants.TEXTUREFORMAT_RGB },
+    { label: "RGBA", normalizable: 1, value: Constants.TEXTUREFORMAT_RGBA },
+    { label: "R (red)", normalizable: 1, value: Constants.TEXTUREFORMAT_RED },
+    { label: "RG (red/green)", normalizable: 1, value: Constants.TEXTUREFORMAT_RG },
+    { label: "R (red) integer", normalizable: 0, value: Constants.TEXTUREFORMAT_RED_INTEGER },
+    { label: "RG (red/green) integer", normalizable: 0, value: Constants.TEXTUREFORMAT_RG_INTEGER },
+    { label: "RGB integer", normalizable: 0, value: Constants.TEXTUREFORMAT_RGB_INTEGER },
+    { label: "RGBA integer", normalizable: 0, value: Constants.TEXTUREFORMAT_RGBA_INTEGER },
+    { label: "BGRA", normalizable: 1, value: Constants.TEXTUREFORMAT_BGRA },
+    { label: "Depth24/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 },
+    { label: "Depth32 float", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
+    { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
+    { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
+    { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
+    { label: "RGBA S3TC DXT5", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 },
+    { label: "RGBA S3TC DXT3", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 },
+    { label: "RGBA S3TC DXT1", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 },
+    { label: "RGB S3TC DXT1", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 },
+    { label: "RGBA ASTC 4x4", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 },
+];
+
+const textureType = [
+    { label: "unsigned byte", normalizable: 1, value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
+    { label: "32-bit float", normalizable: 0, value: Constants.TEXTURETYPE_FLOAT },
+    { label: "16-bit float", normalizable: 0, value: Constants.TEXTURETYPE_HALF_FLOAT },
+    { label: "signed byte", normalizable: 1, value: Constants.TEXTURETYPE_BYTE },
+    { label: "signed short", normalizable: 0, value: Constants.TEXTURETYPE_SHORT },
+    { label: "unsigned short", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_SHORT },
+    { label: "signed int", normalizable: 0, value: Constants.TEXTURETYPE_INT },
+    { label: "unsigned int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INTEGER },
+    { label: "unsigned 4/4/4/4 short", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 },
+    { label: "unsigned 5/5/5/1 short", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 },
+    { label: "unsigned 5/6/5 short", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5 },
+    { label: "unsigned 2/10/10/10 int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV },
+    { label: "unsigned 24/8 int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INT_24_8 },
+    { label: "unsigned 10f/11f/11f int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV },
+    { label: "unsigned 5/9/9/9 int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV },
+    { label: "32-bits with only 8-bit used (stencil)", normalizable: 0, value: Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV },
+];
 
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps,ITexturePropertyGridComponentState> {
 
@@ -137,6 +182,24 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         (this.textureLineRef.current as TextureLineComponent).updatePreview();
     }
 
+    findTextureFormat(format: number) {
+        for (let i = 0; i < textureFormat.length; ++i) {
+            if (textureFormat[i].value === format) {
+                return textureFormat[i];
+            }
+        }
+        return null;
+    }
+
+    findTextureType(type: number) {
+        for (let i = 0; i < textureType.length; ++i) {
+            if (textureType[i].value === type) {
+                return textureType[i];
+            }
+        }
+        return null;
+    }
+
     render() {
         const texture = this.props.texture;
 
@@ -171,6 +234,12 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             { label: "Skybox", value: Texture.SKYBOX_MODE },
             { label: "Spherical", value: Texture.SPHERICAL_MODE },
         ];
+
+        const format = texture._texture?.format ?? -2;
+        const type = texture._texture?.type ?? -2;
+
+        const oformat = this.findTextureFormat(format === -1 ? Constants.TEXTUREFORMAT_RGBA : format);
+        const otype = this.findTextureType(type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : type);
 
         let extension = "";
         let url = (texture as Texture).url;
@@ -238,6 +307,17 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                             });
                         }} />
                     }
+                    <TextLineComponent label="Format" value={oformat?.label ?? "unknown"} />
+                    {
+                        !oformat?.hideType && !oformat?.compressed &&
+                        <TextLineComponent label="Type" value={otype?.label ?? "unknown"} />
+                    }
+                    {
+                        !!oformat?.normalizable && !oformat?.compressed && !!otype?.normalizable &&
+                        <TextLineComponent label="Normalized" value={otype.normalizable ? "Yes" : "No"} />
+                    }
+                    <TextLineComponent label="Is compressed" value={oformat?.compressed ? "Yes" : "No"} />
+                    <TextLineComponent label="Use sRGB buffers" value={texture._texture?._useSRGBBuffer ? "Yes" : "No"} />
                     {
                         extension &&
                         <TextLineComponent label="File format" value={extension} />
