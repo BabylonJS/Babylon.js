@@ -29167,12 +29167,12 @@ declare module BABYLON {
         transform(matrix: Matrix): VertexData;
         /**
          * Merges the passed VertexData into the current one
-         * @param other the VertexData to be merged into the current one
+         * @param others the VertexData to be merged into the current one
          * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
          * @returns the modified VertexData
          */
-        merge(other: VertexData, use32BitsIndices?: boolean): VertexData;
-        private _mergeElement;
+        merge(others: VertexData | VertexData[], use32BitsIndices?: boolean): VertexData;
+        private static _mergeElement;
         private _validate;
         /**
          * Serializes the VertexData
@@ -84133,6 +84133,10 @@ declare module BABYLON {
          * The color of the line to be drawn.
          */
         color?: string;
+        /**
+         * The id of the dataset.
+         */
+        id: string;
         /**
          * The data to be processed by the performance graph.
          */

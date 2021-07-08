@@ -23,6 +23,11 @@ export interface IPerfDataset {
     color?: string;
 
     /**
+     * The id of the dataset.
+     */
+    id: string;
+
+    /**
      * The data to be processed by the performance graph.
      */
     data: IPerfPoint[];

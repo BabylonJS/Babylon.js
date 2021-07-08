@@ -207,6 +207,13 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
         max: number;
     }
     /**
+     * Defines structure of the object which contains information related to panning.
+     */
+    export interface IPerfMousePanningPosition {
+        xPos: number;
+        delta: number;
+    }
+    /**
      * Defines a structure defining the available space in a drawable area.
      */
     export interface IGraphDrawableArea {
@@ -235,6 +242,8 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _height;
         private _sizeOfWindow;
         private _ticks;
+        private _panPosition;
+        private _positions;
         readonly datasets: IPerfDataset[];
         /**
          * Creates an instance of CanvasGraphService.
@@ -316,6 +325,30 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * @param event a mouse wheel event.
          */
         private _handleZoom;
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStart;
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        private _handlePan;
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStop;
+        /**
+         * Method which returns true if the data should become realtime, false otherwise.
+         *
+         * @returns if the data should become realtime or not.
+         */
+        private _shouldBecomeRealtime;
         /**
          * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
          *
@@ -4795,6 +4828,13 @@ declare module INSPECTOR {
         max: number;
     }
     /**
+     * Defines structure of the object which contains information related to panning.
+     */
+    export interface IPerfMousePanningPosition {
+        xPos: number;
+        delta: number;
+    }
+    /**
      * Defines a structure defining the available space in a drawable area.
      */
     export interface IGraphDrawableArea {
@@ -4821,6 +4861,8 @@ declare module INSPECTOR {
         private _height;
         private _sizeOfWindow;
         private _ticks;
+        private _panPosition;
+        private _positions;
         readonly datasets: BABYLON.IPerfDataset[];
         /**
          * Creates an instance of CanvasGraphService.
@@ -4902,6 +4944,30 @@ declare module INSPECTOR {
          * @param event a mouse wheel event.
          */
         private _handleZoom;
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStart;
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        private _handlePan;
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStop;
+        /**
+         * Method which returns true if the data should become realtime, false otherwise.
+         *
+         * @returns if the data should become realtime or not.
+         */
+        private _shouldBecomeRealtime;
         /**
          * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
          *
