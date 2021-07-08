@@ -16,6 +16,11 @@ export interface IPerfMousePanningPosition {
     delta: number;
 }
 
+export interface IPerfIndexBounds {
+    start: number;
+    end: number;
+}
+
 /**
  * Defines a structure defining the available space in a drawable area.
  */

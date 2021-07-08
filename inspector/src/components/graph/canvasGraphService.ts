@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 
@@ -25,6 +25,8 @@ export class CanvasGraphService {
     private _ticks: number[];
     private _panPosition: IPerfMousePanningPosition | null;
     private _positions: Map<string, number>;
+    private _datasetBounds: Map<string, IPerfIndexBounds>;
+
     public readonly datasets: IPerfDataset[];
 
     /**
@@ -40,7 +42,8 @@ export class CanvasGraphService {
         this._ticks = [];
         this._panPosition = null;
         this._positions = new Map<string, number>();
-        
+        this._datasetBounds = new Map<string, IPerfIndexBounds>();
+
         this.datasets = settings.datasets;
 
         this._attachEventListeners(canvas);
@@ -62,13 +65,13 @@ export class CanvasGraphService {
         // Get global min max of time axis (across all datasets).
         const globalTimeMinMax = {min: Infinity, max: 0};
 
-        // TODO: Perhaps see if i can reduce the number of allocations.
-        // Keep only visible and non empty datasets and get a certain window of items.
-        const datasets = this.datasets.map((dataset: IPerfDataset) => {
+        // First we must get the end positions of each dataset.
+        this.datasets.forEach((dataset: IPerfDataset) => {
             // skip hidden and empty datasets!
             if (dataset.data.length === 0 || !!dataset.hidden) {
-                return dataset;
+                return;
             }
+            
             const pos = this._positions.get(dataset.id) ?? dataset.data.length - 1;
             let start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
             let startOverflow = 0;
@@ -89,17 +92,70 @@ export class CanvasGraphService {
                 start = Math.max(start - endOverflow, 0);
             }
 
+            const bounds = this._datasetBounds.get(dataset.id);
+
+            // update or set the bounds
+            if (bounds) {
+                bounds.start = start;
+                bounds.end = end;
+            } else {
+                this._datasetBounds.set(dataset.id, {start, end});
+            }
+        });
+
+        // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
+        this.datasets.forEach((dataset: IPerfDataset) => {
+            const bounds = this._datasetBounds.get(dataset.id);
+            
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            
+            globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, globalTimeMinMax.min);
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+
+        // set the buffer region maximum by rescaling the max timestamp in bounds.
+        const bufferMaximum = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min)/scaleFactor + globalTimeMinMax.min);
+        
+        // we then need to update the end position based on the maximum for the buffer region
+        this.datasets.forEach((dataset: IPerfDataset) => {
+            const bounds = this._datasetBounds.get(dataset.id);
+            
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+
+            // binary search to get closest point to the buffer maximum.
+            bounds.end = this._getClosestPointToTimestamp(dataset, bufferMaximum) + 1;
+
+            // keep track of largest timestamp value in view!
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+
+        let updatedScaleFactor = Scalar.Clamp((globalTimeMinMax.max - globalTimeMinMax.min)/(bufferMaximum - globalTimeMinMax.min), 0.8, 1); 
+
+        // we will now set the global maximum to the maximum of the buffer.
+        globalTimeMinMax.max = bufferMaximum;
+
+
+        // TODO: Perhaps see if i can reduce the number of allocations.
+        // Keep only visible and non empty datasets and get a certain window of items.
+        const datasets = this.datasets.map((dataset: IPerfDataset) => {
+            const bounds = this._datasetBounds.get(dataset.id);
+
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return dataset;
+            }
+
             return {
                 ...dataset,
-                data: dataset.data.slice(start, end)
+                data: dataset.data.slice(bounds.start, bounds.end)
             }
         }).filter((dataset: IPerfDataset) => !dataset.hidden && dataset.data.length > 0);
-
-        // timestamps will be in sorted order so we can simply do the following.
-        datasets.forEach((dataset: IPerfDataset) => {
-            globalTimeMinMax.min = Math.min(dataset.data[0].timestamp, globalTimeMinMax.min);
-            globalTimeMinMax.max = Math.max(dataset.data[dataset.data.length - 1].timestamp, globalTimeMinMax.max);
-        });
 
         const drawableArea: IGraphDrawableArea = {
             top: 0,
@@ -108,11 +164,8 @@ export class CanvasGraphService {
             right: this._width,
         };
 
-        // we will now rescale the maximum for the playhead.
-        globalTimeMinMax.max = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min)/scaleFactor + globalTimeMinMax.min);
-
         this._drawTimeAxis(globalTimeMinMax, drawableArea);
-        this._drawPlayheadRegion(drawableArea, scaleFactor);
+        this._drawPlayheadRegion(drawableArea, updatedScaleFactor);
 
         // process, and then draw our points
         datasets.forEach((dataset: IPerfDataset) => {
@@ -129,6 +182,40 @@ export class CanvasGraphService {
             });
             ctx.stroke();
         });
+    }
+
+    /**
+     * Returns the index of the closest time for a dataset.
+     * Uses a modified binary search to get value.
+     * 
+     * @param dataset the dataset we want to search in.
+     * @param targetTime the time we want to get close to.
+     * @returns index of the item with the closest time to the targetTime
+     */
+    private _getClosestPointToTimestamp(dataset: IPerfDataset, targetTime: number): number {
+        let low = 0;
+        let high = dataset.data.length - 1;
+        let closestIndex = 0;
+
+        while (low <= high) {
+            
+            const middle = Math.trunc((low + high) / 2);
+            const middleTimestamp = dataset.data[middle].timestamp;
+
+            if (Math.abs(middleTimestamp - targetTime) < Math.abs(dataset.data[closestIndex].timestamp - targetTime)) {
+                closestIndex = middle;
+            } 
+
+            if (middleTimestamp < targetTime) {
+                low = middle + 1;
+            } else if (middleTimestamp > targetTime) {
+                high = middle - 1;
+            } else {
+                break;
+            }
+        }
+
+        return closestIndex;
     }
 
     /**
@@ -484,7 +571,7 @@ export class CanvasGraphService {
     private _drawPlayheadRegion(drawableArea: IGraphDrawableArea, scaleFactor: number) {
         const { _ctx: ctx } = this;
        
-        if (!ctx) {
+        if (!ctx || scaleFactor >= 0.95) {
             return;
         }
 
