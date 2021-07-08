@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -52683,7 +52683,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -58997,13 +58997,83 @@ var CanvasGraphService = /** @class */ (function () {
                 .reduce(function (maxLengthSoFar, currLength) {
                 return Math.max(currLength, maxLengthSoFar);
             }, 0);
+            if (_this._shouldBecomeRealtime()) {
+                _this._positions.clear();
+            }
             // Bind the zoom between [minZoom, maxZoom]
             _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+        };
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        this._handlePanStart = function (event) {
+            var ctx = _this._ctx;
+            if (!ctx || !ctx.canvas) {
+                return;
+            }
+            var canvas = ctx.canvas;
+            _this._panPosition = {
+                xPos: event.clientX,
+                delta: 0,
+            };
+            canvas.addEventListener("mousemove", _this._handlePan);
+        };
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        this._handlePan = function (event) {
+            if (!_this._panPosition) {
+                return;
+            }
+            var pixelDelta = _this._panPosition.delta + event.clientX - _this._panPosition.xPos;
+            var pixelsPerItem = _this._width / _this._sizeOfWindow;
+            var itemsDelta = pixelDelta / pixelsPerItem | 0;
+            _this.datasets.forEach(function (dataset) {
+                var _a;
+                if (dataset.data.length === 0 || !!dataset.hidden) {
+                    return;
+                }
+                var id = dataset.id;
+                var pos = (_a = _this._positions.get(id)) !== null && _a !== void 0 ? _a : (dataset.data.length - 1);
+                // update our position without allowing the user to pan more than they need to (approximation) 
+                _this._positions.set(id, babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), dataset.data.length - Math.floor(_this._sizeOfWindow * (1 - scaleFactor))));
+            });
+            if (itemsDelta === 0) {
+                _this._panPosition.delta += pixelDelta;
+            }
+            else {
+                _this._panPosition.delta = 0;
+            }
+            _this._panPosition.xPos = event.clientX;
+        };
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        this._handlePanStop = function () {
+            var ctx = _this._ctx;
+            if (!ctx || !ctx.canvas) {
+                return;
+            }
+            // check if we should return to realtime.
+            if (_this._shouldBecomeRealtime()) {
+                _this._positions.clear();
+            }
+            var canvas = ctx.canvas;
+            canvas.removeEventListener("mousemove", _this._handlePan);
+            _this._panPosition = null;
         };
         this._ctx = canvas.getContext && canvas.getContext("2d");
         this._width = canvas.width;
         this._height = canvas.height;
         this._ticks = [];
+        this._panPosition = null;
+        this._positions = new Map();
         this.datasets = settings.datasets;
         this._attachEventListeners(canvas);
     }
@@ -59020,14 +59090,35 @@ var CanvasGraphService = /** @class */ (function () {
         this.clear();
         // Get global min max of time axis (across all datasets).
         var globalTimeMinMax = { min: Infinity, max: 0 };
-        // TODO: Make better sliding window code (accounting for zoom and pan).
         // TODO: Perhaps see if i can reduce the number of allocations.
         // Keep only visible and non empty datasets and get a certain window of items.
-        var datasets = this.datasets.filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; }).map(function (dataset) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(Math.max(dataset.data.length - _this._sizeOfWindow, 0)) })); });
+        var datasets = this.datasets.map(function (dataset) {
+            var _a;
+            // skip hidden and empty datasets!
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return dataset;
+            }
+            var pos = (_a = _this._positions.get(dataset.id)) !== null && _a !== void 0 ? _a : dataset.data.length - 1;
+            var start = pos - Math.ceil(_this._sizeOfWindow * scaleFactor);
+            var startOverflow = 0;
+            // account for overflow from start.
+            if (start < 0) {
+                startOverflow = 0 - start;
+                start = 0;
+            }
+            var end = Math.ceil(pos + _this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
+            // account for overflow from end.
+            if (end > dataset.data.length) {
+                var endOverflow = end - dataset.data.length;
+                end = dataset.data.length;
+                start = Math.max(start - endOverflow, 0);
+            }
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(start, end) });
+        }).filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; });
+        // timestamps will be in sorted order so we can simply do the following.
         datasets.forEach(function (dataset) {
-            var timeMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.timestamp; }));
-            globalTimeMinMax.min = Math.min(timeMinMax.min, globalTimeMinMax.min);
-            globalTimeMinMax.max = Math.max(timeMinMax.max, globalTimeMinMax.max);
+            globalTimeMinMax.min = Math.min(dataset.data[0].timestamp, globalTimeMinMax.min);
+            globalTimeMinMax.max = Math.max(dataset.data[dataset.data.length - 1].timestamp, globalTimeMinMax.max);
         });
         var drawableArea = {
             top: 0,
@@ -59220,6 +59311,9 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._attachEventListeners = function (canvas) {
         canvas.addEventListener("wheel", this._handleZoom);
+        canvas.addEventListener("mousedown", this._handlePanStart);
+        // The user may stop panning outside of the canvas size so we should add the event listener to the document.
+        canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
     };
     /**
      * We remove all event listeners we added.
@@ -59228,6 +59322,38 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._removeEventListeners = function (canvas) {
         canvas.removeEventListener("wheel", this._handleZoom);
+        canvas.removeEventListener("mousedown", this._handlePanStart);
+        canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
+    };
+    /**
+     * Method which returns true if the data should become realtime, false otherwise.
+     *
+     * @returns if the data should become realtime or not.
+     */
+    CanvasGraphService.prototype._shouldBecomeRealtime = function () {
+        if (this.datasets.length === 0) {
+            return false;
+        }
+        // We first get the latest dataset, because this is where the real time data is!
+        var latestDataset = this.datasets[0];
+        this.datasets.forEach(function (dataset) {
+            // skip over empty and hidden data!
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            if (latestDataset.data[latestDataset.data.length - 1].timestamp < dataset.data[dataset.data.length - 1].timestamp) {
+                latestDataset = dataset;
+            }
+        });
+        var pos = this._positions.get(latestDataset.id);
+        var latestElementPos = latestDataset.data.length - 1;
+        if (pos === undefined) {
+            return false;
+        }
+        // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
+        var overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
+        var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
+        return latestDataset.data[rightmostPos].timestamp / latestDataset.data[latestElementPos].timestamp > 0.998;
     };
     /**
      * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
@@ -64910,7 +65036,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -65217,7 +65343,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -65634,7 +65760,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -65973,14 +66099,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/image":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 
