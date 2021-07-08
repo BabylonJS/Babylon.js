@@ -112,7 +112,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Specular produces a highlight color on an object.
-     * Note: This is note affecting PBR materials.
+     * Note: This is not affecting PBR materials.
      */
     @serializeAsColor3()
     public specular = new Color3(1.0, 1.0, 1.0);
