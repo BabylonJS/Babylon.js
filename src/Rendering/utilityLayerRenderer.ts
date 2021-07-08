@@ -200,7 +200,7 @@ export class UtilityLayerRenderer implements IDisposable {
                             scenePick = new PickingInfo();
                         }
                     } else {
-                        let previousActiveCamera: Nullable<Camera> = null
+                        let previousActiveCamera: Nullable<Camera> = null;
                         // If a camera is set for rendering with this layer
                         // it will also be used for the ray computation
                         // To preserve back compat and because scene.pick always use activeCamera
