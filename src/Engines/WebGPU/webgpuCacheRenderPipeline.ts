@@ -879,7 +879,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
                 if (bindingDefinition.isSampler) {
                     entry.sampler = {
-                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering
+                        type: bindingDefinition.samplerBindingType
                     };
                 } else if (bindingDefinition.isTexture) {
                     entry.texture = {
