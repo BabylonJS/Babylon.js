@@ -4,6 +4,7 @@ import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { Logger } from "../../../Misc/logger";
 
 declare type Scene = import("../../../scene").Scene;
 
@@ -69,6 +70,23 @@ WebGPUEngine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBuffe
     compression: Nullable<string> = null): InternalTexture
 {
     const texture = new InternalTexture(this, InternalTextureSource.CubeRaw);
+
+    if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        generateMipMaps = false;
+        samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        Logger.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+    } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        generateMipMaps = false;
+        samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        Logger.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+    } else if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatRender) {
+        generateMipMaps = false;
+        Logger.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
+    } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.colorBufferFloat) {
+        generateMipMaps = false;
+        Logger.Warn("Render to half float textures is not supported. Mipmap generation forced to false.");
+    }
+
     texture.isCube = true;
     texture.format = format === Constants.TEXTUREFORMAT_RGB ? Constants.TEXTUREFORMAT_RGBA : format;
     texture.type = type;
