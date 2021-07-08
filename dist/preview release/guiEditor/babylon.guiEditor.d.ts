@@ -23,25 +23,30 @@ declare module GUIEDITOR {
     }
     export type FramePortData = {};
     export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
+    export enum ConstraintDirection {
+        NONE = 0,
+        X = 2,
+        Y = 3
+    }
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
+        artBoardBackground: BABYLON.Nullable<Rectangle>;
         private _rootContainer;
+        private _setConstraintDirection;
         private _mouseStartPointX;
         private _mouseStartPointY;
         private _textureMesh;
         private _scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
         private _forceSelecting;
         private _outlines;
-        _frameIsMoving: boolean;
-        _isLoading: boolean;
-        isOverGUINode: boolean;
-        artBoardBackground: Rectangle;
         private _panning;
         private _canvas;
         private _responsive;
+        private _isOverGUINode;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
