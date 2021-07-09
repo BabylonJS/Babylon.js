@@ -285,13 +285,21 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <ButtonLineComponent
                         label="COPY ELEMENT"
                         onClick={() => {
-                            let serializationObject = {};
-                            this.state.currentNode?.serialize(serializationObject);
-                            let newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
+                            if (this.state.currentNode) {
+                                const serializationObject = {};
+                                this.state.currentNode.serialize(serializationObject);
+                                const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
 
-                            if (newControl) { //insert the new control into the adt
-                                this.props.globalState.workbench.appendBlock(newControl);
-                                this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+                                if (newControl) { //insert the new control into the adt
+                                    this.props.globalState.workbench.appendBlock(newControl);
+                                    let index = 1;
+                                    while(this.props.globalState.workbench.nodes.filter(control => control.name === 
+                                        newControl.name).length > 1) //search if thier are any copies
+                                    {
+                                        newControl.name = `${this.state.currentNode.name} Copy ${index++}`;
+                                    }
+                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+                                }
                             }
                         }}
                     />
