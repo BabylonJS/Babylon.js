@@ -185,7 +185,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
             this._worker.postMessage([positions, offset, indices, indices.length, parameters]);
             this._worker.onmessage = function(e) {
                 completion(e.data);
-            }
+            };
         } else {
             // blocking calls
             const rc = new this.bjsRECAST.rcConfig();
