@@ -884,6 +884,9 @@ export class StandardMaterial extends PushMaterial {
 
         // PrePass
         MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT);
+        
+        // Order independant transparency
+        MaterialHelper.PrepareDefinesForOIT(scene, defines, this.needAlphaBlending());
 
         // Textures
         if (defines._areTexturesDirty) {

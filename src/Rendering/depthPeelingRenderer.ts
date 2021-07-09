@@ -1,7 +1,9 @@
 import { Constants, Engine } from "../Engines";
-import { IMultiRenderTargetOptions, MultiRenderTarget, Texture } from "../Materials";
+import { Effect, IMultiRenderTargetOptions, MultiRenderTarget, Texture } from "../Materials";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { Color4 } from "../Maths";
+import { Mesh, SubMesh } from "../Meshes";
+import { SmartArray } from "../Misc";
 import { Scene } from "../scene";
 
 export class DepthPeelingRenderer {
@@ -11,6 +13,9 @@ export class DepthPeelingRenderer {
     private _colorMrts: MultiRenderTarget[];
     private _blendBackMrt: MultiRenderTarget;
 
+    private _blendBackEffect: Effect;
+    private _finalEffect: Effect;
+
     private _passCount: number;
 
     constructor(scene: Scene, passCount: number = 5) {
@@ -18,6 +23,7 @@ export class DepthPeelingRenderer {
         this._engine = scene.getEngine();
         this._passCount = passCount;
         this._createTexturesAndFrameBuffers();
+        this._createEffects();
     }
 
     private _createTexturesAndFrameBuffers() {
@@ -27,9 +33,9 @@ export class DepthPeelingRenderer {
         };
 
         // 2 for ping pong
-        this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 0, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 0, this._scene)];
-        this._colorMrts = [new MultiRenderTarget("depthPeelingColor0", size, 0, this._scene), new MultiRenderTarget("depthPeelingColor1", size, 0, this._scene)];
-        this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 0, this._scene);
+        this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 1, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 1, this._scene)];
+        this._colorMrts = [new MultiRenderTarget("depthPeelingColor0", size, 1, this._scene), new MultiRenderTarget("depthPeelingColor1", size, 1, this._scene)];
+        this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 1, this._scene);
 
         // 0 is a depth texture
         // 1 is a color texture
@@ -64,11 +70,53 @@ export class DepthPeelingRenderer {
         this._engine.bindTextureFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer, blendBackTexture);
     }
 
+    private _createEffects() {
+        this._blendBackEffect = new Effect(
+            {
+                vertex: "postprocess",
+                fragment: "oitBackBlend",
+            },
+            {
+                attributes: [],
+                samplers: [],
+                uniformsNames: [],
+                uniformBuffersNames: [],
+                defines: null,
+                fallbacks: null,
+                onCompiled: null,
+                onError: null,
+            },
+            this._engine
+        );
+
+        this._finalEffect = new Effect(
+            {
+                vertex: "postprocess",
+                fragment: "oitFinal",
+            },
+            {
+                attributes: [],
+                samplers: [],
+                uniformsNames: [],
+                uniformBuffersNames: [],
+                defines: null,
+                fallbacks: null,
+                onCompiled: null,
+                onError: null,
+            },
+            this._engine
+        );
+    }
+
     private _updateSize() {
         // TODO
     }
 
-    public render() {
+    public render(transparentSubMeshes: SmartArray<SubMesh>) {
+        if (!this._blendBackEffect.isReady() || !this._finalEffect.isReady()) {
+            return;
+        }
+
         const DEPTH_CLEAR_VALUE = -99999.0;
         const MIN_DEPTH = 0;
         const MAX_DEPTH = 1;
@@ -125,14 +173,49 @@ export class DepthPeelingRenderer {
             this._engine._bindUnboundFramebuffer(this._depthMrts[writeId].getInternalTexture()!._framebuffer as WebGLFramebuffer);
             attachments = this._engine.buildTextureLayout([true, true, true]);
             this._engine.bindAttachments(attachments);
+            
+            // TODO : alpha state (engine.setAlphaState + engine.applyStates)
             gl.blendEquation(gl.MAX);
-
+            gl.enable(gl.BLEND);
             // TODO : Set texture uniform
+            for (let j = 0; j < transparentSubMeshes.length; j++) {
+                const material = transparentSubMeshes.data[j].getMaterial();
+                let previousShaderHotSwapping = true;
+                if (material) {
+                    // Test for OIT compat
+                    previousShaderHotSwapping = material.allowShaderHotSwapping;
+                    material.allowShaderHotSwapping = false;
+                }
 
-            // TODO : draw mesh
-
+                transparentSubMeshes.data[j].render(false);
+                
+                if (material) {
+                    material.allowShaderHotSwapping = previousShaderHotSwapping;
+                }
+            }
+            
             // Back color
+            this._engine._bindUnboundFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer);
+            attachments = this._engine.buildTextureLayout([true]);
+            this._engine.bindAttachments(attachments);
+            gl.blendEquation(gl.FUNC_ADD);
+            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+            
+            this._engine.enableEffect(this._blendBackEffect);
+            
+            // Bind uniforms
+            // Draw quad
         }
+
+        // Final composition on default FB
+        this._engine._bindUnboundFramebuffer(null);
+
+        // TODO : alpha state (engine.setAlphaState + engine.applyStates)
+        gl.disable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+        // TODO : set texture uniform
+        // TODO : draw quad with finalProgram
     }
 
     public dispose() {}

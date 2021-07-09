@@ -5,6 +5,7 @@
 #endif
 
 #include<prePassDeclaration>[SCENE_MRT_COUNT]
+#include<oitDeclaration>
 
 #define CUSTOM_FRAGMENT_BEGIN
 
@@ -97,6 +98,8 @@ varying vec3 vDirectionW;
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
+
+#include<oitFragment>
 
 #include<clipPlaneFragment>
 
@@ -458,6 +461,15 @@ color.rgb = max(color.rgb, 0.);
 
 #if !defined(PREPASS) || defined(WEBGL2) 
 	gl_FragColor = color;
+#endif
+
+#if ORDER_INDEPENDANT_TRANSPARENCY
+	if (fragDepth == nearestDepth) {
+		frontColor.rgb += color.rgb * color.a * alphaMultiplier;
+		frontColor.a = 1.0 - alphaMultiplier * (1.0 - color.a);
+	} else {
+		backColor += color;
+	}
 #endif
 
 }
