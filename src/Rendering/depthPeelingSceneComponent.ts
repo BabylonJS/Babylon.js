@@ -1,9 +1,7 @@
-import { Material } from "../Materials/material";
 import { Scene } from "../scene";
 import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
 import { Nullable } from "../types";
 import { DepthPeelingRenderer } from "./depthPeelingRenderer";
-impo
 
 declare module "../scene" {
     export interface Scene {

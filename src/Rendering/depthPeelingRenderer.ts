@@ -1,10 +1,16 @@
-import { Constants, Engine } from "../Engines";
-import { Effect, IMultiRenderTargetOptions, MultiRenderTarget, Texture } from "../Materials";
+import { Constants } from "../Engines/constants";
+import { Engine } from "../Engines/engine";
+import { Effect } from "../Materials/effect";
+import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
-import { Color4 } from "../Maths";
-import { Mesh, SubMesh } from "../Meshes";
-import { SmartArray } from "../Misc";
+import { Color4 } from "../Maths/math.color";
+import { SubMesh } from "../Meshes/subMesh";
+import { SmartArray } from "../Misc/smartArray";
 import { Scene } from "../scene";
+
+import "../Shaders/postprocess.vertex";
+import "../Shaders/oitFinal.fragment";
+import "../Shaders/oitBackBlend.fragment";
 
 export class DepthPeelingRenderer {
     private _scene: Scene;
@@ -71,7 +77,7 @@ export class DepthPeelingRenderer {
     }
 
     private _createEffects() {
-        this._blendBackEffect = new Effect(
+        this._blendBackEffect = this._scene.getEngine().createEffect(
             {
                 vertex: "postprocess",
                 fragment: "oitBackBlend",
@@ -81,7 +87,7 @@ export class DepthPeelingRenderer {
                 samplers: [],
                 uniformsNames: [],
                 uniformBuffersNames: [],
-                defines: null,
+                defines: "",
                 fallbacks: null,
                 onCompiled: null,
                 onError: null,
@@ -99,7 +105,7 @@ export class DepthPeelingRenderer {
                 samplers: [],
                 uniformsNames: [],
                 uniformBuffersNames: [],
-                defines: null,
+                defines: "",
                 fallbacks: null,
                 onCompiled: null,
                 onError: null,
