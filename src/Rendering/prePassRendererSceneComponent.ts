@@ -37,7 +37,7 @@ declare module "../abstractScene" {
 declare module "../Materials/Textures/renderTargetTexture" {
     export interface RenderTargetTexture {
         /** @hidden */
-        _prePassRenderTarget: PrePassRenderTarget;
+        _prePassRenderTarget: Nullable<PrePassRenderTarget>;
     }
 }
 
