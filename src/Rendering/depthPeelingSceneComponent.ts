@@ -1,15 +1,53 @@
+import { Material } from "../Materials/material";
 import { Scene } from "../scene";
 import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
+import { Nullable } from "../types";
 import { DepthPeelingRenderer } from "./depthPeelingRenderer";
+impo
 
-declare module "../abstractScene" {
-    export interface AbstractScene {
+declare module "../scene" {
+    export interface Scene {
         /**
          * The depth peeling renderer
          */
-        depthPeelingRenderer: DepthPeelingRenderer;
+        depthPeelingRenderer: Nullable<DepthPeelingRenderer>;
+        /** @hidden (Backing field) */
+        _depthPeelingRenderer: Nullable<DepthPeelingRenderer>;
+
+        /**
+         * Flag to indicate if we want to use order independant transparency, despite the performance hit
+         */
+        useOrderIndependantTransparency: boolean
     }
 }
+
+// declare module "../Materials/material" {
+//     export interface Material {
+//         /**
+//          * Flag to indicate if this mesh is using orderIndependantTransparency for this rendering pass
+//          */
+//     }
+// }
+
+Object.defineProperty(Scene.prototype, "depthPeelingRenderer", {
+    get: function(this: Scene) {
+        if (!this._depthPeelingRenderer) {
+            let component = this._getComponent(SceneComponentConstants.NAME_DEPTHPEELINGRENDERER) as DepthPeelingSceneComponent;
+            if (!component) {
+                component = new DepthPeelingSceneComponent(this);
+                this._addComponent(component);
+            }
+        }
+
+        return this._depthPeelingRenderer;
+    },
+    set: function(this: Scene, value: DepthPeelingRenderer) {
+        this._depthPeelingRenderer = value;
+    },
+    enumerable: true,
+    configurable: true
+});
+
 
 /**
  * Scene component to render order independant transparency with depth peeling
@@ -33,7 +71,7 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
         this.scene = scene;
 
         // TODO dynamic instancing
-        scene.depthPeelingRenderer = new DepthPeelingRenderer();
+        scene.depthPeelingRenderer = new DepthPeelingRenderer(scene);
     }
 
     /**
@@ -58,7 +96,8 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
      * Disposes the component and the associated resources.
      */
     public dispose(): void {
-        this.scene.depthPeelingRenderer.dispose();
+        this.scene.depthPeelingRenderer?.dispose();
+        this.scene.depthPeelingRenderer = null;
     }
 
 }

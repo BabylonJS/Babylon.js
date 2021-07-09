@@ -287,6 +287,21 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines related to order independant transparency
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     */
+    public static PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
+        const previousDefine = defines.ORDER_INDEPENDANT_TRANSPARENCY;
+
+        defines.ORDER_INDEPENDANT_TRANSPARENCY = scene.useOrderIndependantTransparency && needAlphaBlending;
+
+        if (previousDefine !== defines.ORDER_INDEPENDANT_TRANSPARENCY) {
+            defines.markAsUnprocessed();
+        }
+    }
+
+    /**
      * Prepares the defines related to the prepass
      * @param scene The scene we are intending to draw
      * @param defines The defines to update
