@@ -420,6 +420,39 @@ export class VertexData {
         }
     }
 
+    private static TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
+        if (typeof _native !== 'undefined') {
+            _native.TransformVector3Normals(normals, transformation);
+        } else {
+            const normal = Vector3.Zero();
+            const transformedNormal = Vector3.Zero(); // TmpVectors
+            for (let index = 0; index < normals.length; index += 3) {
+                Vector3.FromArrayToRef(normals, index, normal);
+                Vector3.TransformNormalToRef(normal, transformation, transformedNormal);
+                normals[index] = transformedNormal.x;
+                normals[index + 1] = transformedNormal.y;
+                normals[index + 2] = transformedNormal.z;
+            }
+        }
+    }
+
+    private static TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
+        if (typeof _native !== 'undefined' && false) { // TODO
+            _native.TransformVector4Normals(normals, transformation);
+        } else {
+            var normal = Vector4.Zero();
+            var transformedNormal = Vector4.Zero();
+            for (let index = 0; index < normals.length; index += 4) {
+                Vector4.FromArrayToRef(normals, index, normal);
+                Vector4.TransformNormalToRef(normal, transformation, transformedNormal);
+                normals[index] = transformedNormal.x;
+                normals[index + 1] = transformedNormal.y;
+                normals[index + 2] = transformedNormal.z;
+                normals[index + 3] = transformedNormal.w;
+            }
+        }
+    }
+
     /**
      * Transforms each position and each normal of the vertexData according to the passed Matrix
      * @param matrix the transforming matrix
@@ -427,38 +460,17 @@ export class VertexData {
      */
     public transform(matrix: Matrix): VertexData {
         var flip = matrix.determinant() < 0;
-        var transformed = Vector3.Zero();
         var index: number;
         if (this.positions) {
             VertexData.TransformVector3Coordinates(this.positions, matrix);
         }
 
         if (this.normals) {
-            var normal = Vector3.Zero();
-
-            for (index = 0; index < this.normals.length; index += 3) {
-                Vector3.FromArrayToRef(this.normals, index, normal);
-
-                Vector3.TransformNormalToRef(normal, matrix, transformed);
-                this.normals[index] = transformed.x;
-                this.normals[index + 1] = transformed.y;
-                this.normals[index + 2] = transformed.z;
-            }
+            VertexData.TransformVector3Normals(this.normals, matrix);
         }
 
         if (this.tangents) {
-            var tangent = Vector4.Zero();
-            var tangentTransformed = Vector4.Zero();
-
-            for (index = 0; index < this.tangents.length; index += 4) {
-                Vector4.FromArrayToRef(this.tangents, index, tangent);
-
-                Vector4.TransformNormalToRef(tangent, matrix, tangentTransformed);
-                this.tangents[index] = tangentTransformed.x;
-                this.tangents[index + 1] = tangentTransformed.y;
-                this.tangents[index + 2] = tangentTransformed.z;
-                this.tangents[index + 3] = tangentTransformed.w;
-            }
+            VertexData.TransformVector4Normals(this.tangents, matrix);
         }
 
         if (flip && this.indices) {

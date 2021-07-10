@@ -804,9 +804,10 @@ export class SubMesh implements ICullable {
      * @param indexCount the number of indices to copy then from the startIndex
      * @param mesh the main mesh to create the submesh from
      * @param renderingMesh the optional rendering mesh
+     * @param createBoundingBox defines if bounding box should be created for this submesh
      * @returns a new submesh
      */
-    public static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh): SubMesh {
+    public static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true): SubMesh {
         var minVertexIndex = Number.MAX_VALUE;
         var maxVertexIndex = -Number.MAX_VALUE;
 
@@ -824,6 +825,6 @@ export class SubMesh implements ICullable {
             }
         }
 
-        return new SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh);
+        return new SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh, createBoundingBox);
     }
 }
