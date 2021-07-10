@@ -4898,10 +4898,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             //-- apply subdivision according to index table
             while (index < indiceArray.length) {
-                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
+                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass, undefined, false);
                 offset += indiceArray[index];
                 index++;
             }
+
+            for (const subMesh of meshSubclass.subMeshes) {
+                subMesh.refreshBoundingInfo();
+            }
+
+            meshSubclass.computeWorldMatrix(true);
         }
 
         if (multiMultiMaterials) {
@@ -4940,5 +4946,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 }
+
+class Profile {
+    private readonly timestamps: {name:string, time:number}[] = [];
+
+    public mark(name: string): void {
+        this.timestamps.push({name, time:performance.now()});
+    }
+
+    public print(): void {
+        this.timestamps.reduce<{name:string, time:number} | undefined>((previous, current) => {
+            if (previous) {
+                console.log(`${previous.name} -> ${current.name}: ${current.time - previous.time}`);
+            }
+
+            return current;
+        }, undefined);
+    }
+}
+console.log(Profile);
 
 _TypeStore.RegisteredTypes["BABYLON.Mesh"] = Mesh;
