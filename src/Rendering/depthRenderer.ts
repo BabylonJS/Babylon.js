@@ -264,6 +264,12 @@ export class DepthRenderer {
             }
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
             defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
+
+            const skeleton = subMesh.getRenderingMesh().skeleton;
+
+            if (skeleton?.isUsingTextureForMatrices) {
+                defines.push("#define BONETEXTURE");
+            }
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
@@ -311,8 +317,8 @@ export class DepthRenderer {
             cachedDefines = join;
             effect = engine.createEffect("depth",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
-                ["diffuseSampler", "morphTargets"], join,
+                ["world", "mBones", "boneTextureWidth", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
+                ["diffuseSampler", "morphTargets", "boneSampler"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
