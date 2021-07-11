@@ -37,6 +37,9 @@ export class DepthRenderer {
     /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
     public enabled = true;
 
+    /** Force writing the transparent objects into the depth map */
+    public forceDepthWriteTransparentMeshes = false;
+
     /**
      * Specifies that the depth renderer will only be used within
      * the camera it is created for.
@@ -200,11 +203,9 @@ export class DepthRenderer {
             var index;
 
             if (depthOnlySubMeshes.length) {
-                engine.setColorWrite(false);
                 for (index = 0; index < depthOnlySubMeshes.length; index++) {
                     renderSubMesh(depthOnlySubMeshes.data[index]);
                 }
-                engine.setColorWrite(true);
             }
 
             for (index = 0; index < opaqueSubMeshes.length; index++) {
@@ -213,6 +214,12 @@ export class DepthRenderer {
 
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
                 renderSubMesh(alphaTestSubMeshes.data[index]);
+            }
+
+            if (this.forceDepthWriteTransparentMeshes) {
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    renderSubMesh(transparentSubMeshes.data[index]);
+                }
             }
         };
     }
