@@ -69162,6 +69162,8 @@ declare module BABYLON {
         private _camera;
         /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
         enabled: boolean;
+        /** Force writing the transparent objects into the depth map */
+        forceDepthWriteTransparentMeshes: boolean;
         /**
          * Specifies that the depth renderer will only be used within
          * the camera it is created for.
@@ -76827,11 +76829,18 @@ declare module BABYLON {
         private _timeStep;
         private _tempVec1;
         private _tempVec2;
+        private _worker;
         /**
          * Initializes the recastJS plugin
          * @param recastInjection can be used to inject your own recast reference
          */
         constructor(recastInjection?: any);
+        /**
+         * Set worker URL to be used when generating a new navmesh
+         * @param workerURL url string
+         * @returns boolean indicating if worker is created
+         */
+        setWorkerURL(workerURL: string): boolean;
         /**
          * Set the time step of the navigation tick update.
          * Default is 1/60.
@@ -76861,8 +76870,9 @@ declare module BABYLON {
          * Creates a navigation mesh
          * @param meshes array of all the geometry used to compute the navigation mesh
          * @param parameters bunch of parameters used to filter geometry
+         * @param completion callback when data is available from the worker. Not used without a worker
          */
-        createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
+        createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters, completion?: (navmeshData: Uint8Array) => void): void;
         /**
          * Create a navigation mesh debug mesh
          * @param scene is where the mesh will be added

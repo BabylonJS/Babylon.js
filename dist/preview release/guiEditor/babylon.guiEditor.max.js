@@ -44014,6 +44014,23 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         var _a;
                         (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
+                        if (_this.state.currentNode) {
+                            var serializationObject = {};
+                            _this.state.currentNode.serialize(serializationObject);
+                            var newControl_1 = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["Control"].Parse(serializationObject, _this.props.globalState.guiTexture);
+                            if (newControl_1) { //insert the new control into the adt
+                                _this.props.globalState.workbench.appendBlock(newControl_1);
+                                var index = 1;
+                                while (_this.props.globalState.workbench.nodes.filter(//search if there are any copies
+                                function (//search if there are any copies
+                                control) { return control.name === newControl_1.name; }).length > 1) {
+                                    newControl_1.name = _this.state.currentNode.name + " Copy " + index++;
+                                }
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl_1);
+                            }
+                        }
                     } })));
         }
         var sizeOptions = [
