@@ -293,7 +293,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 if (newControl) { //insert the new control into the adt
                                     this.props.globalState.workbench.appendBlock(newControl);
                                     let index = 1;
-                                    while (this.props.globalState.workbench.nodes.filter(  //search if thier are any copies
+                                    while (this.props.globalState.workbench.nodes.filter(  //search if there are any copies
                                         control => control.name === newControl.name).length > 1) {
                                         newControl.name = `${this.state.currentNode.name} Copy ${index++}`;
                                     }
