@@ -294,34 +294,26 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private parent(control: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
 
-        if (draggedControl != null) {
-
-            if (draggedControl.parent) {
-                (draggedControl.parent as Container).removeControl(draggedControl);
-            }
-            else {
-                this.props.globalState.guiTexture.removeControl(draggedControl);
-            }
-
+        if (draggedControl != null && draggedControl.parent) {
+            let draggedControlParent = draggedControl.parent;
+            draggedControlParent.removeControl(draggedControl);
+            
             if (control != null) {
                 if (this.props.globalState.workbench.isContainer(control)) {
                     this.props.globalState.guiTexture.removeControl(draggedControl);
                     (control as Container).addControl(draggedControl);
                 }
-                else if (control.parent) {
+                if (control.parent) {
                     let index = control.parent.children.indexOf(control);
                     index = this._adjustParentingIndex(index);
                     control.parent.children.splice(index, 0, draggedControl);
                     draggedControl.parent = control.parent;
                 }
-                else {
-                    let index = this.props.globalState.guiTexture.getChildren()[0].children.indexOf(control);
-                    index = this._adjustParentingIndex(index);
-                    this.props.globalState.guiTexture.getChildren()[0].children.splice(index, 0, draggedControl);
-                }
+                this.props.globalState.guiTexture.addControl(draggedControl);
             }
             else {
-                this.props.globalState.guiTexture.getChildren()[0].children.unshift(draggedControl);
+                draggedControlParent.children.splice(1, 0, draggedControl);
+                draggedControl.parent = draggedControlParent;
             }
         }
         this.globalState.draggedControl = null;
