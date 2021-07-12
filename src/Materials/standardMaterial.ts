@@ -174,6 +174,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public MULTIVIEW = false;
+    public ORDER_INDEPENDANT_TRANSPARENCY = false;
+    
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
