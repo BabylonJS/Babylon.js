@@ -77,6 +77,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                         this.props.globalState.onParentingChangeObservable.notifyObservers(this.props.control);
                         this.forceUpdate();
                     }
+                    this.props.globalState.draggedControl = null;
                     this.dragOverLocation = DragOverLocation.NONE;
                 }}
                 onDragEnd={event => {
