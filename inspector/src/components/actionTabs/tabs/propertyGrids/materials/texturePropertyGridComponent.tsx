@@ -5,6 +5,8 @@ import { Tools } from "babylonjs/Misc/tools";
 import { Observable } from "babylonjs/Misc/observable";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
+import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
+import { MultiRenderTarget } from "babylonjs/Materials/Textures/multiRenderTarget";
 import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
 import { Constants } from "babylonjs/Engines/constants";
 
@@ -58,6 +60,7 @@ const textureFormat = [
     { label: "BGRA", normalizable: 1, value: Constants.TEXTUREFORMAT_BGRA },
     { label: "Depth24/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 },
     { label: "Depth32 float", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
+    { label: "Depth16", normalizable: 0, value: Constants.TEXTUREFORMAT_DEPTH16 },
     { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
     { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
     { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
@@ -240,6 +243,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
         const oformat = this.findTextureFormat(format === -1 ? Constants.TEXTUREFORMAT_RGBA : format);
         const otype = this.findTextureType(type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : type);
+        const textureClass = texture instanceof MultiRenderTarget ? "MultiRenderTarget" : texture instanceof RenderTargetTexture ? "RenderTargetTexture" : texture.getClassName();
+        const count = texture instanceof MultiRenderTarget ? texture.count : -1;
 
         let extension = "";
         let url = (texture as Texture).url;
@@ -324,7 +329,11 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     }
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
                     <TextLineComponent label="Internal Unique ID" value={texture._texture?.uniqueId.toString()} />
-                    <TextLineComponent label="Class" value={texture.getClassName()} />
+                    <TextLineComponent label="Class" value={textureClass} />
+                    {
+                        count >= 0 &&
+                            <TextLineComponent label="Number of textures" value={count.toString()} />
+                    }
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
                     <TextLineComponent label="Is 3D" value={texture.is3D ? "Yes" : "No"} />
                     <TextLineComponent label="Is 2D array" value={texture.is2DArray ? "Yes" : "No"} />
