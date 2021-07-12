@@ -15551,8 +15551,10 @@ var ValueAndUnit = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "XmlLoader", function() { return XmlLoader; });
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_1__);
+
 
 /**
 * Class used to load GUI via XML.
@@ -15596,13 +15598,13 @@ var XmlLoader = /** @class */ (function () {
     };
     XmlLoader.prototype._getClassAttribute = function (attributeName) {
         var attribute = attributeName.split(".");
-        var className = babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__["_TypeStore"].GetClass("BABYLON.GUI." + attribute[0]);
+        var className = babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].GetClass("BABYLON.GUI." + attribute[0]);
         return className[attribute[1]];
     };
     XmlLoader.prototype._createGuiElement = function (node, parent, linkParent) {
         if (linkParent === void 0) { linkParent = true; }
         try {
-            var className = babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__["_TypeStore"].GetClass("BABYLON.GUI." + node.nodeName);
+            var className = babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].GetClass("BABYLON.GUI." + node.nodeName);
             var guiNode = new className();
             if (parent && linkParent) {
                 parent.addControl(guiNode);
@@ -15656,8 +15658,8 @@ var XmlLoader = /** @class */ (function () {
             }
             return guiNode;
         }
-        catch (e) {
-            throw "XmlLoader Exception : Error parsing Control " + node.nodeName + "," + e + ".";
+        catch (exception) {
+            throw "XmlLoader Exception : Error parsing Control " + node.nodeName + "," + exception + ".";
         }
     };
     XmlLoader.prototype._parseGrid = function (node, guiNode, parent) {
@@ -15754,7 +15756,7 @@ var XmlLoader = /** @class */ (function () {
             var isArray = true;
             var splittedSource = dataSource.split(" in ");
             if (splittedSource.length < 2) {
-                throw "XmlLoader Exception : Malformed XML, Data Source must an iterator and a source";
+                throw "XmlLoader Exception : Malformed XML, Data Source must have an iterator and a source";
             }
             var source = splittedSource[1];
             if (source.startsWith("{") && source.endsWith("}")) {
@@ -15796,6 +15798,9 @@ var XmlLoader = /** @class */ (function () {
             node.setAttribute("id", parent.id + (parent._children.length + 1));
         }
         var guiNode = this._createGuiElement(node, parent);
+        if (!this._rootNode) {
+            this._rootNode = guiNode;
+        }
         if (node.nodeName == "Grid") {
             this._parseGrid(node, guiNode, parent);
         }
@@ -15829,28 +15834,64 @@ var XmlLoader = /** @class */ (function () {
         return this._nodes;
     };
     /**
+     * Disposes the loaded layout
+    */
+    XmlLoader.prototype.dispose = function () {
+        if (this._rootNode) {
+            this._rootNode.dispose();
+            this._rootNode = null;
+            this._nodes = {};
+        }
+    };
+    /**
      * Initiates the xml layout loading
      * @param xmlFile defines the xml layout to load
      * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
-     * @param callback defines the callback called on layout load.
+     * @param onSuccess defines the callback called on layout load successfully.
+     * @param onError defines the callback called on layout load failure.
      */
-    XmlLoader.prototype.loadLayout = function (xmlFile, rootNode, callback) {
+    XmlLoader.prototype.loadLayout = function (xmlFile, rootNode, onSuccess, onError) {
+        var _this = this;
+        if (onSuccess === void 0) { onSuccess = null; }
+        if (onError === void 0) { onError = null; }
         var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-            if (xhttp.readyState == 4 && xhttp.status == 200) {
+        xhttp.onload = function () {
+            if (xhttp.readyState === 4 && xhttp.status === 200) {
                 if (!xhttp.responseXML) {
                     throw "XmlLoader Exception : XML file is malformed or corrupted.";
                 }
                 var xmlDoc = xhttp.responseXML.documentElement;
-                this._parseXml(xmlDoc.firstChild, rootNode);
-                this._isLoaded = true;
-                if (callback) {
-                    callback();
+                _this._parseXml(xmlDoc.firstChild, rootNode);
+                _this._isLoaded = true;
+                if (onSuccess) {
+                    onSuccess();
                 }
             }
-        }.bind(this);
+        };
+        xhttp.onerror = function () {
+            if (onError) {
+                onError("an error occurred during loading the layout");
+            }
+        };
         xhttp.open("GET", xmlFile, true);
         xhttp.send();
+    };
+    /**
+     * Initiates the xml layout loading asynchronously
+     * @param xmlFile defines the xml layout to load
+     * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+     * @returns Promise
+
+     */
+    XmlLoader.prototype.loadLayoutAsync = function (xmlFile, rootNode) {
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var _this = this;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        _this.loadLayout(xmlFile, rootNode, resolve, reject);
+                    })];
+            });
+        });
     };
     return XmlLoader;
 }());
@@ -18147,7 +18188,7 @@ var NearMenu = /** @class */ (function (_super) {
     };
     NearMenu.prototype._finalProcessing = function () {
         _super.prototype._finalProcessing.call(this);
-        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
+        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.2, this._backPlate.scaling.y / 2, -0.1);
     };
     /**
      * Disposes the near menu
@@ -21357,7 +21398,7 @@ var FluentBackplateMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: 4 }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -21607,7 +21648,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
 var name = 'fluentBackplateVertexShader';
-var shader = "uniform mat4 world;\nuniform mat4 viewProjection;\nuniform vec3 cameraPosition;\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec3 tangent;\nuniform float _Radius_;\nuniform float _Line_Width_;\nuniform bool _Absolute_Sizes_;\nuniform float _Filter_Width_;\nuniform vec4 _Base_Color_;\nuniform vec4 _Line_Color_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\n\nuniform vec3 _Blob_Position_;\nuniform float _Blob_Intensity_;\nuniform float _Blob_Near_Size_;\nuniform float _Blob_Far_Size_;\nuniform float _Blob_Near_Distance_;\nuniform float _Blob_Far_Distance_;\nuniform float _Blob_Fade_Length_;\nuniform float _Blob_Pulse_;\nuniform float _Blob_Fade_;\nuniform sampler2D _Blob_Texture_;\n\nuniform vec3 _Blob_Position_2_;\nuniform float _Blob_Near_Size_2_;\nuniform float _Blob_Pulse_2_;\nuniform float _Blob_Fade_2_;\nuniform float _Rate_;\nuniform vec4 _Highlight_Color_;\nuniform float _Highlight_Width_;\nuniform vec4 _Highlight_Transform_;\nuniform float _Highlight_;\nuniform float _Iridescence_Intensity_;\nuniform float _Iridescence_Edge_Intensity_;\nuniform float _Angle_;\nuniform float _Fade_Out_;\n\nuniform bool _Reflected_;\nuniform float _Frequency_;\nuniform float _Vertical_Offset_;\n\nuniform sampler2D _Iridescent_Map_;\nuniform bool _Use_Global_Left_Index_;\nuniform bool _Use_Global_Right_Index_;\nuniform vec4 Global_Left_Index_Tip_Position;\nuniform vec4 Global_Right_Index_Tip_Position;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vColor;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\nvarying vec4 vExtra3;\n\nvoid Object_To_World_Pos_B115(\nvec3 Pos_Object,\nout vec3 Pos_World)\n{\nPos_World=(world*vec4(Pos_Object,1.0)).xyz;\n}\n\n\nvoid PickDir_B140(\nfloat Degrees,\nvec3 DirX,\nvec3 DirY,\nout vec3 Dir)\n{\n\nfloat a=Degrees*3.14159/180.0;\nDir=cos(a)*DirX+sin(a)*DirY;\n}\n\n\nvoid Round_Rect_Vertex_B139(\nvec2 UV,\nfloat Radius,\nfloat Margin,\nfloat Anisotropy,\nfloat Gradient1,\nfloat Gradient2,\nout vec2 Rect_UV,\nout vec4 Rect_Parms,\nout vec2 Scale_XY,\nout vec2 Line_UV)\n{\nScale_XY=vec2(Anisotropy,1.0);\nLine_UV=(UV-vec2(0.5,0.5));\nRect_UV=Line_UV*Scale_XY;\nRect_Parms.xy=Scale_XY*0.5-vec2(Radius,Radius)-vec2(Margin,Margin);\nRect_Parms.z=Gradient1;\nRect_Parms.w=Gradient2;\n}\n\n\nvoid Line_Vertex_B135(\nvec2 Scale_XY,\nvec2 UV,\nfloat Time,\nfloat Rate,\nvec4 Highlight_Transform,\nout vec3 Line_Vertex)\n{\nfloat angle2=(Rate*Time)*2.0*3.1416;\nfloat sinAngle2=sin(angle2);\nfloat cosAngle2=cos(angle2);\nvec2 xformUV=UV*Highlight_Transform.xy+Highlight_Transform.zw;\nLine_Vertex.x=0.0;\nLine_Vertex.y=cosAngle2*xformUV.x-sinAngle2*xformUV.y;\nLine_Vertex.z=0.0;\n}\n\n\nvoid Blob_Vertex_B180(\nvec3 Position,\nvec3 Normal,\nvec3 Tangent,\nvec3 Bitangent,\nvec3 Blob_Position,\nfloat Intensity,\nfloat Blob_Near_Size,\nfloat Blob_Far_Size,\nfloat Blob_Near_Distance,\nfloat Blob_Far_Distance,\nfloat Blob_Fade_Length,\nfloat Blob_Pulse,\nfloat Blob_Fade,\nout vec4 Blob_Info)\n{\nvec3 blob=Blob_Position;\nvec3 delta=blob-Position;\nfloat dist=dot(Normal,delta);\nfloat lerpValue=clamp((abs(dist)-Blob_Near_Distance)/(Blob_Far_Distance-Blob_Near_Distance),0.0,1.0);\nfloat fadeValue=1.0-clamp((abs(dist)-Blob_Far_Distance)/Blob_Fade_Length,0.0,1.0);\nfloat size=Blob_Near_Size+(Blob_Far_Size-Blob_Near_Size)*lerpValue;\nvec2 blobXY=vec2(dot(delta,Tangent),dot(delta,Bitangent))/(0.0001+size);\nfloat Fade=fadeValue*Intensity*Blob_Fade;\nfloat Distance=(lerpValue*0.5+0.5)*(1.0-Blob_Pulse);\nBlob_Info=vec4(blobXY.x,blobXY.y,Distance,Fade);\n}\n\n\nvoid Move_Verts_B129(\nfloat Anisotropy,\nvec3 P,\nfloat Radius,\nout vec3 New_P,\nout vec2 New_UV,\nout float Radial_Gradient,\nout vec3 Radial_Dir)\n{\nvec2 UV=P.xy*2.0+0.5;\nvec2 center=clamp(UV,0.0,1.0);\nvec2 delta=UV-center;\nvec2 r2=2.0*vec2(Radius/Anisotropy,Radius);\nNew_UV=center+r2*(UV-2.0*center+0.5);\nNew_P=vec3(New_UV-0.5,P.z);\nRadial_Gradient=1.0-length(delta)*2.0;\nRadial_Dir=vec3(delta*r2,0.0);\n}\n\n\nvoid Object_To_World_Dir_B132(\nvec3 Dir_Object,\nout vec3 Binormal_World,\nout vec3 Binormal_World_N,\nout float Binormal_Length)\n{\nBinormal_World=(world*vec4(Dir_Object,0.0)).xyz;\nBinormal_Length=length(Binormal_World);\nBinormal_World_N=Binormal_World/Binormal_Length;\n}\n\n\nvoid RelativeOrAbsoluteDetail_B147(\nfloat Nominal_Radius,\nfloat Nominal_LineWidth,\nbool Absolute_Measurements,\nfloat Height,\nout float Radius,\nout float Line_Width)\n{\nfloat scale=Absolute_Measurements ? 1.0/Height : 1.0;\nRadius=Nominal_Radius*scale;\nLine_Width=Nominal_LineWidth*scale;\n}\n\n\nvoid Edge_AA_Vertex_B130(\nvec3 Position_World,\nvec3 Position_Object,\nvec3 Normal_Object,\nvec3 Eye,\nfloat Radial_Gradient,\nvec3 Radial_Dir,\nvec3 Tangent,\nout float Gradient1,\nout float Gradient2)\n{\n\nvec3 I=(Eye-Position_World);\nvec3 T=(world* vec4(Tangent,0.0)).xyz;\nfloat g=(dot(T,I)<0.0) ? 0.0 : 1.0;\nif (Normal_Object.z==0.0) {\n\nGradient1=Position_Object.z>0.0 ? g : 1.0;\nGradient2=Position_Object.z>0.0 ? 1.0 : g;\n} else {\n\n\n\n\nGradient1=g+(1.0-g)*(Radial_Gradient);\nGradient2=1.0;\n}\n}\n\n\nvoid Pick_Radius_B144(\nfloat Radius,\nfloat Radius_Top_Left,\nfloat Radius_Top_Right,\nfloat Radius_Bottom_Left,\nfloat Radius_Bottom_Right,\nvec3 Position,\nout float Result)\n{\nbool whichY=Position.y>0.0;\nResult=Position.x<0.0 ? (whichY ? Radius_Top_Left : Radius_Bottom_Left) : (whichY ? Radius_Top_Right : Radius_Bottom_Right);\nResult*=Radius;\n}\n\nvoid main()\n{\n\nvec3 Nrm_World_Q128;\nNrm_World_Q128=normalize((world*vec4(normal,0.0)).xyz);\n\nvec3 Tangent_World_Q131;\nvec3 Tangent_World_N_Q131;\nfloat Tangent_Length_Q131;\nTangent_World_Q131=(world*vec4(vec3(1,0,0),0.0)).xyz;\nTangent_Length_Q131=length(Tangent_World_Q131);\nTangent_World_N_Q131=Tangent_World_Q131/Tangent_Length_Q131;\nvec3 Binormal_World_Q132;\nvec3 Binormal_World_N_Q132;\nfloat Binormal_Length_Q132;\nObject_To_World_Dir_B132(vec3(0,1,0),Binormal_World_Q132,Binormal_World_N_Q132,Binormal_Length_Q132);\n\nfloat Anisotropy_Q133=Tangent_Length_Q131/Binormal_Length_Q132;\n\nvec3 Result_Q177;\nResult_Q177=mix(_Blob_Position_,Global_Left_Index_Tip_Position.xyz,float(_Use_Global_Left_Index_));\n\nvec3 Result_Q178;\nResult_Q178=mix(_Blob_Position_2_,Global_Right_Index_Tip_Position.xyz,float(_Use_Global_Right_Index_));\nfloat Result_Q144;\nPick_Radius_B144(_Radius_,_Radius_Top_Left_,_Radius_Top_Right_,_Radius_Bottom_Left_,_Radius_Bottom_Right_,position,Result_Q144);\nvec3 Dir_Q140;\nPickDir_B140(_Angle_,Tangent_World_N_Q131,Binormal_World_N_Q132,Dir_Q140);\nfloat Radius_Q147;\nfloat Line_Width_Q147;\nRelativeOrAbsoluteDetail_B147(Result_Q144,_Line_Width_,_Absolute_Sizes_,Binormal_Length_Q132,Radius_Q147,Line_Width_Q147);\n\nvec4 Out_Color_Q145=vec4(Radius_Q147,Line_Width_Q147,0,1);\nvec3 New_P_Q129;\nvec2 New_UV_Q129;\nfloat Radial_Gradient_Q129;\nvec3 Radial_Dir_Q129;\nMove_Verts_B129(Anisotropy_Q133,position,Radius_Q147,New_P_Q129,New_UV_Q129,Radial_Gradient_Q129,Radial_Dir_Q129);\nvec3 Pos_World_Q115;\nObject_To_World_Pos_B115(New_P_Q129,Pos_World_Q115);\nvec4 Blob_Info_Q180;\n#if BLOB_ENABLE\nBlob_Vertex_B180(Pos_World_Q115,Nrm_World_Q128,Tangent_World_N_Q131,Binormal_World_N_Q132,Result_Q177,_Blob_Intensity_,_Blob_Near_Size_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_,_Blob_Fade_,Blob_Info_Q180);\n#else\nBlob_Info_Q180=vec4(0,0,0,0);\n#endif\nvec4 Blob_Info_Q181;\n#if BLOB_ENABLE_2\nBlob_Vertex_B180(Pos_World_Q115,Nrm_World_Q128,Tangent_World_N_Q131,Binormal_World_N_Q132,Result_Q178,_Blob_Intensity_,_Blob_Near_Size_2_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_2_,_Blob_Fade_2_,Blob_Info_Q181);\n#else\nBlob_Info_Q181=vec4(0,0,0,0);\n#endif\nfloat Gradient1_Q130;\nfloat Gradient2_Q130;\n#if SMOOTH_EDGES\nEdge_AA_Vertex_B130(Pos_World_Q115,position,normal,cameraPosition,Radial_Gradient_Q129,Radial_Dir_Q129,tangent,Gradient1_Q130,Gradient2_Q130);\n#else\nGradient1_Q130=1.0;\nGradient2_Q130=1.0;\n#endif\nvec2 Rect_UV_Q139;\nvec4 Rect_Parms_Q139;\nvec2 Scale_XY_Q139;\nvec2 Line_UV_Q139;\nRound_Rect_Vertex_B139(New_UV_Q129,Radius_Q147,0.0,Anisotropy_Q133,Gradient1_Q130,Gradient2_Q130,Rect_UV_Q139,Rect_Parms_Q139,Scale_XY_Q139,Line_UV_Q139);\nvec3 Line_Vertex_Q135;\nLine_Vertex_B135(Scale_XY_Q139,Line_UV_Q139,0.0,_Rate_,_Highlight_Transform_,Line_Vertex_Q135);\nvec3 Position=Pos_World_Q115;\nvec3 Normal=Dir_Q140;\nvec2 UV=Rect_UV_Q139;\nvec3 Tangent=Line_Vertex_Q135;\nvec3 Binormal=Nrm_World_Q128;\nvec4 Color=Out_Color_Q145;\nvec4 Extra1=Rect_Parms_Q139;\nvec4 Extra2=Blob_Info_Q180;\nvec4 Extra3=Blob_Info_Q181;\ngl_Position=viewProjection*vec4(Position,1);\nvPosition=Position;\nvNormal=Normal;\nvUV=UV;\nvTangent=Tangent;\nvBinormal=Binormal;\nvColor=Color;\nvExtra1=Extra1;\nvExtra2=Extra2;\nvExtra3=Extra3;\n}";
+var shader = "uniform mat4 world;\nuniform mat4 viewProjection;\nuniform vec3 cameraPosition;\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef TANGENT\nattribute vec3 tangent;\n#else\nconst vec3 tangent=vec3(0.);\n#endif\nuniform float _Radius_;\nuniform float _Line_Width_;\nuniform bool _Absolute_Sizes_;\nuniform float _Filter_Width_;\nuniform vec4 _Base_Color_;\nuniform vec4 _Line_Color_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\n\nuniform vec3 _Blob_Position_;\nuniform float _Blob_Intensity_;\nuniform float _Blob_Near_Size_;\nuniform float _Blob_Far_Size_;\nuniform float _Blob_Near_Distance_;\nuniform float _Blob_Far_Distance_;\nuniform float _Blob_Fade_Length_;\nuniform float _Blob_Pulse_;\nuniform float _Blob_Fade_;\nuniform sampler2D _Blob_Texture_;\n\nuniform vec3 _Blob_Position_2_;\nuniform float _Blob_Near_Size_2_;\nuniform float _Blob_Pulse_2_;\nuniform float _Blob_Fade_2_;\nuniform float _Rate_;\nuniform vec4 _Highlight_Color_;\nuniform float _Highlight_Width_;\nuniform vec4 _Highlight_Transform_;\nuniform float _Highlight_;\nuniform float _Iridescence_Intensity_;\nuniform float _Iridescence_Edge_Intensity_;\nuniform float _Angle_;\nuniform float _Fade_Out_;\n\nuniform bool _Reflected_;\nuniform float _Frequency_;\nuniform float _Vertical_Offset_;\n\nuniform sampler2D _Iridescent_Map_;\nuniform bool _Use_Global_Left_Index_;\nuniform bool _Use_Global_Right_Index_;\nuniform vec4 Global_Left_Index_Tip_Position;\nuniform vec4 Global_Right_Index_Tip_Position;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vColor;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\nvarying vec4 vExtra3;\n\nvoid Object_To_World_Pos_B115(\nvec3 Pos_Object,\nout vec3 Pos_World)\n{\nPos_World=(world*vec4(Pos_Object,1.0)).xyz;\n}\n\n\nvoid PickDir_B140(\nfloat Degrees,\nvec3 DirX,\nvec3 DirY,\nout vec3 Dir)\n{\n\nfloat a=Degrees*3.14159/180.0;\nDir=cos(a)*DirX+sin(a)*DirY;\n}\n\n\nvoid Round_Rect_Vertex_B139(\nvec2 UV,\nfloat Radius,\nfloat Margin,\nfloat Anisotropy,\nfloat Gradient1,\nfloat Gradient2,\nout vec2 Rect_UV,\nout vec4 Rect_Parms,\nout vec2 Scale_XY,\nout vec2 Line_UV)\n{\nScale_XY=vec2(Anisotropy,1.0);\nLine_UV=(UV-vec2(0.5,0.5));\nRect_UV=Line_UV*Scale_XY;\nRect_Parms.xy=Scale_XY*0.5-vec2(Radius,Radius)-vec2(Margin,Margin);\nRect_Parms.z=Gradient1;\nRect_Parms.w=Gradient2;\n}\n\n\nvoid Line_Vertex_B135(\nvec2 Scale_XY,\nvec2 UV,\nfloat Time,\nfloat Rate,\nvec4 Highlight_Transform,\nout vec3 Line_Vertex)\n{\nfloat angle2=(Rate*Time)*2.0*3.1416;\nfloat sinAngle2=sin(angle2);\nfloat cosAngle2=cos(angle2);\nvec2 xformUV=UV*Highlight_Transform.xy+Highlight_Transform.zw;\nLine_Vertex.x=0.0;\nLine_Vertex.y=cosAngle2*xformUV.x-sinAngle2*xformUV.y;\nLine_Vertex.z=0.0;\n}\n\n\nvoid Blob_Vertex_B180(\nvec3 Position,\nvec3 Normal,\nvec3 Tangent,\nvec3 Bitangent,\nvec3 Blob_Position,\nfloat Intensity,\nfloat Blob_Near_Size,\nfloat Blob_Far_Size,\nfloat Blob_Near_Distance,\nfloat Blob_Far_Distance,\nfloat Blob_Fade_Length,\nfloat Blob_Pulse,\nfloat Blob_Fade,\nout vec4 Blob_Info)\n{\nvec3 blob=Blob_Position;\nvec3 delta=blob-Position;\nfloat dist=dot(Normal,delta);\nfloat lerpValue=clamp((abs(dist)-Blob_Near_Distance)/(Blob_Far_Distance-Blob_Near_Distance),0.0,1.0);\nfloat fadeValue=1.0-clamp((abs(dist)-Blob_Far_Distance)/Blob_Fade_Length,0.0,1.0);\nfloat size=Blob_Near_Size+(Blob_Far_Size-Blob_Near_Size)*lerpValue;\nvec2 blobXY=vec2(dot(delta,Tangent),dot(delta,Bitangent))/(0.0001+size);\nfloat Fade=fadeValue*Intensity*Blob_Fade;\nfloat Distance=(lerpValue*0.5+0.5)*(1.0-Blob_Pulse);\nBlob_Info=vec4(blobXY.x,blobXY.y,Distance,Fade);\n}\n\n\nvoid Move_Verts_B129(\nfloat Anisotropy,\nvec3 P,\nfloat Radius,\nout vec3 New_P,\nout vec2 New_UV,\nout float Radial_Gradient,\nout vec3 Radial_Dir)\n{\nvec2 UV=P.xy*2.0+0.5;\nvec2 center=clamp(UV,0.0,1.0);\nvec2 delta=UV-center;\nvec2 r2=2.0*vec2(Radius/Anisotropy,Radius);\nNew_UV=center+r2*(UV-2.0*center+0.5);\nNew_P=vec3(New_UV-0.5,P.z);\nRadial_Gradient=1.0-length(delta)*2.0;\nRadial_Dir=vec3(delta*r2,0.0);\n}\n\n\nvoid Object_To_World_Dir_B132(\nvec3 Dir_Object,\nout vec3 Binormal_World,\nout vec3 Binormal_World_N,\nout float Binormal_Length)\n{\nBinormal_World=(world*vec4(Dir_Object,0.0)).xyz;\nBinormal_Length=length(Binormal_World);\nBinormal_World_N=Binormal_World/Binormal_Length;\n}\n\n\nvoid RelativeOrAbsoluteDetail_B147(\nfloat Nominal_Radius,\nfloat Nominal_LineWidth,\nbool Absolute_Measurements,\nfloat Height,\nout float Radius,\nout float Line_Width)\n{\nfloat scale=Absolute_Measurements ? 1.0/Height : 1.0;\nRadius=Nominal_Radius*scale;\nLine_Width=Nominal_LineWidth*scale;\n}\n\n\nvoid Edge_AA_Vertex_B130(\nvec3 Position_World,\nvec3 Position_Object,\nvec3 Normal_Object,\nvec3 Eye,\nfloat Radial_Gradient,\nvec3 Radial_Dir,\nvec3 Tangent,\nout float Gradient1,\nout float Gradient2)\n{\n\nvec3 I=(Eye-Position_World);\nvec3 T=(world* vec4(Tangent,0.0)).xyz;\nfloat g=(dot(T,I)<0.0) ? 0.0 : 1.0;\nif (Normal_Object.z==0.0) {\n\nGradient1=Position_Object.z>0.0 ? g : 1.0;\nGradient2=Position_Object.z>0.0 ? 1.0 : g;\n} else {\n\n\n\n\nGradient1=g+(1.0-g)*(Radial_Gradient);\nGradient2=1.0;\n}\n}\n\n\nvoid Pick_Radius_B144(\nfloat Radius,\nfloat Radius_Top_Left,\nfloat Radius_Top_Right,\nfloat Radius_Bottom_Left,\nfloat Radius_Bottom_Right,\nvec3 Position,\nout float Result)\n{\nbool whichY=Position.y>0.0;\nResult=Position.x<0.0 ? (whichY ? Radius_Top_Left : Radius_Bottom_Left) : (whichY ? Radius_Top_Right : Radius_Bottom_Right);\nResult*=Radius;\n}\n\nvoid main()\n{\n\nvec3 Nrm_World_Q128;\nNrm_World_Q128=normalize((world*vec4(normal,0.0)).xyz);\n\nvec3 Tangent_World_Q131;\nvec3 Tangent_World_N_Q131;\nfloat Tangent_Length_Q131;\nTangent_World_Q131=(world*vec4(vec3(1,0,0),0.0)).xyz;\nTangent_Length_Q131=length(Tangent_World_Q131);\nTangent_World_N_Q131=Tangent_World_Q131/Tangent_Length_Q131;\nvec3 Binormal_World_Q132;\nvec3 Binormal_World_N_Q132;\nfloat Binormal_Length_Q132;\nObject_To_World_Dir_B132(vec3(0,1,0),Binormal_World_Q132,Binormal_World_N_Q132,Binormal_Length_Q132);\n\nfloat Anisotropy_Q133=Tangent_Length_Q131/Binormal_Length_Q132;\n\nvec3 Result_Q177;\nResult_Q177=mix(_Blob_Position_,Global_Left_Index_Tip_Position.xyz,float(_Use_Global_Left_Index_));\n\nvec3 Result_Q178;\nResult_Q178=mix(_Blob_Position_2_,Global_Right_Index_Tip_Position.xyz,float(_Use_Global_Right_Index_));\nfloat Result_Q144;\nPick_Radius_B144(_Radius_,_Radius_Top_Left_,_Radius_Top_Right_,_Radius_Bottom_Left_,_Radius_Bottom_Right_,position,Result_Q144);\nvec3 Dir_Q140;\nPickDir_B140(_Angle_,Tangent_World_N_Q131,Binormal_World_N_Q132,Dir_Q140);\nfloat Radius_Q147;\nfloat Line_Width_Q147;\nRelativeOrAbsoluteDetail_B147(Result_Q144,_Line_Width_,_Absolute_Sizes_,Binormal_Length_Q132,Radius_Q147,Line_Width_Q147);\n\nvec4 Out_Color_Q145=vec4(Radius_Q147,Line_Width_Q147,0,1);\nvec3 New_P_Q129;\nvec2 New_UV_Q129;\nfloat Radial_Gradient_Q129;\nvec3 Radial_Dir_Q129;\nMove_Verts_B129(Anisotropy_Q133,position,Radius_Q147,New_P_Q129,New_UV_Q129,Radial_Gradient_Q129,Radial_Dir_Q129);\nvec3 Pos_World_Q115;\nObject_To_World_Pos_B115(New_P_Q129,Pos_World_Q115);\nvec4 Blob_Info_Q180;\n#if BLOB_ENABLE\nBlob_Vertex_B180(Pos_World_Q115,Nrm_World_Q128,Tangent_World_N_Q131,Binormal_World_N_Q132,Result_Q177,_Blob_Intensity_,_Blob_Near_Size_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_,_Blob_Fade_,Blob_Info_Q180);\n#else\nBlob_Info_Q180=vec4(0,0,0,0);\n#endif\nvec4 Blob_Info_Q181;\n#if BLOB_ENABLE_2\nBlob_Vertex_B180(Pos_World_Q115,Nrm_World_Q128,Tangent_World_N_Q131,Binormal_World_N_Q132,Result_Q178,_Blob_Intensity_,_Blob_Near_Size_2_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_2_,_Blob_Fade_2_,Blob_Info_Q181);\n#else\nBlob_Info_Q181=vec4(0,0,0,0);\n#endif\nfloat Gradient1_Q130;\nfloat Gradient2_Q130;\n#if SMOOTH_EDGES\nEdge_AA_Vertex_B130(Pos_World_Q115,position,normal,cameraPosition,Radial_Gradient_Q129,Radial_Dir_Q129,tangent,Gradient1_Q130,Gradient2_Q130);\n#else\nGradient1_Q130=1.0;\nGradient2_Q130=1.0;\n#endif\nvec2 Rect_UV_Q139;\nvec4 Rect_Parms_Q139;\nvec2 Scale_XY_Q139;\nvec2 Line_UV_Q139;\nRound_Rect_Vertex_B139(New_UV_Q129,Radius_Q147,0.0,Anisotropy_Q133,Gradient1_Q130,Gradient2_Q130,Rect_UV_Q139,Rect_Parms_Q139,Scale_XY_Q139,Line_UV_Q139);\nvec3 Line_Vertex_Q135;\nLine_Vertex_B135(Scale_XY_Q139,Line_UV_Q139,0.0,_Rate_,_Highlight_Transform_,Line_Vertex_Q135);\nvec3 Position=Pos_World_Q115;\nvec3 Normal=Dir_Q140;\nvec2 UV=Rect_UV_Q139;\nvec3 Tangent=Line_Vertex_Q135;\nvec3 Binormal=Nrm_World_Q128;\nvec4 Color=Out_Color_Q145;\nvec4 Extra1=Rect_Parms_Q139;\nvec4 Extra2=Blob_Info_Q180;\nvec4 Extra3=Blob_Info_Q181;\ngl_Position=viewProjection*vec4(Position,1);\nvPosition=Position;\nvNormal=Normal;\nvUV=UV;\nvTangent=Tangent;\nvBinormal=Binormal;\nvColor=Color;\nvExtra1=Extra1;\nvExtra2=Extra2;\nvExtra3=Extra3;\n}";
 babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
 /** @hidden */
 var fluentBackplateVertexShader = { name: name, shader: shader };

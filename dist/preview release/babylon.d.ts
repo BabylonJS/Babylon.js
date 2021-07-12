@@ -1964,6 +1964,7 @@ declare module BABYLON {
         lookForClosingBracketForUniformBuffer?: boolean;
         processingContext: Nullable<ShaderProcessingContext>;
         isNDCHalfZRange: boolean;
+        useReverseDepthBuffer: boolean;
     }
 }
 declare module BABYLON {
@@ -9118,7 +9119,7 @@ declare module BABYLON {
         diffuse: Color3;
         /**
          * Specular produces a highlight color on an object.
-         * Note: This is note affecting PBR materials.
+         * Note: This is not affecting PBR materials.
          */
         specular: Color3;
         /**
@@ -17710,6 +17711,7 @@ declare module BABYLON {
         /** @hidden */
         _rebuild(forceFullRebuild?: boolean): void;
         private _createInternalTextures;
+        private _releaseTextures;
         private _createTextures;
         /**
          * Replaces a texture within the MRT.
@@ -19651,16 +19653,6 @@ declare module BABYLON {
          * @returns intersection info or null if no intersection
          */
         intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo>;
-        /**
-         * Projects a point on this submesh and stores the result in "ref"
-         *
-         * @param vector point to project
-         * @param positions defines mesh's positions array
-         * @param indices defines mesh's indices array
-         * @param ref vector that will store the result
-         * @returns distance from the point and the submesh, or -1 if the mesh rendering mode doesn't support projections
-         */
-        projectToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
         /** @hidden */
         private _intersectLines;
         /** @hidden */
@@ -19669,10 +19661,6 @@ declare module BABYLON {
         private _intersectTriangles;
         /** @hidden */
         private _intersectUnIndexedTriangles;
-        /** @hidden */
-        private _projectOnTrianglesToRef;
-        /** @hidden */
-        private _projectOnUnIndexedTrianglesToRef;
         /** @hidden */
         _rebuild(): void;
         /**
@@ -21046,7 +21034,6 @@ declare module BABYLON {
         UV4: boolean;
         UV5: boolean;
         UV6: boolean;
-        USE_REVERSE_DEPTHBUFFER: boolean;
         /** BONES */
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -21880,6 +21867,18 @@ declare module BABYLON {
          * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
          */
         keysRight: number[];
+        /**
+         * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
+         */
+        rotationSpeed: number;
+        /**
+         * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
+         */
+        keysRotateLeft: number[];
+        /**
+        * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+        */
+        keysRotateRight: number[];
         private _keys;
         private _onCanvasBlurObserver;
         private _onKeyboardObserver;
@@ -21911,6 +21910,7 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
+        private _getLocalRotation;
     }
 }
 declare module BABYLON {
@@ -22557,6 +22557,16 @@ declare module BABYLON {
          */
         get keysRight(): number[];
         set keysRight(value: number[]);
+        /**
+         * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
+         */
+        get keysRotateLeft(): number[];
+        set keysRotateLeft(value: number[]);
+        /**
+         * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+         */
+        get keysRotateRight(): number[];
+        set keysRotateRight(value: number[]);
         /**
          * Event raised when the camera collide with a mesh in the scene.
          */
@@ -24023,7 +24033,7 @@ declare module BABYLON {
          */
         dispose(camera?: Camera): void;
         /**
-         * Serializes the particle system to a JSON object
+         * Serializes the post process to a JSON object
          * @returns the JSON object
          */
         serialize(): any;
@@ -29157,12 +29167,12 @@ declare module BABYLON {
         transform(matrix: Matrix): VertexData;
         /**
          * Merges the passed VertexData into the current one
-         * @param other the VertexData to be merged into the current one
+         * @param others the VertexData to be merged into the current one
          * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
          * @returns the modified VertexData
          */
-        merge(other: VertexData, use32BitsIndices?: boolean): VertexData;
-        private _mergeElement;
+        merge(others: VertexData | VertexData[], use32BitsIndices?: boolean): VertexData;
+        private static _mergeElement;
         private _validate;
         /**
          * Serializes the VertexData
@@ -30542,7 +30552,6 @@ declare module BABYLON {
         REFLECTIONMAP_OPPOSITEZ: boolean;
         INVERTCUBICMAP: boolean;
         LOGARITHMICDEPTH: boolean;
-        USE_REVERSE_DEPTHBUFFER: boolean;
         REFRACTION: boolean;
         REFRACTIONMAP_3D: boolean;
         REFLECTIONOVERALPHA: boolean;
@@ -39188,6 +39197,10 @@ declare module BABYLON {
         private _createInternalTextureOnEvent;
         private _frameId;
         private _currentSrc;
+        private _onError?;
+        private _errorFound;
+        private _processError;
+        private _handlePlay;
         /**
          * Creates a video texture.
          * If you want to display a video in your scene, this is the special texture for that.
@@ -39200,8 +39213,9 @@ declare module BABYLON {
          * @param invertY is false by default but can be used to invert video on Y axis
          * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
          * @param settings allows finer control over video usage
+         * @param onError defines a callback triggered when an error occurred during the loading session
          */
-        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings);
+        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings, onError?: Nullable<(message?: string, exception?: any) => void>);
         /**
          * Get the current class name of the video texture useful for serialization or dynamic coding.
          * @returns "VideoTexture"
@@ -40076,6 +40090,10 @@ declare module BABYLON {
         _releaseEffect(effect: Effect): void;
         /** @hidden */
         _deletePipelineContext(pipelineContext: IPipelineContext): void;
+        /** @hidden */
+        _getGlobalDefines(defines?: {
+            [key: string]: string;
+        }): string | undefined;
         /**
          * Create a new effect (used to store vertex/fragment shaders)
          * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
@@ -41834,6 +41852,10 @@ declare module BABYLON {
          * Observable for changes to device input
          */
         readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -43630,6 +43652,10 @@ declare module BABYLON {
         private _nativeInput;
         constructor(nativeInput: INativeInput);
         /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
+        /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
          * @param deviceSlot "Slot" or index that device is referenced in
@@ -43698,6 +43724,10 @@ declare module BABYLON {
         static MAX_POINTER_INPUTS: number;
         private _eventPrefix;
         constructor(engine: Engine);
+        /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -43778,6 +43808,10 @@ declare module BABYLON {
          * @returns DeviceType interpreted from event
          */
         private _getPointerType;
+        /**
+         * Remove events from active input element
+         */
+        private _removeEvents;
     }
 }
 declare module BABYLON {
@@ -58524,6 +58558,7 @@ declare module BABYLON.Debug {
         private _utilityLayer;
         private _debugBoxMesh;
         private _debugSphereMesh;
+        private _debugCapsuleMesh;
         private _debugCylinderMesh;
         private _debugMaterial;
         private _debugMeshMeshes;
@@ -58549,6 +58584,7 @@ declare module BABYLON.Debug {
         private _getDebugMaterial;
         private _getDebugBoxMesh;
         private _getDebugSphereMesh;
+        private _getDebugCapsuleMesh;
         private _getDebugCylinderMesh;
         private _getDebugMeshMesh;
         private _getDebugMesh;
@@ -60852,7 +60888,7 @@ declare module BABYLON {
         setCommandEncoder(encoder: GPUCommandEncoder): void;
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
-        invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
+        invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder): void;
         copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -65874,7 +65910,6 @@ declare module BABYLON {
         POINTSIZE: boolean;
         FOG: boolean;
         LOGARITHMICDEPTH: boolean;
-        USE_REVERSE_DEPTHBUFFER: boolean;
         FORCENORMALFORWARD: boolean;
         SPECULARAA: boolean;
         CLEARCOAT: boolean;
@@ -69127,6 +69162,8 @@ declare module BABYLON {
         private _camera;
         /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
         enabled: boolean;
+        /** Force writing the transparent objects into the depth map */
+        forceDepthWriteTransparentMeshes: boolean;
         /**
          * Specifies that the depth renderer will only be used within
          * the camera it is created for.
@@ -76262,6 +76299,24 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface SubMesh {
+            /** @hidden */
+            _projectOnTrianglesToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, step: number, checkStopper: boolean, ref: Vector3): number;
+            /** @hidden */
+            _projectOnUnIndexedTrianglesToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
+            /**
+             * Projects a point on this submesh and stores the result in "ref"
+             *
+             * @param vector point to project
+             * @param positions defines mesh's positions array
+             * @param indices defines mesh's indices array
+             * @param ref vector that will store the result
+             * @returns distance from the point and the submesh, or -1 if the mesh rendering mode doesn't support projections
+             */
+            projectToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
+        }
+}
+declare module BABYLON {
         interface Mesh {
             /**
              * Gets or sets a boolean defining if we want picking to pick thin instances as well
@@ -76774,11 +76829,18 @@ declare module BABYLON {
         private _timeStep;
         private _tempVec1;
         private _tempVec2;
+        private _worker;
         /**
          * Initializes the recastJS plugin
          * @param recastInjection can be used to inject your own recast reference
          */
         constructor(recastInjection?: any);
+        /**
+         * Set worker URL to be used when generating a new navmesh
+         * @param workerURL url string
+         * @returns boolean indicating if worker is created
+         */
+        setWorkerURL(workerURL: string): boolean;
         /**
          * Set the time step of the navigation tick update.
          * Default is 1/60.
@@ -76808,8 +76870,9 @@ declare module BABYLON {
          * Creates a navigation mesh
          * @param meshes array of all the geometry used to compute the navigation mesh
          * @param parameters bunch of parameters used to filter geometry
+         * @param completion callback when data is available from the worker. Not used without a worker
          */
-        createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
+        createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters, completion?: (navmeshData: Uint8Array) => void): void;
         /**
          * Create a navigation mesh debug mesh
          * @param scene is where the mesh will be added
@@ -81711,7 +81774,7 @@ declare module BABYLON {
         }
         interface RenderTargetTexture {
             /** @hidden */
-            _prePassRenderTarget: PrePassRenderTarget;
+            _prePassRenderTarget: Nullable<PrePassRenderTarget>;
         }
     /**
      * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
@@ -84056,6 +84119,42 @@ declare module BABYLON {
          * @private
          */
         private static _getScreenshotSize;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines what data is needed to graph a point on the performance graph.
+     */
+    export interface IPerfPoint {
+        /**
+         * The timestamp of the point.
+         */
+        timestamp: number;
+        /**
+         * The value of the point.
+         */
+        value: number;
+    }
+    /**
+     * Defines the shape of a dataset that our graphing service uses for drawing purposes.
+     */
+    export interface IPerfDataset {
+        /**
+         * The color of the line to be drawn.
+         */
+        color?: string;
+        /**
+         * The id of the dataset.
+         */
+        id: string;
+        /**
+         * The data to be processed by the performance graph.
+         */
+        data: IPerfPoint[];
+        /**
+         * Specifies if data should be hidden, falsey by default.
+         */
+        hidden?: boolean;
     }
 }
 declare module BABYLON {

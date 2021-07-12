@@ -6,6 +6,7 @@
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 - Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
+- Added GUI Editor ([msDestiny14](https://github.com/msDestiny14))
 
 ## Updates
 
@@ -34,6 +35,7 @@
 - Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
 - Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
 
 ### Engine
 
@@ -58,6 +60,7 @@
 - Improved support for MSFT_lod, now LOD levels are loaded and accurately displayed according to screen coverage ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for direct loading [base64 data URLs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for all loader ([CoPrez](https://github.com/CoPrez))
 - Added DO_NOT_ALTER_FILE_COORDINATES flag to STL loader ([AlbertoPa](https://github.com/AlbertoPa))
+- Added support for pure geometry files to OBJ loader ([Deltakosh](https://github.com/deltakosh))
 
 ### Navigation
 
@@ -100,23 +103,7 @@
 - NME `TextureBlock`: add an output for the texture level and a switch to disable the internal multiplication (level * texture) ([#10192](https://github.com/BabylonJS/Babylon.js/pull/10192)) ([rassie](https://github.com/rassie))
 - Added support for parallax / parallax occlusion to the `PerturbNormal` block ([Popov72](https://github.com/Popov72))
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
-
-### GUIEditor
-
-- Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
-- Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
-- Added basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
-- Added more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
-- Added snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
-- Added scrolling and zooming functionality ([msDestiny14](https://github.com/msDestiny14))
-- Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
-- Added parenting system for scene explorer ([msDestiny14](https://github.com/msDestiny14))
-- Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
-- Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
-- Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
-- Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
-- Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
-- Added navigation hotkeys ([msDestiny14](https://github.com/msDestiny14))
+- Fixed Conditional Block output when pressing the 'Generate Code' button. ([PirateJC](https://github.com/piratejc))
 
 ### GUI
 
@@ -133,6 +120,7 @@
 - Added `NearMenu` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `HandMenu`, a simple menu that uses `HandConstraintBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
 - `VolumeBasedPanel`'s constructor now accepts a name parameter, similar to other controls ([rickfromwork](https://github.com/rickfromwork))
+- Added loadLayoutAsync in the XmlLoader. Now the layouts can be loaded asynchronously rather than providing a callback.
 
 ### Behaviors
 
@@ -195,6 +183,7 @@
 - Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Fix negative scale support for physics impostors ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix an issue with keyboard control (re)attachment. ([#9411](https://github.com/BabylonJS/Babylon.js/issues/9411)) ([RaananW](https://github.com/RaananW))
 - Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
@@ -270,6 +259,8 @@
 - Fix scaling discrepancy between `TouchHolographicButton` and other 3D controls ([rickfromwork](https://github.com/rickfromwork))
 - Fix for triggering interactions on nearby meshes when performing a near interaction grab ([rickfromwork](https://github.com/rickfromwork))
 - Fix for near interaction failing when multiple utility layers are present ([rickfromwork](https://github.com/rickfromwork))
+- Fix handling of events to support multiple canvas scenarios DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix undisposed textures in PrePass effects that would cause the scene to have more textures than expected ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ## Breaking changes
 

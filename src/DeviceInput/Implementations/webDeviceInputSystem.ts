@@ -61,7 +61,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _eventPrefix: string;
 
     constructor(engine: Engine) {
-        const inputElement = engine.getInputElement();
         this._eventPrefix = Tools.GetPointerPrefix(engine);
         this._engine = engine;
 
@@ -83,10 +82,23 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onDeviceDisconnectedObservable = new Observable();
         this.onInputChangedObservable = new Observable();
 
-        if (inputElement) {
+        this.configureEvents();
+    }
+
+    /**
+     * Configures events to work with an engine's active element
+     */
+    public configureEvents() {
+        const inputElement = this._engine.getInputElement();
+        if (inputElement && this._elementToAttachTo !== inputElement) {
+            // If the engine's input element has changed, unregister events from previous element
+            if (this._elementToAttachTo) {
+                this._removeEvents();
+            }
+
             this._elementToAttachTo = inputElement;
             // Set tab index for the inputElement to the engine's canvasTabIndex, if and only if the element's tab index is -1
-            this._elementToAttachTo.tabIndex = (this._elementToAttachTo.tabIndex !== -1) ? this._elementToAttachTo.tabIndex : engine.canvasTabIndex;
+            this._elementToAttachTo.tabIndex = (this._elementToAttachTo.tabIndex !== -1) ? this._elementToAttachTo.tabIndex : this._engine.canvasTabIndex;
             this._handleKeyActions();
             this._handlePointerActions();
             this._handleGamepadActions();
@@ -142,27 +154,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onInputChangedObservable.clear();
 
         if (this._elementToAttachTo) {
-            // Blur Events
-            this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
-            this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
-
-            // Keyboard Events
-            if (this._keyboardActive) {
-                this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
-                this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
-            }
-
-            // Pointer Events
-            if (this._pointerActive) {
-                this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
-                this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-                this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
-                this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
-
-                if (this._pointerWheelClearObserver) {
-                    this._engine.onEndFrameObservable.remove(this._pointerWheelClearObserver);
-                }
-            }
+            this._removeEvents();
 
             // Gamepad Events
             window.removeEventListener("gamepadconnected", this._gamepadConnectedEvent);
@@ -403,10 +395,14 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     fireFakeMove = false;
                 }
                 // Lets Propagate the event for move with same position.
-                if (fireFakeMove) {
+                if (fireFakeMove && evt.button !== -1) {
                     deviceEvent.inputIndex = PointerInput.FakeMove;
                     deviceEvent.previousState = 0;
                     deviceEvent.currentState = 0;
+                    // The pointer buttons in PointerInput are in the same order as they are used for the MouseEvent button property, just offset by 2.
+                    // eg. PointerInput.LeftClick = 2 vs MouseEvent.button = Left Click = 0
+                    // Because of this, we need to offset our indices by two when storing in our inputs array.
+                    pointer[evt.button + 2] = (pointer[evt.button + 2] ? 0 : 1); // Reverse state of button if evt.button has value
 
                     this.onInputChangedObservable.notifyObservers(deviceEvent);
                 }
@@ -769,5 +765,32 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         }
 
         return deviceType;
+    }
+
+    /**
+     * Remove events from active input element
+     */
+    private _removeEvents() {
+        // Blur Events
+        this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
+        this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
+
+        // Keyboard Events
+        if (this._keyboardActive) {
+            this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
+            this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
+        }
+
+        // Pointer Events
+        if (this._pointerActive) {
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+            this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
+
+            if (this._pointerWheelClearObserver) {
+                this._engine.onEndFrameObservable.remove(this._pointerWheelClearObserver);
+            }
+        }
     }
 }
