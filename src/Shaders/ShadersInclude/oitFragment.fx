@@ -6,8 +6,8 @@
     float fragDepth = gl_FragCoord.z;   // 0 - 1
 
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
-    vec2 lastDepth = texelFetch(uDepth, fragCoord, 0).rg;
-    vec4 lastFrontColor = texelFetch(uFrontColor, fragCoord, 0);
+    vec2 lastDepth = texelFetch(oitDepthSampler, fragCoord, 0).rg;
+    vec4 lastFrontColor = texelFetch(oitFrontColorSampler, fragCoord, 0);
 
     // depth value always increases
     // so we can use MAX blend equation
