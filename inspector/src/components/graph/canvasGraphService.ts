@@ -13,6 +13,12 @@ const dividerSize = 2;
 // Currently the scale factor is a constant but when we add panning this may become formula based.
 const scaleFactor = 0.8;
 
+// This controls the scale factor at which we stop drawing the playhead. Below this value there tends to be flickering of the playhead as data comes in.
+const stopDrawingPlayheadThreshold = 0.95;
+
+// Threshold for the ratio at which we go from panning mode to live mode.
+const returnToLiveThreshold = 0.998;
+
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc! 
@@ -559,7 +565,7 @@ export class CanvasGraphService {
         const overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
         const rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
 
-        return latestDataset.data[rightmostPos].timestamp/latestDataset.data[latestElementPos].timestamp > 0.998;
+        return latestDataset.data[rightmostPos].timestamp/latestDataset.data[latestElementPos].timestamp > returnToLiveThreshold;
     }
 
     /**
@@ -571,7 +577,7 @@ export class CanvasGraphService {
     private _drawPlayheadRegion(drawableArea: IGraphDrawableArea, scaleFactor: number) {
         const { _ctx: ctx } = this;
        
-        if (!ctx || scaleFactor >= 0.95) {
+        if (!ctx || scaleFactor >= stopDrawingPlayheadThreshold) {
             return;
         }
 
