@@ -181,6 +181,20 @@ declare module INSPECTOR {
         max: number;
     }
     /**
+     * Defines structure of the object which contains information related to panning.
+     */
+    export interface IPerfMousePanningPosition {
+        xPos: number;
+        delta: number;
+    }
+    /**
+     * Defines structure of the object which contains information regarding the bounds of each dataset we want to consider.
+     */
+    export interface IPerfIndexBounds {
+        start: number;
+        end: number;
+    }
+    /**
      * Defines a structure defining the available space in a drawable area.
      */
     export interface IGraphDrawableArea {
@@ -207,6 +221,9 @@ declare module INSPECTOR {
         private _height;
         private _sizeOfWindow;
         private _ticks;
+        private _panPosition;
+        private _positions;
+        private _datasetBounds;
         readonly datasets: BABYLON.IPerfDataset[];
         /**
          * Creates an instance of CanvasGraphService.
@@ -219,6 +236,15 @@ declare module INSPECTOR {
          * This method draws the data and sets up the appropriate scales.
          */
         draw(): void;
+        /**
+         * Returns the index of the closest time for a dataset.
+         * Uses a modified binary search to get value.
+         *
+         * @param dataset the dataset we want to search in.
+         * @param targetTime the time we want to get close to.
+         * @returns index of the item with the closest time to the targetTime
+         */
+        private _getClosestPointToTimestamp;
         /**
          * Draws the time axis, adjusts the drawable area for the graph.
          *
@@ -288,6 +314,30 @@ declare module INSPECTOR {
          * @param event a mouse wheel event.
          */
         private _handleZoom;
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStart;
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        private _handlePan;
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStop;
+        /**
+         * Method which returns true if the data should become realtime, false otherwise.
+         *
+         * @returns if the data should become realtime or not.
+         */
+        private _shouldBecomeRealtime;
         /**
          * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
          *

@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 
@@ -13,17 +13,25 @@ const dividerSize = 2;
 // Currently the scale factor is a constant but when we add panning this may become formula based.
 const scaleFactor = 0.8;
 
+// This controls the scale factor at which we stop drawing the playhead. Below this value there tends to be flickering of the playhead as data comes in.
+const stopDrawingPlayheadThreshold = 0.95;
+
+// Threshold for the ratio at which we go from panning mode to live mode.
+const returnToLiveThreshold = 0.998;
+
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc! 
  */
 export class CanvasGraphService {
-
     private _ctx: CanvasRenderingContext2D | null;
     private _width: number;
     private _height: number;
     private _sizeOfWindow: number = 300;
     private _ticks: number[];
+    private _panPosition: IPerfMousePanningPosition | null;
+    private _positions: Map<string, number>;
+    private _datasetBounds: Map<string, IPerfIndexBounds>;
 
     public readonly datasets: IPerfDataset[];
 
@@ -38,6 +46,9 @@ export class CanvasGraphService {
         this._width = canvas.width;
         this._height = canvas.height;
         this._ticks = [];
+        this._panPosition = null;
+        this._positions = new Map<string, number>();
+        this._datasetBounds = new Map<string, IPerfIndexBounds>();
 
         this.datasets = settings.datasets;
 
@@ -58,21 +69,99 @@ export class CanvasGraphService {
         this.clear();
 
         // Get global min max of time axis (across all datasets).
-        let globalTimeMinMax = {min: Infinity, max: 0};
+        const globalTimeMinMax = {min: Infinity, max: 0};
 
-        // TODO: Make better sliding window code (accounting for zoom and pan).
+        // First we must get the end positions of each dataset.
+        this.datasets.forEach((dataset: IPerfDataset) => {
+            // skip hidden and empty datasets!
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            
+            const pos = this._positions.get(dataset.id) ?? dataset.data.length - 1;
+            let start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
+            let startOverflow = 0;
+            
+            // account for overflow from start.
+            if (start < 0) {
+                startOverflow = 0 - start;
+                start = 0; 
+            }
+
+            let end = Math.ceil(pos + this._sizeOfWindow * (1-scaleFactor) + startOverflow);
+            
+            // account for overflow from end.
+            if (end > dataset.data.length) {
+                const endOverflow = end - dataset.data.length;
+                end = dataset.data.length;
+
+                start = Math.max(start - endOverflow, 0);
+            }
+
+            const bounds = this._datasetBounds.get(dataset.id);
+
+            // update or set the bounds
+            if (bounds) {
+                bounds.start = start;
+                bounds.end = end;
+            } else {
+                this._datasetBounds.set(dataset.id, {start, end});
+            }
+        });
+
+        // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
+        this.datasets.forEach((dataset: IPerfDataset) => {
+            const bounds = this._datasetBounds.get(dataset.id);
+            
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            
+            globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, globalTimeMinMax.min);
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+
+        // set the buffer region maximum by rescaling the max timestamp in bounds.
+        const bufferMaximum = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min)/scaleFactor + globalTimeMinMax.min);
+        
+        // we then need to update the end position based on the maximum for the buffer region
+        this.datasets.forEach((dataset: IPerfDataset) => {
+            const bounds = this._datasetBounds.get(dataset.id);
+            
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+
+            // binary search to get closest point to the buffer maximum.
+            bounds.end = this._getClosestPointToTimestamp(dataset, bufferMaximum) + 1;
+
+            // keep track of largest timestamp value in view!
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+
+        let updatedScaleFactor = Scalar.Clamp((globalTimeMinMax.max - globalTimeMinMax.min)/(bufferMaximum - globalTimeMinMax.min), 0.8, 1); 
+
+        // we will now set the global maximum to the maximum of the buffer.
+        globalTimeMinMax.max = bufferMaximum;
+
+
         // TODO: Perhaps see if i can reduce the number of allocations.
         // Keep only visible and non empty datasets and get a certain window of items.
-        const datasets = this.datasets.filter((dataset: IPerfDataset) => !dataset.hidden && dataset.data.length > 0).map((dataset: IPerfDataset) => ({
-            ...dataset,
-            data: dataset.data.slice(Math.max(dataset.data.length - this._sizeOfWindow, 0))
-        }));
+        const datasets = this.datasets.map((dataset: IPerfDataset) => {
+            const bounds = this._datasetBounds.get(dataset.id);
 
-        datasets.forEach((dataset: IPerfDataset) => {
-            const timeMinMax = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.timestamp));            
-            globalTimeMinMax.min = Math.min(timeMinMax.min, globalTimeMinMax.min);
-            globalTimeMinMax.max = Math.max(timeMinMax.max, globalTimeMinMax.max);
-        });
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return dataset;
+            }
+
+            return {
+                ...dataset,
+                data: dataset.data.slice(bounds.start, bounds.end)
+            }
+        }).filter((dataset: IPerfDataset) => !dataset.hidden && dataset.data.length > 0);
 
         const drawableArea: IGraphDrawableArea = {
             top: 0,
@@ -81,11 +170,8 @@ export class CanvasGraphService {
             right: this._width,
         };
 
-        // we will now rescale the maximum for the playhead.
-        globalTimeMinMax.max = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min)/scaleFactor + globalTimeMinMax.min);
-
         this._drawTimeAxis(globalTimeMinMax, drawableArea);
-        this._drawPlayheadRegion(drawableArea, scaleFactor);
+        this._drawPlayheadRegion(drawableArea, updatedScaleFactor);
 
         // process, and then draw our points
         datasets.forEach((dataset: IPerfDataset) => {
@@ -102,6 +188,40 @@ export class CanvasGraphService {
             });
             ctx.stroke();
         });
+    }
+
+    /**
+     * Returns the index of the closest time for a dataset.
+     * Uses a modified binary search to get value.
+     * 
+     * @param dataset the dataset we want to search in.
+     * @param targetTime the time we want to get close to.
+     * @returns index of the item with the closest time to the targetTime
+     */
+    private _getClosestPointToTimestamp(dataset: IPerfDataset, targetTime: number): number {
+        let low = 0;
+        let high = dataset.data.length - 1;
+        let closestIndex = 0;
+
+        while (low <= high) {
+            
+            const middle = Math.trunc((low + high) / 2);
+            const middleTimestamp = dataset.data[middle].timestamp;
+
+            if (Math.abs(middleTimestamp - targetTime) < Math.abs(dataset.data[closestIndex].timestamp - targetTime)) {
+                closestIndex = middle;
+            } 
+
+            if (middleTimestamp < targetTime) {
+                low = middle + 1;
+            } else if (middleTimestamp > targetTime) {
+                high = middle - 1;
+            } else {
+                break;
+            }
+        }
+
+        return closestIndex;
     }
 
     /**
@@ -284,6 +404,9 @@ export class CanvasGraphService {
      */
     private _attachEventListeners(canvas: HTMLCanvasElement) {
         canvas.addEventListener("wheel", this._handleZoom);
+        canvas.addEventListener("mousedown", this._handlePanStart);
+        // The user may stop panning outside of the canvas size so we should add the event listener to the document.
+        canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
     }
 
     /**
@@ -293,6 +416,8 @@ export class CanvasGraphService {
      */
     private _removeEventListeners(canvas: HTMLCanvasElement) {
         canvas.removeEventListener("wheel", this._handleZoom);
+        canvas.removeEventListener("mousedown", this._handlePanStart);
+        canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
     }
 
     /**
@@ -316,8 +441,131 @@ export class CanvasGraphService {
                             return Math.max(currLength, maxLengthSoFar)
                         }, 0);
 
+        if (this._shouldBecomeRealtime()) {
+            this._positions.clear();
+        }
         // Bind the zoom between [minZoom, maxZoom]
         this._sizeOfWindow = Scalar.Clamp(this._sizeOfWindow - amount, minZoom, maxZoom);
+    }
+
+    /**
+     * Initializes the panning object and attaches appropriate listener.
+     * 
+     * @param event the mouse event containing positional information.
+     */
+    private _handlePanStart = (event: MouseEvent) => {
+        const {_ctx: ctx} = this;
+        if (!ctx || !ctx.canvas) {
+            return;
+        }
+        const canvas = ctx.canvas;
+
+        this._panPosition = {
+            xPos: event.clientX,
+            delta: 0,
+        };
+        canvas.addEventListener("mousemove", this._handlePan)
+    }
+
+    /**
+     * While panning this event will keep track of the delta and update the "positions".
+     * 
+     * @param event The mouse event that contains positional information.
+     */
+    private _handlePan = (event: MouseEvent) => {
+        if (!this._panPosition) {
+            return;
+        }
+
+        const pixelDelta = this._panPosition.delta + event.clientX - this._panPosition.xPos;
+        const pixelsPerItem = this._width / this._sizeOfWindow;
+        const itemsDelta = pixelDelta / pixelsPerItem | 0;
+
+        this.datasets.forEach((dataset: IPerfDataset) => {
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+
+            const { id } = dataset;
+            const pos = this._positions.get(id) ?? (dataset.data.length - 1)
+            
+            // update our position without allowing the user to pan more than they need to (approximation) 
+            this._positions.set(
+                                id, 
+                                Scalar.Clamp(
+                                                pos - itemsDelta, 
+                                                Math.floor(this._sizeOfWindow * scaleFactor), 
+                                                dataset.data.length - Math.floor(this._sizeOfWindow * (1-scaleFactor))
+                                            )
+                                );
+        });
+
+        if (itemsDelta === 0) {
+            this._panPosition.delta += pixelDelta;
+        } else {
+            this._panPosition.delta = 0;
+        }
+
+        this._panPosition.xPos = event.clientX;
+
+    }
+
+    /**
+     * Clears the panning object and removes the appropriate listener.
+     * 
+     * @param event the mouse event containing positional information.
+     */
+    private _handlePanStop = () => {
+        const {_ctx: ctx} = this;
+        if (!ctx || !ctx.canvas) {
+            return;
+        }
+
+        // check if we should return to realtime.
+        if (this._shouldBecomeRealtime()) {
+            this._positions.clear();
+        }
+
+        const canvas = ctx.canvas;
+        canvas.removeEventListener("mousemove", this._handlePan);
+        this._panPosition = null;
+    }
+
+    /**
+     * Method which returns true if the data should become realtime, false otherwise.
+     * 
+     * @returns if the data should become realtime or not.
+     */
+    private _shouldBecomeRealtime(): boolean {
+        if (this.datasets.length === 0) {
+            return false;
+        }
+
+        // We first get the latest dataset, because this is where the real time data is!
+        let latestDataset: IPerfDataset = this.datasets[0];
+        
+        this.datasets.forEach((dataset: IPerfDataset) => {
+            // skip over empty and hidden data!
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            if (latestDataset.data[latestDataset.data.length - 1].timestamp < dataset.data[dataset.data.length - 1].timestamp) {
+                latestDataset = dataset;
+            }
+        });
+
+        const pos = this._positions.get(latestDataset.id);
+        const latestElementPos = latestDataset.data.length - 1;
+
+        if (pos ===  undefined) {
+            return false;
+        }
+
+        // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
+        const overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
+        const rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
+
+        return latestDataset.data[rightmostPos].timestamp/latestDataset.data[latestElementPos].timestamp > returnToLiveThreshold;
     }
 
     /**
@@ -329,7 +577,7 @@ export class CanvasGraphService {
     private _drawPlayheadRegion(drawableArea: IGraphDrawableArea, scaleFactor: number) {
         const { _ctx: ctx } = this;
        
-        if (!ctx) {
+        if (!ctx || scaleFactor >= stopDrawingPlayheadThreshold) {
             return;
         }
 

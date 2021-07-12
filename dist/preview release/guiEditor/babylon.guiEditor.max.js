@@ -44014,6 +44014,23 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         var _a;
                         (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
+                        if (_this.state.currentNode) {
+                            var serializationObject = {};
+                            _this.state.currentNode.serialize(serializationObject);
+                            var newControl_1 = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["Control"].Parse(serializationObject, _this.props.globalState.guiTexture);
+                            if (newControl_1) { //insert the new control into the adt
+                                _this.props.globalState.workbench.appendBlock(newControl_1);
+                                var index = 1;
+                                while (_this.props.globalState.workbench.nodes.filter(//search if there are any copies
+                                function (//search if there are any copies
+                                control) { return control.name === newControl_1.name; }).length > 1) {
+                                    newControl_1.name = _this.state.currentNode.name + " Copy " + index++;
+                                }
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl_1);
+                            }
+                        }
                     } })));
         }
         var sizeOptions = [
@@ -44909,12 +44926,13 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
 /*!*******************************!*\
   !*** ./diagram/workbench.tsx ***!
   \*******************************/
-/*! exports provided: isFramePortData, WorkbenchComponent */
+/*! exports provided: isFramePortData, ConstraintDirection, WorkbenchComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isFramePortData", function() { return isFramePortData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConstraintDirection", function() { return ConstraintDirection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WorkbenchComponent", function() { return WorkbenchComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
@@ -44949,6 +44967,12 @@ var isFramePortData = function (variableToCheck) {
     else
         return false;
 };
+var ConstraintDirection;
+(function (ConstraintDirection) {
+    ConstraintDirection[ConstraintDirection["NONE"] = 0] = "NONE";
+    ConstraintDirection[ConstraintDirection["X"] = 2] = "X";
+    ConstraintDirection[ConstraintDirection["Y"] = 3] = "Y";
+})(ConstraintDirection || (ConstraintDirection = {}));
 var WorkbenchComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(WorkbenchComponent, _super);
     function WorkbenchComponent(props) {
@@ -44957,15 +44981,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._mouseStartPointY = null;
         _this._selectedGuiNodes = [];
         _this._ctrlKeyIsPressed = false;
+        _this._constraintDirection = ConstraintDirection.NONE;
         _this._forcePanning = false;
         _this._forceZooming = false;
         _this._forceSelecting = false;
         _this._outlines = false;
-        _this._frameIsMoving = false;
-        _this._isLoading = false;
-        _this.isOverGUINode = false;
+        _this._isOverGUINode = false;
         _this.ctrlEvent = function (evt) {
             _this._ctrlKeyIsPressed = evt.ctrlKey;
+            if (evt.shiftKey) {
+                _this._setConstraintDirection = _this._constraintDirection === ConstraintDirection.NONE;
+            }
+            else {
+                _this._constraintDirection = ConstraintDirection.NONE;
+            }
         };
         _this.ctrlFalseEvent = function () {
             _this._ctrlKeyIsPressed = false;
@@ -45036,7 +45065,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.props.globalState.workbench = _this;
         return _this;
     }
-    ;
     Object.defineProperty(WorkbenchComponent.prototype, "globalState", {
         get: function () {
             return this.props.globalState;
@@ -45146,10 +45174,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.isUp = false;
         });
         guiControl.onPointerEnterObservable.add(function (evt) {
-            _this.isOverGUINode = true;
+            _this._isOverGUINode = true;
         });
         guiControl.onPointerOutObservable.add(function (evt) {
-            _this.isOverGUINode = false;
+            _this._isOverGUINode = false;
         });
         if (this.isContainer(guiControl)) {
             guiControl.children.forEach(function (child) {
@@ -45194,6 +45222,16 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (ignorClick === void 0) { ignorClick = false; }
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
+        if (this._setConstraintDirection) {
+            this._setConstraintDirection = false;
+            this._constraintDirection = Math.abs(newX) >= Math.abs(newY) ? ConstraintDirection.X : ConstraintDirection.Y;
+        }
+        if (this._constraintDirection === ConstraintDirection.X) {
+            newY = 0;
+        }
+        else if (this._constraintDirection === ConstraintDirection.Y) {
+            newX = 0;
+        }
         if (guiControl.typeName === "Line") {
             var line = guiControl;
             var x1 = line.x1.substr(0, line.x1.length - 2); //removing the 'px'
@@ -45229,11 +45267,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             var y = this._mouseStartPointY;
             var selected_1 = false;
             this.selectedGuiNodes.forEach(function (element) {
-                //var zoom = this._camera.radius;
                 if (pos) {
                     selected_1 =
-                        _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](pos.x, -pos.z), //need to add zoom factor here.
-                        new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](x, y), false) || selected_1;
+                        _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](pos.x, -pos.z), new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](x, y), false) || selected_1;
                 }
             });
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
@@ -45254,7 +45290,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.onDown = function (evt) {
         var _a;
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.setPointerCapture(evt.pointerId);
-        if (!this.isOverGUINode) {
+        if (!this._isOverGUINode) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
         var pos = this.getGroundPosition();
@@ -45265,6 +45301,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var _a;
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
+        this._constraintDirection = ConstraintDirection.NONE;
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.releasePointerCapture(evt.pointerId);
         this.isUp = true;
     };

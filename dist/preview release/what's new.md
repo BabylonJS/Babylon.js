@@ -6,6 +6,7 @@
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 - Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
+- Added GUI Editor ([msDestiny14](https://github.com/msDestiny14))
 
 ## Updates
 
@@ -103,23 +104,6 @@
 - Added support for parallax / parallax occlusion to the `PerturbNormal` block ([Popov72](https://github.com/Popov72))
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
 - Fixed Conditional Block output when pressing the 'Generate Code' button. ([PirateJC](https://github.com/piratejc))
-
-### GUIEditor
-
-- Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
-- Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
-- Added basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
-- Added more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
-- Added snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
-- Added scrolling and zooming functionality ([msDestiny14](https://github.com/msDestiny14))
-- Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
-- Added parenting system for scene explorer ([msDestiny14](https://github.com/msDestiny14))
-- Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
-- Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
-- Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
-- Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
-- Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
-- Added navigation hotkeys ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -276,6 +260,7 @@
 - Fix for triggering interactions on nearby meshes when performing a near interaction grab ([rickfromwork](https://github.com/rickfromwork))
 - Fix for near interaction failing when multiple utility layers are present ([rickfromwork](https://github.com/rickfromwork))
 - Fix handling of events to support multiple canvas scenarios DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix undisposed textures in PrePass effects that would cause the scene to have more textures than expected ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ## Breaking changes
 
