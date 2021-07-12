@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -52683,7 +52683,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -58966,6 +58966,10 @@ var playheadSize = 8;
 var dividerSize = 2;
 // Currently the scale factor is a constant but when we add panning this may become formula based.
 var scaleFactor = 0.8;
+// This controls the scale factor at which we stop drawing the playhead. Below this value there tends to be flickering of the playhead as data comes in.
+var stopDrawingPlayheadThreshold = 0.95;
+// Threshold for the ratio at which we go from panning mode to live mode.
+var returnToLiveThreshold = 0.998;
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc!
@@ -59074,6 +59078,7 @@ var CanvasGraphService = /** @class */ (function () {
         this._ticks = [];
         this._panPosition = null;
         this._positions = new Map();
+        this._datasetBounds = new Map();
         this.datasets = settings.datasets;
         this._attachEventListeners(canvas);
     }
@@ -59090,13 +59095,12 @@ var CanvasGraphService = /** @class */ (function () {
         this.clear();
         // Get global min max of time axis (across all datasets).
         var globalTimeMinMax = { min: Infinity, max: 0 };
-        // TODO: Perhaps see if i can reduce the number of allocations.
-        // Keep only visible and non empty datasets and get a certain window of items.
-        var datasets = this.datasets.map(function (dataset) {
+        // First we must get the end positions of each dataset.
+        this.datasets.forEach(function (dataset) {
             var _a;
             // skip hidden and empty datasets!
             if (dataset.data.length === 0 || !!dataset.hidden) {
-                return dataset;
+                return;
             }
             var pos = (_a = _this._positions.get(dataset.id)) !== null && _a !== void 0 ? _a : dataset.data.length - 1;
             var start = pos - Math.ceil(_this._sizeOfWindow * scaleFactor);
@@ -59113,23 +59117,61 @@ var CanvasGraphService = /** @class */ (function () {
                 end = dataset.data.length;
                 start = Math.max(start - endOverflow, 0);
             }
-            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(start, end) });
-        }).filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; });
-        // timestamps will be in sorted order so we can simply do the following.
-        datasets.forEach(function (dataset) {
-            globalTimeMinMax.min = Math.min(dataset.data[0].timestamp, globalTimeMinMax.min);
-            globalTimeMinMax.max = Math.max(dataset.data[dataset.data.length - 1].timestamp, globalTimeMinMax.max);
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // update or set the bounds
+            if (bounds) {
+                bounds.start = start;
+                bounds.end = end;
+            }
+            else {
+                _this._datasetBounds.set(dataset.id, { start: start, end: end });
+            }
         });
+        // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
+        this.datasets.forEach(function (dataset) {
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, globalTimeMinMax.min);
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+        // set the buffer region maximum by rescaling the max timestamp in bounds.
+        var bufferMaximum = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min) / scaleFactor + globalTimeMinMax.min);
+        // we then need to update the end position based on the maximum for the buffer region
+        this.datasets.forEach(function (dataset) {
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            // binary search to get closest point to the buffer maximum.
+            bounds.end = _this._getClosestPointToTimestamp(dataset, bufferMaximum) + 1;
+            // keep track of largest timestamp value in view!
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((globalTimeMinMax.max - globalTimeMinMax.min) / (bufferMaximum - globalTimeMinMax.min), 0.8, 1);
+        // we will now set the global maximum to the maximum of the buffer.
+        globalTimeMinMax.max = bufferMaximum;
+        // TODO: Perhaps see if i can reduce the number of allocations.
+        // Keep only visible and non empty datasets and get a certain window of items.
+        var datasets = this.datasets.map(function (dataset) {
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return dataset;
+            }
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(bounds.start, bounds.end) });
+        }).filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; });
         var drawableArea = {
             top: 0,
             left: 0,
             bottom: this._height,
             right: this._width,
         };
-        // we will now rescale the maximum for the playhead.
-        globalTimeMinMax.max = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min) / scaleFactor + globalTimeMinMax.min);
         this._drawTimeAxis(globalTimeMinMax, drawableArea);
-        this._drawPlayheadRegion(drawableArea, scaleFactor);
+        this._drawPlayheadRegion(drawableArea, updatedScaleFactor);
         // process, and then draw our points
         datasets.forEach(function (dataset) {
             var _a;
@@ -59145,6 +59187,36 @@ var CanvasGraphService = /** @class */ (function () {
             });
             ctx.stroke();
         });
+    };
+    /**
+     * Returns the index of the closest time for a dataset.
+     * Uses a modified binary search to get value.
+     *
+     * @param dataset the dataset we want to search in.
+     * @param targetTime the time we want to get close to.
+     * @returns index of the item with the closest time to the targetTime
+     */
+    CanvasGraphService.prototype._getClosestPointToTimestamp = function (dataset, targetTime) {
+        var low = 0;
+        var high = dataset.data.length - 1;
+        var closestIndex = 0;
+        while (low <= high) {
+            var middle = Math.trunc((low + high) / 2);
+            var middleTimestamp = dataset.data[middle].timestamp;
+            if (Math.abs(middleTimestamp - targetTime) < Math.abs(dataset.data[closestIndex].timestamp - targetTime)) {
+                closestIndex = middle;
+            }
+            if (middleTimestamp < targetTime) {
+                low = middle + 1;
+            }
+            else if (middleTimestamp > targetTime) {
+                high = middle - 1;
+            }
+            else {
+                break;
+            }
+        }
+        return closestIndex;
     };
     /**
      * Draws the time axis, adjusts the drawable area for the graph.
@@ -59353,7 +59425,7 @@ var CanvasGraphService = /** @class */ (function () {
         // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
         var overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
         var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
-        return latestDataset.data[rightmostPos].timestamp / latestDataset.data[latestElementPos].timestamp > 0.998;
+        return latestDataset.data[rightmostPos].timestamp / latestDataset.data[latestElementPos].timestamp > returnToLiveThreshold;
     };
     /**
      * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
@@ -59363,7 +59435,7 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._drawPlayheadRegion = function (drawableArea, scaleFactor) {
         var ctx = this._ctx;
-        if (!ctx) {
+        if (!ctx || scaleFactor >= stopDrawingPlayheadThreshold) {
             return;
         }
         var dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
@@ -65036,7 +65108,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -65343,7 +65415,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -65760,7 +65832,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -66099,14 +66171,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/adtInstrumentation":
+/***/ "babylonjs-gui/2D/controls/image":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
 
 /***/ }),
 
