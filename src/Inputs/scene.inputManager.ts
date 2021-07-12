@@ -497,7 +497,12 @@ export class InputManager {
         this._alreadyAttachedTo = elementToAttachTo;
         let engine = scene.getEngine();
 
-        this._deviceInputSystem = DeviceInputSystem.Create(engine);
+        if (!this._deviceInputSystem) {
+            this._deviceInputSystem = DeviceInputSystem.Create(engine);
+        }
+        else {
+            this._deviceInputSystem.configureEvents();
+        }
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {

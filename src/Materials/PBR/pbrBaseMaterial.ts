@@ -235,7 +235,6 @@ export class PBRMaterialDefines extends MaterialDefines
     public POINTSIZE = false;
     public FOG = false;
     public LOGARITHMICDEPTH = false;
-    public USE_REVERSE_DEPTHBUFFER = false;
 
     public FORCENORMALFORWARD = false;
 
@@ -325,6 +324,7 @@ export class PBRMaterialDefines extends MaterialDefines
         super.reset();
         this.ALPHATESTVALUE = "0.5";
         this.PBR = true;
+        this.NORMALXYSCALE = true;
     }
 }
 

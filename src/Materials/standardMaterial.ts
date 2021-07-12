@@ -123,7 +123,6 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public REFLECTIONMAP_OPPOSITEZ = false;
     public INVERTCUBICMAP = false;
     public LOGARITHMICDEPTH = false;
-    public USE_REVERSE_DEPTHBUFFER = false;
     public REFRACTION = false;
     public REFRACTIONMAP_3D = false;
     public REFLECTIONOVERALPHA = false;
@@ -1210,10 +1209,6 @@ export class StandardMaterial extends PushMaterial {
                 if (defines["UV" + i]) {
                     attribs.push(`uv${i === 1 ? "" : i}`);
                 }
-            }
-
-            if (defines.UV2) {
-                attribs.push(VertexBuffer.UV2Kind);
             }
 
             if (defines.VERTEXCOLOR) {
