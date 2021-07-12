@@ -313,6 +313,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Dispose the render targets and their associated resources
      */
     public dispose(): void {
+        this._releaseTextures();
         this.releaseInternalTextures();
 
         super.dispose();
@@ -330,6 +331,15 @@ export class MultiRenderTarget extends RenderTargetTexture {
             if (this._internalTextures[i] !== undefined) {
                 this._internalTextures[i].dispose();
                 this._internalTextures.splice(i, 1);
+            }
+        }
+    }
+
+    private _releaseTextures(): void {
+        if (this._textures) {
+            for (let i = 0; i < this._textures.length; ++i) {
+                this._textures[i]._texture = null; // internal textures are released by a call to releaseInternalTextures()
+                this._textures[i].dispose();
             }
         }
     }
