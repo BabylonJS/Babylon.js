@@ -404,6 +404,7 @@ export class CanvasGraphService {
      */
     private _attachEventListeners(canvas: HTMLCanvasElement) {
         canvas.addEventListener("wheel", this._handleZoom);
+        canvas.addEventListener("mousemove", this._handleDataHover);
         canvas.addEventListener("mousedown", this._handlePanStart);
         // The user may stop panning outside of the canvas size so we should add the event listener to the document.
         canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
@@ -416,8 +417,17 @@ export class CanvasGraphService {
      */
     private _removeEventListeners(canvas: HTMLCanvasElement) {
         canvas.removeEventListener("wheel", this._handleZoom);
+        canvas.removeEventListener("mousemove", this._handleDataHover);
         canvas.removeEventListener("mousedown", this._handlePanStart);
         canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
+    }
+    
+    private _handleDataHover = (event: MouseEvent) => {
+        if (this._panPosition) {
+            // we don't want to do anything if we are in the middle of panning.
+            return;
+        }
+        this._datasetBounds.forEach((value, key) => console.log({key, ...value}));
     }
 
     /**
