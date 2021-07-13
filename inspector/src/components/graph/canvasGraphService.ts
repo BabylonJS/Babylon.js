@@ -19,6 +19,13 @@ const stopDrawingPlayheadThreshold = 0.95;
 // Threshold for the ratio at which we go from panning mode to live mode.
 const returnToLiveThreshold = 0.998;
 
+// Font to use on the tooltip!
+const tooltipFont = "12px Arial";
+
+// A string containing the alphabet, used in line height calculation for the font.
+const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc! 
@@ -32,6 +39,10 @@ export class CanvasGraphService {
     private _panPosition: IPerfMousePanningPosition | null;
     private _positions: Map<string, number>;
     private _datasetBounds: Map<string, IPerfIndexBounds>;
+    private _globalTimeMinMax: IPerfMinMax;
+    
+    private readonly _tooltipLineHeight;
+    private readonly _defaultLineHeight;
 
     public readonly datasets: IPerfDataset[];
 
@@ -49,6 +60,21 @@ export class CanvasGraphService {
         this._panPosition = null;
         this._positions = new Map<string, number>();
         this._datasetBounds = new Map<string, IPerfIndexBounds>();
+        this._globalTimeMinMax = {min: Infinity, max: 0};
+
+        if (this._ctx) {
+            const defaultMetrics = this._ctx.measureText(alphabet);
+            this._defaultLineHeight = defaultMetrics.actualBoundingBoxAscent + defaultMetrics.actualBoundingBoxDescent;
+
+            this._ctx.save();
+            this._ctx.font = tooltipFont;
+            const fontMetrics = this._ctx.measureText(alphabet);
+            this._tooltipLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
+            this._ctx.restore();
+        } else {
+            this._tooltipLineHeight = 1;
+            this._defaultLineHeight = 1;
+        }
 
         this.datasets = settings.datasets;
 
@@ -69,7 +95,8 @@ export class CanvasGraphService {
         this.clear();
 
         // Get global min max of time axis (across all datasets).
-        const globalTimeMinMax = {min: Infinity, max: 0};
+        this._globalTimeMinMax.min = Infinity;
+        this._globalTimeMinMax.max = 0;
 
         // First we must get the end positions of each dataset.
         this.datasets.forEach((dataset: IPerfDataset) => {
@@ -118,12 +145,12 @@ export class CanvasGraphService {
                 return;
             }
             
-            globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, globalTimeMinMax.min);
-            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+            this._globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, this._globalTimeMinMax.min);
+            this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, this._globalTimeMinMax.max);
         });
 
         // set the buffer region maximum by rescaling the max timestamp in bounds.
-        const bufferMaximum = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min)/scaleFactor + globalTimeMinMax.min);
+        const bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min)/scaleFactor + this._globalTimeMinMax.min);
         
         // we then need to update the end position based on the maximum for the buffer region
         this.datasets.forEach((dataset: IPerfDataset) => {
@@ -138,13 +165,13 @@ export class CanvasGraphService {
             bounds.end = this._getClosestPointToTimestamp(dataset, bufferMaximum) + 1;
 
             // keep track of largest timestamp value in view!
-            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+            this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, this._globalTimeMinMax.max);
         });
 
-        let updatedScaleFactor = Scalar.Clamp((globalTimeMinMax.max - globalTimeMinMax.min)/(bufferMaximum - globalTimeMinMax.min), 0.8, 1); 
+        let updatedScaleFactor = Scalar.Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min)/(bufferMaximum - this._globalTimeMinMax.min), 0.8, 1); 
 
         // we will now set the global maximum to the maximum of the buffer.
-        globalTimeMinMax.max = bufferMaximum;
+        this._globalTimeMinMax.max = bufferMaximum;
 
 
         // TODO: Perhaps see if i can reduce the number of allocations.
@@ -170,13 +197,13 @@ export class CanvasGraphService {
             right: this._width,
         };
 
-        this._drawTimeAxis(globalTimeMinMax, drawableArea);
+        this._drawTimeAxis(this._globalTimeMinMax, drawableArea);
         this._drawPlayheadRegion(drawableArea, updatedScaleFactor);
 
         // process, and then draw our points
         datasets.forEach((dataset: IPerfDataset) => {
             const valueMinMax = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.value));
-            const drawablePoints = dataset.data.map((point: IPerfPoint) => this._getPixelPointFromDataPoint(point, globalTimeMinMax, valueMinMax, drawableArea));
+            const drawablePoints = dataset.data.map((point: IPerfPoint) => this._getPixelPointFromDataPoint(point, this._globalTimeMinMax, valueMinMax, drawableArea));
 
             let prevPoint: IPerfPoint = drawablePoints[0];
             ctx.beginPath();
@@ -240,7 +267,7 @@ export class CanvasGraphService {
 
         this._generateTicks(timeMinMax, spaceAvailable);
 
-        const axisHeight = 100;
+        const axisHeight = this._defaultLineHeight + 30;
 
         // remove the height of the axis from the available drawable area.
         drawableArea.bottom -= axisHeight;
@@ -423,11 +450,67 @@ export class CanvasGraphService {
     }
     
     private _handleDataHover = (event: MouseEvent) => {
-        if (this._panPosition) {
-            // we don't want to do anything if we are in the middle of panning.
+        const {_ctx : ctx} = this;
+
+        if (this._panPosition || !ctx || !ctx.canvas) {
+            // we don't want to do anything if we are in the middle of panning, or if in a disposed state.
             return;
         }
-        this._datasetBounds.forEach((value, key) => console.log({key, ...value}));
+
+        // first convert the mouse position in pixels to a timestamp.
+        const {min, max} = this._globalTimeMinMax;
+        const {left: start, right: end} = ctx.canvas.getBoundingClientRect();
+        const pixel = event.clientX;
+        const inferredTimestamp = min + this._getValueFromPixel(pixel, start, end) * (max - min);
+        
+        const results: {text: string, color: string}[] = [];
+
+        // get the closest timestamps to the target timestamp, and store the appropriate meta object.
+        this.datasets.forEach((dataset: IPerfDataset) => {
+            if (!!dataset.hidden || dataset.data.length === 0) {
+                return;
+            }
+
+            const closestIndex = this._getClosestPointToTimestamp(dataset, inferredTimestamp);
+            
+            results.push({
+                            text: `${dataset.id}: ${dataset.data[closestIndex].value.toFixed(2)}`,
+                            color: dataset.color ?? defaultColor,
+                        });
+        });
+
+        const longestText = results.reduce((longestSoFar: string, result) => {
+            if (longestSoFar.length < result.text.length) {
+                return result.text;
+            } else {
+                return longestSoFar;
+            }
+        }, "");
+
+        ctx.save();
+        ctx.font = "12px Arial";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        const textHeight = this._tooltipLineHeight + 5;
+        const width = ctx.measureText(longestText).width + 15;
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = "#121212";
+        ctx.fillRect(pixel - start, Math.floor(this._height / 2), width , textHeight * (results.length + 1));
+        ctx.globalAlpha = 1;
+        let x = pixel - start + 5;
+        let y = Math.floor(this._height/2 + textHeight);
+
+        results.forEach((result) => {
+            ctx.fillStyle = result.color;
+            ctx.fillRect(x, y, 5, 5);
+            ctx.fillText(result.text, x + 7, y);
+            y += textHeight;
+        });
+        ctx.restore();
+    }
+
+    private _getValueFromPixel(pixel: number, start: number, end: number): number {
+        return (pixel - start)/(end - start);
     }
 
     /**
