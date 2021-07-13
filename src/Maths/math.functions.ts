@@ -1,6 +1,9 @@
 import { FloatArray, Nullable, IndicesArray } from '../types';
 import { Vector2, Vector3 } from './math.vector';
 
+/** @hidden */
+declare const _native: any;
+
 /**
  * Extracts minimum and maximum values from a list of indexed positions
  * @param positions defines the positions to use
@@ -14,13 +17,17 @@ export function extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesA
     var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-    for (var index = indexStart; index < indexStart + indexCount; index++) {
-        const offset = indices[index] * 3;
-        const x = positions[offset];
-        const y = positions[offset + 1];
-        const z = positions[offset + 2];
-        minimum.minimizeInPlaceFromFloats(x, y, z);
-        maximum.maximizeInPlaceFromFloats(x, y, z);
+    if (typeof _native !== 'undefined') {
+        _native.extractMinAndMaxIndexed(positions, indices, indexStart, indexCount, minimum, maximum);
+    } else {
+        for (var index = indexStart; index < indexStart + indexCount; index++) {
+            const offset = indices[index] * 3;
+            const x = positions[offset];
+            const y = positions[offset + 1];
+            const z = positions[offset + 2];
+            minimum.minimizeInPlaceFromFloats(x, y, z);
+            maximum.maximizeInPlaceFromFloats(x, y, z);
+        }
     }
 
     if (bias) {
@@ -55,12 +62,16 @@ export function extractMinAndMax(positions: FloatArray, start: number, count: nu
         stride = 3;
     }
 
-    for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
-        const x = positions[offset];
-        const y = positions[offset + 1];
-        const z = positions[offset + 2];
-        minimum.minimizeInPlaceFromFloats(x, y, z);
-        maximum.maximizeInPlaceFromFloats(x, y, z);
+    if (typeof _native !== 'undefined') {
+        _native.extractMinAndMax(positions, start, count, stride, minimum, maximum);
+    } else {
+        for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
+            const x = positions[offset];
+            const y = positions[offset + 1];
+            const z = positions[offset + 2];
+            minimum.minimizeInPlaceFromFloats(x, y, z);
+            maximum.maximizeInPlaceFromFloats(x, y, z);
+        }
     }
 
     if (bias) {
