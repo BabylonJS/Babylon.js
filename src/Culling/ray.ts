@@ -36,8 +36,11 @@ export class Ray {
 
     // Methods
 
-
-    public clone(): Ray{
+    /**
+     * Clone the current ray
+     * @returns a new ray
+     */
+    public clone(): Ray {
         return new Ray(this.origin.clone(), this.direction.clone(), this.length);
     }
 

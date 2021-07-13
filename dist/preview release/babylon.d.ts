@@ -11138,6 +11138,11 @@ declare module BABYLON {
         /** length of the ray */
         length?: number);
         /**
+         * Clone the current ray
+         * @returns a new ray
+         */
+        clone(): Ray;
+        /**
          * Checks if the ray intersects a box
          * This does not account for the ray length by design to improve perfs.
          * @param minimum bound of the box

@@ -424,7 +424,6 @@ export class SpriteManager implements ISpriteManager {
             } else if (!sprite.isPickable) {
                 continue;
             }
-            
 
             Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
 
@@ -444,7 +443,7 @@ export class SpriteManager implements ISpriteManager {
             } else {
                 activeRay = ray;
             }
- 
+
             min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
             max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
 
