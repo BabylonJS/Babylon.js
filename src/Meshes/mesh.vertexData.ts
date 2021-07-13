@@ -404,9 +404,9 @@ export class VertexData {
         return this;
     }
 
-    private static TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>) {
-        if (typeof _native !== 'undefined') {
-            _native.TransformVector3Coordinates(coordinates, transformation);
+    private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>) {
+        if (typeof _native !== 'undefined' && _native.transformVector3Coordinates && !Array.isArray(coordinates)) {
+            _native.transformVector3Coordinates(coordinates, transformation);
         } else {
             const coordinate = Vector3.Zero();
             const transformedCoordinate = Vector3.Zero(); // TmpVectors
@@ -420,9 +420,9 @@ export class VertexData {
         }
     }
 
-    private static TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
-        if (typeof _native !== 'undefined') {
-            _native.TransformVector3Normals(normals, transformation);
+    private static _TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
+        if (typeof _native !== 'undefined' && _native.transformVector3Normals && !Array.isArray(normals)) {
+            _native.transformVector3Normals(normals, transformation);
         } else {
             const normal = Vector3.Zero();
             const transformedNormal = Vector3.Zero(); // TmpVectors
@@ -436,9 +436,9 @@ export class VertexData {
         }
     }
 
-    private static TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
-        if (typeof _native !== 'undefined' && false) { // TODO
-            _native.TransformVector4Normals(normals, transformation);
+    private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
+        if (typeof _native !== 'undefined' && _native.transformVector4Normals && !Array.isArray(normals)) {
+            _native.transformVector4Normals(normals, transformation);
         } else {
             var normal = Vector4.Zero();
             var transformedNormal = Vector4.Zero();
@@ -453,8 +453,8 @@ export class VertexData {
         }
     }
 
-    private static flipIndices(indices: IndicesArray) {
-        if (typeof _native !== 'undefined' && !Array.isArray(indices)) {
+    private static _FlipIndices(indices: IndicesArray) {
+        if (typeof _native !== 'undefined' && _native.flipIndices && !Array.isArray(indices)) {
             _native.flipIndices(indices);
         } else {
             for (let index = 0; index < indices.length; index += 3) {
@@ -473,19 +473,19 @@ export class VertexData {
     public transform(matrix: Matrix): VertexData {
         const flip = matrix.determinant() < 0;
         if (this.positions) {
-            VertexData.TransformVector3Coordinates(this.positions, matrix);
+            VertexData._TransformVector3Coordinates(this.positions, matrix);
         }
 
         if (this.normals) {
-            VertexData.TransformVector3Normals(this.normals, matrix);
+            VertexData._TransformVector3Normals(this.normals, matrix);
         }
 
         if (this.tangents) {
-            VertexData.TransformVector4Normals(this.tangents, matrix);
+            VertexData._TransformVector4Normals(this.tangents, matrix);
         }
 
         if (flip && this.indices) {
-            VertexData.flipIndices(this.indices);
+            VertexData._FlipIndices(this.indices);
         }
 
         return this;
