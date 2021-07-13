@@ -453,14 +453,25 @@ export class VertexData {
         }
     }
 
+    private static flipIndices(indices: IndicesArray) {
+        if (typeof _native !== 'undefined' && !Array.isArray(indices)) {
+            _native.flipIndices(indices);
+        } else {
+            for (let index = 0; index < indices.length; index += 3) {
+                const tmp = indices[index + 1];
+                indices[index + 1] = indices[index + 2];
+                indices[index + 2] = tmp;
+            }
+        }
+    }
+
     /**
      * Transforms each position and each normal of the vertexData according to the passed Matrix
      * @param matrix the transforming matrix
      * @returns the VertexData
      */
     public transform(matrix: Matrix): VertexData {
-        var flip = matrix.determinant() < 0;
-        var index: number;
+        const flip = matrix.determinant() < 0;
         if (this.positions) {
             VertexData.TransformVector3Coordinates(this.positions, matrix);
         }
@@ -474,11 +485,7 @@ export class VertexData {
         }
 
         if (flip && this.indices) {
-            for (index = 0; index < this.indices!.length; index += 3) {
-                let tmp = this.indices[index + 1];
-                this.indices[index + 1] = this.indices[index + 2];
-                this.indices[index + 2] = tmp;
-            }
+            VertexData.flipIndices(this.indices);
         }
 
         return this;
