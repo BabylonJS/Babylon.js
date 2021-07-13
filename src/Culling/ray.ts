@@ -35,6 +35,12 @@ export class Ray {
     ) {}
 
     // Methods
+
+
+    public clone(): Ray{
+        return new Ray(this.origin.clone(), this.direction.clone(), this.length);
+    }
+
     /**
      * Checks if the ray intersects a box
      * This does not account for the ray length by design to improve perfs.
