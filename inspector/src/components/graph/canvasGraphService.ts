@@ -40,6 +40,8 @@ export class CanvasGraphService {
     private _positions: Map<string, number>;
     private _datasetBounds: Map<string, IPerfIndexBounds>;
     private _globalTimeMinMax: IPerfMinMax;
+    private _hoverPosition: number | null;
+    private _drawableArea: IGraphDrawableArea;
     
     private readonly _tooltipLineHeight;
     private readonly _defaultLineHeight;
@@ -58,9 +60,11 @@ export class CanvasGraphService {
         this._height = canvas.height;
         this._ticks = [];
         this._panPosition = null;
+        this._hoverPosition = null;
         this._positions = new Map<string, number>();
         this._datasetBounds = new Map<string, IPerfIndexBounds>();
         this._globalTimeMinMax = {min: Infinity, max: 0};
+        this._drawableArea = {top: 0, left: 0, right: 0, bottom: 0};
 
         if (this._ctx) {
             const defaultMetrics = this._ctx.measureText(alphabet);
@@ -190,20 +194,18 @@ export class CanvasGraphService {
             }
         }).filter((dataset: IPerfDataset) => !dataset.hidden && dataset.data.length > 0);
 
-        const drawableArea: IGraphDrawableArea = {
-            top: 0,
-            left: 0,
-            bottom: this._height,
-            right: this._width,
-        };
+        this._drawableArea.top = 0;
+        this._drawableArea.left = 0;
+        this._drawableArea.bottom = this._height;
+        this._drawableArea.right = this._width;
 
-        this._drawTimeAxis(this._globalTimeMinMax, drawableArea);
-        this._drawPlayheadRegion(drawableArea, updatedScaleFactor);
+        this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
+        this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
 
         // process, and then draw our points
         datasets.forEach((dataset: IPerfDataset) => {
             const valueMinMax = this._getMinMax(dataset.data.map((point: IPerfPoint) => point.value));
-            const drawablePoints = dataset.data.map((point: IPerfPoint) => this._getPixelPointFromDataPoint(point, this._globalTimeMinMax, valueMinMax, drawableArea));
+            const drawablePoints = dataset.data.map((point: IPerfPoint) => this._getPixelPointFromDataPoint(point, this._globalTimeMinMax, valueMinMax, this._drawableArea));
 
             let prevPoint: IPerfPoint = drawablePoints[0];
             ctx.beginPath();
@@ -215,6 +217,9 @@ export class CanvasGraphService {
             });
             ctx.stroke();
         });
+
+        // then draw the tooltip.
+        this._drawTooltip(this._hoverPosition, this._drawableArea);
     }
 
     /**
@@ -433,6 +438,7 @@ export class CanvasGraphService {
         canvas.addEventListener("wheel", this._handleZoom);
         canvas.addEventListener("mousemove", this._handleDataHover);
         canvas.addEventListener("mousedown", this._handlePanStart);
+        canvas.addEventListener("mouseleave", this._handleStopHover);
         // The user may stop panning outside of the canvas size so we should add the event listener to the document.
         canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
     }
@@ -446,21 +452,36 @@ export class CanvasGraphService {
         canvas.removeEventListener("wheel", this._handleZoom);
         canvas.removeEventListener("mousemove", this._handleDataHover);
         canvas.removeEventListener("mousedown", this._handlePanStart);
+        canvas.removeEventListener("mouseleave", this._handleStopHover);
         canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
     }
     
     private _handleDataHover = (event: MouseEvent) => {
+        if (this._panPosition) {
+            // we don't want to do anything if we are in the middle of panning
+            return;
+        }
+
+        this._hoverPosition = event.clientX;
+
+        // then draw the tooltip.
+        this._drawTooltip(this._hoverPosition, this._drawableArea);
+    }
+
+    private _handleStopHover = () => {
+        this._hoverPosition = null;
+    }
+
+    private _drawTooltip(pixel: number | null, drawableArea: IGraphDrawableArea) {
         const {_ctx : ctx} = this;
 
-        if (this._panPosition || !ctx || !ctx.canvas) {
-            // we don't want to do anything if we are in the middle of panning, or if in a disposed state.
+        if (pixel === null || !ctx || !ctx.canvas) {            
             return;
         }
 
         // first convert the mouse position in pixels to a timestamp.
         const {min, max} = this._globalTimeMinMax;
         const {left: start, right: end} = ctx.canvas.getBoundingClientRect();
-        const pixel = event.clientX;
         const inferredTimestamp = min + this._getValueFromPixel(pixel, start, end) * (max - min);
         
         const results: {text: string, color: string}[] = [];
@@ -487,22 +508,25 @@ export class CanvasGraphService {
             }
         }, "");
 
+        let x = pixel - start;
+        let y = Math.floor((drawableArea.bottom - drawableArea.top)/2);
+
         ctx.save();
         ctx.font = "12px Arial";
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
         const textHeight = this._tooltipLineHeight + 5;
         const width = ctx.measureText(longestText).width + 15;
-        ctx.globalAlpha = 0.3;
+        ctx.globalAlpha = 0.8;
         ctx.fillStyle = "#121212";
-        ctx.fillRect(pixel - start, Math.floor(this._height / 2), width , textHeight * (results.length + 1));
+        ctx.fillRect(x, y, width, textHeight * (results.length + 1));
         ctx.globalAlpha = 1;
-        let x = pixel - start + 5;
-        let y = Math.floor(this._height/2 + textHeight);
-
+        x += 5;
+        y += textHeight;
         results.forEach((result) => {
             ctx.fillStyle = result.color;
             ctx.fillRect(x, y, 5, 5);
+            ctx.fillStyle = "#fff";
             ctx.fillText(result.text, x + 7, y);
             y += textHeight;
         });
