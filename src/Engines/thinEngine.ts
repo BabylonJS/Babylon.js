@@ -727,17 +727,10 @@ export class ThinEngine {
                 // Function to check if running on mobile device
                 this._checkForMobile = () => {
                     let currentUA = navigator.userAgent;
-                    this.hostInformation.isMobile = currentUA.indexOf("Mobile") !== -1 || [
-                        'iPad Simulator',
-                        'iPhone Simulator',
-                        'iPod Simulator',
-                        'iPad',
-                        'iPhone',
-                        'iPod'
-                    ].indexOf(navigator.platform) !== -1
-                        // Needed for iOS 13+ detection
-                        || (currentUA.indexOf("Mac") !== -1 && "ontouchend" in document);
-                }
+                    this.hostInformation.isMobile = currentUA.indexOf("Mobile") !== -1 ||
+                        // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
+                        (currentUA.indexOf("Mac") !== -1 && "ontouchend" in document);
+                };
 
                 // Set initial isMobile value
                 this._checkForMobile();
@@ -750,8 +743,6 @@ export class ThinEngine {
                     let key = exception.key;
                     let targets = exception.targets;
                     let check = new RegExp(key);
-
-
 
                     if (check.test(ua)) {
                         if (exception.capture && exception.captureConstraint) {
@@ -4472,8 +4463,9 @@ export class ThinEngine {
                 if (!this._doNotHandleContextLost) {
                     this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
                     this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
-                    window.removeEventListener("resize", this._checkForMobile);
                 }
+
+                window.removeEventListener("resize", this._checkForMobile);
             }
         }
 
