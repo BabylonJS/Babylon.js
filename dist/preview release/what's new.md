@@ -36,6 +36,7 @@
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
 - Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
+- Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
 
 ### Engine
 
@@ -261,6 +262,7 @@
 - Fix for near interaction failing when multiple utility layers are present ([rickfromwork](https://github.com/rickfromwork))
 - Fix handling of events to support multiple canvas scenarios DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix undisposed textures in PrePass effects that would cause the scene to have more textures than expected ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix ThinEngine isMobile to detect changes when window is resized to allow for proper emulator evaluation ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 
