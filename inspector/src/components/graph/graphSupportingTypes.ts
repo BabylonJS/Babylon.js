@@ -25,6 +25,14 @@ export interface IPerfIndexBounds {
 }
 
 /**
+ * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
+ */
+export interface IPerfTooltip {
+    text: string;
+    color: string
+}
+
+/**
  * Defines a structure defining the available space in a drawable area.
  */
 export interface IGraphDrawableArea {
