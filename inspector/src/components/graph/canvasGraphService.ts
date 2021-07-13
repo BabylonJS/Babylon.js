@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 
@@ -6,6 +6,15 @@ const defaultColor = "#000";
 const futureBoxColor = "#dfe9ed";
 const dividerColor = "#0a3066";
 const playheadColor = "#b9dbef";
+
+const tooltipBackgroundColor = "#121212";
+const tooltipForegroundColor = "#fff";
+
+const defaultAlpha = 1;
+const tooltipBackgroundAlpha = 0.8;
+
+const tooltipHorizontalPadding = 10;
+const spaceBetweenTextAndBox = 5;
 
 const playheadSize = 8;
 const dividerSize = 2;
@@ -456,6 +465,11 @@ export class CanvasGraphService {
         canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
     }
     
+    /**
+     * Handles what to do when we are hovering over the canvas and not panning.
+     * 
+     * @param event A reference to the event to be handled. 
+     */
     private _handleDataHover = (event: MouseEvent) => {
         if (this._panPosition) {
             // we don't want to do anything if we are in the middle of panning
@@ -468,10 +482,19 @@ export class CanvasGraphService {
         this._drawTooltip(this._hoverPosition, this._drawableArea);
     }
 
+    /**
+     * Handles what to do when we stop hovering over the canvas.
+     */
     private _handleStopHover = () => {
         this._hoverPosition = null;
     }
 
+    /**
+     * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
+     * 
+     * @param pixel the position of the mouse cursor in pixels. 
+     * @param drawableArea  the available area we can draw in.
+     */
     private _drawTooltip(pixel: number | null, drawableArea: IGraphDrawableArea) {
         const {_ctx : ctx} = this;
 
@@ -480,11 +503,10 @@ export class CanvasGraphService {
         }
 
         // first convert the mouse position in pixels to a timestamp.
-        const {min, max} = this._globalTimeMinMax;
         const {left: start, right: end} = ctx.canvas.getBoundingClientRect();
-        const inferredTimestamp = min + this._getValueFromPixel(pixel, start, end) * (max - min);
+        const inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
         
-        const results: {text: string, color: string}[] = [];
+        const results: IPerfTooltip[] = [];
 
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         this.datasets.forEach((dataset: IPerfDataset) => {
@@ -512,29 +534,55 @@ export class CanvasGraphService {
         let y = Math.floor((drawableArea.bottom - drawableArea.top)/2);
 
         ctx.save();
-        ctx.font = "12px Arial";
+        
+        ctx.font = tooltipFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
-        const textHeight = this._tooltipLineHeight + 5;
-        const width = ctx.measureText(longestText).width + 15;
-        ctx.globalAlpha = 0.8;
-        ctx.fillStyle = "#121212";
+
+        const boxLength = this._tooltipLineHeight;
+        const textHeight = this._tooltipLineHeight + Math.floor(tooltipHorizontalPadding/2);
+
+        const width = ctx.measureText(longestText).width + boxLength + 2 * tooltipHorizontalPadding + spaceBetweenTextAndBox;
+        
+        // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
+        if (x + width > this._width) {
+            x -= width;
+        }
+
+        ctx.globalAlpha = tooltipBackgroundAlpha;
+        ctx.fillStyle = tooltipBackgroundColor;
+        
         ctx.fillRect(x, y, width, textHeight * (results.length + 1));
-        ctx.globalAlpha = 1;
-        x += 5;
+        
+        ctx.globalAlpha = defaultAlpha;
+        
+        x += tooltipHorizontalPadding;
         y += textHeight;
+
         results.forEach((result) => {
             ctx.fillStyle = result.color;
-            ctx.fillRect(x, y, 5, 5);
-            ctx.fillStyle = "#fff";
-            ctx.fillText(result.text, x + 7, y);
+            ctx.fillRect(x, y - Math.floor(boxLength/2), boxLength, boxLength);
+            ctx.fillStyle = tooltipForegroundColor;
+            ctx.fillText(result.text, x + boxLength + spaceBetweenTextAndBox, y);
             y += textHeight;
         });
         ctx.restore();
     }
 
-    private _getValueFromPixel(pixel: number, start: number, end: number): number {
-        return (pixel - start)/(end - start);
+    /**
+     * Gets the number from a pixel position given the minimum and maximum value in range, and the starting pixel and the ending pixel.
+     * 
+     * @param pixel current pixel position we want to get the number for.
+     * @param minMax the minimum and maximum number in the range.
+     * @param startingPixel position of the starting pixel in range.
+     * @param endingPixel position of ending pixel in range.
+     * @returns number corresponding to pixel position
+     */
+    private _getNumberFromPixel(pixel: number, minMax: IPerfMinMax, startingPixel: number, endingPixel: number): number {
+        // normalize pixel to range [0, 1].
+        const normalizedPixelPosition = (pixel - startingPixel)/(endingPixel - startingPixel);
+        
+        return minMax.min + normalizedPixelPosition * (minMax.max - minMax.min);
     }
 
     /**
@@ -581,6 +629,7 @@ export class CanvasGraphService {
             xPos: event.clientX,
             delta: 0,
         };
+        this._hoverPosition = null;
         canvas.addEventListener("mousemove", this._handlePan)
     }
 
