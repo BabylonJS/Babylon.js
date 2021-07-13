@@ -17,7 +17,7 @@ export function extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesA
     var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-    if (typeof _native !== 'undefined') {
+    if (typeof _native !== 'undefined' && _native.extractMinAndMaxIndexed && !Array.isArray(positions) && !Array.isArray(indices)) {
         _native.extractMinAndMaxIndexed(positions, indices, indexStart, indexCount, minimum, maximum);
     } else {
         for (var index = indexStart; index < indexStart + indexCount; index++) {
@@ -62,7 +62,7 @@ export function extractMinAndMax(positions: FloatArray, start: number, count: nu
         stride = 3;
     }
 
-    if (typeof _native !== 'undefined') {
+    if (typeof _native !== 'undefined' && _native.extractMinAndMax && !Array.isArray(positions)) {
         _native.extractMinAndMax(positions, start, count, stride, minimum, maximum);
     } else {
         for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
