@@ -39,7 +39,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             return true;
         }
 
-
+        //if the next entity is going to be selected then we want to highlight it so update
         if (nextProps.entity === nextProps.selectedEntity) {
             nextState.isSelected = true;
             return true;
