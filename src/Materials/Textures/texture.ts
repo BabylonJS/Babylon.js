@@ -439,7 +439,14 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                try {
+                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                } catch (e) {
+                    if (onError) {
+                        onError(e.message, e);
+                    }
+                    throw e;
+                }
                 if (deleteBuffer) {
                     this._buffer = null;
                 }

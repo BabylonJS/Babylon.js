@@ -228,6 +228,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                     }
                     this._dragging = true;
+                    this._ownerNode.computeWorldMatrix(true);
 
                     virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 

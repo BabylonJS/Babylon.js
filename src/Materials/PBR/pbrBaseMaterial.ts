@@ -65,8 +65,16 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public MAINUV1 = false;
     public MAINUV2 = false;
+    public MAINUV3 = false;
+    public MAINUV4 = false;
+    public MAINUV5 = false;
+    public MAINUV6 = false;
     public UV1 = false;
     public UV2 = false;
+    public UV3 = false;
+    public UV4 = false;
+    public UV5 = false;
+    public UV6 = false;
 
     public ALBEDO = false;
     public GAMMAALBEDO = false;
@@ -227,7 +235,6 @@ export class PBRMaterialDefines extends MaterialDefines
     public POINTSIZE = false;
     public FOG = false;
     public LOGARITHMICDEPTH = false;
-    public USE_REVERSE_DEPTHBUFFER = false;
 
     public FORCENORMALFORWARD = false;
 
@@ -317,6 +324,7 @@ export class PBRMaterialDefines extends MaterialDefines
         super.reset();
         this.ALPHATESTVALUE = "0.5";
         this.PBR = true;
+        this.NORMALXYSCALE = true;
     }
 }
 
@@ -1354,12 +1362,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             attribs.push(VertexBuffer.TangentKind);
         }
 
-        if (defines.UV1) {
-            attribs.push(VertexBuffer.UVKind);
-        }
-
-        if (defines.UV2) {
-            attribs.push(VertexBuffer.UV2Kind);
+        for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            if (defines["UV" + i]) {
+                attribs.push(`uv${i === 1 ? "" : i}`);
+            }
         }
 
         if (defines.VERTEXCOLOR) {

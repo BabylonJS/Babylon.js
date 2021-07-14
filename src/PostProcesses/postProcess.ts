@@ -834,7 +834,7 @@ export class PostProcess {
     }
 
     /**
-     * Serializes the particle system to a JSON object
+     * Serializes the post process to a JSON object
      * @returns the JSON object
      */
     public serialize(): any {
