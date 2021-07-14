@@ -22392,6 +22392,10 @@ declare module BABYLON {
          * The higher the faster.
          */
         touchMoveSensibility: number;
+        /**
+         * Swap touch actions so that one touch is used for rotation and multiple for movement
+         */
+        singleFingerRotate: boolean;
         private _offsetX;
         private _offsetY;
         private _pointerPressed;
@@ -32088,6 +32092,7 @@ declare module BABYLON {
         _morphTargetManager: Nullable<MorphTargetManager>;
         _renderingGroupId: number;
         _material: Nullable<Material>;
+        _positions: Nullable<Vector3[]>;
         _meshCollisionData: _MeshCollisionData;
     }
     /**
@@ -39690,6 +39695,7 @@ declare module BABYLON {
          */
         get snapshotRenderingMode(): number;
         set snapshotRenderingMode(mode: number);
+        private _checkForMobile;
         private static _createCanvas;
         /**
          * Create a canvas. This method is overiden by other engines
@@ -76394,8 +76400,10 @@ declare module BABYLON {
             /**
              * Refreshes the bounding info, taking into account all the thin instances defined
              * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
+             * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+             * @param applyMorph  defines whether to apply the morph target before computing the bounding info
              */
-            thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean): void;
+            thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean, applySkeleton?: boolean, applyMorph?: boolean): void;
             /** @hidden */
             _thinInstanceInitializeUserStorage(): void;
             /** @hidden */
