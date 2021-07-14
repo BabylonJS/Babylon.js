@@ -19,6 +19,9 @@ const spaceBetweenTextAndBox = 5;
 const playheadSize = 8;
 const dividerSize = 2;
 
+const axisLineLength = 10;
+const axisPadding = 10;
+
 // Currently the scale factor is a constant but when we add panning this may become formula based.
 const scaleFactor = 0.8;
 
@@ -51,6 +54,7 @@ export class CanvasGraphService {
     private _globalTimeMinMax: IPerfMinMax;
     private _hoverPosition: number | null;
     private _drawableArea: IGraphDrawableArea;
+    private _axisHeight: number;
     
     private readonly _tooltipLineHeight;
     private readonly _defaultLineHeight;
@@ -78,6 +82,7 @@ export class CanvasGraphService {
         if (this._ctx) {
             const defaultMetrics = this._ctx.measureText(alphabet);
             this._defaultLineHeight = defaultMetrics.actualBoundingBoxAscent + defaultMetrics.actualBoundingBoxDescent;
+            this._axisHeight = axisLineLength + axisPadding + this._defaultLineHeight + axisPadding;
 
             this._ctx.save();
             this._ctx.font = tooltipFont;
@@ -181,7 +186,7 @@ export class CanvasGraphService {
             this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, this._globalTimeMinMax.max);
         });
 
-        let updatedScaleFactor = Scalar.Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min)/(bufferMaximum - this._globalTimeMinMax.min), 0.8, 1); 
+        const updatedScaleFactor = Scalar.Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min)/(bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1); 
 
         // we will now set the global maximum to the maximum of the buffer.
         this._globalTimeMinMax.max = bufferMaximum;
@@ -281,10 +286,8 @@ export class CanvasGraphService {
 
         this._generateTicks(timeMinMax, spaceAvailable);
 
-        const axisHeight = this._defaultLineHeight + 30;
-
         // remove the height of the axis from the available drawable area.
-        drawableArea.bottom -= axisHeight;
+        drawableArea.bottom -= this._axisHeight;
 
         // draw time axis line
         ctx.save();
@@ -507,7 +510,7 @@ export class CanvasGraphService {
         const inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
         
         const results: IPerfTooltip[] = [];
-
+        let longestText: string = "";
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         this.datasets.forEach((dataset: IPerfDataset) => {
             if (!!dataset.hidden || dataset.data.length === 0) {
@@ -515,20 +518,17 @@ export class CanvasGraphService {
             }
 
             const closestIndex = this._getClosestPointToTimestamp(dataset, inferredTimestamp);
+            const text = `${dataset.id}: ${dataset.data[closestIndex].value.toFixed(2)}`;
             
+            if (text.length > longestText.length) {
+                longestText = text;
+            }
+
             results.push({
-                            text: `${dataset.id}: ${dataset.data[closestIndex].value.toFixed(2)}`,
+                            text,
                             color: dataset.color ?? defaultColor,
                         });
-        });
-
-        const longestText = results.reduce((longestSoFar: string, result) => {
-            if (longestSoFar.length < result.text.length) {
-                return result.text;
-            } else {
-                return longestSoFar;
-            }
-        }, "");
+        }); 
 
         let x = pixel - start;
         let y = Math.floor((drawableArea.bottom - drawableArea.top)/2);
