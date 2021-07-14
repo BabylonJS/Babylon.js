@@ -1,194 +1,33 @@
-#ifdef ALBEDO
-    #if ALBEDODIRECTUV == 1
-        #define vAlbedoUV vMainUV1
-    #elif ALBEDODIRECTUV == 2
-        #define vAlbedoUV vMainUV2
-    #else
-        varying vec2 vAlbedoUV;
-    #endif
-    uniform sampler2D albedoSampler;
-#endif
-
-#ifdef AMBIENT
-    #if AMBIENTDIRECTUV == 1
-        #define vAmbientUV vMainUV1
-    #elif AMBIENTDIRECTUV == 2
-        #define vAmbientUV vMainUV2
-    #else
-        varying vec2 vAmbientUV;
-    #endif
-    uniform sampler2D ambientSampler;
-#endif
-
-#ifdef OPACITY
-    #if OPACITYDIRECTUV == 1
-        #define vOpacityUV vMainUV1
-    #elif OPACITYDIRECTUV == 2
-        #define vOpacityUV vMainUV2
-    #else
-        varying vec2 vOpacityUV;
-    #endif
-    uniform sampler2D opacitySampler;
-#endif
-
-#ifdef EMISSIVE
-    #if EMISSIVEDIRECTUV == 1
-        #define vEmissiveUV vMainUV1
-    #elif EMISSIVEDIRECTUV == 2
-        #define vEmissiveUV vMainUV2
-    #else
-        varying vec2 vEmissiveUV;
-    #endif
-    uniform sampler2D emissiveSampler;
-#endif
-
-#ifdef LIGHTMAP
-    #if LIGHTMAPDIRECTUV == 1
-        #define vLightmapUV vMainUV1
-    #elif LIGHTMAPDIRECTUV == 2
-        #define vLightmapUV vMainUV2
-    #else
-        varying vec2 vLightmapUV;
-    #endif
-    uniform sampler2D lightmapSampler;
-#endif
-
-#ifdef REFLECTIVITY
-    #if REFLECTIVITYDIRECTUV == 1
-        #define vReflectivityUV vMainUV1
-    #elif REFLECTIVITYDIRECTUV == 2
-        #define vReflectivityUV vMainUV2
-    #else
-        varying vec2 vReflectivityUV;
-    #endif
-    uniform sampler2D reflectivitySampler;
-#endif
-
-#ifdef MICROSURFACEMAP
-    #if MICROSURFACEMAPDIRECTUV == 1
-        #define vMicroSurfaceSamplerUV vMainUV1
-    #elif MICROSURFACEMAPDIRECTUV == 2
-        #define vMicroSurfaceSamplerUV vMainUV2
-    #else
-        varying vec2 vMicroSurfaceSamplerUV;
-    #endif
-    uniform sampler2D microSurfaceSampler;
-#endif
-
-#ifdef METALLIC_REFLECTANCE
-    #if METALLIC_REFLECTANCEDIRECTUV == 1
-        #define vMetallicReflectanceUV vMainUV1
-    #elif METALLIC_REFLECTANCEDIRECTUV == 2
-        #define vMetallicReflectanceUV vMainUV2
-    #else
-        varying vec2 vMetallicReflectanceUV;
-    #endif
-    uniform sampler2D metallicReflectanceSampler;
-#endif
-#ifdef REFLECTANCE
-    #if REFLECTANCEDIRECTUV == 1
-        #define vReflectanceUV vMainUV1
-    #elif REFLECTANCEDIRECTUV == 2
-        #define vReflectanceUV vMainUV2
-    #else
-        varying vec2 vReflectanceUV;
-    #endif
-    uniform sampler2D reflectanceSampler;
-#endif
+#include<samplerFragmentDeclaration>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_SAMPLERNAME_,albedo)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient,_SAMPLERNAME_,ambient)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_SAMPLERNAME_,opacity)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive,_SAMPLERNAME_,emissive)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,LIGHTMAP,_VARYINGNAME_,Lightmap,_SAMPLERNAME_,lightmap)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,REFLECTIVITY,_VARYINGNAME_,Reflectivity,_SAMPLERNAME_,reflectivity)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,MICROSURFACEMAP,_VARYINGNAME_,MicroSurfaceSampler,_SAMPLERNAME_,microSurface)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,METALLIC_REFLECTANCE,_VARYINGNAME_,MetallicReflectance,_SAMPLERNAME_,metallicReflectance)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,REFLECTANCE,_VARYINGNAME_,Reflectance,_SAMPLERNAME_,reflectance)
 
 #ifdef CLEARCOAT
-    #if defined(CLEARCOAT_TEXTURE)
-        #if CLEARCOAT_TEXTUREDIRECTUV == 1
-            #define vClearCoatUV vMainUV1
-        #elif CLEARCOAT_TEXTUREDIRECTUV == 2
-            #define vClearCoatUV vMainUV2
-        #else
-            varying vec2 vClearCoatUV;
-        #endif
-    #endif
-
-    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS)
-        #if CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 1
-            #define vClearCoatRoughnessUV vMainUV1
-        #elif CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 2
-            #define vClearCoatRoughnessUV vMainUV2
-        #else
-            varying vec2 vClearCoatRoughnessUV;
-        #endif
-    #endif
-
-    #ifdef CLEARCOAT_TEXTURE
-        uniform sampler2D clearCoatSampler;
-    #endif
-
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,CLEARCOAT_TEXTURE,_VARYINGNAME_,ClearCoat,_SAMPLERNAME_,clearCoat)
+    #include<samplerFragmentAlternateDeclaration>(_DEFINENAME_,CLEARCOAT_TEXTURE_ROUGHNESS,_VARYINGNAME_,ClearCoatRoughness)
     #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL)
         uniform sampler2D clearCoatRoughnessSampler;
     #endif
-
-    #ifdef CLEARCOAT_BUMP
-        #if CLEARCOAT_BUMPDIRECTUV == 1
-            #define vClearCoatBumpUV vMainUV1
-        #elif CLEARCOAT_BUMPDIRECTUV == 2
-            #define vClearCoatBumpUV vMainUV2
-        #else
-            varying vec2 vClearCoatBumpUV;
-        #endif
-        uniform sampler2D clearCoatBumpSampler;
-    #endif
-
-    #ifdef CLEARCOAT_TINT_TEXTURE
-        #if CLEARCOAT_TINT_TEXTUREDIRECTUV == 1
-            #define vClearCoatTintUV vMainUV1
-        #elif CLEARCOAT_TINT_TEXTUREDIRECTUV == 2
-            #define vClearCoatTintUV vMainUV2
-        #else
-            varying vec2 vClearCoatTintUV;
-        #endif
-        uniform sampler2D clearCoatTintSampler;
-    #endif
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,CLEARCOAT_BUMP,_VARYINGNAME_,ClearCoatBump,_SAMPLERNAME_,clearCoatBump)
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,CLEARCOAT_TINT_TEXTURE,_VARYINGNAME_,ClearCoatTint,_SAMPLERNAME_,clearCoatTint)
 #endif
 
 #ifdef SHEEN
-    #ifdef SHEEN_TEXTURE
-        #if SHEEN_TEXTUREDIRECTUV == 1
-            #define vSheenUV vMainUV1
-        #elif SHEEN_TEXTUREDIRECTUV == 2
-            #define vSheenUV vMainUV2
-        #else
-            varying vec2 vSheenUV;
-        #endif
-    #endif
-
-    #ifdef SHEEN_TEXTURE_ROUGHNESS
-        #if SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 1
-            #define vSheenRoughnessUV vMainUV1
-        #elif SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 2
-            #define vSheenRoughnessUV vMainUV2
-        #else
-            varying vec2 vSheenRoughnessUV;
-        #endif
-    #endif
-
-    #ifdef SHEEN_TEXTURE
-        uniform sampler2D sheenSampler;
-    #endif
-
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,SHEEN_TEXTURE,_VARYINGNAME_,Sheen,_SAMPLERNAME_,sheen)
+    #include<samplerFragmentAlternateDeclaration>(_DEFINENAME_,SHEEN_TEXTURE_ROUGHNESS,_VARYINGNAME_,SheenRoughness)
     #if defined(SHEEN_ROUGHNESS) && defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL)
         uniform sampler2D sheenRoughnessSampler;
     #endif
 #endif
 
 #ifdef ANISOTROPIC
-    #ifdef ANISOTROPIC_TEXTURE
-        #if ANISOTROPIC_TEXTUREDIRECTUV == 1
-            #define vAnisotropyUV vMainUV1
-        #elif ANISOTROPIC_TEXTUREDIRECTUV == 2
-            #define vAnisotropyUV vMainUV2
-        #else
-            varying vec2 vAnisotropyUV;
-        #endif
-        uniform sampler2D anisotropySampler;
-    #endif
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,ANISOTROPIC_TEXTURE,_VARYINGNAME_,Anisotropy,_SAMPLERNAME_,anisotropy)
 #endif
 
 // Reflection
@@ -266,36 +105,7 @@
         #endif
     #endif
 
-    #ifdef SS_THICKNESSANDMASK_TEXTURE
-        #if SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 1
-            #define vThicknessUV vMainUV1
-        #elif SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 2
-            #define vThicknessUV vMainUV2
-        #else
-            varying vec2 vThicknessUV;
-        #endif
-        uniform sampler2D thicknessSampler;
-    #endif
-
-    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-        #if SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV == 1
-            #define vRefractionIntensityUV vMainUV1
-        #elif SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV == 2
-            #define vRefractionIntensityUV vMainUV2
-        #else
-            varying vec2 vRefractionIntensityUV;
-        #endif
-        uniform sampler2D refractionIntensitySampler;
-    #endif
-
-    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-        #if SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV == 1
-            #define vTranslucencyIntensityUV vMainUV1
-        #elif SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV == 2
-            #define vTranslucencyIntensityUV vMainUV2
-        #else
-            varying vec2 vTranslucencyIntensityUV;
-        #endif
-        uniform sampler2D translucencyIntensitySampler;
-    #endif
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_THICKNESSANDMASK_TEXTURE,_VARYINGNAME_,Thickness,_SAMPLERNAME_,thickness)
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_REFRACTIONINTENSITY_TEXTURE,_VARYINGNAME_,RefractionIntensity,_SAMPLERNAME_,refractionIntensity)
+    #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_TRANSLUCENCYINTENSITY_TEXTURE,_VARYINGNAME_,TranslucencyIntensity,_SAMPLERNAME_,translucencyIntensity)
 #endif

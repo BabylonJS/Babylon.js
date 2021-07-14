@@ -23,25 +23,30 @@ declare module GUIEDITOR {
     }
     export type FramePortData = {};
     export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
+    export enum ConstraintDirection {
+        NONE = 0,
+        X = 2,
+        Y = 3
+    }
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
+        artBoardBackground: BABYLON.Nullable<Rectangle>;
         private _rootContainer;
+        private _setConstraintDirection;
         private _mouseStartPointX;
         private _mouseStartPointY;
         private _textureMesh;
         private _scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
         private _forceSelecting;
         private _outlines;
-        _frameIsMoving: boolean;
-        _isLoading: boolean;
-        isOverGUINode: boolean;
-        artBoardBackground: Rectangle;
         private _panning;
         private _canvas;
         private _responsive;
+        private _isOverGUINode;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -60,6 +65,7 @@ declare module GUIEDITOR {
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
         private parent;
+        private _adjustParentingIndex;
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
@@ -89,6 +95,12 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export enum DragOverLocation {
+        ABOVE = 0,
+        BELOW = 1,
+        CENTER = 2,
+        NONE = 3
+    }
     export class GlobalState {
         [x: string]: any;
         guiTexture: AdvancedDynamicTexture;
@@ -121,7 +133,9 @@ declare module GUIEDITOR {
         onOutlinesObservable: BABYLON.Observable<void>;
         onResponsiveChangeObservable: BABYLON.Observable<boolean>;
         onParentingChangeObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
+        onDraggingEndObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
+        draggedControlDirection: DragOverLocation;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -704,50 +718,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    interface IVector2LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: BABYLON.Vector2) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        icon?: string;
-    }
-    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector2;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector2LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector2;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IParentingPropertyGridComponentProps {
-        guiNode: Control;
-        guiNodes: Control[];
-        globalState: GlobalState;
-    }
-    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
-        constructor(props: IParentingPropertyGridComponentProps);
-        parentIndex: number;
-        addChildGui(childNode: Control, parentNode: Control): void;
-        removeChildGui(childNode: Control, parentNode: Control): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -768,7 +738,7 @@ declare module GUIEDITOR {
         save(): void;
         saveToSnippetServer(): void;
         loadFromSnippet(): void;
-        renderProperties(): JSX.Element | JSX.Element[] | null;
+        renderProperties(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -840,11 +810,15 @@ declare module GUIEDITOR {
         isSelected: boolean;
     }> {
         dragOverHover: boolean;
+        dragOverLocation: DragOverLocation;
         private _onSelectionChangedObservable;
+        private _onDraggingEndObservable;
         constructor(props: IControlTreeItemComponentProps);
         componentWillUnmount(): void;
         highlight(): void;
         switchVisibility(): void;
+        dragOver(event: React.DragEvent<HTMLDivElement>): void;
+        drop(): void;
         render(): JSX.Element;
     }
 }
@@ -901,6 +875,7 @@ declare module GUIEDITOR {
         isSelected: boolean;
     }> {
         private _wasSelected;
+        dragOverHover: boolean;
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
@@ -1136,6 +1111,20 @@ declare module GUIEDITOR {
         map?: {
             [key: number]: number;
         };
+    }
+}
+declare module GUIEDITOR {
+    interface IParentingPropertyGridComponentProps {
+        guiNode: Control;
+        guiNodes: Control[];
+        globalState: GlobalState;
+    }
+    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
+        constructor(props: IParentingPropertyGridComponentProps);
+        parentIndex: number;
+        addChildGui(childNode: Control, parentNode: Control): void;
+        removeChildGui(childNode: Control, parentNode: Control): void;
+        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {
@@ -1482,6 +1471,36 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector2) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        icon?: string;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector2;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     interface IVector3LineComponentProps {
         label: string;
         target: any;
@@ -1548,6 +1567,186 @@ declare module GUIEDITOR {
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
         updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ICommonControlPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        constructor(props: ICommonControlPropertyGridComponentProps);
+        renderGridInformation(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ICheckboxPropertyGridComponentProps {
+        checkbox: Checkbox;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CheckboxPropertyGridComponent extends React.Component<ICheckboxPropertyGridComponentProps> {
+        constructor(props: ICheckboxPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IColorPickerPropertyGridComponentProps {
+        colorPicker: ColorPicker;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {
+        constructor(props: IColorPickerPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IControlPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ControlPropertyGridComponent extends React.Component<IControlPropertyGridComponentProps> {
+        constructor(props: IControlPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IEllipsePropertyGridComponentProps {
+        ellipse: Ellipse;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class EllipsePropertyGridComponent extends React.Component<IEllipsePropertyGridComponentProps> {
+        constructor(props: IEllipsePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IGridPropertyGridComponentProps {
+        grid: Grid;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
+        constructor(props: IGridPropertyGridComponentProps);
+        renderRows(): JSX.Element[];
+        renderColumns(): JSX.Element[];
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IImageBasedSliderPropertyGridComponentProps {
+        imageBasedSlider: ImageBasedSlider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ImageBasedSliderPropertyGridComponent extends React.Component<IImageBasedSliderPropertyGridComponentProps> {
+        constructor(props: IImageBasedSliderPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IImagePropertyGridComponentProps {
+        image: Image;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ImagePropertyGridComponent extends React.Component<IImagePropertyGridComponentProps> {
+        constructor(props: IImagePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IInputTextPropertyGridComponentProps {
+        inputText: InputText;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
+        constructor(props: IInputTextPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ILinePropertyGridComponentProps {
+        line: Line;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
+        constructor(props: ILinePropertyGridComponentProps);
+        onDashChange(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IRadioButtonPropertyGridComponentProps {
+        radioButton: RadioButton;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
+        constructor(props: IRadioButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IRectanglePropertyGridComponentProps {
+        rectangle: Rectangle;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class RectanglePropertyGridComponent extends React.Component<IRectanglePropertyGridComponentProps> {
+        constructor(props: IRectanglePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IScrollViewerPropertyGridComponentProps {
+        scrollViewer: ScrollViewer;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ScrollViewerPropertyGridComponent extends React.Component<IScrollViewerPropertyGridComponentProps> {
+        constructor(props: IScrollViewerPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISliderPropertyGridComponentProps {
+        slider: Slider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
+        constructor(props: ISliderPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IStackPanelPropertyGridComponentProps {
+        stackPanel: StackPanel;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class StackPanelPropertyGridComponent extends React.Component<IStackPanelPropertyGridComponentProps> {
+        constructor(props: IStackPanelPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ITextBlockPropertyGridComponentProps {
+        textBlock: TextBlock;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
+        constructor(props: ITextBlockPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }

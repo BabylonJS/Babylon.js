@@ -189,15 +189,44 @@ export class UtilityLayerRenderer implements IDisposable {
                     return;
                 }
 
-                let utilityScenePick;
+                let getNearPickDataForScene = (scene: Scene) => {
+                    let scenePick = null;
 
-                if (prePointerInfo.nearInteractionPickingInfo) {
-                    utilityScenePick = prePointerInfo.nearInteractionPickingInfo;
-                } else {
-                    utilityScenePick = prePointerInfo.ray
-                        ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray)
-                        : this.utilityLayerScene.pick(originalScene.pointerX, originalScene.pointerY);
-                }
+                    if (prePointerInfo.nearInteractionPickingInfo) {
+                        if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == scene) {
+                            scenePick = prePointerInfo.nearInteractionPickingInfo;
+                        }
+                        else {
+                            scenePick = new PickingInfo();
+                        }
+                    } else {
+                        let previousActiveCamera: Nullable<Camera> = null;
+                        // If a camera is set for rendering with this layer
+                        // it will also be used for the ray computation
+                        // To preserve back compat and because scene.pick always use activeCamera
+                        // it's substituted temporarily and a new scenePick is forced.
+                        // otherwise, the ray with previously active camera is always used.
+                        // It's set back to previous activeCamera after operation.
+                        if (this._renderCamera)
+                        {
+                            previousActiveCamera = scene._activeCamera;
+                            scene._activeCamera = this._renderCamera;
+                            prePointerInfo.ray = null;
+                        }
+                        scenePick = prePointerInfo.ray
+                            ? scene.pickWithRay(prePointerInfo.ray)
+                            : scene.pick(originalScene.pointerX, originalScene.pointerY);
+                        if (previousActiveCamera)
+                        {
+                            scene._activeCamera = previousActiveCamera;
+                        }
+                    }
+
+                    return scenePick;
+                };
+
+                let utilityScenePick = getNearPickDataForScene(this.utilityLayerScene);
+
                 if (!prePointerInfo.ray && utilityScenePick) {
                     prePointerInfo.ray = utilityScenePick.ray;
                 }
@@ -231,7 +260,7 @@ export class UtilityLayerRenderer implements IDisposable {
                         prePointerInfo.skipOnPointerObservable = true;
                     }
                 } else {
-                    var originalScenePick = prePointerInfo.ray ? originalScene.pickWithRay(prePointerInfo.ray) : originalScene.pick(originalScene.pointerX, originalScene.pointerY);
+                    let originalScenePick = getNearPickDataForScene(originalScene);
                     let pointerEvent = <PointerEvent>prePointerInfo.event;
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray

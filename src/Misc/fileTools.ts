@@ -12,6 +12,7 @@ import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { ThinEngine } from '../Engines/thinEngine';
 import { EngineStore } from '../Engines/engineStore';
 import { Logger } from './logger';
+import { TimingTools } from './timingTools';
 
 const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
@@ -268,12 +269,12 @@ export class FileTools {
      */
     public static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
         const reader = new FileReader();
-        const request: IFileRequest = {
+        const fileRequest: IFileRequest = {
             onCompleteObservable: new Observable<IFileRequest>(),
             abort: () => reader.abort(),
         };
 
-        reader.onloadend = (e) => request.onCompleteObservable.notifyObservers(request);
+        reader.onloadend = (e) => fileRequest.onCompleteObservable.notifyObservers(fileRequest);
         if (onError) {
             reader.onerror = (e) => {
                 onError(new ReadFileError(`Unable to read ${file.name}`, file));
@@ -294,7 +295,7 @@ export class FileTools {
             reader.readAsArrayBuffer(file);
         }
 
-        return request;
+        return fileRequest;
     }
 
     /**
@@ -308,15 +309,17 @@ export class FileTools {
      * @returns a file request object
      */
     public static LoadFile(fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
-        if (fileOrUrl instanceof File) {
-            return FileTools.ReadFile(fileOrUrl, onSuccess, onProgress, useArrayBuffer, onError ? (error: ReadFileError) => {
+        if ((fileOrUrl as File).name) {
+            return FileTools.ReadFile((fileOrUrl as File), onSuccess, onProgress, useArrayBuffer, onError ? (error: ReadFileError) => {
                 onError(undefined, error);
             } : undefined);
         }
 
+        const url = (fileOrUrl as string);
+
         // If file and file input are set
-        if (fileOrUrl.indexOf("file:") !== -1) {
-            let fileName = decodeURIComponent(fileOrUrl.substring(5).toLowerCase());
+        if (url.indexOf("file:") !== -1) {
+            let fileName = decodeURIComponent(url.substring(5).toLowerCase());
             if (fileName.indexOf('./') === 0) {
                 fileName = fileName.substring(2);
             }
@@ -327,9 +330,14 @@ export class FileTools {
         }
 
         // For a Base64 Data URL
-        if (FileTools.IsBase64DataUrl(fileOrUrl)) {
+        if (FileTools.IsBase64DataUrl(url)) {
+            const fileRequest: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => () => {},
+            };
+
             try {
-                onSuccess(useArrayBuffer ? FileTools.DecodeBase64UrlToBinary(fileOrUrl) : FileTools.DecodeBase64UrlToString(fileOrUrl));
+                onSuccess(useArrayBuffer ? FileTools.DecodeBase64UrlToBinary(url) : FileTools.DecodeBase64UrlToString(url));
             } catch (error) {
                 if (onError) {
                     onError(undefined, error);
@@ -338,13 +346,14 @@ export class FileTools {
                 }
             }
 
-            return {
-                onCompleteObservable: new Observable<IFileRequest>(),
-                abort: () => {},
-            };
+            TimingTools.SetImmediate(() => {
+                fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+            });
+
+            return fileRequest;
         }
 
-        return FileTools.RequestFile(fileOrUrl, (data, request) => {
+        return FileTools.RequestFile(url, (data, request) => {
             onSuccess(data, request ? request.responseURL : undefined);
         }, onProgress, offlineProvider, useArrayBuffer, onError ? (error) => {
             onError(error.request, new LoadFileError(error.message, error.request));

@@ -1675,7 +1675,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // VBOs
-        if (!this._userInstancedBuffersStorage) {
+        if (!this._userInstancedBuffersStorage || this.hasThinInstances) {
             this._geometry._bind(effect, indexToBind);
         } else {
             this._geometry._bind(effect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
@@ -2634,6 +2634,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public get _positions(): Nullable<Vector3[]> {
+        if (this._internalAbstractMeshDataInfo._positions) {
+            return this._internalAbstractMeshDataInfo._positions;
+        }
+
         if (this._geometry) {
             return this._geometry._positions;
         }
