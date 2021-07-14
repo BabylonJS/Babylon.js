@@ -1308,14 +1308,16 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
         let data = this.getVerticesData(VertexBuffer.PositionKind);
 
+        if (this._internalAbstractMeshDataInfo._positions) {
+            this._internalAbstractMeshDataInfo._positions = null;
+        }
+
         if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
             data = Tools.Slice(data);
             this._generatePointsArray();
             if (this._positions) {
                 this._internalAbstractMeshDataInfo._positions = Tools.Slice(this._positions);
             }
-        } else if (this._internalAbstractMeshDataInfo._positions) {
-            this._internalAbstractMeshDataInfo._positions = null;
         }
 
         if (data && applySkeleton && this.skeleton) {
@@ -1366,6 +1368,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             }
         }
         if (data && applyMorph && this.morphTargetManager) {
+            let faceIndexCount = 0;
+            let positionIndex = 0;
             for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
                 for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
                     const targetMorph = this.morphTargetManager.getTarget(targetCount);
@@ -1378,9 +1382,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                     }
                 }
 
-                if (this._positions) {
-                    const index = vertexCount * 3;
-                    this._positions[vertexCount].copyFromFloats(data[index], data[index + 1], data[index + 2]);
+                faceIndexCount++;
+
+                if (this._positions && faceIndexCount === 3) { // We want to merge into positions every 3 indices starting (but not 0)
+                    faceIndexCount = 0;
+                    let index = positionIndex * 3;
+                    this._positions[positionIndex++].copyFromFloats(data[index], data[index + 1], data[index + 2]);
                 }
             }
         }
