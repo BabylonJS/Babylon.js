@@ -7,6 +7,8 @@ import { Color4 } from "../Maths/math.color";
 import { SubMesh } from "../Meshes/subMesh";
 import { SmartArray } from "../Misc/smartArray";
 import { Scene } from "../scene";
+import { ThinTexture } from "../Materials/Textures/thinTexture";
+import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 
 import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
@@ -16,13 +18,16 @@ export class DepthPeelingRenderer {
     private _scene: Scene;
     private _engine: Engine;
     private _depthMrts: MultiRenderTarget[];
+    private _thinTextures: ThinTexture[] = [];
     private _colorMrts: MultiRenderTarget[];
     private _blendBackMrt: MultiRenderTarget;
 
-    private _blendBackEffect: Effect;
-    private _finalEffect: Effect;
+    private _blendBackEffectWrapper: EffectWrapper;
+    private _finalEffectWrapper: EffectWrapper;
+    private _effectRenderer: EffectRenderer;
 
     private _passCount: number;
+    private _currentPingPongState: number = 0;
 
     constructor(scene: Scene, passCount: number = 5) {
         this._scene = scene;
@@ -48,13 +53,16 @@ export class DepthPeelingRenderer {
         const optionsArray = [
             {
                 format: Constants.TEXTUREFORMAT_RG,
+                // format: Constants.TEXTUREFORMAT_RGBA,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 type: Constants.TEXTURETYPE_FLOAT,
+                // type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             } as RenderTargetCreationOptions,
             {
                 format: Constants.TEXTUREFORMAT_RGBA,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 type: Constants.TEXTURETYPE_HALF_FLOAT,
+                // type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             } as RenderTargetCreationOptions,
         ];
 
@@ -70,56 +78,46 @@ export class DepthPeelingRenderer {
 
             this._engine.bindTextureFramebuffer(this._colorMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, frontColorTexture);
             this._engine.bindTextureFramebuffer(this._colorMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, backColorTexture, 1);
-        }
 
+            this._thinTextures.push(new ThinTexture(depthTexture), new ThinTexture(frontColorTexture), new ThinTexture(backColorTexture));
+        }
+        
         const blendBackTexture = this._engine._createInternalTexture(size, optionsArray[1]);
         this._engine.bindTextureFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer, blendBackTexture);
+        this._thinTextures.push(new ThinTexture(blendBackTexture));
     }
 
     private _createEffects() {
-        this._blendBackEffect = this._scene.getEngine().createEffect(
-            {
-                vertex: "postprocess",
-                fragment: "oitBackBlend",
-            },
-            {
-                attributes: [],
-                samplers: [],
-                uniformsNames: [],
-                uniformBuffersNames: [],
-                defines: "",
-                fallbacks: null,
-                onCompiled: null,
-                onError: null,
-            },
-            this._engine
-        );
+        this._blendBackEffectWrapper = new EffectWrapper({
+            fragmentShader: "oitBackBlend",
+            useShaderStore: true,
+            engine: this._engine,
+            samplerNames: ["uBackColor"],
+            uniformNames: [],
+        });
 
-        this._finalEffect = new Effect(
-            {
-                vertex: "postprocess",
-                fragment: "oitFinal",
-            },
-            {
-                attributes: [],
-                samplers: [],
-                uniformsNames: [],
-                uniformBuffersNames: [],
-                defines: "",
-                fallbacks: null,
-                onCompiled: null,
-                onError: null,
-            },
-            this._engine
-        );
+        this._finalEffectWrapper = new EffectWrapper({
+            fragmentShader: "oitFinal",
+            useShaderStore: true,
+            engine: this._engine,
+            samplerNames: ["uFrontColor", "uBackColor"],
+            uniformNames: [],
+        });
+
+        this._effectRenderer = new EffectRenderer(this._engine);
     }
 
-    private _updateSize() {
+    public _updateSize() {
         // TODO
     }
 
+    public bind(effect: Effect) {
+        effect.setTexture("oitDepthSampler", this._thinTextures[this._currentPingPongState * 3]);
+        effect.setTexture("oitFrontColorSampler", this._thinTextures[this._currentPingPongState * 3 + 1]);
+    }
+
     public render(transparentSubMeshes: SmartArray<SubMesh>) {
-        if (!this._blendBackEffect.isReady() || !this._finalEffect.isReady()) {
+        if (!this._blendBackEffectWrapper.effect.isReady() || !this._finalEffectWrapper.effect.isReady()) {
             return;
         }
 
@@ -150,21 +148,46 @@ export class DepthPeelingRenderer {
         // Draw depth for first pass
         this._engine._bindUnboundFramebuffer(this._depthMrts[0].getInternalTexture()!._framebuffer as WebGLFramebuffer);
         attachments = this._engine.buildTextureLayout([true]);
+        this._engine.bindAttachments(attachments);
 
         // TODO add method in engine
+        // TODO : drawElements uses apply states so blendEquation will be overwritten
+        // Use engine.states = .... like in effectRenderer.ts
+        // Maybe we will need to add a different state because gl.MAX may be unused and not implemented for now in BJS
         const gl = this._engine._gl;
+        gl.enable(gl.BLEND);
         gl.blendEquation(gl.MAX);
+        // TODO : depthmask and cullface
+        gl.depthMask(false);
+        gl.disable(gl.CULL_FACE);
 
-        // Bind textures on depth peel shader
-        // Render mesh
+        this._currentPingPongState = 1;
+        for (let j = 0; j < transparentSubMeshes.length; j++) {
+            const material = transparentSubMeshes.data[j].getMaterial();
+            let previousShaderHotSwapping = true;
+            if (material) {
+                // Test for OIT compat
+                previousShaderHotSwapping = material.allowShaderHotSwapping;
+                material.allowShaderHotSwapping = false;
+            }
+            // TODO : remove
+            gl.disable(gl.CULL_FACE);
+
+            transparentSubMeshes.data[j].render(false);
+            
+            if (material) {
+                material.allowShaderHotSwapping = previousShaderHotSwapping;
+            }
+        }
 
         // depth peeling ping-pong
-        let readId;
-        let writeId;
+        let readId = 0;
+        let writeId = 0;
 
         for (let i = 0; i < this._passCount; i++) {
             readId = i % 2;
             writeId = 1 - readId;
+            this._currentPingPongState = readId;
 
             this._engine._bindUnboundFramebuffer(this._depthMrts[writeId].getInternalTexture()!._framebuffer as WebGLFramebuffer);
             attachments = this._engine.buildTextureLayout([true]);
@@ -183,7 +206,7 @@ export class DepthPeelingRenderer {
             // TODO : alpha state (engine.setAlphaState + engine.applyStates)
             gl.blendEquation(gl.MAX);
             gl.enable(gl.BLEND);
-            // TODO : Set texture uniform
+
             for (let j = 0; j < transparentSubMeshes.length; j++) {
                 const material = transparentSubMeshes.data[j].getMaterial();
                 let previousShaderHotSwapping = true;
@@ -192,6 +215,8 @@ export class DepthPeelingRenderer {
                     previousShaderHotSwapping = material.allowShaderHotSwapping;
                     material.allowShaderHotSwapping = false;
                 }
+                // TODO : remove
+                gl.disable(gl.CULL_FACE);
 
                 transparentSubMeshes.data[j].render(false);
                 
@@ -204,13 +229,15 @@ export class DepthPeelingRenderer {
             this._engine._bindUnboundFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer);
             attachments = this._engine.buildTextureLayout([true]);
             this._engine.bindAttachments(attachments);
+            // TODO : drawElements uses apply states so blendEquation will be overwritten
             gl.blendEquation(gl.FUNC_ADD);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
             
-            this._engine.enableEffect(this._blendBackEffect);
-            
-            // Bind uniforms
-            // Draw quad
+            // TODO : remove (see above)
+            (this._engine.depthCullingState as any)._isDepthTestDirty = false;
+            this._engine.enableEffect(this._blendBackEffectWrapper.effect);
+            this._blendBackEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[writeId * 3 + 2]);
+            this._effectRenderer.render(this._blendBackEffectWrapper);
         }
 
         // Final composition on default FB
@@ -220,9 +247,15 @@ export class DepthPeelingRenderer {
         gl.disable(gl.BLEND);
         gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-        // TODO : set texture uniform
-        // TODO : draw quad with finalProgram
+        // TODO : remove (see above)
+        (this._engine.depthCullingState as any)._isDepthTestDirty = false;
+        this._engine.enableEffect(this._finalEffectWrapper.effect);
+        this._finalEffectWrapper.effect.setTexture("uFrontColor", this._thinTextures[writeId * 3 + 1]);
+        this._finalEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[6]);
+        this._effectRenderer.render(this._finalEffectWrapper);
     }
 
-    public dispose() {}
+    public dispose() {
+        // TODO
+    }
 }

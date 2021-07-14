@@ -20,7 +20,7 @@
     // back color is separately blend afterwards each pass
     backColor = vec4(0.0);
 
-    float nearestDepth = - lastDepth.x;
+    float nearestDepth = -lastDepth.x;
     float furthestDepth = lastDepth.y;
     float alphaMultiplier = 1.0 - lastFrontColor.a;
 

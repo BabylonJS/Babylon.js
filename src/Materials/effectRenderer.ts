@@ -284,7 +284,7 @@ export class EffectWrapper {
             delete effectCreationOptions.fragmentSource;
             delete effectCreationOptions.vertexSource;
 
-            this.effect = creationOptions.engine.createEffect(effectCreationOptions.spectorName,
+            this.effect = creationOptions.engine.createEffect(effectCreationOptions,
                 creationOptions.attributeNames || ["position"],
                 uniformNames,
                 creationOptions.samplerNames,

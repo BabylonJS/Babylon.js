@@ -175,7 +175,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public MULTIVIEW = false;
     public ORDER_INDEPENDANT_TRANSPARENCY = false;
-    
+
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
@@ -888,7 +888,7 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT);
         
         // Order independant transparency
-        MaterialHelper.PrepareDefinesForOIT(scene, defines, this.needAlphaBlending());
+        MaterialHelper.PrepareDefinesForOIT(scene, defines, this.needAlphaBlendingForMesh(mesh));
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1239,7 +1239,8 @@ export class StandardMaterial extends PushMaterial {
 
             var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
                 "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
-                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets"];
+                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets", "oitDepthSampler",
+                "oitFrontColorSampler"];
 
             var uniformBuffers = ["Material", "Scene", "Mesh"];
 
@@ -1611,6 +1612,12 @@ export class StandardMaterial extends PushMaterial {
                     }
                 }
             }
+
+            // OIT with depth peeling
+            if (this.getScene().useOrderIndependantTransparency && this.needAlphaBlendingForMesh(mesh)) {
+                this.getScene().depthPeelingRenderer!.bind(effect);
+            }
+
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
 
