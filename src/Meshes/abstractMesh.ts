@@ -1306,16 +1306,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
-        let needUpdatePositionInSkeletonPass = false;
         let data = this.getVerticesData(VertexBuffer.PositionKind);
 
         if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
             data = Tools.Slice(data);
             this._generatePointsArray();
-            needUpdatePositionInSkeletonPass = !!(applySkeleton && this.skeleton) && !(applyMorph && this.morphTargetManager);
-
             if (this._positions) {
-                this._internalAbstractMeshDataInfo._positions = this._positions.slice();
+                this._internalAbstractMeshDataInfo._positions = Tools.Slice(this._positions);
             }
         } else if (this._internalAbstractMeshDataInfo._positions) {
             this._internalAbstractMeshDataInfo._positions = null;
@@ -1362,7 +1359,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                     Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
                     tempVector.toArray(data, index);
 
-                    if (needUpdatePositionInSkeletonPass && this._positions) {
+                    if (this._positions) {
                         this._positions[index / 3].copyFrom(tempVector);
                     }
                 }
