@@ -2634,6 +2634,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public get _positions(): Nullable<Vector3[]> {
+        if (this._internalAbstractMeshDataInfo._positions) {
+            return this._internalAbstractMeshDataInfo._positions;
+        }
+
         if (this._geometry) {
             return this._geometry._positions;
         }
