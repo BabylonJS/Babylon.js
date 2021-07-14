@@ -522,7 +522,7 @@ export class PBRSubSurfaceConfiguration {
             uniformBuffer.updateFloat4("vTintColor", this.tintColor.r,
                 this.tintColor.g,
                 this.tintColor.b,
-                this.tintColorAtDistance);
+                Math.max(0.00001, this.tintColorAtDistance));
 
             uniformBuffer.updateFloat3("vSubSurfaceIntensity", this.refractionIntensity, this.translucencyIntensity, 0);
         }
