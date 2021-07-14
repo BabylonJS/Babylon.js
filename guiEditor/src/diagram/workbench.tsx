@@ -293,11 +293,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     private parent(control: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
+        const draggedControlParent = draggedControl?.parent;
+        
+        if (draggedControlParent && draggedControl) {
 
-        if (draggedControl != null && draggedControl.parent) {
-            let draggedControlParent = draggedControl.parent;
             draggedControlParent.removeControl(draggedControl);
-            
+        
             if (control != null) {
                 if (this.props.globalState.workbench.isContainer(control)) {
                     this.props.globalState.guiTexture.removeControl(draggedControl);
@@ -305,7 +306,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 }
                 if (control.parent) {
                     let index = control.parent.children.indexOf(control);
-                    index = this._adjustParentingIndex(index);
+                    
+                    //adjusting index to be before or after based on where the control is over
+                    index = this._adjustParentingIndex(index); 
                     control.parent.children.splice(index, 0, draggedControl);
                     draggedControl.parent = control.parent;
                 }

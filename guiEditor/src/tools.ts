@@ -42,20 +42,5 @@ export class Tools {
             finalArray.push(...parent.reservedDataStore.detachedChildren);
         }
         return finalArray.reverse();
-
-        return finalArray.sort((a: any, b: any) => {
-            const aIndex = a.zIndex;
-            const bIndex = b.zIndex;
-
-            if (aIndex === bIndex) {
-                return 0;
-            }
-
-            if (aIndex > bIndex) {
-                return 1;
-            }
-
-            return -1;
-        });
     }
 }
