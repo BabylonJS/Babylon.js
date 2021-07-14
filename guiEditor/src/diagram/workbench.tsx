@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import { DragOverLocation, GlobalState } from "../globalState";
 import { Nullable } from "babylonjs/types";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
@@ -293,18 +293,44 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     private parent(control: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
+        const draggedControlParent = draggedControl?.parent;
+        
+        if (draggedControlParent && draggedControl) {
 
-        if (draggedControl != null) {
-            if (draggedControl.parent) {
-                (draggedControl.parent as Container).removeControl(draggedControl);
+            draggedControlParent.removeControl(draggedControl);
+        
+            if (control != null) {
+                if (this.props.globalState.workbench.isContainer(control)) {
+                    this.props.globalState.guiTexture.removeControl(draggedControl);
+                    (control as Container).addControl(draggedControl);
+                }
+                if (control.parent) {
+                    let index = control.parent.children.indexOf(control);
+                    
+                    //adjusting index to be before or after based on where the control is over
+                    index = this._adjustParentingIndex(index); 
+                    control.parent.children.splice(index, 0, draggedControl);
+                    draggedControl.parent = control.parent;
+                }
                 this.props.globalState.guiTexture.addControl(draggedControl);
             }
-            if (control != null && this.props.globalState.workbench.isContainer(control)) {
-                this.props.globalState.guiTexture.removeControl(draggedControl);
-                (control as Container).addControl(draggedControl);
+            else {
+                draggedControlParent.children.splice(1, 0, draggedControl);
+                draggedControl.parent = draggedControlParent;
             }
         }
         this.globalState.draggedControl = null;
+    }
+
+    private _adjustParentingIndex(index: number) {
+        switch (this.props.globalState.draggedControlDirection) {
+            case DragOverLocation.ABOVE:
+                return index + 1;
+            case DragOverLocation.BELOW:
+            case DragOverLocation.CENTER:
+                return index;
+        }
+        return index;
     }
 
     public isSelected(value: boolean, guiNode: Control) {
