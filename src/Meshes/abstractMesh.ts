@@ -96,6 +96,7 @@ class _InternalAbstractMeshDataInfo {
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;
     public _material: Nullable<Material> = null;
+    public _positions: Nullable<Vector3[]> = null;
     // Collisions
     public _meshCollisionData = new _MeshCollisionData();
 }
@@ -1305,11 +1306,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
-        var data = this.getVerticesData(VertexBuffer.PositionKind);
+        let needUpdatePositionInSkeletonPass = false;
+        let data = this.getVerticesData(VertexBuffer.PositionKind);
 
         if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
             data = Tools.Slice(data);
             this._generatePointsArray();
+            needUpdatePositionInSkeletonPass = !!(applySkeleton && this.skeleton) && !(applyMorph && this.morphTargetManager);
+
+            if (this._positions) {
+                this._internalAbstractMeshDataInfo._positions = this._positions.slice();
+            }
+        } else if (this._internalAbstractMeshDataInfo._positions) {
+            this._internalAbstractMeshDataInfo._positions = null;
         }
 
         if (data && applySkeleton && this.skeleton) {
@@ -1353,7 +1362,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                     Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
                     tempVector.toArray(data, index);
 
-                    if (this._positions) {
+                    if (needUpdatePositionInSkeletonPass && this._positions) {
                         this._positions[index / 3].copyFrom(tempVector);
                     }
                 }
@@ -1370,6 +1379,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                             data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
                         }
                     }
+                }
+
+                if (this._positions) {
+                    const index = vertexCount * 3;
+                    this._positions[vertexCount].copyFromFloats(data[index], data[index + 1], data[index + 2]);
                 }
             }
         }

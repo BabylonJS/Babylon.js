@@ -227,7 +227,7 @@ Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<
             this._thinInstanceDataStorage.instancesCount = 0;
             if (!this.doNotSyncBoundingInfo) {
                 // mesh has no more thin instances, so need to recompute the bounding box because it's the regular mesh that will now be displayed
-                this.refreshBoundingInfo(true);
+                this.refreshBoundingInfo();
             }
         }
     } else if (kind === "previousMatrix") {
@@ -305,7 +305,7 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function (forceRefreshParentInf
 
     if (forceRefreshParentInfo) {
         vectors.length = 0;
-        this.refreshBoundingInfo(true);
+        this.refreshBoundingInfo();
     }
 
     const boundingInfo = this.getBoundingInfo();
