@@ -31,6 +31,11 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     @serialize()
     public touchMoveSensibility: number = 250.0;
 
+    /**
+     * Swap touch actions so that one touch is used for rotation and multiple for movement
+     */
+    public singleFingerRotate: boolean = false;
+
     private _offsetX: Nullable<number> = null;
     private _offsetY: Nullable<number> = null;
 
@@ -69,6 +74,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                 var evt = <IPointerEvent>p.event;
 
                 let isMouseEvent = !this.camera.getEngine().hostInformation.isMobile && evt instanceof MouseEvent;
+
                 if (!this.allowMouse && (evt.pointerType === "mouse" || isMouseEvent)) {
                     return;
                 }
@@ -179,7 +185,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         var camera = this.camera;
         camera.cameraRotation.y = this._offsetX / this.touchAngularSensibility;
 
-        if (this._pointerPressed.length > 1) {
+        const rotateCamera = (this.singleFingerRotate && this._pointerPressed.length === 1) || (!this.singleFingerRotate && this._pointerPressed.length > 1);
+
+        if (rotateCamera) {
             camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
         } else {
             var speed = camera._computeLocalCameraSpeed();
