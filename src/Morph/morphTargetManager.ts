@@ -9,6 +9,7 @@ import { MorphTarget } from "./morphTarget";
 import { Constants } from "../Engines/constants";
 import { Effect } from "../Materials/effect";
 import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
+import { AbstractScene } from "../abstractScene";
 /**
  * This class is used to deform meshes using morphing between different targets
  * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -31,6 +32,9 @@ export class MorphTargetManager implements IDisposable {
     private _uniqueId = 0;
     private _tempInfluences = new Array<number>();
     private _canUseTextureForTargets = false;
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /** @hidden */
     public _targetStoreTexture: Nullable<RawTexture2DArray>;
@@ -413,6 +417,19 @@ export class MorphTargetManager implements IDisposable {
         }
 
         this._targetStoreTexture = null;
+
+        // Remove from scene
+        if (this._scene) {
+            this._scene.removeMorphTargetManager(this);
+
+            if (this._parentContainer) {
+                const index = this._parentContainer.morphTargetManagers.indexOf(this);
+                if (index > -1) {
+                    this._parentContainer.morphTargetManagers.splice(index, 1);
+                }
+                this._parentContainer = null;
+            }
+        }
     }
 
     // Statics

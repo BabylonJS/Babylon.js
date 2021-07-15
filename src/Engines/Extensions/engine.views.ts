@@ -146,9 +146,7 @@ Engine.prototype._renderViews = function() {
         if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
             canvas.width = width;
             canvas.height = height;
-            parent.width = width;
-            parent.height = height;
-            this.resize(true);
+            this.setSize(width, height);
         }
 
         if (!parent.width || !parent.height) {
@@ -157,6 +155,8 @@ Engine.prototype._renderViews = function() {
 
         // Render the frame
         this._renderFrame();
+
+        this.flushFramebuffer();
 
         // Copy to target
         if (view.clearBeforeCopy) {

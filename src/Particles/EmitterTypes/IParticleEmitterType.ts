@@ -1,7 +1,8 @@
 import { Vector3, Matrix } from "../../Maths/math.vector";
-import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
 import { Nullable } from '../../types';
+import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
 
 declare type Scene = import("../../scene").Scene;
 
@@ -36,9 +37,15 @@ export interface IParticleEmitterType {
 
     /**
      * Called by the GPUParticleSystem to setup the update shader
-     * @param effect defines the update shader
+     * @param uboOrEffect defines the update shader
      */
-    applyToShader(effect: Effect): void;
+    applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+
+    /**
+     * Creates the structure of the ubo for this particle emitter
+     * @param ubo ubo to create the structure for
+     */
+    buildUniformLayout(ubo: UniformBuffer): void;
 
     /**
      * Returns a string to use to update the GPU particles update shader

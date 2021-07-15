@@ -44,9 +44,14 @@ interface ITransmissionHelperOptions {
     lodGenerationOffset: number;
 
     /**
-     * Type of the refraction render target texture (default: TEXTURETYPE_UNSIGNED_INT)
+     * Type of the refraction render target texture (default: TEXTURETYPE_HALF_FLOAT)
      */
     renderTargetTextureType: number;
+
+    /**
+     * Defines if the mipmaps for the refraction render target texture must be generated (default: true)
+     */
+    generateMipmaps: boolean;
 
     /**
      * Clear color of the opaque texture. If not provided, use the scene clear color (which will be converted to linear space).
@@ -70,6 +75,7 @@ class TransmissionHelper {
             lodGenerationScale: 1,
             lodGenerationOffset: -4,
             renderTargetTextureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            generateMipmaps: true,
         };
     }
 
@@ -133,7 +139,7 @@ class TransmissionHelper {
         this._options = newOptions;
 
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || !this._opaqueRenderTarget) {
+        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || newOptions.generateMipmaps !== oldOptions.generateMipmaps || !this._opaqueRenderTarget) {
             this._setupRenderTargets();
         } else {
             this._opaqueRenderTarget.samples = newOptions.samples;
@@ -224,7 +230,10 @@ class TransmissionHelper {
      * Setup the render targets according to the specified options.
      */
     private _setupRenderTargets(): void {
-        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
+        if (this._opaqueRenderTarget) {
+            this._opaqueRenderTarget.dispose();
+        }
+        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, this._options.generateMipmaps, undefined, this._options.renderTargetTextureType);
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         this._opaqueRenderTarget.clearColor = this._options.clearColor?.clone() ?? this._scene.clearColor.clone();
@@ -235,7 +244,10 @@ class TransmissionHelper {
 
         let sceneImageProcessingapplyByPostProcess: boolean;
 
+        let saveSceneEnvIntensity: number;
         this._opaqueRenderTarget.onBeforeBindObservable.add((opaqueRenderTarget) => {
+            saveSceneEnvIntensity = this._scene.environmentIntensity;
+            this._scene.environmentIntensity = 1.0;
             sceneImageProcessingapplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (!this._options.clearColor) {
                 this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor);
@@ -245,6 +257,7 @@ class TransmissionHelper {
             this._scene.imageProcessingConfiguration.applyByPostProcess = true;
         });
         this._opaqueRenderTarget.onAfterUnbindObservable.add(() => {
+            this._scene.environmentIntensity = saveSceneEnvIntensity;
             this._scene.imageProcessingConfiguration.applyByPostProcess = sceneImageProcessingapplyByPostProcess;
         });
 
@@ -350,9 +363,8 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             (extension.transmissionTexture as ITextureInfo).nonColorData = true;
             return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined)
                 .then((texture: BaseTexture) => {
-                    pbrMaterial.subSurface.thicknessTexture = texture;
-                    pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
-                    pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
+                    pbrMaterial.subSurface.refractionIntensityTexture = texture;
+                    pbrMaterial.subSurface.useGltfStyleTextures = true;
                 });
         } else {
             return Promise.resolve();

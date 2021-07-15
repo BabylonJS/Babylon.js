@@ -139,6 +139,8 @@ export class ComputeEffect {
             version: (this._engine.version * 100).toString(),
             platformName: this._engine.shaderPlatformName,
             processingContext: null,
+            isNDCHalfZRange: this._engine.isNDCHalfZRange,
+            useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
         };
 
         this._loadShader(computeSource, "Compute", "", (computeCode) => {

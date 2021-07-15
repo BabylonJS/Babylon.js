@@ -84,6 +84,11 @@ export interface IDeviceInputSystem extends IDisposable {
      */
     readonly onInputChangedObservable: Observable<IDeviceEvent>;
 
+    /**
+     * Configures events to work with an engine's active element
+     */
+    configureEvents(): void;
+
     // Functions
     /**
      * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.

@@ -9,6 +9,7 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /** Class used to render 2D lines */
 export class Line extends Control {
@@ -174,7 +175,7 @@ export class Line extends Control {
         return "Line";
     }
 
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -204,7 +205,7 @@ export class Line extends Control {
         this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
     }
 
-    protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._currentMeasure.left = parentMeasure.left + Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
         this._currentMeasure.top = parentMeasure.top + Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
     }

@@ -12,7 +12,11 @@ finalAmbient *= surfaceAlbedo.rgb;
 vec3 finalEmissive = vEmissiveColor;
 #ifdef EMISSIVE
 vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb;
-finalEmissive *= toLinearSpace(emissiveColorTex.rgb);
+#ifdef GAMMAEMISSIVE
+    finalEmissive *= toLinearSpace(emissiveColorTex.rgb);
+#else
+    finalEmissive *= emissiveColorTex.rgb;
+#endif
 finalEmissive *=  vEmissiveInfos.y;
 #endif
 finalEmissive *= vLightingIntensity.y;

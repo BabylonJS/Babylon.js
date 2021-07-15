@@ -12,6 +12,7 @@ import { GUID } from '../../Misc/guid';
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';
 import { ThinTexture } from './thinTexture';
+import { AbstractScene } from "../../abstractScene";
 
 declare type Animation = import("../../Animations/animation").Animation;
 
@@ -246,7 +247,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             }
         }
 
-        return this._texture._gammaSpace;
+        return this._texture._gammaSpace && !this._texture._useSRGBBuffer;
     }
 
     public set gammaSpace(gamma: boolean) {
@@ -422,6 +423,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return true;
     }
 
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
+
     /**
      * Instantiates a new BaseTexture.
      * Base class of all the textures in babylon.
@@ -514,21 +518,25 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /** @hidden */
-    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture> {
+    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean, useSRGBBuffer?: boolean): Nullable<InternalTexture> {
         const engine = this._getEngine();
         if (!engine) {
             return null;
         }
 
+        const correctedUseSRGBBuffer = !!useSRGBBuffer && engine._caps.supportSRGBBuffers && (engine.webGLVersion > 1 || engine.isWebGPU || noMipmap);
+
         var texturesCache = engine.getLoadedTexturesCache();
         for (var index = 0; index < texturesCache.length; index++) {
             var texturesCacheEntry = texturesCache[index];
 
-            if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
-                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
-                    if (!sampling || sampling === texturesCacheEntry.samplingMode) {
-                        texturesCacheEntry.incrementReferences();
-                        return texturesCacheEntry;
+            if (useSRGBBuffer === undefined || correctedUseSRGBBuffer === texturesCacheEntry._useSRGBBuffer) {
+                if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
+                    if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
+                        if (!sampling || sampling === texturesCacheEntry.samplingMode) {
+                            texturesCacheEntry.incrementReferences();
+                            return texturesCacheEntry;
+                        }
                     }
                 }
             }
@@ -705,11 +713,21 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             }
             this._scene.onTextureRemovedObservable.notifyObservers(this);
             this._scene = null;
+
+            if (this._parentContainer) {
+                const index = this._parentContainer.textures.indexOf(this);
+                if (index > -1) {
+                    this._parentContainer.textures.splice(index, 1);
+                }
+                this._parentContainer = null;
+            }
         }
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        this.metadata = null;
 
         super.dispose();
     }

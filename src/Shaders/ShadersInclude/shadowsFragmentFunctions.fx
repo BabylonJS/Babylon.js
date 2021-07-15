@@ -249,6 +249,12 @@
         }
     }
 
+    #ifdef IS_NDC_HALF_ZRANGE
+        #define ZINCLIP clipSpace.z
+    #else
+        #define ZINCLIP uvDepth.z
+    #endif
+
     #if defined(WEBGL2) || defined(WEBGPU)
         #define GREATEST_LESS_THAN_ONE 0.99999994
 
@@ -259,11 +265,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
-            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+            uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
-            float shadow = texture(shadowSampler, uvDepthLayer);
+            float shadow = texture2D(shadowSampler, uvDepthLayer);
             shadow = mix(darkness, 1., shadow);
             return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
         }
@@ -277,7 +283,7 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
-            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+            uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -314,7 +320,7 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
-            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+            uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -358,6 +364,7 @@
             {
                 vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+                uvDepth.z = ZINCLIP;
 
                 float shadow = texture2D(shadowSampler, uvDepth);
                 shadow = mix(darkness, 1., shadow);
@@ -378,6 +385,7 @@
             {
                 vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+                uvDepth.z = ZINCLIP;
 
                 vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
                 uv += 0.5;											// offset of half to be in the center of the texel
@@ -419,8 +427,7 @@
             {
                 vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
-
-                //uvDepth.y = 1.0 - uvDepth.y;
+                uvDepth.z = ZINCLIP;
 
                 vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
                 uv += 0.5;											// offset of half to be in the center of the texel
@@ -600,7 +607,7 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
-            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+            uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
@@ -608,7 +615,7 @@
             float sumBlockerDepth = 0.0;
             float numBlocker = 0.0;
             for (int i = 0; i < searchTapCount; i ++) {
-                blockerDepth = texture(depthSampler, vec3(uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer)).r;
+                blockerDepth = texture2D(depthSampler, vec3(uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer)).r;
                 if (blockerDepth < depthMetric) {
                     sumBlockerDepth += blockerDepth;
                     numBlocker++;
@@ -668,12 +675,13 @@
             {
                 vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+                uvDepth.z = ZINCLIP;
 
                 float blockerDepth = 0.0;
                 float sumBlockerDepth = 0.0;
                 float numBlocker = 0.0;
                 for (int i = 0; i < searchTapCount; i ++) {
-                    blockerDepth = texture(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy)).r;
+                    blockerDepth = texture2D(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy)).r;
                     if (blockerDepth < depthMetric) {
                         sumBlockerDepth += blockerDepth;
                         numBlocker++;

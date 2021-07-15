@@ -163,6 +163,9 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public BonesPerMesh = 0;
     public INSTANCES = false;
     public SHADOWFLOAT = false;
+    public LOGARITHMICDEPTH = false;
+    public NONUNIFORMSCALING = false;
+    public ALPHATEST = false;
 
     /**
      * Constructor of the defines.

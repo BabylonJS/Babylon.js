@@ -9,36 +9,37 @@ import { Effect } from "../Materials/effect";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { IShadowGenerator } from "./Shadows/shadowGenerator";
 import { _TypeStore } from '../Misc/typeStore';
+import { ISortableLight, LightConstants } from "./lightConstants";
 
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
  * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
  * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
  */
-export abstract class Light extends Node {
+export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Falloff Default: light is falling off following the material specification:
      * standard material is using standard falloff whereas pbr material can request special falloff per materials.
      */
-    public static readonly FALLOFF_DEFAULT = 0;
+    public static readonly FALLOFF_DEFAULT = LightConstants.FALLOFF_DEFAULT;
 
     /**
      * Falloff Physical: light is falling off following the inverse squared distance law.
      */
-    public static readonly FALLOFF_PHYSICAL = 1;
+    public static readonly FALLOFF_PHYSICAL = LightConstants.FALLOFF_PHYSICAL;
 
     /**
      * Falloff gltf: light is falling off as described in the gltf moving to PBR document
      * to enhance interoperability with other engines.
      */
-    public static readonly FALLOFF_GLTF = 2;
+    public static readonly FALLOFF_GLTF = LightConstants.FALLOFF_GLTF;
 
     /**
      * Falloff Standard: light is falling off like in the standard material
      * to enhance interoperability with other materials.
      */
-    public static readonly FALLOFF_STANDARD = 3;
+    public static readonly FALLOFF_STANDARD = LightConstants.FALLOFF_STANDARD;
 
     //lightmapMode Consts
     /**
@@ -47,19 +48,19 @@ export abstract class Light extends Node {
      * (depends on material.useLightmapAsShadowmap)
      * after every other light calculations.
      */
-    public static readonly LIGHTMAP_DEFAULT = 0;
+    public static readonly LIGHTMAP_DEFAULT = LightConstants.LIGHTMAP_DEFAULT;
     /**
      * material.lightmapTexture as only diffuse lighting from this light
      * adds only specular lighting from this light
      * adds dynamic shadows
      */
-    public static readonly LIGHTMAP_SPECULAR = 1;
+    public static readonly LIGHTMAP_SPECULAR = LightConstants.LIGHTMAP_SPECULAR;
     /**
      * material.lightmapTexture as only lighting
      * no light calculation from this light
      * only adds dynamic shadows from this light
      */
-    public static readonly LIGHTMAP_SHADOWSONLY = 2;
+    public static readonly LIGHTMAP_SHADOWSONLY = LightConstants.LIGHTMAP_SHADOWSONLY;
 
     // Intensity Mode Consts
     /**
@@ -67,41 +68,41 @@ export abstract class Light extends Node {
      *      point/spot lights use luminous intensity
      *      directional lights use illuminance
      */
-    public static readonly INTENSITYMODE_AUTOMATIC = 0;
+    public static readonly INTENSITYMODE_AUTOMATIC = LightConstants.INTENSITYMODE_AUTOMATIC;
     /**
      * lumen (lm)
      */
-    public static readonly INTENSITYMODE_LUMINOUSPOWER = 1;
+    public static readonly INTENSITYMODE_LUMINOUSPOWER = LightConstants.INTENSITYMODE_LUMINOUSPOWER;
     /**
      * candela (lm/sr)
      */
-    public static readonly INTENSITYMODE_LUMINOUSINTENSITY = 2;
+    public static readonly INTENSITYMODE_LUMINOUSINTENSITY = LightConstants.INTENSITYMODE_LUMINOUSINTENSITY;
     /**
      * lux (lm/m^2)
      */
-    public static readonly INTENSITYMODE_ILLUMINANCE = 3;
+    public static readonly INTENSITYMODE_ILLUMINANCE = LightConstants.INTENSITYMODE_ILLUMINANCE;
     /**
      * nit (cd/m^2)
      */
-    public static readonly INTENSITYMODE_LUMINANCE = 4;
+    public static readonly INTENSITYMODE_LUMINANCE = LightConstants.INTENSITYMODE_LUMINANCE;
 
     // Light types ids const.
     /**
      * Light type const id of the point light.
      */
-    public static readonly LIGHTTYPEID_POINTLIGHT = 0;
+    public static readonly LIGHTTYPEID_POINTLIGHT = LightConstants.LIGHTTYPEID_POINTLIGHT;
     /**
      * Light type const id of the directional light.
      */
-    public static readonly LIGHTTYPEID_DIRECTIONALLIGHT = 1;
+    public static readonly LIGHTTYPEID_DIRECTIONALLIGHT = LightConstants.LIGHTTYPEID_DIRECTIONALLIGHT;
     /**
      * Light type const id of the spot light.
      */
-    public static readonly LIGHTTYPEID_SPOTLIGHT = 2;
+    public static readonly LIGHTTYPEID_SPOTLIGHT = LightConstants.LIGHTTYPEID_SPOTLIGHT;
     /**
      * Light type const id of the hemispheric light.
      */
-    public static readonly LIGHTTYPEID_HEMISPHERICLIGHT = 3;
+    public static readonly LIGHTTYPEID_HEMISPHERICLIGHT = LightConstants.LIGHTTYPEID_HEMISPHERICLIGHT;
 
     /**
      * Diffuse gives the basic color to an object.
@@ -111,7 +112,7 @@ export abstract class Light extends Node {
 
     /**
      * Specular produces a highlight color on an object.
-     * Note: This is note affecting PBR materials.
+     * Note: This is not affecting PBR materials.
      */
     @serializeAsColor3()
     public specular = new Color3(1.0, 1.0, 1.0);
@@ -523,21 +524,6 @@ export abstract class Light extends Node {
     }
 
     /**
-     * Sort function to order lights for rendering.
-     * @param a First Light object to compare to second.
-     * @param b Second Light object to compare first.
-     * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
-     */
-    public static CompareLightsPriority(a: Light, b: Light): number {
-        //shadow-casting lights have priority over non-shadow-casting lights
-        //the renderPriority is a secondary sort criterion
-        if (a.shadowEnabled !== b.shadowEnabled) {
-            return (b.shadowEnabled ? 1 : 0) - (a.shadowEnabled ? 1 : 0);
-        }
-        return b.renderPriority - a.renderPriority;
-    }
-
-    /**
      * Releases resources associated with this node.
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
@@ -550,6 +536,14 @@ export abstract class Light extends Node {
 
         // Animations
         this.getScene().stopAnimation(this);
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.lights.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.lights.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
 
         // Remove from meshes
         for (var mesh of this.getScene().meshes) {

@@ -451,6 +451,14 @@ void main(void) {
             vec4 thicknessMap = texture2D(thicknessSampler, vThicknessUV + uvOffset);
         #endif
 
+        #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+            vec4 refractionIntensityMap = texture2D(refractionIntensitySampler, vRefractionIntensityUV + uvOffset);
+        #endif
+
+        #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+            vec4 translucencyIntensityMap = texture2D(translucencyIntensitySampler, vTranslucencyIntensityUV + uvOffset);
+        #endif
+
         subSurfaceBlock(
             vSubSurfaceIntensity,
             vThicknessParam,
@@ -459,6 +467,12 @@ void main(void) {
             specularEnvironmentReflectance,
         #ifdef SS_THICKNESSANDMASK_TEXTURE
             thicknessMap,
+        #endif
+        #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+            refractionIntensityMap,
+        #endif
+        #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+            translucencyIntensityMap,
         #endif
         #ifdef REFLECTION
             #ifdef SS_TRANSLUCENCY

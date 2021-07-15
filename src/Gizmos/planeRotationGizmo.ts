@@ -5,7 +5,6 @@ import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import "../Meshes/Builders/linesBuilder";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { LinesMesh } from '../Meshes/linesMesh';
 import { Mesh } from "../Meshes/mesh";
 import { Node } from "../node";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
@@ -299,13 +298,12 @@ export class PlaneRotationGizmo extends Gizmo {
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 const material = cache.dragBehavior.enabled ? (this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial) : this._disableMaterial;
-                cache.gizmoMeshes.forEach((m: Mesh) => {
-                    m.material = material;
-                    if ((<LinesMesh>m).color && cache.dragBehavior.enabled) {
-                        (<LinesMesh>m).color = material.diffuseColor;
-                    }
-                });
+                this._setGizmoMeshMaterial(cache.gizmoMeshes, material);
             }
+        });
+
+        this.dragBehavior.onEnabledObservable.add((newState) => {
+            this._setGizmoMeshMaterial(cache.gizmoMeshes, newState ? this._coloredMaterial : this._disableMaterial);
         });
     }
 
