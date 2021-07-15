@@ -6,15 +6,15 @@ varying vec2 tUV;
 
 uniform float time;
 uniform float spriteCount;
-uniform sampler2D spriteSheet;
+uniform @float32 sampler2D spriteSheet;
 uniform vec2 spriteMapSize;
 
 uniform vec2 outputSize;
 uniform vec2 stageSize;
 
-uniform sampler2D frameMap;
-uniform sampler2D tileMaps[LAYERS];
-uniform sampler2D animationMap;
+uniform @float32 sampler2D frameMap;
+uniform @float32 sampler2D tileMaps[LAYERS];
+uniform @float32 sampler2D animationMap;
 
 uniform vec3 colorMul;
 
