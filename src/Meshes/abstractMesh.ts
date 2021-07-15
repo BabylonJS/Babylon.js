@@ -1316,7 +1316,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             data = Tools.Slice(data);
             this._generatePointsArray();
             if (this._positions) {
-                this._internalAbstractMeshDataInfo._positions = Tools.Slice(this._positions);
+                const pos = this._positions;
+                this._internalAbstractMeshDataInfo._positions = new Array<Vector3>(pos.length);
+                for (let i = 0; i < pos.length; i++) {
+                    this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
+                }
             }
         }
 
