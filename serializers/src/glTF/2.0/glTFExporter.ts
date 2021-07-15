@@ -1080,7 +1080,7 @@ export class _Exporter {
             jsonChunkBufferView.setUint32(0, jsonLength + jsonPadding, true);
             jsonChunkBufferView.setUint32(4, 0x4E4F534A, true);
 
-            //json chunk bytes 
+            //json chunk bytes
             const jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
             // if TextEncoder was available, we can simply copy the encoded array
             if (encodedJsonText) {
