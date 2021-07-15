@@ -451,6 +451,9 @@ export class PrePassRenderer {
 
     private _setRenderTargetEnabled(prePassRenderTarget: PrePassRenderTarget, enabled: boolean) {
         prePassRenderTarget.enabled = enabled;
+        if (!enabled) {
+            this._unlinkInternalTexture(prePassRenderTarget);
+        }
     }
 
     /**
@@ -585,7 +588,7 @@ export class PrePassRenderer {
 
         if (prePassRenderTarget._outputPostProcess !== postProcess) {
             if (prePassRenderTarget._outputPostProcess) {
-                prePassRenderTarget._outputPostProcess.restoreDefaultInputTexture();
+                this._unlinkInternalTexture(prePassRenderTarget);
             }
             prePassRenderTarget._outputPostProcess = postProcess;
         }
@@ -593,6 +596,15 @@ export class PrePassRenderer {
         if (prePassRenderTarget._internalTextureDirty) {
             this._updateGeometryBufferLayout();
             prePassRenderTarget._internalTextureDirty = false;
+        }
+    }
+
+    /** @hidden */
+    public _unlinkInternalTexture(prePassRenderTarget: PrePassRenderTarget) {
+        if (prePassRenderTarget._outputPostProcess) {
+            prePassRenderTarget._outputPostProcess.autoClear = true;
+            prePassRenderTarget._outputPostProcess.restoreDefaultInputTexture();
+            prePassRenderTarget._outputPostProcess = null;
         }
     }
 
