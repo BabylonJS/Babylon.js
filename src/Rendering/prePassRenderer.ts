@@ -49,6 +49,7 @@ export class PrePassRenderer {
 
     private _mrtFormats: number[] = [];
     private _mrtLayout: number[] = [];
+    private _mrtNames: string[] = [];
     private _textureIndices: number[] = [];
 
     private _multiRenderAttachments: number[];
@@ -79,34 +80,42 @@ export class PrePassRenderer {
         {
             type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Irradiance",
         },
         {
             type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Position",
         },
         {
             type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
+            name: "prePass_Velocity",
         },
         {
             type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
+            name: "prePass_Reflectivity",
         },
         {
             type: Constants.PREPASS_COLOR_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Color",
         },
         {
             type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Depth",
         },
         {
             type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Normal",
         },
         {
             type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
+            name: "prePass_Albedo",
         },
     ];
 
@@ -297,7 +306,8 @@ export class PrePassRenderer {
 
         this._textureIndices[Constants.PREPASS_COLOR_TEXTURE_TYPE] = 0;
         this._mrtLayout = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
-        this._mrtFormats = [Constants.TEXTURETYPE_HALF_FLOAT];
+        this._mrtFormats = [PrePassRenderer._textureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].format];
+        this._mrtNames = [PrePassRenderer._textureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].name];
         this.mrtCount = 1;
     }
 
@@ -483,7 +493,7 @@ export class PrePassRenderer {
 
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.mrtCount !== previousMrtCount) {
-                this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats });
+                this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats }, this._mrtNames.concat("prePass_DepthBuffer"));
             }
 
             this.renderTargets[i]._resetPostProcessChain();
@@ -655,6 +665,7 @@ export class PrePassRenderer {
                 this._mrtLayout.push(type);
 
                 this._mrtFormats.push(PrePassRenderer._textureFormats[type].format);
+                this._mrtNames.push(PrePassRenderer._textureFormats[type].name);
                 this.mrtCount++;
             }
 
