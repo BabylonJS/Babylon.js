@@ -126,6 +126,21 @@ export class CanvasGraphService {
         this._attachEventListeners(canvas);
     }
 
+    public resize(width: number, height: number) {
+        const { _ctx: ctx } = this;
+
+        if (!ctx || !ctx.canvas) {
+            return;
+        }
+
+        this._width = width;
+        this._height = height;
+
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+        this.draw();
+    }
+
     /**
      * This method draws the data and sets up the appropriate scales.
      */
