@@ -3,17 +3,17 @@
     left: 0px;
     top:0px;
     bottom: 0px;
-
+    font-family: "acumin-pro-condensed";
     &:focus {
         outline: none;
     }
 }
 
-#__resizable_base__ {
+#ge-__resizable_base__ {
     display: none;
 }
 
-.context-menu {
+.ge-context-menu {
     background: #e2e2e2;
 
     .react-contextmenu-item {
@@ -26,7 +26,7 @@
     }
 }
 
-.react-contextmenu.context-menu.react-contextmenu--visible {
+.ge-eact-contextmenu.context-menu.react-contextmenu--visible {
     z-index: 99;
     transform: scale(1);
 }
@@ -38,7 +38,7 @@
     padding: 0;
     display: grid;
     grid-template-rows: auto 1fr;
-    font: 14px "Arial";
+    font: 16px "acumin-pro-condensed";
 
     &:focus {
         outline: none;
@@ -197,6 +197,10 @@
         align-items: center;   
         justify-items: center;
         cursor: pointer;
+    }
+
+    .spacer {
+        background: transparent;
     }
 
     .itemContainer {

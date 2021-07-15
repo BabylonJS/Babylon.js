@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \**************************************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \********************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js":
-/*!****************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
-  \****************************************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
+  \**********************************************************************************************/
 /*! exports provided: far, prefix, faAddressBook, faAddressCard, faAngry, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faBell, faBellSlash, faBookmark, faBuilding, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faChartBar, faCheckCircle, faCheckSquare, faCircle, faClipboard, faClock, faClone, faClosedCaptioning, faComment, faCommentAlt, faCommentDots, faComments, faCompass, faCopy, faCopyright, faCreditCard, faDizzy, faDotCircle, faEdit, faEnvelope, faEnvelopeOpen, faEye, faEyeSlash, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileExcel, faFileImage, faFilePdf, faFilePowerpoint, faFileVideo, faFileWord, faFlag, faFlushed, faFolder, faFolderOpen, faFontAwesomeLogoFull, faFrown, faFrownOpen, faFutbol, faGem, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHandshake, faHdd, faHeart, faHospital, faHourglass, faIdBadge, faIdCard, faImage, faImages, faKeyboard, faKiss, faKissBeam, faKissWinkHeart, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLemon, faLifeRing, faLightbulb, faListAlt, faMap, faMeh, faMehBlank, faMehRollingEyes, faMinusSquare, faMoneyBillAlt, faMoon, faNewspaper, faObjectGroup, faObjectUngroup, faPaperPlane, faPauseCircle, faPlayCircle, faPlusSquare, faQuestionCircle, faRegistered, faSadCry, faSadTear, faSave, faShareSquare, faSmile, faSmileBeam, faSmileWink, faSnowflake, faSquare, faStar, faStarHalf, faStickyNote, faStopCircle, faSun, faSurprise, faThumbsDown, faThumbsUp, faTimesCircle, faTired, faTrashAlt, faUser, faUserCircle, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3641,9 +3641,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \**************************************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \********************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10661,9 +10661,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!***********************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \*****************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11064,9 +11064,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/classnames/index.js ***!
-  \************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/classnames/index.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11132,9 +11132,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss":
-/*!****************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
-  \****************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
+  \****************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11150,9 +11150,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss":
-/*!**************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
-  \**************************************************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
+  \**************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11168,9 +11168,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss":
-/*!***********************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
-  \***********************************************************************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
+  \***********************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11186,9 +11186,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss":
-/*!****************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
-  \****************************************************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
+  \****************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11204,9 +11204,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss":
-/*!************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
-  \************************************************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
+  \************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11222,9 +11222,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss":
-/*!***********************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
-  \***********************************************************************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
+  \***********************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11240,9 +11240,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss":
-/*!*********************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
-  \*********************************************************************************************************************************************************************************************************/
+/*!*********************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
+  \*********************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11258,9 +11258,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss":
-/*!**************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
-  \**************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
+  \**************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11276,9 +11276,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**********************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**********************************************************************************************************************************************************************/
+/*!**********************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \**********************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11294,9 +11294,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \**************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11312,9 +11312,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11417,9 +11417,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/gif.js.optimized/dist/gif.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11429,9 +11429,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
-  \***************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11531,9 +11531,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/process/browser.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11726,9 +11726,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11840,9 +11840,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \******************************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12443,9 +12443,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
-  \************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12469,9 +12469,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12493,9 +12493,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/re-resizable/lib/index.es5.js":
-/*!**********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
-  \**********************************************************************/
+/*!****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13242,9 +13242,9 @@ module.exports = Resizable;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \******************************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13468,9 +13468,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \***********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13785,9 +13785,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \************************************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \******************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13985,9 +13985,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!**************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \**************************************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14125,9 +14125,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \*******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14465,9 +14465,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \*******************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14525,9 +14525,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \***********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14623,9 +14623,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \*******************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14685,9 +14685,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \*******************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14734,9 +14734,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \*****************************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14772,9 +14772,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39796,9 +39796,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39841,9 +39841,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40034,9 +40034,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
-  \**********************************************************/
+/*!****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/index.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40051,9 +40051,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41975,9 +41975,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
-  \*******************************************************/
+/*!*************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41992,9 +41992,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!***************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \***************************************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42353,9 +42353,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43223,9 +43223,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43240,9 +43240,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43257,9 +43257,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43455,9 +43455,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/split.js/dist/split.es.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/split.js/dist/split.es.js ***!
-  \******************************************************************/
+/*!************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/split.js/dist/split.es.js ***!
+  \************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -44227,9 +44227,9 @@ var Split = function (idsOption, options) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \**********************************************************************************************/
+/*!****************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44507,9 +44507,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \******************************************************************/
+/*!************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44582,9 +44582,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -45868,6 +45868,61 @@ var GradientStepComponent = /** @class */ (function (_super) {
     return GradientStepComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx":
+/*!*************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx ***!
+  \*************************************************************************************/
+/*! exports provided: PerformanceViewerComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerComponent", function() { return PerformanceViewerComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+
+
+
+
+
+// aribitrary window size
+var initialWindowSize = { width: 1024, height: 512 };
+// Note this should be false when committed until the feature is fully working.
+var isEnabled = false;
+var PerformanceViewerComponent = function (props) {
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    // do cleanup when the window is closed
+    var onClosePerformanceViewer = function (window) {
+        if (window) {
+            window.close();
+        }
+        setIsOpen(false);
+    };
+    var onPerformanceButtonClick = function () {
+        setIsOpen(true);
+    };
+    var onResize = function () {
+        // do nothing for now.
+    };
+    var canvasServiceCallback = function (canvasService) {
+        canvasService.draw();
+    };
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+        isEnabled &&
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
+        isOpen &&
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, onResize: onResize, onClose: onClosePerformanceViewer },
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "performance-viewer" },
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__["CanvasGraphComponent"], { id: "myChart", canvasServiceCallback: canvasServiceCallback }))))));
+};
 
 
 /***/ }),
@@ -52285,7 +52340,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Min Thickness", target: material.subSurface, propertyName: "minimumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Max Thickness", target: material.subSurface, propertyName: "maximumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Mask From Thickness", target: material.subSurface, propertyName: "useMaskFromThicknessTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "glTF-Style Thickness Texture", target: material.subSurface, propertyName: "useGltfStyleThicknessTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "glTF-Style Textures", target: material.subSurface, propertyName: "useGltfStyleTextures", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use Thickness as Depth", target: material.subSurface, propertyName: "useThicknessAsDepth", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.subSurface, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Scattering Enabled", target: material.subSurface, propertyName: "isScatteringEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -52628,7 +52683,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
@@ -52735,6 +52790,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
     };
     TexturePropertyGridComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         var texture = this.props.texture;
         var samplingMode = [
             { label: "Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_NEAREST },
@@ -52807,6 +52863,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                 extension &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "File format", value: extension }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Unique ID", value: texture.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Internal Unique ID", value: (_a = texture._texture) === null || _a === void 0 ? void 0 : _a.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Class", value: texture.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Has alpha", value: texture.hasAlpha ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is 3D", value: texture.is3D ? "Yes" : "No" }),
@@ -53246,15 +53303,17 @@ var Eyedropper = {
             this.pointerObserver = this.getParameters().scene.onPointerObservable.add(function (pointerInfo) {
                 var _a;
                 if ((_a = pointerInfo.pickInfo) === null || _a === void 0 ? void 0 : _a.hit) {
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN) {
+                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN && (pointerInfo.event.buttons === 1) && _this.getParameters().interactionEnabled()) {
                         _this.isPicking = true;
                         _this.pick(pointerInfo);
                     }
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE && _this.isPicking) {
-                        _this.pick(pointerInfo);
-                    }
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
-                        _this.isPicking = false;
+                    if (_this.isPicking) {
+                        if (pointerInfo.event.buttons !== 1 || !_this.getParameters().interactionEnabled()) {
+                            _this.isPicking = false;
+                        }
+                        else {
+                            _this.pick(pointerInfo);
+                        }
                     }
                 }
             });
@@ -53320,10 +53379,8 @@ var Floodfill = {
             var _this = this;
             this.pointerObserver = this.getParameters().scene.onPointerObservable.add(function (pointerInfo) {
                 var _a;
-                if ((_a = pointerInfo.pickInfo) === null || _a === void 0 ? void 0 : _a.hit) {
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN && pointerInfo.event.button === 0) {
-                        _this.fill();
-                    }
+                if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN && (pointerInfo.event.buttons === 1) && _this.getParameters().interactionEnabled() && ((_a = pointerInfo.pickInfo) === null || _a === void 0 ? void 0 : _a.hit)) {
+                    _this.fill();
                 }
             });
         };
@@ -53407,15 +53464,14 @@ var paintbrushTool = /** @class */ (function () {
         var _this = this;
         var scene = this.getParameters().scene;
         this.pointerObserver = scene.onPointerObservable.add(function (pointerInfo) { return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
-            var _a, startPainting, stopPainting, metadata, circleCanvas, circleCtx, pixels, dis, rgb, r, g, b, idx, y, x, _b;
-            var _c, _d;
-            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_e) {
-                switch (_e.label) {
+            var _a, startPainting, stopPainting, metadata, circleCanvas, circleCtx, pixels, dis, rgb, r, g, b, idx, x1, x2, y1, y2, y, x, _b;
+            var _c, _d, _e;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_f) {
+                switch (_f.label) {
                     case 0:
                         _a = this.getParameters(), startPainting = _a.startPainting, stopPainting = _a.stopPainting, metadata = _a.metadata;
-                        if (!((_c = pointerInfo.pickInfo) === null || _c === void 0 ? void 0 : _c.hit)) return [3 /*break*/, 3];
-                        if (!(pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERDOWN)) return [3 /*break*/, 2];
-                        if (!(pointerInfo.event.button == 0)) return [3 /*break*/, 2];
+                        if (!!this.isPainting) return [3 /*break*/, 3];
+                        if (!(pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERDOWN && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled() && ((_c = pointerInfo.pickInfo) === null || _c === void 0 ? void 0 : _c.hit))) return [3 /*break*/, 2];
                         this.isPainting = true;
                         circleCanvas = document.createElement('canvas');
                         circleCanvas.width = this.width;
@@ -53429,8 +53485,10 @@ var paintbrushTool = /** @class */ (function () {
                         g = Math.floor(rgb.g * 255);
                         b = Math.floor(rgb.b * 255);
                         idx = 0;
-                        for (y = -Math.floor(this.width / 2); y < Math.ceil(this.width / 2); y++) {
-                            for (x = -Math.floor(this.width / 2); x < Math.ceil(this.width / 2); x++) {
+                        x1 = -Math.floor(this.width / 2), x2 = Math.ceil(this.width / 2);
+                        y1 = -Math.floor(this.width / 2), y2 = Math.ceil(this.width / 2);
+                        for (y = y1; y < y2; y++) {
+                            for (x = x1; x < x2; x++) {
                                 pixels[idx++] = r;
                                 pixels[idx++] = g;
                                 pixels[idx++] = b;
@@ -53442,24 +53500,24 @@ var paintbrushTool = /** @class */ (function () {
                         _b = this;
                         return [4 /*yield*/, startPainting()];
                     case 1:
-                        _b.ctx = _e.sent();
+                        _b.ctx = _f.sent();
                         this.paint(pointerInfo);
-                        _e.label = 2;
-                    case 2:
-                        if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERMOVE && this.isPainting) {
-                            this.paint(pointerInfo);
-                        }
-                        _e.label = 3;
+                        _f.label = 2;
+                    case 2: return [3 /*break*/, 4];
                     case 3:
-                        if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERUP) {
-                            if (pointerInfo.event.button == 0) {
-                                this.isPainting = false;
-                                (_d = this.circleCanvas.parentNode) === null || _d === void 0 ? void 0 : _d.removeChild(this.circleCanvas);
-                                stopPainting();
-                                this.mousePos = null;
+                        if (pointerInfo.event.buttons !== 1 || !this.getParameters().interactionEnabled()) {
+                            this.isPainting = false;
+                            (_d = this.circleCanvas.parentNode) === null || _d === void 0 ? void 0 : _d.removeChild(this.circleCanvas);
+                            stopPainting();
+                            this.mousePos = null;
+                        }
+                        else {
+                            if (((_e = pointerInfo.pickInfo) === null || _e === void 0 ? void 0 : _e.hit) && pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_2__["PointerEventTypes"].POINTERMOVE) {
+                                this.paint(pointerInfo);
                             }
                         }
-                        return [2 /*return*/];
+                        _f.label = 4;
+                    case 4: return [2 /*return*/];
                 }
             });
         }); });
@@ -53528,37 +53586,24 @@ var RectangleSelect = {
             var scene = this.getParameters().scene;
             this.pointerObserver = scene.onPointerObservable.add(function (pointerInfo) {
                 var _a;
-                var _b;
-                var _c = _this.getParameters(), getMouseCoordinates = _c.getMouseCoordinates, setMetadata = _c.setMetadata, metadata = _c.metadata;
-                if ((_b = pointerInfo.pickInfo) === null || _b === void 0 ? void 0 : _b.hit) {
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN) {
-                        if (pointerInfo.event.button == 0) {
-                            _this.isSelecting = true;
-                            var _d = (_a = getMouseCoordinates(pointerInfo), _this.xStart = _a.x, _this.yStart = _a.y, _a), x = _d.x, y = _d.y;
-                            setMetadata({
-                                select: {
-                                    x1: x,
-                                    y1: y,
-                                    x2: x,
-                                    y2: y
-                                }
-                            });
-                        }
-                    }
-                    if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE && _this.isSelecting) {
-                        var _e = getMouseCoordinates(pointerInfo), x = _e.x, y = _e.y;
+                var _b, _c;
+                var _d = _this.getParameters(), getMouseCoordinates = _d.getMouseCoordinates, setMetadata = _d.setMetadata, metadata = _d.metadata;
+                if (!_this.isSelecting) {
+                    if (pointerInfo.type == babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN && pointerInfo && (pointerInfo.event.buttons === 1) && _this.getParameters().interactionEnabled() && ((_b = pointerInfo.pickInfo) === null || _b === void 0 ? void 0 : _b.hit)) {
+                        _this.isSelecting = true;
+                        var _e = (_a = getMouseCoordinates(pointerInfo), _this.xStart = _a.x, _this.yStart = _a.y, _a), x = _e.x, y = _e.y;
                         setMetadata({
                             select: {
-                                x1: Math.min(x, _this.xStart),
-                                y1: Math.min(y, _this.yStart),
-                                x2: Math.max(x, _this.xStart),
-                                y2: Math.max(y, _this.yStart)
+                                x1: x,
+                                y1: y,
+                                x2: x,
+                                y2: y
                             }
                         });
                     }
                 }
-                if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
-                    if (pointerInfo.event.button == 0) {
+                else {
+                    if (pointerInfo.event.buttons !== 1 || !_this.getParameters().interactionEnabled()) {
                         _this.isSelecting = false;
                         if (metadata.select.x1 === metadata.select.x2 || metadata.select.y1 === metadata.select.y2) {
                             setMetadata({
@@ -53566,6 +53611,21 @@ var RectangleSelect = {
                                     x1: -1, y1: -1, x2: -1, y2: -1
                                 }
                             });
+                        }
+                    }
+                    else {
+                        if (((_c = pointerInfo.pickInfo) === null || _c === void 0 ? void 0 : _c.hit) && pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE) {
+                            if (pointerInfo.type === babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE && _this.isSelecting) {
+                                var _f = getMouseCoordinates(pointerInfo), x = _f.x, y = _f.y;
+                                setMetadata({
+                                    select: {
+                                        x1: Math.min(x, _this.xStart),
+                                        y1: Math.min(y, _this.yStart),
+                                        x2: Math.max(x, _this.xStart),
+                                        y2: Math.max(y, _this.yStart)
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -53786,12 +53846,14 @@ var TextureCanvasManager = /** @class */ (function () {
         this._didEdit = false;
         /** Tracks which keys are currently pressed */
         this._keyMap = {};
+        /** Tracks which mouse buttons are currently pressed */
+        this._buttonsPressed = 0;
         this.ZOOM_MOUSE_SPEED = 0.001;
         this.ZOOM_KEYBOARD_SPEED = 0.4;
         this.ZOOM_IN_KEY = '+';
         this.ZOOM_OUT_KEY = '-';
         this.PAN_SPEED = 0.003;
-        this.PAN_MOUSE_BUTTON = 1; // MMB
+        this.PAN_KEY = 'Space';
         this.MIN_SCALE = 0.01;
         this.GRID_SCALE = 0.047;
         this.MAX_SCALE = 10;
@@ -53916,23 +53978,25 @@ var TextureCanvasManager = /** @class */ (function () {
         });
         this._scene.onPointerObservable.add(function (pointerInfo) {
             var _a;
+            var leftButtonPressed = pointerInfo.event.buttons & 1;
+            var middleButtonPressed = pointerInfo.event.buttons & 4;
+            if (!_this._isPanning) {
+                if ((leftButtonPressed && !(_this._buttonsPressed & 1) && _this._keyMap[_this.PAN_KEY]) || middleButtonPressed) {
+                    _this._isPanning = true;
+                    _this._mouseX = pointerInfo.event.x;
+                    _this._mouseY = pointerInfo.event.y;
+                }
+                if (middleButtonPressed) {
+                    _this._isPanning = true;
+                }
+            }
+            else if ((!leftButtonPressed || !_this._keyMap[_this.PAN_KEY]) && !middleButtonPressed) {
+                _this._isPanning = false;
+            }
             switch (pointerInfo.type) {
                 case babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERWHEEL:
                     var event_1 = pointerInfo.event;
                     _this._scale -= (event_1.deltaY * _this.ZOOM_MOUSE_SPEED * _this._scale);
-                    break;
-                case babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN:
-                    if (pointerInfo.event.button === _this.PAN_MOUSE_BUTTON) {
-                        _this._isPanning = true;
-                        _this._mouseX = pointerInfo.event.x;
-                        _this._mouseY = pointerInfo.event.y;
-                        pointerInfo.event.preventDefault();
-                    }
-                    break;
-                case babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP:
-                    if (pointerInfo.event.button === _this.PAN_MOUSE_BUTTON) {
-                        _this._isPanning = false;
-                    }
                     break;
                 case babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE:
                     if (_this._isPanning) {
@@ -53951,6 +54015,7 @@ var TextureCanvasManager = /** @class */ (function () {
                     }
                     break;
             }
+            _this._buttonsPressed = pointerInfo.event.buttons;
         });
         this._scene.onKeyboardObservable.add(function (kbInfo) {
             switch (kbInfo.type) {
@@ -54392,6 +54457,9 @@ var TextureCanvasManager = /** @class */ (function () {
             babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Tools"].Download(blob, _this._originalTexture.name);
         });
     };
+    TextureCanvasManager.prototype.toolInteractionEnabled = function () {
+        return !(this._keyMap[this.PAN_KEY] || this._isPanning);
+    };
     TextureCanvasManager.prototype.dispose = function () {
         var _a, _b;
         if (this._didEdit) {
@@ -54573,7 +54641,6 @@ var TextureEditorComponent = /** @class */ (function (_super) {
         });
         newTools = this.state.tools.concat(newTools);
         this.setState({ tools: newTools });
-        console.log(newTools);
     };
     TextureEditorComponent.prototype.getToolParameters = function () {
         var _this = this;
@@ -54589,6 +54656,7 @@ var TextureEditorComponent = /** @class */ (function (_super) {
             metadata: this.state.metadata,
             setMetadata: function (data) { return _this.setMetadata(data); },
             getMouseCoordinates: function (pointerInfo) { return _this._textureCanvasManager.getMouseCoordinates(pointerInfo); },
+            interactionEnabled: function () { return _this._textureCanvasManager.toolInteractionEnabled(); },
             BABYLON: BABYLON,
         };
     };
@@ -54629,14 +54697,17 @@ var TextureEditorComponent = /** @class */ (function (_super) {
     };
     TextureEditorComponent.prototype.render = function () {
         var _this = this;
-        var _a;
+        var _a, _b;
         var currentTool = this.state.tools[this.state.activeToolIndex];
         var cursor = "initial";
-        if (currentTool && currentTool.cursor) {
+        if (!((_a = this._textureCanvasManager) === null || _a === void 0 ? void 0 : _a.toolInteractionEnabled())) {
+            cursor = "pointer";
+        }
+        else if (currentTool && currentTool.cursor) {
             cursor = "url(data:image/png;base64," + currentTool.cursor + ") 10 10, auto";
         }
         return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "texture-editor", onPointerDown: this.onPointerDown, style: { cursor: cursor } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertiesBar__WEBPACK_IMPORTED_MODULE_4__["PropertiesBar"], { texture: this.props.texture, saveTexture: this.saveTexture, pixelData: this.state.pixelData, face: this.state.face, setFace: function (face) { return _this.setState({ face: face }); }, resetTexture: this.resetTexture, resizeTexture: this.resizeTexture, uploadTexture: this.uploadTexture, mipLevel: this.state.mipLevel, setMipLevel: function (mipLevel) { return _this.setState({ mipLevel: mipLevel }); }, size: ((_a = this._textureCanvasManager) === null || _a === void 0 ? void 0 : _a.size) || this.props.texture.getSize() }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertiesBar__WEBPACK_IMPORTED_MODULE_4__["PropertiesBar"], { texture: this.props.texture, saveTexture: this.saveTexture, pixelData: this.state.pixelData, face: this.state.face, setFace: function (face) { return _this.setState({ face: face }); }, resetTexture: this.resetTexture, resizeTexture: this.resizeTexture, uploadTexture: this.uploadTexture, mipLevel: this.state.mipLevel, setMipLevel: function (mipLevel) { return _this.setState({ mipLevel: mipLevel }); }, size: ((_b = this._textureCanvasManager) === null || _b === void 0 ? void 0 : _b.size) || this.props.texture.getSize() }),
             !this.props.texture.isCube && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_toolBar__WEBPACK_IMPORTED_MODULE_3__["ToolBar"], { tools: this.state.tools, activeToolIndex: this.state.activeToolIndex, addTool: this.loadToolFromURL, changeTool: this.changeTool, metadata: this.state.metadata, setMetadata: this.setMetadata, pickerOpen: this.state.pickerOpen, setPickerOpen: this.setPickerOpen, pickerRef: this._pickerRef, hasAlpha: this.props.texture.textureFormat === -1 || this.props.texture.textureFormat === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_9__["Constants"].TEXTUREFORMAT_RGBA }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_channelsBar__WEBPACK_IMPORTED_MODULE_5__["ChannelsBar"], { channels: this.state.channels, setChannels: function (channels) { _this.setState({ channels: channels }); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textureCanvasComponent__WEBPACK_IMPORTED_MODULE_7__["TextureCanvasComponent"], { canvas2D: this._2DCanvas, canvas3D: this._3DCanvas, canvasUI: this._UICanvas, texture: this.props.texture }),
@@ -57856,6 +57927,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/valueLineComponent */ "./sharedUiComponents/lines/valueLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/booleanLineComponent */ "./sharedUiComponents/lines/booleanLineComponent.tsx");
+/* harmony import */ var _performanceViewer_performanceViewerComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./performanceViewer/performanceViewerComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx");
+
 
 
 
@@ -57912,6 +57985,7 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Version", value: babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__["Engine"].Version, color: "rgb(113, 159, 255)" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "FPS", value: engine.getFps(), fractionDigits: 0 }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewer_performanceViewerComponent__WEBPACK_IMPORTED_MODULE_8__["PerformanceViewerComponent"], { scene: scene }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "COUNT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Total meshes", value: scene.meshes.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Active meshes", value: scene.getActiveMeshes().length.toString() }),
@@ -58246,7 +58320,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             this._screenShotSize.height = undefined;
         }
         if (scene.activeCamera) {
-            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize);
+            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize, undefined, undefined, 4);
         }
         this._screenShotSize = oldScreenshotSize;
     };
@@ -58829,6 +58903,581 @@ var GlobalState = /** @class */ (function () {
         }
     };
     return GlobalState;
+}());
+
+
+
+/***/ }),
+
+/***/ "./components/graph/canvasGraphComponent.tsx":
+/*!***************************************************!*\
+  !*** ./components/graph/canvasGraphComponent.tsx ***!
+  \***************************************************/
+/*! exports provided: CanvasGraphComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphComponent", function() { return CanvasGraphComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./canvasGraphService */ "./components/graph/canvasGraphService.ts");
+
+
+
+var CanvasGraphComponent = function (props) {
+    var id = props.id, canvasServiceCallback = props.canvasServiceCallback;
+    var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
+    Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+        if (!canvasRef.current) {
+            return;
+        }
+        // temporarily set empty array, will eventually be passed by props!
+        var canvasGraphService = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] });
+        canvasServiceCallback(canvasGraphService);
+        return function () { return canvasGraphService.destroy(); };
+    }, [canvasRef]);
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("canvas", { id: id, ref: canvasRef }));
+};
+
+
+/***/ }),
+
+/***/ "./components/graph/canvasGraphService.ts":
+/*!************************************************!*\
+  !*** ./components/graph/canvasGraphService.ts ***!
+  \************************************************/
+/*! exports provided: CanvasGraphService */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var defaultColor = "#000";
+var futureBoxColor = "#dfe9ed";
+var dividerColor = "#0a3066";
+var playheadColor = "#b9dbef";
+var playheadSize = 8;
+var dividerSize = 2;
+// Currently the scale factor is a constant but when we add panning this may become formula based.
+var scaleFactor = 0.8;
+// This controls the scale factor at which we stop drawing the playhead. Below this value there tends to be flickering of the playhead as data comes in.
+var stopDrawingPlayheadThreshold = 0.95;
+// Threshold for the ratio at which we go from panning mode to live mode.
+var returnToLiveThreshold = 0.998;
+/**
+ * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
+ * let it know something has been resized, etc!
+ */
+var CanvasGraphService = /** @class */ (function () {
+    /**
+     * Creates an instance of CanvasGraphService.
+     *
+     * @param canvas a pointer to the canvas dom element we would like to write to.
+     * @param settings settings for our service.
+     */
+    function CanvasGraphService(canvas, settings) {
+        var _this = this;
+        this._sizeOfWindow = 300;
+        /**
+         * The handler for when we want to zoom in and out of the graph.
+         *
+         * @param event a mouse wheel event.
+         */
+        this._handleZoom = function (event) {
+            event.preventDefault();
+            if (!event.deltaY) {
+                return;
+            }
+            var amount = (event.deltaY * -0.01 | 0) * 100;
+            var minZoom = 60;
+            // The max zoom is the largest dataset's length.      
+            var maxZoom = _this.datasets.map(function (dataset) { return dataset.data.length; })
+                .reduce(function (maxLengthSoFar, currLength) {
+                return Math.max(currLength, maxLengthSoFar);
+            }, 0);
+            if (_this._shouldBecomeRealtime()) {
+                _this._positions.clear();
+            }
+            // Bind the zoom between [minZoom, maxZoom]
+            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+        };
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        this._handlePanStart = function (event) {
+            var ctx = _this._ctx;
+            if (!ctx || !ctx.canvas) {
+                return;
+            }
+            var canvas = ctx.canvas;
+            _this._panPosition = {
+                xPos: event.clientX,
+                delta: 0,
+            };
+            canvas.addEventListener("mousemove", _this._handlePan);
+        };
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        this._handlePan = function (event) {
+            if (!_this._panPosition) {
+                return;
+            }
+            var pixelDelta = _this._panPosition.delta + event.clientX - _this._panPosition.xPos;
+            var pixelsPerItem = _this._width / _this._sizeOfWindow;
+            var itemsDelta = pixelDelta / pixelsPerItem | 0;
+            _this.datasets.forEach(function (dataset) {
+                var _a;
+                if (dataset.data.length === 0 || !!dataset.hidden) {
+                    return;
+                }
+                var id = dataset.id;
+                var pos = (_a = _this._positions.get(id)) !== null && _a !== void 0 ? _a : (dataset.data.length - 1);
+                // update our position without allowing the user to pan more than they need to (approximation) 
+                _this._positions.set(id, babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), dataset.data.length - Math.floor(_this._sizeOfWindow * (1 - scaleFactor))));
+            });
+            if (itemsDelta === 0) {
+                _this._panPosition.delta += pixelDelta;
+            }
+            else {
+                _this._panPosition.delta = 0;
+            }
+            _this._panPosition.xPos = event.clientX;
+        };
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        this._handlePanStop = function () {
+            var ctx = _this._ctx;
+            if (!ctx || !ctx.canvas) {
+                return;
+            }
+            // check if we should return to realtime.
+            if (_this._shouldBecomeRealtime()) {
+                _this._positions.clear();
+            }
+            var canvas = ctx.canvas;
+            canvas.removeEventListener("mousemove", _this._handlePan);
+            _this._panPosition = null;
+        };
+        this._ctx = canvas.getContext && canvas.getContext("2d");
+        this._width = canvas.width;
+        this._height = canvas.height;
+        this._ticks = [];
+        this._panPosition = null;
+        this._positions = new Map();
+        this._datasetBounds = new Map();
+        this.datasets = settings.datasets;
+        this._attachEventListeners(canvas);
+    }
+    /**
+     * This method draws the data and sets up the appropriate scales.
+     */
+    CanvasGraphService.prototype.draw = function () {
+        var _this = this;
+        var ctx = this._ctx;
+        if (!ctx) {
+            return;
+        }
+        // First we clear the canvas so we can draw our data!
+        this.clear();
+        // Get global min max of time axis (across all datasets).
+        var globalTimeMinMax = { min: Infinity, max: 0 };
+        // First we must get the end positions of each dataset.
+        this.datasets.forEach(function (dataset) {
+            var _a;
+            // skip hidden and empty datasets!
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            var pos = (_a = _this._positions.get(dataset.id)) !== null && _a !== void 0 ? _a : dataset.data.length - 1;
+            var start = pos - Math.ceil(_this._sizeOfWindow * scaleFactor);
+            var startOverflow = 0;
+            // account for overflow from start.
+            if (start < 0) {
+                startOverflow = 0 - start;
+                start = 0;
+            }
+            var end = Math.ceil(pos + _this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
+            // account for overflow from end.
+            if (end > dataset.data.length) {
+                var endOverflow = end - dataset.data.length;
+                end = dataset.data.length;
+                start = Math.max(start - endOverflow, 0);
+            }
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // update or set the bounds
+            if (bounds) {
+                bounds.start = start;
+                bounds.end = end;
+            }
+            else {
+                _this._datasetBounds.set(dataset.id, { start: start, end: end });
+            }
+        });
+        // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
+        this.datasets.forEach(function (dataset) {
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, globalTimeMinMax.min);
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+        // set the buffer region maximum by rescaling the max timestamp in bounds.
+        var bufferMaximum = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min) / scaleFactor + globalTimeMinMax.min);
+        // we then need to update the end position based on the maximum for the buffer region
+        this.datasets.forEach(function (dataset) {
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            // binary search to get closest point to the buffer maximum.
+            bounds.end = _this._getClosestPointToTimestamp(dataset, bufferMaximum) + 1;
+            // keep track of largest timestamp value in view!
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((globalTimeMinMax.max - globalTimeMinMax.min) / (bufferMaximum - globalTimeMinMax.min), 0.8, 1);
+        // we will now set the global maximum to the maximum of the buffer.
+        globalTimeMinMax.max = bufferMaximum;
+        // TODO: Perhaps see if i can reduce the number of allocations.
+        // Keep only visible and non empty datasets and get a certain window of items.
+        var datasets = this.datasets.map(function (dataset) {
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return dataset;
+            }
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(bounds.start, bounds.end) });
+        }).filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; });
+        var drawableArea = {
+            top: 0,
+            left: 0,
+            bottom: this._height,
+            right: this._width,
+        };
+        this._drawTimeAxis(globalTimeMinMax, drawableArea);
+        this._drawPlayheadRegion(drawableArea, updatedScaleFactor);
+        // process, and then draw our points
+        datasets.forEach(function (dataset) {
+            var _a;
+            var valueMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.value; }));
+            var drawablePoints = dataset.data.map(function (point) { return _this._getPixelPointFromDataPoint(point, globalTimeMinMax, valueMinMax, drawableArea); });
+            var prevPoint = drawablePoints[0];
+            ctx.beginPath();
+            ctx.strokeStyle = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
+            drawablePoints.forEach(function (point) {
+                ctx.moveTo(prevPoint.timestamp, prevPoint.value);
+                ctx.lineTo(point.timestamp, point.value);
+                prevPoint = point;
+            });
+            ctx.stroke();
+        });
+    };
+    /**
+     * Returns the index of the closest time for a dataset.
+     * Uses a modified binary search to get value.
+     *
+     * @param dataset the dataset we want to search in.
+     * @param targetTime the time we want to get close to.
+     * @returns index of the item with the closest time to the targetTime
+     */
+    CanvasGraphService.prototype._getClosestPointToTimestamp = function (dataset, targetTime) {
+        var low = 0;
+        var high = dataset.data.length - 1;
+        var closestIndex = 0;
+        while (low <= high) {
+            var middle = Math.trunc((low + high) / 2);
+            var middleTimestamp = dataset.data[middle].timestamp;
+            if (Math.abs(middleTimestamp - targetTime) < Math.abs(dataset.data[closestIndex].timestamp - targetTime)) {
+                closestIndex = middle;
+            }
+            if (middleTimestamp < targetTime) {
+                low = middle + 1;
+            }
+            else if (middleTimestamp > targetTime) {
+                high = middle - 1;
+            }
+            else {
+                break;
+            }
+        }
+        return closestIndex;
+    };
+    /**
+     * Draws the time axis, adjusts the drawable area for the graph.
+     *
+     * @param timeMinMax the minimum and maximum for the time axis.
+     * @param drawableArea the current allocated drawable area.
+     */
+    CanvasGraphService.prototype._drawTimeAxis = function (timeMinMax, drawableArea) {
+        var _this = this;
+        var ctx = this._ctx;
+        if (!ctx) {
+            return;
+        }
+        var spaceAvailable = drawableArea.right - drawableArea.left;
+        this._generateTicks(timeMinMax, spaceAvailable);
+        var axisHeight = 100;
+        // remove the height of the axis from the available drawable area.
+        drawableArea.bottom -= axisHeight;
+        // draw time axis line
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = defaultColor;
+        ctx.moveTo(drawableArea.left, drawableArea.bottom);
+        ctx.lineTo(drawableArea.right, drawableArea.bottom);
+        // draw ticks and text.
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        this._ticks.forEach(function (tick) {
+            var position = _this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
+            if (position > spaceAvailable) {
+                position = spaceAvailable;
+            }
+            ctx.moveTo(position, drawableArea.bottom);
+            ctx.lineTo(position, drawableArea.bottom + 10);
+            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+        });
+        ctx.stroke();
+        ctx.restore();
+    };
+    /**
+     * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
+     *
+     * @param minMax the minimum and maximum values of the axis
+     * @param spaceAvailable the total amount of space we have allocated to our axis
+     */
+    CanvasGraphService.prototype._generateTicks = function (minMax, spaceAvailable) {
+        var min = minMax.min, max = minMax.max;
+        var minTickSpacing = 40;
+        this._ticks.length = 0;
+        var maxTickCount = Math.ceil(spaceAvailable / minTickSpacing);
+        var range = this._niceNumber(max - min, false);
+        var spacing = this._niceNumber(range / (maxTickCount - 1), true);
+        var niceMin = Math.floor(min / spacing) * spacing;
+        var niceMax = Math.floor(max / spacing) * spacing;
+        for (var i = niceMin; i <= niceMax + 0.5 * spacing; i += spacing) {
+            this._ticks.push(i);
+        }
+    };
+    /**
+     * Nice number algorithm based on psueudo code defined in "Graphics Gems" by Andrew S. Glassner.
+     * This will find a "nice" number approximately equal to num.
+     *
+     * @param num The number we want to get close to.
+     * @param shouldRound if true we will round the number, otherwise we will get the ceiling.
+     * @returns a "nice" number approximately equal to num.
+     */
+    CanvasGraphService.prototype._niceNumber = function (num, shouldRound) {
+        var exp = Math.floor(Math.log10(num));
+        var fraction = num / Math.pow(10, exp);
+        var niceFraction;
+        if (shouldRound) {
+            if (fraction < 1.5) {
+                niceFraction = 1;
+            }
+            else if (fraction < 3) {
+                niceFraction = 2;
+            }
+            else if (fraction < 7) {
+                niceFraction = 5;
+            }
+            else {
+                niceFraction = 10;
+            }
+        }
+        else {
+            if (fraction <= 1) {
+                niceFraction = 1;
+            }
+            else if (fraction <= 2) {
+                niceFraction = 2;
+            }
+            else if (fraction <= 5) {
+                niceFraction = 5;
+            }
+            else {
+                niceFraction = 10;
+            }
+        }
+        return niceFraction * Math.pow(10, exp);
+    };
+    /**
+     * Gets the min and max as a single object from an array of numbers.
+     *
+     * @param items the array of numbers to get the min and max for.
+     * @returns the min and max of the array.
+     */
+    CanvasGraphService.prototype._getMinMax = function (items) {
+        var min = Infinity, max = 0;
+        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+            var item = items_1[_i];
+            if (item < min) {
+                min = item;
+            }
+            if (item > max) {
+                max = item;
+            }
+        }
+        return {
+            min: min,
+            max: max
+        };
+    };
+    /**
+     * Converts a data point to a point on the canvas (a pixel coordinate).
+     *
+     * @param point The datapoint
+     * @param timeMinMax The minimum and maximum in the time axis.
+     * @param valueMinMax The minimum and maximum in the value axis for the dataset.
+     * @param drawableArea The allowed drawable area.
+     * @returns
+     */
+    CanvasGraphService.prototype._getPixelPointFromDataPoint = function (point, timeMinMax, valueMinMax, drawableArea) {
+        var timestamp = point.timestamp, value = point.value;
+        var top = drawableArea.top, left = drawableArea.left, bottom = drawableArea.bottom, right = drawableArea.right;
+        return {
+            timestamp: this._getPixelForNumber(timestamp, timeMinMax, left, right - left, false),
+            value: this._getPixelForNumber(value, valueMinMax, top, bottom - top, true)
+        };
+    };
+    /**
+     * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
+     *
+     * @param num the number we want to get the pixel coordinate for
+     * @param minMax the min and max of the dataset in the axis we want the pixel coordinate for.
+     * @param startingPixel the starting pixel coordinate (this means it takes account for any offset).
+     * @param spaceAvailable the total space available in this axis.
+     * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
+     * @returns the pixel coordinate of the value in a single axis.
+     */
+    CanvasGraphService.prototype._getPixelForNumber = function (num, minMax, startingPixel, spaceAvailable, shouldFlipValue) {
+        var min = minMax.min, max = minMax.max;
+        // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
+        var normalizedValue = (num - min) / (max - min);
+        // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
+        if (shouldFlipValue) {
+            normalizedValue = 1 - normalizedValue;
+        }
+        return startingPixel + normalizedValue * spaceAvailable;
+    };
+    /**
+     * Add in any necessary event listeners.
+     *
+     * @param canvas The canvas we want to attach listeners to.
+     */
+    CanvasGraphService.prototype._attachEventListeners = function (canvas) {
+        canvas.addEventListener("wheel", this._handleZoom);
+        canvas.addEventListener("mousedown", this._handlePanStart);
+        // The user may stop panning outside of the canvas size so we should add the event listener to the document.
+        canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
+    };
+    /**
+     * We remove all event listeners we added.
+     *
+     * @param canvas The canvas we want to remove listeners from.
+     */
+    CanvasGraphService.prototype._removeEventListeners = function (canvas) {
+        canvas.removeEventListener("wheel", this._handleZoom);
+        canvas.removeEventListener("mousedown", this._handlePanStart);
+        canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
+    };
+    /**
+     * Method which returns true if the data should become realtime, false otherwise.
+     *
+     * @returns if the data should become realtime or not.
+     */
+    CanvasGraphService.prototype._shouldBecomeRealtime = function () {
+        if (this.datasets.length === 0) {
+            return false;
+        }
+        // We first get the latest dataset, because this is where the real time data is!
+        var latestDataset = this.datasets[0];
+        this.datasets.forEach(function (dataset) {
+            // skip over empty and hidden data!
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            if (latestDataset.data[latestDataset.data.length - 1].timestamp < dataset.data[dataset.data.length - 1].timestamp) {
+                latestDataset = dataset;
+            }
+        });
+        var pos = this._positions.get(latestDataset.id);
+        var latestElementPos = latestDataset.data.length - 1;
+        if (pos === undefined) {
+            return false;
+        }
+        // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
+        var overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
+        var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
+        return latestDataset.data[rightmostPos].timestamp / latestDataset.data[latestElementPos].timestamp > returnToLiveThreshold;
+    };
+    /**
+     * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
+     *
+     * @param drawableArea The remaining drawable area.
+     * @param scaleFactor The Percentage between 0.0 and 1.0 of the canvas the data gets drawn on.
+     */
+    CanvasGraphService.prototype._drawPlayheadRegion = function (drawableArea, scaleFactor) {
+        var ctx = this._ctx;
+        if (!ctx || scaleFactor >= stopDrawingPlayheadThreshold) {
+            return;
+        }
+        var dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
+        var playheadPos = dividerXPos - playheadSize;
+        var futureBoxPos = dividerXPos + dividerSize;
+        var rectangleHeight = drawableArea.bottom - drawableArea.top - 1;
+        ctx.save();
+        ctx.fillStyle = futureBoxColor;
+        ctx.fillRect(futureBoxPos, drawableArea.top, drawableArea.right - futureBoxPos, rectangleHeight);
+        ctx.fillStyle = dividerColor;
+        ctx.fillRect(dividerXPos, drawableArea.top, dividerSize, rectangleHeight);
+        ctx.fillStyle = playheadColor;
+        ctx.fillRect(playheadPos, drawableArea.top, playheadSize, rectangleHeight);
+        ctx.restore();
+    };
+    /**
+     *  Method to do cleanup when the object is done being used.
+     *
+     */
+    CanvasGraphService.prototype.destroy = function () {
+        if (!this._ctx || !this._ctx.canvas) {
+            return;
+        }
+        this._removeEventListeners(this._ctx.canvas);
+        this._ctx = null;
+    };
+    /**
+     * This method clears the canvas
+     */
+    CanvasGraphService.prototype.clear = function () {
+        var _a = this, ctx = _a._ctx, _width = _a._width, _height = _a._height;
+        // If we do not have a context we can't really do much here!
+        if (!ctx) {
+            return;
+        }
+        // save the transformation matrix, clear the canvas then restore.
+        ctx.save();
+        ctx.resetTransform();
+        ctx.clearRect(0, 0, _width, _height);
+        ctx.restore();
+    };
+    return CanvasGraphService;
 }());
 
 
@@ -62281,6 +62930,7 @@ var BooleanLineComponent = /** @class */ (function (_super) {
         var check = this.props.value ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCheck"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faTimesCircle"] });
         var className = this.props.value ? "value check" : "value uncheck";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textLine" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className }, check)));
     };
@@ -62314,6 +62964,7 @@ var ButtonLineComponent = /** @class */ (function (_super) {
     ButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { onClick: function () { return _this.props.onClick(); } }, this.props.label)));
     };
     return ButtonLineComponent;
@@ -62397,6 +63048,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
     CheckBoxLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
@@ -62534,6 +63186,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine", title: this.props.label },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
@@ -62699,6 +63352,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { value: this.state.color, onColorChanged: function (color) {
@@ -62783,6 +63437,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var color = this.state.color;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setState({ pickerEnabled: true }); } }),
             this.state.pickerEnabled &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
@@ -62862,6 +63517,7 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
     FileButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
     };
@@ -62906,6 +63562,7 @@ var FileMultipleButtonLineComponent = /** @class */ (function (_super) {
     FileMultipleButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); }, multiple: true })));
     };
@@ -63034,7 +63691,9 @@ var FloatLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             !this.props.useEuler &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+                    this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                    (!this.props.icon || this.props.label != "") &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || this.props.isInteger ? "1" : "0.01", className: "numeric-input", onKeyDown: function (evt) {
                                 if (evt.keyCode !== 13) {
@@ -63189,6 +63848,7 @@ var HexLineComponent = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, !this.props.useEuler &&
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: valueAsHex, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value, false); }, onKeyDown: function (evt) {
@@ -63479,6 +64139,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
     NumericInputComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             this.props.label &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": "),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); }, onBlur: function () { return _this.onBlur(); } })));
@@ -63573,6 +64234,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var _a;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "black", className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value) !== null && _a !== void 0 ? _a : "" }, this.props.options.map(function (option, i) {
@@ -63627,6 +64289,7 @@ var RadioButtonLineComponent = /** @class */ (function (_super) {
     RadioButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "radioLine" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "radioContainer" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { id: this.props.label, className: "radio", type: "radio", checked: this.state.isSelected, onChange: function () { return _this.onChange(); } }),
@@ -63734,7 +64397,9 @@ var SliderLineComponent = /** @class */ (function (_super) {
     SliderLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            (!this.props.icon || this.props.label != "") &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
@@ -63814,7 +64479,9 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     TextInputLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textInputLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "black", className: "icon" }),
+            (!this.props.icon || (this.props.icon && this.props.label != "")) &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return _this.props.lockObject.lock = false; }, onFocus: function () { return _this.props.lockObject.lock = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };
@@ -63868,6 +64535,7 @@ var TextLineComponent = /** @class */ (function (_super) {
     TextLineComponent.prototype.render = function () {
         var _a, _b;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "") },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: (_a = this.props.label) !== null && _a !== void 0 ? _a : "" }, (_b = this.props.label) !== null && _b !== void 0 ? _b : ""),
             this.renderContent()));
     };
@@ -63902,6 +64570,7 @@ var ValueLineComponent = /** @class */ (function (_super) {
         var digits = this.props.fractionDigits !== undefined ? this.props.fractionDigits : 2;
         var value = this.props.value.toFixed(digits) + (this.props.units ? " " + this.props.units : "");
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textLine" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", style: { color: this.props.color ? this.props.color : "" } }, value)));
     };
@@ -63988,6 +64657,7 @@ var Vector2LineComponent = /** @class */ (function (_super) {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine", title: this.props.label },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2)),
@@ -64097,6 +64767,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" },
                     !this.props.useEuler &&
@@ -64220,6 +64891,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2) + ", W: " + this.state.value.w.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
@@ -64436,7 +65108,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -64743,7 +65415,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -65160,7 +65832,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tabs_propertyGrids_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
@@ -65499,14 +66171,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/adtInstrumentation":
+/***/ "babylonjs-gui/2D/controls/image":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
 
 /***/ }),
 

@@ -40,7 +40,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "SubtractBlock": "Subtracts the right input from the left input of the same type",
         "GradientBlock": "Returns the color in the gradient represented by the target value of the input",
         "PosterizeBlock": "Reduces the number of values in each channel to the number in the corresponding channel of steps",
-        "ReplaceColorBlock": "Replaces a reference color in value with the color in replacement blended by distance",
+        "ReplaceColorBlock": "Outputs the replacement color if the distance between value and reference is less than distance, else outputs the value color",
         "ColorMergerBlock": "Combines float input channels into a color",
         "ColorSplitterBlock": "Separates color input channels into individual floats",
         "VectorMergerBlock": "Combines up to four input floats into a vector",
@@ -146,6 +146,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "ParticlePositionWorldBlock": "The world position of the particle",
         "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
+        "SceneDepthBlock": "The scene depth buffer",
         "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
         "EqualBlock": "Return a value if two operands are equals", 
         "NotEqualBlock": "Return a value if two operands are not equals", 
@@ -252,7 +253,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
         };
 
         switch (this.props.globalState.mode) {
@@ -282,6 +283,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Procedural__Texture"];
                 delete allBlocks["PBR"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
+                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
+                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
                 break;
         }
 

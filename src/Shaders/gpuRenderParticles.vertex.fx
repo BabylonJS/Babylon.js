@@ -1,4 +1,4 @@
-#version 300 es
+precision highp float;
 
 uniform mat4 view;
 uniform mat4 projection;
@@ -9,26 +9,26 @@ uniform mat4 emitterWM;
 #endif
 
 // Particles state
-in vec3 position;
-in float age;
-in float life;
-in vec3 size;
+attribute vec3 position;
+attribute float age;
+attribute float life;
+attribute vec3 size;
 #ifndef BILLBOARD
-in vec3 initialDirection;
+attribute vec3 initialDirection;
 #endif
 #ifdef BILLBOARDSTRETCHED
-in vec3 direction;
+attribute vec3 direction;
 #endif
-in float angle;
+attribute float angle;
 #ifdef ANIMATESHEET
-in float cellIndex;
+attribute float cellIndex;
 #endif
-in vec2 offset;
-in vec2 uv;
+attribute vec2 offset;
+attribute vec2 uv;
 
-out vec2 vUV;
-out vec4 vColor;
-out vec3 vPositionW;
+varying vec2 vUV;
+varying vec4 vColor;
+varying vec3 vPositionW;
 
 #if defined(BILLBOARD) && !defined(BILLBOARDY) && !defined(BILLBOARDSTRETCHED)
 uniform mat4 invView;
@@ -40,7 +40,7 @@ uniform mat4 invView;
 uniform sampler2D colorGradientSampler;
 #else
 uniform vec4 colorDead;
-in vec4 color;
+attribute vec4 color;
 #endif
 
 #ifdef ANIMATESHEET
@@ -104,7 +104,7 @@ void main() {
 	#endif
   float ratio = age / life;
 #ifdef COLORGRADIENTS
-	vColor = texture(colorGradientSampler, vec2(ratio, 0));
+	vColor = texture2D(colorGradientSampler, vec2(ratio, 0));
 #else
 	vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
 #endif

@@ -24,6 +24,7 @@ import { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
+import { AbstractScene } from "../abstractScene";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -214,6 +215,7 @@ export class Material implements IAnimatable {
     /**
      * Gets or sets user defined metadata
      */
+    @serialize()
     public metadata: any = null;
 
     /**
@@ -698,6 +700,9 @@ export class Material implements IAnimatable {
 
     /** @hidden */
     public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }> = null;
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
      * Creates a material instance
@@ -1423,6 +1428,14 @@ export class Material implements IAnimatable {
         // Remove from scene
         scene.removeMaterial(this);
 
+        if (this._parentContainer) {
+            const index = this._parentContainer.materials.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.materials.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         if (notBoundToMesh !== true) {
             // Remove from meshes
             if (this.meshMap) {
@@ -1455,6 +1468,8 @@ export class Material implements IAnimatable {
 
             this._drawWrapper.effect = null;
         }
+
+        this.metadata = null;
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);

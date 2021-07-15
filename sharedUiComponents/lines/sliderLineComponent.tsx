@@ -18,6 +18,7 @@ interface ISliderLineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     decimalCount?: number;
     margin?: boolean;
+    icon? : string;
 }
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {
@@ -109,9 +110,12 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
 
         return (
             <div className="sliderLine">
-                <div className={this.props.margin ? "label withMargins" : "label"}  title={this.props.label}>
-                    {this.props.label}
-                </div>
+                {this.props.icon && <img src={this.props.icon} className="icon"/>}
+                {(!this.props.icon || this.props.label != "") &&
+                    <div className={this.props.margin ? "label withMargins" : "label"}  title={this.props.label}>
+                        {this.props.label}
+                    </div>
+                }
                 <FloatLineComponent isInteger={this.props.decimalCount === 0} smallUI={true} label="" target={this.state} digits={this.props.decimalCount === undefined ? 4 : this.props.decimalCount} propertyName="value" min={this.props.minimum} max={this.props.maximum}
                     onEnter={ () => { 
                         var changed = this.prepareDataToRead(this.state.value); this.onChange(changed);

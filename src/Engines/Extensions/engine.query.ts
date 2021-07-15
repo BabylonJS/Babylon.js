@@ -6,6 +6,9 @@ import { PerfCounter } from "../../Misc/perfCounter";
 import { Observer } from "../../Misc/observable";
 
 /** @hidden */
+export type OcclusionQuery = WebGLQuery | number;
+
+/** @hidden */
 export class _OcclusionDataStorage {
     /** @hidden */
     public occlusionInternalRetryCounter = 0;
@@ -32,28 +35,28 @@ declare module "../../Engines/engine" {
          * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
          * @return the new query
          */
-        createQuery(): WebGLQuery;
+        createQuery(): OcclusionQuery;
 
         /**
          * Delete and release a webGL query
          * @param query defines the query to delete
          * @return the current engine
          */
-        deleteQuery(query: WebGLQuery): Engine;
+        deleteQuery(query: OcclusionQuery): Engine;
 
         /**
          * Check if a given query has resolved and got its value
          * @param query defines the query to check
          * @returns true if the query got its value
          */
-        isQueryResultAvailable(query: WebGLQuery): boolean;
+        isQueryResultAvailable(query: OcclusionQuery): boolean;
 
         /**
          * Gets the value of a given query
          * @param query defines the query to check
          * @returns the value of the query
          */
-        getQueryResult(query: WebGLQuery): number;
+        getQueryResult(query: OcclusionQuery): number;
 
         /**
          * Initiates an occlusion query
@@ -62,7 +65,7 @@ declare module "../../Engines/engine" {
          * @returns the current engine
          * @see https://doc.babylonjs.com/features/occlusionquery
          */
-        beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine;
+        beginOcclusionQuery(algorithmType: number, query: OcclusionQuery): boolean;
 
         /**
          * Ends an occlusion query
@@ -128,29 +131,29 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.createQuery = function(): WebGLQuery {
+Engine.prototype.createQuery = function(): OcclusionQuery {
     return this._gl.createQuery();
 };
 
-Engine.prototype.deleteQuery = function(query: WebGLQuery): Engine {
+Engine.prototype.deleteQuery = function(query: OcclusionQuery): Engine {
     this._gl.deleteQuery(query);
 
     return this;
 };
 
-Engine.prototype.isQueryResultAvailable = function(query: WebGLQuery): boolean {
+Engine.prototype.isQueryResultAvailable = function(query: OcclusionQuery): boolean {
     return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
 };
 
-Engine.prototype.getQueryResult = function(query: WebGLQuery): number {
+Engine.prototype.getQueryResult = function(query: OcclusionQuery): number {
     return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
 };
 
-Engine.prototype.beginOcclusionQuery = function(algorithmType: number, query: WebGLQuery): Engine {
+Engine.prototype.beginOcclusionQuery = function(algorithmType: number, query: OcclusionQuery): boolean {
     var glAlgorithm = this._getGlAlgorithmType(algorithmType);
     this._gl.beginQuery(glAlgorithm, query);
 
-    return this;
+    return true;
 };
 
 Engine.prototype.endOcclusionQuery = function(algorithmType: number): Engine {
@@ -468,7 +471,7 @@ AbstractMesh.prototype._checkOcclusionQuery = function() {
 
     var engine = this.getEngine();
 
-    if (engine.webGLVersion < 2) {
+    if (!engine.getCaps().supportOcclusionQuery) {
         dataStorage.isOccluded = false;
         return false;
     }
@@ -486,7 +489,7 @@ AbstractMesh.prototype._checkOcclusionQuery = function() {
 
             dataStorage.isOcclusionQueryInProgress = false;
             dataStorage.occlusionInternalRetryCounter = 0;
-            dataStorage.isOccluded = occlusionQueryResult === 1 ? false : true;
+            dataStorage.isOccluded = occlusionQueryResult > 0 ? false : true;
         }
         else {
 
@@ -501,7 +504,7 @@ AbstractMesh.prototype._checkOcclusionQuery = function() {
                 dataStorage.isOccluded = dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : dataStorage.isOccluded;
             }
             else {
-                return false;
+                return dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : dataStorage.isOccluded;
             }
         }
     }
@@ -510,14 +513,15 @@ AbstractMesh.prototype._checkOcclusionQuery = function() {
     if (scene.getBoundingBoxRenderer) {
         var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
 
-        if (!this._occlusionQuery) {
+        if (this._occlusionQuery === null) {
             this._occlusionQuery = engine.createQuery();
         }
 
-        engine.beginOcclusionQuery(dataStorage.occlusionQueryAlgorithmType, this._occlusionQuery);
-        occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
-        engine.endOcclusionQuery(dataStorage.occlusionQueryAlgorithmType);
-        this._occlusionDataStorage.isOcclusionQueryInProgress = true;
+        if (engine.beginOcclusionQuery(dataStorage.occlusionQueryAlgorithmType, this._occlusionQuery)) {
+            occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
+            engine.endOcclusionQuery(dataStorage.occlusionQueryAlgorithmType);
+            this._occlusionDataStorage.isOcclusionQueryInProgress = true;
+        }
     }
 
     return dataStorage.isOccluded;

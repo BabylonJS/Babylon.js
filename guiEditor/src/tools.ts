@@ -41,20 +41,6 @@ export class Tools {
         if (parent && parent.reservedDataStore && parent.reservedDataStore.detachedChildren) {
             finalArray.push(...parent.reservedDataStore.detachedChildren);
         }
-
-        return finalArray.sort((a: any, b: any) => {
-            const lowerCaseA = (a.name || "").toLowerCase();
-            const lowerCaseB = (b.name || "").toLowerCase();
-
-            if (lowerCaseA === lowerCaseB) {
-                return 0;
-            }
-
-            if (lowerCaseA > lowerCaseB) {
-                return 1;
-            }
-
-            return -1;
-        });
+        return finalArray.reverse();
     }
 }
