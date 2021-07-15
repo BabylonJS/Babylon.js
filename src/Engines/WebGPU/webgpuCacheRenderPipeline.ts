@@ -974,7 +974,7 @@ export abstract class WebGPUCacheRenderPipeline {
                         bindGroupEntries[samplerTexture.sampler.setIndex][samplerTexture.sampler.bindingIndex].sampler!.type = WebGPUConstants.SamplerBindingType.NonFiltering;
                         sampleType = WebGPUConstants.TextureSampleType.UnfilterableFloat;
                     }
-                
+
                     entry.texture = {
                         sampleType,
                         viewDimension: bindingDefinition.textureDimension,
