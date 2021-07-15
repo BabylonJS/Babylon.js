@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 
@@ -37,6 +37,8 @@ const tooltipFont = "12px Arial";
 // A string containing the alphabet, used in line height calculation for the font.
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+// Arbitrary maximum used to make some GC optimizations.
+const maximumDatasetsAllowed = 32;
 
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
@@ -55,6 +57,8 @@ export class CanvasGraphService {
     private _hoverPosition: number | null;
     private _drawableArea: IGraphDrawableArea;
     private _axisHeight: number;
+    private _tooltipItems: IPerfTooltip[];
+    private _textCache: IPerfTextMeasureCache;
     
     private readonly _tooltipLineHeight: number;
     private readonly _defaultLineHeight: number;
@@ -78,6 +82,14 @@ export class CanvasGraphService {
         this._datasetBounds = new Map<string, IPerfIndexBounds>();
         this._globalTimeMinMax = {min: Infinity, max: 0};
         this._drawableArea = {top: 0, left: 0, right: 0, bottom: 0};
+        this._textCache = {text: "", width: 0};
+        this._tooltipItems = [];
+    
+        for (let i = 0; i < maximumDatasetsAllowed; i++) {
+            this._tooltipItems.push({text: "", color: ""});
+        }
+        
+        
 
         if (!this._ctx) {
             throw Error("No canvas context accessible");
@@ -508,8 +520,9 @@ export class CanvasGraphService {
         const {left: start, right: end} = ctx.canvas.getBoundingClientRect();
         const inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
         
-        const results: IPerfTooltip[] = [];
         let longestText: string = "";
+        let numberOfTooltipItems = 0;
+
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         this.datasets.forEach((dataset: IPerfDataset) => {
             if (!!dataset.hidden || dataset.data.length === 0) {
@@ -523,10 +536,9 @@ export class CanvasGraphService {
                 longestText = text;
             }
 
-            results.push({
-                            text,
-                            color: dataset.color ?? defaultColor,
-                        });
+            this._tooltipItems[numberOfTooltipItems].text = text;
+            this._tooltipItems[numberOfTooltipItems].color = dataset.color ?? defaultColor;
+            numberOfTooltipItems++;
         }); 
 
         let x = pixel - start;
@@ -540,8 +552,16 @@ export class CanvasGraphService {
 
         const boxLength = this._tooltipLineHeight;
         const textHeight = this._tooltipLineHeight + Math.floor(tooltipHorizontalPadding/2);
-
-        const width = ctx.measureText(longestText).width + boxLength + 2 * tooltipHorizontalPadding + spaceBetweenTextAndBox;
+        
+        // initialize width with cached value or measure width of longest text and update cache.
+        let width: number;
+        if (longestText === this._textCache.text) {
+            width = this._textCache.width;
+        } else {
+            width = ctx.measureText(longestText).width + boxLength + 2 * tooltipHorizontalPadding + spaceBetweenTextAndBox;
+            this._textCache.text = longestText;
+            this._textCache.width = width;
+        }
         
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
         if (x + width > this._width) {
@@ -551,20 +571,23 @@ export class CanvasGraphService {
         ctx.globalAlpha = tooltipBackgroundAlpha;
         ctx.fillStyle = tooltipBackgroundColor;
         
-        ctx.fillRect(x, y, width, textHeight * (results.length + 1));
+        ctx.fillRect(x, y, width, textHeight * (numberOfTooltipItems + 1));
         
         ctx.globalAlpha = defaultAlpha;
         
         x += tooltipHorizontalPadding;
         y += textHeight;
 
-        results.forEach((result) => {
-            ctx.fillStyle = result.color;
+        for (let i = 0; i < numberOfTooltipItems; i++) {
+            const tooltipItem = this._tooltipItems[i];
+
+            ctx.fillStyle = tooltipItem.color;
             ctx.fillRect(x, y - Math.floor(boxLength/2), boxLength, boxLength);
             ctx.fillStyle = tooltipForegroundColor;
-            ctx.fillText(result.text, x + boxLength + spaceBetweenTextAndBox, y);
+            ctx.fillText(tooltipItem.text, x + boxLength + spaceBetweenTextAndBox, y);
             y += textHeight;
-        });
+        }
+        
         ctx.restore();
     }
 

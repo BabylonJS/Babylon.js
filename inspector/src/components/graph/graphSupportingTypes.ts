@@ -33,6 +33,14 @@ export interface IPerfTooltip {
 }
 
 /**
+ * Defines the structure of a cache object used to store the result of measureText().
+ */
+export interface IPerfTextMeasureCache {
+    text: string;
+    width: number;
+}
+
+/**
  * Defines a structure defining the available space in a drawable area.
  */
 export interface IGraphDrawableArea {
