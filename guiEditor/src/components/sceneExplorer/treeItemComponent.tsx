@@ -4,11 +4,14 @@ import { Nullable } from "babylonjs/types";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faMinus, faBan, faExpandArrowsAlt, faCompress } from '@fortawesome/free-solid-svg-icons';
+import { faBan} from '@fortawesome/free-solid-svg-icons';
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { GlobalState } from "../../globalState";
+
+const expandedIcon: string = require("../../../public/imgs/expandedIcon.svg");
+const collapsedIcon: string = require("../../../public/imgs/collapsedIcon.svg");
 
 interface ITreeItemExpandableHeaderComponentProps {
     isExpanded: boolean,
@@ -27,8 +30,7 @@ class TreeItemExpandableHeaderComponent extends React.Component<ITreeItemExpanda
     }
 
     render() {
-        const chevron = this.props.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
-        const expandAll = this.props.isExpanded ? <FontAwesomeIcon icon={faCompress} /> : <FontAwesomeIcon icon={faExpandArrowsAlt} />
+        const chevron = this.props.isExpanded ? <img src={expandedIcon} className="icon"/>: <img src={collapsedIcon} className="icon"/>
 
         return (
             <div className="expandableHeader">
@@ -41,7 +43,7 @@ class TreeItemExpandableHeaderComponent extends React.Component<ITreeItemExpanda
                     </div>
                 </div>
                 <div className="expandAll icon" onClick={() => this.expandAll()} title={this.props.isExpanded ? "Collapse all" : "Expand all"}>
-                    {expandAll}
+                    {chevron}
                 </div>
             </div>
         )

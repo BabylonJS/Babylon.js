@@ -128,5 +128,9 @@ export class PrePassRenderTarget extends MultiRenderTarget {
         if (this.imageProcessingPostProcess) {
             this.imageProcessingPostProcess.dispose();
         }
+
+        if (this.renderTargetTexture) {
+            this.renderTargetTexture._prePassRenderTarget = null;
+        }
     }
 }

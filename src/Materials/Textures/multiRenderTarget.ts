@@ -205,6 +205,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._createInternalTextures();
 
         if (forceFullRebuild) {
+            this._releaseTextures();
             this._createTextures(textureNames);
         }
 
@@ -225,8 +226,16 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._texture = this._internalTextures[0];
     }
 
+    private _releaseTextures(): void {
+        if (this._textures) {
+            for (let i = 0; i < this._textures.length; i++) {
+                this._textures[i]._texture = null; // internal textures are released by a call to releaseInternalTextures()
+                this._textures[i].dispose();
+            }
+        }
+    }
+
     private _createTextures(textureNames?: string[]): void {
-        this._releaseTextures();
         this._textures = [];
         for (var i = 0; i < this._internalTextures.length; i++) {
             var texture = new Texture(null, this.getScene());
@@ -315,7 +324,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     public dispose(): void {
         this._releaseTextures();
         this.releaseInternalTextures();
-
+        this._releaseTextures();
         super.dispose();
     }
 
@@ -332,15 +341,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
                 this._internalTextures[i].dispose();
                 this._internalTextures.splice(i, 1);
             }
-        }
-    }
-
-    private _releaseTextures(): void {
-        if (this._textures) {
-            for (let i = 0; i < this._textures.length; ++i) {
-                this._textures[i]._texture = null; // internal textures are released by a call to releaseInternalTextures()
-                this._textures[i].dispose();
-            }
+            this._textures[i]._texture = null;
         }
     }
 }

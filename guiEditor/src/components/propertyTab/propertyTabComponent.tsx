@@ -274,12 +274,32 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div id="title">{`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}</div>
                     </div>
                     {this.renderProperties()}
-                   <hr/>
+                    <hr />
                     <ButtonLineComponent
                         label="REMOVE ELEMENT"
                         onClick={() => {
                             this.state.currentNode?.dispose();
                             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        }}
+                    />
+                    <ButtonLineComponent
+                        label="COPY ELEMENT"
+                        onClick={() => {
+                            if (this.state.currentNode) {
+                                const serializationObject = {};
+                                this.state.currentNode.serialize(serializationObject);
+                                const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
+
+                                if (newControl) { //insert the new control into the adt
+                                    this.props.globalState.workbench.appendBlock(newControl);
+                                    let index = 1;
+                                    while (this.props.globalState.workbench.nodes.filter(  //search if there are any copies
+                                        control => control.name === newControl.name).length > 1) {
+                                        newControl.name = `${this.state.currentNode.name} Copy ${index++}`;
+                                    }
+                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+                                }
+                            }
                         }}
                     />
                 </div>
@@ -308,7 +328,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
                         <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
-                    <hr/>
+                    <hr />
                     <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
                         label="Responsive"
@@ -352,12 +372,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 propertyName="y"
                                 isInteger={true}
                                 onChange={(newvalue) => {
-                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2( this.state.textureSize.x,newvalue));
+                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
                                 }}
                             ></FloatLineComponent>
                         </div>
                     }
-                    <hr/>
+                    <hr />
                     <TextLineComponent label="FILE" value=" " color="grey"></TextLineComponent>
                     <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                     <ButtonLineComponent
@@ -366,7 +386,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.save();
                         }}
                     />
-                    <hr/>
+                    <hr />
                     <TextLineComponent label="SNIPPET" value=" " color="grey"></TextLineComponent>
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent
