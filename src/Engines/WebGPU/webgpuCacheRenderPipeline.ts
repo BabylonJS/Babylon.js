@@ -916,7 +916,7 @@ export abstract class WebGPUCacheRenderPipeline {
             if (entries.length > 0) {
                 bindGroupLayouts[i] = this._device.createBindGroupLayout({
                     entries,
-                });;
+                });
             }
         }
 
