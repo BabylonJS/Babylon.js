@@ -1,6 +1,6 @@
 ﻿#if NUM_BONE_INFLUENCERS > 0
 	#ifdef BONETEXTURE
-		uniform @float32 sampler2D boneSampler;
+		uniform sampler2D boneSampler;
 		uniform float boneTextureWidth;
 	#else
 		uniform mat4 mBones[BonesPerMesh];
