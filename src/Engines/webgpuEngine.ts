@@ -625,7 +625,9 @@ export class WebGPUEngine extends Engine {
 
                 this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
-                this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
+                this._initializeLimits();
+
+                this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer, !this._caps.textureFloatLinearFiltering);
 
                 this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
                 this._stencilStateComposer = new WebGPUStencilStateComposer(this._cacheRenderPipeline);
@@ -636,8 +638,6 @@ export class WebGPUEngine extends Engine {
                 this._depthCullingState.depthMask = true;
 
                 this._textureHelper.setCommandEncoder(this._uploadEncoder);
-
-                this._initializeLimits();
 
                 this._clearQuad = new WebGPUClearQuad(this._device, this, this._emptyVertexBuffer);
                 this._defaultMaterialContext = this.createMaterialContext()!;
@@ -2741,7 +2741,20 @@ export class WebGPUEngine extends Engine {
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
         }
 
-        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount);
+        let textureState = 0;
+        if (!this._caps.textureFloatLinearFiltering) {
+            let bitVal = 1;
+            for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.samplerNames.length; ++i) {
+                const samplerName = webgpuPipelineContext.shaderProcessingContext.samplerNames[i];
+                const texture = this._currentMaterialContext.textures[samplerName]?.texture;
+                if (texture?.type === Constants.TEXTURETYPE_FLOAT) {
+                    textureState |= bitVal;
+                }
+                bitVal = bitVal << 1;
+            }
+        }
+
+        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext, this._uniformsBuffers);
 
         if (!this._snapshotRenderingRecordBundles) {
