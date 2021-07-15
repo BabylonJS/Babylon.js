@@ -5,7 +5,7 @@
 		precision mediump sampler2DArray;		
 		uniform float morphTargetTextureIndices[NUM_MORPH_INFLUENCERS];
 		uniform vec3 morphTargetTextureInfo;
-		uniform @float32 sampler2DArray morphTargets;
+		uniform sampler2DArray morphTargets;
 
 		vec3 readVector3FromRawSampler(int targetIndex, float vertexIndex)
 		{			

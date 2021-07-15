@@ -144,13 +144,12 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
-        const uniformRegex = new RegExp(/\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(@\S+)?\s*(\S+)\s+(\S+)\s*;/gm);
+        const uniformRegex = new RegExp(/\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
 
         const match = uniformRegex.exec(uniform);
         if (match != null) {
-            let tag = match[1];
-            let uniformType = match[2];
-            let name = match[3];
+            let uniformType = match[1];
+            let name = match[2];
 
             if (uniformType.indexOf("sampler") === 0 || uniformType.indexOf("sampler") === 1) {
                 let samplerInfo = _knownSamplers[name];
@@ -186,7 +185,6 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 const textureType = _textureTypeByWebGLSamplerType[uniformType];
                 const textureDimension = _gpuTextureViewDimensionByWebGPUTextureType[textureType];
                 const isComparisonSampler = !!_isComparisonSamplerByWebGPUSamplerType[samplerType];
-                const samplerIsFloat32Bits = tag === "@float32";
 
                 // Manage textures and samplers.
                 if (!isTextureArray) {
@@ -212,7 +210,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
                 webgpuProcessingContext.availableSamplers[name] = samplerInfo;
 
-                const samplerBindingType = isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : samplerIsFloat32Bits ? WebGPUConstants.SamplerBindingType.NonFiltering : WebGPUConstants.SamplerBindingType.Filtering;
+                const samplerBindingType = isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
 
                 if (!webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex]) {
                     webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex] = [];
@@ -245,14 +243,12 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                         const sampleType =
                             isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
                             componentType === 'u' ? WebGPUConstants.TextureSampleType.Uint :
-                            componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint :
-                            samplerIsFloat32Bits ? WebGPUConstants.TextureSampleType.UnfilterableFloat : WebGPUConstants.TextureSampleType.Float;
+                            componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float;
 
                         webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
                             isSampler: false,
                             isTexture: true,
                             sampleType,
-                            origSampleType: sampleType,
                             textureDimension,
                             usedInVertex: false,
                             usedInFragment: false,
