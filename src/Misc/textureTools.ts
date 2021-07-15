@@ -146,6 +146,11 @@ export class TextureTools {
     // ref: http://stackoverflow.com/questions/32633585/how-do-you-convert-to-half-floats-in-javascript
     private static _FloatView: Float32Array;
     private static _Int32View: Int32Array;
+    /**
+     * Converts a number to half float
+     * @param value number to convert
+     * @returns converted number
+     */
     public static ToHalfFloat(value: number): number {
         if (!TextureTools._FloatView) {
             TextureTools._FloatView = new Float32Array(1);
@@ -188,6 +193,11 @@ export class TextureTools {
         return bits;
     }
 
+    /**
+     * Converts a half float to a number
+     * @param value half float to convert
+     * @returns converted half float
+     */
     public static FromHalfFloat(value: number): number {
         const s = (value & 0x8000) >> 15;
         const e = (value & 0x7C00) >> 10;
