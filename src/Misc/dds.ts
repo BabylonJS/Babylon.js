@@ -289,7 +289,7 @@ export class DDSTools {
                 destArray[index + 1] = TextureTools.ToHalfFloat(srcData[index + 1]);
                 destArray[index + 2] = TextureTools.ToHalfFloat(srcData[index + 2]);
                 if (DDSTools.StoreLODInAlphaChannel) {
-                    destArray[index + 3] = TextureTools.ToHalfFloat(lod);;
+                    destArray[index + 3] = TextureTools.ToHalfFloat(lod);
                 } else {
                     destArray[index + 3] = TextureTools.ToHalfFloat(srcData[index + 3]);
                 }
