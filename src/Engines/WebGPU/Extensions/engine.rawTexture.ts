@@ -325,11 +325,14 @@ WebGPUEngine.prototype.updateRawTexture2DArray = function(texture: InternalTextu
 /** @hidden */
 function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
     // Create new RGBA data container.
-    var rgbaData: any;
+    let rgbaData: any;
+    let val1 = 1;
     if (textureType === Constants.TEXTURETYPE_FLOAT) {
         rgbaData = new Float32Array(width * height * 4);
-    }
-    else {
+    } else if (textureType === Constants.TEXTURETYPE_HALF_FLOAT) {
+        rgbaData = new Uint16Array(width * height * 4);
+        val1 = 15360; // 15360 is the encoding of 1 in half float
+    } else {
         rgbaData = new Uint32Array(width * height * 4);
     }
 
@@ -345,7 +348,7 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
             rgbaData[newIndex + 2] = rgbData[index + 2];
 
             // Add fully opaque alpha channel.
-            rgbaData[newIndex + 3] = 1;
+            rgbaData[newIndex + 3] = val1;
         }
     }
 
