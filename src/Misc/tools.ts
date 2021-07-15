@@ -908,28 +908,22 @@ export class Tools {
 
     /**
      * Test if the given uri is a base64 string
+     * @deprecated Please use FileTools.IsBase64DataUrl instead.
      * @param uri The uri to test
      * @return True if the uri is a base64 string or false otherwise
      */
     public static IsBase64(uri: string): boolean {
-        return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
+        return FileTools.IsBase64DataUrl(uri);
     }
 
     /**
      * Decode the given base64 uri.
+     * @deprecated Please use FileTools.DecodeBase64UrlToBinary instead.
      * @param uri The uri to decode
      * @return The decoded base64 data.
      */
     public static DecodeBase64(uri: string): ArrayBuffer {
-        const decodedString = atob(uri.split(",")[1]);
-        const bufferLength = decodedString.length;
-        const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
-
-        for (let i = 0; i < bufferLength; i++) {
-            bufferView[i] = decodedString.charCodeAt(i);
-        }
-
-        return bufferView.buffer;
+        return FileTools.DecodeBase64UrlToBinary(uri);
     }
 
     /**

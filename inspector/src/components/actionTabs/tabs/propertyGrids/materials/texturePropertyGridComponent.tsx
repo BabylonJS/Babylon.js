@@ -243,6 +243,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <TextLineComponent label="File format" value={extension} />
                     }
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
+                    <TextLineComponent label="Internal Unique ID" value={texture._texture?.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
                     <TextLineComponent label="Is 3D" value={texture.is3D ? "Yes" : "No"} />

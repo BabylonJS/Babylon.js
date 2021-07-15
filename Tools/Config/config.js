@@ -124,6 +124,7 @@ allModules.map(function(module) {
         const shaderTSGlob = [
             srcDirectory.replace(/\\/g, "/") + "/**/*.fragment.ts",
             srcDirectory.replace(/\\/g, "/") + "/**/*.vertex.ts",
+            srcDirectory.replace(/\\/g, "/") + "/**/*.compute.ts",
             srcDirectory.replace(/\\/g, "/") + "/**/ShadersInclude/*.ts",
         ];
         const tsGlob = srcDirectory.replace(/\\/g, "/") + "/**/*.ts*";

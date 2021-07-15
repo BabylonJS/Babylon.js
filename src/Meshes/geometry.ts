@@ -15,6 +15,7 @@ import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMax } from "../Maths/math.functions";
+import { AbstractScene } from "../abstractScene";
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
@@ -73,6 +74,9 @@ export class Geometry implements IGetSetVerticesData {
     /** @hidden */
     public _positions: Nullable<Vector3[]>;
     private _positionsCache: Vector3[] = [];
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
      *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
@@ -660,6 +664,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
         mesh._geometry = this;
+        mesh._internalAbstractMeshDataInfo._positions = null;
 
         this._scene.pushGeometry(this);
 
@@ -924,6 +929,14 @@ export class Geometry implements IGetSetVerticesData {
         this._boundingInfo = null;
 
         this._scene.removeGeometry(this);
+        if (this._parentContainer) {
+            const index = this._parentContainer.geometries.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.geometries.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         this._isDisposed = true;
     }
 

@@ -1614,10 +1614,8 @@ export class _Exporter {
 
                     mesh.primitives.push(meshPrimitive);
 
-                    const promise = this._extensionsPostExportMeshPrimitiveAsync("postExport", meshPrimitive, submesh, binaryWriter);
-                    if (promise) {
-                        promises.push();
-                    }
+                    this._extensionsPostExportMeshPrimitiveAsync("postExport", meshPrimitive, submesh, binaryWriter);
+                    promises.push();
                 }
             }
         }

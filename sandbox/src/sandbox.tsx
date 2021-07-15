@@ -6,6 +6,11 @@ import { ReflectorZone } from "./components/reflectorZone";
 import { Footer } from "./components/footer";
 import { EnvironmentTools } from "./tools/environmentTools";
 import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Deferred } from "babylonjs/Misc/deferred";
+import { Scene } from "babylonjs/scene";
+import { ScreenshotTools } from "babylonjs/Misc/screenshotTools";
+import { IScreenshotSize } from "babylonjs/Misc/interfaces/screenshotSize";
+import { Color3, Color4 } from "babylonjs/Maths/math";
 
 require("./scss/main.scss");
 var fullScreenLogo = require("./img/logo-fullscreen.svg");
@@ -21,6 +26,8 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
     private _logoRef: React.RefObject<HTMLImageElement>;
     private _dropTextRef: React.RefObject<HTMLDivElement>;
     private _clickInterceptorRef: React.RefObject<HTMLDivElement>;
+    private _clearColor?: string;
+    private _camera?: number;
 
     public constructor(props: ISandboxProps) {
         super(props);
@@ -48,6 +55,16 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                 this._logoRef.current!.className = "hidden";
                 this._dropTextRef.current!.className = "hidden";
             }
+
+            if (this._clearColor) {
+                info.scene.clearColor = Color4.FromColor3(Color3.FromHexString(`#${this._clearColor}`), 1);
+            }
+
+            if (this._camera != undefined) {
+                info.scene.activeCamera = info.scene.cameras[this._camera];
+            }
+
+            Sandbox._sceneLoadedDeferred.resolve(info.scene);
         });
 
         this._globalState.onError.add((error) => {
@@ -58,6 +75,8 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
             if (error.message) {
                 this.setState({ errorMessage: error.message });
             }
+
+            Sandbox._sceneLoadedDeferred.reject(new Error(error.message));
         });
 
         this._globalState.onRequestClickInterceptor.add(() => {
@@ -94,7 +113,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                         break;
                     }
                     case "autoRotate": {
-                        this._autoRotate = !!value;
+                        this._autoRotate = (value === "true" ? true : false);
                         break;
                     }
                     case "cameraPosition": {
@@ -120,6 +139,22 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                         if (this._globalState.reflector) {
                             this._globalState.reflector.port = +value;
                         }
+                        break;
+                    }
+                    case "environment": {
+                        EnvironmentTools.SkyboxPath = value;
+                        break;
+                    }
+                    case "skybox": {
+                        this._globalState.skybox = (value === "true" ? true : false);
+                        break;
+                    }
+                    case "clearColor": {
+                        this._clearColor = value;
+                        break;
+                    }
+                    case "camera": {
+                        this._camera = +value;
                         break;
                     }
                 }
@@ -171,9 +206,17 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
         );
     }
 
-    public static Show(hostElement: HTMLElement) {
-        const sandBox = React.createElement(Sandbox, {});
+    // Use the promise of this deferred to do something after the scene is loaded.
+    private static _sceneLoadedDeferred = new Deferred<Scene>();
 
-        ReactDOM.render(sandBox, hostElement);
+    public static Show(hostElement: HTMLElement): void {
+        const sandbox = React.createElement(Sandbox, {});
+        ReactDOM.render(sandbox, hostElement);
+    }
+
+    public static CaptureScreenshotAsync(size: IScreenshotSize | number, mimeType?: string): Promise<string> {
+        return this._sceneLoadedDeferred.promise.then((scene) => {
+            return ScreenshotTools.CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
+        });
     }
 }

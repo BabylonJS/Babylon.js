@@ -211,7 +211,7 @@ export class RayHelper {
             return;
         }
 
-        if (this._attachedToMesh._isDisposed) {
+        if (this._attachedToMesh.isDisposed()) {
             this.detachFromMesh();
             return;
         }

@@ -10,6 +10,13 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Scene } from "babylonjs/scene";
 import { Control } from "babylonjs-gui/2D/controls/control";
 
+export enum DragOverLocation {
+    ABOVE = 0,
+    BELOW = 1,
+    CENTER = 2,
+    NONE = 3
+}
+
 export class GlobalState {
     [x: string]: any;
     guiTexture: AdvancedDynamicTexture;
@@ -41,11 +48,14 @@ export class GlobalState {
     onSnippetLoadObservable = new Observable<void>();
     onSnippetSaveObservable = new Observable<void>();
     onOutlinesObservable = new Observable<void>();
-
+    onResponsiveChangeObservable = new Observable<boolean>();
+    onParentingChangeObservable = new Observable<Nullable<Control>>();
+    onDraggingEndObservable = new Observable<void>();
+    draggedControl: Nullable<Control>;
+    draggedControlDirection: DragOverLocation;
     storeEditorData: (serializationObject: any) => void;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
-
     public constructor() {
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 

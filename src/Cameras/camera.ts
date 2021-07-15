@@ -16,6 +16,7 @@ import { _DevTools } from '../Misc/devTools';
 import { Viewport } from '../Maths/math.viewport';
 import { Frustum } from '../Maths/math.frustum';
 import { Plane } from '../Maths/math.plane';
+import { Constants } from "../Engines/constants";
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -38,61 +39,61 @@ export class Camera extends Node {
      * It helps recreating a feeling of perspective and better appreciate depth.
      * This is the best way to simulate real life cameras.
      */
-    public static readonly PERSPECTIVE_CAMERA = 0;
+    public static readonly PERSPECTIVE_CAMERA = Constants.PERSPECTIVE_CAMERA;
     /**
      * This helps creating camera with an orthographic mode.
      * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
      */
-    public static readonly ORTHOGRAPHIC_CAMERA = 1;
+    public static readonly ORTHOGRAPHIC_CAMERA = Constants.ORTHOGRAPHIC_CAMERA;
 
     /**
      * This is the default FOV mode for perspective cameras.
      * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
      */
-    public static readonly FOVMODE_VERTICAL_FIXED = 0;
+    public static readonly FOVMODE_VERTICAL_FIXED = Constants.FOVMODE_VERTICAL_FIXED;
     /**
      * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
      */
-    public static readonly FOVMODE_HORIZONTAL_FIXED = 1;
+    public static readonly FOVMODE_HORIZONTAL_FIXED = Constants.FOVMODE_HORIZONTAL_FIXED;
 
     /**
      * This specifies there is no need for a camera rig.
      * Basically only one eye is rendered corresponding to the camera.
      */
-    public static readonly RIG_MODE_NONE = 0;
+    public static readonly RIG_MODE_NONE = Constants.RIG_MODE_NONE;
     /**
      * Simulates a camera Rig with one blue eye and one red eye.
      * This can be use with 3d blue and red glasses.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH = 10;
+    public static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH = Constants.RIG_MODE_STEREOSCOPIC_ANAGLYPH;
     /**
      * Defines that both eyes of the camera will be rendered side by side with a parallel target.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11;
+    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = Constants.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
     /**
      * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
+    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = Constants.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
     /**
      * Defines that both eyes of the camera will be rendered over under each other.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
+    public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = Constants.RIG_MODE_STEREOSCOPIC_OVERUNDER;
     /**
      * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = 14;
+    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = Constants.RIG_MODE_STEREOSCOPIC_INTERLACED;
     /**
      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
      */
-    public static readonly RIG_MODE_VR = 20;
+    public static readonly RIG_MODE_VR = Constants.RIG_MODE_VR;
     /**
      * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
      */
-    public static readonly RIG_MODE_WEBVR = 21;
+    public static readonly RIG_MODE_WEBVR = Constants.RIG_MODE_WEBVR;
     /**
      * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
      */
-    public static readonly RIG_MODE_CUSTOM = 22;
+    public static readonly RIG_MODE_CUSTOM = Constants.RIG_MODE_CUSTOM;
 
     /**
      * Defines if by default attaching controls should prevent the default javascript event to continue.
@@ -135,6 +136,31 @@ export class Camera extends Node {
     }
 
     /**
+     * The screen area in scene units squared
+     */
+    public get screenArea(): number {
+        let x = 0;
+        let y = 0;
+        if (this.mode === Camera.PERSPECTIVE_CAMERA) {
+            if (this.fovMode === Camera.FOVMODE_VERTICAL_FIXED) {
+                y = this.minZ * 2 * Math.tan(this.fov / 2);
+                x = this.getEngine().getAspectRatio(this) * y;
+            } else {
+                x = this.minZ * 2 * Math.tan(this.fov / 2);
+                y = x / this.getEngine().getAspectRatio(this);
+            }
+        } else {
+            const halfWidth = this.getEngine().getRenderWidth() / 2.0;
+            const halfHeight = this.getEngine().getRenderHeight() / 2.0;
+
+            x = (this.orthoRight ?? halfWidth) - (this.orthoLeft ?? -halfWidth);
+            y = (this.orthoTop ?? halfHeight) - (this.orthoBottom ?? -halfHeight);
+        }
+
+        return x * y;
+    }
+
+    /**
      * Define the current limit on the left side for an orthographic camera
      * In scene unit
      */
@@ -167,6 +193,14 @@ export class Camera extends Node {
      */
     @serialize()
     public fov = 0.8;
+
+    /**
+     * Projection plane tilt around the X axis (horizontal), set in Radians. (default is 0)
+     * Can be used to make vertical lines in world space actually vertical on the screen.
+     * See https://forum.babylonjs.com/t/add-vertical-shift-to-3ds-max-exporter-babylon-cameras/17480
+     */
+    @serialize()
+    public projectionPlaneTilt = 0;
 
     /**
      * Define the minimum distance the camera can see from.
@@ -404,6 +438,15 @@ export class Camera extends Node {
     }
 
     /**
+     * Automatically tilts the projection plane, using `projectionPlaneTilt`, to correct the perspective effect on vertical lines.
+     */
+    public applyVerticalCorrection() {
+        const rot = this.absoluteRotation.toEulerAngles();
+
+        this.projectionPlaneTilt = this._scene.useRightHandedSystem ? -rot.x : rot.x;
+    }
+
+    /**
      * Gets the current world space position of the camera.
      */
     public get globalPosition(): Vector3 {
@@ -507,7 +550,8 @@ export class Camera extends Node {
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
             check = this._cache.fov === this.fov
                 && this._cache.fovMode === this.fovMode
-                && this._cache.aspectRatio === engine.getAspectRatio(this);
+                && this._cache.aspectRatio === engine.getAspectRatio(this)
+                && this._cache.projectionPlaneTilt === this.projectionPlaneTilt;
         }
         else {
             check = this._cache.orthoLeft === this.orthoLeft
@@ -770,25 +814,28 @@ export class Camera extends Node {
             this._cache.fov = this.fov;
             this._cache.fovMode = this.fovMode;
             this._cache.aspectRatio = engine.getAspectRatio(this);
+            this._cache.projectionPlaneTilt = this.projectionPlaneTilt;
 
             if (this.minZ <= 0) {
                 this.minZ = 0.1;
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean) => void;
+            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean, projectionPlaneTilt: number) => void;
             if (scene.useRightHandedSystem) {
-                getProjectionMatrix = reverseDepth ? Matrix.PerspectiveFovReverseRHToRef : Matrix.PerspectiveFovRHToRef;
+                getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
-                getProjectionMatrix = reverseDepth ? Matrix.PerspectiveFovReverseLHToRef : Matrix.PerspectiveFovLHToRef;
+                getProjectionMatrix = Matrix.PerspectiveFovLHToRef;
             }
 
             getProjectionMatrix(this.fov,
                 engine.getAspectRatio(this),
-                this.minZ,
-                this.maxZ,
+                reverseDepth ? this.maxZ : this.minZ,
+                reverseDepth ? this.minZ : this.maxZ,
                 this._projectionMatrix,
-                this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+                this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
+                engine.isNDCHalfZRange,
+                this.projectionPlaneTilt);
         } else {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
@@ -799,16 +846,18 @@ export class Camera extends Node {
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
-                    this._projectionMatrix);
-            } else {
+                    this._projectionMatrix,
+                    engine.isNDCHalfZRange);
+                } else {
                 Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
-                    this._projectionMatrix);
-            }
+                    this._projectionMatrix,
+                    engine.isNDCHalfZRange);
+                }
 
             this._cache.orthoLeft = this.orthoLeft;
             this._cache.orthoRight = this.orthoRight;
@@ -932,6 +981,14 @@ export class Camera extends Node {
             if (camera) {
                 camera.dispose();
             }
+        }
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.cameras.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.cameras.splice(index, 1);
+            }
+            this._parentContainer = null;
         }
 
         // Postprocesses
@@ -1108,7 +1165,7 @@ export class Camera extends Node {
 
     /** @hidden */
     public _getVRProjectionMatrix(): Matrix {
-        Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+        Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix, true, this.getEngine().isNDCHalfZRange);
         this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
         return this._projectionMatrix;
     }

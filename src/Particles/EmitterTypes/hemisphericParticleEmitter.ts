@@ -1,9 +1,10 @@
 import { DeepCopier } from "../../Misc/deepCopier";
 import { Vector3, Matrix } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
-import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
+import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from the inside of a hemisphere.
  * It emits the particles alongside the hemisphere radius. The emission direction might be randomized.
@@ -93,12 +94,22 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
 
     /**
      * Called by the GPUParticleSystem to setup the update shader
-     * @param effect defines the update shader
+     * @param uboOrEffect defines the update shader
      */
-    public applyToShader(effect: Effect): void {
-        effect.setFloat("radius", this.radius);
-        effect.setFloat("radiusRange", this.radiusRange);
-        effect.setFloat("directionRandomizer", this.directionRandomizer);
+    public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {
+        uboOrEffect.setFloat("radius", this.radius);
+        uboOrEffect.setFloat("radiusRange", this.radiusRange);
+        uboOrEffect.setFloat("directionRandomizer", this.directionRandomizer);
+    }
+
+    /**
+     * Creates the structure of the ubo for this particle emitter
+     * @param ubo ubo to create the structure for
+     */
+    public buildUniformLayout(ubo: UniformBuffer): void {
+        ubo.addUniform("radius", 1);
+        ubo.addUniform("radiusRange", 1);
+        ubo.addUniform("directionRandomizer", 1);
     }
 
     /**

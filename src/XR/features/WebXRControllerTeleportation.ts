@@ -251,7 +251,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     }
 
     /**
-     * constructs a new anchor system
+     * constructs a new teleportation system
      * @param _xrSessionManager an instance of WebXRSessionManager
      * @param _options configuration object for this feature
      */
@@ -882,6 +882,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             this._quadraticBezierCurve = this._options.generateRayPathMesh(quadraticBezierVectors.getPoints(), pickInfo);
         }
         this._quadraticBezierCurve.isPickable = false;
+        if (this._options.renderingGroupId !== undefined) {
+            this._quadraticBezierCurve.renderingGroupId = this._options.renderingGroupId;
+        }
     }
 
     private _teleportForward(controllerId: string) {

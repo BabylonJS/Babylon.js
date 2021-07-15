@@ -15,15 +15,8 @@ attribute vec4 tangent;
 #ifdef UV1
 attribute vec2 uv;
 #endif
-#ifdef UV2
-attribute vec2 uv2;
-#endif
-#ifdef MAINUV1
-varying vec2 vMainUV1;
-#endif
-#ifdef MAINUV2
-varying vec2 vMainUV2;
-#endif
+#include<uvAttributeDeclaration>[2..7]
+#include<mainUVVaryingDeclaration>[1..7]
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
@@ -34,87 +27,38 @@ attribute vec4 color;
 #include<instancesDeclaration>
 #include<prePassVertexDeclaration>
 
-#if defined(ALBEDO) && ALBEDODIRECTUV == 0
-varying vec2 vAlbedoUV;
-#endif
-
-#if defined(DETAIL) && DETAILDIRECTUV == 0
-varying vec2 vDetailUV;
-#endif
-
-#if defined(AMBIENT) && AMBIENTDIRECTUV == 0
-varying vec2 vAmbientUV;
-#endif
-
-#if defined(OPACITY) && OPACITYDIRECTUV == 0
-varying vec2 vOpacityUV;
-#endif
-
-#if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0
-varying vec2 vEmissiveUV;
-#endif
-
-#if defined(LIGHTMAP) && LIGHTMAPDIRECTUV == 0
-varying vec2 vLightmapUV;
-#endif
-
-#if defined(REFLECTIVITY) && REFLECTIVITYDIRECTUV == 0
-varying vec2 vReflectivityUV;
-#endif
-
-#if defined(MICROSURFACEMAP) && MICROSURFACEMAPDIRECTUV == 0
-varying vec2 vMicroSurfaceSamplerUV;
-#endif
-
-#if defined(METALLIC_REFLECTANCE) && METALLIC_REFLECTANCEDIRECTUV == 0
-    varying vec2 vMetallicReflectanceUV;
-#endif
-#if defined(REFLECTANCE) && REFLECTANCEDIRECTUV == 0
-    varying vec2 vReflectanceUV;
-#endif
-
-#if defined(BUMP) && BUMPDIRECTUV == 0
-varying vec2 vBumpUV;
-#endif
+#include<samplerVertexDeclaration>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo)
+#include<samplerVertexDeclaration>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail)
+#include<samplerVertexDeclaration>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient)
+#include<samplerVertexDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity)
+#include<samplerVertexDeclaration>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive)
+#include<samplerVertexDeclaration>(_DEFINENAME_,LIGHTMAP,_VARYINGNAME_,Lightmap)
+#include<samplerVertexDeclaration>(_DEFINENAME_,REFLECTIVITY,_VARYINGNAME_,Reflectivity)
+#include<samplerVertexDeclaration>(_DEFINENAME_,MICROSURFACEMAP,_VARYINGNAME_,MicroSurfaceSampler)
+#include<samplerVertexDeclaration>(_DEFINENAME_,METALLIC_REFLECTANCE,_VARYINGNAME_,MetallicReflectance)
+#include<samplerVertexDeclaration>(_DEFINENAME_,REFLECTANCE,_VARYINGNAME_,Reflectance)
+#include<samplerVertexDeclaration>(_DEFINENAME_,BUMP,_VARYINGNAME_,Bump)
 
 #ifdef CLEARCOAT
-    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0
-        varying vec2 vClearCoatUV;
-    #endif
-
-    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 0
-        varying vec2 vClearCoatRoughnessUV;
-    #endif
-
-    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0
-        varying vec2 vClearCoatBumpUV;
-    #endif
-
-    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0
-        varying vec2 vClearCoatTintUV;
-    #endif
+    #include<samplerVertexDeclaration>(_DEFINENAME_,CLEARCOAT_TEXTURE,_VARYINGNAME_,ClearCoat)
+    #include<samplerVertexDeclaration>(_DEFINENAME_,CLEARCOAT_TEXTURE_ROUGHNESS,_VARYINGNAME_,ClearCoatRoughness)
+    #include<samplerVertexDeclaration>(_DEFINENAME_,CLEARCOAT_BUMP,_VARYINGNAME_,ClearCoatBump)
+    #include<samplerVertexDeclaration>(_DEFINENAME_,CLEARCOAT_TINT_TEXTURE,_VARYINGNAME_,ClearCoatTint)
 #endif
 
 #ifdef SHEEN
-    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0
-        varying vec2 vSheenUV;
-    #endif
-
-    #if defined(SHEEN_TEXTURE_ROUGHNESS) && SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 0
-        varying vec2 vSheenRoughnessUV;
-    #endif
+    #include<samplerVertexDeclaration>(_DEFINENAME_,SHEEN_TEXTURE,_VARYINGNAME_,Sheen)
+    #include<samplerVertexDeclaration>(_DEFINENAME_,SHEEN_TEXTURE_ROUGHNESS,_VARYINGNAME_,SheenRoughness)
 #endif
 
 #ifdef ANISOTROPIC
-    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0
-        varying vec2 vAnisotropyUV;
-    #endif
+    #include<samplerVertexDeclaration>(_DEFINENAME_,ANISOTROPIC_TEXTURE,_VARYINGNAME_,Anisotropy)
 #endif
 
 #ifdef SUBSURFACE
-    #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0
-        varying vec2 vThicknessUV;
-    #endif
+    #include<samplerVertexDeclaration>(_DEFINENAME_,SS_THICKNESSANDMASK_TEXTURE,_VARYINGNAME_,Thickness)
+    #include<samplerVertexDeclaration>(_DEFINENAME_,SS_REFRACTIONINTENSITY_TEXTURE,_VARYINGNAME_,RefractionIntensity)
+    #include<samplerVertexDeclaration>(_DEFINENAME_,SS_TRANSLUCENCYINTENSITY_TEXTURE,_VARYINGNAME_,TranslucencyIntensity)
 #endif
 
 // Output
@@ -242,232 +186,45 @@ void main(void) {
 #ifndef UV1
     vec2 uvUpdated = vec2(0., 0.);
 #endif
-#ifndef UV2
-    vec2 uv2 = vec2(0., 0.);
-#endif
-
 #ifdef MAINUV1
     vMainUV1 = uvUpdated;
 #endif
 
-#ifdef MAINUV2
-    vMainUV2 = uv2;
-#endif
+    #include<uvVariableDeclaration>[2..7]
 
-#if defined(ALBEDO) && ALBEDODIRECTUV == 0
-    if (vAlbedoInfos.x == 0.)
-    {
-        vAlbedoUV = vec2(albedoMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vAlbedoUV = vec2(albedoMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
-
-#if defined(DETAIL) && DETAILDIRECTUV == 0
-	if (vDetailInfos.x == 0.)
-	{
-		vDetailUV = vec2(detailMatrix * vec4(uvUpdated, 1.0, 0.0));
-	}
-	else
-	{
-		vDetailUV = vec2(detailMatrix * vec4(uv2, 1.0, 0.0));
-	}
-#endif
-
-#if defined(AMBIENT) && AMBIENTDIRECTUV == 0
-    if (vAmbientInfos.x == 0.)
-    {
-        vAmbientUV = vec2(ambientMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vAmbientUV = vec2(ambientMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
-
-#if defined(OPACITY) && OPACITYDIRECTUV == 0
-    if (vOpacityInfos.x == 0.)
-    {
-        vOpacityUV = vec2(opacityMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
-
-#if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0
-    if (vEmissiveInfos.x == 0.)
-    {
-        vEmissiveUV = vec2(emissiveMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
-
-#if defined(LIGHTMAP) && LIGHTMAPDIRECTUV == 0
-    if (vLightmapInfos.x == 0.)
-    {
-        vLightmapUV = vec2(lightmapMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vLightmapUV = vec2(lightmapMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
-
-#if defined(REFLECTIVITY) && REFLECTIVITYDIRECTUV == 0
-    if (vReflectivityInfos.x == 0.)
-    {
-        vReflectivityUV = vec2(reflectivityMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
-
-#if defined(MICROSURFACEMAP) && MICROSURFACEMAPDIRECTUV == 0
-    if (vMicroSurfaceSamplerInfos.x == 0.)
-    {
-        vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
-
-#if defined(METALLIC_REFLECTANCE) && METALLIC_REFLECTANCEDIRECTUV == 0
-    if (vMetallicReflectanceInfos.x == 0.)
-    {
-        vMetallicReflectanceUV = vec2(metallicReflectanceMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vMetallicReflectanceUV = vec2(metallicReflectanceMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
-#if defined(REFLECTANCE) && REFLECTANCEDIRECTUV == 0
-    if (vReflectanceInfos.x == 0.)
-    {
-        vReflectanceUV = vec2(reflectanceMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vReflectanceUV = vec2(reflectanceMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
-
-#if defined(BUMP) && BUMPDIRECTUV == 0
-    if (vBumpInfos.x == 0.)
-    {
-        vBumpUV = vec2(bumpMatrix * vec4(uvUpdated, 1.0, 0.0));
-    }
-    else
-    {
-        vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
-    }
-#endif
+    #include<samplerVertexImplementation>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_MATRIXNAME_,albedo,_INFONAME_,AlbedoInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient,_MATRIXNAME_,ambient,_INFONAME_,AmbientInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_MATRIXNAME_,opacity,_INFONAME_,OpacityInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive,_MATRIXNAME_,emissive,_INFONAME_,EmissiveInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,LIGHTMAP,_VARYINGNAME_,Lightmap,_MATRIXNAME_,lightmap,_INFONAME_,LightmapInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,REFLECTIVITY,_VARYINGNAME_,Reflectivity,_MATRIXNAME_,reflectivity,_INFONAME_,ReflectivityInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,MICROSURFACEMAP,_VARYINGNAME_,MicroSurfaceSampler,_MATRIXNAME_,microSurfaceSampler,_INFONAME_,MicroSurfaceSamplerInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,METALLIC_REFLECTANCE,_VARYINGNAME_,MetallicReflectance,_MATRIXNAME_,metallicReflectance,_INFONAME_,MetallicReflectanceInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,REFLECTANCE,_VARYINGNAME_,Reflectance,_MATRIXNAME_,reflectance,_INFONAME_,ReflectanceInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,BUMP,_VARYINGNAME_,Bump,_MATRIXNAME_,bump,_INFONAME_,BumpInfos.x)
 
 #ifdef CLEARCOAT
-    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0
-        if (vClearCoatInfos.x == 0.)
-        {
-            vClearCoatUV = vec2(clearCoatMatrix * vec4(uvUpdated, 1.0, 0.0));
-        }
-        else
-        {
-            vClearCoatUV = vec2(clearCoatMatrix * vec4(uv2, 1.0, 0.0));
-        }
-    #endif
-
-    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 0
-        if (vClearCoatInfos.z == 0.)
-        {
-            vClearCoatRoughnessUV = vec2(clearCoatRoughnessMatrix * vec4(uvUpdated, 1.0, 0.0));
-        }
-        else
-        {
-            vClearCoatRoughnessUV = vec2(clearCoatRoughnessMatrix * vec4(uv2, 1.0, 0.0));
-        }
-    #endif
-
-    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0
-        if (vClearCoatBumpInfos.x == 0.)
-        {
-            vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uvUpdated, 1.0, 0.0));
-        }
-        else
-        {
-            vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uv2, 1.0, 0.0));
-        }
-    #endif
-
-    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0
-        if (vClearCoatTintInfos.x == 0.)
-        {
-            vClearCoatTintUV = vec2(clearCoatTintMatrix * vec4(uvUpdated, 1.0, 0.0));
-        }
-        else
-        {
-            vClearCoatTintUV = vec2(clearCoatTintMatrix * vec4(uv2, 1.0, 0.0));
-        }
-    #endif
+    #include<samplerVertexImplementation>(_DEFINENAME_,CLEARCOAT_TEXTURE,_VARYINGNAME_,ClearCoat,_MATRIXNAME_,clearCoat,_INFONAME_,ClearCoatInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,CLEARCOAT_TEXTURE_ROUGHNESS,_VARYINGNAME_,ClearCoatRoughness,_MATRIXNAME_,clearCoatRoughness,_INFONAME_,ClearCoatInfos.z)
+    #include<samplerVertexImplementation>(_DEFINENAME_,CLEARCOAT_BUMP,_VARYINGNAME_,ClearCoatBump,_MATRIXNAME_,clearCoatBump,_INFONAME_,ClearCoatBumpInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,CLEARCOAT_TINT_TEXTURE,_VARYINGNAME_,ClearCoatTint,_MATRIXNAME_,clearCoatTint,_INFONAME_,ClearCoatTintInfos.x)
 #endif
 
 #ifdef SHEEN
-    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0
-        if (vSheenInfos.x == 0.)
-        {
-            vSheenUV = vec2(sheenMatrix * vec4(uvUpdated, 1.0, 0.0));
-        }
-        else
-        {
-            vSheenUV = vec2(sheenMatrix * vec4(uv2, 1.0, 0.0));
-        }
-    #endif
+    #include<samplerVertexImplementation>(_DEFINENAME_,SHEEN_TEXTURE,_VARYINGNAME_,Sheen,_MATRIXNAME_,sheen,_INFONAME_,SheenInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,SHEEN_TEXTURE_ROUGHNESS,_VARYINGNAME_,SheenRoughness,_MATRIXNAME_,sheen,_INFONAME_,SheenInfos.z)
 
-    #if defined(SHEEN_TEXTURE_ROUGHNESS) && SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 0
-        if (vSheenInfos.z == 0.)
-        {
-            vSheenRoughnessUV = vec2(sheenRoughnessMatrix * vec4(uvUpdated, 1.0, 0.0));
-        }
-        else
-        {
-            vSheenRoughnessUV = vec2(sheenRoughnessMatrix * vec4(uv2, 1.0, 0.0));
-        }
-    #endif
 #endif
 
 #ifdef ANISOTROPIC
-    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0
-        if (vAnisotropyInfos.x == 0.)
-        {
-            vAnisotropyUV = vec2(anisotropyMatrix * vec4(uvUpdated, 1.0, 0.0));
-        }
-        else
-        {
-            vAnisotropyUV = vec2(anisotropyMatrix * vec4(uv2, 1.0, 0.0));
-        }
-    #endif
+    #include<samplerVertexImplementation>(_DEFINENAME_,ANISOTROPIC_TEXTURE,_VARYINGNAME_,Anisotropy,_MATRIXNAME_,anisotropy,_INFONAME_,AnisotropyInfos.x)
 #endif
 
 #ifdef SUBSURFACE
-    #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0
-        if (vThicknessInfos.x == 0.)
-        {
-            vThicknessUV = vec2(thicknessMatrix * vec4(uvUpdated, 1.0, 0.0));
-        }
-        else
-        {
-            vThicknessUV = vec2(thicknessMatrix * vec4(uv2, 1.0, 0.0));
-        }
-    #endif
+    #include<samplerVertexImplementation>(_DEFINENAME_,SS_THICKNESSANDMASK_TEXTURE,_VARYINGNAME_,Thickness,_MATRIXNAME_,thickness,_INFONAME_,ThicknessInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,SS_REFRACTIONINTENSITY_TEXTURE,_VARYINGNAME_,RefractionIntensity,_MATRIXNAME_,refractionIntensity,_INFONAME_,RefractionIntensityInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,SS_TRANSLUCENCYINTENSITY_TEXTURE,_VARYINGNAME_,TranslucencyIntensity,_MATRIXNAME_,translucencyIntensity,_INFONAME_,TranslucencyIntensityInfos.x)
 #endif
 
     // TBN

@@ -807,8 +807,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._pointerObserver = scene.onPointerObservable.add((pi, state) => {
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
-                && pi.type !== PointerEventTypes.POINTERDOWN) {
+                && pi.type !== PointerEventTypes.POINTERDOWN
+                && pi.type !== PointerEventTypes.POINTERWHEEL) {
                 return;
+            }
+
+            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as IPointerEvent).pointerId) {
+                this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
 
             var pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
@@ -816,7 +821,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     let size = this.getSize();
-                    this._doPicking(uv.x * size.width, (this.applyYInversionOnUpdate ? (1.0 - uv.y) : uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
+                    this._doPicking(uv.x * size.width, (this.applyYInversionOnUpdate ? (1.0 - uv.y) : uv.y) * size.height, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
                 }
             } else if (pi.type === PointerEventTypes.POINTERUP) {
                 if (this._lastControlDown[pointerId]) {
@@ -1008,7 +1013,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * LayerMask is set through advancedTexture.layer.layerMask
     * @param name defines name for the texture
     * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-    * @param scene defines the hsoting scene
+    * @param scene defines the hosting scene
     * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
     * @returns a new AdvancedDynamicTexture
     */

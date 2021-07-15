@@ -65,6 +65,7 @@ export class TransformNode extends Node {
     protected _scaling = Vector3.One();
     protected _isDirty = false;
     private _transformToBoneReferal: Nullable<TransformNode> = null;
+    private _currentParentWhenAttachingToBone: Nullable<Node>;
     private _isAbsoluteSynced = false;
 
     @serialize("billboardMode")
@@ -799,6 +800,7 @@ export class TransformNode extends Node {
      * @returns this object
      */
     public attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode {
+        this._currentParentWhenAttachingToBone = this.parent;
         this._transformToBoneReferal = affectedTransformNode;
         this.parent = bone;
 
@@ -812,10 +814,14 @@ export class TransformNode extends Node {
 
     /**
      * Detach the transform node if its associated with a bone
+     * @param resetToPreviousParent Indicates if the parent that was in effect when attachToBone was called should be set back or if we should set parent to null instead (defaults to the latter) @since 5.0.0
      * @returns this object
      */
-    public detachFromBone(): TransformNode {
+    public detachFromBone(resetToPreviousParent = false): TransformNode {
         if (!this.parent) {
+            if (resetToPreviousParent) {
+                this.parent = this._currentParentWhenAttachingToBone;
+            }
             return this;
         }
 
@@ -823,7 +829,11 @@ export class TransformNode extends Node {
             this.scalingDeterminant *= -1;
         }
         this._transformToBoneReferal = null;
-        this.parent = null;
+        if (resetToPreviousParent) {
+            this.parent = this._currentParentWhenAttachingToBone;
+        } else {
+            this.parent = null;
+        }
         return this;
     }
 
@@ -1372,6 +1382,14 @@ export class TransformNode extends Node {
 
         // Remove from scene
         this.getScene().removeTransformNode(this);
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.transformNodes.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.transformNodes.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
 
         this.onAfterWorldMatrixUpdateObservable.clear();
 

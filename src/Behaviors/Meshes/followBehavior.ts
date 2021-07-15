@@ -86,15 +86,15 @@ export class FollowBehavior implements Behavior<TransformNode> {
     /**
      *  Default distance from eye to attached node, i.e. the sphere radius
      */
-    public defaultDistance = 5;
+    public defaultDistance = 0.8;
     /**
      *  Max distance from eye to attached node, i.e. the sphere radius
      */
-    public maximumDistance = 10;
+    public maximumDistance = 2;
     /**
      *  Min distance from eye to attached node, i.e. the sphere radius
      */
-    public minimumDistance = 3;
+    public minimumDistance = 0.3;
 
     /**
      * Ignore vertical movement and lock the Y position of the object.
@@ -116,7 +116,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
      * The camera that should be followed by this behavior
      */
     public get followedCamera(): Nullable<Camera> {
-        return this._followedCamera;
+        return this._followedCamera || this._scene.activeCamera;
     }
 
     public set followedCamera(camera: Nullable<Camera>) {
@@ -147,9 +147,6 @@ export class FollowBehavior implements Behavior<TransformNode> {
         if (followedCamera) {
             this.followedCamera = followedCamera;
         }
-        if (!this.followedCamera) {
-            this.followedCamera = this._scene.activeCamera;
-        }
 
         this._addObservables();
     }
@@ -167,29 +164,6 @@ export class FollowBehavior implements Behavior<TransformNode> {
      */
     public recenter() {
         this._recenterNextUpdate = true;
-    }
-
-    private _angleBetweenOnPlane(from: Vector3, to: Vector3, normal: Vector3) {
-        // Work on copies
-        this._tmpVectors[0].copyFrom(from);
-        from = this._tmpVectors[0];
-        this._tmpVectors[1].copyFrom(to);
-        to = this._tmpVectors[1];
-        this._tmpVectors[2].copyFrom(normal);
-        normal = this._tmpVectors[2];
-        const right = this._tmpVectors[3];
-        const forward = this._tmpVectors[4];
-
-        from.normalize();
-        to.normalize();
-        normal.normalize();
-
-        Vector3.CrossToRef(normal, from, right);
-        Vector3.CrossToRef(right, normal, forward);
-
-        const angle = Math.atan2(Vector3.Dot(to, right), Vector3.Dot(to, forward));
-
-        return Scalar.NormalizeRadians(angle);
     }
 
     private _angleBetweenVectorAndPlane(vector: Vector3, normal: Vector3) {
@@ -298,11 +272,11 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
         // X-axis leashing
         if (this.ignoreCameraPitchAndRoll) {
-            const angle = this._angleBetweenOnPlane(currentToTarget, forward, right);
+            const angle = Vector3.GetAngleBetweenVectorsOnPlane(currentToTarget, forward, right);
             Quaternion.RotationAxisToRef(right, angle, rotationQuat);
             currentToTarget.rotateByQuaternionToRef(rotationQuat, currentToTarget);
         } else {
-            const angle = -this._angleBetweenOnPlane(currentToTarget, forward, right);
+            const angle = -Vector3.GetAngleBetweenVectorsOnPlane(currentToTarget, forward, right);
             const minMaxAngle = ((this.maxViewVerticalDegrees * Math.PI) / 180) * 0.5;
             if (angle < -minMaxAngle) {
                 Quaternion.RotationAxisToRef(right, -angle - minMaxAngle, rotationQuat);
@@ -359,60 +333,12 @@ export class FollowBehavior implements Behavior<TransformNode> {
         }
     }
 
-    private _vectorSlerpToRef(vector1: Vector3, vector2: Vector3, slerp: number, result: Vector3) {
-        slerp = Scalar.Clamp(slerp, 0, 1);
-        const vector1Dir = this._tmpVectors[0];
-        const vector2Dir = this._tmpVectors[1];
-        let vector1Length;
-        let vector2Length;
-
-        vector1Dir.copyFrom(vector1);
-        vector1Length = vector1Dir.length();
-        vector1Dir.normalizeFromLength(vector1Length);
-
-        vector2Dir.copyFrom(vector2);
-        vector2Length = vector2Dir.length();
-        vector2Dir.normalizeFromLength(vector2Length);
-
-        const dot = Vector3.Dot(vector1Dir, vector2Dir);
-
-        let scale1;
-        let scale2;
-
-        if (dot < 1 - Epsilon) {
-            const omega = Math.acos(dot);
-            const invSin = 1 / Math.sin(omega);
-            scale1 = Math.sin((1 - slerp) * omega) * invSin;
-            scale2 = Math.sin(slerp * omega) * invSin;
-        } else {
-            // Use linear interpolation
-            scale1 = 1 - slerp;
-            scale2 = slerp;
-        }
-
-        vector1Dir.scaleInPlace(scale1);
-        vector2Dir.scaleInPlace(scale2);
-        result.copyFrom(vector1Dir).addInPlace(vector2Dir);
-        result.scaleInPlace(Scalar.Lerp(vector1Length, vector2Length, slerp));
-    }
-
-    private _vectorSmoothToRef(source: Vector3, goal: Vector3, deltaTime: number, lerpTime: number, result: Vector3) {
-        return this._vectorSlerpToRef(source, goal, lerpTime === 0 ? 1 : deltaTime / lerpTime, result);
-    }
-
-    private _quaternionSmoothToRef(source: Quaternion, goal: Quaternion, deltaTime: number, lerpTime: number, result: Quaternion) {
-        let slerp = lerpTime === 0 ? 1 : deltaTime / lerpTime;
-        slerp = Scalar.Clamp(slerp, 0, 1);
-
-        return Quaternion.SlerpToRef(source, goal, slerp, result);
-    }
-
     private _passedOrientationDeadzone(currentToTarget: Vector3, forward: Vector3) {
         const leashToFollow = this._tmpVectors[5];
         leashToFollow.copyFrom(currentToTarget);
         leashToFollow.normalize();
 
-        const angle = Math.abs(this._angleBetweenOnPlane(forward, leashToFollow, Vector3.UpReadOnly));
+        const angle = Math.abs(Vector3.GetAngleBetweenVectorsOnPlane(forward, leashToFollow, Vector3.UpReadOnly));
         return (angle * 180) / Math.PI > this.orientToCameraDeadzoneDegrees;
     }
 
@@ -502,14 +428,14 @@ export class FollowBehavior implements Behavior<TransformNode> {
         // position
         const currentDirection = new Vector3();
         currentDirection.copyFrom(this.attachedNode.position).subtractInPlace(this.followedCamera.globalPosition);
-        this._vectorSmoothToRef(currentDirection, this._workingPosition, elapsed, this.lerpTime, currentDirection);
+        Vector3.SmoothToRef(currentDirection, this._workingPosition, elapsed, this.lerpTime, currentDirection);
         currentDirection.addInPlace(this.followedCamera.globalPosition);
         this.attachedNode.position.copyFrom(currentDirection);
 
         // rotation
         const currentRotation = new Quaternion();
         currentRotation.copyFrom(this.attachedNode.rotationQuaternion);
-        this._quaternionSmoothToRef(currentRotation, this._workingQuaternion, elapsed, this.lerpTime, this.attachedNode.rotationQuaternion);
+        Quaternion.SmoothToRef(currentRotation, this._workingQuaternion, elapsed, this.lerpTime, this.attachedNode.rotationQuaternion);
 
         this.attachedNode.setParent(oldParent);
     }

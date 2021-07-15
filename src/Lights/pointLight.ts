@@ -145,8 +145,12 @@ export class PointLight extends ShadowLight {
             return;
         }
 
-        Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0,
-            this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+
+        const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
+
+        Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0, useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix, true, this._scene.getEngine().isNDCHalfZRange);
     }
 
     protected _buildUniformLayout(): void {

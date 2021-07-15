@@ -204,6 +204,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._createInternalTextures();
 
         if (forceFullRebuild) {
+            this._releaseTextures();
             this._createTextures();
         }
 
@@ -222,6 +223,14 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         // Keeps references to frame buffer and stencil/depth buffer
         this._texture = this._internalTextures[0];
+    }
+
+    private _releaseTextures(): void {
+        if (this._textures) {
+            for (let i = 0; i < this._textures.length; i++) {
+                this._textures[i].dispose();
+            }
+        }
     }
 
     private _createTextures(): void {
@@ -308,7 +317,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public dispose(): void {
         this.releaseInternalTextures();
-
+        this._releaseTextures();
         super.dispose();
     }
 
@@ -325,6 +334,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
                 this._internalTextures[i].dispose();
                 this._internalTextures.splice(i, 1);
             }
+            this._textures[i]._texture = null;
         }
     }
 }
