@@ -1084,7 +1084,7 @@ export class _Exporter {
             const jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
             // if TextEncoder was available, we can simply copy the encoded array
             if (encodedJsonText) {
-                for(let i = 0; i < encodedJsonText.length; ++i) {
+                for (let i = 0; i < encodedJsonText.length; ++i) {
                     jsonData[i] = encodedJsonText[i];
                 }
             }
