@@ -40,6 +40,24 @@ const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 // Arbitrary maximum used to make some GC optimizations.
 const maximumDatasetsAllowed = 32;
 
+// time in ms to wait between tooltip draws inside the mouse move.
+const tooltipDebounceTime = 32;
+
+/**
+ * This function will debounce calls to functions.
+ * 
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+function debounce(callback: (...args: any[]) => void, time: number) {
+    let timerId: any;
+    return function(...args: any[]) {
+        clearTimeout(timerId);
+        timerId = setTimeout(() => callback(...args), time);
+    }
+}
+
+
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc! 
@@ -88,8 +106,6 @@ export class CanvasGraphService {
         for (let i = 0; i < maximumDatasetsAllowed; i++) {
             this._tooltipItems.push({text: "", color: ""});
         }
-        
-        
 
         if (!this._ctx) {
             throw Error("No canvas context accessible");
@@ -493,8 +509,19 @@ export class CanvasGraphService {
         this._hoverPosition = event.clientX;
 
         // then draw the tooltip.
-        this._drawTooltip(this._hoverPosition, this._drawableArea);
+        this._debouncedTooltip(this._hoverPosition, this._drawableArea);
     }
+
+    /**
+     * Debounced version of _drawTooltip.
+     */
+    private _debouncedTooltip = debounce(
+        (pixel: number | null, drawableArea: IGraphDrawableArea) => {
+            this._drawTooltip(pixel, drawableArea)
+        },
+        tooltipDebounceTime
+    )
+        
 
     /**
      * Handles what to do when we stop hovering over the canvas.
