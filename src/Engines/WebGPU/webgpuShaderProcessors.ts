@@ -253,6 +253,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                             usedInVertex: false,
                             usedInFragment: false,
                             name: isTextureArray ? name + i.toString() : name,
+                            origName: name,
                         };
                     }
                     if (isFragment) {
@@ -443,6 +444,8 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         }
 
         // collect all the buffer names for faster processing later in _getBindGroupsToRender
+        // also collect all the sampler names
+        webgpuProcessingContext.samplerNames = [];
         for (let i = 0; i < webgpuProcessingContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
@@ -450,8 +453,13 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             }
             for (let j = 0; j < setDefinition.length; j++) {
                 const bindingDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i][j];
-                if (bindingDefinition && !bindingDefinition.isSampler && !bindingDefinition.isTexture) {
-                    webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
+                if (bindingDefinition) {
+                    if (bindingDefinition.isTexture) {
+                        webgpuProcessingContext.samplerNames.push(bindingDefinition.name);
+                    }
+                    if (!bindingDefinition.isSampler && !bindingDefinition.isTexture) {
+                        webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
+                    }
                 }
             }
         }
