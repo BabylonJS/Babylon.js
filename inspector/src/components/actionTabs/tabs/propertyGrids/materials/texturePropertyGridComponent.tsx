@@ -238,8 +238,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             { label: "Spherical", value: Texture.SPHERICAL_MODE },
         ];
 
-        const format = texture._texture?.format ?? -2;
-        const type = texture._texture?.type ?? -2;
+        const format = texture._texture?.format ?? -2; // -2 is an invalid value so that findTextureFormat will return null when texture is null/undefined. It can't be -1 because -1 means RGBA, so it is -2 :)
+        const type = texture._texture?.type ?? -2; // same than above, -1 means ubyte
 
         const oformat = this.findTextureFormat(format === -1 ? Constants.TEXTUREFORMAT_RGBA : format);
         const otype = this.findTextureType(type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : type);
