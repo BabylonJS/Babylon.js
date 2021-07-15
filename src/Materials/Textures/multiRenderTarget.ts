@@ -324,7 +324,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
     public dispose(): void {
         this._releaseTextures();
         this.releaseInternalTextures();
-        this._releaseTextures();
         super.dispose();
     }
 
