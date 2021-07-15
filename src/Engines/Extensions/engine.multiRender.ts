@@ -295,7 +295,9 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         depthTexture.isReady = true;
         depthTexture.samples = 1;
         depthTexture.generateMipMaps = generateMipMaps;
-        depthTexture.samplingMode = gl.NEAREST;
+        depthTexture.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        depthTexture.format = Constants.TEXTUREFORMAT_DEPTH16;
+        depthTexture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT;
         depthTexture._generateDepthBuffer = generateDepthBuffer;
         depthTexture._generateStencilBuffer = generateStencilBuffer;
 
