@@ -1,5 +1,5 @@
 import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
-import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
+import { Matrix, Vector3, Vector2, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { _DevTools } from '../Misc/devTools';
 import { Color4, Color3 } from '../Maths/math.color';
@@ -408,8 +408,8 @@ export class VertexData {
         if (typeof _native !== 'undefined' && _native.transformVector3Coordinates && !Array.isArray(coordinates)) {
             _native.transformVector3Coordinates(coordinates, transformation);
         } else {
-            const coordinate = Vector3.Zero();
-            const transformedCoordinate = Vector3.Zero(); // TmpVectors
+            const coordinate = TmpVectors.Vector3[0];
+            const transformedCoordinate = TmpVectors.Vector3[1]
             for (let index = 0; index < coordinates.length; index += 3) {
                 Vector3.FromArrayToRef(coordinates, index, coordinate);
                 Vector3.TransformCoordinatesToRef(coordinate, transformation, transformedCoordinate);
@@ -424,8 +424,8 @@ export class VertexData {
         if (typeof _native !== 'undefined' && _native.transformVector3Normals && !Array.isArray(normals)) {
             _native.transformVector3Normals(normals, transformation);
         } else {
-            const normal = Vector3.Zero();
-            const transformedNormal = Vector3.Zero(); // TmpVectors
+            const normal = TmpVectors.Vector3[0];
+            const transformedNormal = TmpVectors.Vector3[1];
             for (let index = 0; index < normals.length; index += 3) {
                 Vector3.FromArrayToRef(normals, index, normal);
                 Vector3.TransformNormalToRef(normal, transformation, transformedNormal);
@@ -440,8 +440,8 @@ export class VertexData {
         if (typeof _native !== 'undefined' && _native.transformVector4Normals && !Array.isArray(normals)) {
             _native.transformVector4Normals(normals, transformation);
         } else {
-            var normal = Vector4.Zero();
-            var transformedNormal = Vector4.Zero();
+            var normal = TmpVectors.Vector4[0];
+            var transformedNormal = TmpVectors.Vector4[1];
             for (let index = 0; index < normals.length; index += 4) {
                 Vector4.FromArrayToRef(normals, index, normal);
                 Vector4.TransformNormalToRef(normal, transformation, transformedNormal);
