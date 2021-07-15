@@ -56,8 +56,8 @@ export class CanvasGraphService {
     private _drawableArea: IGraphDrawableArea;
     private _axisHeight: number;
     
-    private readonly _tooltipLineHeight;
-    private readonly _defaultLineHeight;
+    private readonly _tooltipLineHeight: number;
+    private readonly _defaultLineHeight: number;
 
     public readonly datasets: IPerfDataset[];
 
@@ -79,20 +79,19 @@ export class CanvasGraphService {
         this._globalTimeMinMax = {min: Infinity, max: 0};
         this._drawableArea = {top: 0, left: 0, right: 0, bottom: 0};
 
-        if (this._ctx) {
-            const defaultMetrics = this._ctx.measureText(alphabet);
-            this._defaultLineHeight = defaultMetrics.actualBoundingBoxAscent + defaultMetrics.actualBoundingBoxDescent;
-            this._axisHeight = axisLineLength + axisPadding + this._defaultLineHeight + axisPadding;
-
-            this._ctx.save();
-            this._ctx.font = tooltipFont;
-            const fontMetrics = this._ctx.measureText(alphabet);
-            this._tooltipLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
-            this._ctx.restore();
-        } else {
-            this._tooltipLineHeight = 1;
-            this._defaultLineHeight = 1;
+        if (!this._ctx) {
+            throw Error("No canvas context accessible");
         }
+
+        const defaultMetrics = this._ctx.measureText(alphabet);
+        this._defaultLineHeight = defaultMetrics.actualBoundingBoxAscent + defaultMetrics.actualBoundingBoxDescent;
+        this._axisHeight = axisLineLength + axisPadding + this._defaultLineHeight + axisPadding;
+
+        this._ctx.save();
+        this._ctx.font = tooltipFont;
+        const fontMetrics = this._ctx.measureText(alphabet);
+        this._tooltipLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
+        this._ctx.restore();
 
         this.datasets = settings.datasets;
 
