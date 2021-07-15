@@ -1049,9 +1049,15 @@ export class _Exporter {
             const glbFileName = glTFPrefix + '.glb';
             const headerLength = 12;
             const chunkLengthPrefix = 8;
-            const jsonLength = jsonText.length;
+            let jsonLength = jsonText.length;
+            let encodedJsonText;
             let imageByteLength = 0;
-
+            // make use of TextEncoder when available
+            if (typeof TextEncoder !== "undefined") {
+                const encoder = new TextEncoder();
+                encodedJsonText = encoder.encode(jsonText);
+                jsonLength = encodedJsonText.length;
+            }
             for (let i = 0; i < this._orderedImageData.length; ++i) {
                 imageByteLength += this._orderedImageData[i].data.byteLength;
             }
@@ -1076,8 +1082,23 @@ export class _Exporter {
 
             //json chunk bytes
             const jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
-            for (let i = 0; i < jsonLength; ++i) {
-                jsonData[i] = jsonText.charCodeAt(i);
+            // if TextEncoder was available, we can simply copy the encoded array
+            if (encodedJsonText) {
+                for(let i = 0; i < encodedJsonText.length; ++i) {
+                    jsonData[i] = encodedJsonText[i];
+                }
+            }
+            else {
+                const blankCharCode = "_".charCodeAt(0);
+                for (let i = 0; i < jsonLength; ++i) {
+                    const charCode = jsonText.charCodeAt(i);
+                    // if the character doesn't fit into a single UTF-16 code unit, just put a blank character
+                    if (charCode != jsonText.codePointAt(i)) {
+                        jsonData[i] = blankCharCode;
+                    } else {
+                        jsonData[i] = charCode;
+                    }
+                }
             }
 
             //json padding
