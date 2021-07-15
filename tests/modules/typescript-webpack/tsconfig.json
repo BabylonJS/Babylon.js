@@ -12,7 +12,9 @@
         "lib": [
             "dom",
             "es2015.promise",
-            "es5"
+            "es5",
+            "es2015.symbol.wellknown",
+            "es2020.bigint"
         ],
         "declaration": true,
         "outDir": "./",

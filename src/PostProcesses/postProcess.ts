@@ -16,6 +16,7 @@ import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decorators';
 import { _TypeStore } from '../Misc/typeStore';
 import { DrawWrapper } from "../Materials/drawWrapper";
+import { AbstractScene } from "../abstractScene";
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -36,6 +37,9 @@ type TextureCache = {texture: InternalTexture, postProcessChannel: number, lastU
  * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
  */
 export class PostProcess {
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
+
     /**
      * Gets or sets the unique id of the post process
      */
@@ -661,7 +665,7 @@ export class PostProcess {
             this._engine.bindFramebuffer(target, 0, undefined, undefined, this.forceFullscreenViewport);
         }
 
-        this._engine._debugInsertMarker(`post process ${this.name} input`);
+        this._engine._debugInsertMarker?.(`post process ${this.name} input`);
 
         this.onActivateObservable.notifyObservers(camera);
 
@@ -796,6 +800,14 @@ export class PostProcess {
             }
         }
 
+        if (this._parentContainer) {
+            const index = this._parentContainer.postProcesses.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.postProcesses.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         index = this._engine.postProcesses.indexOf(this);
         if (index !== -1) {
             this._engine.postProcesses.splice(index, 1);
@@ -822,7 +834,7 @@ export class PostProcess {
     }
 
     /**
-     * Serializes the particle system to a JSON object
+     * Serializes the post process to a JSON object
      * @returns the JSON object
      */
     public serialize(): any {

@@ -892,9 +892,10 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _createTargetRenderTexture(): void {
-        if (this._scene.getEngine()._features.supportDepthStencilTexture) {
+        const engine = this._scene.getEngine();
+        if (engine._features.supportDepthStencilTexture) {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube(), undefined, false, false);
-            this._shadowMap.createDepthStencilTexture(Constants.LESS, true);
+            this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
         }
         else {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
@@ -931,7 +932,7 @@ export class ShadowGenerator implements IShadowGenerator {
         let engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup(`shadow map generation for ${this._nameForDrawWrapper}`, 1);
+            engine._debugPushGroup?.(`shadow map generation for ${this._nameForDrawWrapper}`, 1);
         });
 
         // Record Face Index before render.
@@ -956,7 +957,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setColorWrite(true);
             }
             if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
-                engine._debugPopGroup(1);
+                engine._debugPopGroup?.(1);
                 return;
             }
             let shadowMap = this.getShadowMapForRendering();
@@ -965,7 +966,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 const texture = shadowMap.getInternalTexture()!;
                 this._scene.postProcessManager.directRender(this._blurPostProcesses, texture, true);
                 engine.unBindFramebuffer(texture, true);
-                engine._debugPopGroup(1);
+                engine._debugPopGroup?.(1);
             }
         });
 

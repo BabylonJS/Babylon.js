@@ -2,6 +2,7 @@ import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { Scene } from "../scene";
 import { WebXRInput, IWebXRInputOptions } from "./webXRInput";
 import { WebXRControllerPointerSelection, IWebXRControllerPointerSelectionOptions } from "./features/WebXRControllerPointerSelection";
+import { WebXRNearInteraction, IWebXRNearInteractionOptions } from "./features/WebXRNearInteraction";
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXREnterExitUI, WebXREnterExitUIOptions } from "./webXREnterExitUI";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -28,6 +29,10 @@ export class WebXRDefaultExperienceOptions {
      */
     public disableTeleportation?: boolean;
     /**
+     * Should nearInteraction not initialize. Defaults to false.
+     */
+    public disableNearInteraction?: boolean;
+    /**
      * Floor meshes that will be used for teleport
      */
     public floorMeshes?: Array<AbstractMesh>;
@@ -41,6 +46,10 @@ export class WebXRDefaultExperienceOptions {
      * Disable the controller mesh-loading. Can be used if you want to load your own meshes
      */
     public inputOptions?: IWebXRInputOptions;
+    /**
+     * optional configuration for pointer selection
+     */
+    public pointerSelectionOptions?: IWebXRControllerPointerSelectionOptions;
     /**
      * optional configuration for the output canvas
      */
@@ -95,6 +104,11 @@ export class WebXRDefaultExperience {
      */
     public teleportation: WebXRMotionControllerTeleportation;
 
+    /**
+     * Enables near interaction for hands/controllers
+     */
+    public nearInteraction: WebXRNearInteraction;
+
     private constructor() {}
 
     /**
@@ -140,20 +154,44 @@ export class WebXRDefaultExperience {
 
                 if (!options.disablePointerSelection) {
                     // Add default pointer selection
-                    result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRControllerPointerSelectionOptions>{
+                    const pointerSelectionOptions = {
+                        ...options.pointerSelectionOptions,
                         xrInput: result.input,
                         renderingGroupId: options.renderingGroupId,
-                    });
+                    };
+
+                    result.pointerSelection = <WebXRControllerPointerSelection>(
+                        result.baseExperience.featuresManager.enableFeature(
+                            WebXRControllerPointerSelection.Name,
+                            options.useStablePlugins ? "stable" : "latest",
+                            <IWebXRControllerPointerSelectionOptions>pointerSelectionOptions
+                        )
+                    );
 
                     if (!options.disableTeleportation) {
                         // Add default teleportation, including rotation
-                        result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRTeleportationOptions>{
-                            floorMeshes: options.floorMeshes,
-                            xrInput: result.input,
-                            renderingGroupId: options.renderingGroupId,
-                        });
+                        result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(
+                            WebXRMotionControllerTeleportation.Name,
+                            options.useStablePlugins ? "stable" : "latest",
+                            <IWebXRTeleportationOptions>{
+                                floorMeshes: options.floorMeshes,
+                                xrInput: result.input,
+                                renderingGroupId: options.renderingGroupId,
+                            }
+                        );
                         result.teleportation.setSelectionFeature(result.pointerSelection);
                     }
+                }
+
+                if (!options.disableNearInteraction) {
+                    // Add default pointer selection
+                    result.nearInteraction = <WebXRNearInteraction>result.baseExperience.featuresManager.enableFeature(WebXRNearInteraction.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRNearInteractionOptions>{
+                        xrInput: result.input,
+                        farInteractionFeature: result.pointerSelection,
+                        renderingGroupId: options.renderingGroupId,
+                        useUtilityLayer: true,
+                        enableNearInteractionOnAllControllers: true,
+                    });
                 }
 
                 // Create the WebXR output target

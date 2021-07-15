@@ -86,8 +86,10 @@ declare module "./mesh" {
         /**
          * Refreshes the bounding info, taking into account all the thin instances defined
          * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
+         * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @param applyMorph  defines whether to apply the morph target before computing the bounding info
          */
-        thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean): void;
+        thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean, applySkeleton?: boolean, applyMorph?: boolean): void;
 
         /** @hidden */
         _thinInstanceInitializeUserStorage(): void;
@@ -227,7 +229,7 @@ Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<
             this._thinInstanceDataStorage.instancesCount = 0;
             if (!this.doNotSyncBoundingInfo) {
                 // mesh has no more thin instances, so need to recompute the bounding box because it's the regular mesh that will now be displayed
-                this.refreshBoundingInfo(true);
+                this.refreshBoundingInfo();
             }
         }
     } else if (kind === "previousMatrix") {
@@ -296,7 +298,7 @@ Mesh.prototype.thinInstanceGetWorldMatrices = function (): Matrix[] {
     return this._thinInstanceDataStorage.worldMatrices;
 };
 
-Mesh.prototype.thinInstanceRefreshBoundingInfo = function (forceRefreshParentInfo: boolean = false) {
+Mesh.prototype.thinInstanceRefreshBoundingInfo = function (forceRefreshParentInfo: boolean = false, applySkeleton: boolean = false, applyMorph: boolean = false) {
     if (!this._thinInstanceDataStorage.matrixData || !this._thinInstanceDataStorage.matrixBuffer) {
         return;
     }
@@ -305,7 +307,7 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function (forceRefreshParentInf
 
     if (forceRefreshParentInfo) {
         vectors.length = 0;
-        this.refreshBoundingInfo(true);
+        this.refreshBoundingInfo(applySkeleton, applyMorph);
     }
 
     const boundingInfo = this.getBoundingInfo();

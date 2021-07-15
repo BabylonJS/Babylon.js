@@ -18,6 +18,7 @@ interface IVector3LineComponentProps {
     useEuler?: boolean,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     noSlider?: boolean;
+    icon? : string;
 }
 
 export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, { isExpanded: boolean, value: Vector3 }> {
@@ -106,6 +107,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         return (
             <div className="vector3Line">
                 <div className="firstLine">
+                    {this.props.icon && <img src={this.props.icon} className="icon"/>}
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>

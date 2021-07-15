@@ -8,7 +8,7 @@ import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 declare type Scene = import("../../../scene").Scene;
 
 WebGPUEngine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-    compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture
+    compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags: number = 0): InternalTexture
 {
     const texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
@@ -56,7 +56,7 @@ WebGPUEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTex
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }
@@ -189,7 +189,7 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene
 };
 
 WebGPUEngine.prototype.createRawTexture3D = function(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-    compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture
+    compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags: number = 0): InternalTexture
 {
     const source = InternalTextureSource.Raw3D;
     const texture = new InternalTexture(this, source);
@@ -237,7 +237,7 @@ WebGPUEngine.prototype.updateRawTexture3D = function(texture: InternalTexture, b
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }
@@ -247,7 +247,7 @@ WebGPUEngine.prototype.updateRawTexture3D = function(texture: InternalTexture, b
 };
 
 WebGPUEngine.prototype.createRawTexture2DArray = function(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-    compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture
+    compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags: number = 0): InternalTexture
 {
     var source = InternalTextureSource.Raw2DArray;
     var texture = new InternalTexture(this, source);
@@ -295,7 +295,7 @@ WebGPUEngine.prototype.updateRawTexture2DArray = function(texture: InternalTextu
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }

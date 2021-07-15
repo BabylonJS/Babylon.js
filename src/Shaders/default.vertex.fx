@@ -13,9 +13,7 @@ attribute vec4 tangent;
 #ifdef UV1
 attribute vec2 uv;
 #endif
-#ifdef UV2
-attribute vec2 uv2;
-#endif
+#include<uvAttributeDeclaration>[2..7]
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
@@ -28,45 +26,18 @@ attribute vec4 color;
 #include<instancesDeclaration>
 #include<prePassVertexDeclaration>
 
-#ifdef MAINUV1
-	varying vec2 vMainUV1;
-#endif
+#include<mainUVVaryingDeclaration>[1..7]
 
-#ifdef MAINUV2
-	varying vec2 vMainUV2;
+#include<samplerVertexDeclaration>(_DEFINENAME_,DIFFUSE,_VARYINGNAME_,Diffuse)
+#include<samplerVertexDeclaration>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail)
+#include<samplerVertexDeclaration>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient)
+#include<samplerVertexDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity)
+#include<samplerVertexDeclaration>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive)
+#include<samplerVertexDeclaration>(_DEFINENAME_,LIGHTMAP,_VARYINGNAME_,Lightmap)
+#if defined(SPECULARTERM)
+#include<samplerVertexDeclaration>(_DEFINENAME_,SPECULAR,_VARYINGNAME_,Specular)
 #endif
-
-#if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0
-varying vec2 vDiffuseUV;
-#endif
-
-#if defined(DETAIL) && DETAILDIRECTUV == 0
-varying vec2 vDetailUV;
-#endif
-
-#if defined(AMBIENT) && AMBIENTDIRECTUV == 0
-varying vec2 vAmbientUV;
-#endif
-
-#if defined(OPACITY) && OPACITYDIRECTUV == 0
-varying vec2 vOpacityUV;
-#endif
-
-#if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0
-varying vec2 vEmissiveUV;
-#endif
-
-#if defined(LIGHTMAP) && LIGHTMAPDIRECTUV == 0
-varying vec2 vLightmapUV;
-#endif
-
-#if defined(SPECULAR) && defined(SPECULARTERM) && SPECULARDIRECTUV == 0
-varying vec2 vSpecularUV;
-#endif
-
-#if defined(BUMP) && BUMPDIRECTUV == 0
-varying vec2 vBumpUV;
-#endif
+#include<samplerVertexDeclaration>(_DEFINENAME_,BUMP,_VARYINGNAME_,Bump)
 
 // Output
 varying vec3 vPositionW;
@@ -176,105 +147,21 @@ void main(void) {
 #ifndef UV1
 	vec2 uvUpdated = vec2(0., 0.);
 #endif
-#ifndef UV2
-	vec2 uv2 = vec2(0., 0.);
-#endif
-
 #ifdef MAINUV1
 	vMainUV1 = uvUpdated;
 #endif
+    #include<uvVariableDeclaration>[2..7]
 
-#ifdef MAINUV2
-	vMainUV2 = uv2;
-#endif
-
-#if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0
-	if (vDiffuseInfos.x == 0.)
-	{
-		vDiffuseUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
-	}
-	else
-	{
-		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
-	}
-#endif
-
-#if defined(DETAIL) && DETAILDIRECTUV == 0
-	if (vDetailInfos.x == 0.)
-	{
-		vDetailUV = vec2(detailMatrix * vec4(uvUpdated, 1.0, 0.0));
-	}
-	else
-	{
-		vDetailUV = vec2(detailMatrix * vec4(uv2, 1.0, 0.0));
-	}
-#endif
-
-#if defined(AMBIENT) && AMBIENTDIRECTUV == 0
-	if (vAmbientInfos.x == 0.)
-	{
-		vAmbientUV = vec2(ambientMatrix * vec4(uvUpdated, 1.0, 0.0));
-	}
-	else
-	{
-		vAmbientUV = vec2(ambientMatrix * vec4(uv2, 1.0, 0.0));
-	}
-#endif
-
-#if defined(OPACITY) && OPACITYDIRECTUV == 0
-	if (vOpacityInfos.x == 0.)
-	{
-		vOpacityUV = vec2(opacityMatrix * vec4(uvUpdated, 1.0, 0.0));
-	}
-	else
-	{
-		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
-	}
-#endif
-
-#if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0
-	if (vEmissiveInfos.x == 0.)
-	{
-		vEmissiveUV = vec2(emissiveMatrix * vec4(uvUpdated, 1.0, 0.0));
-	}
-	else
-	{
-		vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));
-	}
-#endif
-
-#if defined(LIGHTMAP) && LIGHTMAPDIRECTUV == 0
-	if (vLightmapInfos.x == 0.)
-	{
-		vLightmapUV = vec2(lightmapMatrix * vec4(uvUpdated, 1.0, 0.0));
-	}
-	else
-	{
-		vLightmapUV = vec2(lightmapMatrix * vec4(uv2, 1.0, 0.0));
-	}
-#endif
-
-#if defined(SPECULAR) && defined(SPECULARTERM) && SPECULARDIRECTUV == 0
-	if (vSpecularInfos.x == 0.)
-	{
-		vSpecularUV = vec2(specularMatrix * vec4(uvUpdated, 1.0, 0.0));
-	}
-	else
-	{
-		vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));
-	}
-#endif
-
-#if defined(BUMP) && BUMPDIRECTUV == 0
-	if (vBumpInfos.x == 0.)
-	{
-		vBumpUV = vec2(bumpMatrix * vec4(uvUpdated, 1.0, 0.0));
-	}
-	else
-	{
-		vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
-	}
-#endif
+    #include<samplerVertexImplementation>(_DEFINENAME_,DIFFUSE,_VARYINGNAME_,Diffuse,_MATRIXNAME_,diffuse,_INFONAME_,DiffuseInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient,_MATRIXNAME_,ambient,_INFONAME_,AmbientInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_MATRIXNAME_,opacity,_INFONAME_,OpacityInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive,_MATRIXNAME_,emissive,_INFONAME_,EmissiveInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,LIGHTMAP,_VARYINGNAME_,Lightmap,_MATRIXNAME_,lightmap,_INFONAME_,LightmapInfos.x)
+    #if defined(SPECULARTERM)
+    #include<samplerVertexImplementation>(_DEFINENAME_,SPECULAR,_VARYINGNAME_,Specular,_MATRIXNAME_,specular,_INFONAME_,SpecularInfos.x)
+    #endif
+    #include<samplerVertexImplementation>(_DEFINENAME_,BUMP,_VARYINGNAME_,Bump,_MATRIXNAME_,bump,_INFONAME_,BumpInfos.x)
 
 #include<bumpVertex>
 #include<clipPlaneVertex>

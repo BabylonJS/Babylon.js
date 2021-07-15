@@ -7,25 +7,10 @@ import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smart
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
 import { Vector2, Vector3, Matrix, TmpVectors, Vector4 } from "./Maths/math.vector";
-import { Geometry } from "./Meshes/geometry";
-import { TransformNode } from "./Meshes/transformNode";
-import { SubMesh } from "./Meshes/subMesh";
-import { AbstractMesh } from "./Meshes/abstractMesh";
-import { Mesh } from "./Meshes/mesh";
 import { IParticleSystem } from "./Particles/IParticleSystem";
-import { Bone } from "./Bones/bone";
-import { Skeleton } from "./Bones/skeleton";
-import { MorphTargetManager } from "./Morph/morphTargetManager";
-import { Camera } from "./Cameras/camera";
 import { AbstractScene } from "./abstractScene";
-import { BaseTexture } from "./Materials/Textures/baseTexture";
-import { Texture } from "./Materials/Textures/texture";
-import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
-import { Effect } from "./Materials/effect";
 import { UniformBuffer } from "./Materials/uniformBuffer";
-import { MultiMaterial } from "./Materials/multiMaterial";
-import { Light } from "./Lights/light";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
@@ -36,8 +21,6 @@ import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, PreActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
-import { Node } from "./node";
-import { MorphTarget } from "./Morph/morphTarget";
 import { Constants } from "./Engines/constants";
 import { DomManagement } from "./Misc/domManagement";
 import { Logger } from "./Misc/logger";
@@ -55,7 +38,7 @@ import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
-import { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";
+import { LightConstants } from "./Lights/lightConstants";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -66,6 +49,24 @@ declare type AnimationPropertiesOverride = import("./Animations/animationPropert
 declare type Collider = import("./Collisions/collider").Collider;
 declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 declare type Material = import("./Materials/material").Material;
+declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
+declare type Light = import("./Lights/light").Light;
+declare type Camera = import("./Cameras/camera").Camera;
+declare type Texture = import("./Materials/Textures/texture").Texture;
+declare type MultiMaterial = import("./Materials/multiMaterial").MultiMaterial;
+declare type BaseTexture = import("./Materials/Textures/baseTexture").BaseTexture;
+declare type TransformNode = import("./Meshes/transformNode").TransformNode;
+declare type Skeleton = import("./Bones/skeleton").Skeleton;
+declare type Bone = import("./Bones/bone").Bone;
+declare type SubMesh = import("./Meshes/subMesh").SubMesh;
+declare type Mesh = import("./Meshes/mesh").Mesh;
+declare type Node = import("./node").Node;
+declare type Geometry = import("./Meshes/geometry").Geometry;
+declare type RenderTargetTexture = import("./Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type MorphTargetManager = import("./Morph/morphTargetManager").MorphTargetManager;
+declare type Effect = import("./Materials/effect").Effect;
+declare type MorphTarget = import("./Morph/morphTarget").MorphTarget;
+declare type WebVRFreeCamera = import("./Cameras/VR/webVRCamera").WebVRFreeCamera;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -2455,7 +2456,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public sortLightsByPriority(): void {
         if (this.requireLightSorting) {
-            this.lights.sort(Light.CompareLightsPriority);
+            this.lights.sort(LightConstants.CompareLightsPriority);
         }
     }
 
@@ -3872,7 +3873,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             // Compute world matrix if LOD is billboard
-            if (meshToRender !== mesh && meshToRender.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
+            if (meshToRender !== mesh && meshToRender.billboardMode !== 0) {
                 meshToRender.computeWorldMatrix();
             }
 
@@ -4120,7 +4121,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _processSubCameras(camera: Camera): void {
-        if (camera.cameraRigMode === Camera.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
+        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
             this._renderForCamera(camera);
             this.onAfterRenderCameraObservable.notifyObservers(camera);
             return;
@@ -4154,7 +4155,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
                 if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                     var parameters = action.getTriggerParameter();
-                    var otherMesh = parameters instanceof AbstractMesh ? parameters : parameters.mesh;
+                    var otherMesh = parameters.mesh ? parameters.mesh : parameters;
 
                     var areIntersecting = otherMesh.intersectsMesh(sourceMesh, parameters.usePreciseIntersection);
                     var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
@@ -4176,7 +4177,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
                         //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
                         if (!sourceMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnIntersectionExitTrigger, (parameter) => {
-                            var parameterMesh = parameter instanceof AbstractMesh ? parameter : parameter.mesh;
+                            var parameterMesh = parameter.mesh ? parameter.mesh : parameter;
                             return otherMesh === parameterMesh;
                         }) || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                             sourceMesh._intersectionsInProgress.splice(currentIntersectionInProgress, 1);
@@ -4315,7 +4316,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     let camera = this.activeCameras[cameraIndex];
                     camera.update();
-                    if (camera.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                    if (camera.cameraRigMode !== Constants.RIG_MODE_NONE) {
                         // rig cameras
                         for (var index = 0; index < camera._rigCameras.length; index++) {
                             camera._rigCameras[index].update();
@@ -4324,7 +4325,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 }
             } else if (this.activeCamera) {
                 this.activeCamera.update();
-                if (this.activeCamera.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                if (this.activeCamera.cameraRigMode !== Constants.RIG_MODE_NONE) {
                     // rig cameras
                     for (var index = 0; index < this.activeCamera._rigCameras.length; index++) {
                         this.activeCamera._rigCameras[index].update();
@@ -4373,7 +4374,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
         let frameBufferBound = false;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM && !this.prePass) {
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
             this._bindFrameBuffer(this._activeCamera);
             frameBufferBound = true;
         }
@@ -4477,10 +4478,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public dispose(): void {
         this.beforeRender = null;
         this.afterRender = null;
-
-        if (EngineStore._LastCreatedScene === this) {
-            EngineStore._LastCreatedScene = null;
-        }
+        this.metadata = null;
 
         this.skeletons = [];
         this.morphTargetManagers = [];
@@ -4672,6 +4670,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._engine.scenes.splice(index, 1);
         }
 
+        if (EngineStore._LastCreatedScene === this) {
+            if (this._engine.scenes.length > 0) {
+                EngineStore._LastCreatedScene = this._engine.scenes[this._engine.scenes.length - 1];
+            } else {
+                EngineStore._LastCreatedScene = null;
+            }
+        }
+
         index = this._engine._virtualScenes.indexOf(this);
 
         if (index > -1) {
@@ -4768,7 +4774,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param cameraViewSpace defines if picking will be done in view space (false by default)
      * @returns a Ray
      */
-    public createPickingRay(x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
+    public createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
         throw _DevTools.WarnImport("Ray");
     }
 
@@ -4782,7 +4788,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param cameraViewSpace defines if picking will be done in view space (false by default)
      * @returns the current scene
      */
-    public createPickingRayToRef(x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
+    public createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
         throw _DevTools.WarnImport("Ray");
     }
 
@@ -5091,8 +5097,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
-        const request = FileTools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
+    public _loadFile(fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
+        const request = FileTools.LoadFile(fileOrUrl, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -5101,13 +5107,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** @hidden */
-    public _loadFileAsync(url: string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+    public _loadFileAsync(fileOrUrl: File | string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onOpened?: (request: WebRequest) => void): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
-            this._loadFile(url, (data) => {
+            this._loadFile(fileOrUrl, (data) => {
                 resolve(data);
             }, onProgress, useOfflineSupport, useArrayBuffer, (request, exception) => {
                 reject(exception);
-            });
+            }, onOpened);
         });
     }
 

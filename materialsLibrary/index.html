@@ -65,7 +65,7 @@
 
             engine = new BABYLON.WebGPUEngine(canvas, {
                 deviceDescriptor: {
-                    nonGuaranteedFeatures: [
+                    requiredFeatures: [
                         "texture-compression-bc",
                         "timestamp-query",
                         "pipeline-statistics-query",

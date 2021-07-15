@@ -147,7 +147,7 @@ export class WebXRSessionManager implements IDisposable {
             return this._xrNavigator.xr.getWebXRRenderTarget(engine);
         } else {
             options = options || WebXRManagedOutputCanvasOptions.GetDefaults(engine);
-            options.canvasElement = engine.getRenderingCanvas() || undefined;
+            options.canvasElement = options.canvasElement || engine.getRenderingCanvas() || undefined;
             return new WebXRManagedOutputCanvas(this, options);
         }
     }

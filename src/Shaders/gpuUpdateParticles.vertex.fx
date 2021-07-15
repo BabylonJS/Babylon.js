@@ -255,10 +255,10 @@ void main() {
     newPosition = (radius - (radius * radiusRange * randoms2.z)) * vec3(randX, randY, randZ);
 
     #ifdef DIRECTEDSPHEREEMITTER
-      newDirection = direction1 + (direction2 - direction1) * randoms3;
+      newDirection = normalize(direction1 + (direction2 - direction1) * randoms3);
     #else
       // Direction
-      newDirection = newPosition + directionRandomizer * randoms3;
+      newDirection = normalize(newPosition + directionRandomizer * randoms3);
     #endif
 #elif defined(CYLINDEREMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
@@ -277,8 +277,8 @@ void main() {
       newDirection = direction1 + (direction2 - direction1) * randoms3;
     #else
       // Direction
-      angle = angle + ((randoms3.x-0.5) * PI);
-      newDirection = vec3(cos(angle), randoms3.y-0.5, sin(angle));
+      angle = angle + ((randoms3.x-0.5) * PI) * directionRandomizer;
+      newDirection = vec3(cos(angle), (randoms3.y-0.5) * directionRandomizer, sin(angle));
       newDirection = normalize(newDirection);
     #endif
 #elif defined(CONEEMITTER)

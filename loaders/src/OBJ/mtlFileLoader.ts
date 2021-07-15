@@ -4,6 +4,7 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 
 import { Scene } from "babylonjs/scene";
+import { AssetContainer } from "babylonjs/assetContainer";
 /**
  * Class reading and parsing the MTL file bundled with the obj file.
  */
@@ -27,9 +28,9 @@ export class MTLFileLoader {
      * @param scene defines the scene the material will be created in
      * @param data defines the mtl data to parse
      * @param rootUrl defines the rooturl to use in order to load relative dependencies
-     * @param forAssetContainer defines if the material should be registered in the scene
+     * @param assetContainer defines the asset container to store the material in (can be null)
      */
-    public parseMTL(scene: Scene, data: string | ArrayBuffer, rootUrl: string, forAssetContainer: boolean): void {
+    public parseMTL(scene: Scene, data: string | ArrayBuffer, rootUrl: string, assetContainer: Nullable<AssetContainer>): void {
         if (data instanceof ArrayBuffer) {
             return;
         }
@@ -71,8 +72,9 @@ export class MTLFileLoader {
                 //Create a new material.
                 // value is the name of the material read in the mtl file
 
-                scene._blockEntityCollection = forAssetContainer;
+                scene._blockEntityCollection = !!assetContainer;
                 material = new StandardMaterial(value, scene);
+                material._parentContainer = assetContainer;
                 scene._blockEntityCollection = false;
             } else if (key === "kd" && material) {
                 // Diffuse color (color under white light) using RGB values
