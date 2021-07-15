@@ -11,6 +11,7 @@ import { Tools } from '../../Misc/tools';
 import { ToGammaSpace } from '../../Maths/math.constants';
 import { ThinEngine } from '../../Engines/thinEngine';
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
+import { TextureTools } from "../../Misc/textureTools";
 import "../../Engines/Extensions/engine.rawTexture";
 import "../../Materials/Textures/baseTexture.polynomial";
 
@@ -164,13 +165,22 @@ export class HDRCubeTexture extends BaseTexture {
      */
     private loadTexture() {
         const engine = this._getEngine()!;
-        var callback = (buffer: ArrayBuffer): Nullable<ArrayBufferView[]> => {
+        const caps = engine.getCaps();
+
+        let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (caps.textureFloat && caps.textureFloatLinearFiltering) {
+            textureType = Constants.TEXTURETYPE_FLOAT;
+        } else if (caps.textureHalfFloat && caps.textureHalfFloatLinearFiltering) {
+            textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+
+        const callback = (buffer: ArrayBuffer): Nullable<ArrayBufferView[]> => {
 
             this.lodGenerationOffset = 0.0;
             this.lodGenerationScale = 0.8;
 
             // Extract the raw linear data.
-            var data = HDRTools.GetCubeMapTextureData(buffer, this._size);
+            const data = HDRTools.GetCubeMapTextureData(buffer, this._size);
 
             // Generate harmonics if needed.
             if (this._generateHarmonics) {
@@ -178,24 +188,27 @@ export class HDRCubeTexture extends BaseTexture {
                 this.sphericalPolynomial = sphericalPolynomial;
             }
 
-            var results = [];
-            var byteArray: Nullable<Uint8Array> = null;
+            const results = [];
+
+            let byteArray: Nullable<Uint8Array> = null;
+            let shortArray: Nullable<Uint16Array> = null;
 
             // Push each faces.
-            for (var j = 0; j < 6; j++) {
+            for (let j = 0; j < 6; j++) {
 
-                // Create uintarray fallback.
-                if (!engine.getCaps().textureFloat) {
+                // Create fallback array
+                if (textureType === Constants.TEXTURETYPE_HALF_FLOAT) {
+                    shortArray = new Uint16Array(this._size * this._size * 3);
+                } else if (textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE) {
                     // 3 channels of 1 bytes per pixel in bytes.
-                    var byteBuffer = new ArrayBuffer(this._size * this._size * 3);
-                    byteArray = new Uint8Array(byteBuffer);
+                    byteArray = new Uint8Array(this._size * this._size * 3);
                 }
 
-                var dataFace = <Float32Array>((<any>data)[HDRCubeTexture._facesMapping[j]]);
+                const dataFace = <Float32Array>((<any>data)[HDRCubeTexture._facesMapping[j]]);
 
                 // If special cases.
-                if (this.gammaSpace || byteArray) {
-                    for (var i = 0; i < this._size * this._size; i++) {
+                if (this.gammaSpace || shortArray || byteArray) {
+                    for (let i = 0; i < this._size * this._size; i++) {
 
                         // Put in gamma space if requested.
                         if (this.gammaSpace) {
@@ -204,16 +217,23 @@ export class HDRCubeTexture extends BaseTexture {
                             dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], ToGammaSpace);
                         }
 
+                        // Convert to half float texture for fallback.
+                        if (shortArray) {
+                            shortArray[(i * 3) + 0] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 0]);
+                            shortArray[(i * 3) + 1] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 1]);
+                            shortArray[(i * 3) + 2] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 2]);
+                        }
+
                         // Convert to int texture for fallback.
                         if (byteArray) {
-                            var r = Math.max(dataFace[(i * 3) + 0] * 255, 0);
-                            var g = Math.max(dataFace[(i * 3) + 1] * 255, 0);
-                            var b = Math.max(dataFace[(i * 3) + 2] * 255, 0);
+                            let r = Math.max(dataFace[(i * 3) + 0] * 255, 0);
+                            let g = Math.max(dataFace[(i * 3) + 1] * 255, 0);
+                            let b = Math.max(dataFace[(i * 3) + 2] * 255, 0);
 
                             // May use luminance instead if the result is not accurate.
-                            var max = Math.max(Math.max(r, g), b);
+                            const max = Math.max(Math.max(r, g), b);
                             if (max > 255) {
-                                var scale = 255 / max;
+                                const scale = 255 / max;
                                 r *= scale;
                                 g *= scale;
                                 b *= scale;
@@ -226,7 +246,10 @@ export class HDRCubeTexture extends BaseTexture {
                     }
                 }
 
-                if (byteArray) {
+                if (shortArray) {
+                    results.push(shortArray);
+                }
+                else  if (byteArray) {
                     results.push(byteArray);
                 }
                 else {
@@ -247,7 +270,7 @@ export class HDRCubeTexture extends BaseTexture {
 
         this._texture = engine.createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
             Constants.TEXTUREFORMAT_RGB,
-            engine.getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,
+            textureType,
             this._noMipmap,
             callback,
             null, this._onLoad, this._onError);
