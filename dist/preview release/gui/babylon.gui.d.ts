@@ -3687,12 +3687,13 @@ declare module BABYLON.GUI {
         private _nodeTypes;
         private _isLoaded;
         private _objectAttributes;
+        private _rootNode;
         private _parentClass;
         /**
         * Create a new xml loader
         * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
         */
-        constructor(parentClass?: null);
+        constructor(parentClass?: any);
         private _getChainElement;
         private _getClassAttribute;
         private _createGuiElement;
@@ -3718,12 +3719,24 @@ declare module BABYLON.GUI {
         */
         getNodes(): any;
         /**
+         * Disposes the loaded layout
+        */
+        dispose(): void;
+        /**
          * Initiates the xml layout loading
          * @param xmlFile defines the xml layout to load
          * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
-         * @param callback defines the callback called on layout load.
+         * @param onSuccess defines the callback called on layout load successfully.
+         * @param onError defines the callback called on layout load failure.
          */
-        loadLayout(xmlFile: any, rootNode: any, callback: any): void;
+        loadLayout(xmlFile: any, rootNode: any, onSuccess?: BABYLON.Nullable<() => void>, onError?: BABYLON.Nullable<(error: string) => void>): void;
+        /**
+         * Initiates the xml layout loading asynchronously
+         * @param xmlFile defines the xml layout to load
+         * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+         * @returns Promise
+         */
+        loadLayoutAsync(xmlFile: any, rootNode: any): Promise<any>;
     }
 }
 declare module BABYLON.GUI {

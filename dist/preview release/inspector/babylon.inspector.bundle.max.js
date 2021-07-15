@@ -54641,7 +54641,6 @@ var TextureEditorComponent = /** @class */ (function (_super) {
         });
         newTools = this.state.tools.concat(newTools);
         this.setState({ tools: newTools });
-        console.log(newTools);
     };
     TextureEditorComponent.prototype.getToolParameters = function () {
         var _this = this;
@@ -58967,6 +58966,10 @@ var playheadSize = 8;
 var dividerSize = 2;
 // Currently the scale factor is a constant but when we add panning this may become formula based.
 var scaleFactor = 0.8;
+// This controls the scale factor at which we stop drawing the playhead. Below this value there tends to be flickering of the playhead as data comes in.
+var stopDrawingPlayheadThreshold = 0.95;
+// Threshold for the ratio at which we go from panning mode to live mode.
+var returnToLiveThreshold = 0.998;
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc!
@@ -58998,13 +59001,84 @@ var CanvasGraphService = /** @class */ (function () {
                 .reduce(function (maxLengthSoFar, currLength) {
                 return Math.max(currLength, maxLengthSoFar);
             }, 0);
+            if (_this._shouldBecomeRealtime()) {
+                _this._positions.clear();
+            }
             // Bind the zoom between [minZoom, maxZoom]
             _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+        };
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        this._handlePanStart = function (event) {
+            var ctx = _this._ctx;
+            if (!ctx || !ctx.canvas) {
+                return;
+            }
+            var canvas = ctx.canvas;
+            _this._panPosition = {
+                xPos: event.clientX,
+                delta: 0,
+            };
+            canvas.addEventListener("mousemove", _this._handlePan);
+        };
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        this._handlePan = function (event) {
+            if (!_this._panPosition) {
+                return;
+            }
+            var pixelDelta = _this._panPosition.delta + event.clientX - _this._panPosition.xPos;
+            var pixelsPerItem = _this._width / _this._sizeOfWindow;
+            var itemsDelta = pixelDelta / pixelsPerItem | 0;
+            _this.datasets.forEach(function (dataset) {
+                var _a;
+                if (dataset.data.length === 0 || !!dataset.hidden) {
+                    return;
+                }
+                var id = dataset.id;
+                var pos = (_a = _this._positions.get(id)) !== null && _a !== void 0 ? _a : (dataset.data.length - 1);
+                // update our position without allowing the user to pan more than they need to (approximation) 
+                _this._positions.set(id, babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), dataset.data.length - Math.floor(_this._sizeOfWindow * (1 - scaleFactor))));
+            });
+            if (itemsDelta === 0) {
+                _this._panPosition.delta += pixelDelta;
+            }
+            else {
+                _this._panPosition.delta = 0;
+            }
+            _this._panPosition.xPos = event.clientX;
+        };
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        this._handlePanStop = function () {
+            var ctx = _this._ctx;
+            if (!ctx || !ctx.canvas) {
+                return;
+            }
+            // check if we should return to realtime.
+            if (_this._shouldBecomeRealtime()) {
+                _this._positions.clear();
+            }
+            var canvas = ctx.canvas;
+            canvas.removeEventListener("mousemove", _this._handlePan);
+            _this._panPosition = null;
         };
         this._ctx = canvas.getContext && canvas.getContext("2d");
         this._width = canvas.width;
         this._height = canvas.height;
         this._ticks = [];
+        this._panPosition = null;
+        this._positions = new Map();
+        this._datasetBounds = new Map();
         this.datasets = settings.datasets;
         this._attachEventListeners(canvas);
     }
@@ -59021,25 +59095,83 @@ var CanvasGraphService = /** @class */ (function () {
         this.clear();
         // Get global min max of time axis (across all datasets).
         var globalTimeMinMax = { min: Infinity, max: 0 };
-        // TODO: Make better sliding window code (accounting for zoom and pan).
+        // First we must get the end positions of each dataset.
+        this.datasets.forEach(function (dataset) {
+            var _a;
+            // skip hidden and empty datasets!
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            var pos = (_a = _this._positions.get(dataset.id)) !== null && _a !== void 0 ? _a : dataset.data.length - 1;
+            var start = pos - Math.ceil(_this._sizeOfWindow * scaleFactor);
+            var startOverflow = 0;
+            // account for overflow from start.
+            if (start < 0) {
+                startOverflow = 0 - start;
+                start = 0;
+            }
+            var end = Math.ceil(pos + _this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
+            // account for overflow from end.
+            if (end > dataset.data.length) {
+                var endOverflow = end - dataset.data.length;
+                end = dataset.data.length;
+                start = Math.max(start - endOverflow, 0);
+            }
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // update or set the bounds
+            if (bounds) {
+                bounds.start = start;
+                bounds.end = end;
+            }
+            else {
+                _this._datasetBounds.set(dataset.id, { start: start, end: end });
+            }
+        });
+        // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
+        this.datasets.forEach(function (dataset) {
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, globalTimeMinMax.min);
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+        // set the buffer region maximum by rescaling the max timestamp in bounds.
+        var bufferMaximum = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min) / scaleFactor + globalTimeMinMax.min);
+        // we then need to update the end position based on the maximum for the buffer region
+        this.datasets.forEach(function (dataset) {
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            // binary search to get closest point to the buffer maximum.
+            bounds.end = _this._getClosestPointToTimestamp(dataset, bufferMaximum) + 1;
+            // keep track of largest timestamp value in view!
+            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+        });
+        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((globalTimeMinMax.max - globalTimeMinMax.min) / (bufferMaximum - globalTimeMinMax.min), 0.8, 1);
+        // we will now set the global maximum to the maximum of the buffer.
+        globalTimeMinMax.max = bufferMaximum;
         // TODO: Perhaps see if i can reduce the number of allocations.
         // Keep only visible and non empty datasets and get a certain window of items.
-        var datasets = this.datasets.filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; }).map(function (dataset) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(Math.max(dataset.data.length - _this._sizeOfWindow, 0)) })); });
-        datasets.forEach(function (dataset) {
-            var timeMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.timestamp; }));
-            globalTimeMinMax.min = Math.min(timeMinMax.min, globalTimeMinMax.min);
-            globalTimeMinMax.max = Math.max(timeMinMax.max, globalTimeMinMax.max);
-        });
+        var datasets = this.datasets.map(function (dataset) {
+            var bounds = _this._datasetBounds.get(dataset.id);
+            // handles cases we skip!
+            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
+                return dataset;
+            }
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(bounds.start, bounds.end) });
+        }).filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; });
         var drawableArea = {
             top: 0,
             left: 0,
             bottom: this._height,
             right: this._width,
         };
-        // we will now rescale the maximum for the playhead.
-        globalTimeMinMax.max = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min) / scaleFactor + globalTimeMinMax.min);
         this._drawTimeAxis(globalTimeMinMax, drawableArea);
-        this._drawPlayheadRegion(drawableArea, scaleFactor);
+        this._drawPlayheadRegion(drawableArea, updatedScaleFactor);
         // process, and then draw our points
         datasets.forEach(function (dataset) {
             var _a;
@@ -59055,6 +59187,36 @@ var CanvasGraphService = /** @class */ (function () {
             });
             ctx.stroke();
         });
+    };
+    /**
+     * Returns the index of the closest time for a dataset.
+     * Uses a modified binary search to get value.
+     *
+     * @param dataset the dataset we want to search in.
+     * @param targetTime the time we want to get close to.
+     * @returns index of the item with the closest time to the targetTime
+     */
+    CanvasGraphService.prototype._getClosestPointToTimestamp = function (dataset, targetTime) {
+        var low = 0;
+        var high = dataset.data.length - 1;
+        var closestIndex = 0;
+        while (low <= high) {
+            var middle = Math.trunc((low + high) / 2);
+            var middleTimestamp = dataset.data[middle].timestamp;
+            if (Math.abs(middleTimestamp - targetTime) < Math.abs(dataset.data[closestIndex].timestamp - targetTime)) {
+                closestIndex = middle;
+            }
+            if (middleTimestamp < targetTime) {
+                low = middle + 1;
+            }
+            else if (middleTimestamp > targetTime) {
+                high = middle - 1;
+            }
+            else {
+                break;
+            }
+        }
+        return closestIndex;
     };
     /**
      * Draws the time axis, adjusts the drawable area for the graph.
@@ -59221,6 +59383,9 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._attachEventListeners = function (canvas) {
         canvas.addEventListener("wheel", this._handleZoom);
+        canvas.addEventListener("mousedown", this._handlePanStart);
+        // The user may stop panning outside of the canvas size so we should add the event listener to the document.
+        canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
     };
     /**
      * We remove all event listeners we added.
@@ -59229,6 +59394,38 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._removeEventListeners = function (canvas) {
         canvas.removeEventListener("wheel", this._handleZoom);
+        canvas.removeEventListener("mousedown", this._handlePanStart);
+        canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
+    };
+    /**
+     * Method which returns true if the data should become realtime, false otherwise.
+     *
+     * @returns if the data should become realtime or not.
+     */
+    CanvasGraphService.prototype._shouldBecomeRealtime = function () {
+        if (this.datasets.length === 0) {
+            return false;
+        }
+        // We first get the latest dataset, because this is where the real time data is!
+        var latestDataset = this.datasets[0];
+        this.datasets.forEach(function (dataset) {
+            // skip over empty and hidden data!
+            if (dataset.data.length === 0 || !!dataset.hidden) {
+                return;
+            }
+            if (latestDataset.data[latestDataset.data.length - 1].timestamp < dataset.data[dataset.data.length - 1].timestamp) {
+                latestDataset = dataset;
+            }
+        });
+        var pos = this._positions.get(latestDataset.id);
+        var latestElementPos = latestDataset.data.length - 1;
+        if (pos === undefined) {
+            return false;
+        }
+        // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
+        var overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
+        var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
+        return latestDataset.data[rightmostPos].timestamp / latestDataset.data[latestElementPos].timestamp > returnToLiveThreshold;
     };
     /**
      * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
@@ -59238,7 +59435,7 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._drawPlayheadRegion = function (drawableArea, scaleFactor) {
         var ctx = this._ctx;
-        if (!ctx) {
+        if (!ctx || scaleFactor >= stopDrawingPlayheadThreshold) {
             return;
         }
         var dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
