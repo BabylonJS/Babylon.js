@@ -568,7 +568,7 @@ export class GeometryBufferRenderer {
         } else if (engine._caps.textureHalfFloat && engine._caps.textureHalfFloatLinearFiltering) {
             type = Constants.TEXTURETYPE_HALF_FLOAT;
         }
-        type = Constants.TEXTURETYPE_FLOAT;
+
         this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps: false, generateDepthTexture: true, defaultType: type }, textureNames.concat("gBuffer_DepthBuffer"));
         if (!this.isSupported) {
             return;
