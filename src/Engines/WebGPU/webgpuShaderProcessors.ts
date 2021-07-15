@@ -32,7 +32,8 @@ const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
     "sampler2DArray": "sampler2DArray",
     "sampler2DShadow": "sampler2DShadow",
     "sampler2DArrayShadow": "sampler2DArrayShadow",
-    "samplerCube": "samplerCube"
+    "samplerCube": "samplerCube",
+    "sampler3D": "sampler3D",
 };
 
 const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
@@ -41,7 +42,8 @@ const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
     "sampler2DShadow": "texture2D",
     "sampler2DArrayShadow": "texture2DArray",
     "samplerCube": "textureCube",
-    "samplerCubeArray": "textureCubeArray"
+    "samplerCubeArray": "textureCubeArray",
+    "sampler3D": "texture3D",
 };
 
 const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
@@ -49,6 +51,7 @@ const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureVi
     "textureCubeArray": WebGPUConstants.TextureViewDimension.CubeArray,
     "texture2D": WebGPUConstants.TextureViewDimension.E2d,
     "texture2DArray": WebGPUConstants.TextureViewDimension.E2dArray,
+    "texture3D": WebGPUConstants.TextureViewDimension.E3d,
 };
 
 // if the webgl sampler type is not listed in this array, "sampler" is taken by default
