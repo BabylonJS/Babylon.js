@@ -521,7 +521,6 @@ export class CanvasGraphService {
         },
         tooltipDebounceTime
     )
-        
 
     /**
      * Handles what to do when we stop hovering over the canvas.
