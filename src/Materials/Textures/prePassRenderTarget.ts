@@ -131,5 +131,10 @@ export class PrePassRenderTarget extends MultiRenderTarget {
         if (this.renderTargetTexture) {
             this.renderTargetTexture._prePassRenderTarget = null;
         }
+
+        if (this._outputPostProcess) {
+            this._outputPostProcess.autoClear = true;
+            this._outputPostProcess.restoreDefaultInputTexture();
+        }
     }
 }
