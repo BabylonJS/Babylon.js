@@ -28,6 +28,12 @@ WebGPUEngine.prototype.createRenderTargetTexture = function(size: any, options: 
         fullOptions.creationFlags = 0;
     }
 
+    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    }
+
     const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
     const width = size.width || size;
