@@ -130,8 +130,9 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param count Define the number of target we are rendering into
      * @param scene Define the scene the texture belongs to
      * @param options Define the options used to create the multi render target
+     * @param textureNames Define the names to set to the textures (if count > 0 - optional)
      */
-    constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions) {
+    constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         var generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
         var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
         var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
@@ -174,7 +175,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         if (count > 0) {
             this._createInternalTextures();
-            this._createTextures();
+            this._createTextures(textureNames);
         }
     }
 
@@ -195,7 +196,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     /** @hidden */
-    public _rebuild(forceFullRebuild: boolean = false): void {
+    public _rebuild(forceFullRebuild: boolean = false, textureNames?: string[]): void {
         if (this._count < 1) {
             return;
         }
@@ -205,7 +206,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         if (forceFullRebuild) {
             this._releaseTextures();
-            this._createTextures();
+            this._createTextures(textureNames);
         }
 
         for (var i = 0; i < this._internalTextures.length; i++) {
@@ -228,15 +229,19 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _releaseTextures(): void {
         if (this._textures) {
             for (let i = 0; i < this._textures.length; i++) {
+                this._textures[i]._texture = null; // internal textures are released by a call to releaseInternalTextures()
                 this._textures[i].dispose();
             }
         }
     }
 
-    private _createTextures(): void {
+    private _createTextures(textureNames?: string[]): void {
         this._textures = [];
         for (var i = 0; i < this._internalTextures.length; i++) {
             var texture = new Texture(null, this.getScene());
+            if (textureNames?.[i]) {
+                texture.name = textureNames[i];
+            }
             texture._texture = this._internalTextures[i];
             this._textures.push(texture);
         }
@@ -292,8 +297,9 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Be careful as it will recreate all the data in the new texture.
      * @param count new texture count
      * @param options Specifies texture types and sampling modes for new textures
+     * @param textureNames Specifies the names of the textures (optional)
      */
-    public updateCount(count: number, options?: IMultiRenderTargetOptions) {
+    public updateCount(count: number, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         this._multiRenderTargetOptions.textureCount = count;
         this._count = count;
 
@@ -303,7 +309,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._initTypes(count, types, samplingModes, options);
         this._multiRenderTargetOptions.types = types;
         this._multiRenderTargetOptions.samplingModes = samplingModes;
-        this._rebuild(true);
+        this._rebuild(true, textureNames);
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
@@ -316,8 +322,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Dispose the render targets and their associated resources
      */
     public dispose(): void {
-        this.releaseInternalTextures();
         this._releaseTextures();
+        this.releaseInternalTextures();
         super.dispose();
     }
 
