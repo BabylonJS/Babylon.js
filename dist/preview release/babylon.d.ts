@@ -18623,6 +18623,8 @@ declare module BABYLON {
         private _getPostProcessesSource;
         private _setupOutputForThisPass;
         private _linkInternalTexture;
+        /** @hidden */
+        _unlinkInternalTexture(prePassRenderTarget: PrePassRenderTarget): void;
         private _needsImageProcessing;
         private _hasImageProcessing;
         /**
