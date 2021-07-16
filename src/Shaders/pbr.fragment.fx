@@ -29,6 +29,7 @@ precision highp float;
 #include<pbrFragmentSamplersDeclaration>
 #include<imageProcessingDeclaration>
 #include<clipPlaneFragmentDeclaration>
+#include<depthPeelFragmentDeclaration>
 #include<logDepthDeclaration>
 #include<fogFragmentDeclaration>
 
@@ -71,6 +72,8 @@ void main(void) {
     #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
     #include<clipPlaneFragment>
+
+    #include<depthPeelFragment>
 
     // _____________________________ Geometry Information ____________________________
     #include<pbrBlockNormalGeometric>

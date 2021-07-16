@@ -191,6 +191,15 @@
     #endif
 #endif
 
+#ifdef DEPTH_PEELING
+    #ifdef DEPTH_PEELING_FRONT
+        uniform sampler2D frontDepthTexture;
+    #endif
+    #ifdef DEPTH_PEELING_BACK
+        uniform sampler2D backDepthTexture;
+    #endif
+#endif
+
 // Reflection
 #ifdef REFLECTION
     #ifdef REFLECTIONMAP_3D
