@@ -94,9 +94,10 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * Be careful as it will recreate all the data in the new texture.
      * @param count new texture count
      * @param options Specifies texture types and sampling modes for new textures
+     * @param textureNames Specifies the names of the textures (optional)
      */
-    public updateCount(count: number, options?: IMultiRenderTargetOptions) {
-        super.updateCount(count, options);
+    public updateCount(count: number, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
+        super.updateCount(count, options, textureNames);
         this._internalTextureDirty = true;
     }
 
@@ -126,6 +127,15 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 
         if (this.imageProcessingPostProcess) {
             this.imageProcessingPostProcess.dispose();
+        }
+
+        if (this.renderTargetTexture) {
+            this.renderTargetTexture._prePassRenderTarget = null;
+        }
+
+        if (this._outputPostProcess) {
+            this._outputPostProcess.autoClear = true;
+            this._outputPostProcess.restoreDefaultInputTexture();
         }
     }
 }

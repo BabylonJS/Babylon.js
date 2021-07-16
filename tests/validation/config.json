@@ -153,16 +153,14 @@
             "renderCount": 60,
             "playgroundId": "#2YZFA0#211",
             "referenceImage": "guiSlate.png",
-            "excludedEngines": ["webgl1"],
-            "excludeFromAutomaticTesting": true
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "GUI Near Menu",
             "renderCount": 60,
-            "playgroundId":"#2YZFA0#180",
+            "playgroundId":"#2YZFA0#243",
             "referenceImage": "guiNearMenu.png",
-            "excludedEngines": ["webgl1"],
-            "excludeFromAutomaticTesting": true
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Camera rig",
@@ -408,7 +406,8 @@
             "title": "Self shadowing",
             "scriptToRun": "/Demos/SelfShadowing/shadows.js",
             "functionToCall": "CreateShadowsTestScene",
-            "referenceImage": "selfShadowing.png"
+            "referenceImage": "selfShadowing.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Advanced shadows",
@@ -1317,6 +1316,11 @@
             "excludedEngines": ["webgl1"],
             "referenceImage": "gpuparticle-basic.png",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "GLTF ext MSFT_LOD",
+            "playgroundId": "#2YZFA0#234",
+            "referenceImage": "gltfMSFTLOD.png"
         },
         {
             "title": "Reverse depth buffer and shadows",

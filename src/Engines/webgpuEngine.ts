@@ -45,6 +45,7 @@ import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
 import { ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
+import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -53,13 +54,6 @@ declare function importScripts(...urls: string[]): void;
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
-
-// TODO WEBGPU remove when not needed anymore
-function assert(condition: any, msg?: string): asserts condition {
-    if (!condition) {
-        throw new Error(msg);
-    }
-}
 
 /**
  * Options to load the associated Glslang library
@@ -631,7 +625,9 @@ export class WebGPUEngine extends Engine {
 
                 this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
-                this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
+                this._initializeLimits();
+
+                this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer, !this._caps.textureFloatLinearFiltering);
 
                 this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
                 this._stencilStateComposer = new WebGPUStencilStateComposer(this._cacheRenderPipeline);
@@ -642,8 +638,6 @@ export class WebGPUEngine extends Engine {
                 this._depthCullingState.depthMask = true;
 
                 this._textureHelper.setCommandEncoder(this._uploadEncoder);
-
-                this._initializeLimits();
 
                 this._clearQuad = new WebGPUClearQuad(this._device, this, this._emptyVertexBuffer);
                 this._defaultMaterialContext = this.createMaterialContext()!;
@@ -720,7 +714,7 @@ export class WebGPUEngine extends Engine {
             highPrecisionShaderSupported: true,
             colorBufferFloat: true,
             textureFloat: true,
-            textureFloatLinearFiltering: true,
+            textureFloatLinearFiltering: false, // WebGPU does not allow filtering 32 bits float textures
             textureFloatRender: true,
             textureHalfFloat: true,
             textureHalfFloatLinearFiltering: true,
@@ -757,7 +751,7 @@ export class WebGPUEngine extends Engine {
             checkUbosContentBeforeUpload: true,
             supportCSM: true,
             basisNeedsPOT: false,
-            support3DTextures: false, // TODO WEBGPU change to true when Chrome supports 3D textures
+            support3DTextures: true,
             needTypeSuffixInShaderConstants: true,
             supportMSAA: true,
             supportSSAO2: true,
@@ -1408,8 +1402,15 @@ export class WebGPUEngine extends Engine {
         onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         const vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
         const fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
+        const globalDefines = this._getGlobalDefines()!;
 
-        const name = vertex + "+" + fragment + "@" + (defines ? defines : (<IEffectCreationOptions>attributesNamesOrOptions).defines);
+        let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
+
+        if (globalDefines) {
+            fullDefines += "\n" + globalDefines;
+        }
+
+        const name = vertex + "+" + fragment + "@" + fullDefines;
         if (this._compiledEffects[name]) {
             var compiledEffect = <Effect>this._compiledEffects[name];
             if (onCompiled && compiledEffect.isReady()) {
@@ -1478,6 +1479,18 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
         throw "Not available on WebGPU";
+    }
+
+    /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public inlineShaderCode(code: string): string {
+        const sci = new ShaderCodeInliner(code);
+        sci.debug = false;
+        sci.processCode();
+        return sci.code;
     }
 
     /**
@@ -2555,9 +2568,6 @@ export class WebGPUEngine extends Engine {
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-        // TODO WEBGPU remove the assert debugging code
-        assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we want to unbind is not the same than the currentRenderTarget! texture id=" + texture.uniqueId + ", this._currentRenderTarget id=" + this._currentRenderTarget?.uniqueId);
-
         const saveCRT = this._currentRenderTarget;
 
         this._currentRenderTarget = null; // to be iso with thinEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
@@ -2731,7 +2741,20 @@ export class WebGPUEngine extends Engine {
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
         }
 
-        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount);
+        let textureState = 0;
+        if (!this._caps.textureFloatLinearFiltering) {
+            let bitVal = 1;
+            for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.samplerNames.length; ++i) {
+                const samplerName = webgpuPipelineContext.shaderProcessingContext.samplerNames[i];
+                const texture = this._currentMaterialContext.textures[samplerName]?.texture;
+                if (texture?.type === Constants.TEXTURETYPE_FLOAT) {
+                    textureState |= bitVal;
+                }
+                bitVal = bitVal << 1;
+            }
+        }
+
+        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext, this._uniformsBuffers);
 
         if (!this._snapshotRenderingRecordBundles) {

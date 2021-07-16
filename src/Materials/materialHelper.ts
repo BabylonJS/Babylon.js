@@ -49,11 +49,7 @@ export class MaterialHelper {
         defines[key] = true;
         if (texture.getTextureMatrix().isIdentityAs3x2()) {
             defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
-            if (texture.coordinatesIndex === 0) {
-                defines["MAINUV1"] = true;
-            } else {
-                defines["MAINUV2"] = true;
-            }
+            defines["MAINUV" + (texture.coordinatesIndex + 1)] = true;
         } else {
             defines[key + "DIRECTUV"] = 0;
         }
@@ -98,7 +94,6 @@ export class MaterialHelper {
             defines["FOG"] = fogEnabled && this.GetFogState(mesh, scene);
             defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             defines["ALPHATEST"] = alphaTest;
-            defines["USE_REVERSE_DEPTHBUFFER"] = scene.getEngine().useReverseDepthBuffer;
         }
     }
 
@@ -255,12 +250,8 @@ export class MaterialHelper {
             defines["TANGENT"] = true;
         }
 
-        if (defines._needUVs) {
-            defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
-            defines["UV2"] = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
-        } else {
-            defines["UV1"] = false;
-            defines["UV2"] = false;
+        for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            defines["UV" + i] = defines._needUVs ? mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`) : false;
         }
 
         if (useVertexColor) {

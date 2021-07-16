@@ -3,7 +3,7 @@
     left: 0px;
     top:0px;
     bottom: 0px;
-
+    font-family: "acumin-pro-condensed";
     &:focus {
         outline: none;
     }
@@ -38,7 +38,7 @@
     padding: 0;
     display: grid;
     grid-template-rows: auto 1fr;
-    font: 14px "Arial";
+    font: 16px "acumin-pro-condensed";
 
     &:focus {
         outline: none;
@@ -197,6 +197,10 @@
         align-items: center;   
         justify-items: center;
         cursor: pointer;
+    }
+
+    .spacer {
+        background: transparent;
     }
 
     .itemContainer {

@@ -1410,7 +1410,9 @@ export class GraphFrame {
     {
         if(exposedPorts.length > 0) {
             for(let i = 0; i < exposedPorts.length; ++i) {
-                exposedPorts[i].exposedPortPosition = i;
+                if (exposedPorts[i]) {
+                    exposedPorts[i].exposedPortPosition = i;
+                }
             }
         }
     }

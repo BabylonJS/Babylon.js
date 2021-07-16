@@ -51,7 +51,7 @@ export class DepthReducer extends MinMaxReducer {
                 scene._depthRenderer = {};
             }
 
-            depthRenderer = this._depthRenderer = new DepthRenderer(scene, type, this._camera, false);
+            depthRenderer = this._depthRenderer = new DepthRenderer(scene, type, this._camera, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             depthRenderer.enabled = false;
 
             this._depthRendererId = "minmax" + this._camera.id;

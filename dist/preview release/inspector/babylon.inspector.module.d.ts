@@ -123,6 +123,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/textLineComponent" 
         url?: string;
         ignoreValue?: boolean;
         additionalClass?: string;
+        icon?: string;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
         constructor(props: ITextLineComponentProps);
@@ -165,6 +166,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/valueLineComponent"
         color?: string;
         fractionDigits?: number;
         units?: string;
+        icon?: string;
     }
     export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
         constructor(props: IValueLineComponentProps);
@@ -176,11 +178,310 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/booleanLineComponen
     export interface IBooleanLineComponentProps {
         label: string;
         value: boolean;
+        icon?: string;
     }
     export class BooleanLineComponent extends React.Component<IBooleanLineComponentProps> {
         constructor(props: IBooleanLineComponentProps);
         render(): JSX.Element;
     }
+}
+declare module "babylonjs-inspector/sharedUiComponents/lines/buttonLineComponent" {
+    import * as React from "react";
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+        icon?: string;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
+    import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer";
+    /**
+     * Defines a structure to hold max and min.
+     */
+    export interface IPerfMinMax {
+        min: number;
+        max: number;
+    }
+    /**
+     * Defines structure of the object which contains information related to panning.
+     */
+    export interface IPerfMousePanningPosition {
+        xPos: number;
+        delta: number;
+    }
+    /**
+     * Defines structure of the object which contains information regarding the bounds of each dataset we want to consider.
+     */
+    export interface IPerfIndexBounds {
+        start: number;
+        end: number;
+    }
+    /**
+     * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
+     */
+    export interface IPerfTooltip {
+        text: string;
+        color: string;
+    }
+    /**
+     * Defines the structure of a cache object used to store the result of measureText().
+     */
+    export interface IPerfTextMeasureCache {
+        text: string;
+        width: number;
+    }
+    /**
+     * Defines a structure defining the available space in a drawable area.
+     */
+    export interface IGraphDrawableArea {
+        top: number;
+        left: number;
+        bottom: number;
+        right: number;
+    }
+    /**
+     * Defines what settings our canvas graphing service accepts
+     */
+    export interface ICanvasGraphServiceSettings {
+        datasets: IPerfDataset[];
+    }
+}
+declare module "babylonjs-inspector/components/graph/canvasGraphService" {
+    import { ICanvasGraphServiceSettings } from "babylonjs-inspector/components/graph/graphSupportingTypes";
+    import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer";
+    /**
+     * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
+     * let it know something has been resized, etc!
+     */
+    export class CanvasGraphService {
+        private _ctx;
+        private _width;
+        private _height;
+        private _sizeOfWindow;
+        private _ticks;
+        private _panPosition;
+        private _positions;
+        private _datasetBounds;
+        private _globalTimeMinMax;
+        private _hoverPosition;
+        private _drawableArea;
+        private _axisHeight;
+        private _tooltipItems;
+        private _textCache;
+        private readonly _tooltipLineHeight;
+        private readonly _defaultLineHeight;
+        readonly datasets: IPerfDataset[];
+        /**
+         * Creates an instance of CanvasGraphService.
+         *
+         * @param canvas a pointer to the canvas dom element we would like to write to.
+         * @param settings settings for our service.
+         */
+        constructor(canvas: HTMLCanvasElement, settings: ICanvasGraphServiceSettings);
+        /**
+         * This method draws the data and sets up the appropriate scales.
+         */
+        draw(): void;
+        /**
+         * Returns the index of the closest time for a dataset.
+         * Uses a modified binary search to get value.
+         *
+         * @param dataset the dataset we want to search in.
+         * @param targetTime the time we want to get close to.
+         * @returns index of the item with the closest time to the targetTime
+         */
+        private _getClosestPointToTimestamp;
+        /**
+         * Draws the time axis, adjusts the drawable area for the graph.
+         *
+         * @param timeMinMax the minimum and maximum for the time axis.
+         * @param drawableArea the current allocated drawable area.
+         */
+        private _drawTimeAxis;
+        /**
+         * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
+         *
+         * @param minMax the minimum and maximum values of the axis
+         * @param spaceAvailable the total amount of space we have allocated to our axis
+         */
+        private _generateTicks;
+        /**
+         * Nice number algorithm based on psueudo code defined in "Graphics Gems" by Andrew S. Glassner.
+         * This will find a "nice" number approximately equal to num.
+         *
+         * @param num The number we want to get close to.
+         * @param shouldRound if true we will round the number, otherwise we will get the ceiling.
+         * @returns a "nice" number approximately equal to num.
+         */
+        private _niceNumber;
+        /**
+         * Gets the min and max as a single object from an array of numbers.
+         *
+         * @param items the array of numbers to get the min and max for.
+         * @returns the min and max of the array.
+         */
+        private _getMinMax;
+        /**
+         * Converts a data point to a point on the canvas (a pixel coordinate).
+         *
+         * @param point The datapoint
+         * @param timeMinMax The minimum and maximum in the time axis.
+         * @param valueMinMax The minimum and maximum in the value axis for the dataset.
+         * @param drawableArea The allowed drawable area.
+         * @returns
+         */
+        private _getPixelPointFromDataPoint;
+        /**
+         * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
+         *
+         * @param num the number we want to get the pixel coordinate for
+         * @param minMax the min and max of the dataset in the axis we want the pixel coordinate for.
+         * @param startingPixel the starting pixel coordinate (this means it takes account for any offset).
+         * @param spaceAvailable the total space available in this axis.
+         * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
+         * @returns the pixel coordinate of the value in a single axis.
+         */
+        private _getPixelForNumber;
+        /**
+         * Add in any necessary event listeners.
+         *
+         * @param canvas The canvas we want to attach listeners to.
+         */
+        private _attachEventListeners;
+        /**
+         * We remove all event listeners we added.
+         *
+         * @param canvas The canvas we want to remove listeners from.
+         */
+        private _removeEventListeners;
+        /**
+         * Handles what to do when we are hovering over the canvas and not panning.
+         *
+         * @param event A reference to the event to be handled.
+         */
+        private _handleDataHover;
+        /**
+         * Debounced version of _drawTooltip.
+         */
+        private _debouncedTooltip;
+        /**
+         * Handles what to do when we stop hovering over the canvas.
+         */
+        private _handleStopHover;
+        /**
+         * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
+         *
+         * @param pixel the position of the mouse cursor in pixels.
+         * @param drawableArea  the available area we can draw in.
+         */
+        private _drawTooltip;
+        /**
+         * Gets the number from a pixel position given the minimum and maximum value in range, and the starting pixel and the ending pixel.
+         *
+         * @param pixel current pixel position we want to get the number for.
+         * @param minMax the minimum and maximum number in the range.
+         * @param startingPixel position of the starting pixel in range.
+         * @param endingPixel position of ending pixel in range.
+         * @returns number corresponding to pixel position
+         */
+        private _getNumberFromPixel;
+        /**
+         * The handler for when we want to zoom in and out of the graph.
+         *
+         * @param event a mouse wheel event.
+         */
+        private _handleZoom;
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStart;
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        private _handlePan;
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStop;
+        /**
+         * Method which returns true if the data should become realtime, false otherwise.
+         *
+         * @returns if the data should become realtime or not.
+         */
+        private _shouldBecomeRealtime;
+        /**
+         * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
+         *
+         * @param drawableArea The remaining drawable area.
+         * @param scaleFactor The Percentage between 0.0 and 1.0 of the canvas the data gets drawn on.
+         */
+        private _drawPlayheadRegion;
+        /**
+         *  Method to do cleanup when the object is done being used.
+         *
+         */
+        destroy(): void;
+        /**
+         * This method clears the canvas
+         */
+        clear(): void;
+    }
+}
+declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
+    import * as React from 'react';
+    import { CanvasGraphService } from "babylonjs-inspector/components/graph/canvasGraphService";
+    interface ICanvasGraphComponentProps {
+        id: string;
+        canvasServiceCallback: (canvasService: CanvasGraphService) => void;
+    }
+    export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
+}
+declare module "babylonjs-inspector/components/popupComponent" {
+    import * as React from "react";
+    interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen?: (window: Window) => void;
+        onClose: (window: Window) => void;
+        onResize?: () => void;
+        onKeyUp?: (evt: KeyboardEvent) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        private _host;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        getWindow(): Window | null;
+        render(): React.ReactPortal | null;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerComponent" {
+    import { Scene } from "babylonjs/scene";
+    import * as React from "react";
+    interface IPerformanceViewerComponentProps {
+        scene: Scene;
+    }
+    export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/statisticsTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
@@ -292,6 +593,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/floatLineComponent"
         max?: number;
         smallUI?: boolean;
         onEnter?: (newValue: number) => void;
+        icon?: string;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -328,6 +630,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/sliderLineComponent
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         decimalCount?: number;
         margin?: boolean;
+        icon?: string;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -388,6 +691,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/numericInputCompone
         step?: number;
         onChange: (value: number) => void;
         precision?: number;
+        icon?: string;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -486,6 +790,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/colorPickerComponen
         value: Color4 | Color3;
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
+        icon?: string;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
@@ -514,6 +819,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/color3LineComponent
         propertyName: string;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         isLinear?: boolean;
+        icon?: string;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -549,6 +855,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/vector3LineComponen
         useEuler?: boolean;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         noSlider?: boolean;
+        icon?: string;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -660,46 +967,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cus
         constructor(props: ICustomPropertyGridComponentProps);
         renderInspectable(inspectable: IInspectable): JSX.Element | null;
         render(): JSX.Element | null;
-    }
-}
-declare module "babylonjs-inspector/sharedUiComponents/lines/buttonLineComponent" {
-    import * as React from "react";
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/popupComponent" {
-    import * as React from "react";
-    interface IPopupComponentProps {
-        id: string;
-        title: string;
-        size: {
-            width: number;
-            height: number;
-        };
-        onOpen?: (window: Window) => void;
-        onClose: (window: Window) => void;
-        onResize?: () => void;
-        onKeyUp?: (evt: KeyboardEvent) => void;
-    }
-    export class PopupComponent extends React.Component<IPopupComponentProps, {
-        isComponentMounted: boolean;
-        blockedByBrowser: boolean;
-    }> {
-        private _container;
-        private _window;
-        private _host;
-        constructor(props: IPopupComponentProps);
-        componentDidMount(): void;
-        openPopup(): void;
-        componentWillUnmount(): void;
-        getWindow(): Window | null;
-        render(): React.ReactPortal | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/curve" {
@@ -1484,6 +1751,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/hexLineComponent" {
         digits?: number;
         useEuler?: boolean;
         min?: number;
+        icon?: string;
     }
     export class HexLineComponent extends React.Component<IHexLineComponentProps, {
         value: string;
@@ -1546,6 +1814,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/fileButtonLineCompo
         label: string;
         onClick: (file: File) => void;
         accept: string;
+        icon?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private static _IDGenerator;
@@ -2088,6 +2357,30 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
             (): void;
         }): void;
         forceRefresh(): void;
+        findTextureFormat(format: number): {
+            label: string;
+            normalizable: number;
+            value: number;
+            hideType?: undefined;
+            compressed?: undefined;
+        } | {
+            label: string;
+            normalizable: number;
+            hideType: boolean;
+            value: number;
+            compressed?: undefined;
+        } | {
+            label: string;
+            normalizable: number;
+            compressed: boolean;
+            value: number;
+            hideType?: undefined;
+        } | null;
+        findTextureType(type: number): {
+            label: string;
+            normalizable: number;
+            value: number;
+        } | null;
         render(): JSX.Element;
     }
 }
@@ -2103,6 +2396,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/vector2LineComponen
         step?: number;
         onChange?: (newvalue: Vector2) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        icon?: string;
     }
     export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
         isExpanded: boolean;
@@ -2155,6 +2449,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/radioLineComponent"
         label: string;
         isSelected: () => boolean;
         onSelect: () => void;
+        icon?: string;
     }
     export class RadioButtonLineComponent extends React.Component<IRadioButtonLineComponentProps, {
         isSelected: boolean;
@@ -3054,6 +3349,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/vector4LineComponen
         onChange?: (newvalue: Vector4) => void;
         useEuler?: boolean;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        icon?: string;
     }
     export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
         isExpanded: boolean;
@@ -3137,6 +3433,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/color4LineComponent
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         onChange?: () => void;
         isLinear?: boolean;
+        icon?: string;
     }
     export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
         isExpanded: boolean;
@@ -3704,6 +4001,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/fileMultipleButtonL
         label: string;
         onClick: (event: any) => void;
         accept: string;
+        icon?: string;
     }
     export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
         private static _IDGenerator;
@@ -4546,6 +4844,7 @@ declare module INSPECTOR {
         url?: string;
         ignoreValue?: boolean;
         additionalClass?: string;
+        icon?: string;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
         constructor(props: ITextLineComponentProps);
@@ -4585,6 +4884,7 @@ declare module INSPECTOR {
         color?: string;
         fractionDigits?: number;
         units?: string;
+        icon?: string;
     }
     export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
         constructor(props: IValueLineComponentProps);
@@ -4595,11 +4895,301 @@ declare module INSPECTOR {
     export interface IBooleanLineComponentProps {
         label: string;
         value: boolean;
+        icon?: string;
     }
     export class BooleanLineComponent extends React.Component<IBooleanLineComponentProps> {
         constructor(props: IBooleanLineComponentProps);
         render(): JSX.Element;
     }
+}
+declare module INSPECTOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+        icon?: string;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    /**
+     * Defines a structure to hold max and min.
+     */
+    export interface IPerfMinMax {
+        min: number;
+        max: number;
+    }
+    /**
+     * Defines structure of the object which contains information related to panning.
+     */
+    export interface IPerfMousePanningPosition {
+        xPos: number;
+        delta: number;
+    }
+    /**
+     * Defines structure of the object which contains information regarding the bounds of each dataset we want to consider.
+     */
+    export interface IPerfIndexBounds {
+        start: number;
+        end: number;
+    }
+    /**
+     * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
+     */
+    export interface IPerfTooltip {
+        text: string;
+        color: string;
+    }
+    /**
+     * Defines the structure of a cache object used to store the result of measureText().
+     */
+    export interface IPerfTextMeasureCache {
+        text: string;
+        width: number;
+    }
+    /**
+     * Defines a structure defining the available space in a drawable area.
+     */
+    export interface IGraphDrawableArea {
+        top: number;
+        left: number;
+        bottom: number;
+        right: number;
+    }
+    /**
+     * Defines what settings our canvas graphing service accepts
+     */
+    export interface ICanvasGraphServiceSettings {
+        datasets: BABYLON.IPerfDataset[];
+    }
+}
+declare module INSPECTOR {
+    /**
+     * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
+     * let it know something has been resized, etc!
+     */
+    export class CanvasGraphService {
+        private _ctx;
+        private _width;
+        private _height;
+        private _sizeOfWindow;
+        private _ticks;
+        private _panPosition;
+        private _positions;
+        private _datasetBounds;
+        private _globalTimeMinMax;
+        private _hoverPosition;
+        private _drawableArea;
+        private _axisHeight;
+        private _tooltipItems;
+        private _textCache;
+        private readonly _tooltipLineHeight;
+        private readonly _defaultLineHeight;
+        readonly datasets: BABYLON.IPerfDataset[];
+        /**
+         * Creates an instance of CanvasGraphService.
+         *
+         * @param canvas a pointer to the canvas dom element we would like to write to.
+         * @param settings settings for our service.
+         */
+        constructor(canvas: HTMLCanvasElement, settings: ICanvasGraphServiceSettings);
+        /**
+         * This method draws the data and sets up the appropriate scales.
+         */
+        draw(): void;
+        /**
+         * Returns the index of the closest time for a dataset.
+         * Uses a modified binary search to get value.
+         *
+         * @param dataset the dataset we want to search in.
+         * @param targetTime the time we want to get close to.
+         * @returns index of the item with the closest time to the targetTime
+         */
+        private _getClosestPointToTimestamp;
+        /**
+         * Draws the time axis, adjusts the drawable area for the graph.
+         *
+         * @param timeMinMax the minimum and maximum for the time axis.
+         * @param drawableArea the current allocated drawable area.
+         */
+        private _drawTimeAxis;
+        /**
+         * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
+         *
+         * @param minMax the minimum and maximum values of the axis
+         * @param spaceAvailable the total amount of space we have allocated to our axis
+         */
+        private _generateTicks;
+        /**
+         * Nice number algorithm based on psueudo code defined in "Graphics Gems" by Andrew S. Glassner.
+         * This will find a "nice" number approximately equal to num.
+         *
+         * @param num The number we want to get close to.
+         * @param shouldRound if true we will round the number, otherwise we will get the ceiling.
+         * @returns a "nice" number approximately equal to num.
+         */
+        private _niceNumber;
+        /**
+         * Gets the min and max as a single object from an array of numbers.
+         *
+         * @param items the array of numbers to get the min and max for.
+         * @returns the min and max of the array.
+         */
+        private _getMinMax;
+        /**
+         * Converts a data point to a point on the canvas (a pixel coordinate).
+         *
+         * @param point The datapoint
+         * @param timeMinMax The minimum and maximum in the time axis.
+         * @param valueMinMax The minimum and maximum in the value axis for the dataset.
+         * @param drawableArea The allowed drawable area.
+         * @returns
+         */
+        private _getPixelPointFromDataPoint;
+        /**
+         * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
+         *
+         * @param num the number we want to get the pixel coordinate for
+         * @param minMax the min and max of the dataset in the axis we want the pixel coordinate for.
+         * @param startingPixel the starting pixel coordinate (this means it takes account for any offset).
+         * @param spaceAvailable the total space available in this axis.
+         * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
+         * @returns the pixel coordinate of the value in a single axis.
+         */
+        private _getPixelForNumber;
+        /**
+         * Add in any necessary event listeners.
+         *
+         * @param canvas The canvas we want to attach listeners to.
+         */
+        private _attachEventListeners;
+        /**
+         * We remove all event listeners we added.
+         *
+         * @param canvas The canvas we want to remove listeners from.
+         */
+        private _removeEventListeners;
+        /**
+         * Handles what to do when we are hovering over the canvas and not panning.
+         *
+         * @param event A reference to the event to be handled.
+         */
+        private _handleDataHover;
+        /**
+         * Debounced version of _drawTooltip.
+         */
+        private _debouncedTooltip;
+        /**
+         * Handles what to do when we stop hovering over the canvas.
+         */
+        private _handleStopHover;
+        /**
+         * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
+         *
+         * @param pixel the position of the mouse cursor in pixels.
+         * @param drawableArea  the available area we can draw in.
+         */
+        private _drawTooltip;
+        /**
+         * Gets the number from a pixel position given the minimum and maximum value in range, and the starting pixel and the ending pixel.
+         *
+         * @param pixel current pixel position we want to get the number for.
+         * @param minMax the minimum and maximum number in the range.
+         * @param startingPixel position of the starting pixel in range.
+         * @param endingPixel position of ending pixel in range.
+         * @returns number corresponding to pixel position
+         */
+        private _getNumberFromPixel;
+        /**
+         * The handler for when we want to zoom in and out of the graph.
+         *
+         * @param event a mouse wheel event.
+         */
+        private _handleZoom;
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStart;
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        private _handlePan;
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStop;
+        /**
+         * Method which returns true if the data should become realtime, false otherwise.
+         *
+         * @returns if the data should become realtime or not.
+         */
+        private _shouldBecomeRealtime;
+        /**
+         * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
+         *
+         * @param drawableArea The remaining drawable area.
+         * @param scaleFactor The Percentage between 0.0 and 1.0 of the canvas the data gets drawn on.
+         */
+        private _drawPlayheadRegion;
+        /**
+         *  Method to do cleanup when the object is done being used.
+         *
+         */
+        destroy(): void;
+        /**
+         * This method clears the canvas
+         */
+        clear(): void;
+    }
+}
+declare module INSPECTOR {
+    interface ICanvasGraphComponentProps {
+        id: string;
+        canvasServiceCallback: (canvasService: CanvasGraphService) => void;
+    }
+    export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
+}
+declare module INSPECTOR {
+    interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen?: (window: Window) => void;
+        onClose: (window: Window) => void;
+        onResize?: () => void;
+        onKeyUp?: (evt: KeyboardEvent) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        private _host;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        getWindow(): Window | null;
+        render(): React.ReactPortal | null;
+    }
+}
+declare module INSPECTOR {
+    interface IPerformanceViewerComponentProps {
+        scene: BABYLON.Scene;
+    }
+    export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
 }
 declare module INSPECTOR {
     export class StatisticsTabComponent extends PaneComponent {
@@ -4699,6 +5289,7 @@ declare module INSPECTOR {
         max?: number;
         smallUI?: boolean;
         onEnter?: (newValue: number) => void;
+        icon?: string;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -4732,6 +5323,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         decimalCount?: number;
         margin?: boolean;
+        icon?: string;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -4788,6 +5380,7 @@ declare module INSPECTOR {
         step?: number;
         onChange: (value: number) => void;
         precision?: number;
+        icon?: string;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -4880,6 +5473,7 @@ declare module INSPECTOR {
         value: BABYLON.Color4 | BABYLON.Color3;
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
+        icon?: string;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
@@ -4904,6 +5498,7 @@ declare module INSPECTOR {
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         isLinear?: boolean;
+        icon?: string;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -4935,6 +5530,7 @@ declare module INSPECTOR {
         useEuler?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         noSlider?: boolean;
+        icon?: string;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -5032,44 +5628,6 @@ declare module INSPECTOR {
         constructor(props: ICustomPropertyGridComponentProps);
         renderInspectable(inspectable: BABYLON.IInspectable): JSX.Element | null;
         render(): JSX.Element | null;
-    }
-}
-declare module INSPECTOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IPopupComponentProps {
-        id: string;
-        title: string;
-        size: {
-            width: number;
-            height: number;
-        };
-        onOpen?: (window: Window) => void;
-        onClose: (window: Window) => void;
-        onResize?: () => void;
-        onKeyUp?: (evt: KeyboardEvent) => void;
-    }
-    export class PopupComponent extends React.Component<IPopupComponentProps, {
-        isComponentMounted: boolean;
-        blockedByBrowser: boolean;
-    }> {
-        private _container;
-        private _window;
-        private _host;
-        constructor(props: IPopupComponentProps);
-        componentDidMount(): void;
-        openPopup(): void;
-        componentWillUnmount(): void;
-        getWindow(): Window | null;
-        render(): React.ReactPortal | null;
     }
 }
 declare module INSPECTOR {
@@ -5760,6 +6318,7 @@ declare module INSPECTOR {
         digits?: number;
         useEuler?: boolean;
         min?: number;
+        icon?: string;
     }
     export class HexLineComponent extends React.Component<IHexLineComponentProps, {
         value: string;
@@ -5809,6 +6368,7 @@ declare module INSPECTOR {
         label: string;
         onClick: (file: File) => void;
         accept: string;
+        icon?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private static _IDGenerator;
@@ -6288,6 +6848,30 @@ declare module INSPECTOR {
             (): void;
         }): void;
         forceRefresh(): void;
+        findTextureFormat(format: number): {
+            label: string;
+            normalizable: number;
+            value: number;
+            hideType?: undefined;
+            compressed?: undefined;
+        } | {
+            label: string;
+            normalizable: number;
+            hideType: boolean;
+            value: number;
+            compressed?: undefined;
+        } | {
+            label: string;
+            normalizable: number;
+            compressed: boolean;
+            value: number;
+            hideType?: undefined;
+        } | null;
+        findTextureType(type: number): {
+            label: string;
+            normalizable: number;
+            value: number;
+        } | null;
         render(): JSX.Element;
     }
 }
@@ -6299,6 +6883,7 @@ declare module INSPECTOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector2) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        icon?: string;
     }
     export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
         isExpanded: boolean;
@@ -6342,6 +6927,7 @@ declare module INSPECTOR {
         label: string;
         isSelected: () => boolean;
         onSelect: () => void;
+        icon?: string;
     }
     export class RadioButtonLineComponent extends React.Component<IRadioButtonLineComponentProps, {
         isSelected: boolean;
@@ -6982,6 +7568,7 @@ declare module INSPECTOR {
         onChange?: (newvalue: BABYLON.Vector4) => void;
         useEuler?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        icon?: string;
     }
     export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
         isExpanded: boolean;
@@ -7053,6 +7640,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         onChange?: () => void;
         isLinear?: boolean;
+        icon?: string;
     }
     export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
         isExpanded: boolean;
@@ -7490,6 +8078,7 @@ declare module INSPECTOR {
         label: string;
         onClick: (event: any) => void;
         accept: string;
+        icon?: string;
     }
     export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
         private static _IDGenerator;

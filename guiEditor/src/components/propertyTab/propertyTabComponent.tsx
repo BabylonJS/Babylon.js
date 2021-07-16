@@ -10,10 +10,10 @@ import { Observer } from "babylonjs/Misc/observable";
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { StringTools } from "../../sharedUiComponents/stringTools";
 import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { SliderPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent";
+import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
-import { LinePropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent";
-import { RadioButtonPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent";
+import { LinePropertyGridComponent } from "./propertyGrids/gui/linePropertyGridComponent";
+import { RadioButtonPropertyGridComponent } from "./propertyGrids/gui/radioButtonPropertyGridComponent";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
@@ -27,26 +27,24 @@ import { Line } from "babylonjs-gui/2D/controls/line";
 import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
-import { TextBlockPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent";
-import { InputTextPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent";
-import { ColorPickerPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent";
-import { ImagePropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent";
-import { ImageBasedSliderPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent";
-import { RectanglePropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent";
-import { StackPanelPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent";
-import { GridPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent";
-import { ScrollViewerPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent";
-import { EllipsePropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent";
-import { CheckboxPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent";
+import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPropertyGridComponent";
+import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
+import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
+import { ImagePropertyGridComponent } from "./propertyGrids/gui/imagePropertyGridComponent";
+import { ImageBasedSliderPropertyGridComponent } from "./propertyGrids/gui/imageBasedSliderPropertyGridComponent";
+import { RectanglePropertyGridComponent } from "./propertyGrids/gui/rectanglePropertyGridComponent";
+import { StackPanelPropertyGridComponent } from "./propertyGrids/gui/stackPanelPropertyGridComponent";
+import { GridPropertyGridComponent } from "./propertyGrids/gui/gridPropertyGridComponent";
+import { ScrollViewerPropertyGridComponent } from "./propertyGrids/gui/scrollViewerPropertyGridComponent";
+import { EllipsePropertyGridComponent } from "./propertyGrids/gui/ellipsePropertyGridComponent";
+import { CheckboxPropertyGridComponent } from "./propertyGrids/gui/checkboxPropertyGridComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { ControlPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/controlPropertyGridComponent";
+import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropertyGridComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
-import { Vector2LineComponent } from "../../sharedUiComponents/lines/vector2LineComponent";
 import { Vector2 } from "babylonjs/Maths/math.vector";
-import { Button } from "babylonjs-gui/2D/controls/button";
-import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
+import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -256,17 +254,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
             case "Button": {
                 const control = this.state.currentNode as Control;
-                const button = this.state.currentNode as Button;
-                var buttonMenu = [];
-                buttonMenu.push(<ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-                if (button.textBlock) {
-                    buttonMenu.push(<TextBlockPropertyGridComponent key="textBlockMenu" textBlock={button.textBlock} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-                }
-                if (button.image) {
-                    buttonMenu.push(<ImagePropertyGridComponent key="imageMenu" image={button.image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-                }
-
-                return buttonMenu;
+                return <ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
         }
 
@@ -282,16 +270,36 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
-                        <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                        <div id="title">GUI EDITOR</div>
+                        <img id="logo" src={adtIcon} />
+                        <div id="title">{`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}</div>
                     </div>
                     {this.renderProperties()}
-                    <ParentingPropertyGridComponent guiNode={this.state.currentNode} guiNodes={this.props.globalState.guiTexture.getChildren()[0].children} globalState={this.props.globalState}></ParentingPropertyGridComponent>
+                    <hr />
                     <ButtonLineComponent
                         label="REMOVE ELEMENT"
                         onClick={() => {
                             this.state.currentNode?.dispose();
                             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        }}
+                    />
+                    <ButtonLineComponent
+                        label="COPY ELEMENT"
+                        onClick={() => {
+                            if (this.state.currentNode) {
+                                const serializationObject = {};
+                                this.state.currentNode.serialize(serializationObject);
+                                const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
+
+                                if (newControl) { //insert the new control into the adt
+                                    this.props.globalState.workbench.appendBlock(newControl);
+                                    let index = 1;
+                                    while (this.props.globalState.workbench.nodes.filter(  //search if there are any copies
+                                        control => control.name === newControl.name).length > 1) {
+                                        newControl.name = `${this.state.currentNode.name} Copy ${index++}`;
+                                    }
+                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+                                }
+                            }
                         }}
                     />
                 </div>
@@ -320,7 +328,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
                         <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
-                    <hr></hr>
+                    <hr />
                     <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
                         label="Responsive"
@@ -348,16 +356,28 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }}
                     />
                     {this._sizeOption == (sizeOptions.length - 1) &&
-                        <Vector2LineComponent
-                            label="Custom Size"
-                            target={this.state}
-                            propertyName="textureSize"
-                            onChange={(newvalue) => {
-                                this.props.globalState.workbench.resizeGuiTexture(newvalue);
-                            }}
-                        ></Vector2LineComponent>
+                        <div className="divider">
+                            <FloatLineComponent
+                                icon={canvasSizeIcon}
+                                label=" "
+                                target={this.state.textureSize}
+                                propertyName="x"
+                                isInteger={true}
+                                onChange={(newvalue) => {
+                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, this.state.textureSize.y));
+                                }} ></FloatLineComponent>
+                            <FloatLineComponent
+                                label=" "
+                                target={this.state.textureSize}
+                                propertyName="y"
+                                isInteger={true}
+                                onChange={(newvalue) => {
+                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
+                                }}
+                            ></FloatLineComponent>
+                        </div>
                     }
-                    <hr></hr>
+                    <hr />
                     <TextLineComponent label="FILE" value=" " color="grey"></TextLineComponent>
                     <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                     <ButtonLineComponent
@@ -366,7 +386,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.save();
                         }}
                     />
-                    <hr></hr>
+                    <hr />
                     <TextLineComponent label="SNIPPET" value=" " color="grey"></TextLineComponent>
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent

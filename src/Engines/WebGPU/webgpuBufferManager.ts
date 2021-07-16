@@ -1,5 +1,6 @@
 import { DataBuffer } from '../../Buffers/dataBuffer';
 import { WebGPUDataBuffer } from '../../Meshes/WebGPU/webgpuDataBuffer';
+import { TextureTools } from "../../Misc/textureTools";
 import { Nullable } from '../../types';
 import * as WebGPUConstants from './webgpuConstants';
 
@@ -75,27 +76,13 @@ export class WebGPUBufferManager {
         this._device.queue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
     }
 
-    private _FromHalfFloat(value: number): number {
-        const s = (value & 0x8000) >> 15;
-        const e = (value & 0x7C00) >> 10;
-        const f = value & 0x03FF;
-
-        if (e === 0) {
-            return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
-        } else if (e == 0x1F) {
-            return f ? NaN : ((s ? -1 : 1) * Infinity);
-        }
-
-        return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
-    }
-
     private _GetHalfFloatAsFloatRGBAArrayBuffer(dataLength: number, arrayBuffer: ArrayBuffer, destArray?: Float32Array): Float32Array {
         if (!destArray) {
             destArray = new Float32Array(dataLength);
         }
         const srcData = new Uint16Array(arrayBuffer);
         while (dataLength--) {
-            destArray[dataLength] = this._FromHalfFloat(srcData[dataLength]);
+            destArray[dataLength] = TextureTools.FromHalfFloat(srcData[dataLength]);
         }
 
         return destArray;

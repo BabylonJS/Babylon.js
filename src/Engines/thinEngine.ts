@@ -179,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.27";
+        return "babylonjs@5.0.0-alpha.31";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.27";
+        return "5.0.0-alpha.31";
     }
 
     /**
@@ -509,15 +509,15 @@ export class ThinEngine {
         return false;
     }
 
-    private _framebufferDimensionsObject: Nullable<{framebufferWidth: number, framebufferHeight: number}>;
+    private _framebufferDimensionsObject: Nullable<{ framebufferWidth: number, framebufferHeight: number }>;
 
     /**
      * sets the object from which width and height will be taken from when getting render width and height
      * Will fallback to the gl object
      * @param dimensions the framebuffer width and height that will be used.
      */
-    public set framebufferDimensionsObject(dimensions: Nullable<{framebufferWidth: number, framebufferHeight: number}>) {
-      this._framebufferDimensionsObject = dimensions;
+    public set framebufferDimensionsObject(dimensions: Nullable<{ framebufferWidth: number, framebufferHeight: number }>) {
+        this._framebufferDimensionsObject = dimensions;
     }
 
     /**
@@ -627,7 +627,9 @@ export class ThinEngine {
         this._snapshotRenderingMode = mode;
     }
 
-    private static _createCanvas(width: number, height: number) : ICanvas {
+    private _checkForMobile: () => void;
+
+    private static _createCanvas(width: number, height: number): ICanvas {
         if (typeof document === "undefined") {
             return <ICanvas>(<any>(new OffscreenCanvas(width, height)));
         }
@@ -643,7 +645,7 @@ export class ThinEngine {
      * @param height height
      * @return ICanvas interface
      */
-    public createCanvas(width: number, height: number) : ICanvas {
+    public createCanvas(width: number, height: number): ICanvas {
         return ThinEngine._createCanvas(width, height);
     }
 
@@ -668,7 +670,7 @@ export class ThinEngine {
             return;
         }
 
-        adaptToDeviceRatio = adaptToDeviceRatio ?? options.adaptToDeviceRatio ?? false;
+        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
 
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
@@ -722,10 +724,21 @@ export class ThinEngine {
 
             // Exceptions
             if (navigator && navigator.userAgent) {
+                // Function to check if running on mobile device
+                this._checkForMobile = () => {
+                    let currentUA = navigator.userAgent;
+                    this.hostInformation.isMobile = currentUA.indexOf("Mobile") !== -1 ||
+                        // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
+                        (currentUA.indexOf("Mac") !== -1 && "ontouchend" in document);
+                };
+
+                // Set initial isMobile value
+                this._checkForMobile();
+
+                // Set up event listener to check when window is resized (used to get emulator activation to work properly)
+                window.addEventListener("resize", this._checkForMobile);
+
                 let ua = navigator.userAgent;
-
-                this.hostInformation.isMobile = ua.indexOf("Mobile") !== -1;
-
                 for (var exception of ThinEngine.ExceptionList) {
                     let key = exception.key;
                     let targets = exception.targets;
@@ -1392,7 +1405,7 @@ export class ThinEngine {
      * Gets the audio context specified in engine initialization options
      * @returns an Audio Context
      */
-     public getAudioContext(): Nullable<AudioContext> {
+    public getAudioContext(): Nullable<AudioContext> {
         return this._audioContext;
     }
 
@@ -1400,7 +1413,7 @@ export class ThinEngine {
      * Gets the audio destination specified in engine initialization options
      * @returns an audio destination node
      */
-     public getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> {
+    public getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> {
         return this._audioDestination;
     }
 
@@ -1674,7 +1687,7 @@ export class ThinEngine {
      * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
      * @param stencil stencil states to set
      */
-     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
@@ -1702,7 +1715,7 @@ export class ThinEngine {
      * Set the z offset to apply to current rendering
      * @param value defines the offset to apply
      */
-     public setZOffset(value: number): void {
+    public setZOffset(value: number): void {
         this._depthCullingState.zOffset = this.useReverseDepthBuffer ? -value : value;
     }
 
@@ -1979,7 +1992,7 @@ export class ThinEngine {
         }
     }
 
-    private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): void {
+    private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }): void {
         var attributes = effect.getAttributesNames();
 
         if (!this._vaoRecordInProgress) {
@@ -2037,7 +2050,7 @@ export class ThinEngine {
      * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      * @returns the new vertex array object
      */
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): WebGLVertexArrayObject {
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }): WebGLVertexArrayObject {
         var vao = this._gl.createVertexArray();
 
         this._vaoRecordInProgress = true;
@@ -2129,7 +2142,7 @@ export class ThinEngine {
      * @param effect defines the effect associated with the vertex buffers
      * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      */
-    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {[kind: string]: Nullable<VertexBuffer>}): void {
+    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }): void {
         if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
             this._cachedVertexBuffers = vertexBuffers;
             this._cachedEffectForVertexBuffers = effect;
@@ -2427,6 +2440,35 @@ export class ThinEngine {
         }
     }
 
+    /** @hidden */
+    public _getGlobalDefines(defines?: { [key: string]: string }): string | undefined {
+        if (defines) {
+            if (this.isNDCHalfZRange) {
+                defines["IS_NDC_HALF_ZRANGE"] = "";
+            } else {
+                delete defines["IS_NDC_HALF_ZRANGE"];
+            }
+            if (this.useReverseDepthBuffer) {
+                defines["USE_REVERSE_DEPTHBUFFER"] = "";
+            } else {
+                delete defines["USE_REVERSE_DEPTHBUFFER"];
+            }
+            return;
+        } else {
+            let s = "";
+            if (this.isNDCHalfZRange) {
+                s += "#define IS_NDC_HALF_ZRANGE";
+            }
+            if (this.useReverseDepthBuffer) {
+                if (s) {
+                    s += "\n";
+                }
+                s += "#define USE_REVERSE_DEPTHBUFFER";
+            }
+            return s;
+        }
+    }
+
     /**
      * Create a new effect (used to store vertex/fragment shaders)
      * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
@@ -2445,8 +2487,15 @@ export class ThinEngine {
         onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
+        const globalDefines = this._getGlobalDefines()!;
 
-        var name = vertex + "+" + fragment + "@" + (defines ? defines : (<IEffectCreationOptions>attributesNamesOrOptions).defines);
+        let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
+
+        if (globalDefines) {
+            fullDefines += globalDefines;
+        }
+
+        var name = vertex + "+" + fragment + "@" + fullDefines;
         if (this._compiledEffects[name]) {
             var compiledEffect = <Effect>this._compiledEffects[name];
             if (onCompiled && compiledEffect.isReady()) {
@@ -2527,6 +2576,16 @@ export class ThinEngine {
         var fragmentShader = this._compileShader(fragmentCode, "fragment", defines, shaderVersion);
 
         return this._createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+    }
+
+    /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public inlineShaderCode(code: string): string {
+        // no inlining needed in the WebGL engine
+        return code;
     }
 
     /**
@@ -3127,7 +3186,7 @@ export class ThinEngine {
     /**
      * Gets the stencil state composer
      */
-     public get stencilStateComposer(): StencilStateComposer {
+    public get stencilStateComposer(): StencilStateComposer {
         return this._stencilStateComposer;
     }
 
@@ -3304,7 +3363,7 @@ export class ThinEngine {
     protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         prepareTexture: (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
-        processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => void,
+            processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => void,
         prepareTextureProcessFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture {
@@ -4405,6 +4464,8 @@ export class ThinEngine {
                     this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
                     this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
                 }
+
+                window.removeEventListener("resize", this._checkForMobile);
             }
         }
 
@@ -4828,7 +4889,7 @@ export class ThinEngine {
      * @hidden
      */
     public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
-        throw  _DevTools.WarnImport("FileTools");
+        throw _DevTools.WarnImport("FileTools");
     }
 
     /**
@@ -4855,7 +4916,7 @@ export class ThinEngine {
     // Statics
 
     private static _IsSupported: Nullable<boolean> = null;
-    private static _HasMajorPerformanceCaveat : Nullable<boolean> = null;
+    private static _HasMajorPerformanceCaveat: Nullable<boolean> = null;
 
     /**
      * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)
