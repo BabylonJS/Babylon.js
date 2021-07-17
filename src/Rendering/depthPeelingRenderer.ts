@@ -9,10 +9,29 @@ import { SmartArray } from "../Misc/smartArray";
 import { Scene } from "../scene";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
+import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 
 import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
 import "../Shaders/oitBackBlend.fragment";
+import { PrePassRenderer } from "./prePassRenderer";
+
+class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
+    /**
+     * Is this effect enabled
+     */
+    public enabled = true;
+
+    /**
+     * Name of the configuration
+     */
+    public name = "depthPeeling";
+
+    /**
+     * Textures that should be present in the MRT for this effect to work
+     */
+    public readonly texturesRequired: number[] = [Constants.PREPASS_COLOR_TEXTURE_TYPE, Constants.PREPASS_ALBEDO_TEXTURE_TYPE];
+}
 
 export class DepthPeelingRenderer {
     private _scene: Scene;
@@ -28,11 +47,22 @@ export class DepthPeelingRenderer {
 
     private _passCount: number;
     private _currentPingPongState: number = 0;
+    private _prePassEffectConfiguration: DepthPeelingEffectConfiguration;
 
     constructor(scene: Scene, passCount: number = 5) {
         this._scene = scene;
         this._engine = scene.getEngine();
         this._passCount = passCount;
+
+        //  We need a depth texture for opaque
+        if (!scene.enablePrePassRenderer()) {
+            // Not supported, print error
+            return;
+        } else {
+            scene.prePassRenderer!.markAsDirty();
+        }
+
+        this._prePassEffectConfiguration = new DepthPeelingEffectConfiguration();
         this._createTexturesAndFrameBuffers();
         this._createEffects();
     }
@@ -53,16 +83,13 @@ export class DepthPeelingRenderer {
         const optionsArray = [
             {
                 format: Constants.TEXTUREFORMAT_RG,
-                // format: Constants.TEXTUREFORMAT_RGBA,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 type: Constants.TEXTURETYPE_FLOAT,
-                // type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             } as RenderTargetCreationOptions,
             {
                 format: Constants.TEXTUREFORMAT_RGBA,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 type: Constants.TEXTURETYPE_HALF_FLOAT,
-                // type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             } as RenderTargetCreationOptions,
         ];
 
@@ -81,7 +108,7 @@ export class DepthPeelingRenderer {
 
             this._thinTextures.push(new ThinTexture(depthTexture), new ThinTexture(frontColorTexture), new ThinTexture(backColorTexture));
         }
-        
+
         const blendBackTexture = this._engine._createInternalTexture(size, optionsArray[1]);
         this._engine.bindTextureFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer, blendBackTexture);
         this._thinTextures.push(new ThinTexture(blendBackTexture));
@@ -107,6 +134,10 @@ export class DepthPeelingRenderer {
         this._effectRenderer = new EffectRenderer(this._engine);
     }
 
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer) {
+        prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
+    }
+
     public _updateSize() {
         // TODO
     }
@@ -121,9 +152,20 @@ export class DepthPeelingRenderer {
             return;
         }
 
+        // We bind the opaque depth buffer to correctly occlude fragments that are behind opaque geometry
+        // TODO : move into thinengine
+        const gl = this._engine._gl;
+        const depthStencilBuffer = this._scene.prePassRenderer!.getRenderTarget().getInternalTexture()?._depthStencilBuffer as WebGLRenderbuffer;
+        this._engine._bindUnboundFramebuffer(this._depthMrts[0].getInternalTexture()!._framebuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+        this._engine._bindUnboundFramebuffer(null);
+
         const DEPTH_CLEAR_VALUE = -99999.0;
         const MIN_DEPTH = 0;
         const MAX_DEPTH = 1;
+
+        // TODO
+        (this._scene.prePassRenderer! as any)._enabled = false;
 
         // Clears
         this._engine._bindUnboundFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer);
@@ -154,11 +196,11 @@ export class DepthPeelingRenderer {
         // TODO : drawElements uses apply states so blendEquation will be overwritten
         // Use engine.states = .... like in effectRenderer.ts
         // Maybe we will need to add a different state because gl.MAX may be unused and not implemented for now in BJS
-        const gl = this._engine._gl;
         gl.enable(gl.BLEND);
         gl.blendEquation(gl.MAX);
         // TODO : depthmask and cullface
         gl.depthMask(false);
+        gl.enable(gl.DEPTH_TEST);
         gl.disable(gl.CULL_FACE);
 
         this._currentPingPongState = 1;
@@ -174,7 +216,7 @@ export class DepthPeelingRenderer {
             gl.disable(gl.CULL_FACE);
 
             transparentSubMeshes.data[j].render(false);
-            
+
             if (material) {
                 material.allowShaderHotSwapping = previousShaderHotSwapping;
             }
@@ -202,7 +244,7 @@ export class DepthPeelingRenderer {
             this._engine._bindUnboundFramebuffer(this._depthMrts[writeId].getInternalTexture()!._framebuffer as WebGLFramebuffer);
             attachments = this._engine.buildTextureLayout([true, true, true]);
             this._engine.bindAttachments(attachments);
-            
+
             // TODO : alpha state (engine.setAlphaState + engine.applyStates)
             gl.blendEquation(gl.MAX);
             gl.enable(gl.BLEND);
@@ -219,12 +261,12 @@ export class DepthPeelingRenderer {
                 gl.disable(gl.CULL_FACE);
 
                 transparentSubMeshes.data[j].render(false);
-                
+
                 if (material) {
                     material.allowShaderHotSwapping = previousShaderHotSwapping;
                 }
             }
-            
+
             // Back color
             this._engine._bindUnboundFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer);
             attachments = this._engine.buildTextureLayout([true]);
@@ -232,7 +274,7 @@ export class DepthPeelingRenderer {
             // TODO : drawElements uses apply states so blendEquation will be overwritten
             gl.blendEquation(gl.FUNC_ADD);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            
+
             // TODO : remove (see above)
             (this._engine.depthCullingState as any)._isDepthTestDirty = false;
             this._engine.enableEffect(this._blendBackEffectWrapper.effect);
@@ -253,6 +295,9 @@ export class DepthPeelingRenderer {
         this._finalEffectWrapper.effect.setTexture("uFrontColor", this._thinTextures[writeId * 3 + 1]);
         this._finalEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[6]);
         this._effectRenderer.render(this._finalEffectWrapper);
+
+        // TODO
+        (this._scene.prePassRenderer! as any)._enabled = true;
     }
 
     public dispose() {
