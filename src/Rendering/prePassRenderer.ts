@@ -663,11 +663,22 @@ export class PrePassRenderer {
             }
         }
     }
+    
+    // TODO
+    public forceUpdate() {
+        this._update();
+    }
 
     private _update() {
         this._disable();
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
+
+        // TODO : find a way to avoid this per case prepass enable
+        if (this._scene.depthPeelingRenderer) {
+            this._scene.depthPeelingRenderer.setPrePassRenderer(this);
+            enablePrePass = true;
+        }
 
         for (let i = 0; i < this._scene.materials.length; i++) {
             if (this._scene.materials[i].setPrePassRenderer(this)) {
