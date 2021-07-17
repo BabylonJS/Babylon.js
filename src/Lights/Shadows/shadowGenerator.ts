@@ -1731,7 +1731,18 @@ export class ShadowGenerator implements IShadowGenerator {
         // Reaffect the filter.
         this._applyFilterValues();
         // Reaffect Render List.
-        this._shadowMap!.renderList = renderList;
+        if (renderList) {
+            // Note: don't do this._shadowMap!.renderList = renderList;
+            // The renderList hooked array is accessing the old RenderTargetTexture (see RenderTargetTexture._hookArray), which is disposed at this point (by the call to _disposeRTTandPostProcesses)
+            if (!this._shadowMap!.renderList) {
+                this._shadowMap!.renderList = [];
+            }
+            for (const mesh of renderList) {
+                this._shadowMap!.renderList.push(mesh);
+            }
+        } else {
+            this._shadowMap!.renderList = null;
+        }
     }
 
     protected _disposeBlurPostProcesses(): void {
