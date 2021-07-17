@@ -30,6 +30,11 @@ import { Logger } from "../Misc/logger";
     defines?: string[];
 
     /**
+     * The name of the entry point in the shader source (defaut: "main")
+     */
+    entryPoint?: string;
+
+    /**
      * If provided, will be called with the shader code so that this code can be updated before it is compiled by the GPU
      */
     processFinalCode?: Nullable<(code: string) => string>;
@@ -219,6 +224,7 @@ export class ComputeShader {
 
             effect = this._engine.createComputeEffect(shaderName, <IComputeEffectCreationOptions>{
                 defines: join,
+                entryPoint: this._options.entryPoint,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
             });
