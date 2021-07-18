@@ -61,20 +61,34 @@ export class ComputeShader {
      */
     public readonly uniqueId: number;
 
-     /**
-      * The name of the material
-      */
+    /**
+     * The name of the shader
+     */
     @serialize()
     public name: string;
 
-     /**
+    /**
+     * The options used to create the shader
+     */
+    public get options() {
+        return this._options;
+    }
+ 
+    /**
+     * The shaderPath used to create the shader
+     */
+    public get shaderPath() {
+        return this._shaderPath;
+    }
+ 
+    /**
      * Callback triggered when the shader is compiled
      */
     public onCompiled: Nullable<(effect: ComputeEffect) => void> = null;
 
-     /**
-      * Callback triggered when an error occurs
-      */
+    /**
+     * Callback triggered when an error occurs
+     */
     public onError: Nullable<(effect: ComputeEffect, errors: string) => void> = null;
 
     /**
