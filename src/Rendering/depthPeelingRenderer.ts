@@ -15,6 +15,7 @@ import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
 import "../Shaders/oitBackBlend.fragment";
 import { PrePassRenderer } from "./prePassRenderer";
+import { InternalTexture } from "../Materials";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -48,6 +49,8 @@ export class DepthPeelingRenderer {
     private _passCount: number;
     private _currentPingPongState: number = 0;
     private _prePassEffectConfiguration: DepthPeelingEffectConfiguration;
+
+    private _blendBackTexture: InternalTexture;
 
     constructor(scene: Scene, passCount: number = 5) {
         this._scene = scene;
@@ -109,9 +112,22 @@ export class DepthPeelingRenderer {
             this._thinTextures.push(new ThinTexture(depthTexture), new ThinTexture(frontColorTexture), new ThinTexture(backColorTexture));
         }
 
+        // const blendBackTexture = this._engine._createInternalTexture(size, optionsArray[1]);
         const blendBackTexture = this._engine._createInternalTexture(size, optionsArray[1]);
+        this._blendBackTexture = blendBackTexture;
         this._engine.bindTextureFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer, blendBackTexture);
         this._thinTextures.push(new ThinTexture(blendBackTexture));
+    }
+
+    private _updateTextureReferences() {
+        const prePassTexture = this._scene.prePassRenderer!.defaultRT.textures?.length ? this._scene.prePassRenderer!.defaultRT.textures[0].getInternalTexture() : null;
+
+        if (prePassTexture && this._blendBackTexture !== prePassTexture) {
+            this._blendBackTexture = prePassTexture!;
+            this._engine.bindTextureFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer, this._blendBackTexture);
+            this._thinTextures[6].dispose();
+            this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
+        }
     }
 
     private _createEffects() {
@@ -152,6 +168,8 @@ export class DepthPeelingRenderer {
             return;
         }
 
+        this._updateTextureReferences();
+
         // We bind the opaque depth buffer to correctly occlude fragments that are behind opaque geometry
         // TODO : move into thinengine
         const gl = this._engine._gl;
@@ -168,9 +186,6 @@ export class DepthPeelingRenderer {
         (this._scene.prePassRenderer! as any)._enabled = false;
 
         // Clears
-        this._engine._bindUnboundFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer);
-        this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
-
         this._engine._bindUnboundFramebuffer(this._depthMrts[0].getInternalTexture()!._framebuffer as WebGLFramebuffer);
         let attachments = this._engine.buildTextureLayout([true]);
         this._engine.bindAttachments(attachments);
@@ -298,6 +313,7 @@ export class DepthPeelingRenderer {
 
         // TODO
         (this._scene.prePassRenderer! as any)._enabled = true;
+        gl.depthMask(true);
     }
 
     public dispose() {
