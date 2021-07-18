@@ -73,14 +73,14 @@ export class ComputeShader {
     public get options() {
         return this._options;
     }
- 
+
     /**
      * The shaderPath used to create the shader
      */
     public get shaderPath() {
         return this._shaderPath;
     }
- 
+
     /**
      * Callback triggered when the shader is compiled
      */
