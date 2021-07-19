@@ -43,6 +43,9 @@ const maximumDatasetsAllowed = 32;
 // time in ms to wait between tooltip draws inside the mouse move.
 const tooltipDebounceTime = 32;
 
+// time in ms to wait between draws
+const drawDebounceTime = 15;
+
 /**
  * This function will debounce calls to functions.
  * 
@@ -126,6 +129,15 @@ export class CanvasGraphService {
         this._attachEventListeners(canvas);
     }
 
+    /**
+     * This method draws the data with debounce.
+     *
+     */
+    public update = debounce(
+        () => this.draw(), 
+        drawDebounceTime
+    );
+
     public resize(size: IPerfLayoutSize) {
         const { _ctx: ctx } = this;
         const { width, height } = size;
@@ -140,9 +152,10 @@ export class CanvasGraphService {
         ctx.canvas.width = width;
         ctx.canvas.height = height;
 
-        this.draw();
+        this.update();
     }
 
+    // TODO: Make this private once performanceViewerComponent can be changed (Post data layer).
     /**
      * This method draws the data and sets up the appropriate scales.
      */
