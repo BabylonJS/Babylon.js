@@ -783,6 +783,8 @@ declare module BABYLON {
         static readonly TEXTUREFORMAT_DEPTH24_STENCIL8: number;
         /** Depth 32 bits float */
         static readonly TEXTUREFORMAT_DEPTH32_FLOAT: number;
+        /** Depth 16 bits */
+        static readonly TEXTUREFORMAT_DEPTH16: number;
         /** Compressed BC7 */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM: number;
         /** Compressed BC6 unsigned float */
@@ -2588,6 +2590,12 @@ declare module BABYLON {
          * @returns the base size
          */
         getBaseSize(): ISize;
+        /** @hidden */
+        protected _initialSamplingMode: number;
+        /**
+         * Get the current sampling mode associated with the texture.
+         */
+        get samplingMode(): number;
         /**
          * Update the sampling mode of the texture.
          * Default is Trilinear mode.
@@ -17710,11 +17718,12 @@ declare module BABYLON {
          * @param count Define the number of target we are rendering into
          * @param scene Define the scene the texture belongs to
          * @param options Define the options used to create the multi render target
+         * @param textureNames Define the names to set to the textures (if count > 0 - optional)
          */
-        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions);
+        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]);
         private _initTypes;
         /** @hidden */
-        _rebuild(forceFullRebuild?: boolean): void;
+        _rebuild(forceFullRebuild?: boolean, textureNames?: string[]): void;
         private _createInternalTextures;
         private _releaseTextures;
         private _createTextures;
@@ -17740,8 +17749,9 @@ declare module BABYLON {
          * Be careful as it will recreate all the data in the new texture.
          * @param count new texture count
          * @param options Specifies texture types and sampling modes for new textures
+         * @param textureNames Specifies the names of the textures (optional)
          */
-        updateCount(count: number, options?: IMultiRenderTargetOptions): void;
+        updateCount(count: number, options?: IMultiRenderTargetOptions, textureNames?: string[]): void;
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
         /**
          * Dispose the render targets and their associated resources
@@ -18009,8 +18019,9 @@ declare module BABYLON {
          * Be careful as it will recreate all the data in the new texture.
          * @param count new texture count
          * @param options Specifies texture types and sampling modes for new textures
+         * @param textureNames Specifies the names of the textures (optional)
          */
-        updateCount(count: number, options?: IMultiRenderTargetOptions): void;
+        updateCount(count: number, options?: IMultiRenderTargetOptions, textureNames?: string[]): void;
         /**
          * Resets the post processes chains applied to this RT.
          * @hidden
@@ -18482,6 +18493,7 @@ declare module BABYLON {
         mrtCount: number;
         private _mrtFormats;
         private _mrtLayout;
+        private _mrtNames;
         private _textureIndices;
         private _multiRenderAttachments;
         private _defaultAttachments;
@@ -18611,6 +18623,8 @@ declare module BABYLON {
         private _getPostProcessesSource;
         private _setupOutputForThisPass;
         private _linkInternalTexture;
+        /** @hidden */
+        _unlinkInternalTexture(prePassRenderTarget: PrePassRenderTarget): void;
         private _needsImageProcessing;
         private _hasImageProcessing;
         /**
@@ -22392,6 +22406,10 @@ declare module BABYLON {
          * The higher the faster.
          */
         touchMoveSensibility: number;
+        /**
+         * Swap touch actions so that one touch is used for rotation and multiple for movement
+         */
+        singleFingerRotate: boolean;
         private _offsetX;
         private _offsetY;
         private _pointerPressed;
@@ -24477,8 +24495,6 @@ declare module BABYLON {
         private _cachedHomogeneousRotationInUVTransform;
         private _cachedCoordinatesMode;
         /** @hidden */
-        protected _initialSamplingMode: number;
-        /** @hidden */
         _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>;
         private _deleteBuffer;
         protected _format: Nullable<number>;
@@ -24501,10 +24517,6 @@ declare module BABYLON {
          */
         set isBlocking(value: boolean);
         get isBlocking(): boolean;
-        /**
-         * Get the current sampling mode associated with the texture.
-         */
-        get samplingMode(): number;
         /**
          * Gets a boolean indicating if the texture needs to be inverted on the y axis during loading
          */
@@ -32088,6 +32100,7 @@ declare module BABYLON {
         _morphTargetManager: Nullable<MorphTargetManager>;
         _renderingGroupId: number;
         _material: Nullable<Material>;
+        _positions: Nullable<Vector3[]>;
         _meshCollisionData: _MeshCollisionData;
     }
     /**
@@ -39690,6 +39703,7 @@ declare module BABYLON {
          */
         get snapshotRenderingMode(): number;
         set snapshotRenderingMode(mode: number);
+        private _checkForMobile;
         private static _createCanvas;
         /**
          * Create a canvas. This method is overiden by other engines
@@ -56650,8 +56664,12 @@ declare module BABYLON {
          */
         defines: any;
         /**
-         * Callback that will be called when the shader is compiled.
+         * The name of the entry point in the shader source (defaut: "main")
          */
+        entryPoint?: string;
+        /**
+        * Callback that will be called when the shader is compiled.
+        */
         onCompiled: Nullable<(effect: ComputeEffect) => void>;
         /**
          * Callback that will be called if an error occurs during shader compilation.
@@ -56720,6 +56738,7 @@ declare module BABYLON {
         /** @hidden */
         _computeSourceCode: string;
         private _rawComputeSourceCode;
+        private _entryPoint;
         /**
          * Creates a compute effect that can be used to execute a compute shader
          * @param baseName Name of the effect
@@ -56863,7 +56882,7 @@ declare module BABYLON {
              */
             releaseComputeEffects(): void;
             /** @hidden */
-            _prepareComputePipelineContext(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>): void;
+            _prepareComputePipelineContext(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void;
             /** @hidden */
             _rebuildComputeEffects(): void;
             /** @hidden */
@@ -56890,6 +56909,10 @@ declare module BABYLON {
          */
         defines?: string[];
         /**
+         * The name of the entry point in the shader source (defaut: "main")
+         */
+        entryPoint?: string;
+        /**
          * If provided, will be called with the shader code so that this code can be updated before it is compiled by the GPU
          */
         processFinalCode?: Nullable<(code: string) => string>;
@@ -56912,12 +56935,20 @@ declare module BABYLON {
          */
         readonly uniqueId: number;
         /**
-         * The name of the material
+         * The name of the shader
          */
         name: string;
         /**
-        * Callback triggered when the shader is compiled
-        */
+         * The options used to create the shader
+         */
+        get options(): IComputeShaderOptions;
+        /**
+         * The shaderPath used to create the shader
+         */
+        get shaderPath(): any;
+        /**
+         * Callback triggered when the shader is compiled
+         */
         onCompiled: Nullable<(effect: ComputeEffect) => void>;
         /**
          * Callback triggered when an error occurs
@@ -60442,10 +60473,11 @@ declare module BABYLON {
         usedInVertex: boolean;
         usedInFragment: boolean;
         isSampler: boolean;
-        isComparisonSampler?: boolean;
+        samplerBindingType?: GPUSamplerBindingType;
         isTexture: boolean;
         sampleType?: GPUTextureSampleType;
         textureDimension?: GPUTextureViewDimension;
+        origName?: string;
     }
     /**
      * @hidden
@@ -60761,6 +60793,47 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Class used to host texture specific utilities
+     */
+    export class TextureTools {
+        /**
+         * Uses the GPU to create a copy texture rescaled at a given size
+         * @param texture Texture to copy from
+         * @param width defines the desired width
+         * @param height defines the desired height
+         * @param useBilinearMode defines if bilinear mode has to be used
+         * @return the generated texture
+         */
+        static CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
+        /**
+         * Apply a post process to a texture
+         * @param postProcessName name of the fragment post process
+         * @param internalTexture the texture to encode
+         * @param scene the scene hosting the texture
+         * @param type type of the output texture. If not provided, use the one from internalTexture
+         * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
+         * @param format format of the output texture. If not provided, use the one from internalTexture
+         * @return a promise with the internalTexture having its texture replaced by the result of the processing
+         */
+        static ApplyPostProcess(postProcessName: string, internalTexture: InternalTexture, scene: Scene, type?: number, samplingMode?: number, format?: number): Promise<InternalTexture>;
+        private static _FloatView;
+        private static _Int32View;
+        /**
+         * Converts a number to half float
+         * @param value number to convert
+         * @returns converted number
+         */
+        static ToHalfFloat(value: number): number;
+        /**
+         * Converts a half float to a number
+         * @param value half float to convert
+         * @returns converted half float
+         */
+        static FromHalfFloat(value: number): number;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export class WebGPUBufferManager {
         private _device;
@@ -60770,7 +60843,6 @@ declare module BABYLON {
         createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, mappedAtCreation?: boolean): GPUBuffer;
         createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): DataBuffer;
         setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset?: number, byteLength?: number): void;
-        private _FromHalfFloat;
         private _GetHalfFloatAsFloatRGBAArrayBuffer;
         readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, floatFormat?: number, offset?: number, buffer?: Nullable<ArrayBufferView>, destroyBuffer?: boolean): Promise<ArrayBufferView>;
         releaseBuffer(buffer: DataBuffer | GPUBuffer): boolean;
@@ -60997,7 +61069,9 @@ declare module BABYLON {
         private _vertexBuffers;
         private _overrideVertexBuffers;
         private _indexBuffer;
-        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
+        private _textureState;
+        private _useTextureStage;
+        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean);
         reset(): void;
         protected abstract _getRenderPipeline(param: {
             token: any;
@@ -61011,7 +61085,7 @@ declare module BABYLON {
         get colorFormats(): GPUTextureFormat[];
         readonly mrtAttachments: number[];
         readonly mrtTextureArray: InternalTexture[];
-        getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline;
+        getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState?: number): GPURenderPipeline;
         endFrame(): void;
         setAlphaToCoverage(enabled: boolean): void;
         setFrontFace(frontFace: number): void;
@@ -61057,7 +61131,9 @@ declare module BABYLON {
         private _setColorStates;
         private _setDepthStencilState;
         private _setVertexState;
+        private _setTextureState;
         private _createPipelineLayout;
+        private _createPipelineLayoutWithTextureStage;
         private _getVertexInputDescriptor;
         private _createRenderPipeline;
     }
@@ -61080,7 +61156,7 @@ declare module BABYLON {
             nodeCount: number;
             pipelineCount: number;
         };
-        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
+        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean);
         protected _getRenderPipeline(param: {
             token: any;
             pipeline: Nullable<GPURenderPipeline>;
@@ -62140,7 +62216,7 @@ declare module BABYLON {
 declare module BABYLON {
         interface WebGPUEngine {
             /** @hidden */
-            _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>): GPUProgrammableStage;
+            _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
         }
 }
 declare module BABYLON {
@@ -62273,33 +62349,6 @@ declare module BABYLON {
         name: string;
         shader: string;
     };
-}
-declare module BABYLON {
-    /**
-     * Class used to host texture specific utilities
-     */
-    export class TextureTools {
-        /**
-         * Uses the GPU to create a copy texture rescaled at a given size
-         * @param texture Texture to copy from
-         * @param width defines the desired width
-         * @param height defines the desired height
-         * @param useBilinearMode defines if bilinear mode has to be used
-         * @return the generated texture
-         */
-        static CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
-        /**
-         * Apply a post process to a texture
-         * @param postProcessName name of the fragment post process
-         * @param internalTexture the texture to encode
-         * @param scene the scene hosting the texture
-         * @param type type of the output texture. If not provided, use the one from internalTexture
-         * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
-         * @param format format of the output texture. If not provided, use the one from internalTexture
-         * @return a promise with the internalTexture having its texture replaced by the result of the processing
-         */
-        static ApplyPostProcess(postProcessName: string, internalTexture: InternalTexture, scene: Scene, type?: number, samplingMode?: number, format?: number): Promise<InternalTexture>;
-    }
 }
 declare module BABYLON {
     /**
@@ -67131,13 +67180,10 @@ declare module BABYLON {
          * @returns the DDS information
          */
         static GetDDSInfo(data: ArrayBufferView): DDSInfo;
-        private static _FloatView;
-        private static _Int32View;
-        private static _ToHalfFloat;
-        private static _FromHalfFloat;
         private static _GetHalfFloatAsFloatRGBAArrayBuffer;
         private static _GetHalfFloatRGBAArrayBuffer;
         private static _GetFloatRGBAArrayBuffer;
+        private static _GetFloatAsHalfFloatRGBAArrayBuffer;
         private static _GetFloatAsUIntRGBAArrayBuffer;
         private static _GetHalfFloatAsUIntRGBAArrayBuffer;
         private static _GetRGBAArrayBuffer;
@@ -67148,7 +67194,7 @@ declare module BABYLON {
          * Uploads DDS Levels to a Babylon Texture
          * @hidden
          */
-        static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, data: ArrayBufferView, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex?: number, currentFace?: number): void;
+        static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, data: ArrayBufferView, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex?: number, currentFace?: number, destTypeMustBeFilterable?: boolean): void;
     }
         interface ThinEngine {
             /**
@@ -69183,8 +69229,9 @@ declare module BABYLON {
          * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
          * @param camera The camera to be used to render the depth map (default: scene's active camera)
          * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
+         * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...)
          */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean);
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean, samplingMode?: number);
         /**
          * Creates the depth rendering effect and checks if the effect is ready.
          * @param subMesh The submesh to be used to render the depth map of
@@ -76394,8 +76441,10 @@ declare module BABYLON {
             /**
              * Refreshes the bounding info, taking into account all the thin instances defined
              * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
+             * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+             * @param applyMorph  defines whether to apply the morph target before computing the bounding info
              */
-            thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean): void;
+            thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean, applySkeleton?: boolean, applyMorph?: boolean): void;
             /** @hidden */
             _thinInstanceInitializeUserStorage(): void;
             /** @hidden */

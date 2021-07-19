@@ -32,11 +32,12 @@ export interface WebGPUBindingDescription {
     usedInFragment: boolean;
 
     isSampler: boolean;
-    isComparisonSampler?: boolean;
+    samplerBindingType?: GPUSamplerBindingType;
 
     isTexture: boolean;
     sampleType?: GPUTextureSampleType;
     textureDimension?: GPUTextureViewDimension;
+    origName?: string;
 }
 
 /**
@@ -57,7 +58,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public orderedAttributes: string[];
     public orderedUBOsAndSamplers: WebGPUBindingDescription[][];
     public uniformBufferNames: string[];
-    public samplerNames: string[]; // list of all sampler names used in the shader
+    public samplerNames: string[]; // list of all sampler (texture) names used in the shader
     public attributeNamesFromEffect: string[];
     public attributeLocationsFromEffect: number[];
 
