@@ -162,6 +162,8 @@ export class Constants {
     public static readonly TEXTUREFORMAT_DEPTH24_STENCIL8 = 13;
     /** Depth 32 bits float */
     public static readonly TEXTUREFORMAT_DEPTH32_FLOAT = 14;
+    /** Depth 16 bits */
+    public static readonly TEXTUREFORMAT_DEPTH16 = 15;
 
     /** Compressed BC7 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
