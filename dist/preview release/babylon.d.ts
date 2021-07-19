@@ -56664,8 +56664,12 @@ declare module BABYLON {
          */
         defines: any;
         /**
-         * Callback that will be called when the shader is compiled.
+         * The name of the entry point in the shader source (defaut: "main")
          */
+        entryPoint?: string;
+        /**
+        * Callback that will be called when the shader is compiled.
+        */
         onCompiled: Nullable<(effect: ComputeEffect) => void>;
         /**
          * Callback that will be called if an error occurs during shader compilation.
@@ -56734,6 +56738,7 @@ declare module BABYLON {
         /** @hidden */
         _computeSourceCode: string;
         private _rawComputeSourceCode;
+        private _entryPoint;
         /**
          * Creates a compute effect that can be used to execute a compute shader
          * @param baseName Name of the effect
@@ -56877,7 +56882,7 @@ declare module BABYLON {
              */
             releaseComputeEffects(): void;
             /** @hidden */
-            _prepareComputePipelineContext(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>): void;
+            _prepareComputePipelineContext(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void;
             /** @hidden */
             _rebuildComputeEffects(): void;
             /** @hidden */
@@ -56904,6 +56909,10 @@ declare module BABYLON {
          */
         defines?: string[];
         /**
+         * The name of the entry point in the shader source (defaut: "main")
+         */
+        entryPoint?: string;
+        /**
          * If provided, will be called with the shader code so that this code can be updated before it is compiled by the GPU
          */
         processFinalCode?: Nullable<(code: string) => string>;
@@ -56926,12 +56935,20 @@ declare module BABYLON {
          */
         readonly uniqueId: number;
         /**
-         * The name of the material
+         * The name of the shader
          */
         name: string;
         /**
-        * Callback triggered when the shader is compiled
-        */
+         * The options used to create the shader
+         */
+        get options(): IComputeShaderOptions;
+        /**
+         * The shaderPath used to create the shader
+         */
+        get shaderPath(): any;
+        /**
+         * Callback triggered when the shader is compiled
+         */
         onCompiled: Nullable<(effect: ComputeEffect) => void>;
         /**
          * Callback triggered when an error occurs
@@ -62199,7 +62216,7 @@ declare module BABYLON {
 declare module BABYLON {
         interface WebGPUEngine {
             /** @hidden */
-            _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>): GPUProgrammableStage;
+            _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
         }
 }
 declare module BABYLON {
