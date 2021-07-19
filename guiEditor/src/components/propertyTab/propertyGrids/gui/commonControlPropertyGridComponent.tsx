@@ -9,7 +9,6 @@ import { SliderLineComponent } from "../../../../sharedUiComponents/lines/slider
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
