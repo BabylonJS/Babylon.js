@@ -1,0 +1,53 @@
+#performance-viewer {
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-columns: 25% 75%;
+    grid-template-areas: "sidebar graph";
+    #performance-viewer-graph {
+        grid-area: "graph";
+    }
+    #performance-viewer-sidebar {
+        grid-area: "sidebar";
+        display: flex;
+        flex-direction: column;
+        
+        .sidebar-item {
+            display: inline-flex;
+            flex-direction: row;    
+            width: 100%;
+            .sidebar-item-label {
+                width: 100%;
+            }
+            .color-picker {
+                height: calc(100% - 8px);
+                margin: 4px;
+                width: 100%;
+        
+                .color-rect {
+                    height: calc(100% - 4px);
+                    border: 2px white solid;
+                    cursor: pointer;
+                    min-height: 18px;
+                }
+        
+                .color-picker-cover {
+                    position: fixed;
+                    top: 0px;
+                    right: 0px;
+                    bottom: 0px;
+                    left: 0px;
+                    z-index: 100;
+                }
+        
+                .color-picker-float {
+                    position: absolute;
+        
+                    .color-picker-container {
+                        width: 200px;
+                    }
+                }                
+            }
+        }
+    }
+}
