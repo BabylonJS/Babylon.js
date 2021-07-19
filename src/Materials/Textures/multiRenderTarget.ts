@@ -234,18 +234,39 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     /**
-     * Replaces a texture within the MRT.
-     * @param texture The new texture to insert in the MRT
+     * Replaces an internal texture within the MRT. Useful to share textures between MultiRenderTarget.
+     * @param texture The new texture to set in the MRT
      * @param index The index of the texture to replace
      */
-    public replaceTexture(texture: Texture, index: number) {
-        if (texture._texture) {
-            this._textures[index] = texture;
-            this._internalTextures[index] = texture._texture;
-            if (index === 0) {
-                this._texture = this._internalTextures[index];
-            }
+    public setInternalTexture(texture: InternalTexture, index: number, attachmentIndex: number = 0, disposePrevious: boolean = true) {
+        if (index === 0) {
+            // This function is just meant to replace textures, not the framebuffer
+            // So we keep references
+            texture._framebuffer = this._texture!._framebuffer;
+            // Prevents the dispose of the framebuffer
+            this._texture!._framebuffer = null;
+            texture._MSAAFramebuffer = this._texture!._MSAAFramebuffer;
+            this._texture!._MSAAFramebuffer = null;
+            this._texture = texture;
         }
+
+        if (disposePrevious && this._internalTextures[index]) {
+            this._internalTextures[index].dispose();    
+        }
+        
+        this._internalTextures[index] = texture;
+        if (!this.textures[index]) {
+            this.textures[index] = new Texture(null, this.getScene());
+        }
+        this.textures[index]._texture = texture;
+
+        if (this._engine && this._texture) {
+            this._engine.bindTextureFramebuffer(this._texture._framebuffer!, texture, attachmentIndex);
+        }
+
+        this._count = this._internalTextures.length;
+
+        // TODO : update types and samplingModes
     }
 
     /**
