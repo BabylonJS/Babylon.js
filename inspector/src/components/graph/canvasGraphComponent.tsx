@@ -35,9 +35,9 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
                 return;
             }
             const {left, top} = canvasRef.current.getBoundingClientRect();
-            const width = newSize.width - left;
-            const height = newSize.height - top;
-            cs?.resize(width, height);
+            newSize.width = newSize.width - left;
+            newSize.height = newSize.height - top;
+            cs?.resize(newSize);
         };
 
         layoutObservable?.add(layoutUpdated);
