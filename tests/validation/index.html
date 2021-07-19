@@ -2,17 +2,16 @@
 <html>
 
 <head>
-	<title>BabylonJS - Build validation page</title>
-    <link href="index.css" rel="stylesheet" />    
-	<script src="https://preview.babylonjs.com/draco_decoder_gltf.js"></script>
-	<script src="https://unpkg.com/earcut@2.1.1/dist/earcut.min.js"></script>
-	<script src="../../Tools/DevLoader/BabylonLoader.js"></script>
+    <title>BabylonJS - Build validation page</title>
+    <link href="index.css" rel="stylesheet" />
+    <script src="https://unpkg.com/earcut@2.1.1/dist/earcut.min.js"></script>
+    <script src="../../Tools/DevLoader/BabylonLoader.js"></script>
 </head>
 
 <body>
     <button id="buttonToggleResult" class="buttonToggleResult">Show only failed tests</button>
 
-	<script>
+    <script>
         let toggle = 0, ebutton = document.getElementById("buttonToggleResult");
         ebutton.onclick = function(event) {
             Array.from(document.getElementsByClassName("container")).forEach((elem) => {
@@ -56,60 +55,60 @@
             return queryString;
         }
 
-		BABYLONDEVTOOLS.Loader.require('validation.js')
-			.load(function() {
-				// Loading tests
-				var xhr = new XMLHttpRequest();
+        BABYLONDEVTOOLS.Loader.require('validation.js')
+            .load(function() {
+                // Loading tests
+                var xhr = new XMLHttpRequest();
 
                 var qs = QueryString();
 
-				xhr.open("GET", qs.list ? qs.list + ".json" : "config.json", true);
+                xhr.open("GET", qs.list ? qs.list + ".json" : "config.json", true);
 
-				xhr.addEventListener("load", async function() {
-					if (xhr.status === 200) {
+                xhr.addEventListener("load", async function() {
+                    if (xhr.status === 200) {
 
-						config = JSON.parse(xhr.responseText);
+                        config = JSON.parse(xhr.responseText);
 
                         config.qs = qs;
 
-						// Run tests
-						var index = 0;
-						if (qs.test) {
-							justOnce = true;
-							for (var index = 0; index < config.tests.length; index++) {
-								if (config.tests[index].title === qs.test) {
-									break;
-								}
-							}
-						}
-						if (qs.fromtest) {
-							for (var index = 0; index < config.tests.length; index++) {
-								if (config.tests[index].title === qs.fromtest) {
-									break;
-								}
-							}
-						}
+                        // Run tests
+                        var index = 0;
+                        if (qs.test) {
+                            justOnce = true;
+                            for (var index = 0; index < config.tests.length; index++) {
+                                if (config.tests[index].title === qs.test) {
+                                    break;
+                                }
+                            }
+                        }
+                        if (qs.fromtest) {
+                            for (var index = 0; index < config.tests.length; index++) {
+                                if (config.tests[index].title === qs.fromtest) {
+                                    break;
+                                }
+                            }
+                        }
 
                         await init(qs.engine || "webgl2", qs.useReverseDepthBuffer);
 
-						var recursiveRunTest = function(i) {
-							runTest(i, function() {
-								i++;
-								if (justOnce || i >= config.tests.length) {
+                        var recursiveRunTest = function(i) {
+                            runTest(i, function() {
+                                i++;
+                                if (justOnce || i >= config.tests.length) {
                                     showResultSummary();
-									return;
-								}
-								recursiveRunTest(i);
-							}, qs.list !== "config" && qs.list || "");
-						}
+                                    return;
+                                }
+                                recursiveRunTest(i);
+                            }, qs.list !== "config" && qs.list || "");
+                        }
 
-						recursiveRunTest(index);
-					}
-				}, false);
+                        recursiveRunTest(index);
+                    }
+                }, false);
 
-				xhr.send();
-			});
-	</script>
+                xhr.send();
+            });
+    </script>
 </body>
 
 </html>
