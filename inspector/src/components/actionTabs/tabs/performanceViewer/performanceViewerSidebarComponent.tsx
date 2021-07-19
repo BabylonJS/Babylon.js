@@ -1,5 +1,6 @@
-import { Color3, Observable } from 'babylonjs';
+import { Color3 } from 'babylonjs/Maths/math.color';
 import { IPerfDataset } from 'babylonjs/Misc/interfaces/iPerfViewer';
+import { Observable } from 'babylonjs/Misc/observable';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { ColorPickerLineComponent } from '../../../../sharedUiComponents/lines/colorPickerComponent';
