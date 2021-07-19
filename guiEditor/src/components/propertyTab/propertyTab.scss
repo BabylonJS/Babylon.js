@@ -170,7 +170,7 @@
 
     .divider {
         display: grid;
-        grid-template-columns: auto auto;
+        grid-template-columns: auto auto auto auto auto auto;
     }
 
     .textInputLine {
@@ -418,6 +418,39 @@
 
         }
 
+    }
+
+    .command-button {
+        cursor: pointer;
+        width: auto;
+
+        .command-label {
+            display: none;
+        }        
+
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            color: white;
+            align-content: center;
+            justify-content: center;
+        }
+
+        &:hover {
+            background-color: white;
+        } 
+        
+        .active {
+            transform-origin: center;
+            background-color: white;
+        }
+
+        img {
+            &.active {
+                background-color: white;
+            }
+        }
     }
 
     .floatLine {
