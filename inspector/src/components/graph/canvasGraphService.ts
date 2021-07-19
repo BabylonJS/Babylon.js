@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 
@@ -126,9 +126,10 @@ export class CanvasGraphService {
         this._attachEventListeners(canvas);
     }
 
-    public resize(width: number, height: number) {
+    public resize(size: IPerfLayoutSize) {
         const { _ctx: ctx } = this;
-
+        const { width, height } = size;
+        
         if (!ctx || !ctx.canvas) {
             return;
         }
@@ -138,6 +139,7 @@ export class CanvasGraphService {
 
         ctx.canvas.width = width;
         ctx.canvas.height = height;
+
         this.draw();
     }
 
