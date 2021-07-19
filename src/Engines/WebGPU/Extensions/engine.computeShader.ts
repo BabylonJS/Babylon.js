@@ -10,7 +10,7 @@ import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
 declare module "../../webgpuEngine" {
     export interface WebGPUEngine {
         /** @hidden */
-        _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>): GPUProgrammableStage;
+        _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
     }
 }
 
@@ -98,7 +98,7 @@ WebGPUEngine.prototype.releaseComputeEffects = function() {
     this._compiledComputeEffects = {};
 };
 
-WebGPUEngine.prototype._prepareComputePipelineContext = function(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>): void {
+WebGPUEngine.prototype._prepareComputePipelineContext = function(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void {
     const webGpuContext = pipelineContext as WebGPUComputePipelineContext;
 
     if (this.dbgShowShaderCode) {
@@ -111,7 +111,7 @@ WebGPUEngine.prototype._prepareComputePipelineContext = function(pipelineContext
         rawCompute: rawComputeSourceCode,
     };
 
-    webGpuContext.stage = this._createComputePipelineStageDescriptor(computeSourceCode, defines);
+    webGpuContext.stage = this._createComputePipelineStageDescriptor(computeSourceCode, defines, entryPoint);
 };
 
 WebGPUEngine.prototype._releaseComputeEffect = function(effect: ComputeEffect): void {
@@ -139,7 +139,7 @@ WebGPUEngine.prototype._deleteComputePipelineContext = function(pipelineContext:
     }
 };
 
-WebGPUEngine.prototype._createComputePipelineStageDescriptor = function(computeShader: string, defines: Nullable<string>): GPUProgrammableStage {
+WebGPUEngine.prototype._createComputePipelineStageDescriptor = function(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage {
     if (defines) {
         defines = "//" + defines.split("\n").join("\n//") + "\n";
     } else {
@@ -149,6 +149,6 @@ WebGPUEngine.prototype._createComputePipelineStageDescriptor = function(computeS
         module: this._device.createShaderModule({
             code: defines + computeShader,
         }),
-        entryPoint: "main",
+        entryPoint
     };
 };

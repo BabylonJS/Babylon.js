@@ -30,6 +30,11 @@ import { Logger } from "../Misc/logger";
     defines?: string[];
 
     /**
+     * The name of the entry point in the shader source (defaut: "main")
+     */
+    entryPoint?: string;
+
+    /**
      * If provided, will be called with the shader code so that this code can be updated before it is compiled by the GPU
      */
     processFinalCode?: Nullable<(code: string) => string>;
@@ -56,20 +61,34 @@ export class ComputeShader {
      */
     public readonly uniqueId: number;
 
-     /**
-      * The name of the material
-      */
+    /**
+     * The name of the shader
+     */
     @serialize()
     public name: string;
 
-     /**
+    /**
+     * The options used to create the shader
+     */
+    public get options() {
+        return this._options;
+    }
+
+    /**
+     * The shaderPath used to create the shader
+     */
+    public get shaderPath() {
+        return this._shaderPath;
+    }
+
+    /**
      * Callback triggered when the shader is compiled
      */
     public onCompiled: Nullable<(effect: ComputeEffect) => void> = null;
 
-     /**
-      * Callback triggered when an error occurs
-      */
+    /**
+     * Callback triggered when an error occurs
+     */
     public onError: Nullable<(effect: ComputeEffect, errors: string) => void> = null;
 
     /**
@@ -219,6 +238,7 @@ export class ComputeShader {
 
             effect = this._engine.createComputeEffect(shaderName, <IComputeEffectCreationOptions>{
                 defines: join,
+                entryPoint: this._options.entryPoint,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
             });
