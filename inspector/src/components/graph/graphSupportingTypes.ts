@@ -24,6 +24,11 @@ export interface IPerfIndexBounds {
     end: number;
 }
 
+export interface IPerfLayoutSize {
+    width: number;
+    height: number;
+}
+
 /**
  * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
  */

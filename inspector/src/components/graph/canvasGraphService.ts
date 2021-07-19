@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize } from "./graphSupportingTypes";
 import { IPerfDataset, IPerfPoint } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 
@@ -42,6 +42,9 @@ const maximumDatasetsAllowed = 32;
 
 // time in ms to wait between tooltip draws inside the mouse move.
 const tooltipDebounceTime = 32;
+
+// time in ms to wait between draws
+const drawDebounceTime = 15;
 
 /**
  * This function will debounce calls to functions.
@@ -127,9 +130,34 @@ export class CanvasGraphService {
     }
 
     /**
+     * This method lets the service know it should get ready to update what it is displaying.
+     */
+    public update = debounce(
+        () => this._draw(), 
+        drawDebounceTime
+    );
+
+    public resize(size: IPerfLayoutSize) {
+        const { _ctx: ctx } = this;
+        const { width, height } = size;
+        
+        if (!ctx || !ctx.canvas) {
+            return;
+        }
+
+        this._width = width;
+        this._height = height;
+
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+
+        this.update();
+    }
+
+    /**
      * This method draws the data and sets up the appropriate scales.
      */
-    public draw() {
+    private _draw() {
         const { _ctx: ctx } = this;
 
         if (!ctx) {
