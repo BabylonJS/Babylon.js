@@ -130,11 +130,10 @@ export class CanvasGraphService {
     }
 
     /**
-     * This method draws the data with debounce.
-     *
+     * This method lets the service know it should get ready to update what it is displaying.
      */
     public update = debounce(
-        () => this.draw(), 
+        () => this._draw(), 
         drawDebounceTime
     );
 
@@ -155,11 +154,10 @@ export class CanvasGraphService {
         this.update();
     }
 
-    // TODO: Make this private once performanceViewerComponent can be changed (Post data layer).
     /**
      * This method draws the data and sets up the appropriate scales.
      */
-    public draw() {
+    private _draw() {
         const { _ctx: ctx } = this;
 
         if (!ctx) {
