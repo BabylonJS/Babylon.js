@@ -4874,7 +4874,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             vertexData.transform(wm);
             return vertexData;
         };
-        const vertexData = getVertexDataFromMesh(source).merge(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)));
+        const vertexData = getVertexDataFromMesh(source).merge(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)), allow32BitsIndices);
 
         if (!meshSubclass) {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
@@ -4902,10 +4902,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             //-- apply subdivision according to index table
             while (index < indiceArray.length) {
-                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
+                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass, undefined, false);
                 offset += indiceArray[index];
                 index++;
             }
+
+            for (const subMesh of meshSubclass.subMeshes) {
+                subMesh.refreshBoundingInfo();
+            }
+
+            meshSubclass.computeWorldMatrix(true);
         }
 
         if (multiMultiMaterials) {
