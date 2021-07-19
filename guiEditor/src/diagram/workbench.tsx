@@ -295,31 +295,44 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
         
-        if (draggedControlParent && draggedControl) {
+        //checking to make sure the element is not being inserted into a child
+        if (this._isNotChildInsert(control, draggedControl)) {
+            if (draggedControlParent && draggedControl) {
+                draggedControlParent.removeControl(draggedControl);
 
-            draggedControlParent.removeControl(draggedControl);
-        
-            if (control != null) {
-                if (this.props.globalState.workbench.isContainer(control)) {
-                    this.props.globalState.guiTexture.removeControl(draggedControl);
-                    (control as Container).addControl(draggedControl);
+                if (control != null) {
+                    if (this.props.globalState.workbench.isContainer(control) &&
+                        this.props.globalState.draggedControlDirection === DragOverLocation.CENTER) {
+                        (control as Container).addControl(draggedControl);
+                    }
+                    else if (control.parent) {
+                        let index = control.parent.children.indexOf(control);
+                        //adjusting index to be before or after based on where the control is over
+                        index = this._adjustParentingIndex(index);
+                        control.parent.children.splice(index, 0, draggedControl);
+                        draggedControl.parent = control.parent;
+                    }
+                    else {
+                        this.props.globalState.guiTexture.addControl(draggedControl);
+                    }
                 }
-                if (control.parent) {
-                    let index = control.parent.children.indexOf(control);
-                    
-                    //adjusting index to be before or after based on where the control is over
-                    index = this._adjustParentingIndex(index); 
-                    control.parent.children.splice(index, 0, draggedControl);
-                    draggedControl.parent = control.parent;
+                else {
+                    draggedControlParent.children.splice(1, 0, draggedControl);
+                    draggedControl.parent = draggedControlParent;
                 }
-                this.props.globalState.guiTexture.addControl(draggedControl);
-            }
-            else {
-                draggedControlParent.children.splice(1, 0, draggedControl);
-                draggedControl.parent = draggedControlParent;
             }
         }
         this.globalState.draggedControl = null;
+    }
+
+    private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {
+        while (control?.parent) {
+            if (control.parent == draggedControl) {
+                return false;
+            }
+            control = control.parent;
+        }
+        return true;
     }
 
     private _adjustParentingIndex(index: number) {
