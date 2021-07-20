@@ -64604,6 +64604,7 @@ declare module BABYLON {
         CLEARCOAT_TINT: boolean;
         CLEARCOAT_TINT_TEXTURE: boolean;
         CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
+        CLEARCOAT_TINT_GAMMATEXTURE: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -65049,6 +65050,7 @@ declare module BABYLON {
     export interface IMaterialSheenDefines {
         SHEEN: boolean;
         SHEEN_TEXTURE: boolean;
+        SHEEN_GAMMATEXTURE: boolean;
         SHEEN_TEXTURE_ROUGHNESS: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
         SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;
@@ -65851,6 +65853,7 @@ declare module BABYLON {
         EMISSIVEDIRECTUV: number;
         GAMMAEMISSIVE: boolean;
         REFLECTIVITY: boolean;
+        REFLECTIVITY_GAMMA: boolean;
         REFLECTIVITYDIRECTUV: number;
         SPECULARTERM: boolean;
         MICROSURFACEFROMREFLECTIVITYMAP: boolean;
@@ -65864,9 +65867,11 @@ declare module BABYLON {
         METALLNESSSTOREINMETALMAPBLUE: boolean;
         AOSTOREINMETALMAPRED: boolean;
         METALLIC_REFLECTANCE: boolean;
+        METALLIC_REFLECTANCE_GAMMA: boolean;
         METALLIC_REFLECTANCEDIRECTUV: number;
         METALLIC_REFLECTANCE_USE_ALPHA_ONLY: boolean;
         REFLECTANCE: boolean;
+        REFLECTANCE_GAMMA: boolean;
         REFLECTANCEDIRECTUV: number;
         ENVIRONMENTBRDF: boolean;
         ENVIRONMENTBRDF_RGBD: boolean;
@@ -65979,6 +65984,7 @@ declare module BABYLON {
         CLEARCOAT_REMAP_F0: boolean;
         CLEARCOAT_TINT: boolean;
         CLEARCOAT_TINT_TEXTURE: boolean;
+        CLEARCOAT_TINT_GAMMATEXTURE: boolean;
         CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
         ANISOTROPIC: boolean;
         ANISOTROPIC_TEXTURE: boolean;
@@ -65988,6 +65994,7 @@ declare module BABYLON {
         SPECULAR_GLOSSINESS_ENERGY_CONSERVATION: boolean;
         SHEEN: boolean;
         SHEEN_TEXTURE: boolean;
+        SHEEN_GAMMATEXTURE: boolean;
         SHEEN_TEXTURE_ROUGHNESS: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
         SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;

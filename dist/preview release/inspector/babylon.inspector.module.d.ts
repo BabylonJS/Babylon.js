@@ -220,6 +220,10 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
         start: number;
         end: number;
     }
+    export interface IPerfLayoutSize {
+        width: number;
+        height: number;
+    }
     /**
      * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
      */
@@ -251,7 +255,7 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
     }
 }
 declare module "babylonjs-inspector/components/graph/canvasGraphService" {
-    import { ICanvasGraphServiceSettings } from "babylonjs-inspector/components/graph/graphSupportingTypes";
+    import { ICanvasGraphServiceSettings, IPerfLayoutSize } from "babylonjs-inspector/components/graph/graphSupportingTypes";
     import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer";
     /**
      * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
@@ -283,9 +287,14 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          */
         constructor(canvas: HTMLCanvasElement, settings: ICanvasGraphServiceSettings);
         /**
+         * This method lets the service know it should get ready to update what it is displaying.
+         */
+        update: (...args: any[]) => void;
+        resize(size: IPerfLayoutSize): void;
+        /**
          * This method draws the data and sets up the appropriate scales.
          */
-        draw(): void;
+        private _draw;
         /**
          * Returns the index of the closest time for a dataset.
          * Uses a modified binary search to get value.
@@ -438,11 +447,14 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
     }
 }
 declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
+    import { Observable } from 'babylonjs/Misc/observable';
     import * as React from 'react';
     import { CanvasGraphService } from "babylonjs-inspector/components/graph/canvasGraphService";
+    import { IPerfLayoutSize } from "babylonjs-inspector/components/graph/graphSupportingTypes";
     interface ICanvasGraphComponentProps {
         id: string;
         canvasServiceCallback: (canvasService: CanvasGraphService) => void;
+        layoutObservable?: Observable<IPerfLayoutSize>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -791,6 +803,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/colorPickerComponen
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
@@ -4677,6 +4690,16 @@ declare module "babylonjs-inspector/inspector" {
 declare module "babylonjs-inspector/index" {
     export * from "babylonjs-inspector/inspector";
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent" {
+    import { IPerfDataset } from 'babylonjs/Misc/interfaces/iPerfViewer';
+    import { Observable } from 'babylonjs/Misc/observable';
+    interface IPerformanceViewerSidebarComponentProps {
+        datasetObservable: Observable<IPerfDataset[]>;
+        onToggleVisibility: (id: string, value: boolean) => void;
+        onColorChanged: (id: string, value: string) => void;
+    }
+    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/pushButtonComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
@@ -4935,6 +4958,10 @@ declare module INSPECTOR {
         start: number;
         end: number;
     }
+    export interface IPerfLayoutSize {
+        width: number;
+        height: number;
+    }
     /**
      * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
      */
@@ -4996,9 +5023,14 @@ declare module INSPECTOR {
          */
         constructor(canvas: HTMLCanvasElement, settings: ICanvasGraphServiceSettings);
         /**
+         * This method lets the service know it should get ready to update what it is displaying.
+         */
+        update: (...args: any[]) => void;
+        resize(size: IPerfLayoutSize): void;
+        /**
          * This method draws the data and sets up the appropriate scales.
          */
-        draw(): void;
+        private _draw;
         /**
          * Returns the index of the closest time for a dataset.
          * Uses a modified binary search to get value.
@@ -5154,6 +5186,7 @@ declare module INSPECTOR {
     interface ICanvasGraphComponentProps {
         id: string;
         canvasServiceCallback: (canvasService: CanvasGraphService) => void;
+        layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -5474,6 +5507,7 @@ declare module INSPECTOR {
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
@@ -8649,6 +8683,14 @@ declare module INSPECTOR {
         private static _RemoveElementFromDOM;
         static Hide(): void;
     }
+}
+declare module INSPECTOR {
+    interface IPerformanceViewerSidebarComponentProps {
+        datasetObservable: BABYLON.Observable<BABYLON.IPerfDataset[]>;
+        onToggleVisibility: (id: string, value: boolean) => void;
+        onColorChanged: (id: string, value: string) => void;
+    }
+    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
 }
 declare module INSPECTOR {
     interface IPushButtonComponentProps {

@@ -32,6 +32,7 @@
         const in float roughness,
     #ifdef SHEEN_TEXTURE
         const in vec4 sheenMapData,
+        const in float sheenMapLevel,
     #endif
         const in float reflectance,
     #ifdef SHEEN_LINKWITHALBEDO
@@ -98,7 +99,12 @@
         #else
             vec3 sheenColor = vSheenColor.rgb;
             #ifdef SHEEN_TEXTURE
-                sheenColor.rgb *= sheenMapData.rgb;
+                #ifdef SHEEN_GAMMATEXTURE
+                    sheenColor.rgb *= toLinearSpace(sheenMapData.rgb);
+                #else
+                    sheenColor.rgb *= sheenMapData.rgb;
+                #endif
+                sheenColor.rgb *= sheenMapLevel;
             #endif
             
             #ifdef SHEEN_ROUGHNESS
