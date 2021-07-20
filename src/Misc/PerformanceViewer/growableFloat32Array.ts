@@ -2,7 +2,7 @@ const growthFactor = 1.5;
 const bytesPerItem = 32 / 8;
 
 /**
- * A class acting as a growable float32array primarily used in the performance viewer
+ * A class acting as a growable float32array used in the performance viewer
  */
 export class GrowableFloat32Array {
     private _view: Float32Array;
