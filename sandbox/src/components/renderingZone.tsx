@@ -140,7 +140,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 }
             }
 
-            this._scene?.dispose();
             this._engine.clearInternalTexturesCache();
 
             return SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
