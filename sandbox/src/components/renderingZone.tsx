@@ -100,6 +100,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     if (this.props.globalState.isDebugLayerEnabled) {
                         this._scene.debugLayer.hide();
                     }
+                    this._engine.clearInternalTexturesCache();
                 }
             },
             null,
