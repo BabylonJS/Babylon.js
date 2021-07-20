@@ -8,7 +8,11 @@ export class GrowableFloat32Array {
     private _view: Float32Array;
     private _length: number;
 
-    constructor(private _capacity: number){
+    /**
+     * Creates a new GrowableFloat32Array with the desired capacity.
+     * @param _capacity The initial capacity you would like to set for the array.
+     */
+    constructor(private _capacity: number) {
         const buffer = new ArrayBuffer(_capacity * bytesPerItem);
         this._view = new Float32Array(buffer);
         this._length = 0;
@@ -23,8 +27,7 @@ export class GrowableFloat32Array {
 
     /**
      * Pushes items to the end of the array.
-     * 
-     * @param item The item to push into the array. 
+     * @param item The item to push into the array.
      */
     public push(item: number) {
         this._view[this._length] = item;
@@ -36,7 +39,6 @@ export class GrowableFloat32Array {
 
     /**
      * Gets value at index, NaN if no such index exists.
-     * 
      * @param index the index to get the value at.
      * @returns the value at the index provided.
      */
@@ -50,7 +52,6 @@ export class GrowableFloat32Array {
 
     /**
      * Gets a view of the original array from start to end (exclusive of end).
-     * 
      * @param start starting index.
      * @param end ending index.
      * @returns a subarray of the original array.
@@ -72,7 +73,7 @@ export class GrowableFloat32Array {
 
         return sub;
     }
-    
+
     /**
      * Grows the array by the growth factor when necessary.
      */
