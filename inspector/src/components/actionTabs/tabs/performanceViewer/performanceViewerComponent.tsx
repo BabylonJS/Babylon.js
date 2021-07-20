@@ -36,7 +36,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     }
 
     const canvasServiceCallback = (canvasService: CanvasGraphService) => {
-        canvasService.draw();
+        canvasService.update();
     };
 
     return (
