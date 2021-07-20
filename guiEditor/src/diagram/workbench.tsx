@@ -291,32 +291,32 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.highlightLineWidth = 5;
     }
 
-    private parent(control: Nullable<Control>) {
+    private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
-        
-        //checking to make sure the element is not being inserted into a child
-        if (this._isNotChildInsert(control, draggedControl)) {
-            if (draggedControlParent && draggedControl) {
-                draggedControlParent.removeControl(draggedControl);
 
-                if (control != null) {
-                    if (this.props.globalState.workbench.isContainer(control) &&
+        if (draggedControlParent && draggedControl) {
+            if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
+                
+                draggedControlParent.removeControl(draggedControl);
+                if (dropLocationControl != null) { //the control you are dragging onto top
+                    if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER) {
-                        (control as Container).addControl(draggedControl);
+                        (dropLocationControl as Container).addControl(draggedControl);
                     }
-                    else if (control.parent) {
-                        let index = control.parent.children.indexOf(control);
+                    else if (dropLocationControl.parent) { //dropping inside the controls parent container
+                        let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
                         //adjusting index to be before or after based on where the control is over
                         index = this._adjustParentingIndex(index);
-                        control.parent.children.splice(index, 0, draggedControl);
-                        draggedControl.parent = control.parent;
+                        dropLocationControl.parent.children.splice(index, 0, draggedControl);
+                        draggedControl.parent = dropLocationControl.parent;
                     }
                     else {
                         this.props.globalState.guiTexture.addControl(draggedControl);
                     }
                 }
                 else {
+                    //starting at index 1 because of object "Art-Board-Background" must be at index 0
                     draggedControlParent.children.splice(1, 0, draggedControl);
                     draggedControl.parent = draggedControlParent;
                 }
