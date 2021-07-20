@@ -194,6 +194,10 @@ declare module INSPECTOR {
         start: number;
         end: number;
     }
+    export interface IPerfLayoutSize {
+        width: number;
+        height: number;
+    }
     /**
      * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
      */
@@ -255,9 +259,14 @@ declare module INSPECTOR {
          */
         constructor(canvas: HTMLCanvasElement, settings: ICanvasGraphServiceSettings);
         /**
+         * This method lets the service know it should get ready to update what it is displaying.
+         */
+        update: (...args: any[]) => void;
+        resize(size: IPerfLayoutSize): void;
+        /**
          * This method draws the data and sets up the appropriate scales.
          */
-        draw(): void;
+        private _draw;
         /**
          * Returns the index of the closest time for a dataset.
          * Uses a modified binary search to get value.
@@ -413,6 +422,7 @@ declare module INSPECTOR {
     interface ICanvasGraphComponentProps {
         id: string;
         canvasServiceCallback: (canvasService: CanvasGraphService) => void;
+        layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -733,6 +743,7 @@ declare module INSPECTOR {
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
@@ -3908,6 +3919,14 @@ declare module INSPECTOR {
         private static _RemoveElementFromDOM;
         static Hide(): void;
     }
+}
+declare module INSPECTOR {
+    interface IPerformanceViewerSidebarComponentProps {
+        datasetObservable: BABYLON.Observable<BABYLON.IPerfDataset[]>;
+        onToggleVisibility: (id: string, value: boolean) => void;
+        onColorChanged: (id: string, value: string) => void;
+    }
+    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
 }
 declare module INSPECTOR {
     interface IPushButtonComponentProps {
