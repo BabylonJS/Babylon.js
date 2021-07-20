@@ -44230,7 +44230,6 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
         });
         _this._onDraggingEndObservable = props.globalState.onDraggingEndObservable.add(function () {
             _this.dragOverLocation = _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE;
-            _this.forceUpdate();
         });
         _this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
         return _this;
@@ -44265,7 +44264,6 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
         }
         event.preventDefault();
         this.dragOverHover = true;
-        this.forceUpdate();
     };
     ControlTreeItemComponent.prototype.drop = function () {
         var control = this.props.control;
@@ -44273,7 +44271,6 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
             this.dragOverHover = false;
             this.props.globalState.draggedControlDirection = this.dragOverLocation;
             this.props.globalState.onParentingChangeObservable.notifyObservers(this.props.control);
-            this.forceUpdate();
         }
         this.props.globalState.draggedControl = null;
         this.dragOverLocation = _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE;
@@ -45274,31 +45271,45 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }
         guiControl.highlightLineWidth = 5;
     };
-    WorkbenchComponent.prototype.parent = function (control) {
+    WorkbenchComponent.prototype.parent = function (dropLocationControl) {
         var draggedControl = this.props.globalState.draggedControl;
         var draggedControlParent = draggedControl === null || draggedControl === void 0 ? void 0 : draggedControl.parent;
         if (draggedControlParent && draggedControl) {
-            draggedControlParent.removeControl(draggedControl);
-            if (control != null) {
-                if (this.props.globalState.workbench.isContainer(control)) {
-                    this.props.globalState.guiTexture.removeControl(draggedControl);
-                    control.addControl(draggedControl);
+            if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
+                draggedControlParent.removeControl(draggedControl);
+                if (dropLocationControl != null) { //the control you are dragging onto top
+                    if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
+                        this.props.globalState.draggedControlDirection === _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].CENTER) {
+                        dropLocationControl.addControl(draggedControl);
+                    }
+                    else if (dropLocationControl.parent) { //dropping inside the controls parent container
+                        var index = dropLocationControl.parent.children.indexOf(dropLocationControl);
+                        //adjusting index to be before or after based on where the control is over
+                        index = this._adjustParentingIndex(index);
+                        dropLocationControl.parent.children.splice(index, 0, draggedControl);
+                        draggedControl.parent = dropLocationControl.parent;
+                    }
+                    else {
+                        this.props.globalState.guiTexture.addControl(draggedControl);
+                    }
                 }
-                if (control.parent) {
-                    var index = control.parent.children.indexOf(control);
-                    //adjusting index to be before or after based on where the control is over
-                    index = this._adjustParentingIndex(index);
-                    control.parent.children.splice(index, 0, draggedControl);
-                    draggedControl.parent = control.parent;
+                else {
+                    //starting at index 1 because of object "Art-Board-Background" must be at index 0
+                    draggedControlParent.children.splice(1, 0, draggedControl);
+                    draggedControl.parent = draggedControlParent;
                 }
-                this.props.globalState.guiTexture.addControl(draggedControl);
-            }
-            else {
-                draggedControlParent.children.splice(1, 0, draggedControl);
-                draggedControl.parent = draggedControlParent;
             }
         }
         this.globalState.draggedControl = null;
+    };
+    WorkbenchComponent.prototype._isNotChildInsert = function (control, draggedControl) {
+        while (control === null || control === void 0 ? void 0 : control.parent) {
+            if (control.parent == draggedControl) {
+                return false;
+            }
+            control = control.parent;
+        }
+        return true;
     };
     WorkbenchComponent.prototype._adjustParentingIndex = function (index) {
         switch (this.props.globalState.draggedControlDirection) {
