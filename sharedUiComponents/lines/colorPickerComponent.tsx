@@ -7,6 +7,7 @@ export interface IColorPickerComponentProps {
     linearHint?: boolean;
     onColorChanged: (newOne: string) => void;
     icon? : string;
+    shouldPopRight?: boolean;
 }
 
 interface IColorPickerComponentState {
@@ -46,7 +47,11 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         }
 
         div.style.top = top + "px";
-        div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
+        if (!this.props.shouldPopRight) {
+            div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
+        } else {
+            div.style.left = host.getBoundingClientRect().left + "px";
+        }
     }
 
     shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
