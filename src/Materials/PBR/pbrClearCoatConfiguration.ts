@@ -31,6 +31,7 @@ export interface IMaterialClearCoatDefines {
     CLEARCOAT_TINT: boolean;
     CLEARCOAT_TINT_TEXTURE: boolean;
     CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
+    CLEARCOAT_TINT_GAMMATEXTURE: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -257,6 +258,7 @@ export class PBRClearCoatConfiguration {
                         defines.CLEARCOAT_TINT = true;
                         if (this._tintTexture && MaterialFlags.ClearCoatTintTextureEnabled) {
                             MaterialHelper.PrepareDefinesForMergedUV(this._tintTexture, defines, "CLEARCOAT_TINT_TEXTURE");
+                            defines.CLEARCOAT_TINT_GAMMATEXTURE = this._tintTexture.gammaSpace;
                         }
                         else {
                             defines.CLEARCOAT_TINT_TEXTURE = false;
