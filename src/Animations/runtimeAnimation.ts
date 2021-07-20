@@ -399,7 +399,7 @@ export class RuntimeAnimation {
             this._blendingFactor += blendingSpeed;
         } else {
             if (!this._currentValue) {
-                if (currentValue.clone) {
+                if (currentValue?.clone) {
                     this._currentValue = currentValue.clone();
                 } else {
                     this._currentValue = currentValue;
