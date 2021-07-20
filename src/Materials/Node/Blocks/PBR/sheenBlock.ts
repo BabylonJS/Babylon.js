@@ -131,6 +131,7 @@ export class SheenBlock extends NodeMaterialBlock {
                 roughness,
             #ifdef SHEEN_TEXTURE
                 ${texture},
+                1.0,
             #endif
                 reflectance,
             #ifdef SHEEN_LINKWITHALBEDO
