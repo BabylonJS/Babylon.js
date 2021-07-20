@@ -129,7 +129,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
 
         if (this.zoomToMouseLocation) {
-            this._inertialPanning = Vector3.Zero();
+            this._inertialPanning.setAll(0);
         }
     }
 
@@ -215,7 +215,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         return ray.origin.addInPlace(ray.direction.scaleInPlace(distance));
     }
 
-    private _inertialPanning : Vector3;
+    private _inertialPanning : Vector3 = Vector3.Zero();
 
     private _zoomToMouse(delta: number) {
         var camera = this.camera;
