@@ -257,8 +257,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     onSceneLoaded(filename: string) {
-        this._engine.clearInternalTexturesCache();
-
         this._scene.skipFrustumClipping = true;
 
         this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename });
@@ -319,6 +317,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             .then((scene) => {
                 if (this._scene) {
                     this._scene.dispose();
+                    this._engine.clearInternalTexturesCache();
                 }
 
                 this._scene = scene;
