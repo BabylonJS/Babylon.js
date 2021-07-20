@@ -399,7 +399,7 @@ export class RuntimeAnimation {
             this._blendingFactor += blendingSpeed;
         } else {
             this._currentValue = currentValue;
-            if (this._currentValue._isDirty !== undefined) {
+            if (this._currentValue && this._currentValue._isDirty !== undefined) {
                 this._currentValue._isDirty = true;
             }
         }
