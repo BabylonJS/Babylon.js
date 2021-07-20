@@ -16,6 +16,7 @@ import { SubMesh } from '../../Meshes/subMesh';
 export interface IMaterialSheenDefines {
     SHEEN: boolean;
     SHEEN_TEXTURE: boolean;
+    SHEEN_GAMMATEXTURE: boolean;
     SHEEN_TEXTURE_ROUGHNESS: boolean;
     SHEEN_TEXTUREDIRECTUV: number;
     SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;
@@ -171,6 +172,7 @@ export class PBRSheenConfiguration {
                 if (scene.texturesEnabled) {
                     if (this._texture && MaterialFlags.SheenTextureEnabled) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "SHEEN_TEXTURE");
+                        defines.SHEEN_GAMMATEXTURE = this._texture.gammaSpace;
                     } else {
                         defines.SHEEN_TEXTURE = false;
                     }
