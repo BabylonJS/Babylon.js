@@ -118,6 +118,7 @@ export class Footer extends React.Component<IFooterProps> {
                                 enabled={true}
                                 icon={iconOpen}
                                 onFilesPicked={(evt, files) => {
+                                    this.props.globalState.currentScene?.getEngine().clearInternalTexturesCache();
                                     this.props.globalState.filesInput.loadFiles(evt);
                                 }}
                                 label="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)"/>
