@@ -1624,6 +1624,14 @@ export class ThinEngine {
         this._bindUnboundFramebuffer(currentFB);
     }
 
+    public bindFramebufferRenderbuffer(framebuffer: WebGLFramebuffer, renderBuffer: WebGLRenderbuffer) {
+        const gl = this._gl;
+
+        this._bindUnboundFramebuffer(framebuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderBuffer);
+        this._bindUnboundFramebuffer(null);
+    }
+
     /**
      * Binds the frame buffer to the specified texture.
      * @param texture The texture to render to or null for the default canvas
