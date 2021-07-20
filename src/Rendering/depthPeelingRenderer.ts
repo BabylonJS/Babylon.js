@@ -10,12 +10,13 @@ import { Scene } from "../scene";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
+import { PrePassRenderer } from "./prePassRenderer";
+import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { Logger } from "../Misc/logger";
 
 import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
 import "../Shaders/oitBackBlend.fragment";
-import { PrePassRenderer } from "./prePassRenderer";
-import { InternalTexture } from "../Materials";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -59,10 +60,8 @@ export class DepthPeelingRenderer {
 
         //  We need a depth texture for opaque
         if (!scene.enablePrePassRenderer()) {
-            // Not supported, print error
+            Logger.Warn("Depth peeling for order independant transparency could not enable PrePass, aborting.");
             return;
-        } else {
-            scene.prePassRenderer!.markAsDirty();
         }
 
         this._prePassEffectConfiguration = new DepthPeelingEffectConfiguration();
@@ -101,39 +100,53 @@ export class DepthPeelingRenderer {
             const frontColorTexture = this._engine._createInternalTexture(size, optionsArray[1]);
             const backColorTexture = this._engine._createInternalTexture(size, optionsArray[1]);
 
-            // TODO : lower level (move in engine.multiRender)
             this._depthMrts[i].setInternalTexture(depthTexture, 0, 0);
             this._depthMrts[i].setInternalTexture(frontColorTexture, 1, 1);
             this._depthMrts[i].setInternalTexture(backColorTexture, 2, 2);
 
             this._colorMrts[i].setInternalTexture(frontColorTexture, 0, 0);
             this._colorMrts[i].setInternalTexture(backColorTexture, 1, 1);
-            // this._engine.bindTextureFramebuffer(this._depthMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, depthTexture);
-            // this._engine.bindTextureFramebuffer(this._depthMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, frontColorTexture, 1);
-            // this._engine.bindTextureFramebuffer(this._depthMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, backColorTexture, 2);
-
-            // this._engine.bindTextureFramebuffer(this._colorMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, frontColorTexture);
-            // this._engine.bindTextureFramebuffer(this._colorMrts[i].getInternalTexture()!._framebuffer as WebGLFramebuffer, backColorTexture, 1);
 
             this._thinTextures.push(new ThinTexture(depthTexture), new ThinTexture(frontColorTexture), new ThinTexture(backColorTexture));
         }
-
-        // const blendBackTexture = this._engine._createInternalTexture(size, optionsArray[1]);
-        const blendBackTexture = this._engine._createInternalTexture(size, optionsArray[1]);
-        this._blendBackTexture = blendBackTexture;
-        this._engine.bindTextureFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer, blendBackTexture);
-        this._thinTextures.push(new ThinTexture(blendBackTexture));
     }
 
     private _updateTextureReferences() {
-        const prePassTexture = this._scene.prePassRenderer!.defaultRT.textures?.length ? this._scene.prePassRenderer!.defaultRT.textures[0].getInternalTexture() : null;
+        const prePassRenderer = this._scene.prePassRenderer;
 
-        if (prePassTexture && this._blendBackTexture !== prePassTexture) {
-            this._blendBackTexture = prePassTexture!;
-            this._engine.bindTextureFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer, this._blendBackTexture);
-            this._thinTextures[6].dispose();
-            this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
+        if (!prePassRenderer) {
+            return false;
         }
+
+        // Retrieve opaque color texture
+        const textureIndex = prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE);
+        const prePassTexture = prePassRenderer.defaultRT.textures?.length ? prePassRenderer.defaultRT.textures[textureIndex].getInternalTexture() : null;
+
+        if (!prePassTexture) {
+            return false;
+        }
+
+        if (this._blendBackTexture !== prePassTexture) {
+            this._blendBackTexture = prePassTexture;
+            this._blendBackMrt.setInternalTexture(this._blendBackTexture, 0, 0);
+
+            if (this._thinTextures[6]) {
+                this._thinTextures[6].dispose();
+            }
+            this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
+
+            // We bind the opaque depth buffer to correctly occlude fragments that are behind opaque geometry
+            // TODO : clean the assumptions
+            const depthStencilBuffer = prePassTexture._depthStencilBuffer;
+            const framebuffer = this._depthMrts[0]._getFrameBuffer();
+            if (!depthStencilBuffer || !framebuffer) {
+                return false;
+            }
+
+            this._engine.bindFramebufferRenderbuffer(framebuffer, depthStencilBuffer);
+        }
+
+        return true;
     }
 
     private _createEffects() {
@@ -170,46 +183,36 @@ export class DepthPeelingRenderer {
     }
 
     public render(transparentSubMeshes: SmartArray<SubMesh>) {
-        if (!this._blendBackEffectWrapper.effect.isReady() || !this._finalEffectWrapper.effect.isReady()) {
+        if (!this._blendBackEffectWrapper.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextureReferences()) {
             return;
         }
-
-        this._updateTextureReferences();
-
-        // We bind the opaque depth buffer to correctly occlude fragments that are behind opaque geometry
-        // TODO : move into thinengine
-        const gl = this._engine._gl;
-        const depthStencilBuffer = this._scene.prePassRenderer!.getRenderTarget().getInternalTexture()?._depthStencilBuffer as WebGLRenderbuffer;
-        this._engine._bindUnboundFramebuffer(this._depthMrts[0].getInternalTexture()!._framebuffer);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-        this._engine._bindUnboundFramebuffer(null);
 
         const DEPTH_CLEAR_VALUE = -99999.0;
         const MIN_DEPTH = 0;
         const MAX_DEPTH = 1;
-
+        const gl = this._engine._gl;
         // TODO
         (this._scene.prePassRenderer! as any)._enabled = false;
 
         // Clears
-        this._engine._bindUnboundFramebuffer(this._depthMrts[0].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        this._engine._bindUnboundFramebuffer(this._depthMrts[0]._getFrameBuffer());
         let attachments = this._engine.buildTextureLayout([true]);
         this._engine.bindAttachments(attachments);
         this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
 
-        this._engine._bindUnboundFramebuffer(this._depthMrts[1].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        this._engine._bindUnboundFramebuffer(this._depthMrts[1]._getFrameBuffer());
         this._engine.clear(new Color4(-MIN_DEPTH, MAX_DEPTH, 0, 0), true, false, false);
 
-        this._engine._bindUnboundFramebuffer(this._colorMrts[0].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        this._engine._bindUnboundFramebuffer(this._colorMrts[0]._getFrameBuffer());
         attachments = this._engine.buildTextureLayout([true, true]);
         this._engine.bindAttachments(attachments);
         this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
 
-        this._engine._bindUnboundFramebuffer(this._colorMrts[1].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        this._engine._bindUnboundFramebuffer(this._colorMrts[1]._getFrameBuffer());
         this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
 
         // Draw depth for first pass
-        this._engine._bindUnboundFramebuffer(this._depthMrts[0].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+        this._engine._bindUnboundFramebuffer(this._depthMrts[0]._getFrameBuffer());
         attachments = this._engine.buildTextureLayout([true]);
         this._engine.bindAttachments(attachments);
 
@@ -252,17 +255,17 @@ export class DepthPeelingRenderer {
             writeId = 1 - readId;
             this._currentPingPongState = readId;
 
-            this._engine._bindUnboundFramebuffer(this._depthMrts[writeId].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+            this._engine._bindUnboundFramebuffer(this._depthMrts[writeId]._getFrameBuffer());
             attachments = this._engine.buildTextureLayout([true]);
             this._engine.bindAttachments(attachments);
             this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
 
-            this._engine._bindUnboundFramebuffer(this._colorMrts[writeId].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+            this._engine._bindUnboundFramebuffer(this._colorMrts[writeId]._getFrameBuffer());
             attachments = this._engine.buildTextureLayout([true, true]);
             this._engine.bindAttachments(attachments);
             this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
 
-            this._engine._bindUnboundFramebuffer(this._depthMrts[writeId].getInternalTexture()!._framebuffer as WebGLFramebuffer);
+            this._engine._bindUnboundFramebuffer(this._depthMrts[writeId]._getFrameBuffer());
             attachments = this._engine.buildTextureLayout([true, true, true]);
             this._engine.bindAttachments(attachments);
 
@@ -289,7 +292,7 @@ export class DepthPeelingRenderer {
             }
 
             // Back color
-            this._engine._bindUnboundFramebuffer(this._blendBackMrt.getInternalTexture()!._framebuffer as WebGLFramebuffer);
+            this._engine._bindUnboundFramebuffer(this._blendBackMrt._getFrameBuffer());
             attachments = this._engine.buildTextureLayout([true]);
             this._engine.bindAttachments(attachments);
             // TODO : drawElements uses apply states so blendEquation will be overwritten

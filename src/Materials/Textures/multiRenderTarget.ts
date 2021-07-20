@@ -66,6 +66,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
     private _count: number;
     private _drawOnlyOnFirstAttachmentByDefault: boolean;
+    private _framebuffer: WebGLFramebuffer;
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
@@ -222,6 +223,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         // Keeps references to frame buffer and stencil/depth buffer
         this._texture = this._internalTextures[0];
+        this._framebuffer = this._internalTextures[0]._framebuffer!;
     }
 
     private _createTextures(): void {
@@ -239,18 +241,18 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param index The index of the texture to replace
      */
     public setInternalTexture(texture: InternalTexture, index: number, attachmentIndex: number = 0, disposePrevious: boolean = true) {
-        if (index === 0) {
-            // This function is just meant to replace textures, not the framebuffer
-            // So we keep references
-            texture._framebuffer = this._texture!._framebuffer;
-            // Prevents the dispose of the framebuffer
-            this._texture!._framebuffer = null;
-            texture._MSAAFramebuffer = this._texture!._MSAAFramebuffer;
-            this._texture!._MSAAFramebuffer = null;
-            this._texture = texture;
-        }
+        // if (index === 0) {
+        //     // This function is just meant to replace textures, not the framebuffer
+        //     // So we keep references
+        //     texture._framebuffer = this._texture!._framebuffer;
+        //     // Prevents the dispose of the framebuffer
+        //     this._texture!._framebuffer = null;
+        //     texture._MSAAFramebuffer = this._texture!._MSAAFramebuffer;
+        //     this._texture!._MSAAFramebuffer = null;
+        //     this._texture = texture;
+        // }
 
-        if (disposePrevious && this._internalTextures[index]) {
+        if (disposePrevious && this._internalTextures[index] && index !== 0) {
             this._internalTextures[index].dispose();    
         }
         
@@ -261,12 +263,19 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this.textures[index]._texture = texture;
 
         if (this._engine && this._texture) {
-            this._engine.bindTextureFramebuffer(this._texture._framebuffer!, texture, attachmentIndex);
+            this._engine.bindTextureFramebuffer(this._framebuffer!, texture, attachmentIndex);
         }
 
         this._count = this._internalTextures.length;
-
         // TODO : update types and samplingModes
+    }
+
+    /**
+     * Retrieves the underlying framebuffer associated with this texture
+     * @returns The framebuffer
+     */
+    public _getFrameBuffer(): WebGLFramebuffer {
+        return this._framebuffer;
     }
 
     /**
