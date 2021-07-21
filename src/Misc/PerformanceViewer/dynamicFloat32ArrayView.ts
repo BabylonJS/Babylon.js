@@ -35,7 +35,7 @@ export class DynamicFloat32ArrayView {
     }
 
     /**
-     * Gets a view of the original array from start to end (exclusive of end).
+     * Gets a immutable subarray of the original array from start to end (exclusive of end).
      * @param start starting index.
      * @param end ending index.
      * @returns a subarray of the original array.
