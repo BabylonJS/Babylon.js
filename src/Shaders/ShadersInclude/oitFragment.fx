@@ -1,4 +1,4 @@
-#ifdef ORDER_INDEPENDANT_TRANSPARENCY
+#ifdef ORDER_INDEPENDENT_TRANSPARENCY
     // -------------------------
     // dual depth peeling
     // -------------------------

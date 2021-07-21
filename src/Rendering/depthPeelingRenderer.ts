@@ -203,8 +203,26 @@ export class DepthPeelingRenderer {
         }
     }
 
+    private _finalCompose(writeId: number) {
+        this._engine._bindUnboundFramebuffer(null);
+
+        this._engine.setAlphaMode(Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA);
+        this._engine._alphaState.alphaBlend = false;
+        this._engine.applyStates();
+
+        this._engine.enableEffect(this._finalEffectWrapper.effect);
+        this._finalEffectWrapper.effect.setTexture("uFrontColor", this._thinTextures[writeId * 3 + 1]);
+        this._finalEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[6]);
+        this._effectRenderer.render(this._finalEffectWrapper);
+    }
+
     public render(transparentSubMeshes: SmartArray<SubMesh>) {
         if (!this._blendBackEffectWrapper.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextureReferences()) {
+            return;
+        }
+
+        if (!transparentSubMeshes.length) {
+            this._finalCompose(1);
             return;
         }
 
@@ -293,16 +311,7 @@ export class DepthPeelingRenderer {
         }
 
         // Final composition on default FB
-        this._engine._bindUnboundFramebuffer(null);
-
-        this._engine.setAlphaMode(Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA);
-        this._engine._alphaState.alphaBlend = false;
-        this._engine.applyStates();
-
-        this._engine.enableEffect(this._finalEffectWrapper.effect);
-        this._finalEffectWrapper.effect.setTexture("uFrontColor", this._thinTextures[writeId * 3 + 1]);
-        this._finalEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[6]);
-        this._effectRenderer.render(this._finalEffectWrapper);
+        this._finalCompose(writeId);
 
         // TODO
         (this._scene.prePassRenderer! as any)._enabled = true;

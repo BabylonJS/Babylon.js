@@ -1,4 +1,4 @@
-#ifdef ORDER_INDEPENDANT_TRANSPARENCY
+#ifdef ORDER_INDEPENDENT_TRANSPARENCY
 #extension GL_EXT_draw_buffers : require
 layout(location=0) out vec2 depth;  // RG32F, R - negative front depth, G - back depth
 layout(location=1) out vec4 frontColor;

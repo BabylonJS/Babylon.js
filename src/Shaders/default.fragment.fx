@@ -463,7 +463,7 @@ color.rgb = max(color.rgb, 0.);
 	gl_FragColor = color;
 #endif
 
-#if ORDER_INDEPENDANT_TRANSPARENCY
+#if ORDER_INDEPENDENT_TRANSPARENCY
 	if (fragDepth == nearestDepth) {
 		frontColor.rgb += color.rgb * color.a * alphaMultiplier;
 		frontColor.a = 1.0 - alphaMultiplier * (1.0 - color.a);
