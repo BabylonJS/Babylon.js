@@ -313,7 +313,7 @@ export class Image extends Control {
         const height = this._domImage.height;
 
         // Should abstract platform instead of using LastCreatedEngine
-        const engine = Engine.LastCreatedEngine;
+        const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
@@ -400,7 +400,7 @@ export class Image extends Control {
         const height = this._domImage.height;
 
         if (!this._workingCanvas) {
-            const engine = Engine.LastCreatedEngine;
+            const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
             if (!engine) {
                 throw new Error("Invalid engine. Unable to create a canvas.");
             }
@@ -512,7 +512,7 @@ export class Image extends Control {
         }
 
         // Should abstract platform instead of using LastCreatedEngine
-        const engine = Engine.LastCreatedEngine;
+        const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
@@ -761,7 +761,7 @@ export class Image extends Control {
         const height = this._currentMeasure.height;
 
         if (!this._workingCanvas) {
-            const engine = Engine.LastCreatedEngine;
+            const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
             if (!engine) {
                 throw new Error("Invalid engine. Unable to create a canvas.");
             }
