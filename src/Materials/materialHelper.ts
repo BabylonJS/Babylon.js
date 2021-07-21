@@ -294,7 +294,7 @@ export class MaterialHelper {
     public static PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
         const previousDefine = defines.ORDER_INDEPENDANT_TRANSPARENCY;
 
-        defines.ORDER_INDEPENDANT_TRANSPARENCY = scene.useOrderIndependantTransparency && needAlphaBlending;
+        defines.ORDER_INDEPENDANT_TRANSPARENCY = scene.useOrderIndependentTransparency && needAlphaBlending;
 
         if (previousDefine !== defines.ORDER_INDEPENDANT_TRANSPARENCY) {
             defines.markAsUnprocessed();
