@@ -15,14 +15,14 @@ declare module "../scene" {
         /**
          * Flag to indicate if we want to use order independant transparency, despite the performance hit
          */
-        useOrderIndependantTransparency: boolean
+        useOrderIndependentTransparency: boolean
     }
 }
 
 // declare module "../Materials/material" {
 //     export interface Material {
 //         /**
-//          * Flag to indicate if this mesh is using orderIndependantTransparency for this rendering pass
+//          * Flag to indicate if this mesh is using orderIndependentTransparency for this rendering pass
 //          */
 //     }
 // }

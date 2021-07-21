@@ -150,7 +150,7 @@ export class RenderingGroup {
         // Transparent
         if (this._transparentSubMeshes.length !== 0) {
             engine.setStencilBuffer(stencilState);
-            if (this._scene.useOrderIndependantTransparency) {
+            if (this._scene.useOrderIndependentTransparency) {
                 this._scene.depthPeelingRenderer!.render(this._transparentSubMeshes);
             } else {
                 this._renderTransparent(this._transparentSubMeshes);

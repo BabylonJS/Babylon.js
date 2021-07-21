@@ -1616,7 +1616,7 @@ export class StandardMaterial extends PushMaterial {
             }
 
             // OIT with depth peeling
-            if (this.getScene().useOrderIndependantTransparency && this.needAlphaBlendingForMesh(mesh)) {
+            if (this.getScene().useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
                 this.getScene().depthPeelingRenderer!.bind(effect);
             }
 
