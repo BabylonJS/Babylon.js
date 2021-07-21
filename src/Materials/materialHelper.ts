@@ -290,13 +290,14 @@ export class MaterialHelper {
      * Prepares the defines related to order independant transparency
      * @param scene The scene we are intending to draw
      * @param defines The defines to update
+     * @param needAlphaBlending Determines if the material needs alpha blending
      */
     public static PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
-        const previousDefine = defines.ORDER_INDEPENDANT_TRANSPARENCY;
+        const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
 
-        defines.ORDER_INDEPENDANT_TRANSPARENCY = scene.useOrderIndependentTransparency && needAlphaBlending;
+        defines.ORDER_INDEPENDENT_TRANSPARENCY = scene.useOrderIndependentTransparency && needAlphaBlending;
 
-        if (previousDefine !== defines.ORDER_INDEPENDANT_TRANSPARENCY) {
+        if (previousDefine !== defines.ORDER_INDEPENDENT_TRANSPARENCY) {
             defines.markAsUnprocessed();
         }
     }
