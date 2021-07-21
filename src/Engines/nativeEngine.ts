@@ -2510,8 +2510,7 @@ export class NativeEngine extends Engine {
      * Create an image to use with canvas
      * @return IImage interface
      */
-    public createCanvasImage() : IImage
-    {
+    public createCanvasImage(): IImage {
         if (!_native.NativeCanvas) {
             throw new Error("Native Canvas plugin not available.");
         }

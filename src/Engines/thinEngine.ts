@@ -653,8 +653,7 @@ export class ThinEngine {
      * Create an image to use with canvas
      * @return IImage interface
      */
-     public createCanvasImage(): IImage
-     {
+     public createCanvasImage(): IImage {
          return document.createElement("img");
      }
 
