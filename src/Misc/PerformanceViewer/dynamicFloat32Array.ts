@@ -54,7 +54,6 @@ export class DynamicFloat32Array {
         return this._view.subarray(start, end);
     }
 
-    
     /**
      * Pushes items to the end of the array.
      * @param item The item to push into the array.
