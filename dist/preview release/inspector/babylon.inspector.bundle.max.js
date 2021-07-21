@@ -45346,7 +45346,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
     };
     TextureLineComponent.prototype.updatePreview = function () {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
-            var previewCanvas, texture, size, ratio, width, height, data, context, imageData, castData;
+            var previewCanvas, texture, size, ratio, width, height, data, context, imageData, castData, e_1;
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -45356,8 +45356,11 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         ratio = size.width / size.height;
                         width = this.props.width;
                         height = (width / ratio) | 1;
-                        return [4 /*yield*/, _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureHelper"].GetTextureDataAsync(texture, width, height, this.state.face, this.state.channels, this.props.globalState)];
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureHelper"].GetTextureDataAsync(texture, width, height, this.state.face, this.state.channels, this.props.globalState)];
+                    case 2:
                         data = _a.sent();
                         previewCanvas.width = width;
                         previewCanvas.height = height;
@@ -45369,7 +45372,14 @@ var TextureLineComponent = /** @class */ (function (_super) {
                             context.putImageData(imageData, 0, 0);
                         }
                         previewCanvas.style.height = height + "px";
-                        return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        previewCanvas.width = width;
+                        previewCanvas.height = height;
+                        previewCanvas.style.height = height + "px";
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -45912,7 +45922,7 @@ var PerformanceViewerComponent = function (props) {
         // do nothing for now.
     };
     var canvasServiceCallback = function (canvasService) {
-        canvasService.draw();
+        canvasService.update();
     };
     return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
         isEnabled &&
@@ -52711,6 +52721,52 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+var textureFormat = [
+    { label: "Alpha", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_ALPHA },
+    { label: "Luminance", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_LUMINANCE },
+    { label: "Luminance/Alpha", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_LUMINANCE_ALPHA },
+    { label: "RGB", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGB },
+    { label: "RGBA", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGBA },
+    { label: "R (red)", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RED },
+    { label: "RG (red/green)", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RG },
+    { label: "R (red) integer", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RED_INTEGER },
+    { label: "RG (red/green) integer", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RG_INTEGER },
+    { label: "RGB integer", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGB_INTEGER },
+    { label: "RGBA integer", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGBA_INTEGER },
+    { label: "BGRA", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_BGRA },
+    { label: "Depth24/Stencil8", normalizable: 0, hideType: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_DEPTH24_STENCIL8 },
+    { label: "Depth32 float", normalizable: 0, hideType: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_DEPTH32_FLOAT },
+    { label: "Depth16", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_DEPTH16 },
+    { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
+    { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
+    { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
+    { label: "RGBA S3TC DXT5", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 },
+    { label: "RGBA S3TC DXT3", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 },
+    { label: "RGBA S3TC DXT1", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 },
+    { label: "RGB S3TC DXT1", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 },
+    { label: "RGBA ASTC 4x4", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 },
+];
+var textureType = [
+    { label: "unsigned byte", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_BYTE },
+    { label: "32-bit float", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_FLOAT },
+    { label: "16-bit float", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_HALF_FLOAT },
+    { label: "signed byte", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_BYTE },
+    { label: "signed short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_SHORT },
+    { label: "unsigned short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_SHORT },
+    { label: "signed int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_INT },
+    { label: "unsigned int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INTEGER },
+    { label: "unsigned 4/4/4/4 short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 },
+    { label: "unsigned 5/5/5/1 short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 },
+    { label: "unsigned 5/6/5 short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_SHORT_5_6_5 },
+    { label: "unsigned 2/10/10/10 int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV },
+    { label: "unsigned 24/8 int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT_24_8 },
+    { label: "unsigned 10f/11f/11f int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV },
+    { label: "unsigned 5/9/9/9 int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV },
+    { label: "32-bits with only 8-bit used (stencil)", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV },
+];
 var TexturePropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyGridComponent, _super);
     function TexturePropertyGridComponent(props) {
@@ -52788,9 +52844,25 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
         this.forceUpdate();
         this.textureLineRef.current.updatePreview();
     };
+    TexturePropertyGridComponent.prototype.findTextureFormat = function (format) {
+        for (var i = 0; i < textureFormat.length; ++i) {
+            if (textureFormat[i].value === format) {
+                return textureFormat[i];
+            }
+        }
+        return null;
+    };
+    TexturePropertyGridComponent.prototype.findTextureType = function (type) {
+        for (var i = 0; i < textureType.length; ++i) {
+            if (textureType[i].value === type) {
+                return textureType[i];
+            }
+        }
+        return null;
+    };
     TexturePropertyGridComponent.prototype.render = function () {
         var _this = this;
-        var _a;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         var texture = this.props.texture;
         var samplingMode = [
             { label: "Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_NEAREST },
@@ -52818,6 +52890,12 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
             { label: "Skybox", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].SKYBOX_MODE },
             { label: "Spherical", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].SPHERICAL_MODE },
         ];
+        var format = (_b = (_a = texture._texture) === null || _a === void 0 ? void 0 : _a.format) !== null && _b !== void 0 ? _b : -2; // -2 is an invalid value so that findTextureFormat will return null when texture is null/undefined. It can't be -1 because -1 means RGBA, so it is -2 :)
+        var type = (_d = (_c = texture._texture) === null || _c === void 0 ? void 0 : _c.type) !== null && _d !== void 0 ? _d : -2; // same than above, -1 means ubyte
+        var oformat = this.findTextureFormat(format === -1 ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGBA : format);
+        var otype = this.findTextureType(type === -1 ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_BYTE : type);
+        var textureClass = texture instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["MultiRenderTarget"] ? "MultiRenderTarget" : texture instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"] ? "RenderTargetTexture" : texture.getClassName();
+        var count = texture instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["MultiRenderTarget"] ? texture.count : -1;
         var extension = "";
         var url = texture.url;
         var textureUrl = (!url || url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
@@ -52860,11 +52938,20 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));
                             });
                         } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Format", value: (_e = oformat === null || oformat === void 0 ? void 0 : oformat.label) !== null && _e !== void 0 ? _e : "unknown" }),
+                !(oformat === null || oformat === void 0 ? void 0 : oformat.hideType) && !(oformat === null || oformat === void 0 ? void 0 : oformat.compressed) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Type", value: (_f = otype === null || otype === void 0 ? void 0 : otype.label) !== null && _f !== void 0 ? _f : "unknown" }),
+                !!(oformat === null || oformat === void 0 ? void 0 : oformat.normalizable) && !(oformat === null || oformat === void 0 ? void 0 : oformat.compressed) && !!(otype === null || otype === void 0 ? void 0 : otype.normalizable) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Normalized", value: otype.normalizable ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is compressed", value: (oformat === null || oformat === void 0 ? void 0 : oformat.compressed) ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Use sRGB buffers", value: ((_g = texture._texture) === null || _g === void 0 ? void 0 : _g._useSRGBBuffer) ? "Yes" : "No" }),
                 extension &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "File format", value: extension }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Unique ID", value: texture.uniqueId.toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Internal Unique ID", value: (_a = texture._texture) === null || _a === void 0 ? void 0 : _a.uniqueId.toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Class", value: texture.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Internal Unique ID", value: (_h = texture._texture) === null || _h === void 0 ? void 0 : _h.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Class", value: textureClass }),
+                count >= 0 &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Number of textures", value: count.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Has alpha", value: texture.hasAlpha ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is 3D", value: texture.is3D ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is 2D array", value: texture.is2DArray ? "Yes" : "No" }),
@@ -58926,16 +59013,36 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CanvasGraphComponent = function (props) {
-    var id = props.id, canvasServiceCallback = props.canvasServiceCallback;
+    var id = props.id, canvasServiceCallback = props.canvasServiceCallback, layoutObservable = props.layoutObservable;
     var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
     Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
         if (!canvasRef.current) {
             return;
         }
+        var cs;
         // temporarily set empty array, will eventually be passed by props!
-        var canvasGraphService = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] });
-        canvasServiceCallback(canvasGraphService);
-        return function () { return canvasGraphService.destroy(); };
+        try {
+            cs = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] });
+            canvasServiceCallback(cs);
+        }
+        catch (error) {
+            console.error(error);
+            return;
+        }
+        var layoutUpdated = function (newSize) {
+            if (!canvasRef.current) {
+                return;
+            }
+            var _a = canvasRef.current.getBoundingClientRect(), left = _a.left, top = _a.top;
+            newSize.width = newSize.width - left;
+            newSize.height = newSize.height - top;
+            cs === null || cs === void 0 ? void 0 : cs.resize(newSize);
+        };
+        layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.add(layoutUpdated);
+        return function () {
+            cs === null || cs === void 0 ? void 0 : cs.destroy();
+            layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.removeCallback(layoutUpdated);
+        };
     }, [canvasRef]);
     return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("canvas", { id: id, ref: canvasRef }));
 };
@@ -58962,14 +59069,49 @@ var defaultColor = "#000";
 var futureBoxColor = "#dfe9ed";
 var dividerColor = "#0a3066";
 var playheadColor = "#b9dbef";
+var tooltipBackgroundColor = "#121212";
+var tooltipForegroundColor = "#fff";
+var defaultAlpha = 1;
+var tooltipBackgroundAlpha = 0.8;
+var tooltipHorizontalPadding = 10;
+var spaceBetweenTextAndBox = 5;
 var playheadSize = 8;
 var dividerSize = 2;
+var axisLineLength = 10;
+var axisPadding = 10;
 // Currently the scale factor is a constant but when we add panning this may become formula based.
 var scaleFactor = 0.8;
 // This controls the scale factor at which we stop drawing the playhead. Below this value there tends to be flickering of the playhead as data comes in.
 var stopDrawingPlayheadThreshold = 0.95;
 // Threshold for the ratio at which we go from panning mode to live mode.
 var returnToLiveThreshold = 0.998;
+// Font to use on the tooltip!
+var tooltipFont = "12px Arial";
+// A string containing the alphabet, used in line height calculation for the font.
+var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+// Arbitrary maximum used to make some GC optimizations.
+var maximumDatasetsAllowed = 32;
+// time in ms to wait between tooltip draws inside the mouse move.
+var tooltipDebounceTime = 32;
+// time in ms to wait between draws
+var drawDebounceTime = 15;
+/**
+ * This function will debounce calls to functions.
+ *
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+function debounce(callback, time) {
+    var timerId;
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        clearTimeout(timerId);
+        timerId = setTimeout(function () { return callback.apply(void 0, args); }, time);
+    };
+}
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc!
@@ -58984,6 +59126,36 @@ var CanvasGraphService = /** @class */ (function () {
     function CanvasGraphService(canvas, settings) {
         var _this = this;
         this._sizeOfWindow = 300;
+        /**
+         * This method lets the service know it should get ready to update what it is displaying.
+         */
+        this.update = debounce(function () { return _this._draw(); }, drawDebounceTime);
+        /**
+         * Handles what to do when we are hovering over the canvas and not panning.
+         *
+         * @param event A reference to the event to be handled.
+         */
+        this._handleDataHover = function (event) {
+            if (_this._panPosition) {
+                // we don't want to do anything if we are in the middle of panning
+                return;
+            }
+            _this._hoverPosition = event.clientX;
+            // then draw the tooltip.
+            _this._debouncedTooltip(_this._hoverPosition, _this._drawableArea);
+        };
+        /**
+         * Debounced version of _drawTooltip.
+         */
+        this._debouncedTooltip = debounce(function (pixel, drawableArea) {
+            _this._drawTooltip(pixel, drawableArea);
+        }, tooltipDebounceTime);
+        /**
+         * Handles what to do when we stop hovering over the canvas.
+         */
+        this._handleStopHover = function () {
+            _this._hoverPosition = null;
+        };
         /**
          * The handler for when we want to zoom in and out of the graph.
          *
@@ -59022,6 +59194,7 @@ var CanvasGraphService = /** @class */ (function () {
                 xPos: event.clientX,
                 delta: 0,
             };
+            _this._hoverPosition = null;
             canvas.addEventListener("mousemove", _this._handlePan);
         };
         /**
@@ -59077,15 +59250,46 @@ var CanvasGraphService = /** @class */ (function () {
         this._height = canvas.height;
         this._ticks = [];
         this._panPosition = null;
+        this._hoverPosition = null;
         this._positions = new Map();
         this._datasetBounds = new Map();
+        this._globalTimeMinMax = { min: Infinity, max: 0 };
+        this._drawableArea = { top: 0, left: 0, right: 0, bottom: 0 };
+        this._textCache = { text: "", width: 0 };
+        this._tooltipItems = [];
+        for (var i = 0; i < maximumDatasetsAllowed; i++) {
+            this._tooltipItems.push({ text: "", color: "" });
+        }
+        if (!this._ctx) {
+            throw Error("No canvas context accessible");
+        }
+        var defaultMetrics = this._ctx.measureText(alphabet);
+        this._defaultLineHeight = defaultMetrics.actualBoundingBoxAscent + defaultMetrics.actualBoundingBoxDescent;
+        this._axisHeight = axisLineLength + axisPadding + this._defaultLineHeight + axisPadding;
+        this._ctx.save();
+        this._ctx.font = tooltipFont;
+        var fontMetrics = this._ctx.measureText(alphabet);
+        this._tooltipLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
+        this._ctx.restore();
         this.datasets = settings.datasets;
         this._attachEventListeners(canvas);
     }
+    CanvasGraphService.prototype.resize = function (size) {
+        var ctx = this._ctx;
+        var width = size.width, height = size.height;
+        if (!ctx || !ctx.canvas) {
+            return;
+        }
+        this._width = width;
+        this._height = height;
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+        this.update();
+    };
     /**
      * This method draws the data and sets up the appropriate scales.
      */
-    CanvasGraphService.prototype.draw = function () {
+    CanvasGraphService.prototype._draw = function () {
         var _this = this;
         var ctx = this._ctx;
         if (!ctx) {
@@ -59094,7 +59298,8 @@ var CanvasGraphService = /** @class */ (function () {
         // First we clear the canvas so we can draw our data!
         this.clear();
         // Get global min max of time axis (across all datasets).
-        var globalTimeMinMax = { min: Infinity, max: 0 };
+        this._globalTimeMinMax.min = Infinity;
+        this._globalTimeMinMax.max = 0;
         // First we must get the end positions of each dataset.
         this.datasets.forEach(function (dataset) {
             var _a;
@@ -59134,11 +59339,11 @@ var CanvasGraphService = /** @class */ (function () {
             if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
                 return;
             }
-            globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, globalTimeMinMax.min);
-            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+            _this._globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, _this._globalTimeMinMax.min);
+            _this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, _this._globalTimeMinMax.max);
         });
         // set the buffer region maximum by rescaling the max timestamp in bounds.
-        var bufferMaximum = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min) / scaleFactor + globalTimeMinMax.min);
+        var bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / scaleFactor + this._globalTimeMinMax.min);
         // we then need to update the end position based on the maximum for the buffer region
         this.datasets.forEach(function (dataset) {
             var bounds = _this._datasetBounds.get(dataset.id);
@@ -59149,11 +59354,11 @@ var CanvasGraphService = /** @class */ (function () {
             // binary search to get closest point to the buffer maximum.
             bounds.end = _this._getClosestPointToTimestamp(dataset, bufferMaximum) + 1;
             // keep track of largest timestamp value in view!
-            globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, globalTimeMinMax.max);
+            _this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, _this._globalTimeMinMax.max);
         });
-        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((globalTimeMinMax.max - globalTimeMinMax.min) / (bufferMaximum - globalTimeMinMax.min), 0.8, 1);
+        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
         // we will now set the global maximum to the maximum of the buffer.
-        globalTimeMinMax.max = bufferMaximum;
+        this._globalTimeMinMax.max = bufferMaximum;
         // TODO: Perhaps see if i can reduce the number of allocations.
         // Keep only visible and non empty datasets and get a certain window of items.
         var datasets = this.datasets.map(function (dataset) {
@@ -59164,19 +59369,17 @@ var CanvasGraphService = /** @class */ (function () {
             }
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(bounds.start, bounds.end) });
         }).filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; });
-        var drawableArea = {
-            top: 0,
-            left: 0,
-            bottom: this._height,
-            right: this._width,
-        };
-        this._drawTimeAxis(globalTimeMinMax, drawableArea);
-        this._drawPlayheadRegion(drawableArea, updatedScaleFactor);
+        this._drawableArea.top = 0;
+        this._drawableArea.left = 0;
+        this._drawableArea.bottom = this._height;
+        this._drawableArea.right = this._width;
+        this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
+        this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
         // process, and then draw our points
         datasets.forEach(function (dataset) {
             var _a;
             var valueMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.value; }));
-            var drawablePoints = dataset.data.map(function (point) { return _this._getPixelPointFromDataPoint(point, globalTimeMinMax, valueMinMax, drawableArea); });
+            var drawablePoints = dataset.data.map(function (point) { return _this._getPixelPointFromDataPoint(point, _this._globalTimeMinMax, valueMinMax, _this._drawableArea); });
             var prevPoint = drawablePoints[0];
             ctx.beginPath();
             ctx.strokeStyle = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
@@ -59187,6 +59390,8 @@ var CanvasGraphService = /** @class */ (function () {
             });
             ctx.stroke();
         });
+        // then draw the tooltip.
+        this._drawTooltip(this._hoverPosition, this._drawableArea);
     };
     /**
      * Returns the index of the closest time for a dataset.
@@ -59232,9 +59437,8 @@ var CanvasGraphService = /** @class */ (function () {
         }
         var spaceAvailable = drawableArea.right - drawableArea.left;
         this._generateTicks(timeMinMax, spaceAvailable);
-        var axisHeight = 100;
         // remove the height of the axis from the available drawable area.
-        drawableArea.bottom -= axisHeight;
+        drawableArea.bottom -= this._axisHeight;
         // draw time axis line
         ctx.save();
         ctx.beginPath();
@@ -59383,7 +59587,9 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._attachEventListeners = function (canvas) {
         canvas.addEventListener("wheel", this._handleZoom);
+        canvas.addEventListener("mousemove", this._handleDataHover);
         canvas.addEventListener("mousedown", this._handlePanStart);
+        canvas.addEventListener("mouseleave", this._handleStopHover);
         // The user may stop panning outside of the canvas size so we should add the event listener to the document.
         canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
     };
@@ -59394,8 +59600,94 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._removeEventListeners = function (canvas) {
         canvas.removeEventListener("wheel", this._handleZoom);
+        canvas.removeEventListener("mousemove", this._handleDataHover);
         canvas.removeEventListener("mousedown", this._handlePanStart);
+        canvas.removeEventListener("mouseleave", this._handleStopHover);
         canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
+    };
+    /**
+     * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
+     *
+     * @param pixel the position of the mouse cursor in pixels.
+     * @param drawableArea  the available area we can draw in.
+     */
+    CanvasGraphService.prototype._drawTooltip = function (pixel, drawableArea) {
+        var _this = this;
+        var ctx = this._ctx;
+        if (pixel === null || !ctx || !ctx.canvas) {
+            return;
+        }
+        // first convert the mouse position in pixels to a timestamp.
+        var _a = ctx.canvas.getBoundingClientRect(), start = _a.left, end = _a.right;
+        var inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
+        var longestText = "";
+        var numberOfTooltipItems = 0;
+        // get the closest timestamps to the target timestamp, and store the appropriate meta object.
+        this.datasets.forEach(function (dataset) {
+            var _a;
+            if (!!dataset.hidden || dataset.data.length === 0) {
+                return;
+            }
+            var closestIndex = _this._getClosestPointToTimestamp(dataset, inferredTimestamp);
+            var text = dataset.id + ": " + dataset.data[closestIndex].value.toFixed(2);
+            if (text.length > longestText.length) {
+                longestText = text;
+            }
+            _this._tooltipItems[numberOfTooltipItems].text = text;
+            _this._tooltipItems[numberOfTooltipItems].color = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
+            numberOfTooltipItems++;
+        });
+        var x = pixel - start;
+        var y = Math.floor((drawableArea.bottom - drawableArea.top) / 2);
+        ctx.save();
+        ctx.font = tooltipFont;
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        var boxLength = this._tooltipLineHeight;
+        var textHeight = this._tooltipLineHeight + Math.floor(tooltipHorizontalPadding / 2);
+        // initialize width with cached value or measure width of longest text and update cache.
+        var width;
+        if (longestText === this._textCache.text) {
+            width = this._textCache.width;
+        }
+        else {
+            width = ctx.measureText(longestText).width + boxLength + 2 * tooltipHorizontalPadding + spaceBetweenTextAndBox;
+            this._textCache.text = longestText;
+            this._textCache.width = width;
+        }
+        // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
+        if (x + width > this._width) {
+            x -= width;
+        }
+        ctx.globalAlpha = tooltipBackgroundAlpha;
+        ctx.fillStyle = tooltipBackgroundColor;
+        ctx.fillRect(x, y, width, textHeight * (numberOfTooltipItems + 1));
+        ctx.globalAlpha = defaultAlpha;
+        x += tooltipHorizontalPadding;
+        y += textHeight;
+        for (var i = 0; i < numberOfTooltipItems; i++) {
+            var tooltipItem = this._tooltipItems[i];
+            ctx.fillStyle = tooltipItem.color;
+            ctx.fillRect(x, y - Math.floor(boxLength / 2), boxLength, boxLength);
+            ctx.fillStyle = tooltipForegroundColor;
+            ctx.fillText(tooltipItem.text, x + boxLength + spaceBetweenTextAndBox, y);
+            y += textHeight;
+        }
+        ctx.restore();
+    };
+    /**
+     * Gets the number from a pixel position given the minimum and maximum value in range, and the starting pixel and the ending pixel.
+     *
+     * @param pixel current pixel position we want to get the number for.
+     * @param minMax the minimum and maximum number in the range.
+     * @param startingPixel position of the starting pixel in range.
+     * @param endingPixel position of ending pixel in range.
+     * @returns number corresponding to pixel position
+     */
+    CanvasGraphService.prototype._getNumberFromPixel = function (pixel, minMax, startingPixel, endingPixel) {
+        // normalize pixel to range [0, 1].
+        var normalizedPixelPosition = (pixel - startingPixel) / (endingPixel - startingPixel);
+        return minMax.min + normalizedPixelPosition * (minMax.max - minMax.min);
     };
     /**
      * Method which returns true if the data should become realtime, false otherwise.
@@ -63415,7 +63707,12 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
             top = window.innerHeight - height - 10;
         }
         div.style.top = top + "px";
-        div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
+        if (!this.props.shouldPopRight) {
+            div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
+        }
+        else {
+            div.style.left = host.getBoundingClientRect().left + "px";
+        }
     };
     ColorPickerLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         var diffProps = nextProps.value.toHexString() !== this.props.value.toHexString();

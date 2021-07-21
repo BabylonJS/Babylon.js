@@ -36,7 +36,6 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
 
         this._onDraggingEndObservable = props.globalState.onDraggingEndObservable.add(() => {
             this.dragOverLocation = DragOverLocation.NONE;
-            this.forceUpdate();
         });
         this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
     }
@@ -76,7 +75,6 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         }
         event.preventDefault();
         this.dragOverHover = true;
-        this.forceUpdate();
     }
 
     drop(): void {
@@ -85,7 +83,6 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
             this.dragOverHover = false;
             this.props.globalState.draggedControlDirection = this.dragOverLocation;
             this.props.globalState.onParentingChangeObservable.notifyObservers(this.props.control);
-            this.forceUpdate();
         }
         this.props.globalState.draggedControl = null;
         this.dragOverLocation = DragOverLocation.NONE;

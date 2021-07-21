@@ -50,8 +50,8 @@
     .range {
         -webkit-appearance: none;
         width: 120px;
-        height: 6px;
-        background: #d3d3d3;
+        height: 2px;
+        background: black;
         border-radius: 5px;
         outline: none;
         opacity: 0.7;
@@ -69,7 +69,9 @@
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        background: rgb(0, 0, 0);
+        background: #e2e2e2;
+        border: solid;
+        border-width: thin;
         cursor: pointer;
     }
     
@@ -168,7 +170,7 @@
 
     .divider {
         display: grid;
-        grid-template-columns: auto auto;
+        grid-template-columns: auto auto auto auto auto auto;
     }
 
     .textInputLine {
@@ -418,6 +420,39 @@
 
     }
 
+    .command-button {
+        cursor: pointer;
+        width: auto;
+
+        .command-label {
+            display: none;
+        }        
+
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            color: white;
+            align-content: center;
+            justify-content: center;
+        }
+
+        &:hover {
+            background-color: white;
+        } 
+        
+        .active {
+            transform-origin: center;
+            background-color: white;
+        }
+
+        img {
+            &.active {
+                background-color: white;
+            }
+        }
+    }
+
     .floatLine {
         padding-left: $line-padding-left;
         height: var(--spacingHeight);
@@ -660,24 +695,27 @@
                 height: 14px;
                 width: 34px;
                 margin-right: 5px;
-                background: #898989;
                 border-radius: 100px;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                border: solid;
+                border-width: thin;
             }
 
             .lbl:after {
                 position: absolute;
                 left: 3px;
-                top: 2px;
+                top: 1px;
                 display: block;
                 width: 10px;
                 height: 10px;
                 border-radius: 100px;
-                background: #fff;
+                background: #e2e2e2;
                 box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
                 content: '';
                 transition: all 0.15s ease;
+                border: solid;
+                border-width: thin;
             }
 
             .lbl:active:after { 
@@ -685,16 +723,19 @@
             }
 
             .cbx:checked ~ label { 
-                background: rgb(51, 122, 183);
+                background: transparent;
+                
             }
 
             .cbx:checked ~ label:after {
                 left: 20px;
-                background: rgb(22, 73, 117);
+                background: rgb(0, 0, 0);
+                border: solid;
+                border-width: thin;
             }
 
             .cbx:checked ~ label.disabled { 
-                background: rgb(22, 73, 117);
+                background: rgb(0, 0, 0);
                 cursor: pointer;
             }
 

@@ -182,8 +182,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             // Check for Ammo.js
+            let ammoInit = "";
             if (code.indexOf("AmmoJSPlugin") > -1 && typeof Ammo === "function") {
-                await Ammo();
+                ammoInit = "await Ammo();";
             }
 
             // Check for Unity Toolkit
@@ -227,7 +228,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 // using the appropriate default or user-provided functions.
                 // (Use "window.x = foo" to allow later deletion, see above.)
                 code += `
-                window.initFunction = async function() {               
+                window.initFunction = async function() {
+                    ${ammoInit}
                     var asyncEngineCreation = async function() {
                         try {
                         return ${createEngineFunction}();
@@ -351,6 +353,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
         } catch (err) {
+            console.error(err);
             this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }
     }

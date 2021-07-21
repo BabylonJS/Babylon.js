@@ -40,6 +40,13 @@ export class RawTexture extends Texture {
             return;
         }
 
+        if (!this._engine._caps.textureFloatLinearFiltering && type === Constants.TEXTURETYPE_FLOAT) {
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+        if (!this._engine._caps.textureHalfFloatLinearFiltering && type === Constants.TEXTURETYPE_HALF_FLOAT) {
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+
         this._texture = this._engine.createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type, creationFlags ?? 0);
 
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
