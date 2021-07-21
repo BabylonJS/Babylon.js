@@ -22,7 +22,7 @@ export class AlphaState {
     }
 
     public get isDirty(): boolean {
-        return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty;
+        return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty || this._isBlendEquationParametersDirty;
     }
 
     public get alphaBlend(): boolean {
