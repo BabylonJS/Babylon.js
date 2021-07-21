@@ -963,7 +963,7 @@ export class WebGPUTextureHelper {
                 mipLevelCount: hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
-                arrayLayerCount: layerCount,
+                arrayLayerCount: texture.is3D ? 1 : layerCount,
                 aspect: WebGPUConstants.TextureAspect.All
             });
         }

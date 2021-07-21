@@ -6,6 +6,7 @@
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 - Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
+- Added GUI Editor ([msDestiny14](https://github.com/msDestiny14))
 
 ## Updates
 
@@ -35,6 +36,7 @@
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
 - Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
+- Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
 
 ### Engine
 
@@ -103,23 +105,6 @@
 - Added support for parallax / parallax occlusion to the `PerturbNormal` block ([Popov72](https://github.com/Popov72))
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
 - Fixed Conditional Block output when pressing the 'Generate Code' button. ([PirateJC](https://github.com/piratejc))
-
-### GUIEditor
-
-- Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
-- Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
-- Added basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
-- Added more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
-- Added snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
-- Added scrolling and zooming functionality ([msDestiny14](https://github.com/msDestiny14))
-- Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
-- Added parenting system for scene explorer ([msDestiny14](https://github.com/msDestiny14))
-- Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
-- Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
-- Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
-- Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
-- Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
-- Added navigation hotkeys ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -193,12 +178,14 @@
 
 - Added the `exportUnusedUVs` property to the `IExportOptions` interface that will prevent any unused vertex uv attributes from being stripped during the glTF export. ([ericbroberic](https://github.com/ericbroberic))
 - glTF serializer now supports KHR_materials_clearcoat ([drigax](https://github.com/drigax))
+- Fixed bug where characters that didn't fit into a single UTF-16 code point were not correctly encoded in .glb exports ([darraghjburke](https://github.com/darraghjburke))
 
 ## Bugs
 
 - Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Fix negative scale support for physics impostors ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix an issue with keyboard control (re)attachment. ([#9411](https://github.com/BabylonJS/Babylon.js/issues/9411)) ([RaananW](https://github.com/RaananW))
 - Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
@@ -275,6 +262,10 @@
 - Fix for triggering interactions on nearby meshes when performing a near interaction grab ([rickfromwork](https://github.com/rickfromwork))
 - Fix for near interaction failing when multiple utility layers are present ([rickfromwork](https://github.com/rickfromwork))
 - Fix handling of events to support multiple canvas scenarios DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix undisposed textures in PrePass effects that would cause the scene to have more textures than expected ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix postprocess autoclear when enabling/disabling an effect in PrePass ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix ThinEngine isMobile to detect changes when window is resized to allow for proper emulator evaluation ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix discrete animation not looping correctly ([#10694](https://github.com/BabylonJS/Babylon.js/issues/10694)) ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

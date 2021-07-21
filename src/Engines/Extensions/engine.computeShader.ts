@@ -73,7 +73,7 @@ declare module "../../Engines/thinEngine" {
         releaseComputeEffects(): void;
 
         /** @hidden */
-        _prepareComputePipelineContext(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>): void;
+        _prepareComputePipelineContext(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void;
 
         /** @hidden */
         _rebuildComputeEffects(): void;
@@ -112,7 +112,7 @@ ThinEngine.prototype.areAllComputeEffectsReady = function(): boolean {
 ThinEngine.prototype.releaseComputeEffects = function(): void {
 };
 
-ThinEngine.prototype._prepareComputePipelineContext = function(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>): void {
+ThinEngine.prototype._prepareComputePipelineContext = function(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void {
 };
 
 ThinEngine.prototype._rebuildComputeEffects = function(): void {

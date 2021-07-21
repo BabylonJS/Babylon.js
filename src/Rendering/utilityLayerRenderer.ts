@@ -209,8 +209,8 @@ export class UtilityLayerRenderer implements IDisposable {
                         // It's set back to previous activeCamera after operation.
                         if (this._renderCamera)
                         {
-                            previousActiveCamera = scene.activeCamera;
-                            scene.activeCamera = this._renderCamera;
+                            previousActiveCamera = scene._activeCamera;
+                            scene._activeCamera = this._renderCamera;
                             prePointerInfo.ray = null;
                         }
                         scenePick = prePointerInfo.ray
@@ -218,7 +218,7 @@ export class UtilityLayerRenderer implements IDisposable {
                             : scene.pick(originalScene.pointerX, originalScene.pointerY);
                         if (previousActiveCamera)
                         {
-                            scene.activeCamera = previousActiveCamera;
+                            scene._activeCamera = previousActiveCamera;
                         }
                     }
 
