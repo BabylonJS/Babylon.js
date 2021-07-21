@@ -70,7 +70,7 @@ export class DynamicFloat32Array {
      * Grows the array by the growth factor when necessary.
      */
     private _growArray() {
-        const newCapacity = this._view.length * growthFactor;
+        const newCapacity = Math.floor(this._view.length * growthFactor);
         const view = new Float32Array(newCapacity);
         view.set(this._view);
         this._view = view;
