@@ -663,11 +663,6 @@ export class PrePassRenderer {
             }
         }
     }
-    
-    // TODO
-    public forceUpdate() {
-        this._update();
-    }
 
     private _update() {
         this._disable();

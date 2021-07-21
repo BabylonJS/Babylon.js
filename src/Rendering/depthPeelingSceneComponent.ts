@@ -19,14 +19,6 @@ declare module "../scene" {
     }
 }
 
-// declare module "../Materials/material" {
-//     export interface Material {
-//         /**
-//          * Flag to indicate if this mesh is using orderIndependentTransparency for this rendering pass
-//          */
-//     }
-// }
-
 Object.defineProperty(Scene.prototype, "depthPeelingRenderer", {
     get: function(this: Scene) {
         if (!this._depthPeelingRenderer) {
@@ -68,7 +60,6 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
     constructor(scene: Scene) {
         this.scene = scene;
 
-        // TODO dynamic instancing
         scene.depthPeelingRenderer = new DepthPeelingRenderer(scene);
     }
 
@@ -76,11 +67,6 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
      * Registers the component in a given scene
      */
     public register(): void {
-        // this.scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_LAYER, this, this._drawCameraBackground);
-        // this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_LAYER, this, this._drawCameraForeground);
-
-        // this.scene._beforeRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERTARGETDRAW_LAYER, this, this._drawRenderTargetBackground);
-        // this.scene._afterRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERTARGETDRAW_LAYER, this, this._drawRenderTargetForeground);
     }
 
     /**
@@ -99,12 +85,3 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
     }
 
 }
-
-// DepthPeelingSceneComponent._SceneComponentInitialization = (scene: Scene) => {
-//     // Register the component to the scene.
-//     let component = scene._getComponent(SceneComponentConstants.NAME_DEPTHPEELINGRENDERER) as DepthPeelingSceneComponent;
-//     if (!component) {
-//         component = new DepthPeelingSceneComponent(scene);
-//         scene._addComponent(component);
-//     }
-// };
