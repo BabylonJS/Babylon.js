@@ -664,6 +664,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
         mesh._geometry = this;
+        mesh._internalAbstractMeshDataInfo._positions = null;
 
         this._scene.pushGeometry(this);
 

@@ -273,9 +273,6 @@ export class Texture extends BaseTexture {
     private _cachedCoordinatesMode: number = -1;
 
     /** @hidden */
-    protected _initialSamplingMode = Texture.BILINEAR_SAMPLINGMODE;
-
-    /** @hidden */
     public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
     private _deleteBuffer: boolean = false;
     protected _format: Nullable<number> = null;
@@ -307,17 +304,6 @@ export class Texture extends BaseTexture {
     @serialize()
     public get isBlocking(): boolean {
         return this._isBlocking;
-    }
-
-    /**
-     * Get the current sampling mode associated with the texture.
-     */
-    public get samplingMode(): number {
-        if (!this._texture) {
-            return this._initialSamplingMode;
-        }
-
-        return this._texture.samplingMode;
     }
 
     /**
@@ -439,7 +425,14 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                try {
+                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                } catch (e) {
+                    if (onError) {
+                        onError(e.message, e);
+                    }
+                    throw e;
+                }
                 if (deleteBuffer) {
                     this._buffer = null;
                 }

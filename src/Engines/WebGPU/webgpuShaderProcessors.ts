@@ -32,7 +32,8 @@ const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
     "sampler2DArray": "sampler2DArray",
     "sampler2DShadow": "sampler2DShadow",
     "sampler2DArrayShadow": "sampler2DArrayShadow",
-    "samplerCube": "samplerCube"
+    "samplerCube": "samplerCube",
+    "sampler3D": "sampler3D",
 };
 
 const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
@@ -41,7 +42,8 @@ const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
     "sampler2DShadow": "texture2D",
     "sampler2DArrayShadow": "texture2DArray",
     "samplerCube": "textureCube",
-    "samplerCubeArray": "textureCubeArray"
+    "samplerCubeArray": "textureCubeArray",
+    "sampler3D": "texture3D",
 };
 
 const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
@@ -49,6 +51,7 @@ const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureVi
     "textureCubeArray": WebGPUConstants.TextureViewDimension.CubeArray,
     "texture2D": WebGPUConstants.TextureViewDimension.E2d,
     "texture2DArray": WebGPUConstants.TextureViewDimension.E2dArray,
+    "texture3D": WebGPUConstants.TextureViewDimension.E3d,
 };
 
 // if the webgl sampler type is not listed in this array, "sampler" is taken by default
@@ -210,6 +213,8 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
                 webgpuProcessingContext.availableSamplers[name] = samplerInfo;
 
+                const samplerBindingType = isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
+
                 if (!webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex]) {
                     webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex] = [];
                 }
@@ -217,7 +222,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                     webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex] = {
                         isSampler: true,
                         isTexture: false,
-                        isComparisonSampler,
+                        samplerBindingType,
                         usedInVertex: false,
                         usedInFragment: false,
                         name,
@@ -238,16 +243,20 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                         webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex] = [];
                     }
                     if (!webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex]) {
+                        const sampleType =
+                            isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
+                            componentType === 'u' ? WebGPUConstants.TextureSampleType.Uint :
+                            componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float;
+
                         webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
                             isSampler: false,
                             isTexture: true,
-                            sampleType: isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
-                                        componentType === 'u' ? WebGPUConstants.TextureSampleType.Uint :
-                                        componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float,
+                            sampleType,
                             textureDimension,
                             usedInVertex: false,
                             usedInFragment: false,
                             name: isTextureArray ? name + i.toString() : name,
+                            origName: name,
                         };
                     }
                     if (isFragment) {
@@ -331,11 +340,6 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         }
         return uniformBuffer;
     }
-
-    // public endOfUniformBufferProcessor(closingBracketLine: string, isFragment: boolean): string {
-    //     console.log("uniformBuffer closingBracketLine ", closingBracketLine);
-    //     return closingBracketLine;
-    // }
 
     public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
@@ -443,6 +447,8 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         }
 
         // collect all the buffer names for faster processing later in _getBindGroupsToRender
+        // also collect all the sampler names
+        webgpuProcessingContext.samplerNames = [];
         for (let i = 0; i < webgpuProcessingContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
@@ -450,8 +456,13 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             }
             for (let j = 0; j < setDefinition.length; j++) {
                 const bindingDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i][j];
-                if (bindingDefinition && !bindingDefinition.isSampler && !bindingDefinition.isTexture) {
-                    webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
+                if (bindingDefinition) {
+                    if (bindingDefinition.isTexture) {
+                        webgpuProcessingContext.samplerNames.push(bindingDefinition.name);
+                    }
+                    if (!bindingDefinition.isSampler && !bindingDefinition.isTexture) {
+                        webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
+                    }
                 }
             }
         }

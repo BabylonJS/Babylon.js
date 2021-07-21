@@ -395,10 +395,14 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     fireFakeMove = false;
                 }
                 // Lets Propagate the event for move with same position.
-                if (fireFakeMove) {
+                if (fireFakeMove && evt.button !== -1) {
                     deviceEvent.inputIndex = PointerInput.FakeMove;
                     deviceEvent.previousState = 0;
                     deviceEvent.currentState = 0;
+                    // The pointer buttons in PointerInput are in the same order as they are used for the MouseEvent button property, just offset by 2.
+                    // eg. PointerInput.LeftClick = 2 vs MouseEvent.button = Left Click = 0
+                    // Because of this, we need to offset our indices by two when storing in our inputs array.
+                    pointer[evt.button + 2] = (pointer[evt.button + 2] ? 0 : 1); // Reverse state of button if evt.button has value
 
                     this.onInputChangedObservable.notifyObservers(deviceEvent);
                 }

@@ -36,6 +36,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     private _tempVec1: any;
     private _tempVec2: any;
 
+    private _worker: Nullable<Worker> = null;
+
     /**
      * Initializes the recastJS plugin
      * @param recastInjection can be used to inject your own recast reference
@@ -55,6 +57,20 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
 
         this._tempVec1 = new this.bjsRECAST.Vec3();
         this._tempVec2 = new this.bjsRECAST.Vec3();
+    }
+
+    /**
+     * Set worker URL to be used when generating a new navmesh
+     * @param workerURL url string
+     * @returns boolean indicating if worker is created
+     */
+    public setWorkerURL(workerURL: string): boolean
+    {
+        if (window && window.Worker) {
+            this._worker = new Worker(workerURL);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -99,24 +115,14 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * Creates a navigation mesh
      * @param meshes array of all the geometry used to compute the navigation mesh
      * @param parameters bunch of parameters used to filter geometry
+     * @param completion callback when data is available from the worker. Not used without a worker
      */
-    createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void {
-        const rc = new this.bjsRECAST.rcConfig();
-        rc.cs = parameters.cs;
-        rc.ch = parameters.ch;
-        rc.borderSize = parameters.borderSize ? parameters.borderSize : 0;
-        rc.tileSize = parameters.tileSize ? parameters.tileSize : 0;
-        rc.walkableSlopeAngle = parameters.walkableSlopeAngle;
-        rc.walkableHeight = parameters.walkableHeight;
-        rc.walkableClimb = parameters.walkableClimb;
-        rc.walkableRadius = parameters.walkableRadius;
-        rc.maxEdgeLen = parameters.maxEdgeLen;
-        rc.maxSimplificationError = parameters.maxSimplificationError;
-        rc.minRegionArea = parameters.minRegionArea;
-        rc.mergeRegionArea = parameters.mergeRegionArea;
-        rc.maxVertsPerPoly = parameters.maxVertsPerPoly;
-        rc.detailSampleDist = parameters.detailSampleDist;
-        rc.detailSampleMaxError = parameters.detailSampleMaxError;
+    createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters, completion?: (navmeshData: Uint8Array) => void): void {
+        if (this._worker && !completion) {
+            console.warn("A worker is avaible but no completion callback. Defaulting to blocking navmesh creation");
+        } else if (!this._worker && completion) {
+            console.warn("A completion callback is avaible but no worker. Defaulting to blocking navmesh creation");
+        }
 
         this.navMesh = new this.bjsRECAST.NavMesh();
 
@@ -173,7 +179,34 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 }
             }
         }
-        this.navMesh.build(positions, offset, indices, indices.length, rc);
+
+        if (this._worker && completion) {
+            // spawn worker and send message
+            this._worker.postMessage([positions, offset, indices, indices.length, parameters]);
+            this._worker.onmessage = function(e) {
+                completion(e.data);
+            };
+        } else {
+            // blocking calls
+            const rc = new this.bjsRECAST.rcConfig();
+            rc.cs = parameters.cs;
+            rc.ch = parameters.ch;
+            rc.borderSize = parameters.borderSize ? parameters.borderSize : 0;
+            rc.tileSize = parameters.tileSize ? parameters.tileSize : 0;
+            rc.walkableSlopeAngle = parameters.walkableSlopeAngle;
+            rc.walkableHeight = parameters.walkableHeight;
+            rc.walkableClimb = parameters.walkableClimb;
+            rc.walkableRadius = parameters.walkableRadius;
+            rc.maxEdgeLen = parameters.maxEdgeLen;
+            rc.maxSimplificationError = parameters.maxSimplificationError;
+            rc.minRegionArea = parameters.minRegionArea;
+            rc.mergeRegionArea = parameters.mergeRegionArea;
+            rc.maxVertsPerPoly = parameters.maxVertsPerPoly;
+            rc.detailSampleDist = parameters.detailSampleDist;
+            rc.detailSampleMaxError = parameters.detailSampleMaxError;
+
+            this.navMesh.build(positions, offset, indices, indices.length, rc);
+        }
     }
 
     /**

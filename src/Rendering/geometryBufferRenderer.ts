@@ -531,32 +531,45 @@ export class GeometryBufferRenderer {
         this.getGBuffer().dispose();
     }
 
-    private _assignRenderTargetIndices(): number {
+    private _assignRenderTargetIndices(): [number, string[]] {
+        const textureNames: string[] = [];
         let count = 2;
+
+        textureNames.push("gBuffer_Depth", "gBuffer_Normal");
 
         if (this._enablePosition) {
             this._positionIndex = count;
             count++;
+            textureNames.push("gBuffer_Position");
         }
 
         if (this._enableVelocity) {
             this._velocityIndex = count;
             count++;
+            textureNames.push("gBuffer_Velocity");
         }
 
         if (this._enableReflectivity) {
             this._reflectivityIndex = count;
             count++;
+            textureNames.push("gBuffer_Reflectivity");
         }
 
-        return count;
+        return [count, textureNames];
     }
 
     protected _createRenderTargets(): void {
         var engine = this._scene.getEngine();
-        var count = this._assignRenderTargetIndices();
+        const [count, textureNames] = this._assignRenderTargetIndices();
 
-        this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_FLOAT });
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (engine._caps.textureFloat && engine._caps.textureFloatLinearFiltering) {
+            type = Constants.TEXTURETYPE_FLOAT;
+        } else if (engine._caps.textureHalfFloat && engine._caps.textureHalfFloatLinearFiltering) {
+            type = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+
+        this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps: false, generateDepthTexture: true, defaultType: type }, textureNames.concat("gBuffer_DepthBuffer"));
         if (!this.isSupported) {
             return;
         }
