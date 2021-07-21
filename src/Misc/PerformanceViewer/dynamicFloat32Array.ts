@@ -11,7 +11,7 @@ export class DynamicFloat32Array {
      * Creates a new DynamicFloat32Array with the desired item capacity.
      * @param _itemCapacity The initial item capacity you would like to set for the array.
      */
-     constructor(private _itemCapacity: number) {
+     constructor(_itemCapacity: number) {
         this._view = new Float32Array(_itemCapacity);
         this._itemLength = 0;
     }
@@ -61,7 +61,7 @@ export class DynamicFloat32Array {
      public push(item: number) {
         this._view[this._itemLength] = item;
         this._itemLength++;
-        if (this._itemLength >= this._itemCapacity) {
+        if (this._itemLength >= this._view.length) {
             this._growArray();
         }
     }
@@ -70,8 +70,8 @@ export class DynamicFloat32Array {
      * Grows the array by the growth factor when necessary.
      */
     private _growArray() {
-        this._itemCapacity *= growthFactor;
-        const view = new Float32Array(this._itemCapacity);
+        const newCapacity = this._view.length * growthFactor;
+        const view = new Float32Array(newCapacity);
         view.set(this._view);
         this._view = view;
     }
