@@ -181,6 +181,28 @@ export class DepthPeelingRenderer {
         effect.setTexture("oitFrontColorSampler", this._thinTextures[this._currentPingPongState * 3 + 1]);
     }
 
+    private _renderSubMeshes(transparentSubMeshes: SmartArray<SubMesh>) {
+        for (let j = 0; j < transparentSubMeshes.length; j++) {
+            const material = transparentSubMeshes.data[j].getMaterial();
+            let previousShaderHotSwapping = true;
+            let previousBFC = false;
+
+            if (material) {
+                previousShaderHotSwapping = material.allowShaderHotSwapping;
+                previousBFC = material.backFaceCulling;
+                material.allowShaderHotSwapping = false;
+                material.backFaceCulling = false;
+            }
+
+            transparentSubMeshes.data[j].render(false);
+
+            if (material) {
+                material.allowShaderHotSwapping = previousShaderHotSwapping;
+                material.backFaceCulling = previousBFC;
+            }
+        }
+    }
+
     public render(transparentSubMeshes: SmartArray<SubMesh>) {
         if (!this._blendBackEffectWrapper.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextureReferences()) {
             return;
@@ -189,7 +211,6 @@ export class DepthPeelingRenderer {
         const DEPTH_CLEAR_VALUE = -99999.0;
         const MIN_DEPTH = 0;
         const MAX_DEPTH = 1;
-        const gl = this._engine._gl;
 
         // TODO
         (this._scene.prePassRenderer! as any)._enabled = false;
@@ -224,22 +245,8 @@ export class DepthPeelingRenderer {
         this._engine.applyStates();
 
         this._currentPingPongState = 1;
-        for (let j = 0; j < transparentSubMeshes.length; j++) {
-            const material = transparentSubMeshes.data[j].getMaterial();
-            let previousShaderHotSwapping = true;
-            if (material) {
-                previousShaderHotSwapping = material.allowShaderHotSwapping;
-                material.allowShaderHotSwapping = false;
-            }
-            // TODO : remove
-            gl.disable(gl.CULL_FACE);
-
-            transparentSubMeshes.data[j].render(false);
-
-            if (material) {
-                material.allowShaderHotSwapping = previousShaderHotSwapping;
-            }
-        }
+        // Render
+        this._renderSubMeshes(transparentSubMeshes);
 
         // depth peeling ping-pong
         let readId = 0;
@@ -250,6 +257,7 @@ export class DepthPeelingRenderer {
             writeId = 1 - readId;
             this._currentPingPongState = readId;
 
+            // Clears
             this._engine._bindUnboundFramebuffer(this._depthMrts[writeId]._getFrameBuffer());
             attachments = this._engine.buildTextureLayout([true]);
             this._engine.bindAttachments(attachments);
@@ -268,22 +276,8 @@ export class DepthPeelingRenderer {
             this._engine._alphaState.alphaBlend = true;
             this._engine.applyStates();
 
-            for (let j = 0; j < transparentSubMeshes.length; j++) {
-                const material = transparentSubMeshes.data[j].getMaterial();
-                let previousShaderHotSwapping = true;
-                if (material) {
-                    previousShaderHotSwapping = material.allowShaderHotSwapping;
-                    material.allowShaderHotSwapping = false;
-                }
-                // TODO : remove
-                gl.disable(gl.CULL_FACE);
-
-                transparentSubMeshes.data[j].render(false);
-
-                if (material) {
-                    material.allowShaderHotSwapping = previousShaderHotSwapping;
-                }
-            }
+            // Render
+            this._renderSubMeshes(transparentSubMeshes);
 
             // Back color
             this._engine._bindUnboundFramebuffer(this._blendBackMrt._getFrameBuffer());
