@@ -142,7 +142,7 @@ export class DepthPeelingRenderer {
                 return false;
             }
 
-            this._engine.bindFramebufferRenderbuffer(framebuffer, depthStencilBuffer);
+            this._engine.bindDepthBuffer(framebuffer, depthStencilBuffer);
         }
 
         return true;

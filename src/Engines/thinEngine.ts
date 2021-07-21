@@ -1624,11 +1624,16 @@ export class ThinEngine {
         this._bindUnboundFramebuffer(currentFB);
     }
 
-    public bindFramebufferRenderbuffer(framebuffer: WebGLFramebuffer, renderBuffer: WebGLRenderbuffer) {
+    /**
+     * Binds a depth buffer (as a renderbuffer) onto a framebuffer
+     * @param framebuffer The framebuffer
+     * @param depthbuffer The depth buffer
+     */
+    public bindDepthBuffer(framebuffer: WebGLFramebuffer, depthbuffer: WebGLRenderbuffer) {
         const gl = this._gl;
 
         this._bindUnboundFramebuffer(framebuffer);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderBuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthbuffer);
         this._bindUnboundFramebuffer(null);
     }
 

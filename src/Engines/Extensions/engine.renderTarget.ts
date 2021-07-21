@@ -28,7 +28,7 @@ declare module "../../Engines/thinEngine" {
          * @hidden
          * @returns a new render target texture stored in an InternalTexture
          */
-        _createInternalTexture(size: RenderTargetTextureSize, options: RenderTargetCreationOptions): InternalTexture;
+        _createInternalTexture(size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): InternalTexture;
 
         /**
          * Creates a depth stencil texture.
@@ -54,7 +54,7 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
         fullOptions.generateStencilBuffer = false;
     }
 
-    const texture = this._createInternalTexture(size, fullOptions);
+    const texture = this._createInternalTexture(size, options);
     const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
     const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
 
@@ -80,7 +80,7 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
     return texture;
 };
 
-ThinEngine.prototype._createInternalTexture = function(this: ThinEngine, size: RenderTargetTextureSize, options: RenderTargetCreationOptions): InternalTexture {
+ThinEngine.prototype._createInternalTexture = function(this: ThinEngine, size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): InternalTexture {
     const fullOptions = new RenderTargetCreationOptions();
     if (options !== undefined && typeof options === "object") {
         fullOptions.generateMipMaps = options.generateMipMaps;
