@@ -2,7 +2,10 @@ import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager'
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { TransformNode } from '../../Meshes/transformNode';
-//import { Nullable } from "../../types";
+import { Observable } from "../../Misc/observable";
+import { Vector3, Quaternion } from "../../Maths/math.vector";
+import { Ray } from "../../Culling/ray";
+import { Nullable } from "../../types";
 
 /**
  * Options used in the mesh detector module
@@ -37,8 +40,11 @@ export interface IWebXREyeTrackingOptions {
  */
 export class WebXREyeTracking extends WebXRAbstractFeature {
 //    private _detectedMeshes: Map<XRMesh, IWebXRVertexData> = new Map<XRMesh, IWebXRVertexData>();
-   // private _latestEyeSpace: Nullable<XRSpace>;
-    private _IsSpaceDirty: boolean;
+    private _latestEyeSpace: Nullable<XRSpace>;
+
+    private _gazeRay: Nullable<Ray>;
+
+    private _tmpQuat: Quaternion = new Quaternion();
 
     /**
      * The module's name
@@ -65,7 +71,9 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
      * Observers registered here will be executed when an existing mesh updates
      */
   //  public onMeshUpdatedObservable: Observable<IWebXRVertexData> = new Observable();
-
+    public onEyeTrackingStartedObservable: Observable<Ray> = new Observable();
+    public onEyeTrackingEndedObservable: Observable<void> = new Observable();
+    public onEyeTrackingFrameUpdateObservable: Observable<Ray> = new Observable();
 
 
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXREyeTrackingOptions = {}) {
@@ -90,30 +98,27 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
             !!this._xrSessionManager.session.trySetEyeTrackingEnabled) {
             this._xrSessionManager.session.trySetEyeTrackingEnabled(false);
         }
-/*
-        if (!this._options.doNotRemoveMeshesOnSessionEnded) {
-            this._detectedMeshes.forEach((mesh) => {
-                this.onMeshRemovedObservable.notifyObservers(mesh);
-            });
-
-            this._detectedMeshes.clear();
-        }
-*/
+        
         return true;
     }
 
     public dispose(): void {
         super.dispose();
-  //      this.onMeshAddedObservable.clear();
-  //      this.onMeshRemovedObservable.clear();
-  //      this.onMeshUpdatedObservable.clear();
+
+        this.onEyeTrackingStartedObservable.clear();
+        this.onEyeTrackingEndedObservable.clear();
+        this.onEyeTrackingFrameUpdateObservable.clear();
+    }
+
+    public isEyeGazeValid() {
+        return !!this._gazeRay;
+    }
+
+    public getEyeGaze() {
+        return this._gazeRay;
     }
 
     protected _onXRFrame(frame: XRFrame) {
-        if (!this._IsSpaceDirty) {
-
-        }
-
         if (!this.attached || !frame) {
             return;
         }
@@ -121,50 +126,37 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
             //satisfy the compiler for now
             return;
         }
-/*
-        const detectedMeshes = frame.worldInformation?.detectedMeshes;
-        if (!!detectedMeshes) {
-            let toRemove = new Set<XRMesh>();
-            this._detectedMeshes.forEach((vertexData, xrMesh) => {
-                if (!detectedMeshes.has(xrMesh)) {
-                    toRemove.add(xrMesh);
-                }
-            });
-            toRemove.forEach((xrMesh) => {
-                const vertexData = this._detectedMeshes.get(xrMesh);
-                if (!!vertexData) {
-                    this.onMeshRemovedObservable.notifyObservers(vertexData);
-                    this._detectedMeshes.delete(xrMesh);
-                }
-            });
 
-            // now check for new ones
-            detectedMeshes.forEach((xrMesh) => {
-                if (!this._detectedMeshes.has(xrMesh)) {
-                    const partialVertexData: Partial<IWebXRVertexData> = {
-                        id: meshIdProvider++,
-                        xrMesh: xrMesh,
-                    };
-                    this._detectedMeshes.set(xrMesh, vertexData);
-                    this.onMeshAddedObservable.notifyObservers(vertexData);
-                } else {
-                    // updated?
-                    if (xrMesh.lastChangedTime === this._xrSessionManager.currentTimestamp) {
-                        const vertexData = this._detectedMeshes.get(xrMesh);
-                        if (!!vertexData) {
-                            this.onMeshUpdatedObservable.notifyObservers(vertexData);
-                        }
-                    }
-                }
-            });
-        }*/
+        if (this._latestEyeSpace && this._gazeRay) {
+            let pose = frame.getPose(this._latestEyeSpace, this._xrSessionManager.referenceSpace);
+            if (pose) {
+                this._gazeRay.origin.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
+                const quat = pose.transform.orientation;
+                this._tmpQuat.set(quat.x, quat.y, quat.z, quat.w);
+                Vector3.Forward().rotateByQuaternionToRef(this._tmpQuat, this._gazeRay.direction);
+                this.onEyeTrackingFrameUpdateObservable.notifyObservers(this._gazeRay);
+            }
+
+        }
     }
 
     private _init() {
         // Only supported by BabylonNative
-        if (!!this._xrSessionManager.isNative && 
-            !!this._xrSessionManager.session.trySetEyeTrackingEnabled) {
-                this._xrSessionManager.session.trySetEyeTrackingEnabled(true);
+        if (!!this._xrSessionManager.isNative) {
+
+            const eyeTrackingStartListener = (event: XREyeTrackingSourceEvent) => {
+                this._latestEyeSpace = event.gazeSpace;
+                this._gazeRay = new Ray(Vector3.Zero(), Vector3.Forward());
+                this.onEyeTrackingStartedObservable.notifyObservers(this._gazeRay);
+            };
+            const eyeTrackingEndListener = () => {
+                this._latestEyeSpace = null;
+                this._gazeRay = null;
+                this.onEyeTrackingEndedObservable.notifyObservers();
+            };
+
+            this._xrSessionManager.session.addEventListener("eyetrackingstart", eyeTrackingStartListener);
+            this._xrSessionManager.session.addEventListener("eyetrackingend", eyeTrackingEndListener);
         }
     }
 }
