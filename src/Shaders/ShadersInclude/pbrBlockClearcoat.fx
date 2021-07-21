@@ -132,7 +132,11 @@ struct clearcoatOutParams
             float clearCoatThickness = vClearCoatTintParams.a;
 
             #ifdef CLEARCOAT_TINT_TEXTURE
-                clearCoatColor *= clearCoatTintMapData.rgb;
+                #ifdef CLEARCOAT_TINT_GAMMATEXTURE
+                    clearCoatColor *= toLinearSpace(clearCoatTintMapData.rgb);
+                #else
+                    clearCoatColor *= clearCoatTintMapData.rgb;
+                #endif
                 clearCoatThickness *= clearCoatTintMapData.a;
                 #if DEBUGMODE > 0
                     outParams.clearCoatTintMapData = clearCoatTintMapData;

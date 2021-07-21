@@ -273,9 +273,6 @@ export class Texture extends BaseTexture {
     private _cachedCoordinatesMode: number = -1;
 
     /** @hidden */
-    protected _initialSamplingMode = Texture.BILINEAR_SAMPLINGMODE;
-
-    /** @hidden */
     public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
     private _deleteBuffer: boolean = false;
     protected _format: Nullable<number> = null;
@@ -307,17 +304,6 @@ export class Texture extends BaseTexture {
     @serialize()
     public get isBlocking(): boolean {
         return this._isBlocking;
-    }
-
-    /**
-     * Get the current sampling mode associated with the texture.
-     */
-    public get samplingMode(): number {
-        if (!this._texture) {
-            return this._initialSamplingMode;
-        }
-
-        return this._texture.samplingMode;
     }
 
     /**

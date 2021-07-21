@@ -52,7 +52,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
     private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
-    private _hitPlane: Plane;
+    private _hitPlane: Nullable<Plane>;
 
     private computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
         var delta = 0;
@@ -129,7 +129,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
 
         if (this.zoomToMouseLocation) {
-            this._inertialPanning = Vector3.Zero();
+            this._inertialPanning.setAll(0);
         }
     }
 
@@ -201,21 +201,21 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _getPosition() : Vector3 {
         var camera = this.camera;
         var scene = camera.getScene();
-        var direction = camera.target.subtract(camera.position);
-        direction.normalize();
 
         // since the _hitPlane is always updated to be orthogonal to the camera position vector
         // we don't have to worry about this ray shooting off to infinity. This ray creates
         // a vector defining where we want to zoom to.
         var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
-        const distance = ray.intersectsPlane(this._hitPlane);
-        var dist = distance ?? 0;
+        let distance = 0;
+        if (this._hitPlane) {
+            distance = ray.intersectsPlane(this._hitPlane) ?? 0;
+        }
 
         // not using this ray again, so modifying its vectors here is fine
-        return ray.origin.addInPlace(ray.direction.scaleInPlace(dist));
+        return ray.origin.addInPlace(ray.direction.scaleInPlace(distance));
     }
 
-    private _inertialPanning : Vector3;
+    private _inertialPanning : Vector3 = Vector3.Zero();
 
     private _zoomToMouse(delta: number) {
         var camera = this.camera;

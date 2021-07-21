@@ -7,9 +7,10 @@ import { Logger } from "../Misc/logger";
 import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Scene } from '../scene';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
+import { ThinEngine } from '../Engines/thinEngine';
+import { TextureTools } from "./textureTools";
 
 import "../Engines/Extensions/engine.cubeTexture";
-import { ThinEngine } from '../Engines/thinEngine';
 
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:
@@ -213,65 +214,6 @@ export class DDSTools {
         };
     }
 
-    // ref: http://stackoverflow.com/questions/32633585/how-do-you-convert-to-half-floats-in-javascript
-    private static _FloatView: Float32Array;
-    private static _Int32View: Int32Array;
-    private static _ToHalfFloat(value: number): number {
-        if (!DDSTools._FloatView) {
-            DDSTools._FloatView = new Float32Array(1);
-            DDSTools._Int32View = new Int32Array(DDSTools._FloatView.buffer);
-        }
-
-        DDSTools._FloatView[0] = value;
-        var x = DDSTools._Int32View[0];
-
-        var bits = (x >> 16) & 0x8000; /* Get the sign */
-        var m = (x >> 12) & 0x07ff; /* Keep one extra bit for rounding */
-        var e = (x >> 23) & 0xff; /* Using int is faster here */
-
-        /* If zero, or denormal, or exponent underflows too much for a denormal
-        * half, return signed zero. */
-        if (e < 103) {
-            return bits;
-        }
-
-        /* If NaN, return NaN. If Inf or exponent overflow, return Inf. */
-        if (e > 142) {
-            bits |= 0x7c00;
-            /* If exponent was 0xff and one mantissa bit was set, it means NaN,
-            * not Inf, so make sure we set one mantissa bit too. */
-            bits |= ((e == 255) ? 0 : 1) && (x & 0x007fffff);
-            return bits;
-        }
-
-        /* If exponent underflows but not too much, return a denormal */
-        if (e < 113) {
-            m |= 0x0800;
-            /* Extra rounding may overflow and set mantissa to 0 and exponent
-            * to 1, which is OK. */
-            bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
-            return bits;
-        }
-
-        bits |= ((e - 112) << 10) | (m >> 1);
-        bits += m & 1;
-        return bits;
-    }
-
-    private static _FromHalfFloat(value: number): number {
-        var s = (value & 0x8000) >> 15;
-        var e = (value & 0x7C00) >> 10;
-        var f = value & 0x03FF;
-
-        if (e === 0) {
-            return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
-        } else if (e == 0x1F) {
-            return f ? NaN : ((s ? -1 : 1) * Infinity);
-        }
-
-        return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
-    }
-
     private static _GetHalfFloatAsFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
         var destArray = new Float32Array(dataLength);
         var srcData = new Uint16Array(arrayBuffer, dataOffset);
@@ -279,13 +221,13 @@ export class DDSTools {
         for (var y = 0; y < height; y++) {
             for (var x = 0; x < width; x++) {
                 var srcPos = (x + y * width) * 4;
-                destArray[index] = DDSTools._FromHalfFloat(srcData[srcPos]);
-                destArray[index + 1] = DDSTools._FromHalfFloat(srcData[srcPos + 1]);
-                destArray[index + 2] = DDSTools._FromHalfFloat(srcData[srcPos + 2]);
+                destArray[index] = TextureTools.FromHalfFloat(srcData[srcPos]);
+                destArray[index + 1] = TextureTools.FromHalfFloat(srcData[srcPos + 1]);
+                destArray[index + 2] = TextureTools.FromHalfFloat(srcData[srcPos + 2]);
                 if (DDSTools.StoreLODInAlphaChannel) {
                     destArray[index + 3] = lod;
                 } else {
-                    destArray[index + 3] = DDSTools._FromHalfFloat(srcData[srcPos + 3]);
+                    destArray[index + 3] = TextureTools.FromHalfFloat(srcData[srcPos + 3]);
                 }
                 index += 4;
             }
@@ -305,7 +247,7 @@ export class DDSTools {
                     destArray[index] = srcData[srcPos];
                     destArray[index + 1] = srcData[srcPos + 1];
                     destArray[index + 2] = srcData[srcPos + 2];
-                    destArray[index + 3] = DDSTools._ToHalfFloat(lod);
+                    destArray[index + 3] = TextureTools.ToHalfFloat(lod);
                     index += 4;
                 }
             }
@@ -337,6 +279,27 @@ export class DDSTools {
         return new Float32Array(arrayBuffer, dataOffset, dataLength);
     }
 
+    private static _GetFloatAsHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint16Array {
+        var destArray = new Uint16Array(dataLength);
+        var srcData = new Float32Array(arrayBuffer, dataOffset);
+        var index = 0;
+        for (var y = 0; y < height; y++) {
+            for (var x = 0; x < width; x++) {
+                destArray[index] = TextureTools.ToHalfFloat(srcData[index]);
+                destArray[index + 1] = TextureTools.ToHalfFloat(srcData[index + 1]);
+                destArray[index + 2] = TextureTools.ToHalfFloat(srcData[index + 2]);
+                if (DDSTools.StoreLODInAlphaChannel) {
+                    destArray[index + 3] = TextureTools.ToHalfFloat(lod);
+                } else {
+                    destArray[index + 3] = TextureTools.ToHalfFloat(srcData[index + 3]);
+                }
+                index += 4;
+            }
+        }
+
+        return destArray;
+    }
+
     private static _GetFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint8Array {
         var destArray = new Uint8Array(dataLength);
         var srcData = new Float32Array(arrayBuffer, dataOffset);
@@ -366,13 +329,13 @@ export class DDSTools {
         for (var y = 0; y < height; y++) {
             for (var x = 0; x < width; x++) {
                 var srcPos = (x + y * width) * 4;
-                destArray[index] = Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos])) * 255;
-                destArray[index + 1] = Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 1])) * 255;
-                destArray[index + 2] = Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 2])) * 255;
+                destArray[index] = Scalar.Clamp(TextureTools.FromHalfFloat(srcData[srcPos])) * 255;
+                destArray[index + 1] = Scalar.Clamp(TextureTools.FromHalfFloat(srcData[srcPos + 1])) * 255;
+                destArray[index + 2] = Scalar.Clamp(TextureTools.FromHalfFloat(srcData[srcPos + 2])) * 255;
                 if (DDSTools.StoreLODInAlphaChannel) {
                     destArray[index + 3] = lod;
                 } else {
-                    destArray[index + 3] = Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 3])) * 255;
+                    destArray[index + 3] = Scalar.Clamp(TextureTools.FromHalfFloat(srcData[srcPos + 3])) * 255;
                 }
                 index += 4;
             }
@@ -445,7 +408,7 @@ export class DDSTools {
      * Uploads DDS Levels to a Babylon Texture
      * @hidden
      */
-    public static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, data: ArrayBufferView, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number) {
+    public static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, data: ArrayBufferView, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number, destTypeMustBeFilterable = true) {
         var sphericalPolynomialFaces: Nullable<Array<ArrayBufferView>> = null;
         if (info.sphericalPolynomial) {
             sphericalPolynomialFaces = new Array<ArrayBufferView>();
@@ -545,6 +508,7 @@ export class DDSTools {
         }
 
         const startFace = currentFace || 0;
+        const caps = engine.getCaps();
         for (var face = startFace; face < faces; face++) {
             width = header[off_width];
             height = header[off_height];
@@ -559,7 +523,7 @@ export class DDSTools {
                         dataLength = width * height * 4;
                         var floatArray: Nullable<ArrayBufferView> = null;
 
-                        if (engine._badOS || engine._badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
+                        if (engine._badOS || engine._badDesktopOS || (!caps.textureHalfFloat && !caps.textureFloat)) { // Required because iOS has many issues with float and half float generation
                             if (bpp === 128) {
                                 floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
                                 if (sphericalPolynomialFaces && i == 0) {
@@ -576,24 +540,59 @@ export class DDSTools {
                             texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
                         }
                         else {
-                            if (bpp === 128) {
-                                texture.type = Constants.TEXTURETYPE_FLOAT;
-                                floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
-                                if (sphericalPolynomialFaces && i == 0) {
-                                    sphericalPolynomialFaces.push(floatArray);
+                            const floatAvailable = caps.textureFloat && (destTypeMustBeFilterable && caps.textureFloatLinearFiltering || !destTypeMustBeFilterable);
+                            const halfFloatAvailable = caps.textureHalfFloat && (destTypeMustBeFilterable && caps.textureHalfFloatLinearFiltering || !destTypeMustBeFilterable);
+
+                            const destType =
+                                (bpp === 128 || bpp === 64 && !halfFloatAvailable) && floatAvailable ? Constants.TEXTURETYPE_FLOAT :
+                                (bpp === 64 || bpp === 128 && !floatAvailable) && halfFloatAvailable ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+
+                            let dataGetter: (width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number) => ArrayBufferView;
+                            let dataGetterPolynomial: Nullable<(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number) => ArrayBufferView> = null;
+
+                            switch (bpp) {
+                                case 128: {
+                                    switch (destType) {
+                                        case Constants.TEXTURETYPE_FLOAT:
+                                            dataGetter = DDSTools._GetFloatRGBAArrayBuffer;
+                                            dataGetterPolynomial = null;
+                                            break;
+                                        case Constants.TEXTURETYPE_HALF_FLOAT:
+                                            dataGetter = DDSTools._GetFloatAsHalfFloatRGBAArrayBuffer;
+                                            dataGetterPolynomial = DDSTools._GetFloatRGBAArrayBuffer;
+                                            break;
+                                        case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                                            dataGetter = DDSTools._GetFloatAsUIntRGBAArrayBuffer;
+                                            dataGetterPolynomial = DDSTools._GetFloatRGBAArrayBuffer;
+                                            break;
+                                    }
+                                    break;
                                 }
-                            } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
-                                texture.type = Constants.TEXTURETYPE_FLOAT;
-                                floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
-                                if (sphericalPolynomialFaces && i == 0) {
-                                    sphericalPolynomialFaces.push(floatArray);
+                                default: { // 64 bpp
+                                    switch (destType) {
+                                        case Constants.TEXTURETYPE_FLOAT:
+                                            dataGetter = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer;
+                                            dataGetterPolynomial = null;
+                                            break;
+                                        case Constants.TEXTURETYPE_HALF_FLOAT:
+                                            dataGetter = DDSTools._GetHalfFloatRGBAArrayBuffer;
+                                            dataGetterPolynomial = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer;
+                                            break;
+                                        case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                                            dataGetter = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer;
+                                            dataGetterPolynomial = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer;
+                                            break;
+                                    }
+                                    break;
                                 }
-                            } else { // 64
-                                texture.type = Constants.TEXTURETYPE_HALF_FLOAT;
-                                floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
-                                if (sphericalPolynomialFaces && i == 0) {
-                                    sphericalPolynomialFaces.push(DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, data.buffer, i));
-                                }
+                            }
+
+                            texture.type = destType;
+
+                            floatArray = dataGetter(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
+
+                            if (sphericalPolynomialFaces && i == 0) {
+                                sphericalPolynomialFaces.push(dataGetterPolynomial ? dataGetterPolynomial(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i) : floatArray);
                             }
                         }
 

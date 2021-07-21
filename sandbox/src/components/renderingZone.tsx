@@ -140,6 +140,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 }
             }
 
+            this._engine.clearInternalTexturesCache();
+
             return SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
         };
 
@@ -257,8 +259,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     onSceneLoaded(filename: string) {
-        this._engine.clearInternalTexturesCache();
-
         this._scene.skipFrustumClipping = true;
 
         this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename });
@@ -310,6 +310,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         const assetUrl = this.props.assetUrl!;
         const rootUrl = Tools.GetFolderPath(assetUrl);
         const fileName = Tools.GetFilename(assetUrl);
+
+        this._engine.clearInternalTexturesCache();
 
         const promise = isTextureAsset(assetUrl)
             ? Promise.resolve(this.loadTextureAsset(assetUrl))
