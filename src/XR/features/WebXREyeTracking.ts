@@ -98,7 +98,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
             !!this._xrSessionManager.session.trySetEyeTrackingEnabled) {
             this._xrSessionManager.session.trySetEyeTrackingEnabled(false);
         }
-        
+
         return true;
     }
 
@@ -133,6 +133,13 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
                 this._gazeRay.origin.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
                 const quat = pose.transform.orientation;
                 this._tmpQuat.set(quat.x, quat.y, quat.z, quat.w);
+
+                if (!this._xrSessionManager.scene.useRightHandedSystem) {
+                    this._gazeRay.origin.z *= -1;
+                    this._tmpQuat.z *= -1;
+                    this._tmpQuat.w *= -1;
+                }
+                
                 Vector3.Forward().rotateByQuaternionToRef(this._tmpQuat, this._gazeRay.direction);
                 this.onEyeTrackingFrameUpdateObservable.notifyObservers(this._gazeRay);
             }
