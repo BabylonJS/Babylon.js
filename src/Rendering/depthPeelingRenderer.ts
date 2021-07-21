@@ -136,7 +136,6 @@ export class DepthPeelingRenderer {
             this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
 
             // We bind the opaque depth buffer to correctly occlude fragments that are behind opaque geometry
-            // TODO : clean the assumptions
             const depthStencilBuffer = prePassTexture._depthStencilBuffer;
             const framebuffer = this._depthMrts[0]._getFrameBuffer();
             if (!depthStencilBuffer || !framebuffer) {
@@ -191,6 +190,7 @@ export class DepthPeelingRenderer {
         const MIN_DEPTH = 0;
         const MAX_DEPTH = 1;
         const gl = this._engine._gl;
+
         // TODO
         (this._scene.prePassRenderer! as any)._enabled = false;
 
@@ -216,23 +216,18 @@ export class DepthPeelingRenderer {
         attachments = this._engine.buildTextureLayout([true]);
         this._engine.bindAttachments(attachments);
 
-        // TODO add method in engine
-        // TODO : drawElements uses apply states so blendEquation will be overwritten
-        // Use engine.states = .... like in effectRenderer.ts
-        // Maybe we will need to add a different state because gl.MAX may be unused and not implemented for now in BJS
-        gl.enable(gl.BLEND);
-        gl.blendEquation(gl.MAX);
-        // TODO : depthmask and cullface
-        gl.depthMask(false);
-        gl.enable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
+        this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
+        this._engine._alphaState.alphaBlend = true;
+        this._engine.depthCullingState.depthMask = false;
+        this._engine.depthCullingState.depthTest = true;
+        this._engine.depthCullingState.cull = false;
+        this._engine.applyStates();
 
         this._currentPingPongState = 1;
         for (let j = 0; j < transparentSubMeshes.length; j++) {
             const material = transparentSubMeshes.data[j].getMaterial();
             let previousShaderHotSwapping = true;
             if (material) {
-                // Test for OIT compat
                 previousShaderHotSwapping = material.allowShaderHotSwapping;
                 material.allowShaderHotSwapping = false;
             }
@@ -269,15 +264,14 @@ export class DepthPeelingRenderer {
             attachments = this._engine.buildTextureLayout([true, true, true]);
             this._engine.bindAttachments(attachments);
 
-            // TODO : alpha state (engine.setAlphaState + engine.applyStates)
-            gl.blendEquation(gl.MAX);
-            gl.enable(gl.BLEND);
+            this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
+            this._engine._alphaState.alphaBlend = true;
+            this._engine.applyStates();
 
             for (let j = 0; j < transparentSubMeshes.length; j++) {
                 const material = transparentSubMeshes.data[j].getMaterial();
                 let previousShaderHotSwapping = true;
                 if (material) {
-                    // Test for OIT compat
                     previousShaderHotSwapping = material.allowShaderHotSwapping;
                     material.allowShaderHotSwapping = false;
                 }
@@ -295,12 +289,10 @@ export class DepthPeelingRenderer {
             this._engine._bindUnboundFramebuffer(this._blendBackMrt._getFrameBuffer());
             attachments = this._engine.buildTextureLayout([true]);
             this._engine.bindAttachments(attachments);
-            // TODO : drawElements uses apply states so blendEquation will be overwritten
-            gl.blendEquation(gl.FUNC_ADD);
-            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+            this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_ADD);
+            this._engine.setAlphaMode(Constants.ALPHA_LAYER_ACCUMULATE);
+            this._engine.applyStates();
 
-            // TODO : remove (see above)
-            (this._engine.depthCullingState as any)._isDepthTestDirty = false;
             this._engine.enableEffect(this._blendBackEffectWrapper.effect);
             this._blendBackEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[writeId * 3 + 2]);
             this._effectRenderer.render(this._blendBackEffectWrapper);
@@ -309,12 +301,10 @@ export class DepthPeelingRenderer {
         // Final composition on default FB
         this._engine._bindUnboundFramebuffer(null);
 
-        // TODO : alpha state (engine.setAlphaState + engine.applyStates)
-        gl.disable(gl.BLEND);
-        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        this._engine.setAlphaMode(Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA);
+        this._engine._alphaState.alphaBlend = false;
+        this._engine.applyStates();
 
-        // TODO : remove (see above)
-        (this._engine.depthCullingState as any)._isDepthTestDirty = false;
         this._engine.enableEffect(this._finalEffectWrapper.effect);
         this._finalEffectWrapper.effect.setTexture("uFrontColor", this._thinTextures[writeId * 3 + 1]);
         this._finalEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[6]);
@@ -322,7 +312,7 @@ export class DepthPeelingRenderer {
 
         // TODO
         (this._scene.prePassRenderer! as any)._enabled = true;
-        gl.depthMask(true);
+        this._engine.depthCullingState.depthMask = true;
     }
 
     public dispose() {

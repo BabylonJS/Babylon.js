@@ -241,17 +241,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param index The index of the texture to replace
      */
     public setInternalTexture(texture: InternalTexture, index: number, attachmentIndex: number = 0, disposePrevious: boolean = true) {
-        // if (index === 0) {
-        //     // This function is just meant to replace textures, not the framebuffer
-        //     // So we keep references
-        //     texture._framebuffer = this._texture!._framebuffer;
-        //     // Prevents the dispose of the framebuffer
-        //     this._texture!._framebuffer = null;
-        //     texture._MSAAFramebuffer = this._texture!._MSAAFramebuffer;
-        //     this._texture!._MSAAFramebuffer = null;
-        //     this._texture = texture;
-        // }
-
         if (disposePrevious && this._internalTextures[index] && index !== 0) {
             this._internalTextures[index].dispose();    
         }
@@ -273,6 +262,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     /**
      * Retrieves the underlying framebuffer associated with this texture
      * @returns The framebuffer
+     * @hidden
      */
     public _getFrameBuffer(): WebGLFramebuffer {
         return this._framebuffer;
