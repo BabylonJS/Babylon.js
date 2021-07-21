@@ -36,7 +36,7 @@ import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
-import { ICanvas, ICanvasRenderingContext } from "./ICanvas";
+import { ICanvas, ICanvasRenderingContext, IImage } from "./ICanvas";
 import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
@@ -648,6 +648,14 @@ export class ThinEngine {
     public createCanvas(width: number, height: number): ICanvas {
         return ThinEngine._createCanvas(width, height);
     }
+
+    /**
+     * Create an image to use with canvas
+     * @return IImage interface
+     */
+     public createCanvasImage(): IImage {
+         return document.createElement("img");
+     }
 
     /**
      * Creates a new engine
