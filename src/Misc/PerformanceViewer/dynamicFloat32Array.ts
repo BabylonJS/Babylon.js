@@ -11,7 +11,7 @@ export class DynamicFloat32Array {
      * Creates a new DynamicFloat32Array with the desired item capacity.
      * @param _itemCapacity The initial item capacity you would like to set for the array.
      */
-     constructor(protected _itemCapacity: number) {
+     constructor(private _itemCapacity: number) {
         this._view = new Float32Array(_itemCapacity);
         this._itemLength = 0;
     }
