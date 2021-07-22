@@ -65,11 +65,11 @@ export class DepthPeelingRenderer {
         }
 
         this._prePassEffectConfiguration = new DepthPeelingEffectConfiguration();
-        this._createTexturesAndFrameBuffers();
+        this._createTexturesAndFramebuffers();
         this._createEffects();
     }
 
-    private _createTexturesAndFrameBuffers() {
+    private _createTexturesAndFramebuffers() {
         const size = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
@@ -109,6 +109,34 @@ export class DepthPeelingRenderer {
 
             this._thinTextures.push(new ThinTexture(depthTexture), new ThinTexture(frontColorTexture), new ThinTexture(backColorTexture));
         }
+    }
+
+    private _disposeTexturesAndFramebuffers() {
+        for (let i = 0; i < this._thinTextures.length; i++) {
+            if (i === 6) {
+                // Do not dispose the shared texture with the prepass
+                continue;
+            }
+            this._thinTextures[i].dispose();
+        }
+
+        for (let i = 0; i < 2; i++) {
+            this._depthMrts[i].dispose(true);
+            this._colorMrts[i].dispose(true);
+            this._blendBackMrt.dispose(true);
+        }
+
+        this._thinTextures = [];
+        this._colorMrts = [];
+        this._depthMrts = [];
+    }
+
+    private _updateTextures() {
+        if (this._depthMrts[0].getSize().width !== this._engine.getRenderWidth() || this._depthMrts[0].getSize().height !== this._engine.getRenderHeight()) {
+            this._disposeTexturesAndFramebuffers();
+            this._createTexturesAndFramebuffers();
+        }
+        return this._updateTextureReferences();
     }
 
     private _updateTextureReferences() {
@@ -217,7 +245,7 @@ export class DepthPeelingRenderer {
     }
 
     public render(transparentSubMeshes: SmartArray<SubMesh>) {
-        if (!this._blendBackEffectWrapper.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextureReferences()) {
+        if (!this._blendBackEffectWrapper.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextures()) {
             return;
         }
 
@@ -319,6 +347,6 @@ export class DepthPeelingRenderer {
     }
 
     public dispose() {
-        // TODO
+        this._disposeTexturesAndFramebuffers();
     }
 }
