@@ -78,7 +78,6 @@ const invertYPreMultiplyAlphaVertexSource = `
     }
     `;
 
-// TODO WEBGPU: remove usage of textureSize -> need to create a ubo and pass the height...
 const invertYPreMultiplyAlphaFragmentSource = `
     #extension GL_EXT_samplerless_texture_functions : enable
 
