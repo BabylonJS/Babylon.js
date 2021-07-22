@@ -402,7 +402,7 @@ export class VertexData {
         return this;
     }
 
-    @nativeOverride.filter((coordinates => !Array.isArray(coordinates)))
+    @nativeOverride.filter((coordinates) => !Array.isArray(coordinates))
     private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>) {
         const coordinate = TmpVectors.Vector3[0];
         const transformedCoordinate = TmpVectors.Vector3[1]
@@ -415,7 +415,7 @@ export class VertexData {
         }
     }
 
-    @nativeOverride.filter((normals => !Array.isArray(normals)))
+    @nativeOverride.filter((normals) => !Array.isArray(normals))
     private static _TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
         const normal = TmpVectors.Vector3[0];
         const transformedNormal = TmpVectors.Vector3[1];
@@ -428,7 +428,7 @@ export class VertexData {
         }
     }
 
-    @nativeOverride.filter((normals => !Array.isArray(normals)))
+    @nativeOverride.filter((normals) => !Array.isArray(normals))
     private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
         var normal = TmpVectors.Vector4[0];
         var transformedNormal = TmpVectors.Vector4[1];
@@ -442,7 +442,7 @@ export class VertexData {
         }
     }
 
-    @nativeOverride.filter((indices => !Array.isArray(indices)))
+    @nativeOverride.filter((indices) => !Array.isArray(indices))
     private static _FlipIndices(indices: IndicesArray) {
         for (let index = 0; index < indices.length; index += 3) {
             const tmp = indices[index + 1];
