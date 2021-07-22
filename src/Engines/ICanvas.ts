@@ -30,6 +30,48 @@ export interface ICanvas
 }
 
 /**
+ * Class used to abstract am image to use with the canvas and its context
+ */
+ export interface IImage
+ {
+    /**
+     * onload callback.
+     */
+    onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+
+    /**
+     * Image source.
+     */
+    src: string;
+
+    /**
+     * Image width.
+     */
+    readonly width: number;
+
+    /**
+     * Image height.
+     */
+    readonly height: number;
+
+    /**
+     * The original height of the image resource before sizing.
+     */
+    readonly naturalHeight: number;
+
+    /**
+     * The original width of the image resource before sizing.
+     */
+    readonly naturalWidth: number;
+
+    /**
+     * provides support for CORS, defining how the element handles crossorigin requests,
+     * thereby enabling the configuration of the CORS requests for the element's fetched data.
+     */
+    crossOrigin: string | null;
+ }
+
+/**
  * Class used to abstract a canvas gradient
  */
 export interface ICanvasGradient {

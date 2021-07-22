@@ -21,4 +21,5 @@ export * from "./rawTexture3D";
 export * from "./refractionTexture";
 export * from "./renderTargetTexture";
 export * from "./texture";
+export * from "./thinTexture";
 export * from "./videoTexture";
