@@ -15,6 +15,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
     private _gazeRay: Nullable<Ray>;
 
     private _tmpQuat: Quaternion = new Quaternion();
+    private _eventListeners: { [event in XREventType]?: (event: XREyeTrackingSourceEvent) => void };
 
     /**
      * The module's name
@@ -61,6 +62,13 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
      */
     public dispose(): void {
         super.dispose();
+
+        Object.keys(this._eventListeners).forEach((eventName: string) => {
+            const func = this._eventListeners && this._eventListeners[eventName as XREventType];
+            if (func) {
+                this._xrSessionManager.session.removeEventListener(eventName as XREventType, func);
+            }
+        });
 
         this.onEyeTrackingStartedObservable.clear();
         this.onEyeTrackingEndedObservable.clear();
@@ -120,6 +128,11 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
                 this._latestEyeSpace = null;
                 this._gazeRay = null;
                 this.onEyeTrackingEndedObservable.notifyObservers();
+            };
+
+            this._eventListeners = {
+                eyetrackingstart: eyeTrackingStartListener,
+                eyetrackingend: eyeTrackingEndListener,
             };
 
             this._xrSessionManager.session.addEventListener("eyetrackingstart", eyeTrackingStartListener);
