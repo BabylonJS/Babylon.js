@@ -52,20 +52,6 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
         }
     }
 
-    public detach(): boolean {
-        if (!super.detach()) {
-            return false;
-        }
-
-        // Only supported by BabylonNative
-        if (!!this._xrSessionManager.isNative &&
-            !!this._xrSessionManager.session.trySetEyeTrackingEnabled) {
-            this._xrSessionManager.session.trySetEyeTrackingEnabled(false);
-        }
-
-        return true;
-    }
-
     public dispose(): void {
         super.dispose();
 
