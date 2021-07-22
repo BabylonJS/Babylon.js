@@ -57,20 +57,26 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         var width = this.props.width;
         var height = (width / ratio) | 1;            
 
-        const data = await TextureHelper.GetTextureDataAsync(texture, width, height, this.state.face, this.state.channels, this.props.globalState);
-        
-        previewCanvas.width = width;
-        previewCanvas.height = height;
-        var context = previewCanvas.getContext('2d');
+        try {
+            const data = await TextureHelper.GetTextureDataAsync(texture, width, height, this.state.face, this.state.channels, this.props.globalState);
+            
+            previewCanvas.width = width;
+            previewCanvas.height = height;
+            var context = previewCanvas.getContext('2d');
 
-        if (context) {
-            // Copy the pixels to the preview canvas
-            var imageData = context.createImageData(width, height);
-            var castData = imageData.data;
-            castData.set(data);
-            context.putImageData(imageData, 0, 0);
+            if (context) {
+                // Copy the pixels to the preview canvas
+                var imageData = context.createImageData(width, height);
+                var castData = imageData.data;
+                castData.set(data);
+                context.putImageData(imageData, 0, 0);
+            }
+            previewCanvas.style.height = height + "px";
+        } catch (e) {
+            previewCanvas.width = width;
+            previewCanvas.height = height;
+            previewCanvas.style.height = height + "px";
         }
-        previewCanvas.style.height = height + "px";
     }
 
     render() {

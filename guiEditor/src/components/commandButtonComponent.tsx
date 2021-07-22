@@ -1,8 +1,6 @@
 import * as React from "react";
-import { GlobalState } from '../globalState';
 
 interface ICommandButtonComponentProps {
-    globalState: GlobalState;
     tooltip: string;   
     shortcut?: string;
     icon: string; 
