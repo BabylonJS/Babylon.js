@@ -584,7 +584,7 @@ export class Geometry implements IGetSetVerticesData {
         if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
             return orig;
         } else {
-            return orig.slice();
+            return Tools.Slice(orig);
         }
     }
 
