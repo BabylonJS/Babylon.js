@@ -179,4 +179,4 @@ export function collectionTypeToPredefinedStrategies(scene: Scene, engineInstrum
         [PerfCollectionType.InterFrame]: interFrameStrategy,
         [PerfCollectionType.GpuFrameTime]: gpuFrameTimeStrategy,
     };
-};
+}
