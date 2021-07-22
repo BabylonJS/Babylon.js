@@ -143,12 +143,13 @@ export class ComputeShader {
     public setTexture(name: string, texture: BaseTexture, bindSampler = true): void {
         const current = this._bindings[name];
 
-        this._contextIsDirty ||= !current || current.object !== texture;
-
         this._bindings[name] = {
             type: bindSampler ? ComputeBindingType.Texture : ComputeBindingType.TextureWithoutSampler,
             object: texture,
+            indexInGroupEntries: current?.indexInGroupEntries,
         };
+
+        this._contextIsDirty ||= !current || current.object !== texture || current.type !== this._bindings[name].type;
     }
 
     /**
@@ -164,6 +165,7 @@ export class ComputeShader {
         this._bindings[name] = {
             type: ComputeBindingType.StorageTexture,
             object: texture,
+            indexInGroupEntries: current?.indexInGroupEntries,
         };
     }
 
@@ -180,6 +182,7 @@ export class ComputeShader {
         this._bindings[name] = {
             type: ComputeBindingType.UniformBuffer,
             object: buffer,
+            indexInGroupEntries: current?.indexInGroupEntries,
         };
     }
 
@@ -196,6 +199,7 @@ export class ComputeShader {
         this._bindings[name] = {
             type: ComputeBindingType.StorageBuffer,
             object: buffer,
+            indexInGroupEntries: current?.indexInGroupEntries,
         };
     }
 

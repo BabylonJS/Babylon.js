@@ -26,7 +26,7 @@ export enum ComputeBindingType {
 }
 
 /** @hidden */
-export type ComputeBindingList = { [key: string]: { type: ComputeBindingType, object: any } };
+export type ComputeBindingList = { [key: string]: { type: ComputeBindingType, object: any, indexInGroupEntries?: number } };
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
