@@ -430,3 +430,47 @@ export class SerializationHelper {
         return _copySource(creationFunction, source, true);
     }
 }
+
+/** @hidden */
+declare const _native: any;
+
+/**
+ * Decorator used to redirect a function to a native implementation if available.
+ * @hidden
+ */
+export function nativeOverride(target: any, propertyKey: string, descriptor: PropertyDescriptor, predicate?: (...params: any) => boolean) {
+    // Cache the original JS function for later.
+    const jsFunc = descriptor.value;
+
+    // Override the JS function to check for a native override on first invocation. Setting descriptor.value overrides the function at the early stage of code being loaded/imported.
+    descriptor.value = (...params: any) => {
+        // Check if we are executing in a Babylon Native context (e.g. check the presence of the _native global property) and if so also check if a function override is available.
+        if (typeof _native !== 'undefined' && _native[propertyKey]) {
+            const nativeFunc = _native[propertyKey];
+            // If a predicate was provided, then we'll need to invoke the predicate on each invocation of the underlying function to determine whether to call the native function or the JS function.
+            if (predicate) {
+                // Override the JS function again, this time to execute the predicate and then either execute the native function or the JS function.
+                target[propertyKey] = (...params: any) => predicate(...params) ? nativeFunc(...params) : jsFunc(...params);
+            } else {
+                // Override the JS function again, this time to always execute the native function.
+                target[propertyKey] = nativeFunc;
+            }
+        } else {
+            // Override the JS function again, this time simply restoring the original JS function.
+            target[propertyKey] = jsFunc;
+        }
+
+        // The JS function has now been overridden based on whether we're executing in the context of Babylon Native, but we still need to invoke that function.
+        // Future invocations of the function will just directly invoke the final overridden function, not any of the decorator setup logic above.
+        target[propertyKey](...params);
+    };
+}
+
+/**
+ * Decorator factory that applies the nativeOverride decorator, but determines whether to redirect to the native implementation based on a filter function that evaluates the function arguments.
+ * @example @nativeOverride.filter((arg1) => arg1.length > 20)
+ * @hidden
+ */
+nativeOverride.filter = function(predicate: (...params: any) => boolean) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => nativeOverride(target, propertyKey, descriptor, predicate);
+};
