@@ -436,6 +436,7 @@ declare const _native: any;
 
 /**
  * Decorator used to redirect a function to a native implementation if available.
+ * @hidden
  */
 export function nativeOverride(target: any, propertyKey: string, descriptor: PropertyDescriptor, predicate?: (...params: any) => boolean) {
     // Cache the original JS function for later.
@@ -468,6 +469,7 @@ export function nativeOverride(target: any, propertyKey: string, descriptor: Pro
 /**
  * Decorator factory that applies the nativeOverride decorator, but determines whether to redirect to the native implementation based on a filter function that evaluates the function arguments.
  * @example @nativeOverride.filter((arg1) => arg1.length > 20)
+ * @hidden
  */
 nativeOverride.filter = function(predicate: (...params: any) => boolean) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => nativeOverride(target, propertyKey, descriptor, predicate);
