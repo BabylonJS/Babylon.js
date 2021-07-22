@@ -3,6 +3,13 @@ varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
+#ifdef DEPTH_PEELING
+	uniform vec4 depthPeelValues;
+	#ifdef DEPTH_PEELING_FRONT
+		uniform sampler2D frontDepthTexture;
+	#endif
+#endif
+
 varying float vDepthMetric;
 
 #ifdef PACKED
@@ -15,6 +22,8 @@ void main(void)
 	if (texture2D(diffuseSampler, vUV).a < 0.4)
 		discard;
 #endif
+
+#include<depthPeelFragment>
 
 #ifdef NONLINEARDEPTH
 	#ifdef PACKED

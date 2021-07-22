@@ -5,6 +5,7 @@ import { MaterialFlags } from "../materialFlags";
 import { BaseTexture } from "../Textures/baseTexture";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { Nullable } from "../../types";
+import { Effect } from "../../Materials/effect";
 
 /**
  * @hidden
@@ -12,7 +13,7 @@ import { Nullable } from "../../types";
 export interface IMaterialDepthPeelingDefines {
     DEPTH_PEELING: boolean;
     DEPTH_PEELING_FRONT: boolean;
-    DEPTH_PEELING_FRONT_INVERSE: boolean;
+    DEPTH_PEELING_FRONT_RESOLVE: boolean;
     DEPTH_PEELING_BACK: boolean;
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -107,7 +108,7 @@ export class PBRDepthPeelingConfiguration {
                 if (scene.texturesEnabled) {
                     if (this._frontDepthTexture && MaterialFlags.DepthPeelingFrontTextureEnabled) {
                         defines.DEPTH_PEELING_FRONT = true;
-                        defines.DEPTH_PEELING_FRONT_INVERSE = this.frontDepthTextureIsInverse;
+                        defines.DEPTH_PEELING_FRONT_RESOLVE = true;
                     } else {
                         defines.DEPTH_PEELING_FRONT = false;
                     }
@@ -122,7 +123,7 @@ export class PBRDepthPeelingConfiguration {
         else {
             defines.DEPTH_PEELING = false;
             defines.DEPTH_PEELING_FRONT = false;
-            defines.DEPTH_PEELING_FRONT_INVERSE = false;
+            defines.DEPTH_PEELING_FRONT_RESOLVE = false;
             defines.DEPTH_PEELING_BACK = false;
         }
     }
@@ -162,6 +163,24 @@ export class PBRDepthPeelingConfiguration {
                 uniformBuffer.setTexture("frontDepthTexture", this._frontDepthTexture);
             }
         }
+    }
+
+    /**
+     * Unbinds the material from the mesh.
+     * @param activeEffect defines the effect that should be unbound from.
+     * @returns true if unbound, otherwise false
+     */
+     public unbind(activeEffect: Effect): boolean {
+        if (this._backDepthTexture && this._backDepthTexture.isRenderTarget) {
+            activeEffect.setTexture("backDepthTexture", null);
+            return true;
+        }
+        if (this._frontDepthTexture && this._frontDepthTexture.isRenderTarget) {
+            activeEffect.setTexture("frontDepthTexture", null);
+            return true;
+        }
+
+        return false;
     }
 
     /**

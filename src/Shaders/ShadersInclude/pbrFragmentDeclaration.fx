@@ -184,6 +184,11 @@ uniform mat4 view;
     uniform vec4 vDetailInfos;
 #endif
 
+// Depth Peeling
+#if defined(DEPTH_PEELING)
+    uniform vec4 depthPeelValues;
+#endif
+
 #ifdef USESPHERICALFROMREFLECTIONMAP
     #ifdef SPHERICAL_HARMONICS
         uniform vec3 vSphericalL00;

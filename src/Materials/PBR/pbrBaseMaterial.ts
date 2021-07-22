@@ -278,7 +278,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public DEPTH_PEELING = false;
     public DEPTH_PEELING_FRONT = false;
-    public DEPTH_PEELING_FRONT_INVERSE = false;
+    public DEPTH_PEELING_FRONT_RESOLVE = false;
     public DEPTH_PEELING_BACK = false;
 
     public SUBSURFACE = false;
@@ -1200,7 +1200,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             !this.clearCoat.isReadyForSubMesh(defines, scene, engine, this._disableBumpMap) ||
             !this.sheen.isReadyForSubMesh(defines, scene) ||
             !this.anisotropy.isReadyForSubMesh(defines, scene) ||
-            !this.detailMap.isReadyForSubMesh(defines, scene)) {
+            !this.detailMap.isReadyForSubMesh(defines, scene) ||
+            !this.depthPeeling.isReadyForSubMesh(defines, scene)) {
             return false;
         }
 
@@ -1906,6 +1907,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             if (this.subSurface.unbind(this._activeEffect)) {
+                needFlag = true;
+            }
+
+            if (this.depthPeeling.unbind(this._activeEffect)) {
                 needFlag = true;
             }
 

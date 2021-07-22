@@ -29,7 +29,6 @@ precision highp float;
 #include<pbrFragmentSamplersDeclaration>
 #include<imageProcessingDeclaration>
 #include<clipPlaneFragmentDeclaration>
-#include<depthPeelFragmentDeclaration>
 #include<logDepthDeclaration>
 #include<fogFragmentDeclaration>
 

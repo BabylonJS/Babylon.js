@@ -466,6 +466,7 @@ export class Material implements IAnimatable {
      * | 8 | ALPHA_PREMULTIPLIED_PORTERDUFF |   |
      * | 9 | ALPHA_INTERPOLATE |   |
      * | 10 | ALPHA_SCREENMODE |   |
+     * | 11 | ALPHA_UNDER |   |
      *
      */
     public set alphaMode(value: number) {

@@ -86,6 +86,7 @@ interface INativeEngine {
     readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
     readonly ALPHA_INTERPOLATE: number;
     readonly ALPHA_SCREENMODE: number;
+    readonly ALPHA_UNDER: number;
 
     readonly STENCIL_TEST_LESS: number;
     readonly STENCIL_TEST_LEQUAL: number;
@@ -2690,6 +2691,8 @@ export class NativeEngine extends Engine {
                 return this._native.ALPHA_INTERPOLATE;
             case Constants.ALPHA_SCREENMODE:
                 return this._native.ALPHA_SCREENMODE;
+            case Constants.ALPHA_UNDER:
+                return this._native.ALPHA_UNDER;
             default:
                 throw new Error(`Unsupported alpha mode: ${mode}.`);
         }

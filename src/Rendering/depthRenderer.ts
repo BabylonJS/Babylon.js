@@ -5,6 +5,7 @@ import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { SmartArray } from "../Misc/smartArray";
 import { Scene } from "../scene";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { MaterialHelper } from "../Materials/materialHelper";
@@ -46,6 +47,9 @@ export class DepthRenderer {
      * This can help forcing its rendering during the camera processing.
      */
     public useOnlyInActiveCamera: boolean = false;
+
+    public depthPeeling: boolean = false;
+    public frontDepthTexture: Nullable<BaseTexture> = null;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -169,6 +173,15 @@ export class DepthRenderer {
                 }
 
                 effect.setFloat2("depthValues", minZ, minZ + maxZ);
+
+                if (this.depthPeeling) {
+                    const depthTextureHeight = scene.getEngine().getRenderHeight();
+                    const depthTextureWidth = scene.getEngine().getRenderWidth();
+                    effect.setFloat4("depthPeelValues", minZ, minZ + maxZ, depthTextureWidth, depthTextureHeight);
+                    if (this.frontDepthTexture) {
+                        effect.setTexture("frontDepthTexture", this.frontDepthTexture);
+                    }
+                }
 
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
@@ -328,14 +341,22 @@ export class DepthRenderer {
             defines.push("#define PACKED");
         }
 
+        // Depth Peeling
+        if (this.depthPeeling) {
+            defines.push("#define DEPTH_PEELING");
+            if (this.frontDepthTexture) {
+                defines.push("#define DEPTH_PEELING_FRONT");
+            }
+        }
+
         // Get correct effect
         var join = defines.join("\n");
         if (cachedDefines !== join) {
             cachedDefines = join;
             effect = engine.createEffect("depth",
                 attribs,
-                ["world", "mBones", "boneTextureWidth", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
-                ["diffuseSampler", "morphTargets", "boneSampler"], join,
+                ["world", "mBones", "boneTextureWidth", "viewProjection", "diffuseMatrix", "depthValues", "depthPeelValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
+                ["diffuseSampler", "morphTargets", "boneSampler", "frontDepthTexture"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 

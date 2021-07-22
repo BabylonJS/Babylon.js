@@ -84,6 +84,11 @@ export class Engine extends ThinEngine {
      * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
      */
     public static readonly ALPHA_SCREENMODE = Constants.ALPHA_SCREENMODE;
+    /**
+     * Defines that alpha blending is SRC * (1 - DST_ALPHA) + DST * (DST_ALPHA)
+     * Alpha will be set to DST ALPHA
+     */
+    public static readonly ALPHA_UNDER = Constants.ALPHA_UNDER;
 
     /** Defines that the resource is not delayed*/
     public static readonly DELAYLOADSTATE_NONE = Constants.DELAYLOADSTATE_NONE;

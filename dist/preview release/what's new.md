@@ -80,6 +80,7 @@
 - Added the `stencil` object property to `Material` ([Popov72](https://github.com/Popov72))
 - Set the `metadata` property on `Material` to be serializable, so that it can be properly loaded from .babylon files ([jlivak](https://github.com/jlivak))
 - Add `mesh.visibility` support to grid material ([bghgary](https://github.com/bghgary))
+- Add `depthPeeling` support to materials and `DepthRenderer` ([miibond](https://github.com/miibond))
 
 ### Meshes
 

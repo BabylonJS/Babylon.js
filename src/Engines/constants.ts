@@ -58,6 +58,12 @@ export class Constants {
      */
     public static readonly ALPHA_EXCLUSION = 16;
 
+    /**
+     * Defines that alpha blending is SRC * (1 - DST_ALPHA) + DST * (DST_ALPHA)
+     * Alpha will be set to DST ALPHA + SRC ALPHA
+     */
+     public static readonly ALPHA_UNDER = 17;
+
     /** Defines that alpha blending equation a SUM */
     public static readonly ALPHA_EQUATION_ADD = 0;
     /** Defines that alpha blending equation a SUBSTRACTION */

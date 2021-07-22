@@ -105,6 +105,7 @@ uniform Material {
 
     vec4 vDetailInfos;
     mat4 detailMatrix;
+    vec4 depthPeelValues;
 
     vec3 vSphericalL00;
     vec3 vSphericalL1_1;
