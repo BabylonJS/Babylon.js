@@ -29,7 +29,7 @@ const defaultGetDataImpl = () => 0;
  * @param engineInstrumentation engineInstrumentation which is initialized from the scene, also used to collect data on.
  * @returns a mapping of PerfCollectionType to strategy.
  */
-export const collectionTypeToPredefinedStrategies = (scene: Scene, engineInstrumentation: EngineInstrumentation): Record<PerfCollectionType, IPerfViewerCollectionStrategy> => {
+export function collectionTypeToPredefinedStrategies(scene: Scene, engineInstrumentation: EngineInstrumentation): Record<PerfCollectionType, IPerfViewerCollectionStrategy> {
     const fpsStrategy: IPerfViewerCollectionStrategy = {
         id: "fps",
         getData: () => scene.getEngine().getFps(),
