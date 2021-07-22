@@ -18,6 +18,10 @@ export interface IComputeEffectCreationOptions {
      */
     defines: any;
     /**
+     * The name of the entry point in the shader source (defaut: "main")
+     */
+    entryPoint?: string;
+     /**
      * Callback that will be called when the shader is compiled.
      */
     onCompiled: Nullable<(effect: ComputeEffect) => void>;
@@ -92,6 +96,7 @@ export class ComputeEffect {
     /** @hidden */
     public _computeSourceCode: string = "";
     private _rawComputeSourceCode: string = "";
+    private _entryPoint: string;
 
     /**
      * Creates a compute effect that can be used to execute a compute shader
@@ -110,6 +115,7 @@ export class ComputeEffect {
         this.defines = options.defines ?? "";
         this.onError = options.onError;
         this.onCompiled = options.onCompiled;
+        this._entryPoint = options.entryPoint ?? "main";
 
         let computeSource: any;
 
@@ -333,7 +339,7 @@ export class ComputeEffect {
             this._pipelineContext = engine.createComputePipelineContext();
             this._pipelineContext._name = this._key;
 
-            engine._prepareComputePipelineContext(this._pipelineContext, this._computeSourceCodeOverride ? this._computeSourceCodeOverride : this._computeSourceCode, this._rawComputeSourceCode, this._computeSourceCodeOverride ? null : defines);
+            engine._prepareComputePipelineContext(this._pipelineContext, this._computeSourceCodeOverride ? this._computeSourceCodeOverride : this._computeSourceCode, this._rawComputeSourceCode, this._computeSourceCodeOverride ? null : defines, this._entryPoint);
 
             engine._executeWhenComputeStateIsCompiled(this._pipelineContext, () => {
                 this._compilationError = "";

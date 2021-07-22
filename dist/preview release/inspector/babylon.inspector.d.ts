@@ -181,6 +181,38 @@ declare module INSPECTOR {
         max: number;
     }
     /**
+     * Defines structure of the object which contains information related to panning.
+     */
+    export interface IPerfMousePanningPosition {
+        xPos: number;
+        delta: number;
+    }
+    /**
+     * Defines structure of the object which contains information regarding the bounds of each dataset we want to consider.
+     */
+    export interface IPerfIndexBounds {
+        start: number;
+        end: number;
+    }
+    export interface IPerfLayoutSize {
+        width: number;
+        height: number;
+    }
+    /**
+     * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
+     */
+    export interface IPerfTooltip {
+        text: string;
+        color: string;
+    }
+    /**
+     * Defines the structure of a cache object used to store the result of measureText().
+     */
+    export interface IPerfTextMeasureCache {
+        text: string;
+        width: number;
+    }
+    /**
      * Defines a structure defining the available space in a drawable area.
      */
     export interface IGraphDrawableArea {
@@ -207,6 +239,17 @@ declare module INSPECTOR {
         private _height;
         private _sizeOfWindow;
         private _ticks;
+        private _panPosition;
+        private _positions;
+        private _datasetBounds;
+        private _globalTimeMinMax;
+        private _hoverPosition;
+        private _drawableArea;
+        private _axisHeight;
+        private _tooltipItems;
+        private _textCache;
+        private readonly _tooltipLineHeight;
+        private readonly _defaultLineHeight;
         readonly datasets: BABYLON.IPerfDataset[];
         /**
          * Creates an instance of CanvasGraphService.
@@ -216,9 +259,23 @@ declare module INSPECTOR {
          */
         constructor(canvas: HTMLCanvasElement, settings: ICanvasGraphServiceSettings);
         /**
+         * This method lets the service know it should get ready to update what it is displaying.
+         */
+        update: (...args: any[]) => void;
+        resize(size: IPerfLayoutSize): void;
+        /**
          * This method draws the data and sets up the appropriate scales.
          */
-        draw(): void;
+        private _draw;
+        /**
+         * Returns the index of the closest time for a dataset.
+         * Uses a modified binary search to get value.
+         *
+         * @param dataset the dataset we want to search in.
+         * @param targetTime the time we want to get close to.
+         * @returns index of the item with the closest time to the targetTime
+         */
+        private _getClosestPointToTimestamp;
         /**
          * Draws the time axis, adjusts the drawable area for the graph.
          *
@@ -283,11 +340,66 @@ declare module INSPECTOR {
          */
         private _removeEventListeners;
         /**
+         * Handles what to do when we are hovering over the canvas and not panning.
+         *
+         * @param event A reference to the event to be handled.
+         */
+        private _handleDataHover;
+        /**
+         * Debounced version of _drawTooltip.
+         */
+        private _debouncedTooltip;
+        /**
+         * Handles what to do when we stop hovering over the canvas.
+         */
+        private _handleStopHover;
+        /**
+         * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
+         *
+         * @param pixel the position of the mouse cursor in pixels.
+         * @param drawableArea  the available area we can draw in.
+         */
+        private _drawTooltip;
+        /**
+         * Gets the number from a pixel position given the minimum and maximum value in range, and the starting pixel and the ending pixel.
+         *
+         * @param pixel current pixel position we want to get the number for.
+         * @param minMax the minimum and maximum number in the range.
+         * @param startingPixel position of the starting pixel in range.
+         * @param endingPixel position of ending pixel in range.
+         * @returns number corresponding to pixel position
+         */
+        private _getNumberFromPixel;
+        /**
          * The handler for when we want to zoom in and out of the graph.
          *
          * @param event a mouse wheel event.
          */
         private _handleZoom;
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStart;
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        private _handlePan;
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        private _handlePanStop;
+        /**
+         * Method which returns true if the data should become realtime, false otherwise.
+         *
+         * @returns if the data should become realtime or not.
+         */
+        private _shouldBecomeRealtime;
         /**
          * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
          *
@@ -310,6 +422,7 @@ declare module INSPECTOR {
     interface ICanvasGraphComponentProps {
         id: string;
         canvasServiceCallback: (canvasService: CanvasGraphService) => void;
+        layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -630,6 +743,7 @@ declare module INSPECTOR {
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
@@ -2004,6 +2118,30 @@ declare module INSPECTOR {
             (): void;
         }): void;
         forceRefresh(): void;
+        findTextureFormat(format: number): {
+            label: string;
+            normalizable: number;
+            value: number;
+            hideType?: undefined;
+            compressed?: undefined;
+        } | {
+            label: string;
+            normalizable: number;
+            hideType: boolean;
+            value: number;
+            compressed?: undefined;
+        } | {
+            label: string;
+            normalizable: number;
+            compressed: boolean;
+            value: number;
+            hideType?: undefined;
+        } | null;
+        findTextureType(type: number): {
+            label: string;
+            normalizable: number;
+            value: number;
+        } | null;
         render(): JSX.Element;
     }
 }
@@ -3781,6 +3919,14 @@ declare module INSPECTOR {
         private static _RemoveElementFromDOM;
         static Hide(): void;
     }
+}
+declare module INSPECTOR {
+    interface IPerformanceViewerSidebarComponentProps {
+        datasetObservable: BABYLON.Observable<BABYLON.IPerfDataset[]>;
+        onToggleVisibility: (id: string, value: boolean) => void;
+        onColorChanged: (id: string, value: string) => void;
+    }
+    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
 }
 declare module INSPECTOR {
     interface IPushButtonComponentProps {

@@ -10076,7 +10076,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\n#ge-propertyTab {\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 6px;\n    background: #d3d3d3;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .divider {\n    display: grid;\n    grid-template-columns: auto auto; }\n  #ge-propertyTab .textInputLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: calc(100% - 8px);\n    margin: 4px;\n    width: calc(100% - 8px); }\n    #ge-propertyTab .color-picker .color-rect {\n      height: calc(100% - 4px);\n      border: 2px white solid;\n      cursor: pointer;\n      min-height: 18px; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .floatLine {\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: #164975;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        width: 50px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
+exports.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\n#ge-propertyTab {\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 2px;\n    background: black;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto; }\n  #ge-propertyTab .textInputLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: calc(100% - 8px);\n    margin: 4px;\n    width: calc(100% - 8px); }\n    #ge-propertyTab .color-picker .color-rect {\n      height: calc(100% - 4px);\n      border: 2px white solid;\n      cursor: pointer;\n      min-height: 18px; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: auto; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .floatLine {\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        width: 50px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10094,7 +10094,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #ge-sceneExplorer .itemContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 30px 30px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .spacer {\n    background: transparent; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #ge-sceneExplorer .itemContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 30px 30px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -42277,6 +42277,28 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/collapsedIcon.svg":
+/*!****************************************!*\
+  !*** ../public/imgs/collapsedIcon.svg ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='30' viewBox='0 0 15 30'%3E%3Cpath d='M9.13,15.4l-2.66,2a.5.5,0,0,1-.8-.4V13a.5.5,0,0,1,.8-.4l2.66,2A.5.5,0,0,1,9.13,15.4Z' style='fill:%238e8e8e'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/expandedIcon.svg":
+/*!***************************************!*\
+  !*** ../public/imgs/expandedIcon.svg ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='30' viewBox='0 0 15 30'%3E%3Cpath d='M7.1,16.63,5.1,14a.5.5,0,0,1,.4-.8h4a.5.5,0,0,1,.4.8l-2,2.66A.5.5,0,0,1,7.1,16.63Z' style='fill:%238e8e8e'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/guidesIcon.svg":
 /*!*************************************!*\
   !*** ../public/imgs/guidesIcon.svg ***!
@@ -42307,6 +42329,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M19.39,13.51v5.07a.61.61,0,0,0,.61.61.61.61,0,0,0,.61-.61V14.51a.39.39,0,0,1,.4-.39.43.43,0,0,1,.41.41v6.08a.61.61,0,0,0,1,.42h0l0,0,.08-.07c.08-.07.19-.16.33-.26A2.66,2.66,0,0,1,24,20.2a1.86,1.86,0,0,1,1.13.11.68.68,0,0,1,.36.43l-1.35,1L24,21.8l-1.76,1.76a10,10,0,0,0-1.87,2.59,1.35,1.35,0,0,1-1.2.74H17a1.21,1.21,0,0,1-1.07-.58,9,9,0,0,1-1.39-4.08V16a.41.41,0,1,1,.81,0v2.83a.61.61,0,0,0,.61.61.61.61,0,0,0,.61-.61V14.53a.4.4,0,0,1,.4-.41.41.41,0,0,1,.41.41v4a.61.61,0,1,0,1.21,0V13.51a.41.41,0,0,1,.81,0ZM20.52,13A1.63,1.63,0,0,0,19,11.89,1.6,1.6,0,0,0,17.46,13a1.63,1.63,0,0,0-.5-.07,1.61,1.61,0,0,0-1.61,1.47,1.84,1.84,0,0,0-.41-.05A1.62,1.62,0,0,0,13.31,16v6.28a10.2,10.2,0,0,0,1.56,4.7A2.44,2.44,0,0,0,17,28.11H19.2a2.58,2.58,0,0,0,2.29-1.41,8.79,8.79,0,0,1,1.63-2.28l1.74-1.73,1.58-1.19a.61.61,0,0,0,.25-.49,1.9,1.9,0,0,0-1.06-1.78A3,3,0,0,0,23.74,19a3.64,3.64,0,0,0-1.11.4V14.53A1.63,1.63,0,0,0,21,12.91,1.51,1.51,0,0,0,20.52,13Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/makeChildOfContainerIcon.svg":
+/*!***************************************************!*\
+  !*** ../public/imgs/makeChildOfContainerIcon.svg ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M18.67,14.77l-.07,0a.61.61,0,0,0-.79,0L15.61,17V11.48A.6.6,0,0,0,15,11h-.08a.6.6,0,0,0-.53.6V17l-2.2-2.21-.07-.06a.61.61,0,0,0-.79.92l3.24,3.24.07.06a.62.62,0,0,0,.79-.06l3.24-3.24,0-.07A.61.61,0,0,0,18.67,14.77Z' style='fill:%23212121'/%3E%3Cpath d='M10.35,7.72a2.62,2.62,0,0,0-2.63,2.63v9.3a2.62,2.62,0,0,0,2.63,2.63h9.3a2.62,2.62,0,0,0,2.63-2.63v-9.3a2.62,2.62,0,0,0-2.63-2.63ZM8.93,10.35a1.43,1.43,0,0,1,1.42-1.42h9.3a1.43,1.43,0,0,1,1.42,1.42v9.3a1.43,1.43,0,0,1-1.42,1.42h-9.3a1.43,1.43,0,0,1-1.42-1.42Z' style='fill:%23212121'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42477,13 +42510,13 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             onClick: function () { _this.props.globalState.onSnippetLoadObservable.notifyObservers(); }
                         },
                     ] }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Select", icon: pointerIcon, shortcut: "Q", isActive: this._selecting, onClick: function () { if (!_this._selecting)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "Q", isActive: this._selecting, onClick: function () { if (!_this._selecting)
                         _this.props.globalState.onSelectionButtonObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Pan", icon: handIcon, shortcut: "W", isActive: this._panning, onClick: function () { if (!_this._panning)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "W", isActive: this._panning, onClick: function () { if (!_this._panning)
                         _this.props.globalState.onPanObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Zoom", shortcut: "E", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "E", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
                         _this.props.globalState.onZoomObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { globalState: this.props.globalState, tooltip: "Toggle Guides", shortcut: "R", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "R", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: controlsIcon, tooltip: "Create", items: [
                         {
                             label: "Image",
@@ -42887,7 +42920,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
+/* harmony import */ var _commandButtonComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../commandButtonComponent */ "./components/commandButtonComponent.tsx");
 
 
 
@@ -42913,6 +42946,12 @@ var shadowOffsetXIcon = __webpack_require__(/*! ../../../../sharedUiComponents/i
 var shadowOffsetYIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/shadowOffsetYIcon.svg */ "./sharedUiComponents/imgs/shadowOffsetYIcon.svg");
 var colorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/colorIcon.svg */ "./sharedUiComponents/imgs/colorIcon.svg");
 var fillColorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/fillColorIcon.svg */ "./sharedUiComponents/imgs/fillColorIcon.svg");
+var hAlignCenterIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/hAlignCenterIcon.svg */ "./sharedUiComponents/imgs/hAlignCenterIcon.svg");
+var hAlignLeftIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/hAlignLeftIcon.svg */ "./sharedUiComponents/imgs/hAlignLeftIcon.svg");
+var hAlignRightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/hAlignRightIcon.svg */ "./sharedUiComponents/imgs/hAlignRightIcon.svg");
+var vAlignCenterIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg */ "./sharedUiComponents/imgs/vAlignCenterIcon.svg");
+var vAlignTopIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/vAlignTopIcon.svg */ "./sharedUiComponents/imgs/vAlignTopIcon.svg");
+var vAlignBottomIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/vAlignBottomIcon.svg */ "./sharedUiComponents/imgs/vAlignBottomIcon.svg");
 var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonControlPropertyGridComponent, _super);
     function CommonControlPropertyGridComponent(props) {
@@ -42939,24 +42978,18 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     };
     CommonControlPropertyGridComponent.prototype.render = function () {
         var control = this.props.control;
-        var horizontalOptions = [
-            { label: "Left", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_LEFT },
-            { label: "Right", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_RIGHT },
-            { label: "Center", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_CENTER },
-        ];
-        var verticalOptions = [
-            { label: "Top", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_TOP },
-            { label: "Bottom", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_BOTTOM },
-            { label: "Center", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER },
-        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: control, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "ZIndex", target: control, propertyName: "zIndex", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "H", options: horizontalOptions, target: control, propertyName: "horizontalAlignment", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "V", options: verticalOptions, target: control, propertyName: "verticalAlignment", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_8__["CommandButtonComponent"], { tooltip: "Left", icon: hAlignLeftIcon, shortcut: "", isActive: control.horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_LEFT, onClick: function () { control.horizontalAlignment = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_LEFT; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_8__["CommandButtonComponent"], { tooltip: "Center", icon: hAlignCenterIcon, shortcut: "", isActive: control.horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_CENTER, onClick: function () { control.horizontalAlignment = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_CENTER; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_8__["CommandButtonComponent"], { tooltip: "Right", icon: hAlignRightIcon, shortcut: "", isActive: control.horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_RIGHT, onClick: function () { control.horizontalAlignment = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_RIGHT; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_8__["CommandButtonComponent"], { tooltip: "Top", icon: vAlignTopIcon, shortcut: "", isActive: control.verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_TOP, onClick: function () { control.verticalAlignment = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_TOP; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_8__["CommandButtonComponent"], { tooltip: "Center", icon: vAlignCenterIcon, shortcut: "", isActive: control.verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER, onClick: function () { control.verticalAlignment = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_8__["CommandButtonComponent"], { tooltip: "Center", icon: vAlignBottomIcon, shortcut: "", isActive: control.verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_BOTTOM, onClick: function () { control.verticalAlignment = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_BOTTOM; } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "left", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "top", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
@@ -44014,6 +44047,23 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         var _a;
                         (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
+                        if (_this.state.currentNode) {
+                            var serializationObject = {};
+                            _this.state.currentNode.serialize(serializationObject);
+                            var newControl_1 = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["Control"].Parse(serializationObject, _this.props.globalState.guiTexture);
+                            if (newControl_1) { //insert the new control into the adt
+                                _this.props.globalState.workbench.appendBlock(newControl_1);
+                                var index = 1;
+                                while (_this.props.globalState.workbench.nodes.filter(//search if there are any copies
+                                function (//search if there are any copies
+                                control) { return control.name === newControl_1.name; }).length > 1) {
+                                    newControl_1.name = _this.state.currentNode.name + " Copy " + index++;
+                                }
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl_1);
+                            }
+                        }
                     } })));
         }
         var sizeOptions = [
@@ -44158,6 +44208,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../globalState */ "./globalState.ts");
+
 
 
 
@@ -44165,6 +44217,8 @@ __webpack_require__.r(__webpack_exports__);
 var visibilityNotActiveIcon = __webpack_require__(/*! ../../../../../public/imgs/visibilityNotActiveIcon.svg */ "../public/imgs/visibilityNotActiveIcon.svg");
 var visibilityActiveIcon = __webpack_require__(/*! ../../../../../public/imgs/visibilityActiveIcon.svg */ "../public/imgs/visibilityActiveIcon.svg");
 var makeComponentIcon = __webpack_require__(/*! ../../../../../public/imgs/makeComponentIcon.svg */ "../public/imgs/makeComponentIcon.svg");
+var makeChildOfContainerIcon = __webpack_require__(/*! ../../../../../public/imgs/makeChildOfContainerIcon.svg */ "../public/imgs/makeChildOfContainerIcon.svg");
+var CONTROL_HEIGHT = 30;
 var ControlTreeItemComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ControlTreeItemComponent, _super);
     function ControlTreeItemComponent(props) {
@@ -44174,11 +44228,15 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
         _this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(function (selection) {
             _this.setState({ isSelected: selection === _this.props.control });
         });
+        _this._onDraggingEndObservable = props.globalState.onDraggingEndObservable.add(function () {
+            _this.dragOverLocation = _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE;
+        });
         _this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
         return _this;
     }
     ControlTreeItemComponent.prototype.componentWillUnmount = function () {
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
+        this.props.globalState.onParentingChangeObservable.remove(this._onDraggingEndObservable);
     };
     ControlTreeItemComponent.prototype.highlight = function () {
         var control = this.props.control;
@@ -44190,6 +44248,33 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
         this.setState({ isVisible: newState });
         this.props.control.isVisible = newState;
     };
+    ControlTreeItemComponent.prototype.dragOver = function (event) {
+        //check the positiions of the mouse cursor.
+        var target = event.target;
+        var rect = target.getBoundingClientRect();
+        var y = event.clientY - rect.top;
+        if (y < CONTROL_HEIGHT / 3) { // one third
+            this.dragOverLocation = _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].ABOVE;
+        }
+        else if (y > (2 * (CONTROL_HEIGHT / 3))) { //two thirds
+            this.dragOverLocation = _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].BELOW;
+        }
+        else {
+            this.dragOverLocation = _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].CENTER;
+        }
+        event.preventDefault();
+        this.dragOverHover = true;
+    };
+    ControlTreeItemComponent.prototype.drop = function () {
+        var control = this.props.control;
+        if (this.props.globalState.draggedControl != control) {
+            this.dragOverHover = false;
+            this.props.globalState.draggedControlDirection = this.dragOverLocation;
+            this.props.globalState.onParentingChangeObservable.notifyObservers(this.props.control);
+        }
+        this.props.globalState.draggedControl = null;
+        this.dragOverLocation = _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE;
+    };
     ControlTreeItemComponent.prototype.render = function () {
         var _this = this;
         var control = this.props.control;
@@ -44197,27 +44282,26 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "controlTools", onMouseOver: function () { return _this.setState({ isHovered: true }); }, onMouseLeave: function () { return _this.setState({ isHovered: false }); }, draggable: true, onDragStart: function (event) {
                 _this.props.globalState.draggedControl = control;
             }, onDrop: function (event) {
-                if (_this.props.globalState.draggedControl != control) {
-                    _this.dragOverHover = false;
-                    _this.props.globalState.onParentingChangeObservable.notifyObservers(_this.props.control);
-                    _this.forceUpdate();
-                }
+                _this.drop();
+            }, onDragEnd: function (event) {
+                _this.props.globalState.onDraggingEndObservable.notifyObservers();
             }, onDragOver: function (event) {
-                event.preventDefault();
-                _this.dragOverHover = true;
-                _this.forceUpdate();
+                _this.dragOver(event);
             }, onDragLeave: function (event) {
                 _this.dragOverHover = false;
                 _this.forceUpdate();
             } },
+            (this.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].ABOVE) &&
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemLabelComponent"], { label: name, onClick: function () { return _this.props.onClick(); }, color: "greenyellow" }),
-            (this.state.isHovered || this.state.isSelected || this.dragOverHover) && react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
+            (this.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].CENTER && this.props.globalState.workbench.isContainer(control)) && react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "makeChild icon", onClick: function () { return _this.highlight(); }, title: "Make Child" },
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: makeChildOfContainerIcon }))),
+            (this.state.isHovered && this.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE) && react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "addComponent icon", onClick: function () { return _this.highlight(); }, title: "Add component (Not Implemented)" },
                     react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: makeComponentIcon })),
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchVisibility(); }, title: "Show/Hide control" },
                     react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon }))),
-            (this.dragOverHover) && react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "Parent" })),
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_2__["ExtensionsComponent"], { target: control, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return ControlTreeItemComponent;
@@ -44554,6 +44638,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var expandedIcon = __webpack_require__(/*! ../../../public/imgs/expandedIcon.svg */ "../public/imgs/expandedIcon.svg");
+var collapsedIcon = __webpack_require__(/*! ../../../public/imgs/collapsedIcon.svg */ "../public/imgs/collapsedIcon.svg");
 var TreeItemExpandableHeaderComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemExpandableHeaderComponent, _super);
     function TreeItemExpandableHeaderComponent(props) {
@@ -44564,13 +44650,12 @@ var TreeItemExpandableHeaderComponent = /** @class */ (function (_super) {
     };
     TreeItemExpandableHeaderComponent.prototype.render = function () {
         var _this = this;
-        var chevron = this.props.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlus"] });
-        var expandAll = this.props.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCompress"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faExpandArrowsAlt"] });
+        var chevron = this.props.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: expandedIcon, className: "icon" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: collapsedIcon, className: "icon" });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expandableHeader" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "text" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "arrow icon", onClick: function () { return _this.props.onClick(); } }, chevron),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "text-value" }, this.props.label)),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expandAll icon", onClick: function () { return _this.expandAll(); }, title: this.props.isExpanded ? "Collapse all" : "Expand all" }, expandAll)));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expandAll icon", onClick: function () { return _this.expandAll(); }, title: this.props.isExpanded ? "Collapse all" : "Expand all" }, chevron)));
     };
     return TreeItemExpandableHeaderComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44723,26 +44808,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TreeItemSelectableComponent", function() { return TreeItemSelectableComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _treeItemSpecializedComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./treeItemSpecializedComponent */ "./components/sceneExplorer/treeItemSpecializedComponent.tsx");
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../tools */ "./tools.ts");
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../tools */ "./tools.ts");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
 
 
 
 
 
-
-
+var expandedIcon = __webpack_require__(/*! ../../../public/imgs/expandedIcon.svg */ "../public/imgs/expandedIcon.svg");
+var collapsedIcon = __webpack_require__(/*! ../../../public/imgs/collapsedIcon.svg */ "../public/imgs/collapsedIcon.svg");
 var TreeItemSelectableComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemSelectableComponent, _super);
     function TreeItemSelectableComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._wasSelected = false;
-        _this.state = { isSelected: _this.props.entity === _this.props.selectedEntity, isExpanded: _this.props.mustExpand || _tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].LookForItem(_this.props.entity, _this.props.selectedEntity) };
+        _this.state = { isSelected: _this.props.entity === _this.props.selectedEntity, isExpanded: _this.props.mustExpand || _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].LookForItem(_this.props.entity, _this.props.selectedEntity) };
         return _this;
     }
     TreeItemSelectableComponent.prototype.switchExpandedState = function () {
@@ -44752,15 +44835,16 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         if (!nextState.isExpanded && this.state.isExpanded) {
             return true;
         }
+        //if the next entity is going to be selected then we want to highlight it so update
+        if (nextProps.entity === nextProps.selectedEntity) {
+            nextState.isSelected = true;
+            return true;
+        }
+        else {
+            nextState.isSelected = false;
+        }
         if (nextProps.selectedEntity) {
-            if (nextProps.entity === nextProps.selectedEntity) {
-                nextState.isSelected = true;
-                return true;
-            }
-            else {
-                nextState.isSelected = false;
-            }
-            if (_tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].LookForItem(nextProps.entity, nextProps.selectedEntity)) {
+            if (_tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].LookForItem(nextProps.entity, nextProps.selectedEntity)) {
                 nextState.isExpanded = true;
                 return true;
             }
@@ -44768,7 +44852,7 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         return true;
     };
     TreeItemSelectableComponent.prototype.scrollIntoView = function () {
-        var element = react_dom__WEBPACK_IMPORTED_MODULE_5__["findDOMNode"](this);
+        var element = react_dom__WEBPACK_IMPORTED_MODULE_3__["findDOMNode"](this);
         if (element) {
             element.scrollIntoView(false);
         }
@@ -44798,12 +44882,12 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         if (!entity.getChildren && !entity.children || !this.state.isExpanded) {
             return null;
         }
-        var children = _tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        var children = _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         return (children.map(function (item, i) {
             if (item.name == "Art-Board-Background") {
                 return (null);
             }
-            return (react__WEBPACK_IMPORTED_MODULE_6__["createElement"](TreeItemSelectableComponent, { globalState: _this.props.globalState, mustExpand: _this.props.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, selectedEntity: _this.props.selectedEntity, key: i, offset: _this.props.offset + 2, entity: item, filter: _this.props.filter }));
+            return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"](TreeItemSelectableComponent, { globalState: _this.props.globalState, mustExpand: _this.props.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, selectedEntity: _this.props.selectedEntity, key: i, offset: _this.props.offset + 2, entity: item, filter: _this.props.filter }));
         }));
     };
     TreeItemSelectableComponent.prototype.render = function () {
@@ -44812,8 +44896,8 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
             paddingLeft: (10 * (this.props.offset + 0.5)) + "px"
         };
         var entity = this.props.entity;
-        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlus"] });
-        var children = entity.getClassName() === "MultiMaterial" ? [] : _tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("img", { src: expandedIcon, className: "icon" }) : react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("img", { src: collapsedIcon, className: "icon" });
+        var children = entity.getClassName() === "MultiMaterial" ? [] : _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         var hasChildren = children.length > 0;
         if (!entity.reservedDataStore) {
             entity.reservedDataStore = {};
@@ -44837,15 +44921,16 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
                 }
             }
         }
-        return (react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: this.state.isSelected ? "itemContainer selected" : "itemContainer", style: marginStyle },
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: this.state.isSelected ? "itemContainer selected" : "itemContainer", style: marginStyle },
                 hasChildren &&
-                    react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: "arrow icon", onClick: function () { return _this.switchExpandedState(); } }, chevron),
-                react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_treeItemSpecializedComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemSpecializedComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, label: entity.name, entity: entity, onClick: function () { return _this.onSelect(); } })),
+                    react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "arrow icon", onClick: function () { return _this.switchExpandedState(); } }, chevron),
+                react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemSpecializedComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemSpecializedComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, label: entity.name, entity: entity, onClick: function () { return _this.onSelect(); } })),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "spacer" }),
             this.renderChildren()));
     };
     return TreeItemSelectableComponent;
-}(react__WEBPACK_IMPORTED_MODULE_6__["Component"]));
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
 
 
 
@@ -44909,20 +44994,23 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
 /*!*******************************!*\
   !*** ./diagram/workbench.tsx ***!
   \*******************************/
-/*! exports provided: isFramePortData, WorkbenchComponent */
+/*! exports provided: isFramePortData, ConstraintDirection, WorkbenchComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isFramePortData", function() { return isFramePortData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConstraintDirection", function() { return ConstraintDirection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WorkbenchComponent", function() { return WorkbenchComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../globalState */ "./globalState.ts");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -44949,6 +45037,12 @@ var isFramePortData = function (variableToCheck) {
     else
         return false;
 };
+var ConstraintDirection;
+(function (ConstraintDirection) {
+    ConstraintDirection[ConstraintDirection["NONE"] = 0] = "NONE";
+    ConstraintDirection[ConstraintDirection["X"] = 2] = "X";
+    ConstraintDirection[ConstraintDirection["Y"] = 3] = "Y";
+})(ConstraintDirection || (ConstraintDirection = {}));
 var WorkbenchComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(WorkbenchComponent, _super);
     function WorkbenchComponent(props) {
@@ -44957,28 +45051,33 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._mouseStartPointY = null;
         _this._selectedGuiNodes = [];
         _this._ctrlKeyIsPressed = false;
+        _this._constraintDirection = ConstraintDirection.NONE;
         _this._forcePanning = false;
         _this._forceZooming = false;
         _this._forceSelecting = false;
         _this._outlines = false;
-        _this._frameIsMoving = false;
-        _this._isLoading = false;
-        _this.isOverGUINode = false;
+        _this._isOverGUINode = false;
         _this.ctrlEvent = function (evt) {
             _this._ctrlKeyIsPressed = evt.ctrlKey;
+            if (evt.shiftKey) {
+                _this._setConstraintDirection = _this._constraintDirection === ConstraintDirection.NONE;
+            }
+            else {
+                _this._constraintDirection = ConstraintDirection.NONE;
+            }
         };
         _this.ctrlFalseEvent = function () {
             _this._ctrlKeyIsPressed = false;
         };
         _this.isUp = true;
-        _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["DataStorage"].ReadBoolean("Responsive", true);
+        _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true);
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
                 _this.changeSelectionHighlight(false);
                 _this._selectedGuiNodes = [];
             }
             else {
-                if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["Control"]) {
+                if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"]) {
                     if (_this._ctrlKeyIsPressed) {
                         if (_this._selectedGuiNodes.indexOf(selection) === -1) {
                             _this._selectedGuiNodes.push(selection);
@@ -45036,7 +45135,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.props.globalState.workbench = _this;
         return _this;
     }
-    ;
     Object.defineProperty(WorkbenchComponent.prototype, "globalState", {
         get: function () {
             return this.props.globalState;
@@ -45146,10 +45244,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.isUp = false;
         });
         guiControl.onPointerEnterObservable.add(function (evt) {
-            _this.isOverGUINode = true;
+            _this._isOverGUINode = true;
         });
         guiControl.onPointerOutObservable.add(function (evt) {
-            _this.isOverGUINode = false;
+            _this._isOverGUINode = false;
         });
         if (this.isContainer(guiControl)) {
             guiControl.children.forEach(function (child) {
@@ -45173,19 +45271,55 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }
         guiControl.highlightLineWidth = 5;
     };
-    WorkbenchComponent.prototype.parent = function (control) {
+    WorkbenchComponent.prototype.parent = function (dropLocationControl) {
         var draggedControl = this.props.globalState.draggedControl;
-        if (draggedControl != null) {
-            if (draggedControl.parent) {
-                draggedControl.parent.removeControl(draggedControl);
-                this.props.globalState.guiTexture.addControl(draggedControl);
-            }
-            if (control != null && this.props.globalState.workbench.isContainer(control)) {
-                this.props.globalState.guiTexture.removeControl(draggedControl);
-                control.addControl(draggedControl);
+        var draggedControlParent = draggedControl === null || draggedControl === void 0 ? void 0 : draggedControl.parent;
+        if (draggedControlParent && draggedControl) {
+            if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
+                draggedControlParent.removeControl(draggedControl);
+                if (dropLocationControl != null) { //the control you are dragging onto top
+                    if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
+                        this.props.globalState.draggedControlDirection === _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].CENTER) {
+                        dropLocationControl.addControl(draggedControl);
+                    }
+                    else if (dropLocationControl.parent) { //dropping inside the controls parent container
+                        var index = dropLocationControl.parent.children.indexOf(dropLocationControl);
+                        //adjusting index to be before or after based on where the control is over
+                        index = this._adjustParentingIndex(index);
+                        dropLocationControl.parent.children.splice(index, 0, draggedControl);
+                        draggedControl.parent = dropLocationControl.parent;
+                    }
+                    else {
+                        this.props.globalState.guiTexture.addControl(draggedControl);
+                    }
+                }
+                else {
+                    //starting at index 1 because of object "Art-Board-Background" must be at index 0
+                    draggedControlParent.children.splice(1, 0, draggedControl);
+                    draggedControl.parent = draggedControlParent;
+                }
             }
         }
         this.globalState.draggedControl = null;
+    };
+    WorkbenchComponent.prototype._isNotChildInsert = function (control, draggedControl) {
+        while (control === null || control === void 0 ? void 0 : control.parent) {
+            if (control.parent == draggedControl) {
+                return false;
+            }
+            control = control.parent;
+        }
+        return true;
+    };
+    WorkbenchComponent.prototype._adjustParentingIndex = function (index) {
+        switch (this.props.globalState.draggedControlDirection) {
+            case _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].ABOVE:
+                return index + 1;
+            case _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].BELOW:
+            case _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].CENTER:
+                return index;
+        }
+        return index;
     };
     WorkbenchComponent.prototype.isSelected = function (value, guiNode) {
         this.globalState.onSelectionChangedObservable.notifyObservers(guiNode);
@@ -45194,6 +45328,16 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (ignorClick === void 0) { ignorClick = false; }
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
+        if (this._setConstraintDirection) {
+            this._setConstraintDirection = false;
+            this._constraintDirection = Math.abs(newX) >= Math.abs(newY) ? ConstraintDirection.X : ConstraintDirection.Y;
+        }
+        if (this._constraintDirection === ConstraintDirection.X) {
+            newY = 0;
+        }
+        else if (this._constraintDirection === ConstraintDirection.Y) {
+            newX = 0;
+        }
         if (guiControl.typeName === "Line") {
             var line = guiControl;
             var x1 = line.x1.substr(0, line.x1.length - 2); //removing the 'px'
@@ -45229,11 +45373,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             var y = this._mouseStartPointY;
             var selected_1 = false;
             this.selectedGuiNodes.forEach(function (element) {
-                //var zoom = this._camera.radius;
                 if (pos) {
                     selected_1 =
-                        _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](pos.x, -pos.z), //need to add zoom factor here.
-                        new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](x, y), false) || selected_1;
+                        _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](pos.x, -pos.z), new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](x, y), false) || selected_1;
                 }
             });
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
@@ -45254,7 +45396,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.onDown = function (evt) {
         var _a;
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.setPointerCapture(evt.pointerId);
-        if (!this.isOverGUINode) {
+        if (!this._isOverGUINode) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
         var pos = this.getGroundPosition();
@@ -45265,6 +45407,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var _a;
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
+        this._constraintDirection = ConstraintDirection.NONE;
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.releasePointerCapture(evt.pointerId);
         this.isUp = true;
     };
@@ -45274,21 +45417,21 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var canvas = document.getElementById("workbench-canvas");
         this._canvas = canvas;
         // Associate a Babylon Engine to it.
-        var engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Engine"](canvas);
+        var engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
         // Create our first scene.
-        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Scene"](engine);
+        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](engine);
         var clearColor = 204 / 255.0;
-        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Color4"](clearColor, clearColor, clearColor, 1.0);
-        var camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, 1024, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero(), this._scene);
-        var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Axis"].Y, this._scene);
+        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 1.0);
+        var camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, 1024, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
+        var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
         light.intensity = 0.9;
         var textureSize = 1024;
-        this._textureMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Mesh"].CreateGround("GuiCanvas", 1, 1, 1, this._scene);
+        this._textureMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Mesh"].CreateGround("GuiCanvas", 1, 1, 1, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
-        this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
+        this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this._textureMesh.showBoundingBox = true;
-        this.artBoardBackground = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["Rectangle"]("Art-Board-Background");
+        this.artBoardBackground = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Rectangle"]("Art-Board-Background");
         this.artBoardBackground.width = "100%";
         this.artBoardBackground.height = "100%";
         this.artBoardBackground.background = "white";
@@ -45313,9 +45456,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         camera.upperRadiusLimit = 2500;
         camera.upperBetaLimit = Math.PI / 2 - 0.1;
         camera.angularSensibilityX = camera.angularSensibilityY = 500;
-        var plane = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Axis"].Y);
-        var inertialPanning = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero();
-        var initialPos = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"](0, 0, 0);
+        var plane = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y);
+        var inertialPanning = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
+        var initialPos = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"](0, 0, 0);
         var panningFn = function () {
             var pos = _this.getPosition(scene, camera, plane);
             _this.panning(pos, initialPos, camera.inertia, inertialPanning);
@@ -45347,22 +45490,22 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             removeObservers();
             if (p.event.button !== 0 || _this._forcePanning) {
                 initialPos = _this.getPosition(scene, camera, plane);
-                scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERMOVE);
+                scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERMOVE);
                 _this._panning = true;
             }
             else if (_this._forceZooming) {
                 initialPos = _this.getPosition(scene, camera, plane);
-                scene.onPointerObservable.add(zoomFnMouse, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERMOVE);
+                scene.onPointerObservable.add(zoomFnMouse, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERMOVE);
                 _this._panning = false;
             }
             else {
                 _this._panning = false;
             }
-        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERDOWN);
+        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERDOWN);
         scene.onPointerObservable.add(function (p, e) {
             _this._panning = false;
             removeObservers();
-        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERUP);
+        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
         scene.onKeyboardObservable.add(function (k, e) {
             switch (k.event.key) {
                 case "q": //select
@@ -45387,8 +45530,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 default:
                     break;
             }
-        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["KeyboardEventTypes"].KEYDOWN);
-        scene.onPointerObservable.add(zoomFnScrollWheel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERWHEEL);
+        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["KeyboardEventTypes"].KEYDOWN);
+        scene.onPointerObservable.add(zoomFnScrollWheel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
         // stop context menu showing on canvas right click
@@ -45400,10 +45543,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     //Get pos on plane
     WorkbenchComponent.prototype.getPosition = function (scene, camera, plane) {
-        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Matrix"].Identity(), camera, false);
+        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
         var distance = ray.intersectsPlane(plane);
         //not using this ray again, so modifying its vectors here is fine
-        return distance !== null ? ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero();
+        return distance !== null ? ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
     };
     //Return offsets for inertial panning given initial and current pointer positions
     WorkbenchComponent.prototype.panning = function (newPos, initialPos, inertia, ref) {
@@ -45458,13 +45601,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     //Sets x y or z of passed in vector to zero if less than Epsilon
     WorkbenchComponent.prototype.zeroIfClose = function (vec) {
-        if (Math.abs(vec.x) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Epsilon"]) {
+        if (Math.abs(vec.x) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Epsilon"]) {
             vec.x = 0;
         }
-        if (Math.abs(vec.y) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Epsilon"]) {
+        if (Math.abs(vec.y) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Epsilon"]) {
             vec.y = 0;
         }
-        if (Math.abs(vec.z) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Epsilon"]) {
+        if (Math.abs(vec.z) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Epsilon"]) {
             vec.z = 0;
         }
     };
@@ -45512,17 +45655,25 @@ module.exports = content.locals || {};
 /*!************************!*\
   !*** ./globalState.ts ***!
   \************************/
-/*! exports provided: GlobalState */
+/*! exports provided: DragOverLocation, GlobalState */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DragOverLocation", function() { return DragOverLocation; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 
 
 
+var DragOverLocation;
+(function (DragOverLocation) {
+    DragOverLocation[DragOverLocation["ABOVE"] = 0] = "ABOVE";
+    DragOverLocation[DragOverLocation["BELOW"] = 1] = "BELOW";
+    DragOverLocation[DragOverLocation["CENTER"] = 2] = "CENTER";
+    DragOverLocation[DragOverLocation["NONE"] = 3] = "NONE";
+})(DragOverLocation || (DragOverLocation = {}));
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
         this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -45548,6 +45699,7 @@ var GlobalState = /** @class */ (function () {
         this.onOutlinesObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onResponsiveChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onParentingChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
@@ -46412,6 +46564,39 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./sharedUiComponents/imgs/hAlignCenterIcon.svg":
+/*!******************************************************!*\
+  !*** ./sharedUiComponents/imgs/hAlignCenterIcon.svg ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M22.3,9.93A2.23,2.23,0,0,0,20.07,7.7H9.93A2.23,2.23,0,0,0,7.7,9.93V20.07A2.23,2.23,0,0,0,9.93,22.3H20.07a2.23,2.23,0,0,0,2.23-2.23Zm-12.37-1H20.07a1,1,0,0,1,1,1V20.07a1,1,0,0,1-1,1H9.93a1,1,0,0,1-1-1V9.93A1,1,0,0,1,9.93,8.91Z' style='fill:%23333'/%3E%3Cpath d='M10.76,13.39h8.46a.6.6,0,0,1,.08,1.2H10.76a.6.6,0,0,1-.08-1.2Z' style='fill:%23333'/%3E%3Cpath d='M12.3,15.82h5.4a.6.6,0,0,1,.09,1.2H12.3a.6.6,0,0,1-.09-1.2Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/hAlignLeftIcon.svg":
+/*!****************************************************!*\
+  !*** ./sharedUiComponents/imgs/hAlignLeftIcon.svg ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M22.3,9.93A2.23,2.23,0,0,0,20.07,7.7H9.93A2.23,2.23,0,0,0,7.7,9.93V20.07A2.23,2.23,0,0,0,9.93,22.3H20.07a2.23,2.23,0,0,0,2.23-2.23Zm-12.37-1H20.07a1,1,0,0,1,1,1V20.07a1,1,0,0,1-1,1H9.93a1,1,0,0,1-1-1V9.93A1,1,0,0,1,9.93,8.91Z' style='fill:%23333'/%3E%3Cpath d='M10.76,13.39h8.46a.6.6,0,0,1,.08,1.2H10.76a.6.6,0,0,1-.08-1.2Z' style='fill:%23333'/%3E%3Cpath d='M10.76,15.82h5.41a.6.6,0,0,1,.08,1.2H10.76a.6.6,0,0,1-.08-1.2Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/hAlignRightIcon.svg":
+/*!*****************************************************!*\
+  !*** ./sharedUiComponents/imgs/hAlignRightIcon.svg ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M22.3,9.93A2.23,2.23,0,0,0,20.07,7.7H9.93A2.23,2.23,0,0,0,7.7,9.93V20.07A2.23,2.23,0,0,0,9.93,22.3H20.07a2.23,2.23,0,0,0,2.23-2.23Zm-12.37-1H20.07a1,1,0,0,1,1,1V20.07a1,1,0,0,1-1,1H9.93a1,1,0,0,1-1-1V9.93A1,1,0,0,1,9.93,8.91Z' style='fill:%23333'/%3E%3Cpath d='M10.76,13.39h8.46a.6.6,0,0,1,.08,1.2H10.76a.6.6,0,0,1-.08-1.2Z' style='fill:%23333'/%3E%3Cpath d='M13.81,15.82h5.41A.6.6,0,0,1,19.3,17H13.81a.6.6,0,0,1-.08-1.2Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./sharedUiComponents/imgs/horizontalMarginIcon.svg":
 /*!**********************************************************!*\
   !*** ./sharedUiComponents/imgs/horizontalMarginIcon.svg ***!
@@ -46519,6 +46704,39 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M7.73,10A2.23,2.23,0,0,1,10,7.73h10.1A2.23,2.23,0,0,1,22.27,10v10.1a2.23,2.23,0,0,1-2.22,2.22H10a2.23,2.23,0,0,1-2.22-2.22Zm2.22-1a1,1,0,0,0-1,1v10.1a1,1,0,0,0,1,1h10.1a1,1,0,0,0,1-1V10a1,1,0,0,0-1-1Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/vAlignBottomIcon.svg":
+/*!******************************************************!*\
+  !*** ./sharedUiComponents/imgs/vAlignBottomIcon.svg ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M10.77,16.21h8.46a.6.6,0,0,1,.08,1.2H10.77a.61.61,0,0,1-.08-1.21Z' style='fill:%23333'/%3E%3Cpath d='M19.23,18.63H10.69a.6.6,0,0,0,.08,1.2h8.54a.6.6,0,0,0-.08-1.2Z' style='fill:%23333'/%3E%3Cpath d='M22.25,10A2.21,2.21,0,0,0,20,7.75H10A2.21,2.21,0,0,0,7.75,10V20A2.21,2.21,0,0,0,10,22.25H20A2.21,2.21,0,0,0,22.25,20ZM10,9H20a1,1,0,0,1,1,1V20a1,1,0,0,1-1,1H10a1,1,0,0,1-1-1V10A1,1,0,0,1,10,9Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/vAlignCenterIcon.svg":
+/*!******************************************************!*\
+  !*** ./sharedUiComponents/imgs/vAlignCenterIcon.svg ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M11,13.39h8a.72.72,0,0,1,.8.61.69.69,0,0,1-.69.59H11c-.44,0-.8-.27-.8-.6a.69.69,0,0,1,.69-.6Z' style='fill:%23333'/%3E%3Cpath d='M19,15.8H10.87a.69.69,0,0,0-.69.6c0,.33.36.6.8.6h8.15a.69.69,0,0,0,.69-.59A.72.72,0,0,0,19,15.8Z' style='fill:%23333'/%3E%3Cpath d='M22.23,10A2.21,2.21,0,0,0,20,7.77H10A2.21,2.21,0,0,0,7.77,10V20A2.21,2.21,0,0,0,10,22.23H20A2.21,2.21,0,0,0,22.23,20ZM10,9H20a1,1,0,0,1,1,1V20a1,1,0,0,1-1,1H10a1,1,0,0,1-1-1V10A1,1,0,0,1,10,9Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/vAlignTopIcon.svg":
+/*!***************************************************!*\
+  !*** ./sharedUiComponents/imgs/vAlignTopIcon.svg ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M22.29,9.94a2.23,2.23,0,0,0-2.23-2.23H9.94A2.23,2.23,0,0,0,7.71,9.94V20.06a2.23,2.23,0,0,0,2.23,2.23H20.06a2.23,2.23,0,0,0,2.23-2.23Zm-12.35-1H20.06a1,1,0,0,1,1,1V20.06a1,1,0,0,1-1,1H9.94a1,1,0,0,1-1-1V9.94A1,1,0,0,1,9.94,8.92Zm.81,2.43h8.5a.61.61,0,0,1,.61.61.6.6,0,0,1-.52.6H10.75a.61.61,0,0,1-.09-1.21Zm8.5,2.43H10.66A.61.61,0,0,0,10.75,15h8.59a.6.6,0,0,0,.52-.6A.61.61,0,0,0,19.25,13.78Z' style='fill:%23333'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -46841,7 +47059,12 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
             top = window.innerHeight - height - 10;
         }
         div.style.top = top + "px";
-        div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
+        if (!this.props.shouldPopRight) {
+            div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
+        }
+        else {
+            div.style.left = host.getBoundingClientRect().left + "px";
+        }
     };
     ColorPickerLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         var diffProps = nextProps.value.toHexString() !== this.props.value.toHexString();
@@ -47856,17 +48079,7 @@ var Tools = /** @class */ (function () {
         if (parent && parent.reservedDataStore && parent.reservedDataStore.detachedChildren) {
             finalArray.push.apply(finalArray, parent.reservedDataStore.detachedChildren);
         }
-        return finalArray.sort(function (a, b) {
-            var lowerCaseA = (a.name || "").toLowerCase();
-            var lowerCaseB = (b.name || "").toLowerCase();
-            if (lowerCaseA === lowerCaseB) {
-                return 0;
-            }
-            if (lowerCaseA > lowerCaseB) {
-                return 1;
-            }
-            return -1;
-        });
+        return finalArray.reverse();
     };
     return Tools;
 }());

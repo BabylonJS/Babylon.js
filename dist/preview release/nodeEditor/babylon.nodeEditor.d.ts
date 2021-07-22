@@ -1789,6 +1789,7 @@ declare module NODEEDITOR {
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;

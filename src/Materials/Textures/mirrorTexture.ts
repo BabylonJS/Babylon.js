@@ -196,7 +196,7 @@ export class MirrorTexture extends RenderTargetTexture {
         if (this._blurKernelX && this._blurKernelY) {
             var engine = (<Scene>this.getScene()).getEngine();
 
-            var textureType = engine.getCaps().textureFloatRender ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT;
+            var textureType = engine.getCaps().textureFloatRender && engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT;
 
             this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
             this._blurX.autoClear = false;

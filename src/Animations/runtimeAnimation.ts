@@ -398,7 +398,17 @@ export class RuntimeAnimation {
             const blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
             this._blendingFactor += blendingSpeed;
         } else {
-            this._currentValue = currentValue;
+            if (!this._currentValue) {
+                if (currentValue?.clone) {
+                    this._currentValue = currentValue.clone();
+                } else {
+                    this._currentValue = currentValue;
+                }
+            } else if (this._currentValue.copyFrom) {
+                this._currentValue.copyFrom(currentValue);
+            } else {
+                this._currentValue = currentValue;
+            }
         }
 
         if (weight !== -1.0) {

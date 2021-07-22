@@ -36,25 +36,30 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
     }
     export type FramePortData = {};
     export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
+    export enum ConstraintDirection {
+        NONE = 0,
+        X = 2,
+        Y = 3
+    }
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
+        artBoardBackground: Nullable<Rectangle>;
         private _rootContainer;
+        private _setConstraintDirection;
         private _mouseStartPointX;
         private _mouseStartPointY;
         private _textureMesh;
         private _scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
         private _forceSelecting;
         private _outlines;
-        _frameIsMoving: boolean;
-        _isLoading: boolean;
-        isOverGUINode: boolean;
-        artBoardBackground: Rectangle;
         private _panning;
         private _canvas;
         private _responsive;
+        private _isOverGUINode;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -73,6 +78,8 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
         private parent;
+        private _isNotChildInsert;
+        private _adjustParentingIndex;
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick?: boolean): boolean;
@@ -112,6 +119,12 @@ declare module "babylonjs-gui-editor/globalState" {
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Scene } from "babylonjs/scene";
     import { Control } from "babylonjs-gui/2D/controls/control";
+    export enum DragOverLocation {
+        ABOVE = 0,
+        BELOW = 1,
+        CENTER = 2,
+        NONE = 3
+    }
     export class GlobalState {
         [x: string]: any;
         guiTexture: AdvancedDynamicTexture;
@@ -144,7 +157,9 @@ declare module "babylonjs-gui-editor/globalState" {
         onOutlinesObservable: Observable<void>;
         onResponsiveChangeObservable: Observable<boolean>;
         onParentingChangeObservable: Observable<Nullable<Control>>;
+        onDraggingEndObservable: Observable<void>;
         draggedControl: Nullable<Control>;
+        draggedControlDirection: DragOverLocation;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -384,40 +399,17 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineCompo
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/optionsLineComponent" {
+declare module "babylonjs-gui-editor/components/commandButtonComponent" {
     import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
+    interface ICommandButtonComponentProps {
+        tooltip: string;
+        shortcut?: string;
+        icon: string;
+        isActive: boolean;
+        onClick: () => void;
     }
-    export interface IOptionsLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        options: ListLineOption[];
-        noDirectUpdate?: boolean;
-        onSelect?: (value: number) => void;
-        extractValue?: () => number;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        allowNullValue?: boolean;
-        icon?: string;
-    }
-    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        private remapValueIn;
-        private remapValueOut;
-        constructor(props: IOptionsLineComponentProps);
-        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
+    export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
+        constructor(props: ICommandButtonComponentProps);
         render(): JSX.Element;
     }
 }
@@ -484,6 +476,43 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/ra
     }
     export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
         constructor(props: IRadioButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/optionsLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    export const Null_Value: number;
+    export class ListLineOption {
+        label: string;
+        value: number;
+        selected?: boolean;
+    }
+    export interface IOptionsLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        options: ListLineOption[];
+        noDirectUpdate?: boolean;
+        onSelect?: (value: number) => void;
+        extractValue?: () => number;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
+        icon?: string;
+    }
+    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        private remapValueIn;
+        private remapValueOut;
+        constructor(props: IOptionsLineComponentProps);
+        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
         render(): JSX.Element;
     }
 }
@@ -627,6 +656,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/colorPickerCompone
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
@@ -946,7 +976,7 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/contr
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import * as React from 'react';
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    import { DragOverLocation, GlobalState } from "babylonjs-gui-editor/globalState";
     interface IControlTreeItemComponentProps {
         control: Control;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -960,11 +990,15 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/contr
         isSelected: boolean;
     }> {
         dragOverHover: boolean;
+        dragOverLocation: DragOverLocation;
         private _onSelectionChangedObservable;
+        private _onDraggingEndObservable;
         constructor(props: IControlTreeItemComponentProps);
         componentWillUnmount(): void;
         highlight(): void;
         switchVisibility(): void;
+        dragOver(event: React.DragEvent<HTMLDivElement>): void;
+        drop(): void;
         render(): JSX.Element;
     }
 }
@@ -1032,6 +1066,7 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         isSelected: boolean;
     }> {
         private _wasSelected;
+        dragOverHover: boolean;
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
@@ -1127,22 +1162,6 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/sceneExplorerCompo
         renderContent(): JSX.Element | null;
         onClose(): void;
         onPopup(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/commandButtonComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    interface ICommandButtonComponentProps {
-        globalState: GlobalState;
-        tooltip: string;
-        shortcut?: string;
-        icon: string;
-        isActive: boolean;
-        onClick: () => void;
-    }
-    export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
-        constructor(props: ICommandButtonComponentProps);
         render(): JSX.Element;
     }
 }
@@ -2089,25 +2108,30 @@ declare module GUIEDITOR {
     }
     export type FramePortData = {};
     export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
+    export enum ConstraintDirection {
+        NONE = 0,
+        X = 2,
+        Y = 3
+    }
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
+        artBoardBackground: BABYLON.Nullable<Rectangle>;
         private _rootContainer;
+        private _setConstraintDirection;
         private _mouseStartPointX;
         private _mouseStartPointY;
         private _textureMesh;
         private _scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
         private _forceSelecting;
         private _outlines;
-        _frameIsMoving: boolean;
-        _isLoading: boolean;
-        isOverGUINode: boolean;
-        artBoardBackground: Rectangle;
         private _panning;
         private _canvas;
         private _responsive;
+        private _isOverGUINode;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -2126,6 +2150,8 @@ declare module GUIEDITOR {
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
         private parent;
+        private _isNotChildInsert;
+        private _adjustParentingIndex;
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
@@ -2155,6 +2181,12 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export enum DragOverLocation {
+        ABOVE = 0,
+        BELOW = 1,
+        CENTER = 2,
+        NONE = 3
+    }
     export class GlobalState {
         [x: string]: any;
         guiTexture: AdvancedDynamicTexture;
@@ -2187,7 +2219,9 @@ declare module GUIEDITOR {
         onOutlinesObservable: BABYLON.Observable<void>;
         onResponsiveChangeObservable: BABYLON.Observable<boolean>;
         onParentingChangeObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
+        onDraggingEndObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
+        draggedControlDirection: DragOverLocation;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -2409,36 +2443,15 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
+    interface ICommandButtonComponentProps {
+        tooltip: string;
+        shortcut?: string;
+        icon: string;
+        isActive: boolean;
+        onClick: () => void;
     }
-    export interface IOptionsLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        options: ListLineOption[];
-        noDirectUpdate?: boolean;
-        onSelect?: (value: number) => void;
-        extractValue?: () => number;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        allowNullValue?: boolean;
-        icon?: string;
-    }
-    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        private remapValueIn;
-        private remapValueOut;
-        constructor(props: IOptionsLineComponentProps);
-        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
+    export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
+        constructor(props: ICommandButtonComponentProps);
         render(): JSX.Element;
     }
 }
@@ -2485,6 +2498,40 @@ declare module GUIEDITOR {
     }
     export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
         constructor(props: IRadioButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export const Null_Value: number;
+    export class ListLineOption {
+        label: string;
+        value: number;
+        selected?: boolean;
+    }
+    export interface IOptionsLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        options: ListLineOption[];
+        noDirectUpdate?: boolean;
+        onSelect?: (value: number) => void;
+        extractValue?: () => number;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
+        icon?: string;
+    }
+    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        private remapValueIn;
+        private remapValueOut;
+        constructor(props: IOptionsLineComponentProps);
+        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
         render(): JSX.Element;
     }
 }
@@ -2611,6 +2658,7 @@ declare module GUIEDITOR {
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
@@ -2862,11 +2910,15 @@ declare module GUIEDITOR {
         isSelected: boolean;
     }> {
         dragOverHover: boolean;
+        dragOverLocation: DragOverLocation;
         private _onSelectionChangedObservable;
+        private _onDraggingEndObservable;
         constructor(props: IControlTreeItemComponentProps);
         componentWillUnmount(): void;
         highlight(): void;
         switchVisibility(): void;
+        dragOver(event: React.DragEvent<HTMLDivElement>): void;
+        drop(): void;
         render(): JSX.Element;
     }
 }
@@ -2923,6 +2975,7 @@ declare module GUIEDITOR {
         isSelected: boolean;
     }> {
         private _wasSelected;
+        dragOverHover: boolean;
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
@@ -3009,20 +3062,6 @@ declare module GUIEDITOR {
         renderContent(): JSX.Element | null;
         onClose(): void;
         onPopup(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ICommandButtonComponentProps {
-        globalState: GlobalState;
-        tooltip: string;
-        shortcut?: string;
-        icon: string;
-        isActive: boolean;
-        onClick: () => void;
-    }
-    export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
-        constructor(props: ICommandButtonComponentProps);
         render(): JSX.Element;
     }
 }
