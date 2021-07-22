@@ -28,7 +28,7 @@ import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
 import { EngineStore } from "../engineStore";
 
-// TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
+// TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag (but that requires an extra copy...) - use compute shaders?
 // see https://github.com/toji/web-texture-tool/tree/main/src
 
 // TODO WEBGPU optimize, don't recreate things that can be cached (bind groups, descriptors, etc)
@@ -59,29 +59,42 @@ const mipmapFragmentSource = `
     `;
 
 const invertYPreMultiplyAlphaVertexSource = `
+    #extension GL_EXT_samplerless_texture_functions : enable
+
     const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
     const vec2 tex[4] = vec2[4](vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f));
 
-    layout(location = 0) out vec2 vTex;
+    layout(set = 0, binding = 0) uniform texture2D img;
+
+    #ifdef INVERTY
+        layout(location = 0) out flat ivec2 vTextureSize;
+    #endif
 
     void main() {
-        vTex = tex[gl_VertexIndex];
-    #ifdef INVERTY
-        vTex.y = 1.0 - vTex.y;
-    #endif
+        #ifdef INVERTY
+            vTextureSize = textureSize(img, 0);
+        #endif
         gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
     }
     `;
 
+// TODO WEBGPU: remove usage of textureSize -> need to create a ubo and pass the height...
 const invertYPreMultiplyAlphaFragmentSource = `
-    layout(set = 0, binding = 0) uniform sampler imgSampler;
-    layout(set = 0, binding = 1) uniform texture2D img;
+    #extension GL_EXT_samplerless_texture_functions : enable
 
-    layout(location = 0) in vec2 vTex;
+    layout(set = 0, binding = 0) uniform texture2D img;
+
+    #ifdef INVERTY
+        layout(location = 0) in flat ivec2 vTextureSize;
+    #endif
     layout(location = 0) out vec4 outColor;
 
     void main() {
-        vec4 color = texture(sampler2D(img, imgSampler), vTex);
+    #ifdef INVERTY
+        vec4 color = texelFetch(img, ivec2(gl_FragCoord.x, vTextureSize.y - gl_FragCoord.y), 0);
+    #else
+        vec4 color = texelFetch(img, ivec2(gl_FragCoord.xy), 0);
+    #endif
     #ifdef PREMULTIPLYALPHA
         color.rgb *= color.a;
     #endif
@@ -133,7 +146,6 @@ export class WebGPUTextureHelper {
     private _glslang: any;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
-    private _invertYPreMultiplyAlphaSampler: GPUSampler;
     private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
     private _compiledShaders: GPUShaderModule[][] = [];
     private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
@@ -153,7 +165,6 @@ export class WebGPUTextureHelper {
         this._bufferManager = bufferManager;
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
-        this._invertYPreMultiplyAlphaSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Nearest, magFilter: WebGPUConstants.FilterMode.Nearest });
 
         this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
     }
@@ -655,9 +666,6 @@ export class WebGPUTextureHelper {
             layout: bindGroupLayout,
             entries: [{
                 binding: 0,
-                resource: this._invertYPreMultiplyAlphaSampler,
-            }, {
-                binding: 1,
                 resource: gpuTexture.createView({
                     format,
                     dimension: WebGPUConstants.TextureViewDimension.E2d,
@@ -718,9 +726,6 @@ export class WebGPUTextureHelper {
             layout: bindGroupLayout,
             entries: [{
                 binding: 0,
-                resource: this._invertYPreMultiplyAlphaSampler,
-            }, {
-                binding: 1,
                 resource: srcTextureView,
             }],
         });
