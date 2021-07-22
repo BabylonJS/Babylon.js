@@ -130,6 +130,7 @@ export class WebGPUComputeContext implements IComputeContext {
         this._device = device;
         this._cacheSampler = cacheSampler;
         this.uniqueId = WebGPUComputeContext._Counter++;
+        this._bindGroupEntries = [];
         this.clear();
     }
 
