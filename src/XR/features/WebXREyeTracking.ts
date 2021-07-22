@@ -7,7 +7,7 @@ import { Ray } from "../../Culling/ray";
 import { Nullable } from "../../types";
 
 /**
- * The eye tracker grabs eye data from the device and provides it in an easy-access format.
+ * The WebXR Eye Tracking feature grabs eye data from the device and provides it in an easy-access format.
  * Currently only enabled for BabylonNative applications, developers intending to use this must enable the Gaze Input capability in their appx package manifest for data to flow.
  */
 export class WebXREyeTracking extends WebXRAbstractFeature {
@@ -40,6 +40,10 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
      */
     public onEyeTrackingFrameUpdateObservable: Observable<Ray> = new Observable();
 
+    /**
+     * Creates a new instance of the XR eye tracking feature.
+     * @param _xrSessionManager An instance of WebXRSessionManager.
+     */
     constructor(_xrSessionManager: WebXRSessionManager) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "eye-tracking";
@@ -52,6 +56,9 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
         }
     }
 
+    /**
+     * Dispose this feature and all of the resources attached.
+     */
     public dispose(): void {
         super.dispose();
 
@@ -60,10 +67,16 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
         this.onEyeTrackingFrameUpdateObservable.clear();
     }
 
+    /**
+     * Returns whether the gaze data is valid or not
+     */
     public isEyeGazeValid() {
         return !!this._gazeRay;
     }
 
+    /**
+     * Returns a reference to the gaze ray. This data is valid while eye tracking persists, and will be set to null when gaze data is no longer available
+     */
     public getEyeGaze() {
         return this._gazeRay;
     }
