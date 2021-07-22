@@ -1304,6 +1304,40 @@ declare module BABYLON {
         toDataURL(mime: string): string;
     }
     /**
+     * Class used to abstract am image to use with the canvas and its context
+     */
+    export interface IImage {
+        /**
+         * onload callback.
+         */
+        onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+        /**
+         * Image source.
+         */
+        src: string;
+        /**
+         * Image width.
+         */
+        readonly width: number;
+        /**
+         * Image height.
+         */
+        readonly height: number;
+        /**
+         * The original height of the image resource before sizing.
+         */
+        readonly naturalHeight: number;
+        /**
+         * The original width of the image resource before sizing.
+         */
+        readonly naturalWidth: number;
+        /**
+         * provides support for CORS, defining how the element handles crossorigin requests,
+         * thereby enabling the configuration of the CORS requests for the element's fetched data.
+         */
+        crossOrigin: string | null;
+    }
+    /**
      * Class used to abstract a canvas gradient
      */
     export interface ICanvasGradient {
@@ -39713,6 +39747,11 @@ declare module BABYLON {
          */
         createCanvas(width: number, height: number): ICanvas;
         /**
+         * Create an image to use with canvas
+         * @return IImage interface
+         */
+        createCanvasImage(): IImage;
+        /**
          * Creates a new engine
          * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
          * @param antialias defines enable antialiasing (default: false)
@@ -62875,6 +62914,11 @@ declare module BABYLON {
          * @return ICanvas interface
          */
         createCanvas(width: number, height: number): ICanvas;
+        /**
+         * Create an image to use with canvas
+         * @return IImage interface
+         */
+        createCanvasImage(): IImage;
         /** @hidden */
         _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */

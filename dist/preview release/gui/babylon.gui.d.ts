@@ -1793,8 +1793,8 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets the internal DOM image used to render the control
          */
-        set domImage(value: HTMLImageElement);
-        get domImage(): HTMLImageElement;
+        set domImage(value: BABYLON.IImage);
+        get domImage(): BABYLON.IImage;
         private _onImageLoaded;
         /**
          * Gets the image source url
