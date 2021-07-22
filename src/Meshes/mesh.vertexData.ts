@@ -4,12 +4,10 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { _DevTools } from '../Misc/devTools';
 import { Color4, Color3 } from '../Maths/math.color';
 import { Logger } from '../Misc/logger';
+import { nativeOverride } from '../Misc/decorators';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
-
-/** @hidden */
-declare const _native: any;
 
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 
@@ -404,64 +402,52 @@ export class VertexData {
         return this;
     }
 
+    @nativeOverride.filter((coordinates => !Array.isArray(coordinates)))
     private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>) {
-        if (typeof _native !== 'undefined' && _native.transformVector3Coordinates && !Array.isArray(coordinates)) {
-            _native.transformVector3Coordinates(coordinates, transformation);
-        } else {
-            const coordinate = TmpVectors.Vector3[0];
-            const transformedCoordinate = TmpVectors.Vector3[1]
-            for (let index = 0; index < coordinates.length; index += 3) {
-                Vector3.FromArrayToRef(coordinates, index, coordinate);
-                Vector3.TransformCoordinatesToRef(coordinate, transformation, transformedCoordinate);
-                coordinates[index] = transformedCoordinate.x;
-                coordinates[index + 1] = transformedCoordinate.y;
-                coordinates[index + 2] = transformedCoordinate.z;
-            }
+        const coordinate = TmpVectors.Vector3[0];
+        const transformedCoordinate = TmpVectors.Vector3[1]
+        for (let index = 0; index < coordinates.length; index += 3) {
+            Vector3.FromArrayToRef(coordinates, index, coordinate);
+            Vector3.TransformCoordinatesToRef(coordinate, transformation, transformedCoordinate);
+            coordinates[index] = transformedCoordinate.x;
+            coordinates[index + 1] = transformedCoordinate.y;
+            coordinates[index + 2] = transformedCoordinate.z;
         }
     }
 
+    @nativeOverride.filter((normals => !Array.isArray(normals)))
     private static _TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
-        if (typeof _native !== 'undefined' && _native.transformVector3Normals && !Array.isArray(normals)) {
-            _native.transformVector3Normals(normals, transformation);
-        } else {
-            const normal = TmpVectors.Vector3[0];
-            const transformedNormal = TmpVectors.Vector3[1];
-            for (let index = 0; index < normals.length; index += 3) {
-                Vector3.FromArrayToRef(normals, index, normal);
-                Vector3.TransformNormalToRef(normal, transformation, transformedNormal);
-                normals[index] = transformedNormal.x;
-                normals[index + 1] = transformedNormal.y;
-                normals[index + 2] = transformedNormal.z;
-            }
+        const normal = TmpVectors.Vector3[0];
+        const transformedNormal = TmpVectors.Vector3[1];
+        for (let index = 0; index < normals.length; index += 3) {
+            Vector3.FromArrayToRef(normals, index, normal);
+            Vector3.TransformNormalToRef(normal, transformation, transformedNormal);
+            normals[index] = transformedNormal.x;
+            normals[index + 1] = transformedNormal.y;
+            normals[index + 2] = transformedNormal.z;
         }
     }
 
+    @nativeOverride.filter((normals => !Array.isArray(normals)))
     private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
-        if (typeof _native !== 'undefined' && _native.transformVector4Normals && !Array.isArray(normals)) {
-            _native.transformVector4Normals(normals, transformation);
-        } else {
-            var normal = TmpVectors.Vector4[0];
-            var transformedNormal = TmpVectors.Vector4[1];
-            for (let index = 0; index < normals.length; index += 4) {
-                Vector4.FromArrayToRef(normals, index, normal);
-                Vector4.TransformNormalToRef(normal, transformation, transformedNormal);
-                normals[index] = transformedNormal.x;
-                normals[index + 1] = transformedNormal.y;
-                normals[index + 2] = transformedNormal.z;
-                normals[index + 3] = transformedNormal.w;
-            }
+        var normal = TmpVectors.Vector4[0];
+        var transformedNormal = TmpVectors.Vector4[1];
+        for (let index = 0; index < normals.length; index += 4) {
+            Vector4.FromArrayToRef(normals, index, normal);
+            Vector4.TransformNormalToRef(normal, transformation, transformedNormal);
+            normals[index] = transformedNormal.x;
+            normals[index + 1] = transformedNormal.y;
+            normals[index + 2] = transformedNormal.z;
+            normals[index + 3] = transformedNormal.w;
         }
     }
 
+    @nativeOverride.filter((indices => !Array.isArray(indices)))
     private static _FlipIndices(indices: IndicesArray) {
-        if (typeof _native !== 'undefined' && _native.flipIndices && !Array.isArray(indices)) {
-            _native.flipIndices(indices);
-        } else {
-            for (let index = 0; index < indices.length; index += 3) {
-                const tmp = indices[index + 1];
-                indices[index + 1] = indices[index + 2];
-                indices[index + 2] = tmp;
-            }
+        for (let index = 0; index < indices.length; index += 3) {
+            const tmp = indices[index + 1];
+            indices[index + 1] = indices[index + 2];
+            indices[index + 2] = tmp;
         }
     }
 
