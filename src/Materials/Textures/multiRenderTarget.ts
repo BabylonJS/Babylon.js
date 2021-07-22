@@ -326,8 +326,13 @@ export class MultiRenderTarget extends RenderTargetTexture {
     /**
      * Dispose the render targets and their associated resources
      */
-    public dispose(): void {
-        this.releaseInternalTextures();
+    public dispose(doNotDisposeInternalTextures = false): void {
+        if (!doNotDisposeInternalTextures) {
+            this.releaseInternalTextures();
+        } else {
+            // Prevent internal texture dispose in super.dispose
+            this._texture = null;
+        }
 
         super.dispose();
     }
