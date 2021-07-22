@@ -2,20 +2,17 @@ import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager'
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from "../../Misc/observable";
-import { Vector3, Quaternion } from "../../Maths/math.vector";
+import { Vector3, TmpVectors } from "../../Maths/math.vector";
 import { Ray } from "../../Culling/ray";
 import { Nullable } from "../../types";
 
 /**
  * The WebXR Eye Tracking feature grabs eye data from the device and provides it in an easy-access format.
- * Currently only enabled for BabylonNative applications, developers intending to use this must enable the Gaze Input capability in their appx package manifest for data to flow.
+ * Currently only enabled for BabylonNative applications.
  */
 export class WebXREyeTracking extends WebXRAbstractFeature {
     private _latestEyeSpace: Nullable<XRSpace>;
     private _gazeRay: Nullable<Ray>;
-
-    private _tmpQuat: Quaternion = new Quaternion();
-    private _eventListeners: { [event in XREventType]?: (event: XREyeTrackingSourceEvent) => void };
 
     /**
      * The module's name
@@ -31,15 +28,15 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
     /**
      * This observable will notify registered observers when eye tracking starts
      */
-    public onEyeTrackingStartedObservable: Observable<Ray> = new Observable();
+    public readonly onEyeTrackingStartedObservable: Observable<Ray> = new Observable();
     /**
      * This observable will notify registered observers when eye tracking ends
      */
-    public onEyeTrackingEndedObservable: Observable<void> = new Observable();
+    public readonly onEyeTrackingEndedObservable: Observable<void> = new Observable();
     /**
      * This observable will notify registered observers on each frame that has valid tracking
      */
-    public onEyeTrackingFrameUpdateObservable: Observable<Ray> = new Observable();
+    public readonly onEyeTrackingFrameUpdateObservable: Observable<Ray> = new Observable();
 
     /**
      * Creates a new instance of the XR eye tracking feature.
@@ -63,12 +60,8 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
     public dispose(): void {
         super.dispose();
 
-        Object.keys(this._eventListeners).forEach((eventName: string) => {
-            const func = this._eventListeners && this._eventListeners[eventName as XREventType];
-            if (func) {
-                this._xrSessionManager.session.removeEventListener(eventName as XREventType, func);
-            }
-        });
+        this._xrSessionManager.session.removeEventListener("eyetrackingstart", this._eyeTrackingStartListener);
+        this._xrSessionManager.session.removeEventListener("eyetrackingend", this._eyeTrackingEndListener);
 
         this.onEyeTrackingStartedObservable.clear();
         this.onEyeTrackingEndedObservable.clear();
@@ -79,7 +72,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
      * Returns whether the gaze data is valid or not
      * @returns true if the data is valid
      */
-    public isEyeGazeValid(): boolean {
+    public get isEyeGazeValid(): boolean {
         return !!this._gazeRay;
     }
 
@@ -101,42 +94,37 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
             if (pose) {
                 this._gazeRay.origin.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
                 const quat = pose.transform.orientation;
-                this._tmpQuat.set(quat.x, quat.y, quat.z, quat.w);
+                TmpVectors.Quaternion[0].set(quat.x, quat.y, quat.z, quat.w);
 
                 if (!this._xrSessionManager.scene.useRightHandedSystem) {
                     this._gazeRay.origin.z *= -1;
-                    this._tmpQuat.z *= -1;
-                    this._tmpQuat.w *= -1;
+                    TmpVectors.Quaternion[0].z *= -1;
+                    TmpVectors.Quaternion[0].w *= -1;
                 }
 
-                Vector3.Forward().rotateByQuaternionToRef(this._tmpQuat, this._gazeRay.direction);
+                Vector3.Forward().rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
                 this.onEyeTrackingFrameUpdateObservable.notifyObservers(this._gazeRay);
             }
         }
     }
 
+    private _eyeTrackingStartListener(event: XREyeTrackingSourceEvent) {
+        this._latestEyeSpace = event.gazeSpace;
+        this._gazeRay = new Ray(Vector3.Zero(), Vector3.Forward());
+        this.onEyeTrackingStartedObservable.notifyObservers(this._gazeRay);
+    }
+
+    private _eyeTrackingEndListener() {
+        this._latestEyeSpace = null;
+        this._gazeRay = null;
+        this.onEyeTrackingEndedObservable.notifyObservers();
+    }
+
     private _init() {
         // Only supported by BabylonNative
         if (!!this._xrSessionManager.isNative) {
-
-            const eyeTrackingStartListener = (event: XREyeTrackingSourceEvent) => {
-                this._latestEyeSpace = event.gazeSpace;
-                this._gazeRay = new Ray(Vector3.Zero(), Vector3.Forward());
-                this.onEyeTrackingStartedObservable.notifyObservers(this._gazeRay);
-            };
-            const eyeTrackingEndListener = () => {
-                this._latestEyeSpace = null;
-                this._gazeRay = null;
-                this.onEyeTrackingEndedObservable.notifyObservers();
-            };
-
-            this._eventListeners = {
-                eyetrackingstart: eyeTrackingStartListener,
-                eyetrackingend: eyeTrackingEndListener,
-            };
-
-            this._xrSessionManager.session.addEventListener("eyetrackingstart", eyeTrackingStartListener);
-            this._xrSessionManager.session.addEventListener("eyetrackingend", eyeTrackingEndListener);
+            this._xrSessionManager.session.addEventListener("eyetrackingstart", this._eyeTrackingStartListener);
+            this._xrSessionManager.session.addEventListener("eyetrackingend", this._eyeTrackingEndListener);
         }
     }
 }
