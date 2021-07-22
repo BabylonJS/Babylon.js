@@ -5,97 +5,97 @@ export enum PerfCollectionType {
     /**
      * Collection type for fps collection.
      */
-    Fps = 1,
+    Fps = "fps",
     /**
      * Collection type for cpu utilization collection.
      */
-    Cpu = 2,
+    Cpu = "cpu utilization",
     /**
      * Collection type for collection of total number of meshes.
      */
-    TotalMeshes = 4,
+    TotalMeshes = "total meshes",
     /**
      * Collection type for collection of number of active meshes.
      */
-    ActiveMeshes = 8,
+    ActiveMeshes = "active meshes",
     /**
      * Collection type for collection of number of active indices.
      */
-    ActiveIndicies = 16,
+    ActiveIndicies = "active indices",
     /**
      * Collection type for collection of number of active faces.
      */
-    ActiveFaces = 32,
+    ActiveFaces = "active faces",
     /**
      * Collection type for collection of number of active bones.
      */
-    ActiveBones = 64,
+    ActiveBones = "active bones",
     /**
      * Collection type for collection of number of active particles.
      */
-    ActiveParticles = 128,
+    ActiveParticles = "active particles",
     /**
      * Collection type for collection of number of draw calls.
      */
-    DrawCalls = 256,
+    DrawCalls = "draw calls",
     /**
      * Collection type for collection of total number of lights.
      */
-    TotalLights = 512,
+    TotalLights = "total lights",
     /**
      * Collection type for collection of total number of vertices.
      */
-    TotalVertices = 1024,
+    TotalVertices = "total vertices",
     /**
      * Collection type for collection of total number of materials.
      */
-    TotalMaterials = 2048,
+    TotalMaterials = "total materials",
     /**
      * Collection type for collection of total number of textures.
      */
-    TotalTextures = 4096,
+    TotalTextures = "total textures",
     /**
      * Collection type for collection of the absolute fps.
      */
-    AbsoluteFps = 8192,
+    AbsoluteFps = "absolute fps",
     /**
      * Collection type for collection of time taken for meshes selection.
      */
-    MeshesSelection = 16384,
+    MeshesSelection = "meshes selection time",
     /**
      * Collection type for collection of time taken for render targets.
      */
-    RenderTargets = 32768,
+    RenderTargets = "render targets time",
     /**
      * Collection type for collection of time taken for particles.
      */
-    Particles = 65536,
+    Particles = "particles time",
     /**
      * Collection type for collection of time taken for sprites.
      */
-    Sprites = 131072,
+    Sprites = "sprites time",
     /**
      * Collection type for collection of time taken for animations.
      */
-    Animations = 262144,
+    Animations = "animations time",
     /**
      * Collection type for collection of time taken for physics.
      */
-    Physics = 524288,
+    Physics = "physics time",
     /**
      * Collection type for collection of time taken for rendering.
      */
-    Render = 1048576,
+    Render = "render time",
     /**
      * Collection type for collection of frame total time.
      */
-    FrameTotal = 2097152,
+    FrameTotal = "total frame time",
     /**
      * Collection type for collection of inter-frame time.
      */
-    InterFrame = 4194304,
+    InterFrame = "inter-frame time",
     /**
      * Collection type for collection of gpu frame time.
      */
-    GpuFrameTime = 8388608,
+    GpuFrameTime = "gpu frame time",
 }
