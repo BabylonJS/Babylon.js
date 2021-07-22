@@ -27,7 +27,7 @@ import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
-import { ICanvas } from "./ICanvas";
+import { ICanvas, IImage } from "./ICanvas";
 import { IStencilState } from "../States/IStencilState";
 
 interface INativeCamera {
@@ -1841,6 +1841,10 @@ export class NativeEngine extends Engine {
     }
 
     public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
+        // it's not possible to create 0x0 texture sized. Many bgfx methods assume texture size is at least 1x1(best case).
+        // Worst case is getting a crash/assert.
+        width = Math.max(width, 1);
+        height = Math.max(height, 1);
         return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, false, false, samplingMode);
     }
 
@@ -2492,7 +2496,7 @@ export class NativeEngine extends Engine {
      * @param height height
      * @return ICanvas interface
      */
-    public createCanvas(width: number, height: number) : ICanvas {
+    public createCanvas(width: number, height: number): ICanvas {
         if (!_native.NativeCanvas) {
             throw new Error("Native Canvas plugin not available.");
         }
@@ -2500,6 +2504,18 @@ export class NativeEngine extends Engine {
         canvas.width = width;
         canvas.height = height;
         return canvas;
+    }
+
+    /**
+     * Create an image to use with canvas
+     * @return IImage interface
+     */
+    public createCanvasImage(): IImage {
+        if (!_native.NativeCanvas) {
+            throw new Error("Native Canvas plugin not available.");
+        }
+        const image = new _native.NativeCanvasImage();
+        return image;
     }
 
     /** @hidden */
