@@ -69,15 +69,17 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
 
     /**
      * Returns whether the gaze data is valid or not
+     * @returns true if the data is valid
      */
-    public isEyeGazeValid() {
+    public isEyeGazeValid(): boolean {
         return !!this._gazeRay;
     }
 
     /**
-     * Returns a reference to the gaze ray. This data is valid while eye tracking persists, and will be set to null when gaze data is no longer available
+     * Get a reference to the gaze ray. This data is valid while eye tracking persists, and will be set to null when gaze data is no longer available
+     * @returns a reference to the gaze ray if it exists and is valid, returns null otherwise.
      */
-    public getEyeGaze() {
+    public getEyeGaze(): Nullable<Ray> {
         return this._gazeRay;
     }
 
