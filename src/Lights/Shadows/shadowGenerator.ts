@@ -1046,15 +1046,11 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
         var index: number;
-        let engine = this._scene.getEngine();
 
-        const colorWrite = engine.getColorWrite();
         if (depthOnlySubMeshes.length) {
-            engine.setColorWrite(false);
             for (index = 0; index < depthOnlySubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(depthOnlySubMeshes.data[index]);
             }
-            engine.setColorWrite(colorWrite);
         }
 
         for (index = 0; index < opaqueSubMeshes.length; index++) {
