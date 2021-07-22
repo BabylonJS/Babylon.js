@@ -138,14 +138,15 @@ export class ComputeShader {
      * Binds a texture to the shader
      * @param name Binding name of the texture
      * @param texture Texture to bind
+     * @param bindSampler Bind the sampler corresponding to the texture (default: true). The sampler will be bound just before the binding index of the texture
      */
-    public setTexture(name: string, texture: BaseTexture): void {
+    public setTexture(name: string, texture: BaseTexture, bindSampler = true): void {
         const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || current.object !== texture;
 
         this._bindings[name] = {
-            type: ComputeBindingType.Texture,
+            type: bindSampler ? ComputeBindingType.Texture : ComputeBindingType.TextureWithoutSampler,
             object: texture,
         };
     }
@@ -212,6 +213,7 @@ export class ComputeShader {
 
             switch (type) {
                 case ComputeBindingType.Texture:
+                case ComputeBindingType.TextureWithoutSampler:
                 case ComputeBindingType.StorageTexture:
                     const texture = object as BaseTexture;
                     if (!texture.isReady()) {
@@ -351,6 +353,7 @@ export class ComputeShader {
 
             switch (binding.type) {
                 case ComputeBindingType.Texture:
+                case ComputeBindingType.TextureWithoutSampler:
                 case ComputeBindingType.StorageTexture: {
                     const serializedData = (object as BaseTexture).serialize();
                     if (serializedData) {
@@ -387,6 +390,8 @@ export class ComputeShader {
 
             if (binding.type === ComputeBindingType.Texture) {
                 compute.setTexture(key, texture);
+            } else if (binding.type === ComputeBindingType.TextureWithoutSampler) {
+                compute.setTexture(key, texture, false);
             } else {
                 compute.setStorageTexture(key, texture);
             }

@@ -22,6 +22,7 @@ export enum ComputeBindingType {
     StorageTexture = 1,
     UniformBuffer = 2,
     StorageBuffer = 3,
+    TextureWithoutSampler = 4,
 }
 
 /** @hidden */
