@@ -405,7 +405,7 @@ export class VertexData {
     @nativeOverride.filter((coordinates) => !Array.isArray(coordinates))
     private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>) {
         const coordinate = TmpVectors.Vector3[0];
-        const transformedCoordinate = TmpVectors.Vector3[1]
+        const transformedCoordinate = TmpVectors.Vector3[1];
         for (let index = 0; index < coordinates.length; index += 3) {
             Vector3.FromArrayToRef(coordinates, index, coordinate);
             Vector3.TransformCoordinatesToRef(coordinate, transformation, transformedCoordinate);
@@ -430,8 +430,8 @@ export class VertexData {
 
     @nativeOverride.filter((normals) => !Array.isArray(normals))
     private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
-        var normal = TmpVectors.Vector4[0];
-        var transformedNormal = TmpVectors.Vector4[1];
+        const normal = TmpVectors.Vector4[0];
+        const transformedNormal = TmpVectors.Vector4[1];
         for (let index = 0; index < normals.length; index += 4) {
             Vector4.FromArrayToRef(normals, index, normal);
             Vector4.TransformNormalToRef(normal, transformation, transformedNormal);
@@ -443,7 +443,7 @@ export class VertexData {
     }
 
     @nativeOverride.filter((indices) => !Array.isArray(indices))
-    private static _FlipIndices(indices: IndicesArray) {
+    private static _FlipFaces(indices: IndicesArray) {
         for (let index = 0; index < indices.length; index += 3) {
             const tmp = indices[index + 1];
             indices[index + 1] = indices[index + 2];
@@ -471,7 +471,7 @@ export class VertexData {
         }
 
         if (flip && this.indices) {
-            VertexData._FlipIndices(this.indices);
+            VertexData._FlipFaces(this.indices);
         }
 
         return this;
