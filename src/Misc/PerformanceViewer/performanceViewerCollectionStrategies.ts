@@ -328,7 +328,7 @@ export type PerfStrategyInitialization = (scene: Scene, engine: Engine) => IPerf
      * @returns the initializer for the gpu frame time strategy
      */
     public static GpuFrameTimeStrategy(): PerfStrategyInitialization {
-        return (_, engine: Engine) => {
+        return (_, engine) => {
             const engineInstrumentation = new EngineInstrumentation(engine);
             engineInstrumentation.captureGPUFrameTime = true;
             return {
