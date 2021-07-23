@@ -134,7 +134,7 @@ export class UtilityLayerRenderer implements IDisposable {
     public pickingEnabled = true;
 
     /**
-     * Observable raised when the pointer move from the utility layer scene to the main scene
+     * Observable raised when the pointer moves from the utility layer scene to the main scene
      */
     public onPointerOutObservable = new Observable<number>();
 
