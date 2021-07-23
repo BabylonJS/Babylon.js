@@ -17,13 +17,15 @@ export class WebGPUComputeContext implements IComputeContext {
     private _device: GPUDevice;
     private _cacheSampler: WebGPUCacheSampler;
     private _bindGroups: GPUBindGroup[];
+    private _bindGroupEntries: GPUBindGroupEntry[][];
 
     public getBindGroups(bindings: ComputeBindingList, computePipeline: GPUComputePipeline, bindingsMapping?: ComputeBindingMapping): GPUBindGroup[] {
         if (!bindingsMapping) {
             throw new Error("WebGPUComputeContext.getBindGroups: bindingsMapping is required until browsers support reflection for wgsl shaders!");
         }
+        // TODO WEBGPU: add a cache for bind groups?
         if (this._bindGroups.length === 0) {
-            const bindGroupEntries: GPUBindGroupEntry[][] = [];
+            const bindGroupEntriesExist = this._bindGroupEntries.length > 0;
             for (const key in bindings) {
                 const binding = bindings[key],
                       location = bindingsMapping[key],
@@ -31,24 +33,36 @@ export class WebGPUComputeContext implements IComputeContext {
                       index = location.binding,
                       type = binding.type,
                       object = binding.object;
+                let indexInGroupEntries = binding.indexInGroupEntries;
 
-                let entries = bindGroupEntries[group];
+                let entries = this._bindGroupEntries[group];
                 if (!entries) {
-                    entries = bindGroupEntries[group] = [];
+                    entries = this._bindGroupEntries[group] = [];
                 }
 
                 switch (type) {
-                    case ComputeBindingType.Texture: {
+                    case ComputeBindingType.Texture:
+                    case ComputeBindingType.TextureWithoutSampler: {
                         const texture = object as BaseTexture;
                         const hardwareTexture = texture._texture!._hardwareTexture as WebGPUHardwareTexture;
-                        entries.push({
-                            binding: index - 1,
-                            resource: this._cacheSampler.getSampler(texture._texture!),
-                        });
-                        entries.push({
-                            binding: index,
-                            resource: hardwareTexture.view!,
-                        });
+                        if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
+                            if (type === ComputeBindingType.Texture) {
+                                entries[indexInGroupEntries++].resource = this._cacheSampler.getSampler(texture._texture!);
+                            }
+                            entries[indexInGroupEntries].resource = hardwareTexture.view!;
+                        } else {
+                            binding.indexInGroupEntries = entries.length;
+                            if (type === ComputeBindingType.Texture) {
+                                entries.push({
+                                    binding: index - 1,
+                                    resource: this._cacheSampler.getSampler(texture._texture!),
+                                });
+                            }
+                            entries.push({
+                                binding: index,
+                                resource: hardwareTexture.view!,
+                            });
+                        }
                         break;
                     }
 
@@ -58,47 +72,44 @@ export class WebGPUComputeContext implements IComputeContext {
                         if ((hardwareTexture.textureAdditionalUsages & WebGPUConstants.TextureUsage.Storage) === 0) {
                             Logger.Error(`computeDispatch: The texture (name=${texture.name}, uniqueId=${texture.uniqueId}) is not a storage texture!`, 50);
                         }
-                        entries.push({
-                            binding: index,
-                            resource: hardwareTexture.view!,
-                        });
+                        if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
+                            entries[indexInGroupEntries].resource = hardwareTexture.view!;
+                        } else {
+                            binding.indexInGroupEntries = entries.length;
+                            entries.push({
+                                binding: index,
+                                resource: hardwareTexture.view!,
+                            });
+                        }
                         break;
                     }
 
-                    case ComputeBindingType.UniformBuffer: {
-                        const buffer = object as UniformBuffer;
+                    case ComputeBindingType.UniformBuffer:
+                    case ComputeBindingType.StorageBuffer: {
+                        const buffer = type === ComputeBindingType.UniformBuffer ? object as UniformBuffer : object as StorageBuffer;
                         const dataBuffer = buffer.getBuffer()!;
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
-                        entries.push({
-                            binding: index,
-                            resource: {
-                                buffer: webgpuBuffer,
-                                offset: 0,
-                                size: dataBuffer.capacity,
-                            }
-                        });
-                        break;
-                    }
-
-                    case ComputeBindingType.StorageBuffer: {
-                        const buffer = object as StorageBuffer;
-                        const dataBuffer = buffer.getBuffer();
-                        const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
-                        entries.push({
-                            binding: index,
-                            resource: {
-                                buffer: webgpuBuffer,
-                                offset: 0,
-                                size: dataBuffer.capacity,
-                            }
-                        });
+                        if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
+                            (entries[indexInGroupEntries].resource as GPUBufferBinding).buffer = webgpuBuffer;
+                            (entries[indexInGroupEntries].resource as GPUBufferBinding).size = dataBuffer.capacity;
+                        } else {
+                            binding.indexInGroupEntries = entries.length;
+                            entries.push({
+                                binding: index,
+                                resource: {
+                                    buffer: webgpuBuffer,
+                                    offset: 0,
+                                    size: dataBuffer.capacity,
+                                }
+                            });
+                        }
                         break;
                     }
                 }
             }
 
-            for (let i = 0; i < bindGroupEntries.length; ++i) {
-                const entries = bindGroupEntries[i];
+            for (let i = 0; i < this._bindGroupEntries.length; ++i) {
+                const entries = this._bindGroupEntries[i];
                 if (!entries) {
                     this._bindGroups[i] = undefined as any;
                     continue;
@@ -109,7 +120,7 @@ export class WebGPUComputeContext implements IComputeContext {
                 });
             }
 
-            this._bindGroups.length = bindGroupEntries.length;
+            this._bindGroups.length = this._bindGroupEntries.length;
         }
 
         return this._bindGroups;
@@ -119,10 +130,12 @@ export class WebGPUComputeContext implements IComputeContext {
         this._device = device;
         this._cacheSampler = cacheSampler;
         this.uniqueId = WebGPUComputeContext._Counter++;
+        this._bindGroupEntries = [];
         this.clear();
     }
 
     public clear(): void {
         this._bindGroups = [];
+        // Don't reset _bindGroupEntries if they have already been created, they are still ok even if we have to clear _bindGroups (the layout of the compute shader can't change once created)
     }
 }
