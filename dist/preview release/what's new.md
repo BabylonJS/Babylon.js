@@ -37,6 +37,7 @@
 - Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
 - Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
+- Added the ability to load a fullscreen GUI from the snippet server ([PirateJC](https://github.com/piratejc))
 
 ### Engine
 
@@ -155,6 +156,7 @@
 - Fixed an issue with superfluous reloading of the hand tracking models ([#10453](https://github.com/BabylonJS/Babylon.js/issues/10453)) ([rgerd](https://github.com/rgerd))
 - Added support for XRFrame.fillPoses and XRFrame.fillJointRadii ([#10454](https://github.com/BabylonJS/Babylon.js/issues/10454)) ([rgerd](https://github.com/rgerd))
 - Improved functionality of `WebXRNearInteraction` and updated coverage to be enabled on Behaviors and Gizmos ([rickfromwork](https://github.com/rickfromwork))
+- Introduced framework support for XR-based eye tracking. XR eye tracking is not yet supported in webXR, but is supported in BabylonNative using OpenXR. ([rickfromwork](https://github.com/rickfromwork))
 
 ### Gizmos
 
@@ -190,6 +192,7 @@
 - Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
 - Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
+- Fix compound shapes for CannonJS plugin ([cedricguillemet](https://github.com/cedricguillemet))
 - Fix crash of some node materials using instances on iOS ([Popov72](https://github.com/Popov72))
 - Fix the code generated for the NME gradient block ([Popov72](https://github.com/Popov72))
 - Fix ssao2RenderingPipeline for orthographic cameras ([Kesshi](https://github.com/Kesshi))
