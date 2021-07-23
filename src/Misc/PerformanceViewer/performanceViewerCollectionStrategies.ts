@@ -1,3 +1,4 @@
+import { Engine } from "../../Engines";
 import { EngineInstrumentation } from "../../Instrumentation/engineInstrumentation";
 import { Scene } from "../../scene";
 
@@ -13,285 +14,327 @@ export interface IPerfViewerCollectionStrategy {
      * Function which gets the data for the strategy.
      */
     getData: () => number;
-    /**
-     * Optional function which handles any necessary initialization.
-     */
-    initialization?: () => void;
 }
 
 // Temporary until implemented all getDatas.
 const defaultGetDataImpl = () => 0;
 
+export type PerfStrategyInitialization = (scene: Scene, engine: Engine) => IPerfViewerCollectionStrategy;
 /**
  * Defines the predefined strategies used in the performance viewer.
  */
  export class PerfCollectionStrategy {
     /**
-     * Gets the strategy used for collection of fps metrics
-     * @param scene the scene used for collection of metrics.
-     * @returns the fps strategy
+     * Gets the initializer for the strategy used for collection of fps metrics
+     * @returns the initializer for the fps strategy
      */
-    public static FpsStrategy(scene: Scene): IPerfViewerCollectionStrategy {
-        return {
-            id: "fps",
-            getData: () => scene.getEngine().getFps(),
+    public static FpsStrategy(): PerfStrategyInitialization {
+        return (_, engine) => {
+            return {
+                id: "fps",
+                getData: () => engine.getFps(),
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of cpu utilization metrics.
-     * @returns the cpu utilization strategy
+     * Gets the initializer for the strategy used for collection of cpu utilization metrics.
+     * @returns the initializer for the cpu utilization strategy
      */
-    public static CpuStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "cpu utilization",
-            getData: defaultGetDataImpl,
+    public static CpuStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "cpu utilization",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of total meshes metrics.
-     * @returns the total meshes strategy
+     * Gets the initializer for the strategy used for collection of total meshes metrics.
+     * @returns the initializer for the total meshes strategy
      */
-    public static TotalMeshesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "total meshes",
-            getData: defaultGetDataImpl,
+    public static TotalMeshesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "total meshes",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of active meshes metrics.
-     * @returns the active meshes strategy
+     * Gets the initializer for the strategy used for collection of active meshes metrics.
+     * @returns the initializer for the active meshes strategy
      */
-    public static ActiveMeshesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "active meshes",
-            getData: defaultGetDataImpl,
+    public static ActiveMeshesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "active meshes",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of active indices metrics.
-     * @returns the active indices strategy
+     * Gets the initializer for the strategy used for collection of active indices metrics.
+     * @returns the initializer for the active indices strategy
      */
-    public static ActiveIndiciesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "active indices",
-            getData: defaultGetDataImpl,
+    public static ActiveIndiciesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "active indices",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of active faces metrics.
-     * @returns the active faces strategy
+     * Gets the initializer for the strategy used for collection of active faces metrics.
+     * @returns the initializer for the active faces strategy
      */
-    public static ActiveFacesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "active faces",
-            getData: defaultGetDataImpl,
+    public static ActiveFacesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "active faces",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of active bones metrics.
-     * @returns the active bones strategy
+     * Gets the initializer for the strategy used for collection of active bones metrics.
+     * @returns the initializer for the active bones strategy
      */
-    public static ActiveBonesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "active bones",
-            getData: defaultGetDataImpl,
+    public static ActiveBonesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "active bones",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of active particles metrics.
-     * @returns the active particles strategy
+     * Gets the initializer for the strategy used for collection of active particles metrics.
+     * @returns the initializer for the active particles strategy
      */
-    public static ActiveParticlesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "active particles",
-            getData: defaultGetDataImpl,
+    public static ActiveParticlesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "active particles",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of draw calls metrics.
-     * @returns the draw calls strategy
+     * Gets the initializer for the strategy used for collection of draw calls metrics.
+     * @returns the initializer for the draw calls strategy
      */
-    public static DrawCallsStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "draw calls",
-            getData: defaultGetDataImpl,
+    public static DrawCallsStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "draw calls",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of total lights metrics.
-     * @returns the total lights strategy
+     * Gets the initializer for the strategy used for collection of total lights metrics.
+     * @returns the initializer for the total lights strategy
      */
-    public static TotalLightsStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "total lights",
-            getData: defaultGetDataImpl,
+    public static TotalLightsStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "total lights",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of total vertices metrics.
-     * @returns the total vertices strategy
+     * Gets the initializer for the strategy used for collection of total vertices metrics.
+     * @returns the initializer for the total vertices strategy
      */
-    public static TotalVerticesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "total vertices",
-            getData: defaultGetDataImpl,
+    public static TotalVerticesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "total vertices",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of total materials metrics.
-     * @returns the total materials strategy
+     * Gets the initializer for the strategy used for collection of total materials metrics.
+     * @returns the initializer for the total materials strategy
      */
-    public static TotalMaterialsStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "total materials",
-            getData: defaultGetDataImpl,
+    public static TotalMaterialsStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "total materials",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of total textures metrics.
-     * @returns the total textures strategy
+     * Gets the initializer for the strategy used for collection of total textures metrics.
+     * @returns the initializer for the total textures strategy
      */
-    public static TotalTexturesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "total textures",
-            getData: defaultGetDataImpl,
+    public static TotalTexturesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "total textures",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of absolute fps metrics.
-     * @returns the absolute fps strategy
+     * Gets the initializer for the strategy used for collection of absolute fps metrics.
+     * @returns the initializer for the absolute fps strategy
      */
-    public static AbsoluteFpsStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "absolute fps",
-            getData: defaultGetDataImpl,
+    public static AbsoluteFpsStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "absolute fps",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of meshes selection time metrics.
-     * @returns the meshes selection time strategy
+     * Gets the initializer for the strategy used for collection of meshes selection time metrics.
+     * @returns the initializer for the meshes selection time strategy
      */
-    public static MeshesSelectionStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "meshes selection time",
-            getData: defaultGetDataImpl,
+    public static MeshesSelectionStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "meshes selection time",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of render targets time metrics.
-     * @returns the render targets time strategy
+     * Gets the initializer for the strategy used for collection of render targets time metrics.
+     * @returns the initializer for the render targets time strategy
      */
-    public static RenderTargetsStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "render targets time",
-            getData: defaultGetDataImpl,
+    public static RenderTargetsStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "render targets time",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of particles time metrics.
-     * @returns the particles time strategy
+     * Gets the initializer for the strategy used for collection of particles time metrics.
+     * @returns the initializer for the particles time strategy
      */
-    public static ParticlesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "particles time",
-            getData: defaultGetDataImpl,
+    public static ParticlesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "particles time",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of sprites time metrics.
-     * @returns the sprites time strategy
+     * Gets the initializer for the strategy used for collection of sprites time metrics.
+     * @returns the initializer for the sprites time strategy
      */
-    public static SpritesStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "sprites time",
-            getData: defaultGetDataImpl,
+    public static SpritesStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "sprites time",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of animations time metrics.
-     * @returns the animations time strategy
+     * Gets the initializer for the strategy used for collection of animations time metrics.
+     * @returns the initializer for the animations time strategy
      */
-    public static AnimationsStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "animations time",
-            getData: defaultGetDataImpl,
+    public static AnimationsStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "animations time",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of physics time metrics.
-     * @returns the physics time strategy
+     * Gets the initializer for the strategy used for collection of physics time metrics.
+     * @returns the initializer for the physics time strategy
      */
-    public static PhysicsStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "physics time",
-            getData: defaultGetDataImpl,
+    public static PhysicsStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "physics time",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of render time metrics.
-     * @returns the render time strategy
+     * Gets the initializer for the strategy used for collection of render time metrics.
+     * @returns the initializer for the render time strategy
      */
-    public static RenderStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "render time",
-            getData: defaultGetDataImpl,
+    public static RenderStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "render time",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of total frame time metrics.
-     * @returns the total frame time strategy
+     * Gets the initializer for the strategy used for collection of total frame time metrics.
+     * @returns the initializer for the total frame time strategy
      */
-    public static FrameTotalStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "total frame time",
-            getData: defaultGetDataImpl,
+    public static FrameTotalStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "total frame time",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of inter-frame time metrics.
-     * @returns the inter-frame time strategy
+     * Gets the initializer for the strategy used for collection of inter-frame time metrics.
+     * @returns the initializer for the inter-frame time strategy
      */
-    public static InterFrameStrategy(): IPerfViewerCollectionStrategy {
-        return {
-            id: "inter-frame time",
-            getData: defaultGetDataImpl,
+    public static InterFrameStrategy(): PerfStrategyInitialization {
+        return () => {
+            return {
+                id: "inter-frame time",
+                getData: defaultGetDataImpl,
+            };
         };
     }
 
     /**
-     * Gets the strategy used for collection of gpu frame time metrics.
-     * @param engineInstrumentation engine instrumentation object used for collection of metrics.
-     * @returns the gpu frame time strategy
+     * Gets the initializer for the strategy used for collection of gpu frame time metrics.
+     * @returns the initializer for the gpu frame time strategy
      */
-    public static GpuFrameTimeStrategy(engineInstrumentation: EngineInstrumentation): IPerfViewerCollectionStrategy {
-        return {
-            id:  "gpu frame time",
-            getData: () => Math.max(engineInstrumentation.gpuFrameTimeCounter.lastSecAverage * 0.000001, 0),
-            initialization:  () => {
-                engineInstrumentation.captureGPUFrameTime = true;
-            }
+    public static GpuFrameTimeStrategy(): PerfStrategyInitialization {
+        return (_, engine: Engine) => {
+            const engineInstrumentation = new EngineInstrumentation(engine);
+            engineInstrumentation.captureGPUFrameTime = true;
+            return {
+                id:  "gpu frame time",
+                getData: () => Math.max(engineInstrumentation.gpuFrameTimeCounter.lastSecAverage * 0.000001, 0),
+            };
         };
     }
 }
