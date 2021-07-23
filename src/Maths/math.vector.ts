@@ -752,6 +752,9 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
+    private static _RightHandedForwardReadOnly = Vector3.Forward(true) as DeepImmutable<Vector3>;
+    private static _RightReadOnly = Vector3.Right() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
     /** @hidden */
@@ -1667,6 +1670,27 @@ export class Vector3 {
      */
     public static get UpReadOnly(): DeepImmutable<Vector3> {
         return Vector3._UpReadOnly;
+    }
+
+    /**
+     * Gets a right Vector3 that must not be updated
+     */
+    public static get RightReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._RightReadOnly;
+    }
+
+    /**
+     * Gets a forward Vector3 that must not be updated
+     */
+    public static get LeftHandedForwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._LeftHandedForwardReadOnly;
+    }
+
+    /**
+     * Gets a forward Vector3 that must not be updated
+     */
+    public static get RightHandedForwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._RightHandedForwardReadOnly;
     }
 
     /**
