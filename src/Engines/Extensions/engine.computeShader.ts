@@ -22,10 +22,11 @@ export enum ComputeBindingType {
     StorageTexture = 1,
     UniformBuffer = 2,
     StorageBuffer = 3,
+    TextureWithoutSampler = 4,
 }
 
 /** @hidden */
-export type ComputeBindingList = { [key: string]: { type: ComputeBindingType, object: any } };
+export type ComputeBindingList = { [key: string]: { type: ComputeBindingType, object: any, indexInGroupEntries?: number } };
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

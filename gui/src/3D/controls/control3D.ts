@@ -69,12 +69,12 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     public pointerUpAnimation: () => void;
 
     /**
-     * An event triggered when the pointer move over the control
+     * An event triggered when the pointer moves over the control
      */
     public onPointerMoveObservable = new Observable<Vector3>();
 
     /**
-     * An event triggered when the pointer move out of the control
+     * An event triggered when the pointer moves out of the control
      */
     public onPointerOutObservable = new Observable<Control3D>();
 

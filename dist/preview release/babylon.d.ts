@@ -19739,9 +19739,10 @@ declare module BABYLON {
          * @param indexCount the number of indices to copy then from the startIndex
          * @param mesh the main mesh to create the submesh from
          * @param renderingMesh the optional rendering mesh
+         * @param createBoundingBox defines if bounding box should be created for this submesh
          * @returns a new submesh
          */
-        static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh): SubMesh;
+        static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox?: boolean): SubMesh;
     }
 }
 declare module BABYLON {
@@ -29210,6 +29211,10 @@ declare module BABYLON {
         updateGeometry(geometry: Geometry): VertexData;
         private _applyTo;
         private _update;
+        private static _TransformVector3Coordinates;
+        private static _TransformVector3Normals;
+        private static _TransformVector4Normals;
+        private static _FlipFaces;
         /**
          * Transforms each position and each normal of the vertexData according to the passed Matrix
          * @param matrix the transforming matrix
@@ -37131,6 +37136,18 @@ declare module BABYLON {
          * @returns the new object
          */
         static Instanciate<T>(creationFunction: () => T, source: T): T;
+    }
+    /**
+     * Decorator used to redirect a function to a native implementation if available.
+     * @hidden
+     */
+    export function nativeOverride(target: any, propertyKey: string, descriptor: PropertyDescriptor, predicate?: (...params: any) => boolean): void;
+    /**
+     * Decorator used to redirect a function to a native implementation if available.
+     * @hidden
+     */
+    export namespace nativeOverride {
+        var filter: (predicate: (...params: any) => boolean) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
     }
 }
 declare module BABYLON {
@@ -55161,7 +55178,7 @@ declare module BABYLON {
          */
         pickingEnabled: boolean;
         /**
-         * Observable raised when the pointer move from the utility layer scene to the main scene
+         * Observable raised when the pointer moves from the utility layer scene to the main scene
          */
         onPointerOutObservable: Observable<number>;
         /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
@@ -56873,13 +56890,15 @@ declare module BABYLON {
         Texture = 0,
         StorageTexture = 1,
         UniformBuffer = 2,
-        StorageBuffer = 3
+        StorageBuffer = 3,
+        TextureWithoutSampler = 4
     }
     /** @hidden */
     export type ComputeBindingList = {
         [key: string]: {
             type: ComputeBindingType;
             object: any;
+            indexInGroupEntries?: number;
         };
     };
         interface ThinEngine {
@@ -57015,8 +57034,9 @@ declare module BABYLON {
          * Binds a texture to the shader
          * @param name Binding name of the texture
          * @param texture Texture to bind
+         * @param bindSampler Bind the sampler corresponding to the texture (default: true). The sampler will be bound just before the binding index of the texture
          */
-        setTexture(name: string, texture: BaseTexture): void;
+        setTexture(name: string, texture: BaseTexture, bindSampler?: boolean): void;
         /**
          * Binds a storage texture to the shader
          * @param name Binding name of the texture
@@ -60980,7 +61000,6 @@ declare module BABYLON {
         private _glslang;
         private _bufferManager;
         private _mipmapSampler;
-        private _invertYPreMultiplyAlphaSampler;
         private _pipelines;
         private _compiledShaders;
         private _deferredReleaseTextures;
@@ -62228,6 +62247,7 @@ declare module BABYLON {
         private _device;
         private _cacheSampler;
         private _bindGroups;
+        private _bindGroupEntries;
         getBindGroups(bindings: ComputeBindingList, computePipeline: GPUComputePipeline, bindingsMapping?: ComputeBindingMapping): GPUBindGroup[];
         constructor(device: GPUDevice, cacheSampler: WebGPUCacheSampler);
         clear(): void;

@@ -255,12 +255,12 @@ export class Control {
     */
     public onWheelObservable = new Observable<Vector2>();
     /**
-    * An event triggered when the pointer move over the control.
+    * An event triggered when the pointer moves over the control.
     */
     public onPointerMoveObservable = new Observable<Vector2>();
 
     /**
-    * An event triggered when the pointer move out of the control.
+    * An event triggered when the pointer moves out of the control.
     */
     public onPointerOutObservable = new Observable<Control>();
 
