@@ -55,6 +55,11 @@
     "insertText" : "BABYLON.NodeMaterial.ParseFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene).then(nodeMaterial => {\n     ${2:mesh_to_apply_node_material_to}.material = nodeMaterial;\n});"
   },
   {
+    "label" : "Load a fullscreen GUI from the snippet server",
+    "documentation" : "Coming Soon",
+    "insertText" : "let advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI(\"${1:name}\", true, scene);\nlet loadedGUI = advancedTexture.parseFromSnippetAsync(\"${2:your_snippet_url_no_#}\");"
+  },
+  {
     "label" : "Show the Inspector",
     "documentation" : "https://doc.babylonjs.com/features/playground_debuglayer",
     "insertText" : "scene.debugLayer.show({\n     embedMode:true\n});"
