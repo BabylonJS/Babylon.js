@@ -1,4 +1,3 @@
-import { Engine } from "../../Engines";
 import { EngineInstrumentation } from "../../Instrumentation/engineInstrumentation";
 import { Scene } from "../../scene";
 
@@ -19,7 +18,10 @@ export interface IPerfViewerCollectionStrategy {
 // Temporary until implemented all getDatas.
 const defaultGetDataImpl = () => 0;
 
-export type PerfStrategyInitialization = (scene: Scene, engine: Engine) => IPerfViewerCollectionStrategy;
+/**
+ * Initializer callback for a strategy
+ */
+export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollectionStrategy;
 /**
  * Defines the predefined strategies used in the performance viewer.
  */
@@ -29,7 +31,8 @@ export type PerfStrategyInitialization = (scene: Scene, engine: Engine) => IPerf
      * @returns the initializer for the fps strategy
      */
     public static FpsStrategy(): PerfStrategyInitialization {
-        return (_, engine) => {
+        return (scene) => {
+            const engine = scene.getEngine();
             return {
                 id: "fps",
                 getData: () => engine.getFps(),
@@ -328,8 +331,8 @@ export type PerfStrategyInitialization = (scene: Scene, engine: Engine) => IPerf
      * @returns the initializer for the gpu frame time strategy
      */
     public static GpuFrameTimeStrategy(): PerfStrategyInitialization {
-        return (_, engine) => {
-            const engineInstrumentation = new EngineInstrumentation(engine);
+        return (scene) => {
+            const engineInstrumentation = new EngineInstrumentation(scene.getEngine());
             engineInstrumentation.captureGPUFrameTime = true;
             return {
                 id:  "gpu frame time",
