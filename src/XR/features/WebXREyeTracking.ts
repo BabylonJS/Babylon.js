@@ -100,9 +100,13 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
                     this._gazeRay.origin.z *= -1;
                     TmpVectors.Quaternion[0].z *= -1;
                     TmpVectors.Quaternion[0].w *= -1;
+
+                    Vector3.RightHandedForwardReadOnly.rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
+                }
+                else {
+                    Vector3.LeftHandedForwardReadOnly.rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
                 }
 
-                Vector3.Forward().rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
                 this.onEyeTrackingFrameUpdateObservable.notifyObservers(this._gazeRay);
             }
         }
