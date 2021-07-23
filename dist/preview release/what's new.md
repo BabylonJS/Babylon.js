@@ -155,6 +155,7 @@
 - Fixed an issue with superfluous reloading of the hand tracking models ([#10453](https://github.com/BabylonJS/Babylon.js/issues/10453)) ([rgerd](https://github.com/rgerd))
 - Added support for XRFrame.fillPoses and XRFrame.fillJointRadii ([#10454](https://github.com/BabylonJS/Babylon.js/issues/10454)) ([rgerd](https://github.com/rgerd))
 - Improved functionality of `WebXRNearInteraction` and updated coverage to be enabled on Behaviors and Gizmos ([rickfromwork](https://github.com/rickfromwork))
+- Introduced framework support for XR-based eye tracking. XR eye tracking is not yet supported in webXR, but is supported in BabylonNative using OpenXR. ([rickfromwork](https://github.com/rickfromwork))
 
 ### Gizmos
 
