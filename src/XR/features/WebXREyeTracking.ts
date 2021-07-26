@@ -101,10 +101,10 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
                     TmpVectors.Quaternion[0].z *= -1;
                     TmpVectors.Quaternion[0].w *= -1;
 
-                    Vector3.RightHandedForwardReadOnly.rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
+                    Vector3.LeftHandedForwardReadOnly.rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
                 }
                 else {
-                    Vector3.LeftHandedForwardReadOnly.rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
+                    Vector3.RightHandedForwardReadOnly.rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
                 }
 
                 this.onEyeTrackingFrameUpdateObservable.notifyObservers(this._gazeRay);
@@ -112,17 +112,17 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
         }
     }
 
-    private _eyeTrackingStartListener(event: XREyeTrackingSourceEvent) {
+    private _eyeTrackingStartListener = (event: XREyeTrackingSourceEvent) => {
         this._latestEyeSpace = event.gazeSpace;
         this._gazeRay = new Ray(Vector3.Zero(), Vector3.Forward());
         this.onEyeTrackingStartedObservable.notifyObservers(this._gazeRay);
-    }
+    };
 
-    private _eyeTrackingEndListener() {
+    private _eyeTrackingEndListener = () => {
         this._latestEyeSpace = null;
         this._gazeRay = null;
         this.onEyeTrackingEndedObservable.notifyObservers();
-    }
+    };
 
     private _init() {
         // Only supported by BabylonNative
