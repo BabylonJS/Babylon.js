@@ -46,6 +46,7 @@ import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLine
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
 
+
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
@@ -126,15 +127,18 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     save() {
+        this.props.globalState.guiTexture.removeControl(this.props.globalState.workbench.artBoardBackground);
         try {
             const json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
             StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
         } catch (error) {
             alert("Unable to save your GUI");
         }
+        this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
     }
 
     saveToSnippetServer() {
+        this.props.globalState.guiTexture.removeControl(this.props.globalState.workbench.artBoardBackground);
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());
 
@@ -182,6 +186,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         };
 
         xmlHttp.send(JSON.stringify(dataToSend));
+        adt.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
     }
 
     loadFromSnippet() {
@@ -290,12 +295,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.state.currentNode.serialize(serializationObject);
                                 const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
 
-                                if (newControl) { //insert the new control into the adt
+                                if (newControl) { //insert the new control into the adt or parent container
                                     this.props.globalState.workbench.appendBlock(newControl);
+                                    this.props.globalState.guiTexture.removeControl(newControl);
+                                    this.state.currentNode.parent?.addControl(newControl);
+
                                     let index = 1;
-                                    while (this.props.globalState.workbench.nodes.filter(  //search if there are any copies
+                                    while ( this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
                                         control => control.name === newControl.name).length > 1) {
-                                        newControl.name = `${this.state.currentNode.name} Copy ${index++}`;
+                                        newControl.name = `${this.state.currentNode.name} Copy ${index++}`;  
                                     }
                                     this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
                                 }
