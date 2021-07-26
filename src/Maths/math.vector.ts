@@ -6318,20 +6318,20 @@ export class Matrix {
  * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
  */
 class MathTmp {
-    public static Vector3: Vector3[] = ArrayTools.BuildArray(11, Vector3.Zero);
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(2, Matrix.Identity);
-    public static Quaternion: Quaternion[] = ArrayTools.BuildArray(3, Quaternion.Zero);
+    public static Vector3 = ArrayTools.BuildTuple(11, Vector3.Zero);
+    public static Matrix = ArrayTools.BuildTuple(2, Matrix.Identity);
+    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
 }
 
 /**
  * @hidden
  */
 export class TmpVectors {
-    public static Vector2: Vector2[] = ArrayTools.BuildArray(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
-    public static Vector3: Vector3[] = ArrayTools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
-    public static Vector4: Vector4[] = ArrayTools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
-    public static Quaternion: Quaternion[] = ArrayTools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
+    public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
+    public static Vector3 = ArrayTools.BuildTuple(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
+    public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
+    public static Quaternion = ArrayTools.BuildTuple(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
+    public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity); // 8 temp Matrices at once should be enough
 }
 
 _TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;
