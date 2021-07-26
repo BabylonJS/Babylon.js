@@ -230,6 +230,10 @@ export class DepthRenderer {
                 for (index = 0; index < transparentSubMeshes.length; index++) {
                     renderSubMesh(transparentSubMeshes.data[index]);
                 }
+            } else {
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    transparentSubMeshes.data[index].getEffectiveMesh()._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+                }
             }
         };
     }
