@@ -298,7 +298,7 @@ export interface IParticleSystem {
     /**
     * An event triggered when the system is stopped
     */
-   onStoppedObservable: Observable<IParticleSystem>;
+    onStoppedObservable: Observable<IParticleSystem>;
     /**
      * Clones the particle system.
      * @param name The name of the cloned object

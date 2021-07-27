@@ -42,10 +42,10 @@ declare module "../Materials/Textures/renderTargetTexture" {
 }
 
 Object.defineProperty(Scene.prototype, "prePassRenderer", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         return this._prePassRenderer;
     },
-    set: function(this: Scene, value: Nullable<PrePassRenderer>) {
+    set: function (this: Scene, value: Nullable<PrePassRenderer>) {
         if (value && value.isSupported) {
             this._prePassRenderer = value;
         }
@@ -54,7 +54,7 @@ Object.defineProperty(Scene.prototype, "prePassRenderer", {
     configurable: true
 });
 
-Scene.prototype.enablePrePassRenderer = function(): Nullable<PrePassRenderer> {
+Scene.prototype.enablePrePassRenderer = function (): Nullable<PrePassRenderer> {
     if (this._prePassRenderer) {
         return this._prePassRenderer;
     }
@@ -71,7 +71,7 @@ Scene.prototype.enablePrePassRenderer = function(): Nullable<PrePassRenderer> {
     return this._prePassRenderer;
 };
 
-Scene.prototype.disablePrePassRenderer = function(): void {
+Scene.prototype.disablePrePassRenderer = function (): void {
     if (!this._prePassRenderer) {
         return;
     }

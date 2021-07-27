@@ -35,7 +35,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.getGlowLayerByName = function(name: string): Nullable<GlowLayer> {
+AbstractScene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer> {
     for (var index = 0; index < this.effectLayers.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
             return (<any>this.effectLayers[index]) as GlowLayer;

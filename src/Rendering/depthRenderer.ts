@@ -158,7 +158,7 @@ export class DepthRenderer {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
-                let minZ : number, maxZ: number;
+                let minZ: number, maxZ: number;
 
                 if (cameraIsOrtho) {
                     minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;

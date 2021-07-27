@@ -67,7 +67,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.getLensFlareSystemByName = function(name: string): Nullable<LensFlareSystem> {
+AbstractScene.prototype.getLensFlareSystemByName = function (name: string): Nullable<LensFlareSystem> {
     for (var index = 0; index < this.lensFlareSystems.length; index++) {
         if (this.lensFlareSystems[index].name === name) {
             return this.lensFlareSystems[index];
@@ -77,7 +77,7 @@ AbstractScene.prototype.getLensFlareSystemByName = function(name: string): Nulla
     return null;
 };
 
-AbstractScene.prototype.getLensFlareSystemById = function(id: string): Nullable<LensFlareSystem> {
+AbstractScene.prototype.getLensFlareSystemById = function (id: string): Nullable<LensFlareSystem> {
     for (var index = 0; index < this.lensFlareSystems.length; index++) {
         if (this.lensFlareSystems[index].id === id) {
             return this.lensFlareSystems[index];
@@ -87,11 +87,11 @@ AbstractScene.prototype.getLensFlareSystemById = function(id: string): Nullable<
     return null;
 };
 
-AbstractScene.prototype.getLensFlareSystemByID = function(id: string): Nullable<LensFlareSystem> {
+AbstractScene.prototype.getLensFlareSystemByID = function (id: string): Nullable<LensFlareSystem> {
     return this.getLensFlareSystemById(id);
 };
 
-AbstractScene.prototype.removeLensFlareSystem = function(toRemove: LensFlareSystem): number {
+AbstractScene.prototype.removeLensFlareSystem = function (toRemove: LensFlareSystem): number {
     var index = this.lensFlareSystems.indexOf(toRemove);
     if (index !== -1) {
         this.lensFlareSystems.splice(index, 1);
@@ -99,7 +99,7 @@ AbstractScene.prototype.removeLensFlareSystem = function(toRemove: LensFlareSyst
     return index;
 };
 
-AbstractScene.prototype.addLensFlareSystem = function(newLensFlareSystem: LensFlareSystem): void {
+AbstractScene.prototype.addLensFlareSystem = function (newLensFlareSystem: LensFlareSystem): void {
     this.lensFlareSystems.push(newLensFlareSystem);
 };
 

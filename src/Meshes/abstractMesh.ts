@@ -286,7 +286,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _syncGeometryWithMorphTargetManager(): void {}
+    public _syncGeometryWithMorphTargetManager(): void { }
 
     /** @hidden */
     public _updateNonUniformScalingState(value: boolean): boolean {
@@ -700,10 +700,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         actions: Nullable<any>;
         freezeWorldMatrix: Nullable<boolean>;
     } = {
-        lods: null,
-        actions: null,
-        freezeWorldMatrix: null,
-    };
+            lods: null,
+            actions: null,
+            freezeWorldMatrix: null,
+        };
 
     /** @hidden */
     public _bonesTransformMatrices: Nullable<Float32Array> = null;
@@ -1138,10 +1138,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _preActivate(): void {}
+    public _preActivate(): void { }
 
     /** @hidden */
-    public _preActivateForIntermediateRendering(renderId: number): void {}
+    public _preActivateForIntermediateRendering(renderId: number): void { }
 
     /** @hidden */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {

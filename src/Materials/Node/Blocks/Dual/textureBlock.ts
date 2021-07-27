@@ -337,7 +337,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this._writeTextureRead(state, true);
 
         for (var output of this._outputs) {
-            if (output.hasEndpoints  && output.name !== "level") {
+            if (output.hasEndpoints && output.name !== "level") {
                 this._writeOutput(state, output, output.name, true);
             }
         }

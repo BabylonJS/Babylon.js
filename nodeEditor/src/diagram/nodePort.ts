@@ -78,8 +78,7 @@ export class NodePort {
         this.connectionPoint.isExposedOnFrame = value;
     }
 
-    public get exposedPortPosition()
-    {
+    public get exposedPortPosition() {
         return this.connectionPoint.exposedPortPosition;
     }
 
@@ -179,7 +178,7 @@ export class NodePort {
     }
 
     public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement,
-            displayManager: Nullable<IDisplayManager>, globalState: GlobalState) {
+        displayManager: Nullable<IDisplayManager>, globalState: GlobalState) {
         let portContainer = root.ownerDocument!.createElement("div");
         let block = connectionPoint.ownerBlock;
 

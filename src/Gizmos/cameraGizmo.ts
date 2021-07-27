@@ -162,22 +162,22 @@ export class CameraGizmo extends Gizmo {
         var mesh = new Mesh(root.name, scene);
         mesh.parent = root;
 
-        var box = BoxBuilder.CreateBox(root.name, {width: 1.0, height: 0.8, depth: 0.5 }, scene);
+        var box = BoxBuilder.CreateBox(root.name, { width: 1.0, height: 0.8, depth: 0.5 }, scene);
         box.parent = mesh;
 
-        var cyl1 = CylinderBuilder.CreateCylinder(root.name, {height: 0.5, diameterTop: 0.8, diameterBottom: 0.8}, scene);
+        var cyl1 = CylinderBuilder.CreateCylinder(root.name, { height: 0.5, diameterTop: 0.8, diameterBottom: 0.8 }, scene);
         cyl1.parent = mesh;
         cyl1.position.y = 0.3;
         cyl1.position.x = -0.6;
         cyl1.rotation.x = Math.PI * 0.5;
 
-        var cyl2 = CylinderBuilder.CreateCylinder(root.name, {height: 0.5, diameterTop: 0.6, diameterBottom: 0.6}, scene);
+        var cyl2 = CylinderBuilder.CreateCylinder(root.name, { height: 0.5, diameterTop: 0.6, diameterBottom: 0.6 }, scene);
         cyl2.parent = mesh;
         cyl2.position.y = 0.5;
         cyl2.position.x = 0.4;
         cyl2.rotation.x = Math.PI * 0.5;
 
-        var cyl3 = CylinderBuilder.CreateCylinder(root.name, {height: 0.5, diameterTop: 0.5, diameterBottom: 0.5}, scene);
+        var cyl3 = CylinderBuilder.CreateCylinder(root.name, { height: 0.5, diameterTop: 0.5, diameterBottom: 0.5 }, scene);
         cyl3.parent = mesh;
         cyl3.position.y = 0.0;
         cyl3.position.x = 0.6;
@@ -194,10 +194,8 @@ export class CameraGizmo extends Gizmo {
         var mesh = new Mesh(root.name, scene);
         mesh.parent = root;
 
-        for (var y = 0; y < 4; y += 2)
-        {
-            for (var x = 0; x < 4; x += 2)
-            {
+        for (var y = 0; y < 4; y += 2) {
+            for (var x = 0; x < 4; x += 2) {
                 var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
@@ -206,7 +204,7 @@ export class CameraGizmo extends Gizmo {
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;
-                var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x,  1, -1 + y)] }, scene);
+                var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x, 1, -1 + y)] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;

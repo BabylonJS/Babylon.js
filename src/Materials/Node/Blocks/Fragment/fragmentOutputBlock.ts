@@ -34,11 +34,11 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     }
 
     /** Gets or sets a boolean indicating if content needs to be converted to gamma space */
-    @editableInPropertyPage("Convert to gamma space", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Convert to gamma space", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
     public convertToGammaSpace = false;
 
     /** Gets or sets a boolean indicating if content needs to be converted to linear space */
-    @editableInPropertyPage("Convert to linear space", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Convert to linear space", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
     public convertToLinearSpace = false;
 
     /**

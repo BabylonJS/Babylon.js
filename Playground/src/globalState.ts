@@ -60,7 +60,7 @@ export class GlobalState {
     public onThemeChangedObservable = new Observable<void>();
     public onFontSizeChangedObservable = new Observable<void>();
     public onLanguageChangedObservable = new Observable<void>();
-    public onNavigateRequiredObservable = new Observable<{lineNumber: number, column: number}>();
+    public onNavigateRequiredObservable = new Observable<{ lineNumber: number, column: number }>();
     public onExamplesDisplayChangedObservable = new Observable<void>();
     public onQRCodeRequiredObservable = new Observable<boolean>();
     public OnNewDropdownButtonClicked = new Observable<any>();

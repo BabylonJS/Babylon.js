@@ -131,39 +131,39 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.createQuery = function(): OcclusionQuery {
+Engine.prototype.createQuery = function (): OcclusionQuery {
     return this._gl.createQuery();
 };
 
-Engine.prototype.deleteQuery = function(query: OcclusionQuery): Engine {
+Engine.prototype.deleteQuery = function (query: OcclusionQuery): Engine {
     this._gl.deleteQuery(query);
 
     return this;
 };
 
-Engine.prototype.isQueryResultAvailable = function(query: OcclusionQuery): boolean {
+Engine.prototype.isQueryResultAvailable = function (query: OcclusionQuery): boolean {
     return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
 };
 
-Engine.prototype.getQueryResult = function(query: OcclusionQuery): number {
+Engine.prototype.getQueryResult = function (query: OcclusionQuery): number {
     return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
 };
 
-Engine.prototype.beginOcclusionQuery = function(algorithmType: number, query: OcclusionQuery): boolean {
+Engine.prototype.beginOcclusionQuery = function (algorithmType: number, query: OcclusionQuery): boolean {
     var glAlgorithm = this._getGlAlgorithmType(algorithmType);
     this._gl.beginQuery(glAlgorithm, query);
 
     return true;
 };
 
-Engine.prototype.endOcclusionQuery = function(algorithmType: number): Engine {
+Engine.prototype.endOcclusionQuery = function (algorithmType: number): Engine {
     var glAlgorithm = this._getGlAlgorithmType(algorithmType);
     this._gl.endQuery(glAlgorithm);
 
     return this;
 };
 
-Engine.prototype._createTimeQuery = function(): WebGLQuery {
+Engine.prototype._createTimeQuery = function (): WebGLQuery {
     let timerQuery = <EXT_disjoint_timer_query>this.getCaps().timerQuery;
 
     if (timerQuery.createQueryEXT) {
@@ -173,7 +173,7 @@ Engine.prototype._createTimeQuery = function(): WebGLQuery {
     return this.createQuery();
 };
 
-Engine.prototype._deleteTimeQuery = function(query: WebGLQuery): void {
+Engine.prototype._deleteTimeQuery = function (query: WebGLQuery): void {
     let timerQuery = <EXT_disjoint_timer_query>this.getCaps().timerQuery;
 
     if (timerQuery.deleteQueryEXT) {
@@ -184,7 +184,7 @@ Engine.prototype._deleteTimeQuery = function(query: WebGLQuery): void {
     this.deleteQuery(query);
 };
 
-Engine.prototype._getTimeQueryResult = function(query: WebGLQuery): any {
+Engine.prototype._getTimeQueryResult = function (query: WebGLQuery): any {
     let timerQuery = <EXT_disjoint_timer_query>this.getCaps().timerQuery;
 
     if (timerQuery.getQueryObjectEXT) {
@@ -193,7 +193,7 @@ Engine.prototype._getTimeQueryResult = function(query: WebGLQuery): any {
     return this.getQueryResult(query);
 };
 
-Engine.prototype._getTimeQueryAvailability = function(query: WebGLQuery): any {
+Engine.prototype._getTimeQueryAvailability = function (query: WebGLQuery): any {
     let timerQuery = <EXT_disjoint_timer_query>this.getCaps().timerQuery;
 
     if (timerQuery.getQueryObjectEXT) {
@@ -202,7 +202,7 @@ Engine.prototype._getTimeQueryAvailability = function(query: WebGLQuery): any {
     return this.isQueryResultAvailable(query);
 };
 
-Engine.prototype.startTimeQuery = function(): Nullable<_TimeToken> {
+Engine.prototype.startTimeQuery = function (): Nullable<_TimeToken> {
     let caps = this.getCaps();
     let timerQuery = caps.timerQuery;
     if (!timerQuery) {
@@ -232,7 +232,7 @@ Engine.prototype.startTimeQuery = function(): Nullable<_TimeToken> {
     return token;
 };
 
-Engine.prototype.endTimeQuery = function(token: _TimeToken): int {
+Engine.prototype.endTimeQuery = function (token: _TimeToken): int {
     let caps = this.getCaps();
     let timerQuery = caps.timerQuery;
     if (!timerQuery || !token) {
@@ -339,7 +339,7 @@ Engine.prototype.captureGPUFrameTime = function (value: boolean) {
     }
 };
 
-Engine.prototype._getGlAlgorithmType = function(algorithmType: number): number {
+Engine.prototype._getGlAlgorithmType = function (algorithmType: number): number {
     return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
 };
 
@@ -395,10 +395,10 @@ declare module "../../Meshes/abstractMesh" {
     }
 }
 Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         return this._occlusionDataStorage.isOcclusionQueryInProgress;
     },
-    set: function(this: AbstractMesh, value: boolean) {
+    set: function (this: AbstractMesh, value: boolean) {
         this._occlusionDataStorage.isOcclusionQueryInProgress = value;
     },
     enumerable: false,
@@ -406,7 +406,7 @@ Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
 });
 
 Object.defineProperty(AbstractMesh.prototype, "_occlusionDataStorage", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         if (!this.__occlusionDataStorage) {
             this.__occlusionDataStorage = new _OcclusionDataStorage();
         }
@@ -417,10 +417,10 @@ Object.defineProperty(AbstractMesh.prototype, "_occlusionDataStorage", {
 });
 
 Object.defineProperty(AbstractMesh.prototype, "isOccluded", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         return this._occlusionDataStorage.isOccluded;
     },
-    set: function(this: AbstractMesh, value: boolean) {
+    set: function (this: AbstractMesh, value: boolean) {
         this._occlusionDataStorage.isOccluded = value;
     },
     enumerable: true,
@@ -428,10 +428,10 @@ Object.defineProperty(AbstractMesh.prototype, "isOccluded", {
 });
 
 Object.defineProperty(AbstractMesh.prototype, "occlusionQueryAlgorithmType", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         return this._occlusionDataStorage.occlusionQueryAlgorithmType;
     },
-    set: function(this: AbstractMesh, value: number) {
+    set: function (this: AbstractMesh, value: number) {
         this._occlusionDataStorage.occlusionQueryAlgorithmType = value;
     },
     enumerable: true,
@@ -439,10 +439,10 @@ Object.defineProperty(AbstractMesh.prototype, "occlusionQueryAlgorithmType", {
 });
 
 Object.defineProperty(AbstractMesh.prototype, "occlusionType", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         return this._occlusionDataStorage.occlusionType;
     },
-    set: function(this: AbstractMesh, value: number) {
+    set: function (this: AbstractMesh, value: number) {
         this._occlusionDataStorage.occlusionType = value;
     },
     enumerable: true,
@@ -450,10 +450,10 @@ Object.defineProperty(AbstractMesh.prototype, "occlusionType", {
 });
 
 Object.defineProperty(AbstractMesh.prototype, "occlusionRetryCount", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         return this._occlusionDataStorage.occlusionRetryCount;
     },
-    set: function(this: AbstractMesh, value: number) {
+    set: function (this: AbstractMesh, value: number) {
         this._occlusionDataStorage.occlusionRetryCount = value;
     },
     enumerable: true,
@@ -461,7 +461,7 @@ Object.defineProperty(AbstractMesh.prototype, "occlusionRetryCount", {
 });
 
 // We also need to update AbstractMesh as there is a portion of the code there
-AbstractMesh.prototype._checkOcclusionQuery = function() {
+AbstractMesh.prototype._checkOcclusionQuery = function () {
     let dataStorage = this._occlusionDataStorage;
 
     if (dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {

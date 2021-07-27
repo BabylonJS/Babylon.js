@@ -207,8 +207,7 @@ export class UtilityLayerRenderer implements IDisposable {
                         // it's substituted temporarily and a new scenePick is forced.
                         // otherwise, the ray with previously active camera is always used.
                         // It's set back to previous activeCamera after operation.
-                        if (this._renderCamera)
-                        {
+                        if (this._renderCamera) {
                             previousActiveCamera = scene._activeCamera;
                             scene._activeCamera = this._renderCamera;
                             prePointerInfo.ray = null;
@@ -216,8 +215,7 @@ export class UtilityLayerRenderer implements IDisposable {
                         scenePick = prePointerInfo.ray
                             ? scene.pickWithRay(prePointerInfo.ray)
                             : scene.pick(originalScene.pointerX, originalScene.pointerY);
-                        if (previousActiveCamera)
-                        {
+                        if (previousActiveCamera) {
                             scene._activeCamera = previousActiveCamera;
                         }
                     }

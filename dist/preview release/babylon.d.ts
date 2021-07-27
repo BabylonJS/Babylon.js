@@ -3122,17 +3122,41 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    interface TupleTypes<T> {
+        2: [T, T];
+        3: [T, T, T];
+        4: [T, T, T, T];
+        5: [T, T, T, T, T];
+        6: [T, T, T, T, T, T];
+        7: [T, T, T, T, T, T, T];
+        8: [T, T, T, T, T, T, T, T];
+        9: [T, T, T, T, T, T, T, T, T];
+        10: [T, T, T, T, T, T, T, T, T, T];
+        11: [T, T, T, T, T, T, T, T, T, T, T];
+        12: [T, T, T, T, T, T, T, T, T, T, T, T];
+        13: [T, T, T, T, T, T, T, T, T, T, T, T, T];
+        14: [T, T, T, T, T, T, T, T, T, T, T, T, T, T];
+        15: [T, T, T, T, T, T, T, T, T, T, T, T, T, T, T];
+    }
     /**
      * Class containing a set of static utilities functions for arrays.
      */
     export class ArrayTools {
         /**
-         * Returns an array of the given size filled with element built from the given constructor and the parameters
-         * @param size the number of element to construct and put in the array
+         * Returns an array of the given size filled with elements built from the given constructor and the parameters.
+         * @param size the number of element to construct and put in the array.
          * @param itemBuilder a callback responsible for creating new instance of item. Called once per array entry.
-         * @returns a new array filled with new objects
+         * @returns a new array filled with new objects.
          */
         static BuildArray<T>(size: number, itemBuilder: () => T): Array<T>;
+        /**
+         * Returns a tuple of the given size filled with elements built from the given constructor and the parameters.
+         * @param size he number of element to construct and put in the tuple.
+         * @param itemBuilder a callback responsible for creating new instance of item. Called once per tuple entry.
+         * @returns a new tuple filled with new objects.
+         */
+        static BuildTuple<T, N extends keyof TupleTypes<unknown>>(size: N, itemBuilder: () => T): TupleTypes<T>[N];
     }
 }
 declare module BABYLON {
@@ -37073,11 +37097,11 @@ declare module BABYLON {
      * @hidden
      */
     export class TmpVectors {
-        static Vector2: Vector2[];
-        static Vector3: Vector3[];
-        static Vector4: Vector4[];
-        static Quaternion: Quaternion[];
-        static Matrix: Matrix[];
+        static Vector2: [Vector2, Vector2, Vector2];
+        static Vector3: [Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3];
+        static Vector4: [Vector4, Vector4, Vector4];
+        static Quaternion: [Quaternion, Quaternion];
+        static Matrix: [Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix];
     }
 }
 declare module BABYLON {
@@ -88057,7 +88081,7 @@ type XRAnchorSet = Set<XRAnchor>;
 
 type XREventHandler = (callback: any) => void;
 
-interface XRLayer extends EventTarget {}
+interface XRLayer extends EventTarget { }
 
 type XRDOMOverlayInit = {
     /**
@@ -88113,7 +88137,7 @@ declare class XRWebGLLayer {
 }
 
 // tslint:disable-next-line no-empty-interface
-interface XRSpace extends EventTarget {}
+interface XRSpace extends EventTarget { }
 
 interface XRRenderState {
     readonly baseLayer?: XRWebGLLayer;
@@ -88361,7 +88385,7 @@ interface XRPlane {
     lastChangedTime: number;
 }
 
-interface XRJointSpace extends XRSpace {}
+interface XRJointSpace extends XRSpace { }
 
 interface XRJointPose extends XRPose {
     radius: number | undefined;

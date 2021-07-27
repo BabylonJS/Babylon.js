@@ -15,7 +15,7 @@ export class LoadManager {
             let prevHash = location.hash;
             location.hash = id;
 
-            if(location.hash === prevHash){
+            if (location.hash === prevHash) {
                 this._loadPlayground(id);
             }
         });

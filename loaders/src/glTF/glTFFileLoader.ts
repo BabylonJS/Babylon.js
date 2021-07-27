@@ -234,9 +234,9 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public useSRGBBuffers = true;
 
-     /**
-     * Function called before loading a url referenced by the asset.
-     */
+    /**
+    * Function called before loading a url referenced by the asset.
+    */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
     /**

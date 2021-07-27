@@ -335,8 +335,8 @@ export class MorphTargetManager implements IDisposable {
             if (this._targetStoreTexture) {
                 let textureSize = this._targetStoreTexture.getSize();
                 if (textureSize.width === this._textureWidth
-                && textureSize.height === this._textureHeight
-                && this._targetStoreTexture.depth === this._targets.length) {
+                    && textureSize.height === this._textureHeight
+                    && this._targetStoreTexture.depth === this._targets.length) {
                     mustUpdateTexture = false;
                 }
             }

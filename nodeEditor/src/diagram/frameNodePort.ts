@@ -15,7 +15,7 @@ export class FrameNodePort extends NodePort {
     private _framePortId: number;
     private _onFramePortPositionChangedObservable = new Observable<FrameNodePort>();
 
-    public get parentFrameId () {
+    public get parentFrameId() {
         return this._parentFrameId;
     }
 
@@ -41,7 +41,7 @@ export class FrameNodePort extends NodePort {
     }
 
     public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number) {
-        super(portContainer, connectionPoint,node, globalState);
+        super(portContainer, connectionPoint, node, globalState);
 
         this._parentFrameId = parentFrameId;
         this._isInput = isInput;
@@ -58,13 +58,13 @@ export class FrameNodePort extends NodePort {
         this.refresh();
     }
 
-    public static CreateFrameNodePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, 
+    public static CreateFrameNodePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement,
         displayManager: Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number) {
         let portContainer = root.ownerDocument!.createElement("div");
         let block = connectionPoint.ownerBlock;
 
         portContainer.classList.add("portLine");
-        if(framePortId !== null) {
+        if (framePortId !== null) {
             portContainer.dataset.framePortId = `${framePortId}`;
         }
         root.appendChild(portContainer);
@@ -76,12 +76,12 @@ export class FrameNodePort extends NodePort {
             if (connectionPoint.ownerBlock.isInput) {
                 portName = node.name;
             }
-            portLabel.innerHTML = portName;       
+            portLabel.innerHTML = portName;
             portContainer.appendChild(portLabel);
         }
 
         return new FrameNodePort(portContainer, connectionPoint, node, globalState, isInput, framePortId, parentFrameId);
     }
 
-} 
+}
 
