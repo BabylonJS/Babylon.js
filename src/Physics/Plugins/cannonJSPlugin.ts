@@ -176,7 +176,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 if (childImpostor) {
                     var parent = childImpostor.parent;
                     if (parent !== mainImpostor && mesh.parent) {
-                         const pPosition = mesh.getAbsolutePosition().subtract((mesh.parent as TransformNode).getAbsolutePosition());
+                        const pPosition = mesh.getAbsolutePosition().subtract((mesh.parent as TransformNode).getAbsolutePosition());
                         var q = mesh.rotationQuaternion.multiply(this._tmpQuaternion);
 
                         if (childImpostor.physicsBody) {
@@ -185,7 +185,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                         }
                         childImpostor.parent = mainImpostor;
                         childImpostor.resetUpdateFlags();
-                        mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z) , new this.BJSCANNON.Quaternion(q.x, q.y, q.z, q.w));
+                        mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z), new this.BJSCANNON.Quaternion(q.x, q.y, q.z, q.w));
                         //Add the mass of the children.
                         mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                     }
@@ -666,7 +666,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         result.z = shape.halfExtents.z * 2;
     }
 
-    public dispose() {}
+    public dispose() { }
 
     private _extendNamespace() {
         //this will force cannon to execute at least one step when using interpolation

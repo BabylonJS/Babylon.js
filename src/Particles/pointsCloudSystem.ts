@@ -99,7 +99,7 @@ export class PointsCloudSystem implements IDisposable {
      * @param options defines the options of the PCS e.g.
      * * updatable (optional boolean, default true) : if the PCS must be updatable or immutable
      */
-    constructor(name: string, pointSize: number, scene: Scene, options?: { updatable?: boolean}) {
+    constructor(name: string, pointSize: number, scene: Scene, options?: { updatable?: boolean }) {
         this.name = name;
         this._size = pointSize;
         this._scene = scene || EngineStore.LastCreatedScene;
@@ -228,57 +228,57 @@ export class PointsCloudSystem implements IDisposable {
 
         var idxPoints: number = 0;
 
-        var index:  number = 0;
-        var id0:  number = 0;
-        var id1:  number = 0;
-        var id2:  number = 0;
-        var v0X:  number = 0;
-        var v0Y:  number = 0;
-        var v0Z:  number = 0;
-        var v1X:  number = 0;
-        var v1Y:  number = 0;
-        var v1Z:  number = 0;
-        var v2X:  number = 0;
-        var v2Y:  number = 0;
-        var v2Z:  number = 0;
+        var index: number = 0;
+        var id0: number = 0;
+        var id1: number = 0;
+        var id2: number = 0;
+        var v0X: number = 0;
+        var v0Y: number = 0;
+        var v0Z: number = 0;
+        var v1X: number = 0;
+        var v1Y: number = 0;
+        var v1Z: number = 0;
+        var v2X: number = 0;
+        var v2Y: number = 0;
+        var v2Z: number = 0;
         var vertex0 = Vector3.Zero();
         var vertex1 = Vector3.Zero();
         var vertex2 = Vector3.Zero();
         var vec0 = Vector3.Zero();
         var vec1 = Vector3.Zero();
 
-        var uv0X:  number = 0;
-        var uv0Y:  number = 0;
-        var uv1X:  number = 0;
-        var uv1Y:  number = 0;
-        var uv2X:  number = 0;
-        var uv2Y:  number = 0;
+        var uv0X: number = 0;
+        var uv0Y: number = 0;
+        var uv1X: number = 0;
+        var uv1Y: number = 0;
+        var uv2X: number = 0;
+        var uv2Y: number = 0;
         var uv0 = Vector2.Zero();
         var uv1 = Vector2.Zero();
         var uv2 = Vector2.Zero();
         var uvec0 = Vector2.Zero();
         var uvec1 = Vector2.Zero();
 
-        var col0X:  number = 0;
-        var col0Y:  number = 0;
-        var col0Z:  number = 0;
-        var col0A:  number = 0;
-        var col1X:  number = 0;
-        var col1Y:  number = 0;
-        var col1Z:  number = 0;
-        var col1A:  number = 0;
-        var col2X:  number = 0;
-        var col2Y:  number = 0;
-        var col2Z:  number = 0;
-        var col2A:  number = 0;
+        var col0X: number = 0;
+        var col0Y: number = 0;
+        var col0Z: number = 0;
+        var col0A: number = 0;
+        var col1X: number = 0;
+        var col1Y: number = 0;
+        var col1Z: number = 0;
+        var col1A: number = 0;
+        var col2X: number = 0;
+        var col2Y: number = 0;
+        var col2Z: number = 0;
+        var col2A: number = 0;
         var col0 = Vector4.Zero();
         var col1 = Vector4.Zero();
         var col2 = Vector4.Zero();
         var colvec0 = Vector4.Zero();
         var colvec1 = Vector4.Zero();
 
-        var lamda:  number = 0;
-        var mu:  number = 0;
+        var lamda: number = 0;
+        var mu: number = 0;
         range = range ? range : 0;
 
         var facetPoint: Vector3;
@@ -484,7 +484,7 @@ export class PointsCloudSystem implements IDisposable {
                     n = 0;
                 }
                 if (n > textureList.length - 1) {
-                    n =  textureList.length - 1;
+                    n = textureList.length - 1;
                 }
                 const finalize = () => {
                     pointsGroup._groupImgWidth = textureList[n].getSize().width;
@@ -631,8 +631,8 @@ export class PointsCloudSystem implements IDisposable {
      */
     public addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4 | number, range?: number): number {
         var colored = colorWith ? colorWith : PointColor.Random;
-        if (isNaN(colored) ||  colored < 0 || colored > 3) {
-            colored = PointColor.Random ;
+        if (isNaN(colored) || colored < 0 || colored > 3) {
+            colored = PointColor.Random;
         }
 
         var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
@@ -678,7 +678,7 @@ export class PointsCloudSystem implements IDisposable {
      */
     public addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4 | number, range?: number): number {
         var colored = colorWith ? colorWith : PointColor.Random;
-        if (isNaN(colored) ||  colored < 0 || colored > 3) {
+        if (isNaN(colored) || colored < 0 || colored > 3) {
             colored = PointColor.Random;
         }
 
@@ -701,7 +701,7 @@ export class PointsCloudSystem implements IDisposable {
                 break;
             case PointColor.UV:
                 this._setPointsColorOrUV(mesh, pointsGroup, true, false, false);
-            break;
+                break;
             case PointColor.Random:
                 this._setPointsColorOrUV(mesh, pointsGroup, true);
                 break;
@@ -724,7 +724,7 @@ export class PointsCloudSystem implements IDisposable {
      * @returns the PCS.
      */
     public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): PointsCloudSystem {
-        if (!this._updatable  || !this._isReady) {
+        if (!this._updatable || !this._isReady) {
             return this;
         }
 

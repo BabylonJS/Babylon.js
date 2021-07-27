@@ -30,7 +30,7 @@ declare type PrePassEffectConfiguration = import("../Rendering/prePassEffectConf
  */
 export type PostProcessOptions = { width: number, height: number };
 
-type TextureCache = {texture: InternalTexture, postProcessChannel: number, lastUsedRenderId : number};
+type TextureCache = { texture: InternalTexture, postProcessChannel: number, lastUsedRenderId: number };
 
 /**
  * PostProcess can be used to apply a shader to a texture after it has been rendered
@@ -373,41 +373,41 @@ export class PostProcess {
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess",
         indexParameters?: any, blockCompilation = false, textureFormat = Constants.TEXTUREFORMAT_RGBA) {
 
-            this.name = name;
-            if (camera != null) {
-                this._camera = camera;
-                this._scene = camera.getScene();
-                camera.attachPostProcess(this);
-                this._engine = this._scene.getEngine();
+        this.name = name;
+        if (camera != null) {
+            this._camera = camera;
+            this._scene = camera.getScene();
+            camera.attachPostProcess(this);
+            this._engine = this._scene.getEngine();
 
-                this._scene.postProcesses.push(this);
-                this.uniqueId = this._scene.getUniqueId();
-            }
-            else if (engine) {
-                this._engine = engine;
-                this._engine.postProcesses.push(this);
-            }
-            this._options = options;
-            this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-            this._reusable = reusable || false;
-            this._textureType = textureType;
-            this._textureFormat = textureFormat;
+            this._scene.postProcesses.push(this);
+            this.uniqueId = this._scene.getUniqueId();
+        }
+        else if (engine) {
+            this._engine = engine;
+            this._engine.postProcesses.push(this);
+        }
+        this._options = options;
+        this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        this._reusable = reusable || false;
+        this._textureType = textureType;
+        this._textureFormat = textureFormat;
 
-            this._samplers = samplers || [];
-            this._samplers.push("textureSampler");
+        this._samplers = samplers || [];
+        this._samplers.push("textureSampler");
 
-            this._fragmentUrl = fragmentUrl;
-            this._vertexUrl = vertexUrl;
-            this._parameters = parameters || [];
+        this._fragmentUrl = fragmentUrl;
+        this._vertexUrl = vertexUrl;
+        this._parameters = parameters || [];
 
-            this._parameters.push("scale");
+        this._parameters.push("scale");
 
-            this._indexParameters = indexParameters;
-            this._drawWrapper = new DrawWrapper(this._engine);
+        this._indexParameters = indexParameters;
+        this._drawWrapper = new DrawWrapper(this._engine);
 
-            if (!blockCompilation) {
-                this.updateEffect(defines);
-            }
+        if (!blockCompilation) {
+            this.updateEffect(defines);
+        }
     }
 
     /**
@@ -508,7 +508,7 @@ export class PostProcess {
         }
 
         const tex = this._engine.createRenderTargetTexture(textureSize, textureOptions);
-        this._textureCache.push({ texture: tex, postProcessChannel: channel, lastUsedRenderId : -1 });
+        this._textureCache.push({ texture: tex, postProcessChannel: channel, lastUsedRenderId: -1 });
 
         return tex;
     }
@@ -901,7 +901,7 @@ export class PostProcess {
     }
 
     /** @hidden */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) : Nullable<PostProcess> {
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<PostProcess> {
         return SerializationHelper.Parse(() => {
             return new PostProcess(
                 parsedPostProcess.name,
@@ -919,7 +919,7 @@ export class PostProcess {
                 parsedPostProcess.indexParameters,
                 false,
                 parsedPostProcess.textureFormat
-                );
+            );
         }, parsedPostProcess, scene, rootUrl);
     }
 }

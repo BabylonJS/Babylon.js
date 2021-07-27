@@ -25,7 +25,7 @@ export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollection
 /**
  * Defines the predefined strategies used in the performance viewer.
  */
- export class PerfCollectionStrategy {
+export class PerfCollectionStrategy {
     /**
      * Gets the initializer for the strategy used for collection of fps metrics
      * @returns the initializer for the fps strategy
@@ -335,7 +335,7 @@ export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollection
             const engineInstrumentation = new EngineInstrumentation(scene.getEngine());
             engineInstrumentation.captureGPUFrameTime = true;
             return {
-                id:  "gpu frame time",
+                id: "gpu frame time",
                 getData: () => Math.max(engineInstrumentation.gpuFrameTimeCounter.lastSecAverage * 0.000001, 0),
             };
         };

@@ -68,7 +68,7 @@ function transformTextureUrl(this: Engine, url: string): string {
 }
 
 Object.defineProperty(Engine.prototype, "texturesSupported", {
-    get: function(this: Engine) {
+    get: function (this: Engine) {
         // Intelligently add supported compressed formats in order to check for.
         // Check for ASTC support first as it is most powerful and to be very cross platform.
         // Next PVRTC & DXT, which are probably superior to ETC1/2.
@@ -87,18 +87,18 @@ Object.defineProperty(Engine.prototype, "texturesSupported", {
 });
 
 Object.defineProperty(Engine.prototype, "textureFormatInUse", {
-    get: function(this: Engine) {
+    get: function (this: Engine) {
         return this._textureFormatInUse || null;
     },
     enumerable: true,
     configurable: true
 });
 
-Engine.prototype.setCompressedTextureExclusions = function(skippedFiles: Array<string>): void {
+Engine.prototype.setCompressedTextureExclusions = function (skippedFiles: Array<string>): void {
     this._excludedCompressedTextures = skippedFiles;
 };
 
-Engine.prototype.setTextureFormatToUse = function(formatsAvailable: Array<string>): Nullable<string> {
+Engine.prototype.setTextureFormatToUse = function (formatsAvailable: Array<string>): Nullable<string> {
     const texturesSupported = this.texturesSupported;
     for (let i = 0, len1 = texturesSupported.length; i < len1; i++) {
         for (let j = 0, len2 = formatsAvailable.length; j < len2; j++) {

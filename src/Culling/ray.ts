@@ -32,7 +32,7 @@ export class Ray {
         public direction: Vector3,
         /** length of the ray */
         public length: number = Number.MAX_VALUE
-    ) {}
+    ) { }
 
     // Methods
 

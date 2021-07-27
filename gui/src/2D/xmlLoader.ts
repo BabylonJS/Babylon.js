@@ -23,7 +23,7 @@ export class XmlLoader {
         "stretch": 5,
     };
 
-    private _rootNode : any;
+    private _rootNode: any;
 
     private _parentClass: any;
 

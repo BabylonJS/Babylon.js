@@ -10,7 +10,7 @@ import { PBRDisplayManager } from './display/pbrDisplayManager';
 import { ConditionalDisplayManager } from './display/conditionalDisplayManager';
 
 export class DisplayLedger {
-    public static RegisteredControls: {[key: string] : any} = {};
+    public static RegisteredControls: { [key: string]: any } = {};
 }
 
 DisplayLedger.RegisteredControls["InputBlock"] = InputDisplayManager;

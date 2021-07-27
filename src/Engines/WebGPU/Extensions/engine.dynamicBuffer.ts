@@ -3,7 +3,7 @@ import { WebGPUDataBuffer } from "../../../Meshes/WebGPU/webgpuDataBuffer";
 import { DataArray, IndicesArray } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 
- WebGPUEngine.prototype.updateDynamicIndexBuffer = function(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
+WebGPUEngine.prototype.updateDynamicIndexBuffer = function (indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
     const gpuBuffer = indexBuffer as WebGPUDataBuffer;
 
     var view: ArrayBufferView;
@@ -35,7 +35,7 @@ import { WebGPUEngine } from "../../webgpuEngine";
     this._bufferManager.setSubData(gpuBuffer, offset, view);
 };
 
-WebGPUEngine.prototype.updateDynamicVertexBuffer = function(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+WebGPUEngine.prototype.updateDynamicVertexBuffer = function (vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
     const dataBuffer = vertexBuffer as WebGPUDataBuffer;
     if (byteOffset === undefined) {
         byteOffset = 0;

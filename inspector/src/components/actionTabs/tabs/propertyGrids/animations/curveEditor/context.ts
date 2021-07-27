@@ -32,7 +32,7 @@ export class Context {
     onHostWindowResized = new Observable<void>();
 
     onActiveKeyFrameChanged = new Observable<number>();
-    
+
     onFrameSet = new Observable<number>();
     onFrameManuallyEntered = new Observable<number>();
 
@@ -69,7 +69,7 @@ export class Context {
     onEditAnimationRequired = new Observable<Animation>();
     onEditAnimationUIClosed = new Observable<void>();
 
-    public prepare() {        
+    public prepare() {
         this.isPlaying = false;
         if (!this.animations || !this.animations.length) {
             return;
@@ -83,7 +83,7 @@ export class Context {
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = this.toKey;
         this.snippetId = animation.snippetId;
-    
+
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
         }
@@ -106,7 +106,7 @@ export class Context {
     public stop() {
         this.isPlaying = false;
         this.scene.stopAnimation(this.target);
-    
+
         this.onAnimationStateChanged.notifyObservers();
     }
 

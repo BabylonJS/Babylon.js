@@ -28,11 +28,11 @@ export class WebGPUComputeContext implements IComputeContext {
             const bindGroupEntriesExist = this._bindGroupEntries.length > 0;
             for (const key in bindings) {
                 const binding = bindings[key],
-                      location = bindingsMapping[key],
-                      group = location.group,
-                      index = location.binding,
-                      type = binding.type,
-                      object = binding.object;
+                    location = bindingsMapping[key],
+                    group = location.group,
+                    index = location.binding,
+                    type = binding.type,
+                    object = binding.object;
                 let indexInGroupEntries = binding.indexInGroupEntries;
 
                 let entries = this._bindGroupEntries[group];
