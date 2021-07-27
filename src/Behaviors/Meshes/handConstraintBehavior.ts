@@ -63,7 +63,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     /**
      * Where to place the node regarding the center of the hand.
      */
-    public targetZone: HandConstraintZone = HandConstraintZone.RADIAL_SIDE;
+    public targetZone: HandConstraintZone = HandConstraintZone.ULNAR_SIDE;
 
     /**
      * Orientation mode of the 4 zones around the hand
@@ -75,9 +75,9 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     public nodeOrientationMode: HandConstraintOrientation = HandConstraintOrientation.HAND_ROTATION;
 
     /**
-     * Set the hand this behavior should follow. If set to "none", it will follow any visible hand (prioritising the right one).
+     * Set the hand this behavior should follow. If set to "none", it will follow any visible hand (prioritising the left one).
      */
-    public handedness: XRHandedness = "right";
+    public handedness: XRHandedness = "left";
 
     /**
      * Rate of interpolation of position and rotation of the attached node.
@@ -106,10 +106,10 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
             return null;
         }
 
-        // Retrieve any available hand, starting by the right
+        // Retrieve any available hand, starting by the left
         let hand;
         if (this.handedness === "none") {
-            hand = this._handTracking.getHandByHandedness("right") || this._handTracking.getHandByHandedness("left");
+            hand = this._handTracking.getHandByHandedness("left") || this._handTracking.getHandByHandedness("right");
         } else {
             hand = this._handTracking.getHandByHandedness(this.handedness);
         }
