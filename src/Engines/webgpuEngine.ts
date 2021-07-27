@@ -698,7 +698,7 @@ export class WebGPUEngine extends Engine {
             maxCubemapTextureSize: 2048,
             maxRenderTextureSize: 8192,
             maxVertexAttribs: 16,
-            maxVaryingVectors: 16,
+            maxVaryingVectors: 15,
             maxFragmentUniformVectors: 1024,
             maxVertexUniformVectors: 1024,
             standardDerivatives: true,
