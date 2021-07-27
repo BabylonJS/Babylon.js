@@ -348,5 +348,8 @@ export class DepthPeelingRenderer {
 
     public dispose() {
         this._disposeTexturesAndFramebuffers();
+        this._blendBackEffectWrapper.dispose();
+        this._finalEffectWrapper.dispose();
+        this._effectRenderer.dispose();
     }
 }
