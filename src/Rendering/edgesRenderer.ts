@@ -34,7 +34,7 @@ declare module "../Meshes/abstractMesh" {
         edgesRenderer: Nullable<EdgesRenderer>;
     }
 }
-AbstractMesh.prototype.disableEdgesRendering = function(): AbstractMesh {
+AbstractMesh.prototype.disableEdgesRendering = function (): AbstractMesh {
     if (this._edgesRenderer) {
         this._edgesRenderer.dispose();
         this._edgesRenderer = null;
@@ -42,14 +42,14 @@ AbstractMesh.prototype.disableEdgesRendering = function(): AbstractMesh {
     return this;
 };
 
-AbstractMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false, options?: IEdgesRendererOptions): AbstractMesh {
+AbstractMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false, options?: IEdgesRendererOptions): AbstractMesh {
     this.disableEdgesRendering();
     this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices, true, options);
     return this;
 };
 
 Object.defineProperty(AbstractMesh.prototype, "edgesRenderer", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         return this._edgesRenderer;
     },
     enumerable: true,
@@ -69,7 +69,7 @@ declare module "../Meshes/linesMesh" {
         enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
     }
 }
-LinesMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
+LinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
     this.disableEdgesRendering();
     this._edgesRenderer = new LineEdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
     return this;
@@ -89,7 +89,7 @@ declare module "../Meshes/linesMesh" {
     }
 }
 
-InstancedLinesMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedLinesMesh {
+InstancedLinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedLinesMesh {
     LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
     return this;
 };
@@ -543,7 +543,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         const uniquePositions: Array<number> = []; // list of unique index of vertices - needed for tessellation
 
         if (useFastVertexMerger) {
-            const mapVertices: { [key: string]: number} = {};
+            const mapVertices: { [key: string]: number } = {};
             for (let v1 = 0; v1 < positions.length; v1 += 3) {
                 const x1 = positions[v1 + 0], y1 = positions[v1 + 1], z1 = positions[v1 + 2];
 
@@ -656,7 +656,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         /**
          * Collect the edges to render
          */
-        const edges: { [key: string] : { normal: Vector3, done: boolean, index: number, i: number } } = { };
+        const edges: { [key: string]: { normal: Vector3, done: boolean, index: number, i: number } } = {};
 
         for (let index = 0; index < indices.length; index += 3) {
             let faceNormal;

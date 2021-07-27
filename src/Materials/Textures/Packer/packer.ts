@@ -15,7 +15,7 @@ import { Tools } from '../../../Misc/tools';
 /**
 * Defines the basic options interface of a TexturePacker
 */
-export interface ITexturePackerOptions{
+export interface ITexturePackerOptions {
 
     /**
     * Custom targets for the channels of a texture packer.  Default is all the channels of the Standard Material
@@ -87,7 +87,7 @@ export interface ITexturePackerOptions{
 /**
 * Defines the basic interface of a TexturePacker JSON File
 */
-export interface ITexturePackerJSON{
+export interface ITexturePackerJSON {
 
     /**
     * The frame ID
@@ -115,7 +115,7 @@ export interface ITexturePackerJSON{
 * This is a support class that generates a series of packed texture sets.
 * @see https://doc.babylonjs.com/babylon101/materials
 */
-export class TexturePacker{
+export class TexturePacker {
 
     /** Packer Layout Constant 0 */
     public static readonly LAYOUT_STRIP = 0;
@@ -144,7 +144,7 @@ export class TexturePacker{
     public options: ITexturePackerOptions;
 
     /** The promise that is started upon initialization */
-    public promise: Nullable<Promise< TexturePacker | string >>;
+    public promise: Nullable<Promise<TexturePacker | string>>;
 
     /** The Container object for the channel sets that are generated */
     public sets: object;
@@ -177,16 +177,16 @@ export class TexturePacker{
          */
         this.options = options;
         this.options.map = this.options.map ?? [
-                'ambientTexture',
-                'bumpTexture',
-                'diffuseTexture',
-                'emissiveTexture',
-                'lightmapTexture',
-                'opacityTexture',
-                'reflectionTexture',
-                'refractionTexture',
-                'specularTexture'
-            ];
+            'ambientTexture',
+            'bumpTexture',
+            'diffuseTexture',
+            'emissiveTexture',
+            'lightmapTexture',
+            'opacityTexture',
+            'reflectionTexture',
+            'refractionTexture',
+            'specularTexture'
+        ];
 
         this.options.uvsIn = this.options.uvsIn ?? VertexBuffer.UVKind;
         this.options.uvsOut = this.options.uvsOut ?? VertexBuffer.UVKind;
@@ -246,16 +246,16 @@ export class TexturePacker{
             let setName = sKeys[i];
 
             let dt = new DynamicTexture(this.name + '.TexturePack.' + setName + 'Set',
-                    { width: dtSize.x, height: dtSize.y },
-                    this.scene,
-                    true, //Generate Mips
-                    Texture.TRILINEAR_SAMPLINGMODE,
-                    Engine.TEXTUREFORMAT_RGBA
-                );
+                { width: dtSize.x, height: dtSize.y },
+                this.scene,
+                true, //Generate Mips
+                Texture.TRILINEAR_SAMPLINGMODE,
+                Engine.TEXTUREFORMAT_RGBA
+            );
 
             let dtx = dt.getContext();
             dtx.fillStyle = 'rgba(0,0,0,0)';
-            dtx.fillRect(0, 0, dtSize.x, dtSize.y) ;
+            dtx.fillRect(0, 0, dtSize.x, dtSize.y);
             dt.update(false);
             (this.sets as any)[setName] = dt;
         }
@@ -331,9 +331,9 @@ export class TexturePacker{
                         tempTexture.update(false);
 
                         tcx.setTransform(1, 0, 0, -1, 0, 0);
-                        let cellOffsets = [ 0, 0, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1 - 1, 0, -1, 1, -1];
+                        let cellOffsets = [0, 0, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1 - 1, 0, -1, 1, -1];
 
-                        switch (this.options.paddingMode){
+                        switch (this.options.paddingMode) {
                             //Wrap Mode
                             case 0:
                                 for (let i = 0; i < 9; i++) {
@@ -349,7 +349,7 @@ export class TexturePacker{
                                         baseSize
                                     );
                                 }
-                            break;
+                                break;
                             //Extend Mode
                             case 1:
                                 for (let i = 0; i < padding; i++) {
@@ -414,14 +414,14 @@ export class TexturePacker{
                                     baseSize
                                 );
 
-                            break;
+                                break;
                             //Color Mode
                             case 2:
 
-                               tcx.fillStyle = (this.options.paddingColor || Color3.Black()).toHexString();
-                               tcx.fillRect(0, 0, tcs, -tcs);
-                               tcx.clearRect(padding, padding, baseSize, baseSize);
-                               tcx.drawImage(
+                                tcx.fillStyle = (this.options.paddingColor || Color3.Black()).toHexString();
+                                tcx.fillRect(0, 0, tcs, -tcs);
+                                tcx.clearRect(padding, padding, baseSize, baseSize);
+                                tcx.drawImage(
                                     img,
                                     0,
                                     0,
@@ -433,7 +433,7 @@ export class TexturePacker{
                                     baseSize
                                 );
 
-                            break;
+                                break;
                         }
 
                         tcx.setTransform(1, 0, 0, 1, 0, 0);
@@ -452,24 +452,24 @@ export class TexturePacker{
     private _calculateSize(): Vector2 {
 
         let meshLength: number = this.meshes.length || 0;
-        let baseSize: number =  this.options.frameSize || 0;
+        let baseSize: number = this.options.frameSize || 0;
         let padding: number = this._paddingValue || 0;
 
-        switch (this.options.layout){
-            case 0 :
+        switch (this.options.layout) {
+            case 0:
                 //STRIP_LAYOUT
                 return new Vector2(
                     (baseSize * meshLength) + (2 * padding * meshLength),
                     (baseSize) + (2 * padding)
                 );
-            break;
-            case 1 :
+                break;
+            case 1:
                 //POWER2
                 let sqrtCount = Math.max(2, Math.ceil(Math.sqrt(meshLength)));
                 let size = (baseSize * sqrtCount) + (2 * padding * sqrtCount);
                 return new Vector2(size, size);
-            break;
-            case 2 :
+                break;
+            case 2:
                 //COLNUM
                 let cols = this.options.colnum || 1;
                 let rowCnt = Math.max(1, Math.ceil(meshLength / cols));
@@ -477,7 +477,7 @@ export class TexturePacker{
                     (baseSize * cols) + (2 * padding * cols),
                     (baseSize * rowCnt) + (2 * padding * rowCnt)
                 );
-            break;
+                break;
         }
 
         return Vector2.Zero();
@@ -530,32 +530,32 @@ export class TexturePacker{
         let meshLength = this.meshes.length;
         let uvStep, yStep, xStep;
 
-        switch (this.options.layout){
-            case 0 :
+        switch (this.options.layout) {
+            case 0:
                 //STRIP_LAYOUT
                 uvStep = 1 / meshLength;
                 return new Vector2(
                     index * uvStep,
                     0
                 );
-            break;
-            case 1 :
+                break;
+            case 1:
                 //POWER2
                 let sqrtCount = Math.max(2, Math.ceil(Math.sqrt(meshLength)));
                 yStep = Math.floor(index / sqrtCount);
                 xStep = index - (yStep * sqrtCount);
                 uvStep = 1 / sqrtCount;
-                return new Vector2(xStep * uvStep , yStep * uvStep);
-            break;
-            case 2 :
+                return new Vector2(xStep * uvStep, yStep * uvStep);
+                break;
+            case 2:
                 //COLNUM
                 let cols = this.options.colnum || 1;
                 let rowCnt = Math.max(1, Math.ceil(meshLength / cols));
                 xStep = Math.floor(index / rowCnt);
                 yStep = index - (xStep * rowCnt);
                 uvStep = new Vector2(1 / cols, 1 / rowCnt);
-                return new Vector2(xStep * uvStep.x , yStep * uvStep.y);
-            break;
+                return new Vector2(xStep * uvStep.x, yStep * uvStep.y);
+                break;
         }
 
         return Vector2.Zero();
@@ -596,9 +596,9 @@ export class TexturePacker{
         let sKeys = Object.keys(this.sets);
 
         let _dispose = (_t: any) => {
-             if ((_t.dispose)) {
+            if ((_t.dispose)) {
                 _t.dispose();
-             }
+            }
         };
 
         for (let i = 0; i < sKeys.length; i++) {
@@ -638,58 +638,58 @@ export class TexturePacker{
     * @returns Promise<void>
     */
     public processAsync(): Promise<void> {
-            return new Promise ((resolve, reject) => {
-                try {
-                    if (this.meshes.length === 0) {
-                        //Must be a JSON load!
-                        resolve();
-                        return;
-                    }
-                    let done = 0;
-                    const doneCheck = (mat: Material) => {
-                        done++;
-                        //Check Status of all Textures on all meshes, till they are ready.
-                        if (this.options.map) {
-                            for (let j = 0; j < this.options.map.length; j++) {
-                                let index: string = this.options.map[j];
-                                let t: (Texture | DynamicTexture) = (mat as any)[index];
-
-                                if (t !== null) {
-                                    if (!(this.sets as any)[this.options.map[j]]) {
-                                        (this.sets as any)[this.options.map[j]] = true;
-                                    }
-
-                                    this._expecting++;
-                                }
-                            }
-
-                            if (done === this.meshes.length) {
-                                this._createFrames(resolve);
-                            }
-                        }
-                    };
-
-                    for (let i = 0; i < this.meshes.length; i++) {
-
-                        let mesh = this.meshes[i];
-                        let material: Nullable< Material > = mesh.material;
-
-                        if (!material) {
-                            done++;
-                            if (done === this.meshes.length) {
-                                return this._createFrames(resolve);
-                            }
-                            continue;
-                        }
-
-                        material.forceCompilationAsync(mesh).then(() => {
-                            doneCheck((material as Material));
-                        });
-                    }
-                } catch (e) {
-                    return reject(e);
+        return new Promise((resolve, reject) => {
+            try {
+                if (this.meshes.length === 0) {
+                    //Must be a JSON load!
+                    resolve();
+                    return;
                 }
-            });
+                let done = 0;
+                const doneCheck = (mat: Material) => {
+                    done++;
+                    //Check Status of all Textures on all meshes, till they are ready.
+                    if (this.options.map) {
+                        for (let j = 0; j < this.options.map.length; j++) {
+                            let index: string = this.options.map[j];
+                            let t: (Texture | DynamicTexture) = (mat as any)[index];
+
+                            if (t !== null) {
+                                if (!(this.sets as any)[this.options.map[j]]) {
+                                    (this.sets as any)[this.options.map[j]] = true;
+                                }
+
+                                this._expecting++;
+                            }
+                        }
+
+                        if (done === this.meshes.length) {
+                            this._createFrames(resolve);
+                        }
+                    }
+                };
+
+                for (let i = 0; i < this.meshes.length; i++) {
+
+                    let mesh = this.meshes[i];
+                    let material: Nullable<Material> = mesh.material;
+
+                    if (!material) {
+                        done++;
+                        if (done === this.meshes.length) {
+                            return this._createFrames(resolve);
+                        }
+                        continue;
+                    }
+
+                    material.forceCompilationAsync(mesh).then(() => {
+                        doneCheck((material as Material));
+                    });
+                }
+            } catch (e) {
+                return reject(e);
+            }
+        });
     }
 
     /**
@@ -711,10 +711,10 @@ export class TexturePacker{
     public download(imageType: string = 'png', quality: number = 1): void {
         setTimeout(() => {
             let pack = {
-                name : this.name,
-                sets : {},
+                name: this.name,
+                sets: {},
                 options: {},
-                frames : []
+                frames: []
             };
 
             let sKeys = Object.keys(this.sets);
@@ -722,7 +722,7 @@ export class TexturePacker{
             try {
                 for (let i = 0; i < sKeys.length; i++) {
                     let channel: string = sKeys[i];
-                    let dt =  (this.sets as any)[channel];
+                    let dt = (this.sets as any)[channel];
                     (pack.sets as any)[channel] = dt.getContext().canvas.toDataURL('image/' + imageType, quality);
                 }
                 for (let i = 0; i < oKeys.length; i++) {
@@ -770,7 +770,7 @@ export class TexturePacker{
                     new Vector2(parsedData.frames[i], parsedData.frames[i + 1]),
                     new Vector2(parsedData.frames[i + 2], parsedData.frames[i + 3])
                 );
-            this.frames.push(frame);
+                this.frames.push(frame);
             }
 
             let channels = Object.keys(parsedData.sets);

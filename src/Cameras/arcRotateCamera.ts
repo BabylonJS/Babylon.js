@@ -437,8 +437,8 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the boolean value that controls whether or not the mouse wheel
      * zooms to the location of the mouse pointer or not.  The default is false.
      */
-     @serialize()
-     public get zoomToMouseLocation(): boolean {
+    @serialize()
+    public get zoomToMouseLocation(): boolean {
         var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
         if (mousewheel) {
             return mousewheel.zoomToMouseLocation;

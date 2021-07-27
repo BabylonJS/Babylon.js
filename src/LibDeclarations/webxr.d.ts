@@ -41,7 +41,7 @@ type XRAnchorSet = Set<XRAnchor>;
 
 type XREventHandler = (callback: any) => void;
 
-interface XRLayer extends EventTarget {}
+interface XRLayer extends EventTarget { }
 
 type XRDOMOverlayInit = {
     /**
@@ -97,7 +97,7 @@ declare class XRWebGLLayer {
 }
 
 // tslint:disable-next-line no-empty-interface
-interface XRSpace extends EventTarget {}
+interface XRSpace extends EventTarget { }
 
 interface XRRenderState {
     readonly baseLayer?: XRWebGLLayer;
@@ -345,7 +345,7 @@ interface XRPlane {
     lastChangedTime: number;
 }
 
-interface XRJointSpace extends XRSpace {}
+interface XRJointSpace extends XRSpace { }
 
 interface XRJointPose extends XRPose {
     radius: number | undefined;

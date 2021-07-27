@@ -12,7 +12,7 @@ export class StringTools {
         if ('download' in HTMLAnchorElement.prototype) {
             var URL = window.URL || window.webkitURL;
             var a = document.createElement('a');
-        
+
             a.download = name;
             a.rel = 'noopener'; // tabnabbing
 
@@ -37,7 +37,7 @@ export class StringTools {
             // Safari doesn't allow downloading of blob URLs
             var reader = new FileReader();
             reader.onloadend = () => {
-                var url:any = reader.result;
+                var url: any = reader.result;
                 url = isChromeIOS ? url : url.replace(/^data:[^;]*;/, 'data:attachment/file;');
                 if (popup) {
                     popup.location.href = url;
@@ -82,6 +82,6 @@ export class StringTools {
                 type: "application/octet-stream"
             });
 
-        this._SaveAs(blob, filename, document);        
+        this._SaveAs(blob, filename, document);
     }
 }

@@ -32,9 +32,9 @@ var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vect
 };
 
 var getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: number, found: boolean } =
-    (function() {
+    (function () {
         var result = { root: 0, found: false };
-        return function(a: number, b: number, c: number, maxR: number) {
+        return function (a: number, b: number, c: number, maxR: number) {
             result.root = 0; result.found = false;
             var determinant = b * b - 4.0 * a * c;
             if (determinant < 0) {

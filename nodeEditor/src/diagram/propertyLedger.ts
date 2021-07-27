@@ -10,7 +10,7 @@ import { TrigonometryPropertyTabComponent } from './properties/trigonometryNodeP
 import { ConditionalPropertyTabComponent } from './properties/conditionalNodePropertyComponent';
 
 export class PropertyLedger {
-    public static RegisteredControls: {[key: string] : ComponentClass<IPropertyComponentProps>} = {};
+    public static RegisteredControls: { [key: string]: ComponentClass<IPropertyComponentProps> } = {};
 }
 
 PropertyLedger.RegisteredControls["TransformBlock"] = TransformPropertyTabComponent;

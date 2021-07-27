@@ -2484,7 +2484,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 scene._removePendingData(this);
             },
-            () => {},
+            () => { },
             scene.offlineProvider,
             getBinaryData
         );
@@ -2806,7 +2806,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
-        Tools.LoadImage(url, onload, () => {}, scene.offlineProvider);
+        Tools.LoadImage(url, onload, () => { }, scene.offlineProvider);
         return this;
     }
 
