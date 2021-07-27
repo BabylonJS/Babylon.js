@@ -3,7 +3,7 @@ import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 
-VertexData.CreateTorus = function(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }) {
+VertexData.CreateTorus = function (options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }) {
     var indices = [];
     var positions = [];
     var normals = [];

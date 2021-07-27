@@ -4,7 +4,7 @@ import { Vector4 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
-VertexData.CreateDisc = function(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+VertexData.CreateDisc = function (options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var positions = new Array<number>();
     var indices = new Array<number>();
     var normals = new Array<number>();

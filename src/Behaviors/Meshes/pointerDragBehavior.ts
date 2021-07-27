@@ -86,7 +86,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     /**
      *  Fires each time behavior enabled state changes
      */
-     public onEnabledObservable = new Observable<boolean>();
+    public onEnabledObservable = new Observable<boolean>();
 
     /**
      *  If the attached mesh should be moved when dragged
@@ -446,12 +446,10 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             // Calculate plane normal that is the cross product of local axis and (eye-dragPlanePosition)
             ray.origin.subtractToRef(this._pointA, this._pointC);
             this._pointC.normalize();
-            if (Math.abs(Vector3.Dot(this._localAxis, this._pointC)) > 0.999)
-            {
+            if (Math.abs(Vector3.Dot(this._localAxis, this._pointC)) > 0.999) {
                 // the drag axis is colinear with the (eye to position) ray. The cross product will give jittered values.
                 // A new axis vector need to be computed
-                if (Math.abs(Vector3.Dot(Vector3.UpReadOnly, this._pointC)) > 0.999)
-                {
+                if (Math.abs(Vector3.Dot(Vector3.UpReadOnly, this._pointC)) > 0.999) {
                     this._lookAt.copyFrom(Vector3.Right());
                 } else {
                     this._lookAt.copyFrom(Vector3.UpReadOnly);

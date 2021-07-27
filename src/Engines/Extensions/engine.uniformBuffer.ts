@@ -47,17 +47,17 @@ declare module "../../Engines/thinEngine" {
          */
         bindUniformBufferBase(buffer: DataBuffer, location: number, name: string): void;
 
-         /**
-          * Bind a specific block at a given index in a specific shader program
-          * @param pipelineContext defines the pipeline context to use
-          * @param blockName defines the block name
-          * @param index defines the index where to bind the block
-          */
+        /**
+         * Bind a specific block at a given index in a specific shader program
+         * @param pipelineContext defines the pipeline context to use
+         * @param blockName defines the block name
+         * @param index defines the index where to bind the block
+         */
         bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
     }
 }
 
-ThinEngine.prototype.createUniformBuffer = function(elements: FloatArray): DataBuffer {
+ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray): DataBuffer {
     var ubo = this._gl.createBuffer();
 
     if (!ubo) {
@@ -79,7 +79,7 @@ ThinEngine.prototype.createUniformBuffer = function(elements: FloatArray): DataB
     return result;
 };
 
-ThinEngine.prototype.createDynamicUniformBuffer = function(elements: FloatArray): DataBuffer {
+ThinEngine.prototype.createDynamicUniformBuffer = function (elements: FloatArray): DataBuffer {
     var ubo = this._gl.createBuffer();
 
     if (!ubo) {
@@ -101,39 +101,39 @@ ThinEngine.prototype.createDynamicUniformBuffer = function(elements: FloatArray)
     return result;
 };
 
-ThinEngine.prototype.updateUniformBuffer = function(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void {
-   this.bindUniformBuffer(uniformBuffer);
+ThinEngine.prototype.updateUniformBuffer = function (uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void {
+    this.bindUniformBuffer(uniformBuffer);
 
-   if (offset === undefined) {
-       offset = 0;
-   }
+    if (offset === undefined) {
+        offset = 0;
+    }
 
-   if (count === undefined) {
-       if (elements instanceof Float32Array) {
-           this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, <Float32Array>elements);
-       } else {
-           this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, new Float32Array(<number[]>elements));
-       }
-   } else {
-       if (elements instanceof Float32Array) {
-           this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, <Float32Array>elements.subarray(offset, offset + count));
-       } else {
-           this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, new Float32Array(<number[]>elements).subarray(offset, offset + count));
-       }
-   }
+    if (count === undefined) {
+        if (elements instanceof Float32Array) {
+            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, <Float32Array>elements);
+        } else {
+            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, new Float32Array(<number[]>elements));
+        }
+    } else {
+        if (elements instanceof Float32Array) {
+            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, <Float32Array>elements.subarray(offset, offset + count));
+        } else {
+            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, new Float32Array(<number[]>elements).subarray(offset, offset + count));
+        }
+    }
 
-   this.bindUniformBuffer(null);
+    this.bindUniformBuffer(null);
 };
 
-ThinEngine.prototype.bindUniformBuffer = function(buffer: Nullable<DataBuffer>): void {
+ThinEngine.prototype.bindUniformBuffer = function (buffer: Nullable<DataBuffer>): void {
     this._gl.bindBuffer(this._gl.UNIFORM_BUFFER, buffer ? buffer.underlyingResource : null);
 };
 
-ThinEngine.prototype.bindUniformBufferBase = function(buffer: DataBuffer, location: number, name: string): void {
+ThinEngine.prototype.bindUniformBufferBase = function (buffer: DataBuffer, location: number, name: string): void {
     this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer ? buffer.underlyingResource : null);
 };
 
-ThinEngine.prototype.bindUniformBlock = function(pipelineContext: IPipelineContext, blockName: string, index: number): void {
+ThinEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineContext, blockName: string, index: number): void {
     let program = (pipelineContext as WebGLPipelineContext).program!;
 
     var uniformLocation = this._gl.getUniformBlockIndex(program, blockName);

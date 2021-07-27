@@ -50,7 +50,7 @@ export class SkeletonViewer {
         let targetBoneIndex: number = options.targetBoneIndex ?? 0;
 
         Effect.ShadersStore['boneWeights:' + skeleton.name + "VertexShader"] =
-        `precision highp float;
+            `precision highp float;
 
         attribute vec3 position;
         attribute vec2 uv;
@@ -109,7 +109,7 @@ export class SkeletonViewer {
         gl_Position = projection * view * worldPos;
         }`;
         Effect.ShadersStore['boneWeights:' + skeleton.name + "FragmentShader"] =
-        `
+            `
             precision highp float;
             varying vec3 vPosition;
 
@@ -121,17 +121,17 @@ export class SkeletonViewer {
             }
         `;
         let shader: ShaderMaterial = new ShaderMaterial('boneWeight:' + skeleton.name, scene,
-        {
-            vertex: 'boneWeights:' + skeleton.name,
-            fragment: 'boneWeights:' + skeleton.name
-        },
-        {
-            attributes: ['position', 'normal', 'matricesIndices', 'matricesWeights'],
-            uniforms: [
-                'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
-                'colorBase', 'colorZero', 'colorQuarter', 'colorHalf', 'colorFull', 'targetBoneIndex'
-            ]
-        });
+            {
+                vertex: 'boneWeights:' + skeleton.name,
+                fragment: 'boneWeights:' + skeleton.name
+            },
+            {
+                attributes: ['position', 'normal', 'matricesIndices', 'matricesWeights'],
+                uniforms: [
+                    'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
+                    'colorBase', 'colorZero', 'colorQuarter', 'colorHalf', 'colorFull', 'targetBoneIndex'
+                ]
+            });
 
         shader.setColor3('colorBase', colorBase);
         shader.setColor3('colorZero', colorZero);
@@ -160,36 +160,36 @@ export class SkeletonViewer {
         let colorMap: ISkeletonMapShaderColorMapKnot[] = options.colorMap ?? [
             {
                 color: new Color3(1, 0.38, 0.18),
-                location : 0
+                location: 0
             },
             {
                 color: new Color3(.59, 0.18, 1.00),
-                location : 0.2
+                location: 0.2
             },
             {
                 color: new Color3(0.59, 1, 0.18),
-                location : 0.4
+                location: 0.4
             },
             {
-               color: new Color3(1, 0.87, 0.17),
-                location : 0.6
+                color: new Color3(1, 0.87, 0.17),
+                location: 0.6
             },
             {
                 color: new Color3(1, 0.17, 0.42),
-                location : 0.8
+                location: 0.8
             },
             {
                 color: new Color3(0.17, 0.68, 1.0),
-                location : 1.0
+                location: 1.0
             }
         ];
 
         let bufferWidth: number = skeleton.bones.length + 1;
         let colorMapBuffer: number[] = SkeletonViewer._CreateBoneMapColorBuffer(bufferWidth, colorMap, scene);
         let shader = new ShaderMaterial('boneWeights:' + skeleton.name, scene,
-        {
-            vertexSource:
-            `precision highp float;
+            {
+                vertexSource:
+                    `precision highp float;
 
             attribute vec3 position;
             attribute vec2 uv;
@@ -239,8 +239,8 @@ export class SkeletonViewer {
 
                 gl_Position = projection * view * worldPos;
             }`,
-            fragmentSource:
-            `
+                fragmentSource:
+                    `
             precision highp float;
             varying vec3 vColor;
 
@@ -249,14 +249,14 @@ export class SkeletonViewer {
                 gl_FragColor = color;
             }
             `
-        },
-        {
-            attributes: ['position', 'normal', 'matricesIndices', 'matricesWeights'],
-            uniforms: [
-                'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
-                'colorMap'
-            ]
-        });
+            },
+            {
+                attributes: ['position', 'normal', 'matricesIndices', 'matricesWeights'],
+                uniforms: [
+                    'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
+                    'colorMap'
+                ]
+            });
 
         shader.setFloats('colorMap', colorMapBuffer);
 
@@ -276,7 +276,7 @@ export class SkeletonViewer {
      * @returns an Array of floats from the color gradient values
      */
     private static _CreateBoneMapColorBuffer(size: number, colorMap: ISkeletonMapShaderColorMapKnot[], scene: Scene) {
-        let tempGrad = new DynamicTexture('temp', {width: size, height: 1}, scene, false);
+        let tempGrad = new DynamicTexture('temp', { width: size, height: 1 }, scene, false);
         let ctx = tempGrad.getContext();
         let grad = ctx.createLinearGradient(0, 0, size, 0);
 
@@ -298,7 +298,7 @@ export class SkeletonViewer {
     }
 
     /** If SkeletonViewer scene scope. */
-    private _scene : Scene;
+    private _scene: Scene;
 
     /** Gets or sets the color used to render the skeleton */
     public color: Color3 = Color3.White();
@@ -316,12 +316,12 @@ export class SkeletonViewer {
     private _isEnabled = true;
 
     /** If SkeletonViewer is ready. */
-    private _ready : boolean;
+    private _ready: boolean;
 
     /** SkeletonViewer render observable. */
     private _obs: Nullable<Observer<Scene>> = null;
 
-     /** The Utility Layer to render the gizmos in. */
+    /** The Utility Layer to render the gizmos in. */
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
     private _boneIndices: Set<number>;
@@ -348,7 +348,7 @@ export class SkeletonViewer {
     }
     /** Sets the debugMesh */
     set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>) {
-         this._debugMesh = (value as any);
+        this._debugMesh = (value as any);
     }
     /** Gets the displayMode */
     get displayMode(): number {
@@ -383,7 +383,7 @@ export class SkeletonViewer {
         public renderingGroupId: number = 3,
         /** is the options for the viewer */
         public options: Partial<ISkeletonViewerOptions> = {}
-        ) {
+    ) {
 
         this._scene = scene;
         this._ready = false;
@@ -436,11 +436,11 @@ export class SkeletonViewer {
 
     /** The Dynamic bindings for the update functions */
     private _bindObs(): void {
-        switch (this.displayMode){
+        switch (this.displayMode) {
             case SkeletonViewer.DISPLAY_LINES: {
-                    this._obs = this.scene.onBeforeRenderObservable.add(() => {
-                        this._displayLinesUpdate();
-                    });
+                this._obs = this.scene.onBeforeRenderObservable.add(() => {
+                    this._displayLinesUpdate();
+                });
                 break;
             }
         }
@@ -448,7 +448,7 @@ export class SkeletonViewer {
 
     /** Update the viewer to sync with current skeleton state, only used to manually update. */
     public update(): void {
-        switch (this.displayMode){
+        switch (this.displayMode) {
             case SkeletonViewer.DISPLAY_LINES: {
                 this._displayLinesUpdate();
                 break;
@@ -632,7 +632,7 @@ export class SkeletonViewer {
                 boneAbsoluteBindPoseTransform.decompose(undefined, undefined, anchorPoint);
 
                 bone.children.forEach((bc, i) => {
-                    let childAbsoluteBindPoseTransform : Matrix = new Matrix();
+                    let childAbsoluteBindPoseTransform: Matrix = new Matrix();
                     bc.getBindPose().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
                     let childPoint = new Vector3();
                     childAbsoluteBindPoseTransform.decompose(undefined, undefined, childPoint);
@@ -654,29 +654,29 @@ export class SkeletonViewer {
                     let up0 = up.scale(midStep);
 
                     let spur = ShapeBuilder.ExtrudeShapeCustom('skeletonViewer',
-                    {
-                        shape:  [
-                                    new Vector3(1, -1,  0),
-                                    new Vector3(1,  1,  0),
-                                    new Vector3(-1,  1,  0),
-                                    new Vector3(-1, -1,  0),
-                                    new Vector3(1, -1,  0)
-                                ],
-                        path:   [ Vector3.Zero(), up0, up ],
-                        scaleFunction:
+                        {
+                            shape: [
+                                new Vector3(1, -1, 0),
+                                new Vector3(1, 1, 0),
+                                new Vector3(-1, 1, 0),
+                                new Vector3(-1, -1, 0),
+                                new Vector3(1, -1, 0)
+                            ],
+                            path: [Vector3.Zero(), up0, up],
+                            scaleFunction:
                                 (i: number) => {
-                                    switch (i){
+                                    switch (i) {
                                         case 0:
                                         case 2:
-                                        return 0;
+                                            return 0;
                                         case 1:
-                                        return h * midStepFactor;
+                                            return h * midStepFactor;
                                     }
                                     return 0;
                                 },
-                        sideOrientation: Mesh.DEFAULTSIDE,
-                        updatable: false
-                    },  utilityLayerScene);
+                            sideOrientation: Mesh.DEFAULTSIDE,
+                            updatable: false
+                        }, utilityLayerScene);
 
                     let numVertices = spur.getTotalVertices();
                     let mwk: number[] = [], mik: number[] = [];
@@ -837,7 +837,7 @@ export class SkeletonViewer {
     }
 
     /** Update the viewer to sync with current skeleton state, only used for the line display. */
-    private  _displayLinesUpdate(): void {
+    private _displayLinesUpdate(): void {
         if (!this._utilityLayer) {
             return;
         }

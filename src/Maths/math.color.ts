@@ -526,7 +526,7 @@ export class Color3 {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-     public static Hermite1stDerivative(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number): Color3 {
+    public static Hermite1stDerivative(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number): Color3 {
         let result = Color3.Black();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
@@ -543,7 +543,7 @@ export class Color3 {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number, result: Color3) {
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number, result: Color3) {
         const t2 = time * time;
 
         result.r = (t2 - time) * 6 * value1.r + (3 * t2 - 4 * time + 1) * tangent1.r + (-t2 + time) * 6 * value2.r + (3 * t2 - 2 * time) * tangent2.r;
@@ -1009,7 +1009,7 @@ export class Color4 {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-     public static Hermite1stDerivative(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number): Color4 {
+    public static Hermite1stDerivative(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number): Color4 {
         let result = new Color4();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
@@ -1026,7 +1026,7 @@ export class Color4 {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number, result: Color4)  {
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number, result: Color4) {
         const t2 = time * time;
 
         result.r = (t2 - time) * 6 * value1.r + (3 * t2 - 4 * time + 1) * tangent1.r + (-t2 + time) * 6 * value2.r + (3 * t2 - 2 * time) * tangent2.r;

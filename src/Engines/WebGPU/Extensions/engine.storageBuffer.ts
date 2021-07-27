@@ -5,11 +5,11 @@ import { Constants } from "../../constants";
 import { WebGPUEngine } from "../../webgpuEngine";
 import * as WebGPUConstants from '../webgpuConstants';
 
-WebGPUEngine.prototype.createStorageBuffer = function(data: DataArray | number, creationFlags: number): DataBuffer {
+WebGPUEngine.prototype.createStorageBuffer = function (data: DataArray | number, creationFlags: number): DataBuffer {
     return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE);
 };
 
-WebGPUEngine.prototype.updateStorageBuffer = function(buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+WebGPUEngine.prototype.updateStorageBuffer = function (buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
     const dataBuffer = buffer as WebGPUDataBuffer;
     if (byteOffset === undefined) {
         byteOffset = 0;
@@ -42,7 +42,7 @@ WebGPUEngine.prototype.updateStorageBuffer = function(buffer: DataBuffer, data: 
     this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
 };
 
-WebGPUEngine.prototype.readFromStorageBuffer = function(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {
+WebGPUEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {
     size = size || storageBuffer.capacity;
 
     const gpuBuffer = this._bufferManager.createRawBuffer(size, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst);

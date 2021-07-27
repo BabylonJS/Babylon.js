@@ -280,8 +280,7 @@ export class PhysicsViewer {
                             const boundingInfo = m.getBoundingInfo();
                             const min = boundingInfo.boundingBox.minimum;
                             const max = boundingInfo.boundingBox.maximum;
-                            switch (m.physicsImpostor.type)
-                            {
+                            switch (m.physicsImpostor.type) {
                                 case PhysicsImpostor.BoxImpostor:
                                     mesh = this._getDebugBoxMesh(utilityLayerScene);
                                     mesh.position.copyFrom(min);

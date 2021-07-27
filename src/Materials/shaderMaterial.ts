@@ -1087,7 +1087,7 @@ export class ShaderMaterial extends Material {
 
         // Matrix
         for (var key in this._matrices) {
-            result.setMatrix(key,  this._matrices[key]);
+            result.setMatrix(key, this._matrices[key]);
         }
 
         // Matrix 3x3

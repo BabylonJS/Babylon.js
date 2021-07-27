@@ -109,19 +109,19 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     /**
      * Force rendering the geometry through geometry buffer
      */
-     private _forceGeometryBuffer: boolean = false;
-     private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
-         if (!this._forceGeometryBuffer) {
-             return null;
-         }
-         return this._scene.geometryBufferRenderer;
-     }
-     private get _prePassRenderer(): Nullable<PrePassRenderer> {
-         if (this._forceGeometryBuffer) {
-             return null;
-         }
-         return this._scene.prePassRenderer;
-     }
+    private _forceGeometryBuffer: boolean = false;
+    private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
+        if (!this._forceGeometryBuffer) {
+            return null;
+        }
+        return this._scene.geometryBufferRenderer;
+    }
+    private get _prePassRenderer(): Nullable<PrePassRenderer> {
+        if (this._forceGeometryBuffer) {
+            return null;
+        }
+        return this._scene.prePassRenderer;
+    }
     /**
      * Ratio object used for SSAO ratio and blur ratio
      */
