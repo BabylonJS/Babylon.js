@@ -1,3 +1,6 @@
+import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
+import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
@@ -23,7 +26,7 @@ export interface IWebXRLightEstimationOptions {
 export class WebXRLightEstimation extends WebXRAbstractFeature {
 
     private _canvasContext: Nullable<WebGLRenderingContext | WebGL2RenderingContext> = null;
-    private _reflectionCubeMap: Nullable<WebGLTexture> = null;
+    private _reflectionCubeMap: Nullable<BaseTexture> = null;
     private _xrLightEstimate: Nullable<XRLightEstimate> = null;
     private _xrLightProbe: Nullable<XRLightProbe> = null;
     private _xrWebGLBinding: Nullable<XRWebGLBinding> = null;
@@ -42,7 +45,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
     /**
      * This observable will notify when the reflection cube map is updated.
      */
-    public onReflectionCubeMapUpdatedObservable: Observable<WebGLTexture> = new Observable();
+    public onReflectionCubeMapUpdatedObservable: Observable<BaseTexture> = new Observable();
 
     /**
     * Creates a new instance of the light estimation feature
@@ -68,19 +71,19 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      * Since creating and processing the cube map is potentially expensive, especially if mip maps are needed, you can listen to the onReflectionCubeMapUpdatedObservable to determine
      * when it has been updated.
      */
-    public get reflectionCubeMap(): Nullable<WebGLTexture> {
+    public get reflectionCubeMap(): Nullable<BaseTexture> {
         return this._reflectionCubeMap;
     }
 
-    /**
-     * The XRLightProbe object created during attach (may not be available for a few frames depending on device).
-     *
-     * The XRLightProbe itself contains no lighting values, but is used to retrieve the current lighting state with each XRFrame.
-     * XR Light Probe also contains the probe space, may update it's pose over time as the user moves around their environment.
-     */
-    public get xrLightProbe(): Nullable<XRLightProbe> {
-        return this._xrLightProbe;
-    }
+    // /**
+    //  * The XRLightProbe object created during attach (may not be available for a few frames depending on device).
+    //  *
+    //  * The XRLightProbe itself contains no lighting values, but is used to retrieve the current lighting state with each XRFrame.
+    //  * XR Light Probe also contains the probe space, may update it's pose over time as the user moves around their environment.
+    //  */
+    // public get xrLightProbe(): Nullable<XRLightProbe> {
+    //     return this._xrLightProbe;
+    // }
 
     /**
      * The most recent light estimate.  Available starting on the first frame where the device provides a light probe.
@@ -91,12 +94,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
 
     private _getCanvasContext(): WebGLRenderingContext | WebGL2RenderingContext {
         if (this._canvasContext === null) {
-            const canvas: HTMLCanvasElement = this._xrSessionManager.scene.getEngine().getRenderingCanvas()!;
-            let context: Nullable<WebGLRenderingContext | WebGL2RenderingContext> = canvas.getContext("webgl2");
-            if (!context) {
-                context = canvas.getContext("webgl")!;
-            }
-            this._canvasContext = context;
+            this._canvasContext = this._xrSessionManager.scene.getEngine()._gl;
         }
         return this._canvasContext;
     }
@@ -113,11 +111,21 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      * Event Listener to for "reflectionchange" events.
      */
     private _updateReflectionCubeMap = (): void => {
-        if (this._reflectionCubeMap !== null) {
-            this._getCanvasContext().deleteTexture(this._reflectionCubeMap);
+        console.log('updating');
+        if (this._reflectionCubeMap === null) {
+            this._reflectionCubeMap = new BaseTexture(this._xrSessionManager.scene);
         }
-        this._reflectionCubeMap = this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe!);
-        this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap);
+        // else {
+        //     this._reflectionCubeMap._texture?.dispose();
+        // }
+        console.log(this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe!));
+        if (this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe!)) {
+            console.log(this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe!));
+            const internalTexture = new InternalTexture(this._xrSessionManager.scene.getEngine(), InternalTextureSource.CubeRaw, false);
+            internalTexture._hardwareTexture = new WebGLHardwareTexture(this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe!), this._getCanvasContext() as WebGLRenderingContext);
+            this._reflectionCubeMap._texture = internalTexture;
+            this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap!);
+        }
     }
 
     /**
@@ -148,7 +156,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-     public detach(): boolean {
+    public detach(): boolean {
         const detached = super.detach();
 
         if (this._xrLightProbe !== null) {
