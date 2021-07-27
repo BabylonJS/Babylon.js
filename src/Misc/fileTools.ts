@@ -333,7 +333,7 @@ export class FileTools {
         if (FileTools.IsBase64DataUrl(url)) {
             const fileRequest: IFileRequest = {
                 onCompleteObservable: new Observable<IFileRequest>(),
-                abort: () => () => {},
+                abort: () => () => { },
             };
 
             try {

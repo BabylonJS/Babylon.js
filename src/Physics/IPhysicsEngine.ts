@@ -104,7 +104,7 @@ export interface IPhysicsEngine {
      * To increase physics resolution precision, set a small value (like 1 ms)
      * @param subTimeStep defines the new sub timestep used for physics resolution.
      */
-    setSubTimeStep(subTimeStep: number) : void;
+    setSubTimeStep(subTimeStep: number): void;
 
     /**
      * Get the sub time step of the physics engine.

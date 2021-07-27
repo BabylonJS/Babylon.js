@@ -1,7 +1,7 @@
 /**
  * Describes the test suite.
  */
-describe('Babylon Ray', function() {
+describe('Babylon Ray', function () {
     let subject: BABYLON.Engine;
 
     this.timeout(10000);
@@ -9,12 +9,12 @@ describe('Babylon Ray', function() {
     /**
      * Loads the dependencies.
      */
-    before(function(done) {
+    before(function (done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .testMode()
-            .load(function() {
+            .load(function () {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 done();
@@ -24,7 +24,7 @@ describe('Babylon Ray', function() {
     /**
      * Create a new engine subject before each test.
      */
-    beforeEach(function() {
+    beforeEach(function () {
         subject = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,

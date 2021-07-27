@@ -17,7 +17,7 @@ declare module "../../scene" {
 }
 
 Object.defineProperty(Scene.prototype, "postProcessRenderPipelineManager", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         if (!this._postProcessRenderPipelineManager) {
             // Register the G Buffer component to the scene.
             let component = this._getComponent(SceneComponentConstants.NAME_POSTPROCESSRENDERPIPELINEMANAGER) as PostProcessRenderPipelineManagerSceneComponent;

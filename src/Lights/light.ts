@@ -346,7 +346,7 @@ export abstract class Light extends Node implements ISortableLight {
     constructor(name: string, scene: Scene) {
         super(name, scene);
         this.getScene().addLight(this);
-        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined,  undefined, name);
+        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
         this._buildUniformLayout();
 
         this.includedOnlyMeshes = new Array<AbstractMesh>();

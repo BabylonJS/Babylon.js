@@ -44,7 +44,7 @@ export class ConvolutionPostProcess extends PostProcess {
         kernel: number[],
         options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
-            this.kernel = kernel;
+        this.kernel = kernel;
         this.onApply = (effect: Effect) => {
             effect.setFloat2("screenSize", this.width, this.height);
             effect.setArray("kernel", this.kernel);

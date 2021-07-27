@@ -69,7 +69,7 @@ export class OculusTouchController extends WebVRController {
             meshName = OculusTouchController.MODEL_RIGHT_FILENAME;
         }
 
-        SceneLoader.ImportMesh("",  OculusTouchController._IsQuest ? OculusTouchController.QUEST_MODEL_BASE_URL : OculusTouchController.MODEL_BASE_URL, meshName, scene, (newMeshes) => {
+        SceneLoader.ImportMesh("", OculusTouchController._IsQuest ? OculusTouchController.QUEST_MODEL_BASE_URL : OculusTouchController.MODEL_BASE_URL, meshName, scene, (newMeshes) => {
             /*
             Parent Mesh name: oculus_touch_left
             - body

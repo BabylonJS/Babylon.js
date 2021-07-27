@@ -1,6 +1,6 @@
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype._debugPushGroup = function(groupName: string, targetObject?: number): void {
+WebGPUEngine.prototype._debugPushGroup = function (groupName: string, targetObject?: number): void {
     if (!this._options.enableGPUDebugMarkers) {
         return;
     }
@@ -15,7 +15,7 @@ WebGPUEngine.prototype._debugPushGroup = function(groupName: string, targetObjec
     }
 };
 
-WebGPUEngine.prototype._debugPopGroup = function(targetObject?: number): void {
+WebGPUEngine.prototype._debugPopGroup = function (targetObject?: number): void {
     if (!this._options.enableGPUDebugMarkers) {
         return;
     }
@@ -30,7 +30,7 @@ WebGPUEngine.prototype._debugPopGroup = function(targetObject?: number): void {
     }
 };
 
-WebGPUEngine.prototype._debugInsertMarker = function(text: string, targetObject?: number): void {
+WebGPUEngine.prototype._debugInsertMarker = function (text: string, targetObject?: number): void {
     if (!this._options.enableGPUDebugMarkers) {
         return;
     }
@@ -45,7 +45,7 @@ WebGPUEngine.prototype._debugInsertMarker = function(text: string, targetObject?
     }
 };
 
-WebGPUEngine.prototype._debugFlushPendingCommands = function(): void {
+WebGPUEngine.prototype._debugFlushPendingCommands = function (): void {
     for (let i = 0; i < this._pendingDebugCommands.length; ++i) {
         const [name, param] = this._pendingDebugCommands[i];
 

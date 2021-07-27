@@ -53,7 +53,7 @@ export class Inspector {
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet: any = sourceDoc.styleSheets[index];
-            
+
             try {
                 if (styleSheet.cssRules) {
                     // for <style> elements
@@ -74,7 +74,7 @@ export class Inspector {
                     targetDoc.head!.appendChild(newLinkEl);
                 }
             } catch (e) {
-                
+
             }
         }
     }

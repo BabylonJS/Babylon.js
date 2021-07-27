@@ -5,7 +5,7 @@ import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     if (onBeforeUnbind) {
         onBeforeUnbind();
     }
@@ -33,7 +33,7 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures
     this._setColorFormat(this._mainRenderPassWrapper);
 };
 
-WebGPUEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
+WebGPUEngine.prototype.createMultipleRenderTarget = function (size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
     let generateMipMaps = false;
     let generateDepthBuffer = true;
     let generateStencilBuffer = false;
@@ -134,7 +134,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function(size: any, options:
     return textures;
 };
 
-WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
+WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (textures: Nullable<InternalTexture[]>, samples: number): number {
     if (!textures || textures[0].samples === samples) {
         return samples;
     }
@@ -157,7 +157,7 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(t
     return samples;
 };
 
-WebGPUEngine.prototype.bindAttachments = function(attachments: number[]): void {
+WebGPUEngine.prototype.bindAttachments = function (attachments: number[]): void {
     if (attachments.length === 0 || !this._currentRenderTarget) {
         return;
     }
@@ -165,7 +165,7 @@ WebGPUEngine.prototype.bindAttachments = function(attachments: number[]): void {
     this._mrtAttachments = attachments;
 };
 
-WebGPUEngine.prototype.buildTextureLayout = function(textureStatus: boolean[]): number[] {
+WebGPUEngine.prototype.buildTextureLayout = function (textureStatus: boolean[]): number[] {
     const result = [];
 
     for (let i = 0; i < textureStatus.length; i++) {
@@ -179,6 +179,6 @@ WebGPUEngine.prototype.buildTextureLayout = function(textureStatus: boolean[]): 
     return result;
 };
 
-WebGPUEngine.prototype.restoreSingleAttachment = function(): void {
+WebGPUEngine.prototype.restoreSingleAttachment = function (): void {
     // nothing to do, this is done automatically in the unBindFramebuffer function
 };

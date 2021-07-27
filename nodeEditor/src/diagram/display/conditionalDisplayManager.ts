@@ -11,7 +11,7 @@ export class ConditionalDisplayManager implements IDisplayManager {
         return true;
     }
 
-    public getHeaderText(block: NodeMaterialBlock): string {        
+    public getHeaderText(block: NodeMaterialBlock): string {
         let conditionBlock = block as ConditionalBlock;
         let desc = "";
 
@@ -39,10 +39,10 @@ export class ConditionalDisplayManager implements IDisplayManager {
                 break;
             case ConditionalBlockConditions.Or:
                 desc = "|";
-                break;         
+                break;
             case ConditionalBlockConditions.And:
                 desc = "&";
-                break;                                                                                                                                                        
+                break;
         }
 
         return block.name + " (" + desc + ")"
@@ -52,6 +52,6 @@ export class ConditionalDisplayManager implements IDisplayManager {
         return "#00A080";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {       
+    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
     }
 }

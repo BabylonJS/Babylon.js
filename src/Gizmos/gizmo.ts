@@ -236,13 +236,12 @@ export class Gizmo implements IDisposable {
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
      * @param value Node, TransformNode or mesh
      */
-    protected _matrixChanged()
-    {
+    protected _matrixChanged() {
         if (!this._attachedNode) {
             return;
         }
 
-        if  ((<Camera>this._attachedNode)._isCamera) {
+        if ((<Camera>this._attachedNode)._isCamera) {
             var camera = this._attachedNode as Camera;
             var worldMatrix;
             var worldMatrixUC;
@@ -266,11 +265,11 @@ export class Gizmo implements IDisposable {
             worldMatrixUC.decompose(this._tempVector2, this._tempQuaternion, this._tempVector);
 
             var inheritsTargetCamera = this._attachedNode.getClassName() === "FreeCamera"
-            || this._attachedNode.getClassName() === "FlyCamera"
-            || this._attachedNode.getClassName() === "ArcFollowCamera"
-            || this._attachedNode.getClassName() === "TargetCamera"
-            || this._attachedNode.getClassName() === "TouchCamera"
-            || this._attachedNode.getClassName() === "UniversalCamera";
+                || this._attachedNode.getClassName() === "FlyCamera"
+                || this._attachedNode.getClassName() === "ArcFollowCamera"
+                || this._attachedNode.getClassName() === "TargetCamera"
+                || this._attachedNode.getClassName() === "TouchCamera"
+                || this._attachedNode.getClassName() === "UniversalCamera";
 
             if (inheritsTargetCamera) {
                 var targetCamera = this._attachedNode as TargetCamera;

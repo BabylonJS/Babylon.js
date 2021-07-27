@@ -64,8 +64,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param workerURL url string
      * @returns boolean indicating if worker is created
      */
-    public setWorkerURL(workerURL: string): boolean
-    {
+    public setWorkerURL(workerURL: string): boolean {
         if (window && window.Worker) {
             this._worker = new Worker(workerURL);
             return true;
@@ -106,8 +105,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * Get the maximum number of iterations per navigation tick update
      * @returns the maximum number of iterations
      */
-    getMaximumSubStepCount(): number
-    {
+    getMaximumSubStepCount(): number {
         return this._maximumSubStepCount;
     }
 
@@ -161,7 +159,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                     worldMatrices.push(worldMatrix);
                 }
 
-                for (let matrixIndex = 0; matrixIndex < worldMatrices.length; matrixIndex ++) {
+                for (let matrixIndex = 0; matrixIndex < worldMatrices.length; matrixIndex++) {
                     const wm = worldMatrices[matrixIndex];
                     for (tri = 0; tri < meshIndices.length; tri++) {
                         indices.push(meshIndices[tri] + offset);
@@ -183,7 +181,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         if (this._worker && completion) {
             // spawn worker and send message
             this._worker.postMessage([positions, offset, indices, indices.length, parameters]);
-            this._worker.onmessage = function(e) {
+            this._worker.onmessage = function (e) {
                 completion(e.data);
             };
         } else {
@@ -222,14 +220,11 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
 
         var indices = [];
         var positions = [];
-        for (tri = 0; tri < triangleCount * 3; tri++)
-        {
+        for (tri = 0; tri < triangleCount * 3; tri++) {
             indices.push(tri);
         }
-        for (tri = 0; tri < triangleCount; tri++)
-        {
-            for (pt = 0; pt < 3 ; pt++)
-            {
+        for (tri = 0; tri < triangleCount; tri++) {
+            for (pt = 0; pt < 3; pt++) {
                 let point = debugNavMesh.getTriangle(tri).getPoint(pt);
                 positions.push(point.x, point.y, point.z);
             }
@@ -249,8 +244,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param position world position
      * @returns the closest point to position constrained by the navigation mesh
      */
-    getClosestPoint(position: Vector3) : Vector3
-    {
+    getClosestPoint(position: Vector3): Vector3 {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
@@ -264,7 +258,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param position world position
      * @param result output the closest point to position constrained by the navigation mesh
      */
-    getClosestPointToRef(position: Vector3, result: Vector3) : void {
+    getClosestPointToRef(position: Vector3, result: Vector3): void {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
@@ -342,8 +336,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param end world position
      * @returns array containing world position composing the path
      */
-    computePath(start: Vector3, end: Vector3): Vector3[]
-    {
+    computePath(start: Vector3, end: Vector3): Vector3[] {
         var pt: number;
         this._tempVec1.x = start.x;
         this._tempVec1.y = start.y;
@@ -354,8 +347,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         let navPath = this.navMesh.computePath(this._tempVec1, this._tempVec2);
         let pointCount = navPath.getPointCount();
         var positions = [];
-        for (pt = 0; pt < pointCount; pt++)
-        {
+        for (pt = 0; pt < pointCount; pt++) {
             let p = navPath.getPoint(pt);
             positions.push(new Vector3(p.x, p.y, p.z));
         }
@@ -369,8 +361,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param scene to attach the crowd to
      * @returns the crowd you can add agents to
      */
-    createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene) : ICrowd
-    {
+    createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene): ICrowd {
         var crowd = new RecastJSCrowd(this, maxAgents, maxAgentRadius, scene);
         return crowd;
     }
@@ -381,8 +372,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * default is (1,1,1)
      * @param extent x,y,z value that define the extent around the queries point of reference
      */
-    setDefaultQueryExtent(extent: Vector3): void
-    {
+    setDefaultQueryExtent(extent: Vector3): void {
         this._tempVec1.x = extent.x;
         this._tempVec1.y = extent.y;
         this._tempVec1.z = extent.z;
@@ -393,8 +383,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * Get the Bounding box extent specified by setDefaultQueryExtent
      * @returns the box extent values
      */
-    getDefaultQueryExtent(): Vector3
-    {
+    getDefaultQueryExtent(): Vector3 {
         let p = this.navMesh.getDefaultQueryExtent();
         return new Vector3(p.x, p.y, p.z);
     }
@@ -403,8 +392,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * build the navmesh from a previously saved state using getNavmeshData
      * @param data the Uint8Array returned by getNavmeshData
      */
-    buildFromNavmeshData(data: Uint8Array): void
-    {
+    buildFromNavmeshData(data: Uint8Array): void {
         var nDataBytes = data.length * data.BYTES_PER_ELEMENT;
         var dataPtr = this.bjsRECAST._malloc(nDataBytes);
 
@@ -425,8 +413,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * returns the navmesh data that can be used later. The navmesh must be built before retrieving the data
      * @returns data the Uint8Array that can be saved and reused
      */
-    getNavmeshData(): Uint8Array
-    {
+    getNavmeshData(): Uint8Array {
         let navmeshData = this.navMesh.getNavmeshData();
         var arrView = new Uint8Array(this.bjsRECAST.HEAPU8.buffer, navmeshData.dataPointer, navmeshData.size);
         var ret = new Uint8Array(navmeshData.size);
@@ -439,8 +426,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * Get the Bounding box extent result specified by setDefaultQueryExtent
      * @param result output the box extent values
      */
-    getDefaultQueryExtentToRef(result: Vector3): void
-    {
+    getDefaultQueryExtentToRef(result: Vector3): void {
         let p = this.navMesh.getDefaultQueryExtent();
         result.set(p.x, p.y, p.z);
     }
@@ -459,8 +445,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param height cylinder height
      * @returns the obstacle freshly created
      */
-    addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle
-    {
+    addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
@@ -474,8 +459,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param angle angle in radians of the box orientation on Y axis
      * @returns the obstacle freshly created
      */
-    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle
-    {
+    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
@@ -489,8 +473,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * Removes an obstacle created by addCylinderObstacle or addBoxObstacle
      * @param obstacle obstacle to remove from the navigation
      */
-    removeObstacle(obstacle: IObstacle): void
-    {
+    removeObstacle(obstacle: IObstacle): void {
         this.navMesh.removeObstacle(obstacle);
     }
 
@@ -559,8 +542,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param transform hooked to the agent that will be update by the scene
      * @returns agent index
      */
-    addAgent(pos: Vector3, parameters: IAgentParameters, transform: TransformNode): number
-    {
+    addAgent(pos: Vector3, parameters: IAgentParameters, transform: TransformNode): number {
         var agentParams = new this.bjsRECASTPlugin.bjsRECAST.dtCrowdAgentParams();
         agentParams.radius = parameters.radius;
         agentParams.height = parameters.height;
@@ -770,8 +752,7 @@ export class RecastJSCrowd implements ICrowd {
      * default is (1,1,1)
      * @param extent x,y,z value that define the extent around the queries point of reference
      */
-    setDefaultQueryExtent(extent: Vector3): void
-    {
+    setDefaultQueryExtent(extent: Vector3): void {
         let ext = new this.bjsRECASTPlugin.bjsRECAST.Vec3(extent.x, extent.y, extent.z);
         this.recastCrowd.setDefaultQueryExtent(ext);
     }
@@ -780,8 +761,7 @@ export class RecastJSCrowd implements ICrowd {
      * Get the Bounding box extent specified by setDefaultQueryExtent
      * @returns the box extent values
      */
-    getDefaultQueryExtent(): Vector3
-    {
+    getDefaultQueryExtent(): Vector3 {
         let p = this.recastCrowd.getDefaultQueryExtent();
         return new Vector3(p.x, p.y, p.z);
     }
@@ -790,8 +770,7 @@ export class RecastJSCrowd implements ICrowd {
      * Get the Bounding box extent result specified by setDefaultQueryExtent
      * @param result output the box extent values
      */
-    getDefaultQueryExtentToRef(result: Vector3): void
-    {
+    getDefaultQueryExtentToRef(result: Vector3): void {
         let p = this.recastCrowd.getDefaultQueryExtent();
         result.set(p.x, p.y, p.z);
     }
@@ -801,14 +780,12 @@ export class RecastJSCrowd implements ICrowd {
      * @param index agent index returned by addAgent
      * @returns array containing world position composing the path
      */
-    getCorners(index: number): Vector3[]
-    {
+    getCorners(index: number): Vector3[] {
         let pt: number;
         const navPath = this.recastCrowd.getPath(index);
         const pointCount = navPath.getPointCount();
         var positions = [];
-        for (pt = 0; pt < pointCount; pt++)
-        {
+        for (pt = 0; pt < pointCount; pt++) {
             let p = navPath.getPoint(pt);
             positions.push(new Vector3(p.x, p.y, p.z));
         }
@@ -818,8 +795,7 @@ export class RecastJSCrowd implements ICrowd {
     /**
      * Release all resources
      */
-    dispose() : void
-    {
+    dispose(): void {
         this.recastCrowd.destroy();
         this._scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
         this._onBeforeAnimationsObserver = null;

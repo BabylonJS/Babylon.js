@@ -46,7 +46,7 @@ export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
         if (xmp_gltf && xmp_node) {
             const packet = +xmp_node.packet;
             if (xmp_gltf.packets && packet < xmp_gltf.packets.length) {
-                this._loader.rootBabylonMesh.metadata = this._loader.rootBabylonMesh.metadata || { };
+                this._loader.rootBabylonMesh.metadata = this._loader.rootBabylonMesh.metadata || {};
                 this._loader.rootBabylonMesh.metadata.xmp = xmp_gltf.packets[packet];
             }
         }

@@ -128,7 +128,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      *  Initializes the behavior
      */
-    public init() {}
+    public init() { }
 
     /**
      * In the case of multiple active cameras, the cameraToUseForPointers should be used if set instead of active camera
