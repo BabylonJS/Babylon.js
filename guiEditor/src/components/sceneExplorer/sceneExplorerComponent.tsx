@@ -7,6 +7,7 @@ import { Scene } from "babylonjs/scene";
 import { TreeItemComponent } from "./treeItemComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../globalState";
+import { PropertyChangedEvent } from "../../sharedUiComponents/propertyChangedEvent";
 
 require("./sceneExplorer.scss");
 
@@ -45,6 +46,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onParrentingChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneObserver: Nullable<Observer<Nullable<Scene>>>;
+    private _onPropertyChangedObservable: Nullable<Observer<PropertyChangedEvent>>;
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
@@ -54,6 +56,12 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             this.setState({
                 scene,
             });
+        });
+
+        this._onPropertyChangedObservable = this.props.globalState.onPropertyChangedObservable.add((event :PropertyChangedEvent) => {
+            if(event.property === "name") {
+                this.forceUpdate();
+            }
         });
     }
 
@@ -92,6 +100,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (this._onParrentingChangeObserver) {
             this.props.globalState.onParentingChangeObservable.remove(this._onParrentingChangeObserver);
+        }
+
+        if (this._onPropertyChangedObservable) {
+            this.props.globalState.onPropertyChangedObservable.remove(this._onPropertyChangedObservable);
         }
     }
 
