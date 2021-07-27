@@ -25,7 +25,7 @@ export class UniformBuffer {
 
     private _engine: ThinEngine;
     private _buffer: Nullable<DataBuffer>;
-    private _buffers : Array<[DataBuffer, Float32Array | undefined]>;
+    private _buffers: Array<[DataBuffer, Float32Array | undefined]>;
     private _bufferIndex: number;
     private _createBufferOnWrite: boolean;
     private _data: number[];
@@ -122,7 +122,7 @@ export class UniformBuffer {
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateMatrices:  (name: string, mat: Float32Array) => void;
+    public updateMatrices: (name: string, mat: Float32Array) => void;
 
     /**
      * Lambda to Update vec3 of float from a Vector in a uniform buffer.
@@ -157,13 +157,13 @@ export class UniformBuffer {
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-     public updateDirectColor4: (name: string, color: IColor4Like, suffix?: string) => void;
+    public updateDirectColor4: (name: string, color: IColor4Like, suffix?: string) => void;
 
-     /**
-     * Lambda to Update a int a uniform buffer.
-     * This is dynamic to allow compat with webgl 1 and 2.
-     * You will need to pass the name of the uniform as well as the value.
-     */
+    /**
+    * Lambda to Update a int a uniform buffer.
+    * This is dynamic to allow compat with webgl 1 and 2.
+    * You will need to pass the name of the uniform as well as the value.
+    */
     public updateInt: (name: string, x: number, suffix?: string) => void;
 
     /**
@@ -374,8 +374,8 @@ export class UniformBuffer {
                 size = size * arraySize;
             }
             else {
-                const perElementPadding =  4 - size;
-                const totalPadding =  perElementPadding * arraySize;
+                const perElementPadding = 4 - size;
+                const totalPadding = perElementPadding * arraySize;
                 size = size * arraySize + totalPadding;
             }
 

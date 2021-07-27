@@ -38,7 +38,7 @@ export class EffectRenderer {
         indices: [0, 1, 2, 0, 2, 3],
     };
 
-    private _vertexBuffers: {[key: string]: VertexBuffer};
+    private _vertexBuffers: { [key: string]: VertexBuffer };
     private _indexBuffer: DataBuffer;
 
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
@@ -115,7 +115,7 @@ export class EffectRenderer {
         this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
     }
 
-    private isRenderTargetTexture(texture: InternalTexture | RenderTargetTexture): texture is RenderTargetTexture  {
+    private isRenderTargetTexture(texture: InternalTexture | RenderTargetTexture): texture is RenderTargetTexture {
         return (texture as RenderTargetTexture).renderList !== undefined;
     }
 

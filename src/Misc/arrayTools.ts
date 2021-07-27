@@ -1,13 +1,13 @@
 /** @hidden */
 interface TupleTypes<T> {
-    2:  [T, T];
-    3:  [T, T, T];
-    4:  [T, T, T, T];
-    5:  [T, T, T, T, T];
-    6:  [T, T, T, T, T, T];
-    7:  [T, T, T, T, T, T, T];
-    8:  [T, T, T, T, T, T, T, T];
-    9:  [T, T, T, T, T, T, T, T, T];
+    2: [T, T];
+    3: [T, T, T];
+    4: [T, T, T, T];
+    5: [T, T, T, T, T];
+    6: [T, T, T, T, T, T];
+    7: [T, T, T, T, T, T, T];
+    8: [T, T, T, T, T, T, T, T];
+    9: [T, T, T, T, T, T, T, T, T];
     10: [T, T, T, T, T, T, T, T, T, T];
     11: [T, T, T, T, T, T, T, T, T, T, T];
     12: [T, T, T, T, T, T, T, T, T, T, T, T];

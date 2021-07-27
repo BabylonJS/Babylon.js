@@ -30,7 +30,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.createDynamicTexture = function(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
+ThinEngine.prototype.createDynamicTexture = function (width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
     var texture = new InternalTexture(this, InternalTextureSource.Dynamic);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -54,7 +54,7 @@ ThinEngine.prototype.createDynamicTexture = function(width: number, height: numb
     return texture;
 };
 
-ThinEngine.prototype.updateDynamicTexture = function(texture: Nullable<InternalTexture>,
+ThinEngine.prototype.updateDynamicTexture = function (texture: Nullable<InternalTexture>,
     source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas,
     invertY?: boolean,
     premulAlpha: boolean = false,

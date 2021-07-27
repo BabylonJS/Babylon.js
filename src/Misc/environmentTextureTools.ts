@@ -360,50 +360,50 @@ export class EnvironmentTextureTools {
     }
 
     private static _OnImageReadyAsync(image: HTMLImageElement | ImageBitmap, engine: Engine, expandTexture: boolean,
-        rgbdPostProcess:  Nullable<PostProcess>, url: string, face: number, i: number, generateNonLODTextures: boolean,
+        rgbdPostProcess: Nullable<PostProcess>, url: string, face: number, i: number, generateNonLODTextures: boolean,
         lodTextures: Nullable<{ [lod: number]: BaseTexture }>, cubeRtt: Nullable<InternalTexture>, texture: InternalTexture
-        ): Promise<void> {
-            return new Promise((resolve, reject) => {
-                if (expandTexture) {
-                    let tempTexture = engine.createTexture(null, true, true, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null,
-                        (message) => {
-                            reject(message);
-                        },
-                        image);
+    ): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (expandTexture) {
+                let tempTexture = engine.createTexture(null, true, true, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null,
+                    (message) => {
+                        reject(message);
+                    },
+                    image);
 
-                    rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
-                        // Uncompress the data to a RTT
-                        rgbdPostProcess!.onApply = (effect) => {
-                            effect._bindTexture("textureSampler", tempTexture);
-                            effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && (image instanceof ImageBitmap) ? -1 : 1);
-                        };
+                rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
+                    // Uncompress the data to a RTT
+                    rgbdPostProcess!.onApply = (effect) => {
+                        effect._bindTexture("textureSampler", tempTexture);
+                        effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && (image instanceof ImageBitmap) ? -1 : 1);
+                    };
 
-                        if (!engine.scenes.length) {
-                            return;
-                        }
-
-                        engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
-
-                        // Cleanup
-                        engine.restoreDefaultFramebuffer();
-                        tempTexture.dispose();
-                        URL.revokeObjectURL(url);
-                        resolve();
-                    });
-                }
-                else {
-                    engine._uploadImageToTexture(texture, image, face, i);
-
-                    // Upload the face to the non lod texture support
-                    if (generateNonLODTextures) {
-                        let lodTexture = lodTextures![i];
-                        if (lodTexture) {
-                            engine._uploadImageToTexture(lodTexture._texture!, image, face, 0);
-                        }
+                    if (!engine.scenes.length) {
+                        return;
                     }
+
+                    engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
+
+                    // Cleanup
+                    engine.restoreDefaultFramebuffer();
+                    tempTexture.dispose();
+                    URL.revokeObjectURL(url);
                     resolve();
-                }
+                });
             }
+            else {
+                engine._uploadImageToTexture(texture, image, face, i);
+
+                // Upload the face to the non lod texture support
+                if (generateNonLODTextures) {
+                    let lodTexture = lodTextures![i];
+                    if (lodTexture) {
+                        engine._uploadImageToTexture(lodTexture._texture!, image, face, 0);
+                    }
+                }
+                resolve();
+            }
+        }
         );
     }
 
@@ -543,10 +543,10 @@ export class EnvironmentTextureTools {
                     promise = new Promise<void>((resolve, reject) => {
                         image.onload = () => {
                             this._OnImageReadyAsync(image, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture)
-                            .then(() => resolve())
-                            .catch((reason) => {
-                                reject(reason);
-                            });
+                                .then(() => resolve())
+                                .catch((reason) => {
+                                    reject(reason);
+                                });
                         };
                         image.onerror = (error) => {
                             reject(error);

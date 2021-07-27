@@ -63,7 +63,7 @@ export interface IKTX2DecoderOptions {
     bypassTranscoders?: string[];
 }
 
-const isPowerOfTwo = (value: number)  => {
+const isPowerOfTwo = (value: number) => {
     return (value & (value - 1)) === 0 && value !== 0;
 };
 
@@ -127,7 +127,7 @@ export class KTX2Decoder {
 
         let firstImageDescIndex = 0;
 
-        for (let level = 0; level < kfr.header.levelCount; level ++) {
+        for (let level = 0; level < kfr.header.levelCount; level++) {
             if (level > 0) {
                 firstImageDescIndex += Math.max(kfr.header.layerCount, 1) * kfr.header.faceCount * Math.max(kfr.header.pixelDepth >> (level - 1), 1);
             }
@@ -155,7 +155,7 @@ export class KTX2Decoder {
                 decodedData.height = roundToMultiple4 ? (levelHeight + 3) & ~3 : levelHeight;
             }
 
-            for (let imageIndex = 0; imageIndex < numImagesInLevel; imageIndex ++) {
+            for (let imageIndex = 0; imageIndex < numImagesInLevel; imageIndex++) {
                 let encodedData: Uint8Array;
                 let imageDesc: IKTX2_ImageDesc | null = null;
 

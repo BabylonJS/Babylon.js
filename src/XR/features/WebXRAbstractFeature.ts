@@ -34,7 +34,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * Construct a new (abstract) WebXR feature
      * @param _xrSessionManager the xr session manager for this feature
      */
-    constructor(protected _xrSessionManager: WebXRSessionManager) {}
+    constructor(protected _xrSessionManager: WebXRSessionManager) { }
 
     /**
      * Is this feature attached
