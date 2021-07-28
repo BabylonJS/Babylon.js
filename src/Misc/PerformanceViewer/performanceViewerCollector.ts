@@ -1,5 +1,5 @@
 import { Scene } from "../../scene";
-import { IPerfDatasets, IPerfDataSliceSnapshot, IPerfMetadata } from "../interfaces/iPerfViewer";
+import { IPerfDatasets, IPerfMetadata } from "../interfaces/iPerfViewer";
 import { EventState, Observable } from "../observable";
 import { PrecisionDate } from "../precisionDate";
 import { DynamicFloat32Array } from "./dynamicFloat32Array";
@@ -30,7 +30,7 @@ export class PerformanceViewerCollector {
     /**
      * An observable you can attach to get deltas in the dataset. Subscribing to this will increase memory consumption slightly, and may hurt performance due to increased garbage collection needed.
      */
-    public readonly datasetObservable: Observable<IPerfDataSliceSnapshot>;
+    public readonly datasetObservable: Observable<number[]>;
     /**
      * An observable you can attach to get the most updated map of metadatas.
      */
@@ -158,7 +158,7 @@ export class PerformanceViewerCollector {
                 slice.push(this.datasets.data.at(startingIndex + PerformanceViewerCollector.SliceDataOffset + i));
             }
 
-            this.datasetObservable.notifyObservers({slice});
+            this.datasetObservable.notifyObservers(slice);
         }
     }
 
@@ -185,7 +185,7 @@ export class PerformanceViewerCollector {
         });
 
         if (this.datasetObservable.hasObservers()) {
-            this.datasetObservable.notifyObservers({slice});
+            this.datasetObservable.notifyObservers(slice);
         }
 
     }
