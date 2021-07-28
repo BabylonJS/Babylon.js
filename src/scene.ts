@@ -4147,6 +4147,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._renderMultiviewToSingleView(camera);
         } else {
             // rig cameras
+            this.onBeforeCameraRenderObservable.notifyObservers(camera);
             for (var index = 0; index < camera._rigCameras.length; index++) {
                 this._renderForCamera(camera._rigCameras[index], camera);
             }
