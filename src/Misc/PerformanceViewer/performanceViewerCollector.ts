@@ -54,7 +54,7 @@ export class PerformanceViewerCollector {
 
     /**
      * This method adds additional collection strategies for data collection purposes.
-     * @param strategyCallbacks the list of data to collect with callbacks. 
+     * @param strategyCallbacks the list of data to collect with callbacks.
      */
     public addCollectionStrategies(strategyCallbacks: PerfStrategyInitialization[]) {
         for (const strategyCallback of strategyCallbacks) {
