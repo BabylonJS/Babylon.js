@@ -596,7 +596,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
     * An event triggered when a multi material is created
     */
-   public onNewMultiMaterialAddedObservable = new Observable<MultiMaterial>();
+    public onNewMultiMaterialAddedObservable = new Observable<MultiMaterial>();
 
     /**
     * An event triggered when a material is removed
@@ -771,11 +771,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
      * @return the computed eye position
      */
-     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
+    public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
         const eyePosition =
             this._forcedViewPosition ? this._forcedViewPosition :
-            this._mirroredCameraPosition ? this._mirroredCameraPosition :
-            this.activeCamera!.globalPosition ?? (this.activeCamera as WebVRFreeCamera).devicePosition;
+                this._mirroredCameraPosition ? this._mirroredCameraPosition :
+                    this.activeCamera!.globalPosition ?? (this.activeCamera as WebVRFreeCamera).devicePosition;
 
         const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
 
@@ -3126,7 +3126,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns a list of meshes
      */
     public getMeshesById(id: string): Array<AbstractMesh> {
-        return this.meshes.filter(function(m) {
+        return this.meshes.filter(function (m) {
             return m.id === id;
         });
     }
@@ -3197,7 +3197,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns a list of transform nodes
      */
     public getTransformNodesById(id: string): Array<TransformNode> {
-        return this.transformNodes.filter(function(m) {
+        return this.transformNodes.filter(function (m) {
             return m.id === id;
         });
     }
@@ -4299,7 +4299,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._frameId++;
         this._defaultFrameBufferCleared = false;
-        if (this._activeCamera?.outputRenderTarget) {
+        if (this._activeCamera?.outputRenderTarget && !this.activeCamera?.isRigCamera) {
             this._activeCamera.outputRenderTarget._cleared = false;
         }
         if (this.activeCameras?.length) {
@@ -4401,10 +4401,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        let frameBufferBound = false;
         if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
             this._bindFrameBuffer(this._activeCamera, false);
-            frameBufferBound = true;
         }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
@@ -4413,13 +4411,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Clear
-        if (!frameBufferBound && this.activeCamera && this.activeCamera._rigCameras.length > 0) {
-            for (const rigCamera of this.activeCamera._rigCameras) {
-                this._bindFrameBuffer(rigCamera);
-            }
-        } else {
-            this._clearFrameBuffer(this.activeCamera);
-        }
+        this._clearFrameBuffer(this.activeCamera);
 
         // Collects render targets from external components.
         for (let step of this._gatherRenderTargetsStage) {
