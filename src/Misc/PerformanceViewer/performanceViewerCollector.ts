@@ -14,11 +14,6 @@ const numberOfBitsInHexcode = 24;
 // Allows single numeral hex numbers to be appended by a 0.
 const hexPadding = "0";
 
-// The offset for the value of the number of points inside a slice.
-export const numberOfPointsOffset = 1;
-
-// The offset for when actual data values start appearing inside a slice.
-export const sliceDataOffset = 2;
 /**
  * The collector class handles the collection and storage of data into the appropriate array.
  * The collector also handles notifying any observers of any updates.
@@ -28,9 +23,32 @@ export class PerformanceViewerCollector {
     private _strategies: Map<string, IPerfViewerCollectionStrategy>;
     private _startingTimestamp: number;
 
+    /**
+     * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
+     */
     public readonly datasets: IPerfDatasets;
+    /**
+     * An observable you can attach to get deltas in the dataset. Subscribing to this will increase memory consumption slightly, and may hurt performance due to increased garbage collection needed.
+     */
     public readonly datasetObservable: Observable<IPerfDataSliceSnapshot>;
+    /**
+     * An observable you can attach to get the most updated map of metadatas.
+     */
     public readonly metadataObservable: Observable<Map<string, IPerfMetadata>>;
+
+    /**
+     * The offset for when actual data values start appearing inside a slice.
+     */
+    public static get SliceDataOffset() {
+        return 2;
+    }
+
+    /**
+     * The offset for the value of the number of points inside a slice.
+     */
+    public static get NumberOfPointsOffset() {
+        return 1;
+    }
 
     /**
      * Handles the creation of a performance viewer collector.
@@ -113,7 +131,7 @@ export class PerformanceViewerCollector {
 
         if (numberOfIndices > 0) {
             const previousStartingIndex = this.datasets.startingIndices.at(numberOfIndices - 1);
-            startingIndex = previousStartingIndex + this.datasets.data.at(previousStartingIndex + numberOfPointsOffset) + sliceDataOffset;
+            startingIndex = previousStartingIndex + this.datasets.data.at(previousStartingIndex + PerformanceViewerCollector.NumberOfPointsOffset) + PerformanceViewerCollector.SliceDataOffset;
         }
 
         this.datasets.startingIndices.push(startingIndex);
@@ -137,7 +155,7 @@ export class PerformanceViewerCollector {
             const slice: number[] = [timestamp, numPoints];
 
             for (let i = 0; i < numPoints; i++) {
-                slice.push(this.datasets.data.at(startingIndex + sliceDataOffset + i));
+                slice.push(this.datasets.data.at(startingIndex + PerformanceViewerCollector.SliceDataOffset + i));
             }
 
             this.datasetObservable.notifyObservers({slice});
