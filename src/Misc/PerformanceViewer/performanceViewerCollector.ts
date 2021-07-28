@@ -195,7 +195,6 @@ export class PerformanceViewerCollector {
      * @param id the id of the dataset which needs its metadata updated.
      * @param prop the property to update.
      * @param value the value to update the property with.
-     * @returns
      */
     public updateMetadata<T extends keyof IPerfMetadata>(id: string, prop: T, value: IPerfMetadata[T]) {
         const meta = this._datasetMeta.get(id);
