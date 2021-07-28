@@ -1,4 +1,4 @@
-import { IPerfDataset, IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer"
+import { IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer"
 
 /**
  * Defines a structure to hold max and min.
