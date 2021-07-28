@@ -76,13 +76,3 @@ export interface IPerfDataset {
       */
      hidden?: boolean;
 }
-
-/**
- * Defines the shape of a snapshot sent to observers.
- */
-export interface IPerfDataSliceSnapshot {
-    /**
-     * An array containing information about the latest slice.
-     */
-    slice: number[];
-}
