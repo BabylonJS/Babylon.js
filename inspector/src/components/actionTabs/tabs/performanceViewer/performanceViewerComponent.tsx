@@ -20,7 +20,7 @@ interface IPerformanceViewerComponentProps {
 const initialWindowSize = { width: 1024, height: 512 };
 
 // Note this should be false when committed until the feature is fully working.
-const isEnabled = true;
+const isEnabled = false;
 
 export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps> = (props: IPerformanceViewerComponentProps) => {
     const { scene } = props;
