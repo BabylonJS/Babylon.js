@@ -1,4 +1,4 @@
-import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
+import { IPerfDataset, IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer"
 
 /**
  * Defines a structure to hold max and min.
@@ -59,5 +59,5 @@ export interface IGraphDrawableArea {
  * Defines what settings our canvas graphing service accepts
  */
 export interface ICanvasGraphServiceSettings {
-    datasets: IPerfDataset[];
+    datasets: IPerfDatasets;
 }
