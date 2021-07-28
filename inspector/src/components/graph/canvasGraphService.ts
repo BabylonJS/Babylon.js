@@ -61,7 +61,6 @@ function debounce(callback: (...args: any[]) => void, time: number) {
     }
 }
 
-
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc! 
@@ -309,6 +308,10 @@ export class CanvasGraphService {
         return closestIndex;
     }
 
+    /**
+     * This is a convenience method to get the number of collected slices.
+     * @returns the total number of collected slices.
+     */
     private _getNumberOfSlices() {
         return this.datasets.startingIndices.itemLength;
     }
