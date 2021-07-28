@@ -37,7 +37,7 @@ export class PerformanceViewerCollector {
      * @param _scene the scene to collect on.
      * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
      */
-    constructor(private _scene: Scene, private _enabledStrategyCallbacks: PerfStrategyInitialization[]) {
+    constructor(private _scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]) {
         this.datasets = {
             ids: [],
             data: new DynamicFloat32Array(initialArraySize),
@@ -47,15 +47,22 @@ export class PerformanceViewerCollector {
         this._datasetMeta = new Map<string, IPerfMetadata>();
         this.datasetObservable = new Observable();
         this.metadataObservable = new Observable((observer) => observer.callback(this._datasetMeta, new EventState(0)));
-        this._initialize();
+        if (_enabledStrategyCallbacks) {
+            this.addCollectionStrategies(_enabledStrategyCallbacks);
+        }
     }
 
     /**
-     * Populates our internal structures and does appropriate initialization of strategies.
+     * This method adds additional collection strategies for data collection purposes.
+     * @param strategyCallbacks the list of data to collect with callbacks. 
      */
-    private _initialize() {
-        for (const strategyCallback of this._enabledStrategyCallbacks) {
+    public addCollectionStrategies(strategyCallbacks: PerfStrategyInitialization[]) {
+        for (const strategyCallback of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
+
+            if (this._strategies.has(strategy.id)) {
+                continue;
+            }
 
             this.datasets.ids.push(strategy.id);
 
