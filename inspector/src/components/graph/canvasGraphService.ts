@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker } from "./graphSupportingTypes";
 import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
@@ -16,6 +16,8 @@ const tooltipBackgroundAlpha = 0.8;
 
 const tooltipHorizontalPadding = 10;
 const spaceBetweenTextAndBox = 5;
+
+const tickerHorizontalPadding = 10;
 
 const playheadSize = 8;
 const dividerSize = 2;
@@ -39,7 +41,7 @@ const tooltipFont = "12px Arial";
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 // Arbitrary maximum used to make some GC optimizations.
-const maximumDatasetsAllowed = 32;
+const maximumDatasetsAllowed = 64;
 
 // time in ms to wait between tooltip draws inside the mouse move.
 const tooltipDebounceTime = 32;
@@ -79,7 +81,9 @@ export class CanvasGraphService {
     private _drawableArea: IGraphDrawableArea;
     private _axisHeight: number;
     private _tooltipItems: IPerfTooltip[];
-    private _textCache: IPerfTextMeasureCache;
+    private _tooltipTextCache: IPerfTextMeasureCache;
+    private _tickerTextCache: IPerfTextMeasureCache;
+    private _tickerItems: IPerfTicker[];
 
     private readonly _tooltipLineHeight: number;
     private readonly _defaultLineHeight: number;
@@ -104,11 +108,14 @@ export class CanvasGraphService {
         this._datasetBounds = { start: 0, end: 0 };
         this._globalTimeMinMax = {min: Infinity, max: 0};
         this._drawableArea = {top: 0, left: 0, right: 0, bottom: 0};
-        this._textCache = {text: "", width: 0};
+        this._tooltipTextCache = {text: "", width: 0};
+        this._tickerTextCache = {text: "", width: 0};
         this._tooltipItems = [];
+        this._tickerItems = [];
 
         for (let i = 0; i < maximumDatasetsAllowed; i++) {
-            this._tooltipItems.push({ text: "", color: "" });
+            this._tooltipItems.push({text: "", color: ""});
+            this._tickerItems.push({id: "", max: 0, min: 0});
         }
 
         if (!this._ctx) {
@@ -229,17 +236,26 @@ export class CanvasGraphService {
         this._drawableArea.bottom = this._height;
         this._drawableArea.right = this._width;
 
+        const numberOfTickers = this._drawTickers(this._drawableArea, this._datasetBounds);
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
+
         const {left, right, bottom, top} = this._drawableArea;
         // process, and then draw our points
         this.datasets.ids.forEach((id, idOffset) => {
-            // we don't want to draw hidden datasets.
-            if (!!this.metadata.get(id)?.hidden) {
-                return;
+            let valueMinMax: IPerfMinMax | undefined;
+
+            // we have already calculated  the min and max while getting the tickers, so use those.
+            for (let i = 0; i < numberOfTickers; i++) {
+                if (this._tickerItems[i].id === id) {
+                    valueMinMax = this._tickerItems[i];
+                }
             }
 
-            const valueMinMax = this._getMinMax(this._datasetBounds, idOffset);
+            // if we could not find the min max object it must be hidden so we skip.
+            if (!valueMinMax) {
+                return;
+            }
 
             ctx.beginPath();
             ctx.strokeStyle = this.metadata.get(id)?.color ?? defaultColor;
@@ -272,6 +288,63 @@ export class CanvasGraphService {
 
         // then draw the tooltip.
         this._drawTooltip(this._hoverPosition, this._drawableArea);
+    }
+
+    private _drawTickers(drawableArea: IGraphDrawableArea, bounds: IPerfIndexBounds): number {
+        const {_ctx: ctx} = this;
+
+        if (!ctx) {
+            return 0;
+        }
+
+        // create the ticker objects for each of the non hidden items.
+        let longestText: string = "";
+        let numberOfTickers: number = 0;
+        this.datasets.ids.forEach((id, idOffset) => {
+            if (!!this.metadata.get(id)?.hidden) {
+                return;
+            }
+
+            const valueMinMax = this._getMinMax(bounds, idOffset);
+            const text = `${id}: (max: ${valueMinMax.max.toFixed(2)}, min: ${valueMinMax.min.toFixed(2)})`
+            if (text.length > longestText.length) {
+                longestText = text;
+            }
+            this._tickerItems[numberOfTickers].id = id;
+            this._tickerItems[numberOfTickers].max = valueMinMax.max;
+            this._tickerItems[numberOfTickers].min = valueMinMax.min;
+            numberOfTickers++;
+        });
+
+        ctx.save();        
+        ctx.font = tooltipFont;
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+
+        let width: number;
+        if (this._tickerTextCache.text === longestText) {
+            width = this._tickerTextCache.width;
+        } else {
+            width = ctx.measureText(longestText).width + 2 * tickerHorizontalPadding;
+            this._tickerTextCache.text = longestText;
+            this._tickerTextCache.width = width;
+        }
+        
+        drawableArea.right -= width;
+
+        const textHeight = this._tooltipLineHeight + Math.floor(tooltipHorizontalPadding/2);
+
+        const x = drawableArea.right + tickerHorizontalPadding;
+        let y = drawableArea.top + textHeight;
+        for (let i = 0; i < numberOfTickers; i++) {
+            const tickerItem = this._tickerItems[i];
+            const text = `${tickerItem.id}: (max: ${tickerItem.max.toFixed(2)}, min: ${tickerItem.min.toFixed(2)})`
+            ctx.fillText(text, x, y);
+            y += textHeight;
+        }
+        ctx.restore();
+
+        return numberOfTickers;
     }
 
     /**
@@ -597,12 +670,12 @@ export class CanvasGraphService {
 
         // initialize width with cached value or measure width of longest text and update cache.
         let width: number;
-        if (longestText === this._textCache.text) {
-            width = this._textCache.width;
+        if (longestText === this._tooltipTextCache.text) {
+            width = this._tooltipTextCache.width;
         } else {
             width = ctx.measureText(longestText).width + boxLength + 2 * tooltipHorizontalPadding + spaceBetweenTextAndBox;
-            this._textCache.text = longestText;
-            this._textCache.width = width;
+            this._tooltipTextCache.text = longestText;
+            this._tooltipTextCache.width = width;
         }
 
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
@@ -705,7 +778,7 @@ export class CanvasGraphService {
         }
 
         const pixelDelta = this._panPosition.delta + event.clientX - this._panPosition.xPos;
-        const pixelsPerItem = this._width / this._sizeOfWindow;
+        const pixelsPerItem = (this._drawableArea.right - this._drawableArea.left) / this._sizeOfWindow;
         const itemsDelta = pixelDelta / pixelsPerItem | 0;
         const pos = this._position ?? (this._getNumberOfSlices() - 1)
         
