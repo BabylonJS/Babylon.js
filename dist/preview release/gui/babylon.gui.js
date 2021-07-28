@@ -9032,6 +9032,7 @@ var InputText = /** @class */ (function (_super) {
         var marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
         if (this._autoStretchWidth) {
             this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
+            this._autoStretchWidth = true; // setting the width will have reset _autoStretchWidth to false!
         }
         var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
         var availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
