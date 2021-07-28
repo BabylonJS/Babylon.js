@@ -43,7 +43,7 @@ export class DynamicFloat32Array {
      * @returns a subarray of the original array.
      */
     public subarray(start: number, end: number): Float32Array {
-        if (end >= start || start < 0) {
+        if (start >= end || start < 0) {
             return new Float32Array(0);
         }
 
