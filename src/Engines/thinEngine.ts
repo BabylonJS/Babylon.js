@@ -1743,6 +1743,11 @@ export class ThinEngine {
         }
     }
 
+    /** @hidden */
+    public _currentFrameBufferIsDefaultFrameBuffer() {
+        return this._currentFramebuffer === null;
+    }
+
     /**
      * Unbind the current render target texture from the webGL context
      * @param texture defines the render target texture to unbind

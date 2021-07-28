@@ -2227,6 +2227,11 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /** @hidden */
+    public _currentFrameBufferIsDefaultFrameBuffer() {
+        return this._currentRenderTarget === null;
+    }
+
     //------------------------------------------------------------------------------
     //                              Render Pass
     //------------------------------------------------------------------------------
