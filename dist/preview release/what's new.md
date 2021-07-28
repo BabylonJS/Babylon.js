@@ -269,6 +269,7 @@
 - Fix postprocess autoclear when enabling/disabling an effect in PrePass ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix ThinEngine isMobile to detect changes when window is resized to allow for proper emulator evaluation ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix discrete animation not looping correctly ([#10694](https://github.com/BabylonJS/Babylon.js/issues/10694)) ([Popov72](https://github.com/Popov72))
+- Fix support for camera output render targets ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
