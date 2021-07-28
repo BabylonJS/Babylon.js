@@ -235,6 +235,8 @@ export class RenderTargetTexture extends Texture {
     protected _sizeRatio: Nullable<number>;
     /** @hidden */
     public _generateMipMaps: boolean;
+    /** @hidden */
+    public _cleared = false;
     protected _renderingManager: RenderingManager;
     /** @hidden */
     public _waitingRenderList?: string[];
