@@ -66,7 +66,7 @@ export class PerformanceViewerCollector {
         this.datasetObservable = new Observable();
         this.metadataObservable = new Observable((observer) => observer.callback(this._datasetMeta, new EventState(0)));
         if (_enabledStrategyCallbacks) {
-            this.addCollectionStrategies(_enabledStrategyCallbacks);
+            this.addCollectionStrategies(..._enabledStrategyCallbacks);
         }
     }
 
@@ -74,7 +74,7 @@ export class PerformanceViewerCollector {
      * This method adds additional collection strategies for data collection purposes.
      * @param strategyCallbacks the list of data to collect with callbacks.
      */
-    public addCollectionStrategies(strategyCallbacks: PerfStrategyInitialization[]) {
+    public addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]) {
         for (const strategyCallback of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
 
@@ -163,10 +163,10 @@ export class PerformanceViewerCollector {
     }
 
     /**
-     * Collects data for every dataset by using the appropriate strategy when the user wants.
-     * This method will then notify all observers with the latest slice of data.
+     * Collects and then sends the latest slice to any observers by using the appropriate strategy when the user wants.
+     * This method does not add onto the collected data accessible via the datasets variable.
      */
-    public collectDataNow() {
+    public getCurrentSlice() {
         const timestamp = PrecisionDate.Now - this._startingTimestamp;
         const numPoints = this.datasets.ids.length;
         const slice: number[] = [timestamp, numPoints];
