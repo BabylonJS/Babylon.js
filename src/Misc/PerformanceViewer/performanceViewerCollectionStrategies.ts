@@ -1,4 +1,5 @@
 import { EngineInstrumentation } from "../../Instrumentation/engineInstrumentation";
+import { SceneInstrumentation } from "../../Instrumentation/sceneInstrumentation";
 import { Scene } from "../../scene";
 
 /**
@@ -58,10 +59,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the total meshes strategy
      */
     public static TotalMeshesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "total meshes",
-                getData: defaultGetDataImpl,
+                getData: () => scene.meshes.length,
             };
         };
     }
@@ -71,10 +72,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the active meshes strategy
      */
     public static ActiveMeshesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "active meshes",
-                getData: defaultGetDataImpl,
+                getData: () => scene.getActiveMeshes().length,
             };
         };
     }
@@ -84,10 +85,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the active indices strategy
      */
     public static ActiveIndiciesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "active indices",
-                getData: defaultGetDataImpl,
+                getData: () => scene.getActiveIndices(),
             };
         };
     }
@@ -97,10 +98,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the active faces strategy
      */
     public static ActiveFacesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "active faces",
-                getData: defaultGetDataImpl,
+                getData: () => scene.getActiveIndices() / 3,
             };
         };
     }
@@ -110,10 +111,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the active bones strategy
      */
     public static ActiveBonesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "active bones",
-                getData: defaultGetDataImpl,
+                getData: () => scene.getActiveBones(),
             };
         };
     }
@@ -123,10 +124,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the active particles strategy
      */
     public static ActiveParticlesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "active particles",
-                getData: defaultGetDataImpl,
+                getData: () => scene.getActiveParticles(),
             };
         };
     }
@@ -136,10 +137,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the draw calls strategy
      */
     public static DrawCallsStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
             return {
                 id: "draw calls",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.drawCallsCounter.current,
             };
         };
     }
@@ -149,10 +151,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the total lights strategy
      */
     public static TotalLightsStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "total lights",
-                getData: defaultGetDataImpl,
+                getData: () => scene.lights.length,
             };
         };
     }
@@ -162,10 +164,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the total vertices strategy
      */
     public static TotalVerticesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "total vertices",
-                getData: defaultGetDataImpl,
+                getData: () => scene.getTotalVertices(),
             };
         };
     }
@@ -175,10 +177,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the total materials strategy
      */
     public static TotalMaterialsStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "total materials",
-                getData: defaultGetDataImpl,
+                getData: () => scene.materials.length,
             };
         };
     }
@@ -188,10 +190,10 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the total textures strategy
      */
     public static TotalTexturesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
             return {
                 id: "total textures",
-                getData: defaultGetDataImpl,
+                getData: () => scene.textures.length,
             };
         };
     }
@@ -201,10 +203,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the absolute fps strategy
      */
     public static AbsoluteFpsStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureFrameTime = true;
             return {
                 id: "absolute fps",
-                getData: defaultGetDataImpl,
+                getData: () => 1000.0 / sceneInstrumentation.frameTimeCounter.lastSecAverage,
             };
         };
     }
@@ -214,10 +218,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the meshes selection time strategy
      */
     public static MeshesSelectionStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
             return {
                 id: "meshes selection time",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.activeMeshesEvaluationTimeCounter.lastSecAverage,
             };
         };
     }
@@ -227,10 +233,13 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the render targets time strategy
      */
     public static RenderTargetsStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureRenderTargetsRenderTime = true;
+
             return {
                 id: "render targets time",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.renderTargetsRenderTimeCounter.lastSecAverage,
             };
         };
     }
@@ -240,10 +249,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the particles time strategy
      */
     public static ParticlesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureParticlesRenderTime = true;
             return {
                 id: "particles time",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage,
             };
         };
     }
@@ -253,10 +264,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the sprites time strategy
      */
     public static SpritesStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureSpritesRenderTime = true;
             return {
                 id: "sprites time",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.spritesRenderTimeCounter.lastSecAverage,
             };
         };
     }
@@ -266,10 +279,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the animations time strategy
      */
     public static AnimationsStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureAnimationsTime = true;
             return {
                 id: "animations time",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.animationsTimeCounter.lastSecAverage,
             };
         };
     }
@@ -279,10 +294,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the physics time strategy
      */
     public static PhysicsStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.capturePhysicsTime = true;
             return {
                 id: "physics time",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.physicsTimeCounter.lastSecAverage,
             };
         };
     }
@@ -292,10 +309,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the render time strategy
      */
     public static RenderStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureRenderTime = true;
             return {
                 id: "render time",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.renderTimeCounter.lastSecAverage,
             };
         };
     }
@@ -305,10 +324,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the total frame time strategy
      */
     public static FrameTotalStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureFrameTime = true;
             return {
                 id: "total frame time",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.frameTimeCounter.lastSecAverage,
             };
         };
     }
@@ -318,10 +339,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the inter-frame time strategy
      */
     public static InterFrameStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureInterFrameTime = true
             return {
                 id: "inter-frame time",
-                getData: defaultGetDataImpl,
+                getData: () => sceneInstrumentation.interFrameTimeCounter.lastSecAverage,
             };
         };
     }
