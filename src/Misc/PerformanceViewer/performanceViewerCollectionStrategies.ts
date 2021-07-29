@@ -341,7 +341,7 @@ export class PerfCollectionStrategy {
     public static InterFrameStrategy(): PerfStrategyInitialization {
         return (scene) => {
             const sceneInstrumentation = new SceneInstrumentation(scene);
-            sceneInstrumentation.captureInterFrameTime = true
+            sceneInstrumentation.captureInterFrameTime = true;
             return {
                 id: "inter-frame time",
                 getData: () => sceneInstrumentation.interFrameTimeCounter.lastSecAverage,
