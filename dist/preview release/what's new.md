@@ -157,7 +157,7 @@
 - Added support for XRFrame.fillPoses and XRFrame.fillJointRadii ([#10454](https://github.com/BabylonJS/Babylon.js/issues/10454)) ([rgerd](https://github.com/rgerd))
 - Improved functionality of `WebXRNearInteraction` and updated coverage to be enabled on Behaviors and Gizmos ([rickfromwork](https://github.com/rickfromwork))
 - Introduced framework support for XR-based eye tracking. XR eye tracking is not yet supported in webXR, but is supported in BabylonNative using OpenXR. ([rickfromwork](https://github.com/rickfromwork))
-- Introduced spectator mode for desktop VR experiences and fixed an issue with XR camera in the activeCameras array ([#9938](https://github.com/BabylonJS/Babylon.js/issues/10560)) ([RaananW](https://github.com/RaananW))
+- Introduced spectator mode for desktop VR experiences and fixed an issue with XR camera in the activeCameras array ([#10560](https://github.com/BabylonJS/Babylon.js/issues/10560)) ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 
