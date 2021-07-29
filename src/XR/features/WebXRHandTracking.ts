@@ -435,7 +435,7 @@ export class WebXRHand implements IDisposable {
             return;
         }
 
-        handJointReferenceArray.forEach((jointName, jointIdx) => {
+        handJointReferenceArray.forEach((_jointName, jointIdx) => {
             const jointTransform = this._jointTransforms[jointIdx];
             Matrix.FromArrayToRef(this._jointTransformMatrices, jointIdx * 16, this._tempJointMatrix);
             this._tempJointMatrix.decompose(undefined, jointTransform.rotationQuaternion!, jointTransform.position);
@@ -447,7 +447,7 @@ export class WebXRHand implements IDisposable {
             jointMesh.isVisible = !this._handMesh && !this._jointsInvisible;
             jointMesh.position.copyFrom(jointTransform.position);
             jointMesh.rotationQuaternion!.copyFrom(jointTransform.rotationQuaternion!);
-            jointMesh.scaling.copyFromFloats(scaledJointRadius, scaledJointRadius, scaledJointRadius);
+            jointMesh.scaling.setAll(scaledJointRadius);
 
             // The WebXR data comes as right-handed, so we might need to do some conversions.
             if (!this._scene.useRightHandedSystem) {
@@ -525,6 +525,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 newInstance.isPickable = false;
                 if (featureOptions.jointMeshes?.enablePhysics) {
                     const props = featureOptions.jointMeshes?.physicsProps || {};
+                    // downscale the instances so that physics will be initialized correctly
+                    newInstance.scaling.setAll(0.02);
                     const type = props.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
                     newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, { mass: 0, ...props });
                 }
