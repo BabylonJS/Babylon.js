@@ -1,4 +1,4 @@
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { Scene } from "babylonjs/scene";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
