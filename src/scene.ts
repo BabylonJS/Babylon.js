@@ -4284,6 +4284,20 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
+    private checkCameraRenderTarget(camera: Nullable<Camera>) {
+        if (camera?.outputRenderTarget && !camera?.isRigCamera) {
+            camera.outputRenderTarget._cleared = false;
+        }
+        if (camera?.rigCameras?.length) {
+            for (let i = 0; i < camera.rigCameras.length; ++i) {
+                const rtt = camera.rigCameras[i].outputRenderTarget;
+                if (rtt) {
+                    rtt._cleared = false;
+                }
+            }
+        }
+    }
+
     /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -4300,24 +4314,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._frameId++;
         this._defaultFrameBufferCleared = false;
-        if (this._activeCamera?.outputRenderTarget && !this.activeCamera?.isRigCamera) {
-            this._activeCamera.outputRenderTarget._cleared = false;
-        }
-        if (this._activeCamera?.rigCameras?.length) {
-            for (let i = 0; i < this._activeCamera.rigCameras.length; ++i) {
-                const rtt = this._activeCamera.rigCameras[i].outputRenderTarget;
-                if (rtt) {
-                    rtt._cleared = false;
-                }
-            }
-        }
+        this.checkCameraRenderTarget(this.activeCamera);
         if (this.activeCameras?.length) {
-            for (let i = 0; i < this.activeCameras.length; ++i) {
-                const rtt = this.activeCameras[i].outputRenderTarget;
-                if (rtt) {
-                    rtt._cleared = false;
-                }
-            }
+            this.activeCameras.forEach(this.checkCameraRenderTarget);
         }
 
         // Register components that have been associated lately to the scene.
