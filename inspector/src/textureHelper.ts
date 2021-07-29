@@ -57,7 +57,7 @@ export class TextureHelper {
             { width: width, height: height },
             scene, false);
 
-        lodPostProcess.onApply = function(effect) {
+        lodPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
             effect.setFloat("lod", lod);
         };

@@ -249,7 +249,7 @@ export class HDRCubeTexture extends BaseTexture {
                 if (shortArray) {
                     results.push(shortArray);
                 }
-                else  if (byteArray) {
+                else if (byteArray) {
                     results.push(byteArray);
                 }
                 else {

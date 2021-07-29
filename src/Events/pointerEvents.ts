@@ -57,7 +57,7 @@ export class PointerInfoBase {
          * Defines the related dom event
          */
         public event: IMouseEvent
-    ) {}
+    ) { }
 }
 
 /**

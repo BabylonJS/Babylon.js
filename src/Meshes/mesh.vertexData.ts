@@ -1083,7 +1083,7 @@ export class VertexData {
      * @returns the VertexData of the Capsule
      */
     public static CreateCapsule(options: ICreateCapsuleOptions = {
-        orientation : Vector3.Up(),
+        orientation: Vector3.Up(),
         subdivisions: 2,
         tessellation: 16,
         height: 1,

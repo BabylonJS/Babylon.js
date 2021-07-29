@@ -16,7 +16,7 @@ import { Logger } from "../Misc/logger";
 /**
  * Defines the options associated with the creation of a compute shader.
  */
- export interface IComputeShaderOptions {
+export interface IComputeShaderOptions {
     /**
      * list of bindings mapping (key is property name, value is binding location)
      * Must be provided because browsers don't support reflection for wgsl shaders yet (so there's no way to query the binding/group from a variable name)
@@ -51,8 +51,8 @@ export class ComputeShader {
     private _options: IComputeShaderOptions;
     private _effect: ComputeEffect;
     private _cachedDefines: string;
-    private _bindings : ComputeBindingList = {};
-    private _samplers : { [key: string]: Sampler } = {};
+    private _bindings: ComputeBindingList = {};
+    private _samplers: { [key: string]: Sampler } = {};
     private _context: IComputeContext;
     private _contextIsDirty = false;
 
@@ -212,8 +212,8 @@ export class ComputeShader {
 
         for (const key in this._bindings) {
             const binding = this._bindings[key],
-                  type = binding.type,
-                  object = binding.object;
+                type = binding.type,
+                object = binding.object;
 
             switch (type) {
                 case ComputeBindingType.Texture:
@@ -260,11 +260,11 @@ export class ComputeShader {
     }
 
     private _compareSampler(texture: BaseTexture, sampler: Sampler): boolean {
-        return  texture.wrapU === sampler.wrapU &&
-                texture.wrapV === sampler.wrapV &&
-                texture.wrapR === sampler.wrapR &&
-                texture.anisotropicFilteringLevel === sampler.anisotropicFilteringLevel &&
-                texture._texture?.samplingMode === sampler.samplingMode;
+        return texture.wrapU === sampler.wrapU &&
+            texture.wrapV === sampler.wrapV &&
+            texture.wrapR === sampler.wrapR &&
+            texture.anisotropicFilteringLevel === sampler.anisotropicFilteringLevel &&
+            texture._texture?.samplingMode === sampler.samplingMode;
     }
 
     /**
@@ -274,7 +274,7 @@ export class ComputeShader {
      * @param z Number of workgroups to execute on the Z dimension (default: 1)
      * @returns True if the dispatch could be done, else false (meaning either the compute effect or at least one of the bound resources was not ready)
      */
-     public dispatch(x: number, y?: number, z?: number): boolean {
+    public dispatch(x: number, y?: number, z?: number): boolean {
         if (!this.isReady()) {
             return false;
         }

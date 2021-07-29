@@ -373,8 +373,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             // Don't perform touch logic while grabbing, to prevent triggering touch interactions while in the middle of a grab interaction
             // Dont update cursor logic either - the cursor should already be visible for the grab to be in range,
             // and in order to maintain its position on the target mesh it is parented for the duration of the grab.
-            if (!controllerData.grabInteraction)
-            {
+            if (!controllerData.grabInteraction) {
                 let pick = null;
 
                 // near interaction hover

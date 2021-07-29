@@ -21,7 +21,7 @@ export class ShaderDefineExpression {
                 stack.push(c);
             } else {
                 const v1 = stack[stack.length - 1],
-                      v2 = stack[stack.length - 2];
+                    v2 = stack[stack.length - 2];
 
                 stack.length -= 2;
                 stack.push(`(${v2}${c}${v1})`);
@@ -59,7 +59,7 @@ export class ShaderDefineExpression {
 
         while (idx < infix.length) {
             const c = infix.charAt(idx),
-                  token = idx < infix.length - 1 ? infix.substr(idx, 2) : '';
+                token = idx < infix.length - 1 ? infix.substr(idx, 2) : '';
 
             if (c === '(') {
                 operand = '';

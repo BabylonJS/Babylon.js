@@ -96,7 +96,7 @@ declare module "../scene" {
     }
 }
 
-Scene.prototype._internalPickSprites = function(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
+Scene.prototype._internalPickSprites = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
     if (!PickingInfo) {
         return null;
     }
@@ -138,7 +138,7 @@ Scene.prototype._internalPickSprites = function(ray: Ray, predicate?: (sprite: S
     return pickingInfo || new PickingInfo();
 };
 
-Scene.prototype._internalMultiPickSprites = function(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
+Scene.prototype._internalMultiPickSprites = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
     if (!PickingInfo) {
         return null;
     }
@@ -162,16 +162,16 @@ Scene.prototype._internalMultiPickSprites = function(ray: Ray, predicate?: (spri
 
             var results = spriteManager.multiIntersects(ray, camera, predicate);
 
-             if (results !== null) {
-                 pickingInfos = pickingInfos.concat(results);
-             }
+            if (results !== null) {
+                pickingInfos = pickingInfos.concat(results);
+            }
         }
     }
 
     return pickingInfos;
 };
 
-Scene.prototype.pickSprite = function(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
+Scene.prototype.pickSprite = function (x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
     if (!this._tempSpritePickingRay) {
         return null;
     }
@@ -186,7 +186,7 @@ Scene.prototype.pickSprite = function(x: number, y: number, predicate?: (sprite:
     return result;
 };
 
-Scene.prototype.pickSpriteWithRay = function(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
+Scene.prototype.pickSpriteWithRay = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
     if (!this._tempSpritePickingRay) {
         return null;
     }
@@ -208,13 +208,13 @@ Scene.prototype.pickSpriteWithRay = function(ray: Ray, predicate?: (sprite: Spri
     return result;
 };
 
-Scene.prototype.multiPickSprite = function(x: number, y: number, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
+Scene.prototype.multiPickSprite = function (x: number, y: number, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
     this.createPickingRayInCameraSpaceToRef(x, y, this._tempSpritePickingRay!, camera);
 
     return this._internalMultiPickSprites(this._tempSpritePickingRay!, predicate, camera);
 };
 
-Scene.prototype.multiPickSpriteWithRay = function(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
+Scene.prototype.multiPickSpriteWithRay = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
     if (!this._tempSpritePickingRay) {
         return null;
     }
@@ -231,7 +231,7 @@ Scene.prototype.multiPickSpriteWithRay = function(ray: Ray, predicate?: (sprite:
     return this._internalMultiPickSprites(this._tempSpritePickingRay, predicate, camera);
 };
 
-Scene.prototype.setPointerOverSprite = function(sprite: Nullable<Sprite>): void {
+Scene.prototype.setPointerOverSprite = function (sprite: Nullable<Sprite>): void {
     if (this._pointerOverSprite === sprite) {
         return;
     }
@@ -246,7 +246,7 @@ Scene.prototype.setPointerOverSprite = function(sprite: Nullable<Sprite>): void 
     }
 };
 
-Scene.prototype.getPointerOverSprite = function(): Nullable<Sprite> {
+Scene.prototype.getPointerOverSprite = function (): Nullable<Sprite> {
     return this._pointerOverSprite;
 };
 

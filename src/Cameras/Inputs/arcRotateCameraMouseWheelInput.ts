@@ -40,8 +40,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * Gets or Set the boolean value that controls whether or not the mouse wheel
      * zooms to the location of the mouse pointer or not.  The default is false.
      */
-     @serialize()
-     public zoomToMouseLocation = false;
+    @serialize()
+    public zoomToMouseLocation = false;
 
     /**
      * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
@@ -198,7 +198,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     }
 
     // Get position on the hit plane
-    private _getPosition() : Vector3 {
+    private _getPosition(): Vector3 {
         var camera = this.camera;
         var scene = camera.getScene();
 
@@ -215,7 +215,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         return ray.origin.addInPlace(ray.direction.scaleInPlace(distance));
     }
 
-    private _inertialPanning : Vector3 = Vector3.Zero();
+    private _inertialPanning: Vector3 = Vector3.Zero();
 
     private _zoomToMouse(delta: number) {
         var camera = this.camera;

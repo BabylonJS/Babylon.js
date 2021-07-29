@@ -47,7 +47,7 @@ export class NodeMaterialBlock {
      * Gets the name of the block
      */
     public get name(): string {
-         return this._name;
+        return this._name;
     }
 
     /**
@@ -475,7 +475,7 @@ export class NodeMaterialBlock {
             ((block.target & block._buildTarget) === 0) ||
             ((block.target & input.target) === 0) ||
             (this.target !== NodeMaterialBlockTargets.VertexAndFragment && otherBlockWasGeneratedInVertexShader)
-            )) { // context switch! We need a varying
+        )) { // context switch! We need a varying
             if ((!block.isInput && state.target !== block._buildTarget) // block was already emitted by vertex shader
                 || (block.isInput && (block as InputBlock).isAttribute && !(block as InputBlock)._noContextSwitch) // block is an attribute
             ) {
@@ -496,26 +496,26 @@ export class NodeMaterialBlock {
     */
     public validateBlockName(newName: string) {
         let reservedNames: Array<string> = [
-        "position",
-        "normal",
-        "tangent",
-        "particle_positionw",
-        "uv",
-        "uv2",
-        "uv3",
-        "uv4",
-        "uv5",
-        "uv6",
-        "position2d",
-        "particle_uv",
-        "matricesIndices",
-        "matricesWeights",
-        "world0",
-        "world1",
-        "world2",
-        "world3",
-        "particle_color",
-        "particle_texturemask"];
+            "position",
+            "normal",
+            "tangent",
+            "particle_positionw",
+            "uv",
+            "uv2",
+            "uv3",
+            "uv4",
+            "uv5",
+            "uv6",
+            "position2d",
+            "particle_uv",
+            "matricesIndices",
+            "matricesWeights",
+            "world0",
+            "world1",
+            "world2",
+            "world3",
+            "particle_color",
+            "particle_texturemask"];
         for (var reservedName of reservedNames) {
             if (newName === reservedName) {
                 return false;

@@ -280,7 +280,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                             } else {
                                 for (var o = 0; o < _indices.length; o++) {
                                     //Apply the material to the Mesh for each mesh with the material
-                                    const mesh =  babylonMeshesArray[_indices[o]];
+                                    const mesh = babylonMeshesArray[_indices[o]];
                                     const material = materialsFromMTLFile.materials[n];
                                     mesh.material = material;
 

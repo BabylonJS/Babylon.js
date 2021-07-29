@@ -332,9 +332,8 @@ export class Texture extends BaseTexture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
-            deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number)
-    {
+        onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number) {
         super(sceneOrEngine);
 
         this.name = url || "";
@@ -534,13 +533,13 @@ export class Texture extends BaseTexture {
      */
     public checkTransformsAreIdentical(texture: Nullable<Texture>): boolean {
         return texture !== null &&
-                this.uOffset === texture.uOffset &&
-                this.vOffset === texture.vOffset &&
-                this.uScale === texture.uScale &&
-                this.vScale === texture.vScale &&
-                this.uAng === texture.uAng &&
-                this.vAng === texture.vAng &&
-                this.wAng === texture.wAng;
+            this.uOffset === texture.uOffset &&
+            this.vOffset === texture.vOffset &&
+            this.uScale === texture.uScale &&
+            this.vScale === texture.vScale &&
+            this.uAng === texture.uAng &&
+            this.vAng === texture.vAng &&
+            this.wAng === texture.wAng;
     }
 
     /**

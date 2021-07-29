@@ -23,7 +23,7 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
 
     private _wasUsed = false;
 
-    private _exporter : _Exporter;
+    private _exporter: _Exporter;
 
     constructor(exporter: _Exporter) {
         this._exporter = exporter;

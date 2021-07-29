@@ -9,7 +9,7 @@ import { Scene } from "../../scene";
  * @returns the capsule VertexData
  * @see https://doc.babylonjs.com/how_to/capsule_shape
  */
-VertexData.CreateCapsule = function(
+VertexData.CreateCapsule = function (
     options: ICreateCapsuleOptions = {
         subdivisions: 2,
         tessellation: 16,
@@ -24,8 +24,8 @@ VertexData.CreateCapsule = function(
     let radius = Math.max(options.radius ? options.radius : 0.25, 0.);
     let capDetail = Math.max(options.capSubdivisions ? options.capSubdivisions : 6, 1);
 
-    let  radialSegments = tessellation;
-    let  heightSegments = subdivisions;
+    let radialSegments = tessellation;
+    let heightSegments = subdivisions;
 
     let radiusTop = Math.max(options.radiusTop ? options.radiusTop : radius, 0.);
     let radiusBottom = Math.max(options.radiusBottom ? options.radiusBottom : radius, 0.);
@@ -46,8 +46,8 @@ VertexData.CreateCapsule = function(
     var uvs = [];
 
     var index = 0,
-    indexArray = [],
-    halfHeight = heightMinusCaps * 0.5;
+        indexArray = [],
+        halfHeight = heightMinusCaps * 0.5;
     let pi2 = Math.PI * 0.5;
 
     var x, y;
@@ -61,10 +61,10 @@ VertexData.CreateCapsule = function(
         new Vector2(
             radiusTop * sinAlpha,
             halfHeight + radiusTop * cosAlpha
-            ).subtract(new Vector2(
-                radiusBottom * sinAlpha,
-                -halfHeight + radiusBottom * cosAlpha
-            )
+        ).subtract(new Vector2(
+            radiusBottom * sinAlpha,
+            -halfHeight + radiusBottom * cosAlpha
+        )
         ).length();
 
     // Total length for v texture coord
@@ -85,7 +85,7 @@ VertexData.CreateCapsule = function(
         // calculate the radius of the current row
         var _radius = cosA * radiusTop;
 
-        for (x = 0; x <= radialSegments; x ++) {
+        for (x = 0; x <= radialSegments; x++) {
             var u = x / radialSegments;
             var theta = u * thetaLength + thetaStart;
             var sinTheta = Math.sin(theta);
@@ -103,7 +103,7 @@ VertexData.CreateCapsule = function(
             // save index of vertex in respective row
             indexRow.push(index);
             // increase index
-            index ++;
+            index++;
         }
         // now save vertices of the row in our index array
         indexArray.push(indexRow);
@@ -117,7 +117,7 @@ VertexData.CreateCapsule = function(
         v += cone_length / heightSegments;
         // calculate the radius of the current row
         var _radius = sinAlpha * (y * (radiusBottom - radiusTop) / heightSegments + radiusTop);
-        for (x = 0; x <= radialSegments; x ++) {
+        for (x = 0; x <= radialSegments; x++) {
             var u = x / radialSegments;
             var theta = u * thetaLength + thetaStart;
             var sinTheta = Math.sin(theta);
@@ -135,7 +135,7 @@ VertexData.CreateCapsule = function(
             // save index of vertex in respective row
             indexRow.push(index);
             // increase index
-            index ++;
+            index++;
         }
         // now save vertices of the row in our index array
         indexArray.push(indexRow);
@@ -149,7 +149,7 @@ VertexData.CreateCapsule = function(
         var sinA = Math.sin(a);
         // calculate the radius of the current row
         var _radius = cosA * radiusBottom;
-        for (x = 0; x <= radialSegments; x ++) {
+        for (x = 0; x <= radialSegments; x++) {
             var u = x / radialSegments;
             var theta = u * thetaLength + thetaStart;
             var sinTheta = Math.sin(theta);
@@ -167,19 +167,19 @@ VertexData.CreateCapsule = function(
             // save index of vertex in respective row
             indexRow.push(index);
             // increase index
-            index ++;
+            index++;
         }
         // now save vertices of the row in our index array
         indexArray.push(indexRow);
     }
     // generate indices
-    for (x = 0; x < radialSegments; x ++) {
-        for (y = 0; y < capsTopSegments + heightSegments + capsBottomSegments; y ++) {
+    for (x = 0; x < radialSegments; x++) {
+        for (y = 0; y < capsTopSegments + heightSegments + capsBottomSegments; y++) {
             // we use the index array to access the correct indices
-            var i1 = indexArray[ y ][ x ];
-            var i2 = indexArray[ y + 1 ][ x ];
-            var i3 = indexArray[ y + 1 ][ x + 1 ];
-            var i4 = indexArray[ y ][ x + 1 ];
+            var i1 = indexArray[y][x];
+            var i2 = indexArray[y + 1][x];
+            var i3 = indexArray[y + 1][x + 1];
+            var i4 = indexArray[y][x + 1];
             // face one
             indices.push(i1);
             indices.push(i2);
@@ -218,7 +218,7 @@ VertexData.CreateCapsule = function(
 /**
  * The options Interface for creating a Capsule Mesh
  */
-export interface ICreateCapsuleOptions{
+export interface ICreateCapsuleOptions {
     /** The Orientation of the capsule.  Default : Vector3.Up() */
     orientation?: Vector3;
 
@@ -279,7 +279,7 @@ export class CapsuleBuilder {
     public static CreateCapsule(
         name: string,
         options: ICreateCapsuleOptions = {
-            orientation : Vector3.Up(),
+            orientation: Vector3.Up(),
             subdivisions: 2,
             tessellation: 16,
             height: 1,

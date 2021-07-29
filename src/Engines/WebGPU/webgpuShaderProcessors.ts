@@ -6,7 +6,7 @@ import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
 
-const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
+const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number } } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
     "Light0": { setIndex: 0, bindingIndex: 5 },
     "Light1": { setIndex: 0, bindingIndex: 6 },
@@ -245,8 +245,8 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                     if (!webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex]) {
                         const sampleType =
                             isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
-                            componentType === 'u' ? WebGPUConstants.TextureSampleType.Uint :
-                            componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float;
+                                componentType === 'u' ? WebGPUConstants.TextureSampleType.Uint :
+                                    componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float;
 
                         webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
                             isSampler: false,
