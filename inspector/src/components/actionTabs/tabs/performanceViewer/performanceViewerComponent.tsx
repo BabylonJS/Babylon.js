@@ -52,16 +52,17 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     }
 
     useEffect(() => {
-        let perfCollector: PerformanceViewerCollector | undefined;
+        const perfCollector = new PerformanceViewerCollector(scene, [PerfCollectionStrategy.GpuFrameTimeStrategy(), PerfCollectionStrategy.FpsStrategy()]);
+        setPerformanceCollector(perfCollector);
+    }, []);
+
+    useEffect(() => {
         if (isOpen) {
-            perfCollector = new PerformanceViewerCollector(scene, [PerfCollectionStrategy.GpuFrameTimeStrategy(), PerfCollectionStrategy.FpsStrategy()]);
-            perfCollector.start();
-            setPerformanceCollector(perfCollector);
+            performanceCollector?.start();
         }
 
         return () => {
-            perfCollector?.stop();
-            setPerformanceCollector(undefined);
+            performanceCollector?.stop();
         }
     }, [isOpen]);
 
