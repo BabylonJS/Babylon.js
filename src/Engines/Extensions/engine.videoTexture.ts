@@ -14,7 +14,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.updateVideoTexture = function(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
+ThinEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
     if (!texture || texture._isDisabled) {
         return;
     }

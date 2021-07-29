@@ -18,7 +18,7 @@ export class OutputDisplayManager implements IDisplayManager {
         return "rgb(106, 44, 131)";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {       
+    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         contentArea.classList.add("output-block");
     }
 }

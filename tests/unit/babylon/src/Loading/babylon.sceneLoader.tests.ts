@@ -1,7 +1,7 @@
 /**
  * Describes the test suite.
  */
-describe('Babylon Scene Loader', function() {
+describe('Babylon Scene Loader', function () {
     let subject: BABYLON.Engine;
 
     this.timeout(10000);
@@ -9,12 +9,12 @@ describe('Babylon Scene Loader', function() {
     /**
      * Loads the dependencies.
      */
-    before(function(done) {
+    before(function (done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .testMode()
-            .load(function() {
+            .load(function () {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 BABYLON.Engine.audioEngine = new BABYLON.AudioEngine();
@@ -25,7 +25,7 @@ describe('Babylon Scene Loader', function() {
     /**
      * Create a new engine subject before each test.
      */
-    beforeEach(function() {
+    beforeEach(function () {
         subject = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -333,7 +333,7 @@ describe('Babylon Scene Loader', function() {
             const scene = new BABYLON.Scene(subject);
             const promises = new Array<Promise<void>>();
 
-            const materialNames = [ "Low", "Medium", "High" ];
+            const materialNames = ["Low", "Medium", "High"];
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 const observer = loader.onExtensionLoadedObservable.add((extension) => {
@@ -414,14 +414,14 @@ describe('Babylon Scene Loader', function() {
 
             const setRequestHeaderCalls = new Array<string>();
             const origSetRequestHeader = BABYLON.WebRequest.prototype.setRequestHeader;
-            const setRequestHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "setRequestHeader").callsFake(function(...args) {
+            const setRequestHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "setRequestHeader").callsFake(function (...args) {
                 setRequestHeaderCalls.push(args.join(": "));
                 origSetRequestHeader.apply(this, args);
             });
 
             // Simulate default CORS policy on some web servers that reject getResponseHeader calls with `Content-Range`.
             const origGetResponseHeader = BABYLON.WebRequest.prototype.getResponseHeader;
-            const getResponseHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "getResponseHeader").callsFake(function(...args) {
+            const getResponseHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "getResponseHeader").callsFake(function (...args) {
                 return (args[0] === "Content-Range") ? null : origGetResponseHeader.apply(this, args);
             });
 

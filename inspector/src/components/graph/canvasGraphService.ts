@@ -54,7 +54,7 @@ const drawDebounceTime = 15;
  */
 function debounce(callback: (...args: any[]) => void, time: number) {
     let timerId: any;
-    return function(...args: any[]) {
+    return function (...args: any[]) {
         clearTimeout(timerId);
         timerId = setTimeout(() => callback(...args), time);
     }
@@ -80,7 +80,7 @@ export class CanvasGraphService {
     private _axisHeight: number;
     private _tooltipItems: IPerfTooltip[];
     private _textCache: IPerfTextMeasureCache;
-    
+
     private readonly _tooltipLineHeight: number;
     private readonly _defaultLineHeight: number;
 
@@ -101,13 +101,13 @@ export class CanvasGraphService {
         this._hoverPosition = null;
         this._positions = new Map<string, number>();
         this._datasetBounds = new Map<string, IPerfIndexBounds>();
-        this._globalTimeMinMax = {min: Infinity, max: 0};
-        this._drawableArea = {top: 0, left: 0, right: 0, bottom: 0};
-        this._textCache = {text: "", width: 0};
+        this._globalTimeMinMax = { min: Infinity, max: 0 };
+        this._drawableArea = { top: 0, left: 0, right: 0, bottom: 0 };
+        this._textCache = { text: "", width: 0 };
         this._tooltipItems = [];
-    
+
         for (let i = 0; i < maximumDatasetsAllowed; i++) {
-            this._tooltipItems.push({text: "", color: ""});
+            this._tooltipItems.push({ text: "", color: "" });
         }
 
         if (!this._ctx) {
@@ -133,14 +133,14 @@ export class CanvasGraphService {
      * This method lets the service know it should get ready to update what it is displaying.
      */
     public update = debounce(
-        () => this._draw(), 
+        () => this._draw(),
         drawDebounceTime
     );
 
     public resize(size: IPerfLayoutSize) {
         const { _ctx: ctx } = this;
         const { width, height } = size;
-        
+
         if (!ctx || !ctx.canvas) {
             return;
         }
@@ -177,19 +177,19 @@ export class CanvasGraphService {
             if (dataset.data.length === 0 || !!dataset.hidden) {
                 return;
             }
-            
+
             const pos = this._positions.get(dataset.id) ?? dataset.data.length - 1;
             let start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
             let startOverflow = 0;
-            
+
             // account for overflow from start.
             if (start < 0) {
                 startOverflow = 0 - start;
-                start = 0; 
+                start = 0;
             }
 
-            let end = Math.ceil(pos + this._sizeOfWindow * (1-scaleFactor) + startOverflow);
-            
+            let end = Math.ceil(pos + this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
+
             // account for overflow from end.
             if (end > dataset.data.length) {
                 const endOverflow = end - dataset.data.length;
@@ -205,30 +205,30 @@ export class CanvasGraphService {
                 bounds.start = start;
                 bounds.end = end;
             } else {
-                this._datasetBounds.set(dataset.id, {start, end});
+                this._datasetBounds.set(dataset.id, { start, end });
             }
         });
 
         // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
         this.datasets.forEach((dataset: IPerfDataset) => {
             const bounds = this._datasetBounds.get(dataset.id);
-            
+
             // handles cases we skip!
             if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
                 return;
             }
-            
+
             this._globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, this._globalTimeMinMax.min);
             this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, this._globalTimeMinMax.max);
         });
 
         // set the buffer region maximum by rescaling the max timestamp in bounds.
-        const bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min)/scaleFactor + this._globalTimeMinMax.min);
-        
+        const bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / scaleFactor + this._globalTimeMinMax.min);
+
         // we then need to update the end position based on the maximum for the buffer region
         this.datasets.forEach((dataset: IPerfDataset) => {
             const bounds = this._datasetBounds.get(dataset.id);
-            
+
             // handles cases we skip!
             if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
                 return;
@@ -241,7 +241,7 @@ export class CanvasGraphService {
             this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, this._globalTimeMinMax.max);
         });
 
-        const updatedScaleFactor = Scalar.Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min)/(bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1); 
+        const updatedScaleFactor = Scalar.Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
 
         // we will now set the global maximum to the maximum of the buffer.
         this._globalTimeMinMax.max = bufferMaximum;
@@ -305,13 +305,13 @@ export class CanvasGraphService {
         let closestIndex = 0;
 
         while (low <= high) {
-            
+
             const middle = Math.trunc((low + high) / 2);
             const middleTimestamp = dataset.data[middle].timestamp;
 
             if (Math.abs(middleTimestamp - targetTime) < Math.abs(dataset.data[closestIndex].timestamp - targetTime)) {
                 closestIndex = middle;
-            } 
+            }
 
             if (middleTimestamp < targetTime) {
                 low = middle + 1;
@@ -350,7 +350,7 @@ export class CanvasGraphService {
         ctx.strokeStyle = defaultColor;
         ctx.moveTo(drawableArea.left, drawableArea.bottom);
         ctx.lineTo(drawableArea.right, drawableArea.bottom);
-        
+
         // draw ticks and text.
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -376,16 +376,16 @@ export class CanvasGraphService {
      */
     private _generateTicks(minMax: IPerfMinMax, spaceAvailable: number) {
         const { min, max } = minMax;
-        const minTickSpacing = 40; 
+        const minTickSpacing = 40;
 
         this._ticks.length = 0;
 
         const maxTickCount = Math.ceil(spaceAvailable / minTickSpacing);
         const range = this._niceNumber(max - min, false);
-        const spacing = this._niceNumber(range/(maxTickCount - 1), true);
-        const niceMin = Math.floor(min/spacing) * spacing;
-        const niceMax = Math.floor(max/spacing) * spacing;
-        
+        const spacing = this._niceNumber(range / (maxTickCount - 1), true);
+        const niceMin = Math.floor(min / spacing) * spacing;
+        const niceMax = Math.floor(max / spacing) * spacing;
+
         for (let i = niceMin; i <= niceMax + 0.5 * spacing; i += spacing) {
             this._ticks.push(i);
         }
@@ -424,7 +424,7 @@ export class CanvasGraphService {
                 niceFraction = 10;
             }
         }
-    
+
         return niceFraction * Math.pow(10, exp);
     }
 
@@ -452,7 +452,7 @@ export class CanvasGraphService {
             max
         }
     }
-    
+
     /**
      * Converts a data point to a point on the canvas (a pixel coordinate).
      * 
@@ -463,16 +463,16 @@ export class CanvasGraphService {
      * @returns 
      */
     private _getPixelPointFromDataPoint(point: IPerfPoint, timeMinMax: IPerfMinMax, valueMinMax: IPerfMinMax, drawableArea: IGraphDrawableArea): IPerfPoint {
-        const {timestamp, value} = point;
+        const { timestamp, value } = point;
 
-        const {top, left, bottom, right} = drawableArea;
-        
+        const { top, left, bottom, right } = drawableArea;
+
         return {
             timestamp: this._getPixelForNumber(timestamp, timeMinMax, left, right - left, false),
             value: this._getPixelForNumber(value, valueMinMax, top, bottom - top, true)
         };
     }
-    
+
     /**
      * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
      * 
@@ -484,9 +484,9 @@ export class CanvasGraphService {
      * @returns the pixel coordinate of the value in a single axis.
      */
     private _getPixelForNumber(num: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
-        const {min, max} = minMax;
+        const { min, max } = minMax;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
-        let normalizedValue = (num - min)/(max - min);
+        let normalizedValue = (num - min) / (max - min);
 
         // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
         if (shouldFlipValue) {
@@ -522,7 +522,7 @@ export class CanvasGraphService {
         canvas.removeEventListener("mouseleave", this._handleStopHover);
         canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
     }
-    
+
     /**
      * Handles what to do when we are hovering over the canvas and not panning.
      * 
@@ -564,16 +564,16 @@ export class CanvasGraphService {
      * @param drawableArea  the available area we can draw in.
      */
     private _drawTooltip(pixel: number | null, drawableArea: IGraphDrawableArea) {
-        const {_ctx : ctx} = this;
+        const { _ctx: ctx } = this;
 
-        if (pixel === null || !ctx || !ctx.canvas) {            
+        if (pixel === null || !ctx || !ctx.canvas) {
             return;
         }
 
         // first convert the mouse position in pixels to a timestamp.
-        const {left: start, right: end} = ctx.canvas.getBoundingClientRect();
+        const { left: start, right: end } = ctx.canvas.getBoundingClientRect();
         const inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
-        
+
         let longestText: string = "";
         let numberOfTooltipItems = 0;
 
@@ -585,7 +585,7 @@ export class CanvasGraphService {
 
             const closestIndex = this._getClosestPointToTimestamp(dataset, inferredTimestamp);
             const text = `${dataset.id}: ${dataset.data[closestIndex].value.toFixed(2)}`;
-            
+
             if (text.length > longestText.length) {
                 longestText = text;
             }
@@ -593,20 +593,20 @@ export class CanvasGraphService {
             this._tooltipItems[numberOfTooltipItems].text = text;
             this._tooltipItems[numberOfTooltipItems].color = dataset.color ?? defaultColor;
             numberOfTooltipItems++;
-        }); 
+        });
 
         let x = pixel - start;
-        let y = Math.floor((drawableArea.bottom - drawableArea.top)/2);
+        let y = Math.floor((drawableArea.bottom - drawableArea.top) / 2);
 
         ctx.save();
-        
+
         ctx.font = tooltipFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
 
         const boxLength = this._tooltipLineHeight;
-        const textHeight = this._tooltipLineHeight + Math.floor(tooltipHorizontalPadding/2);
-        
+        const textHeight = this._tooltipLineHeight + Math.floor(tooltipHorizontalPadding / 2);
+
         // initialize width with cached value or measure width of longest text and update cache.
         let width: number;
         if (longestText === this._textCache.text) {
@@ -616,7 +616,7 @@ export class CanvasGraphService {
             this._textCache.text = longestText;
             this._textCache.width = width;
         }
-        
+
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
         if (x + width > this._width) {
             x -= width;
@@ -624,11 +624,11 @@ export class CanvasGraphService {
 
         ctx.globalAlpha = tooltipBackgroundAlpha;
         ctx.fillStyle = tooltipBackgroundColor;
-        
+
         ctx.fillRect(x, y, width, textHeight * (numberOfTooltipItems + 1));
-        
+
         ctx.globalAlpha = defaultAlpha;
-        
+
         x += tooltipHorizontalPadding;
         y += textHeight;
 
@@ -636,12 +636,12 @@ export class CanvasGraphService {
             const tooltipItem = this._tooltipItems[i];
 
             ctx.fillStyle = tooltipItem.color;
-            ctx.fillRect(x, y - Math.floor(boxLength/2), boxLength, boxLength);
+            ctx.fillRect(x, y - Math.floor(boxLength / 2), boxLength, boxLength);
             ctx.fillStyle = tooltipForegroundColor;
             ctx.fillText(tooltipItem.text, x + boxLength + spaceBetweenTextAndBox, y);
             y += textHeight;
         }
-        
+
         ctx.restore();
     }
 
@@ -656,8 +656,8 @@ export class CanvasGraphService {
      */
     private _getNumberFromPixel(pixel: number, minMax: IPerfMinMax, startingPixel: number, endingPixel: number): number {
         // normalize pixel to range [0, 1].
-        const normalizedPixelPosition = (pixel - startingPixel)/(endingPixel - startingPixel);
-        
+        const normalizedPixelPosition = (pixel - startingPixel) / (endingPixel - startingPixel);
+
         return minMax.min + normalizedPixelPosition * (minMax.max - minMax.min);
     }
 
@@ -668,7 +668,7 @@ export class CanvasGraphService {
      */
     private _handleZoom = (event: WheelEvent) => {
         event.preventDefault();
-        
+
         if (!event.deltaY) {
             return;
         }
@@ -678,9 +678,9 @@ export class CanvasGraphService {
 
         // The max zoom is the largest dataset's length.      
         const maxZoom = this.datasets.map((dataset: IPerfDataset) => dataset.data.length)
-                        .reduce((maxLengthSoFar: number, currLength: number) => {
-                            return Math.max(currLength, maxLengthSoFar)
-                        }, 0);
+            .reduce((maxLengthSoFar: number, currLength: number) => {
+                return Math.max(currLength, maxLengthSoFar)
+            }, 0);
 
         if (this._shouldBecomeRealtime()) {
             this._positions.clear();
@@ -695,7 +695,7 @@ export class CanvasGraphService {
      * @param event the mouse event containing positional information.
      */
     private _handlePanStart = (event: MouseEvent) => {
-        const {_ctx: ctx} = this;
+        const { _ctx: ctx } = this;
         if (!ctx || !ctx.canvas) {
             return;
         }
@@ -730,16 +730,16 @@ export class CanvasGraphService {
 
             const { id } = dataset;
             const pos = this._positions.get(id) ?? (dataset.data.length - 1)
-            
+
             // update our position without allowing the user to pan more than they need to (approximation) 
             this._positions.set(
-                                id, 
-                                Scalar.Clamp(
-                                                pos - itemsDelta, 
-                                                Math.floor(this._sizeOfWindow * scaleFactor), 
-                                                dataset.data.length - Math.floor(this._sizeOfWindow * (1-scaleFactor))
-                                            )
-                                );
+                id,
+                Scalar.Clamp(
+                    pos - itemsDelta,
+                    Math.floor(this._sizeOfWindow * scaleFactor),
+                    dataset.data.length - Math.floor(this._sizeOfWindow * (1 - scaleFactor))
+                )
+            );
         });
 
         if (itemsDelta === 0) {
@@ -758,7 +758,7 @@ export class CanvasGraphService {
      * @param event the mouse event containing positional information.
      */
     private _handlePanStop = () => {
-        const {_ctx: ctx} = this;
+        const { _ctx: ctx } = this;
         if (!ctx || !ctx.canvas) {
             return;
         }
@@ -785,7 +785,7 @@ export class CanvasGraphService {
 
         // We first get the latest dataset, because this is where the real time data is!
         let latestDataset: IPerfDataset = this.datasets[0];
-        
+
         this.datasets.forEach((dataset: IPerfDataset) => {
             // skip over empty and hidden data!
             if (dataset.data.length === 0 || !!dataset.hidden) {
@@ -799,7 +799,7 @@ export class CanvasGraphService {
         const pos = this._positions.get(latestDataset.id);
         const latestElementPos = latestDataset.data.length - 1;
 
-        if (pos ===  undefined) {
+        if (pos === undefined) {
             return false;
         }
 
@@ -807,7 +807,7 @@ export class CanvasGraphService {
         const overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
         const rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
 
-        return latestDataset.data[rightmostPos].timestamp/latestDataset.data[latestElementPos].timestamp > returnToLiveThreshold;
+        return latestDataset.data[rightmostPos].timestamp / latestDataset.data[latestElementPos].timestamp > returnToLiveThreshold;
     }
 
     /**
@@ -818,28 +818,28 @@ export class CanvasGraphService {
      */
     private _drawPlayheadRegion(drawableArea: IGraphDrawableArea, scaleFactor: number) {
         const { _ctx: ctx } = this;
-       
+
         if (!ctx || scaleFactor >= stopDrawingPlayheadThreshold) {
             return;
         }
 
         const dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
-        const playheadPos = dividerXPos - playheadSize; 
+        const playheadPos = dividerXPos - playheadSize;
         const futureBoxPos = dividerXPos + dividerSize;
 
         const rectangleHeight = drawableArea.bottom - drawableArea.top - 1;
 
         ctx.save();
-        
+
         ctx.fillStyle = futureBoxColor;
         ctx.fillRect(futureBoxPos, drawableArea.top, drawableArea.right - futureBoxPos, rectangleHeight);
-        
+
         ctx.fillStyle = dividerColor;
         ctx.fillRect(dividerXPos, drawableArea.top, dividerSize, rectangleHeight);
-        
+
         ctx.fillStyle = playheadColor;
         ctx.fillRect(playheadPos, drawableArea.top, playheadSize, rectangleHeight);
-        
+
         ctx.restore();
     }
 
@@ -855,7 +855,7 @@ export class CanvasGraphService {
         this._removeEventListeners(this._ctx.canvas);
         this._ctx = null;
     }
-    
+
     /**
      * This method clears the canvas
      */

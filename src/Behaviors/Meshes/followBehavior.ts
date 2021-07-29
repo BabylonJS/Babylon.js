@@ -133,7 +133,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     /**
      *  Initializes the behavior
      */
-    public init() {}
+    public init() { }
 
     /**
      * Attaches the follow behavior

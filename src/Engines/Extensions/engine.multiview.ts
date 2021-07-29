@@ -27,7 +27,7 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.createMultiviewRenderTargetTexture = function(width: number, height: number) {
+Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, height: number) {
     var gl = this._gl;
 
     if (!this.getCaps().multiview) {
@@ -50,7 +50,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function(width: number, he
     return internalTexture;
 };
 
-Engine.prototype.bindMultiviewFramebuffer = function(multiviewTexture: InternalTexture) {
+Engine.prototype.bindMultiviewFramebuffer = function (multiviewTexture: InternalTexture) {
     var gl: any = this._gl;
     var ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
 
@@ -96,7 +96,7 @@ Camera.prototype._useMultiviewToSingleView = false;
 
 Camera.prototype._multiviewTexture = null;
 
-Camera.prototype._resizeOrCreateMultiviewTexture = function(width: number, height: number) {
+Camera.prototype._resizeOrCreateMultiviewTexture = function (width: number, height: number) {
     if (!this._multiviewTexture) {
         this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), { width: width, height: height });
     } else if (this._multiviewTexture.getRenderWidth() != width || this._multiviewTexture.getRenderHeight() != height) {
@@ -122,7 +122,7 @@ declare module "../../scene" {
 
 Scene.prototype._transformMatrixR = Matrix.Zero();
 Scene.prototype._multiviewSceneUbo = null;
-Scene.prototype._createMultiviewUbo = function() {
+Scene.prototype._createMultiviewUbo = function () {
     this._multiviewSceneUbo = new UniformBuffer(this.getEngine(), undefined, true, "scene_multiview");
     this._multiviewSceneUbo.addUniform("viewProjection", 16);
     this._multiviewSceneUbo.addUniform("viewProjectionR", 16);
@@ -130,7 +130,7 @@ Scene.prototype._createMultiviewUbo = function() {
     this._multiviewSceneUbo.addUniform("projection", 16);
     this._multiviewSceneUbo.addUniform("viewPosition", 4);
 };
-Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Matrix) {
+Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {
         viewR.multiplyToRef(projectionR, this._transformMatrixR);
     }
@@ -147,7 +147,7 @@ Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Mat
         this._multiviewSceneUbo.updateMatrix("projection", this._projectionMatrix);
     }
 };
-Scene.prototype._renderMultiviewToSingleView = function(camera: Camera) {
+Scene.prototype._renderMultiviewToSingleView = function (camera: Camera) {
     // Multiview is only able to be displayed directly for API's such as webXR
     // This displays a multiview image by rendering to the multiview image and then
     // copying the result into the sub cameras instead of rendering them and proceeding as normal from there

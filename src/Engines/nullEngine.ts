@@ -179,12 +179,12 @@ export class NullEngine extends Engine {
         const theCurrentGlobal = (typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : window);
         if (typeof URL === "undefined") {
             theCurrentGlobal.URL = {
-                createObjectURL: function() { },
-                revokeObjectURL: function() { }
+                createObjectURL: function () { },
+                revokeObjectURL: function () { }
             };
         }
         if (typeof Blob === "undefined") {
-            theCurrentGlobal.Blob = function() { };
+            theCurrentGlobal.Blob = function () { };
         }
     }
 

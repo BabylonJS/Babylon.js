@@ -202,7 +202,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     constructor(
         /** Defines the control name */
         public name?: string
-    ) {}
+    ) { }
 
     /**
      * Gets a string representing the class name

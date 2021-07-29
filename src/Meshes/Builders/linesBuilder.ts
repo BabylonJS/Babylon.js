@@ -9,7 +9,7 @@ import { VertexBuffer } from "../../Buffers/buffer";
 
 declare type Material = import("../../Materials/material").Material;
 
-VertexData.CreateLineSystem = function(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
+VertexData.CreateLineSystem = function (options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
     var indices = [];
     var positions = [];
     var lines = options.lines;
@@ -41,7 +41,7 @@ VertexData.CreateLineSystem = function(options: { lines: Vector3[][], colors?: N
     return vertexData;
 };
 
-VertexData.CreateDashedLines = function(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
+VertexData.CreateDashedLines = function (options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
     var dashSize = options.dashSize || 3;
     var gapSize = options.gapSize || 1;
     var dashNb = options.dashNb || 200;

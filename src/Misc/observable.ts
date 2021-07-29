@@ -58,9 +58,9 @@ export class EventState {
      */
     public lastReturnValue?: any;
 
-     /**
-     * User defined information that will be sent to observers
-     */
+    /**
+    * User defined information that will be sent to observers
+    */
     public userInfo?: any;
 }
 

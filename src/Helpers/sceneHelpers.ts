@@ -88,7 +88,7 @@ declare module "../scene" {
     }
 }
 
-Scene.prototype.createDefaultLight = function(replace = false): void {
+Scene.prototype.createDefaultLight = function (replace = false): void {
     // Dispose existing light in replace mode.
     if (replace) {
         if (this.lights) {
@@ -104,7 +104,7 @@ Scene.prototype.createDefaultLight = function(replace = false): void {
     }
 };
 
-Scene.prototype.createDefaultCamera = function(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
+Scene.prototype.createDefaultCamera = function (createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
     // Dispose existing camera in replace mode.
     if (replace) {
         if (this.activeCamera) {
@@ -149,12 +149,12 @@ Scene.prototype.createDefaultCamera = function(createArcRotateCamera = false, re
     }
 };
 
-Scene.prototype.createDefaultCameraOrLight = function(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
+Scene.prototype.createDefaultCameraOrLight = function (createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
     this.createDefaultLight(replace);
     this.createDefaultCamera(createArcRotateCamera, replace, attachCameraControls);
 };
 
-Scene.prototype.createDefaultSkybox = function(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
+Scene.prototype.createDefaultSkybox = function (environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
 
     if (!environmentTexture) {
         Logger.Warn("Can not create default skybox without environment texture.");
@@ -197,18 +197,18 @@ Scene.prototype.createDefaultSkybox = function(environmentTexture?: BaseTexture,
     return hdrSkybox;
 };
 
-Scene.prototype.createDefaultEnvironment = function(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
+Scene.prototype.createDefaultEnvironment = function (options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
     if (EnvironmentHelper) {
         return new EnvironmentHelper(options, this);
     }
     return null;
 };
 
-Scene.prototype.createDefaultVRExperience = function(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
+Scene.prototype.createDefaultVRExperience = function (webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
     return new VRExperienceHelper(this, webVROptions);
 };
 
-Scene.prototype.createDefaultXRExperienceAsync = function(options: WebXRDefaultExperienceOptions = {}): Promise<WebXRDefaultExperience> {
+Scene.prototype.createDefaultXRExperienceAsync = function (options: WebXRDefaultExperienceOptions = {}): Promise<WebXRDefaultExperience> {
     return WebXRDefaultExperience.CreateAsync(this, options).then((helper) => {
         return helper;
     });

@@ -82,7 +82,7 @@ export class StringTools {
      * @param base64Data The base64 encoded string to decode
      * @returns Decoded ASCII string
      */
-    public static DecodeBase64ToString(base64Data: string) : string {
+    public static DecodeBase64ToString(base64Data: string): string {
         return atob(base64Data);
     }
 
@@ -91,7 +91,7 @@ export class StringTools {
      * @param base64Data The base64 encoded string to decode
      * @returns ArrayBuffer of byte data
      */
-    public static DecodeBase64ToBinary(base64Data: string) : ArrayBuffer {
+    public static DecodeBase64ToBinary(base64Data: string): ArrayBuffer {
         const decodedString = StringTools.DecodeBase64ToString(base64Data);
         const bufferLength = decodedString.length;
         const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));

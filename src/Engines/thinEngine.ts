@@ -653,9 +653,9 @@ export class ThinEngine {
      * Create an image to use with canvas
      * @return IImage interface
      */
-     public createCanvasImage(): IImage {
-         return document.createElement("img");
-     }
+    public createCanvasImage(): IImage {
+        return document.createElement("img");
+    }
 
     /**
      * Creates a new engine
@@ -1741,6 +1741,11 @@ export class ThinEngine {
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, framebuffer);
             this._currentFramebuffer = framebuffer;
         }
+    }
+
+    /** @hidden */
+    public _currentFrameBufferIsDefaultFrameBuffer() {
+        return this._currentFramebuffer === null;
     }
 
     /**

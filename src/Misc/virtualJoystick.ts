@@ -639,7 +639,7 @@ export class VirtualJoystick {
         if (this.pressed) {
             this._touches.forEach((key, touch) => {
                 if ((<PointerEvent>touch).pointerId === this._joystickPointerId) {
-                    if (! this.alwaysVisible) {
+                    if (!this.alwaysVisible) {
                         this._drawContainer();
                     }
 

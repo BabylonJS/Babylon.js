@@ -133,10 +133,10 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
     return (target: any, propertyKey: string) => {
         var key = targetKey || ("_" + propertyKey);
         Object.defineProperty(target, propertyKey, {
-            get: function(this: any) {
+            get: function (this: any) {
                 return this[key];
             },
-            set: function(this: any, value) {
+            set: function (this: any, value) {
                 if (this[key] === value) {
                     return;
                 }
@@ -471,6 +471,6 @@ export function nativeOverride(target: any, propertyKey: string, descriptor: Pro
  * @example @nativeOverride.filter((arg1) => arg1.length > 20)
  * @hidden
  */
-nativeOverride.filter = function(predicate: (...params: any) => boolean) {
+nativeOverride.filter = function (predicate: (...params: any) => boolean) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => nativeOverride(target, propertyKey, descriptor, predicate);
 };

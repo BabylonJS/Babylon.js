@@ -12,10 +12,10 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype._readTexturePixelsSync = function(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): ArrayBufferView {
+ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): ArrayBufferView {
     let gl = this._gl;
     if (!gl) {
-        throw new Error ("Engine does not have gl rendering context.");
+        throw new Error("Engine does not have gl rendering context.");
     }
     if (!this._dummyFramebuffer) {
         let dummy = gl.createFramebuffer();
@@ -61,6 +61,6 @@ ThinEngine.prototype._readTexturePixelsSync = function(texture: InternalTexture,
     return buffer;
 };
 
-ThinEngine.prototype._readTexturePixels = function(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Promise<ArrayBufferView> {
+ThinEngine.prototype._readTexturePixels = function (texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Promise<ArrayBufferView> {
     return Promise.resolve(this._readTexturePixelsSync(texture, width, height, faceIndex, level, buffer, flushRenderer));
 };

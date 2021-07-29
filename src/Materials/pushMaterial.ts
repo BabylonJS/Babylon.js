@@ -41,7 +41,7 @@ export class PushMaterial extends Material {
         const defines = subMesh._materialDefines;
         if (!this.checkReadyOnEveryCall && subMesh.effect && defines) {
             if (defines._renderId === this.getScene().getRenderId()) {
-                    return true;
+                return true;
             }
         }
 

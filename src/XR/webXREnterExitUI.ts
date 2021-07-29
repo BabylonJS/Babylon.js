@@ -21,13 +21,13 @@ export class WebXREnterExitUIButton {
         public sessionMode: XRSessionMode,
         /** Reference space type */
         public referenceSpaceType: XRReferenceSpaceType
-    ) {}
+    ) { }
 
     /**
      * Extendable function which can be used to update the button's visuals when the state changes
      * @param activeButton the current active button in the UI
      */
-    public update(activeButton: Nullable<WebXREnterExitUIButton>) {}
+    public update(activeButton: Nullable<WebXREnterExitUIButton>) { }
 }
 
 /**

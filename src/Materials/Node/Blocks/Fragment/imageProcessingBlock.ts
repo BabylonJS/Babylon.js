@@ -35,13 +35,13 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     /**
      * Defines if the input should be converted to linear space (default: true)
      */
-     @editableInPropertyPage("Convert input to linear space", PropertyTypeForEdition.Boolean, "ADVANCED")
-     public convertInputToLinearSpace: boolean = true;
+    @editableInPropertyPage("Convert input to linear space", PropertyTypeForEdition.Boolean, "ADVANCED")
+    public convertInputToLinearSpace: boolean = true;
 
-     /**
-     * Gets the current class name
-     * @returns the class name
-     */
+    /**
+    * Gets the current class name
+    * @returns the class name
+    */
     public getClassName() {
         return "ImageProcessingBlock";
     }

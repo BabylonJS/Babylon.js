@@ -68,17 +68,17 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
             // IE: event.wheelDelta
             // Firefox: event.detail (inverted)
             var wheelDelta = Math.max(-1, Math.min(1,
-              (event.deltaY || (<any>event).wheelDelta || -event.detail)));
+                (event.deltaY || (<any>event).wheelDelta || -event.detail)));
             if (this.wheelDeltaPercentage) {
                 console.assert((<number>(<unknown>this.axisControlRadius) +
-                                <number>(<unknown>this.axisControlHeight) +
-                                <number>(<unknown>this.axisControlRotation)) <= 1,
-                               "wheelDeltaPercentage only usable when mouse wheel " +
-                               "controls ONE axis. " +
-                               "Currently enabled: " +
-                               "axisControlRadius: " + this.axisControlRadius +
-                               ", axisControlHeightOffset: " + this.axisControlHeight +
-                               ", axisControlRotationOffset: " + this.axisControlRotation);
+                    <number>(<unknown>this.axisControlHeight) +
+                    <number>(<unknown>this.axisControlRotation)) <= 1,
+                    "wheelDeltaPercentage only usable when mouse wheel " +
+                    "controls ONE axis. " +
+                    "Currently enabled: " +
+                    "axisControlRadius: " + this.axisControlRadius +
+                    ", axisControlHeightOffset: " + this.axisControlHeight +
+                    ", axisControlRotationOffset: " + this.axisControlRotation);
 
                 if (this.axisControlRadius) {
                     delta =

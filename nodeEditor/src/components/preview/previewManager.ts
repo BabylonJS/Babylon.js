@@ -36,7 +36,7 @@ import { DataStorage } from "babylonjs/Misc/dataStorage";
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;
-    
+
     private _onPreviewCommandActivatedObserver: Nullable<Observer<boolean>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;

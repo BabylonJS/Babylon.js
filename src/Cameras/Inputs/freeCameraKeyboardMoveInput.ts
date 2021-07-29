@@ -57,18 +57,18 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     /**
      * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
      */
-     @serialize()
-     public rotationSpeed = 0.5;
+    @serialize()
+    public rotationSpeed = 0.5;
 
     /**
      * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
      */
-     @serialize()
-     public keysRotateLeft: number[] = [];
+    @serialize()
+    public keysRotateLeft: number[] = [];
 
-     /**
-     * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
-     */
+    /**
+    * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+    */
     @serialize()
     public keysRotateRight: number[] = [];
 

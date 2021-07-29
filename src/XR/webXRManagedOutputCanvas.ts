@@ -127,7 +127,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             .makeXRCompatible()
             .then(
                 // catch any error and continue. When using the emulator is throws this error for no apparent reason.
-                () => {},
+                () => { },
                 () => {
                     // log the error, continue nonetheless!
                     Tools.Warn("Error executing makeXRCompatible. This does not mean that the session will work incorrectly.");
