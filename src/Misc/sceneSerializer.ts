@@ -342,7 +342,7 @@ export class SceneSerializer {
         return Promise.all(promises).then(() => serializationObject);
     }
 
-    private static _CollectPromises(obj: any, promises: Array<Promise<any>>): void  {
+    private static _CollectPromises(obj: any, promises: Array<Promise<any>>): void {
         if (Array.isArray(obj)) {
             for (let i = 0; i < obj.length; ++i) {
                 const o = obj[i];

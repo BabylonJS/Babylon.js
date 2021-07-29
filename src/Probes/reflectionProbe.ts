@@ -30,7 +30,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.removeReflectionProbe = function(toRemove: ReflectionProbe): number {
+AbstractScene.prototype.removeReflectionProbe = function (toRemove: ReflectionProbe): number {
     if (!this.reflectionProbes) {
         return -1;
     }
@@ -43,7 +43,7 @@ AbstractScene.prototype.removeReflectionProbe = function(toRemove: ReflectionPro
     return index;
 };
 
-AbstractScene.prototype.addReflectionProbe = function(newReflectionProbe: ReflectionProbe): void {
+AbstractScene.prototype.addReflectionProbe = function (newReflectionProbe: ReflectionProbe): void {
     if (!this.reflectionProbes) {
         this.reflectionProbes = [];
     }
@@ -147,7 +147,7 @@ export class ReflectionProbe {
                     scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
                 }
             }
-            else  {
+            else {
                 Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
                 if (scene.activeCamera) {

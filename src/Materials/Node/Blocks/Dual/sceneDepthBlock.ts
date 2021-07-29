@@ -25,14 +25,14 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     /**
      * Defines if the depth renderer should be setup in non linear mode
      */
-    @editableInPropertyPage("Use non linear depth", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { "activatePreviewCommand": true, "callback": (scene) => scene.disableDepthRenderer() }})
+    @editableInPropertyPage("Use non linear depth", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { "activatePreviewCommand": true, "callback": (scene) => scene.disableDepthRenderer() } })
     public useNonLinearDepth = false;
 
     /**
      * Defines if the depth renderer should be setup in full 32 bits float mode
      */
-     @editableInPropertyPage("Force 32 bits float", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { "activatePreviewCommand": true, "callback": (scene) => scene.disableDepthRenderer() }})
-     public force32itsFloat = false;
+    @editableInPropertyPage("Force 32 bits float", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { "activatePreviewCommand": true, "callback": (scene) => scene.disableDepthRenderer() } })
+    public force32itsFloat = false;
 
     /**
      * Create a new SceneDepthBlock

@@ -99,7 +99,7 @@ export class Tags {
         }
 
         var tags = tagsString.split(" ");
-        tags.forEach(function(tag, index, array) {
+        tags.forEach(function (tag, index, array) {
             Tags._AddTagTo(obj, tag);
         });
     }

@@ -23,9 +23,9 @@ const enum DFDChannel_ETC1S {
 }
 
 const enum DFDChannel_UASTC {
-    RGB  = 0,
+    RGB = 0,
     RGBA = 3,
-    RRR  = 4,
+    RRR = 4,
     RRRG = 5
 }
 
@@ -163,22 +163,22 @@ export class KTX2FileReader {
         const hdrReader = new DataReader(this._data, offsetInFile, 17 * 4);
 
         const header = this._header = {
-            vkFormat:               hdrReader.readUint32(),
-            typeSize:               hdrReader.readUint32(),
-            pixelWidth:             hdrReader.readUint32(),
-            pixelHeight:            hdrReader.readUint32(),
-            pixelDepth:             hdrReader.readUint32(),
-            layerCount:             hdrReader.readUint32(),
-            faceCount:              hdrReader.readUint32(),
-            levelCount:             hdrReader.readUint32(),
+            vkFormat: hdrReader.readUint32(),
+            typeSize: hdrReader.readUint32(),
+            pixelWidth: hdrReader.readUint32(),
+            pixelHeight: hdrReader.readUint32(),
+            pixelDepth: hdrReader.readUint32(),
+            layerCount: hdrReader.readUint32(),
+            faceCount: hdrReader.readUint32(),
+            levelCount: hdrReader.readUint32(),
             supercompressionScheme: hdrReader.readUint32(),
 
-            dfdByteOffset:          hdrReader.readUint32(),
-            dfdByteLength:          hdrReader.readUint32(),
-            kvdByteOffset:          hdrReader.readUint32(),
-            kvdByteLength:          hdrReader.readUint32(),
-            sgdByteOffset:          hdrReader.readUint64(),
-            sgdByteLength:          hdrReader.readUint64(),
+            dfdByteOffset: hdrReader.readUint32(),
+            dfdByteLength: hdrReader.readUint32(),
+            kvdByteOffset: hdrReader.readUint32(),
+            kvdByteLength: hdrReader.readUint32(),
+            sgdByteOffset: hdrReader.readUint64(),
+            sgdByteLength: hdrReader.readUint64(),
         };
 
         if (header.pixelDepth > 0) {
@@ -290,7 +290,7 @@ export class KTX2FileReader {
 
             const imageCount = this._getImageCount();
 
-            for (let i = 0; i < imageCount; i ++) {
+            for (let i = 0; i < imageCount; i++) {
                 sgd.imageDescs.push({
                     imageFlags: sgdReader.readUint32(),
                     rgbSliceByteOffset: sgdReader.readUint32(),

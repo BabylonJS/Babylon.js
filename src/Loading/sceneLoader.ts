@@ -314,7 +314,7 @@ interface IFileInfo {
     /**
      * Gets the file
      */
-     file: Nullable<File>;
+    file: Nullable<File>;
 }
 
 /**

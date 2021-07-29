@@ -794,7 +794,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
                                 if (!this._lightOnControllers) {
                                     this._lightOnControllers = new HemisphericLight("vrControllersLight", new Vector3(0, 1, 0), this.getScene());
                                 }
-                                let activateLightOnSubMeshes = function(mesh: AbstractMesh, light: HemisphericLight) {
+                                let activateLightOnSubMeshes = function (mesh: AbstractMesh, light: HemisphericLight) {
                                     let children = mesh.getChildren();
                                     if (children && children.length !== 0) {
                                         children.forEach((mesh) => {

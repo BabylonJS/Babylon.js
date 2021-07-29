@@ -16,7 +16,7 @@ declare module "../scene" {
     }
 }
 Object.defineProperty(Scene.prototype, "simplificationQueue", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         if (!this._simplificationQueue) {
             this._simplificationQueue = new SimplificationQueue();
             let component = this._getComponent(SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE) as SimplicationQueueSceneComponent;
@@ -27,7 +27,7 @@ Object.defineProperty(Scene.prototype, "simplificationQueue", {
         }
         return this._simplificationQueue;
     },
-    set: function(this: Scene, value: SimplificationQueue) {
+    set: function (this: Scene, value: SimplificationQueue) {
         this._simplificationQueue = value;
     },
     enumerable: true,
@@ -49,7 +49,7 @@ declare module "../Meshes/mesh" {
     }
 }
 
-Mesh.prototype.simplify = function(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
+Mesh.prototype.simplify = function (settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
     this.getScene().simplificationQueue.addTask({
         settings: settings,
         parallelProcessing: parallelProcessing,

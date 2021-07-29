@@ -3,7 +3,7 @@ import { Viewport } from '../../Maths/math.viewport';
 import { PassPostProcess } from '../../PostProcesses/passPostProcess';
 import { StereoscopicInterlacePostProcessI } from '../../PostProcesses/stereoscopicInterlacePostProcess';
 
-Camera._setStereoscopicRigMode = function(camera: Camera) {
+Camera._setStereoscopicRigMode = function (camera: Camera) {
     var isStereoscopicHoriz = camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
     var isCrossEye = camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
     var isInterlaced = camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_INTERLACED;

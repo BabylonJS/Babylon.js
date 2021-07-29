@@ -272,7 +272,7 @@ export interface ICrowd {
      * get the list of all agents attached to this crowd
      * @returns list of agent indices
      */
-    getAgents() : number[];
+    getAgents(): number[];
 
     /**
      * Tick update done by the Scene. Agent position/velocity/acceleration is updated by this function
@@ -331,7 +331,7 @@ export interface ICrowd {
     /**
      * Release all resources
      */
-    dispose() : void;
+    dispose(): void;
 }
 
 /**

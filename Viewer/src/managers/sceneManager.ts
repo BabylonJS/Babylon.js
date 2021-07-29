@@ -921,7 +921,7 @@ export class SceneManager {
                 camera.minZ = radius * 0.01;
                 camera.maxZ = radius * 1000;
                 camera.speed = radius * 0.2;
-               this.scene.activeCamera = camera;
+                this.scene.activeCamera = camera;
             }
             let canvas = this.scene.getEngine().getInputElement();
             if (canvas) {

@@ -3,7 +3,7 @@ import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
 /**
  * Defines a structure to hold max and min.
  */
- export interface IPerfMinMax {
+export interface IPerfMinMax {
     min: number;
     max: number;
 }

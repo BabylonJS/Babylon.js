@@ -192,7 +192,7 @@ export class VideoTexture extends Texture {
      * Get the current class name of the video texture useful for serialization or dynamic coding.
      * @returns "VideoTexture"
      */
-     public getClassName(): string {
+    public getClassName(): string {
         return "VideoTexture";
     }
 
@@ -468,9 +468,9 @@ export class VideoTexture extends Texture {
 
         if (navigator.mediaDevices) {
             return navigator.mediaDevices.getUserMedia({
-                    video: constraints,
-                    audio: audioConstaints
-                })
+                video: constraints,
+                audio: audioConstaints
+            })
                 .then((stream) => {
                     return this.CreateFromStreamAsync(scene, stream, constraints);
                 });
@@ -501,7 +501,7 @@ export class VideoTexture extends Texture {
                     (stream: any) => {
                         return this.CreateFromStreamAsync(scene, stream, constraints);
                     },
-                    function(e: MediaStreamError) {
+                    function (e: MediaStreamError) {
                         Logger.Error(e.name);
                     }
                 );
@@ -531,12 +531,12 @@ export class VideoTexture extends Texture {
         audioConstaints: boolean | MediaTrackConstraints = false
     ): void {
         this.CreateFromWebCamAsync(scene, constraints, audioConstaints)
-            .then(function(videoTexture) {
+            .then(function (videoTexture) {
                 if (onReady) {
                     onReady(videoTexture);
                 }
             })
-            .catch(function(err) {
+            .catch(function (err) {
                 Logger.Error(err.name);
             });
     }

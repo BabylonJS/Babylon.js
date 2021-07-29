@@ -1,7 +1,7 @@
 import { Engine } from "../../engine";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype.setAlphaMode = function(mode: number, noDepthWriteChange: boolean = false): void {
+WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
     if (this._alphaMode === mode) {
         return;
     }
@@ -70,7 +70,7 @@ WebGPUEngine.prototype.setAlphaMode = function(mode: number, noDepthWriteChange:
     this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
 };
 
-WebGPUEngine.prototype.setAlphaEquation = function(equation: number): void {
+WebGPUEngine.prototype.setAlphaEquation = function (equation: number): void {
     Engine.prototype.setAlphaEquation(equation);
 
     this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);

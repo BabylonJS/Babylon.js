@@ -338,11 +338,11 @@ export class SpotLight extends ShadowLight {
             const u = this._projectionTexture.uScale / 2.0;
             const v = this._projectionTexture.vScale / 2.0;
             Matrix.FromValuesToRef(
-                u,   0.0, 0.0, 0.0,
-                0.0, v,   0.0, 0.0,
+                u, 0.0, 0.0, 0.0,
+                0.0, v, 0.0, 0.0,
                 0.0, 0.0, 0.5, 0.0,
                 0.5, 0.5, 0.5, 1.0
-            , this._projectionTextureScalingMatrix);
+                , this._projectionTextureScalingMatrix);
         }
         this._projectionTextureMatrix.multiplyToRef(this._projectionTextureScalingMatrix, this._projectionTextureMatrix);
     }
@@ -465,7 +465,7 @@ export class SpotLight extends ShadowLight {
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
-     public getDepthMinZ(activeCamera: Camera): number {
+    public getDepthMinZ(activeCamera: Camera): number {
         const engine = this._scene.getEngine();
         const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
 
