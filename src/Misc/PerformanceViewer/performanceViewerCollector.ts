@@ -86,7 +86,7 @@ export class PerformanceViewerCollector {
             this.datasets.ids.push(strategy.id);
 
             this._datasetMeta.set(strategy.id, {
-                color: this._getHexFromId(strategy.id),
+                color: this._getHexColorFromId(strategy.id),
             });
 
             this._strategies.set(strategy.id, strategy);
@@ -96,11 +96,11 @@ export class PerformanceViewerCollector {
     }
 
     /**
-     * Gets a 6 character hexcode from a passed in string.
+     * Gets a 6 character hexcode representing the colour from a passed in string.
      * @param id the string to get a hex code for.
      * @returns a hexcode hashed from the id.
      */
-    private _getHexFromId(id: string) {
+    private _getHexColorFromId(id: string) {
         // this first bit is just a known way of hashing a string.
         let hash = 0;
         for (let i = 0; i < id.length; i++) {
