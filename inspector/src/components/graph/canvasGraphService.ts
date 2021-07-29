@@ -115,7 +115,7 @@ export class CanvasGraphService {
 
         for (let i = 0; i < maximumDatasetsAllowed; i++) {
             this._tooltipItems.push({text: "", color: ""});
-            this._tickerItems.push({id: "", max: 0, min: 0});
+            this._tickerItems.push({text: "", id: "", max: 0, min: 0});
         }
 
         if (!this._ctx) {
@@ -306,13 +306,15 @@ export class CanvasGraphService {
             }
 
             const valueMinMax = this._getMinMax(bounds, idOffset);
-            const text = `${id}: (max: ${valueMinMax.max.toFixed(2)}, min: ${valueMinMax.min.toFixed(2)})`
+            const latestValue = this.datasets.data.at(this.datasets.startingIndices.at(bounds.end - 1) + PerformanceViewerCollector.SliceDataOffset + idOffset);
+            const text = `${id}: ${latestValue.toFixed(2)} (max: ${valueMinMax.max.toFixed(2)}, min: ${valueMinMax.min.toFixed(2)})`
             if (text.length > longestText.length) {
                 longestText = text;
             }
             this._tickerItems[numberOfTickers].id = id;
             this._tickerItems[numberOfTickers].max = valueMinMax.max;
             this._tickerItems[numberOfTickers].min = valueMinMax.min;
+            this._tickerItems[numberOfTickers].text = text;
             numberOfTickers++;
         });
 
@@ -322,7 +324,8 @@ export class CanvasGraphService {
         ctx.textAlign = "left";
 
         let width: number;
-        if (this._tickerTextCache.text === longestText) {
+        // if the lengths are the same the estimate should be good enough given the padding.
+        if (this._tickerTextCache.text.length === longestText.length) {
             width = this._tickerTextCache.width;
         } else {
             width = ctx.measureText(longestText).width + 2 * tickerHorizontalPadding;
@@ -338,8 +341,7 @@ export class CanvasGraphService {
         let y = drawableArea.top + textHeight;
         for (let i = 0; i < numberOfTickers; i++) {
             const tickerItem = this._tickerItems[i];
-            const text = `${tickerItem.id}: (max: ${tickerItem.max.toFixed(2)}, min: ${tickerItem.min.toFixed(2)})`
-            ctx.fillText(text, x, y);
+            ctx.fillText(tickerItem.text, x, y);
             y += textHeight;
         }
         ctx.restore();
