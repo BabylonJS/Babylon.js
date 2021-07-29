@@ -346,10 +346,6 @@ export class WebXRHand implements IDisposable {
         if (_handMesh) {
             // Note that this logic needs to happen after we initialize the joint tracking transform nodes.
             this.setHandMesh(_handMesh, rigMapping);
-
-            // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
-            _handMesh.alwaysSelectAsActiveMesh = true;
-            _handMesh.getChildMeshes().forEach((mesh) => (mesh.alwaysSelectAsActiveMesh = true));
         }
 
         // hide the motion controller, if available/loaded
@@ -384,6 +380,10 @@ export class WebXRHand implements IDisposable {
      */
     public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>) {
         this._handMesh = handMesh;
+
+        // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
+        handMesh.alwaysSelectAsActiveMesh = true;
+        handMesh.getChildMeshes().forEach((mesh) => (mesh.alwaysSelectAsActiveMesh = true));
 
         // Link the bones in the hand mesh to the transform nodes that will be bound to the WebXR tracked joints.
         if (this._handMesh.skeleton) {
@@ -435,7 +435,7 @@ export class WebXRHand implements IDisposable {
             return;
         }
 
-        handJointReferenceArray.forEach((jointName, jointIdx) => {
+        handJointReferenceArray.forEach((_jointName, jointIdx) => {
             const jointTransform = this._jointTransforms[jointIdx];
             Matrix.FromArrayToRef(this._jointTransformMatrices, jointIdx * 16, this._tempJointMatrix);
             this._tempJointMatrix.decompose(undefined, jointTransform.rotationQuaternion!, jointTransform.position);
@@ -447,7 +447,7 @@ export class WebXRHand implements IDisposable {
             jointMesh.isVisible = !this._handMesh && !this._jointsInvisible;
             jointMesh.position.copyFrom(jointTransform.position);
             jointMesh.rotationQuaternion!.copyFrom(jointTransform.rotationQuaternion!);
-            jointMesh.scaling.copyFromFloats(scaledJointRadius, scaledJointRadius, scaledJointRadius);
+            jointMesh.scaling.setAll(scaledJointRadius);
 
             // The WebXR data comes as right-handed, so we might need to do some conversions.
             if (!this._scene.useRightHandedSystem) {
@@ -525,6 +525,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 newInstance.isPickable = false;
                 if (featureOptions.jointMeshes?.enablePhysics) {
                     const props = featureOptions.jointMeshes?.physicsProps || {};
+                    // downscale the instances so that physics will be initialized correctly
+                    newInstance.scaling.setAll(0.02);
                     const type = props.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
                     newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, { mass: 0, ...props });
                 }
