@@ -60,6 +60,7 @@ export interface IGraphDrawableArea {
  */
 export interface IPerfTicker extends IPerfMinMax {
     id: string;
+    text: string;
 }
 
 /**
