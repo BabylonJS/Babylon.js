@@ -80,8 +80,8 @@ export class RenderTargetTexture extends Texture {
 
             var result = oldPush.apply(array, items);
 
-            if (wasEmpty && this.getScene()) {
-                this.getScene()!.meshes.forEach((mesh) => {
+            if (wasEmpty) {
+                this.getScene()?.meshes.forEach((mesh) => {
                     mesh._markSubMeshesAsLightDirty();
                 });
             }
@@ -94,7 +94,7 @@ export class RenderTargetTexture extends Texture {
             var deleted = oldSplice.apply(array, [index, deleteCount]);
 
             if (array.length === 0) {
-                this.getScene()!.meshes.forEach((mesh) => {
+                this.getScene()?.meshes.forEach((mesh) => {
                     mesh._markSubMeshesAsLightDirty();
                 });
             }
@@ -235,6 +235,8 @@ export class RenderTargetTexture extends Texture {
     protected _sizeRatio: Nullable<number>;
     /** @hidden */
     public _generateMipMaps: boolean;
+    /** @hidden */
+    public _cleared = false;
     protected _renderingManager: RenderingManager;
     /** @hidden */
     public _waitingRenderList?: string[];
