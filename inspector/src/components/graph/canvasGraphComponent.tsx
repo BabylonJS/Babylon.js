@@ -63,7 +63,7 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
         return () => {
             cs?.destroy();
             layoutObservable?.removeCallback(layoutUpdated);
-            collector.datasetObservable.removeCallback(dataUpdated);
+            scene.onAfterRenderObservable.removeCallback(dataUpdated);
             collector.metadataObservable.removeCallback(metaUpdated);
         };
     }, [canvasRef]);
