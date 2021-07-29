@@ -346,10 +346,6 @@ export class WebXRHand implements IDisposable {
         if (_handMesh) {
             // Note that this logic needs to happen after we initialize the joint tracking transform nodes.
             this.setHandMesh(_handMesh, rigMapping);
-
-            // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
-            _handMesh.alwaysSelectAsActiveMesh = true;
-            _handMesh.getChildMeshes().forEach((mesh) => (mesh.alwaysSelectAsActiveMesh = true));
         }
 
         // hide the motion controller, if available/loaded
@@ -384,6 +380,10 @@ export class WebXRHand implements IDisposable {
      */
     public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>) {
         this._handMesh = handMesh;
+
+        // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
+        handMesh.alwaysSelectAsActiveMesh = true;
+        handMesh.getChildMeshes().forEach((mesh) => (mesh.alwaysSelectAsActiveMesh = true));
 
         // Link the bones in the hand mesh to the transform nodes that will be bound to the WebXR tracked joints.
         if (this._handMesh.skeleton) {
