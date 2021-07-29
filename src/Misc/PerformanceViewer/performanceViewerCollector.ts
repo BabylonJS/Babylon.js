@@ -29,6 +29,7 @@ export class PerformanceViewerCollector {
     public readonly datasets: IPerfDatasets;
     /**
      * An observable you can attach to get deltas in the dataset. Subscribing to this will increase memory consumption slightly, and may hurt performance due to increased garbage collection needed.
+     * Updates of slices will be of the form [timestamp, numberOfPoints, value1, value2...].
      */
     public readonly datasetObservable: Observable<number[]>;
     /**
@@ -164,6 +165,7 @@ export class PerformanceViewerCollector {
 
     /**
      * Collects and then sends the latest slice to any observers by using the appropriate strategy when the user wants.
+     * The slice will be of the form [timestamp, numberOfPoints, value1, value2...]
      * This method does not add onto the collected data accessible via the datasets variable.
      */
     public getCurrentSlice() {
@@ -210,8 +212,13 @@ export class PerformanceViewerCollector {
 
     /**
      * Starts the realtime collection of data.
+     * @param shouldPreserve optional boolean param, if set will preserve the dataset between calls of start.
      */
-    public start() {
+    public start(shouldPreserve?: boolean) {
+        if (!shouldPreserve) {
+            this.datasets.data = new DynamicFloat32Array(initialArraySize);
+            this.datasets.startingIndices = new DynamicFloat32Array(initialArraySize);
+        }
         this._startingTimestamp = PrecisionDate.Now;
         this._scene.onBeforeRenderObservable.add(this._collectDataAtFrame);
     }
