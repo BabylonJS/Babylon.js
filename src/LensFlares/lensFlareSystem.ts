@@ -360,7 +360,7 @@ export class LensFlareSystem {
     /**
      * Rebuilds the lens flare system
      */
-     public rebuild(): void {
+    public rebuild(): void {
         this._createIndexBuffer();
 
         for (const key in this._vertexBuffers) {

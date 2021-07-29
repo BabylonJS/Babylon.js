@@ -240,7 +240,7 @@ export class ThinTexture {
     /**
      * Get the current sampling mode associated with the texture.
      */
-     public get samplingMode(): number {
+    public get samplingMode(): number {
         if (!this._texture) {
             return this._initialSamplingMode;
         }

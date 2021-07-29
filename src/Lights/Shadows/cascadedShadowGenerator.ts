@@ -76,8 +76,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     protected _validateFilter(filter: number): number {
         if (filter === ShadowGenerator.FILTER_NONE ||
             filter === ShadowGenerator.FILTER_PCF ||
-            filter === ShadowGenerator.FILTER_PCSS)
-        {
+            filter === ShadowGenerator.FILTER_PCSS) {
             return filter;
         }
 
@@ -170,7 +169,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 }
 
                 const boundingInfo = mesh.getBoundingInfo(),
-                      boundingBox = boundingInfo.boundingBox;
+                    boundingBox = boundingInfo.boundingBox;
 
                 this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
                 this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
@@ -185,7 +184,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 }
 
                 const boundingInfo = mesh.getBoundingInfo(),
-                      boundingBox = boundingInfo.boundingBox;
+                    boundingBox = boundingInfo.boundingBox;
 
                 this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
                 this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
@@ -475,7 +474,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         if (!this._depthReducer) {
             this._depthReducer = new DepthReducer(camera);
-            this._depthReducer.onAfterReductionPerformed.add((minmax: { min: number, max: number}) => {
+            this._depthReducer.onAfterReductionPerformed.add((minmax: { min: number, max: number }) => {
                 let min = minmax.min, max = minmax.max;
                 if (min >= max) {
                     min = 0;
@@ -523,21 +522,21 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         const near = camera.minZ,
-              far = camera.maxZ,
-              cameraRange = far - near,
-              minDistance = this._minDistance,
-              maxDistance = this._shadowMaxZ < far && this._shadowMaxZ >= near ? Math.min((this._shadowMaxZ - near) / (far - near), this._maxDistance) : this._maxDistance;
+            far = camera.maxZ,
+            cameraRange = far - near,
+            minDistance = this._minDistance,
+            maxDistance = this._shadowMaxZ < far && this._shadowMaxZ >= near ? Math.min((this._shadowMaxZ - near) / (far - near), this._maxDistance) : this._maxDistance;
 
         const minZ = near + minDistance * cameraRange,
-              maxZ = near + maxDistance * cameraRange;
+            maxZ = near + maxDistance * cameraRange;
 
         const range = maxZ - minZ,
-              ratio = maxZ / minZ;
+            ratio = maxZ / minZ;
 
         for (let cascadeIndex = 0; cascadeIndex < this._cascades.length; ++cascadeIndex) {
             const p = (cascadeIndex + 1) / this._numCascades,
-                  log = minZ * (ratio ** p),
-                  uniform = minZ + range * p;
+                log = minZ * (ratio ** p),
+                uniform = minZ + range * p;
 
             const d = this._lambda * (log - uniform) + uniform;
 
@@ -629,7 +628,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         const prevSplitDist = this._cascades[cascadeIndex].prevBreakDistance,
-              splitDist = this._cascades[cascadeIndex].breakDistance;
+            splitDist = this._cascades[cascadeIndex].breakDistance;
 
         const isNDCHalfZRange = this._scene.getEngine().isNDCHalfZRange;
 
@@ -1037,7 +1036,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         if (parsedShadowGenerator.depthClamp !== undefined) {
-             shadowGenerator.depthClamp = parsedShadowGenerator.depthClamp;
+            shadowGenerator.depthClamp = parsedShadowGenerator.depthClamp;
         }
 
         if (parsedShadowGenerator.autoCalcDepthBounds !== undefined) {

@@ -133,10 +133,10 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
     return (target: any, propertyKey: string) => {
         var key = targetKey || ("_" + propertyKey);
         Object.defineProperty(target, propertyKey, {
-            get: function(this: any) {
+            get: function (this: any) {
                 return this[key];
             },
-            set: function(this: any, value) {
+            set: function (this: any, value) {
                 if (this[key] === value) {
                     return;
                 }

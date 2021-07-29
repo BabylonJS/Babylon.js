@@ -328,7 +328,7 @@ export class Container extends Control {
                     this._intermediateTexture = null;
                 }
                 if (!this._intermediateTexture) {
-                    this._intermediateTexture = new DynamicTexture('', {width: this._currentMeasure.width, height: this._currentMeasure.height},
+                    this._intermediateTexture = new DynamicTexture('', { width: this._currentMeasure.width, height: this._currentMeasure.height },
                         this._host.getScene(), false, Texture.NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA, false);
                     this._intermediateTexture.hasAlpha = true;
                 } else {
@@ -514,10 +514,10 @@ export class Container extends Control {
         this._measureForChildren.copyFrom(this._currentMeasure);
     }
 
-     /**
-     * Serializes the current control
-     * @param serializationObject defined the JSON serialized object
-     */
+    /**
+    * Serializes the current control
+    * @param serializationObject defined the JSON serialized object
+    */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
         if (!this.children.length) {

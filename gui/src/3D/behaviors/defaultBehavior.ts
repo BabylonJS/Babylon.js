@@ -82,7 +82,7 @@ export class DefaultBehavior implements Behavior<Mesh> {
     /**
      *  Initializes the behavior
      */
-    public init() {}
+    public init() { }
 
     /**
      * Attaches the default behavior

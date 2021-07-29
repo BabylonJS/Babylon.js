@@ -19,7 +19,7 @@ class MathHelpers {
 
     @nativeOverride.filter((...[positions]: Parameters<typeof MathHelpers.extractMinAndMax>) => !Array.isArray(positions))
     public static extractMinAndMax(positions: FloatArray, start: number, count: number, stride: number, minimum: Vector3, maximum: Vector3): void {
-        for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
+        for (var index = start, offset = start * stride; index < start + count; index++, offset += stride) {
             const x = positions[offset];
             const y = positions[offset + 1];
             const z = positions[offset + 2];

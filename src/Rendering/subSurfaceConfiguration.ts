@@ -106,7 +106,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * @param color The color of the diffusion profile. Should be the average color of the material.
      * @return The index of the diffusion profile for the material subsurface configuration
      */
-    public addDiffusionProfile(color: Color3) : number {
+    public addDiffusionProfile(color: Color3): number {
         if (this.ssDiffusionD.length >= 5) {
             // We only suppport 5 diffusion profiles
             Logger.Error("You already reached the maximum number of diffusion profiles.");
@@ -134,7 +134,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * Creates the sss post process
      * @return The created post process
      */
-    public createPostProcess() : SubSurfaceScatteringPostProcess {
+    public createPostProcess(): SubSurfaceScatteringPostProcess {
         this.postProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._scene.getEngine());
         this.postProcess.autoClear = false;
 
@@ -174,8 +174,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * ------------------------------------------------------------------------------------
      * We importance sample the color channel with the widest scattering distance.
      */
-    public getDiffusionProfileParameters(color: Color3)
-    {
+    public getDiffusionProfileParameters(color: Color3) {
         const cdf = 0.997;
         const maxScatteringDistance = Math.max(color.r, color.g, color.b);
 
@@ -188,8 +187,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * rcp(s) = 1 / ShapeParam = ScatteringDistance.
      * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
      */
-    private _sampleBurleyDiffusionProfile(u: number, rcpS: number)
-    {
+    private _sampleBurleyDiffusionProfile(u: number, rcpS: number) {
         u = 1 - u; // Convert CDF to CCDF
 
         let g = 1 + (4 * u) * (2 * u + Math.sqrt(1 + (4 * u) * u));

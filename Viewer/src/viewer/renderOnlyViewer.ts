@@ -7,7 +7,7 @@ export class RenderOnlyViewer extends AbstractViewer {
         super(containerElement, initialConfiguration);
         this._canvas = containerElement as HTMLCanvasElement
     }
-    public initialize(){
+    public initialize() {
         let autoLoad = typeof this.configuration.model === 'string' || (this.configuration.model && this.configuration.model.url);
         return this._initEngine().then((engine) => {
             return this.onEngineInitObservable.notifyObserversWithPromise(engine);
