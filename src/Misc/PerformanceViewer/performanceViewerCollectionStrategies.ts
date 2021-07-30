@@ -152,15 +152,21 @@ export class PerfCollectionStrategy {
      */
     public static DrawCallsStrategy(): PerfStrategyInitialization {
         return (scene) => {
+            let drawCalls = 0;
             const onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
                 scene.getEngine()._drawCalls.fetchNewFrame();
             });
 
+            const onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
+                drawCalls = scene.getEngine()._drawCalls.current
+            });
+
             return {
                 id: "draw calls",
-                getData: () => scene.getEngine()._drawCalls.current,
+                getData: () => drawCalls,
                 dispose: () => {
                     scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
+                    scene.onAfterRenderObservable.remove(onAfterRenderObserver);
                 },
             };
         };
