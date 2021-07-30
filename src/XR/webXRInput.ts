@@ -170,5 +170,8 @@ export class WebXRInput implements IDisposable {
         this.xrSessionManager.onXRSessionEnded.remove(this._sessionEndedObserver);
         this.onControllerAddedObservable.clear();
         this.onControllerRemovedObservable.clear();
+
+        // clear the controller cache
+        WebXRMotionControllerManager.ClearControllerCache();
     }
 }
