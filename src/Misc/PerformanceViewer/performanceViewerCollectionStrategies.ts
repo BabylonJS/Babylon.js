@@ -158,7 +158,7 @@ export class PerfCollectionStrategy {
             });
 
             const onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
-                drawCalls = scene.getEngine()._drawCalls.current
+                drawCalls = scene.getEngine()._drawCalls.current;
             });
 
             return {
@@ -487,7 +487,7 @@ export class PerfCollectionStrategy {
             const onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
                 startTime = PrecisionDate.Now;
             });
-  
+
             return {
                 id: "inter-frame time",
                 getData: () => timeTaken,
