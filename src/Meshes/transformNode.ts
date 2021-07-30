@@ -1204,7 +1204,7 @@ export class TransformNode extends Node {
                     let tmpRotationQuaternion = TmpVectors.Quaternion[0];
                     bakedMatrix.decompose(child.scaling, tmpRotationQuaternion, child.position);
                     if (child.rotationQuaternion) {
-                        child.rotationQuaternion = tmpRotationQuaternion.clone();
+                        child.rotationQuaternion.copyFrom(tmpRotationQuaternion);
                     } else {
                         tmpRotationQuaternion.toEulerAnglesToRef(child.rotation);
                     }
