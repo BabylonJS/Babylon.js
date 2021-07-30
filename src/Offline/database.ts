@@ -108,7 +108,7 @@ export class Database implements IOfflineProvider {
         var createManifestURL = (): string => {
             try {
                 // make sure we have a valid URL.
-                if (typeof URL !== "undefined" && this._currentSceneUrl.indexOf("http") === 0) {
+                if (typeof URL === "function" && this._currentSceneUrl.indexOf("http") === 0) {
                     // we don't have the base url, so the URL string must have a protocol
                     var url = new URL(this._currentSceneUrl);
                     url.pathname += ".manifest";
