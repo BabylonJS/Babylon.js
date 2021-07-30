@@ -37180,13 +37180,13 @@ declare module BABYLON {
      * Decorator used to redirect a function to a native implementation if available.
      * @hidden
      */
-    export function nativeOverride(target: any, propertyKey: string, descriptor: PropertyDescriptor, predicate?: (...params: any) => boolean): void;
+    export function nativeOverride<T extends (...params: any) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T): void;
     /**
      * Decorator used to redirect a function to a native implementation if available.
      * @hidden
      */
     export namespace nativeOverride {
-        var filter: (predicate: (...params: any) => boolean) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+        var filter: <T extends (...params: any) => boolean>(predicate: T) => (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>) => void;
     }
 }
 declare module BABYLON {
@@ -48206,10 +48206,14 @@ declare module BABYLON {
          * It defines the percentage of current camera.radius to use as delta when wheel is used.
          */
         wheelDeltaPercentage: number;
+        /**
+         * If set, this function will be used to set the radius delta that will be added to the current camera radius
+         */
+        customComputeDeltaFromMouseWheel: Nullable<(wheelDelta: number, input: ArcRotateCameraMouseWheelInput, event: IWheelEvent) => number>;
         private _wheel;
         private _observer;
         private _hitPlane;
-        private computeDeltaFromMouseWheelLegacyEvent;
+        protected computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number): number;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -78532,11 +78536,11 @@ declare module BABYLON {
             getPhysicsEngine(): Nullable<IPhysicsEngine>;
             /**
              * Enables physics to the current scene
-             * @param gravity defines the scene's gravity for the physics engine
+             * @param gravity defines the scene's gravity for the physics engine. defaults to real earth gravity : (0, -9.81, 0)
              * @param plugin defines the physics engine to be used. defaults to CannonJS.
              * @return a boolean indicating if the physics engine was initialized
              */
-            enablePhysics(gravity: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
+            enablePhysics(gravity?: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
             /**
              * Disables and disposes the physics engine associated with the scene
              */
@@ -84311,6 +84315,46 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A class acting as a dynamic float32array used in the performance viewer
+     */
+    export class DynamicFloat32Array {
+        private _view;
+        private _itemLength;
+        /**
+         * Creates a new DynamicFloat32Array with the desired item capacity.
+         * @param itemCapacity The initial item capacity you would like to set for the array.
+         */
+        constructor(itemCapacity: number);
+        /**
+         * The number of items currently in the array.
+         */
+        get itemLength(): number;
+        /**
+         * Gets value at index, NaN if no such index exists.
+         * @param index the index to get the value at.
+         * @returns the value at the index provided.
+         */
+        at(index: number): number;
+        /**
+         * Gets a view of the original array from start to end (exclusive of end).
+         * @param start starting index.
+         * @param end ending index.
+         * @returns a subarray of the original array.
+         */
+        subarray(start: number, end: number): Float32Array;
+        /**
+         * Pushes items to the end of the array.
+         * @param item The item to push into the array.
+         */
+        push(item: number): void;
+        /**
+         * Grows the array by the growth factor when necessary.
+         */
+        private _growArray;
+    }
+}
+declare module BABYLON {
+    /**
      * Defines what data is needed to graph a point on the performance graph.
      */
     export interface IPerfPoint {
@@ -84339,6 +84383,36 @@ declare module BABYLON {
          * The data to be processed by the performance graph.
          */
         data: IPerfPoint[];
+        /**
+         * Specifies if data should be hidden, falsey by default.
+         */
+        hidden?: boolean;
+    }
+    /**
+     * Defines the shape of a collection of datasets that our graphing service uses for drawing purposes.
+     */
+    export interface IPerfDatasets {
+        /**
+         * The ids of our dataset.
+         */
+        ids: string[];
+        /**
+         * The data to be processed by the performance graph. Each slice will be of the form of [timestamp, numberOfPoints, value1, value2...]
+         */
+        data: DynamicFloat32Array;
+        /**
+         * A list of starting indices for each slice of data collected. Used for fast access of an arbitrary slice inside the data array.
+         */
+        startingIndices: DynamicFloat32Array;
+    }
+    /**
+     * Defines the shape of a the metadata the graphing service uses for drawing purposes.
+     */
+    export interface IPerfMetadata {
+        /**
+         * The color of the line to be drawn.
+         */
+        color?: string;
         /**
          * Specifies if data should be hidden, falsey by default.
          */
@@ -84641,6 +84715,227 @@ declare module BABYLON {
         close(): void;
         private _handleServerMessage;
         private _handleClientMessage;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the general structure of what is necessary for a collection strategy.
+     */
+    export interface IPerfViewerCollectionStrategy {
+        /**
+         * The id of the strategy.
+         */
+        id: string;
+        /**
+         * Function which gets the data for the strategy.
+         */
+        getData: () => number;
+    }
+    /**
+     * Initializer callback for a strategy
+     */
+    export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollectionStrategy;
+    /**
+     * Defines the predefined strategies used in the performance viewer.
+     */
+    export class PerfCollectionStrategy {
+        /**
+         * Gets the initializer for the strategy used for collection of fps metrics
+         * @returns the initializer for the fps strategy
+         */
+        static FpsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of cpu utilization metrics.
+         * @returns the initializer for the cpu utilization strategy
+         */
+        static CpuStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total meshes metrics.
+         * @returns the initializer for the total meshes strategy
+         */
+        static TotalMeshesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active meshes metrics.
+         * @returns the initializer for the active meshes strategy
+         */
+        static ActiveMeshesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active indices metrics.
+         * @returns the initializer for the active indices strategy
+         */
+        static ActiveIndiciesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active faces metrics.
+         * @returns the initializer for the active faces strategy
+         */
+        static ActiveFacesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active bones metrics.
+         * @returns the initializer for the active bones strategy
+         */
+        static ActiveBonesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active particles metrics.
+         * @returns the initializer for the active particles strategy
+         */
+        static ActiveParticlesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of draw calls metrics.
+         * @returns the initializer for the draw calls strategy
+         */
+        static DrawCallsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total lights metrics.
+         * @returns the initializer for the total lights strategy
+         */
+        static TotalLightsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total vertices metrics.
+         * @returns the initializer for the total vertices strategy
+         */
+        static TotalVerticesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total materials metrics.
+         * @returns the initializer for the total materials strategy
+         */
+        static TotalMaterialsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total textures metrics.
+         * @returns the initializer for the total textures strategy
+         */
+        static TotalTexturesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of absolute fps metrics.
+         * @returns the initializer for the absolute fps strategy
+         */
+        static AbsoluteFpsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of meshes selection time metrics.
+         * @returns the initializer for the meshes selection time strategy
+         */
+        static MeshesSelectionStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of render targets time metrics.
+         * @returns the initializer for the render targets time strategy
+         */
+        static RenderTargetsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of particles time metrics.
+         * @returns the initializer for the particles time strategy
+         */
+        static ParticlesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of sprites time metrics.
+         * @returns the initializer for the sprites time strategy
+         */
+        static SpritesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of animations time metrics.
+         * @returns the initializer for the animations time strategy
+         */
+        static AnimationsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of physics time metrics.
+         * @returns the initializer for the physics time strategy
+         */
+        static PhysicsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of render time metrics.
+         * @returns the initializer for the render time strategy
+         */
+        static RenderStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total frame time metrics.
+         * @returns the initializer for the total frame time strategy
+         */
+        static FrameTotalStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of inter-frame time metrics.
+         * @returns the initializer for the inter-frame time strategy
+         */
+        static InterFrameStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of gpu frame time metrics.
+         * @returns the initializer for the gpu frame time strategy
+         */
+        static GpuFrameTimeStrategy(): PerfStrategyInitialization;
+    }
+}
+declare module BABYLON {
+    /**
+     * The collector class handles the collection and storage of data into the appropriate array.
+     * The collector also handles notifying any observers of any updates.
+     */
+    export class PerformanceViewerCollector {
+        private _scene;
+        private _datasetMeta;
+        private _strategies;
+        private _startingTimestamp;
+        /**
+         * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
+         */
+        readonly datasets: IPerfDatasets;
+        /**
+         * An observable you can attach to get deltas in the dataset. Subscribing to this will increase memory consumption slightly, and may hurt performance due to increased garbage collection needed.
+         * Updates of slices will be of the form [timestamp, numberOfPoints, value1, value2...].
+         */
+        readonly datasetObservable: Observable<number[]>;
+        /**
+         * An observable you can attach to get the most updated map of metadatas.
+         */
+        readonly metadataObservable: Observable<Map<string, IPerfMetadata>>;
+        /**
+         * The offset for when actual data values start appearing inside a slice.
+         */
+        static get SliceDataOffset(): number;
+        /**
+         * The offset for the value of the number of points inside a slice.
+         */
+        static get NumberOfPointsOffset(): number;
+        /**
+         * Handles the creation of a performance viewer collector.
+         * @param _scene the scene to collect on.
+         * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
+         */
+        constructor(_scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]);
+        /**
+         * This method adds additional collection strategies for data collection purposes.
+         * @param strategyCallbacks the list of data to collect with callbacks.
+         */
+        addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]): void;
+        /**
+         * Gets a 6 character hexcode representing the colour from a passed in string.
+         * @param id the string to get a hex code for.
+         * @returns a hexcode hashed from the id.
+         */
+        private _getHexColorFromId;
+        /**
+         * Collects data for every dataset by using the appropriate strategy. This is called every frame.
+         * This method will then notify all observers with the latest slice.
+         */
+        private _collectDataAtFrame;
+        /**
+         * Collects and then sends the latest slice to any observers by using the appropriate strategy when the user wants.
+         * The slice will be of the form [timestamp, numberOfPoints, value1, value2...]
+         * This method does not add onto the collected data accessible via the datasets variable.
+         */
+        getCurrentSlice(): void;
+        /**
+         * Updates a property for a dataset's metadata with the value provided.
+         * @param id the id of the dataset which needs its metadata updated.
+         * @param prop the property to update.
+         * @param value the value to update the property with.
+         */
+        updateMetadata<T extends keyof IPerfMetadata>(id: string, prop: T, value: IPerfMetadata[T]): void;
+        /**
+         * Starts the realtime collection of data.
+         * @param shouldPreserve optional boolean param, if set will preserve the dataset between calls of start.
+         */
+        start(shouldPreserve?: boolean): void;
+        /**
+         * Stops the collection of data.
+         */
+        stop(): void;
     }
 }
 declare module BABYLON {
@@ -86240,190 +86535,6 @@ declare module BABYLON {
             token: any;
             pipeline: Nullable<GPURenderPipeline>;
         }): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * A class acting as a dynamic float32array used in the performance viewer
-     */
-    export class DynamicFloat32Array {
-        private _view;
-        private _itemLength;
-        /**
-         * Creates a new DynamicFloat32Array with the desired item capacity.
-         * @param itemCapacity The initial item capacity you would like to set for the array.
-         */
-        constructor(itemCapacity: number);
-        /**
-         * The number of items currently in the array.
-         */
-        get itemLength(): number;
-        /**
-         * Gets value at index, NaN if no such index exists.
-         * @param index the index to get the value at.
-         * @returns the value at the index provided.
-         */
-        at(index: number): number;
-        /**
-         * Gets a view of the original array from start to end (exclusive of end).
-         * @param start starting index.
-         * @param end ending index.
-         * @returns a subarray of the original array.
-         */
-        subarray(start: number, end: number): Float32Array;
-        /**
-         * Pushes items to the end of the array.
-         * @param item The item to push into the array.
-         */
-        push(item: number): void;
-        /**
-         * Grows the array by the growth factor when necessary.
-         */
-        private _growArray;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines the general structure of what is necessary for a collection strategy.
-     */
-    export interface IPerfViewerCollectionStrategy {
-        /**
-         * The id of the strategy.
-         */
-        id: string;
-        /**
-         * Function which gets the data for the strategy.
-         */
-        getData: () => number;
-    }
-    /**
-     * Initializer callback for a strategy
-     */
-    export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollectionStrategy;
-    /**
-     * Defines the predefined strategies used in the performance viewer.
-     */
-    export class PerfCollectionStrategy {
-        /**
-         * Gets the initializer for the strategy used for collection of fps metrics
-         * @returns the initializer for the fps strategy
-         */
-        static FpsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of cpu utilization metrics.
-         * @returns the initializer for the cpu utilization strategy
-         */
-        static CpuStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total meshes metrics.
-         * @returns the initializer for the total meshes strategy
-         */
-        static TotalMeshesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active meshes metrics.
-         * @returns the initializer for the active meshes strategy
-         */
-        static ActiveMeshesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active indices metrics.
-         * @returns the initializer for the active indices strategy
-         */
-        static ActiveIndiciesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active faces metrics.
-         * @returns the initializer for the active faces strategy
-         */
-        static ActiveFacesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active bones metrics.
-         * @returns the initializer for the active bones strategy
-         */
-        static ActiveBonesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active particles metrics.
-         * @returns the initializer for the active particles strategy
-         */
-        static ActiveParticlesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of draw calls metrics.
-         * @returns the initializer for the draw calls strategy
-         */
-        static DrawCallsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total lights metrics.
-         * @returns the initializer for the total lights strategy
-         */
-        static TotalLightsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total vertices metrics.
-         * @returns the initializer for the total vertices strategy
-         */
-        static TotalVerticesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total materials metrics.
-         * @returns the initializer for the total materials strategy
-         */
-        static TotalMaterialsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total textures metrics.
-         * @returns the initializer for the total textures strategy
-         */
-        static TotalTexturesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of absolute fps metrics.
-         * @returns the initializer for the absolute fps strategy
-         */
-        static AbsoluteFpsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of meshes selection time metrics.
-         * @returns the initializer for the meshes selection time strategy
-         */
-        static MeshesSelectionStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of render targets time metrics.
-         * @returns the initializer for the render targets time strategy
-         */
-        static RenderTargetsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of particles time metrics.
-         * @returns the initializer for the particles time strategy
-         */
-        static ParticlesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of sprites time metrics.
-         * @returns the initializer for the sprites time strategy
-         */
-        static SpritesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of animations time metrics.
-         * @returns the initializer for the animations time strategy
-         */
-        static AnimationsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of physics time metrics.
-         * @returns the initializer for the physics time strategy
-         */
-        static PhysicsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of render time metrics.
-         * @returns the initializer for the render time strategy
-         */
-        static RenderStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total frame time metrics.
-         * @returns the initializer for the total frame time strategy
-         */
-        static FrameTotalStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of inter-frame time metrics.
-         * @returns the initializer for the inter-frame time strategy
-         */
-        static InterFrameStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of gpu frame time metrics.
-         * @returns the initializer for the gpu frame time strategy
-         */
-        static GpuFrameTimeStrategy(): PerfStrategyInitialization;
     }
 }
 declare module BABYLON {
