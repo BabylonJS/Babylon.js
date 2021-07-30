@@ -5,7 +5,7 @@ import { nativeOverride } from '../Misc/decorators';
 // This helper class is only here so we can apply the nativeOverride decorator to functions.
 class MathHelpers {
 
-    @nativeOverride.filter((positions, indices) => !Array.isArray(positions) && !Array.isArray(indices))
+    @nativeOverride.filter((...[positions, indices]: Parameters<typeof MathHelpers.extractMinAndMaxIndexed>) => !Array.isArray(positions) && !Array.isArray(indices))
     public static extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, minimum: Vector3, maximum: Vector3): void {
         for (var index = indexStart; index < indexStart + indexCount; index++) {
             const offset = indices[index] * 3;
@@ -17,7 +17,7 @@ class MathHelpers {
         }
     }
 
-    @nativeOverride.filter((positions) => !Array.isArray(positions))
+    @nativeOverride.filter((...[positions]: Parameters<typeof MathHelpers.extractMinAndMax>) => !Array.isArray(positions))
     public static extractMinAndMax(positions: FloatArray, start: number, count: number, stride: number, minimum: Vector3, maximum: Vector3): void {
         for (var index = start, offset = start * stride; index < start + count; index++, offset += stride) {
             const x = positions[offset];

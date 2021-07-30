@@ -38,6 +38,8 @@
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
 - Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
 - Added the ability to load a fullscreen GUI from the snippet server ([PirateJC](https://github.com/piratejc))
+- Updated the gravity parameter in `Scene.enablePhysics()` as optional to fit the current behaviour ([Faber](https://https://github.com/Faber-smythe))
+- Allow the possibility to override the radius delta calculation for mouse wheel event ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -271,6 +273,7 @@
 - Fix ThinEngine isMobile to detect changes when window is resized to allow for proper emulator evaluation ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix discrete animation not looping correctly ([#10694](https://github.com/BabylonJS/Babylon.js/issues/10694)) ([Popov72](https://github.com/Popov72))
 - Fix support for camera output render targets ([Popov72](https://github.com/Popov72))
+- Fix `bakeTransformIntoVertices` not working when using `rotationQuaternion` + sometimes inverting winding ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
