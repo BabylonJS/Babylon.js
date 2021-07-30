@@ -2333,9 +2333,7 @@ export class NativeEngine extends Engine {
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-        if (disableGenerateMipMaps) {
-            Logger.Warn("Disabling mipmap generation not yet supported in NativeEngine. Ignoring.");
-        }
+        // NOTE: Disabling mipmap generation is not yet supported in NativeEngine.
 
         if (onBeforeUnbind) {
             onBeforeUnbind();
