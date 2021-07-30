@@ -46,7 +46,6 @@ import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLine
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
 
-
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
@@ -73,10 +72,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
 
         this.props.globalState.onSaveObservable.add(() => {
-            this.save();
+            this.save(this.saveLocally);
         });
         this.props.globalState.onSnippetSaveObservable.add(() => {
-            this.saveToSnippetServer();
+            this.save(this.saveToSnippetServer);
         });
         this.props.globalState.onSnippetLoadObservable.add(() => {
             this.loadFromSnippet();
@@ -126,19 +125,29 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         );
     }
 
-    save() {
+    save(saveCallback: () => void) {
+        //removing the art board background from the adt.
         this.props.globalState.guiTexture.removeControl(this.props.globalState.workbench.artBoardBackground);
+        saveCallback();
+        //readding the art board at the front of the list so it will be the first thing rendered.
+        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
+            this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
+        }
+        else {
+            this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
+        }
+    }
+
+    saveLocally = () => {
         try {
             const json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
             StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
         } catch (error) {
             alert("Unable to save your GUI");
         }
-        this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
     }
 
-    saveToSnippetServer() {
-        this.props.globalState.guiTexture.removeControl(this.props.globalState.workbench.artBoardBackground);
+    saveToSnippetServer = () => {
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());
 
@@ -186,7 +195,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         };
 
         xmlHttp.send(JSON.stringify(dataToSend));
-        adt.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
     }
 
     loadFromSnippet() {
@@ -301,9 +309,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                     this.state.currentNode.parent?.addControl(newControl);
 
                                     let index = 1;
-                                    while ( this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
+                                    while (this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
                                         control => control.name === newControl.name).length > 1) {
-                                        newControl.name = `${this.state.currentNode.name} Copy ${index++}`;  
+                                        newControl.name = `${this.state.currentNode.name} Copy ${index++}`;
                                     }
                                     this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
                                 }
@@ -391,7 +399,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <ButtonLineComponent
                         label="Save"
                         onClick={() => {
-                            this.save();
+                            this.props.globalState.onSaveObservable.notifyObservers();
                         }}
                     />
                     <hr />
@@ -400,7 +408,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <ButtonLineComponent
                         label="Save to snippet server"
                         onClick={() => {
-                            this.saveToSnippetServer();
+                            this.props.globalState.onSnippetSaveObservable.notifyObservers();
                         }}
                     />
                 </div>
