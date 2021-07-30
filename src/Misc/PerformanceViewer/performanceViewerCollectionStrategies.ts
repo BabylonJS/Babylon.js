@@ -20,9 +20,9 @@ export interface IPerfViewerCollectionStrategy {
 const defaultGetDataImpl = () => 0;
 
 /**
- * Initializer callback for a strategy
+ * Initializer callback for a strategy, we allow sceneInstrumentation to save on allocations of this object as a lot of default strategies use it.
  */
-export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollectionStrategy;
+export type PerfStrategyInitialization = (scene: Scene, sceneInstrumentation: SceneInstrumentation) => IPerfViewerCollectionStrategy;
 /**
  * Defines the predefined strategies used in the performance viewer.
  */
@@ -137,8 +137,7 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the draw calls strategy
      */
     public static DrawCallsStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             return {
                 id: "draw calls",
                 getData: () => sceneInstrumentation.drawCallsCounter.current,
@@ -203,12 +202,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the absolute fps strategy
      */
     public static AbsoluteFpsStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.captureFrameTime = true;
             return {
                 id: "absolute fps",
-                getData: () => 1000.0 / sceneInstrumentation.frameTimeCounter.lastSecAverage,
+                getData: () => 1000.0 / sceneInstrumentation.frameTimeCounter.current,
             };
         };
     }
@@ -218,12 +216,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the meshes selection time strategy
      */
     public static MeshesSelectionStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
             return {
                 id: "meshes selection time",
-                getData: () => sceneInstrumentation.activeMeshesEvaluationTimeCounter.lastSecAverage,
+                getData: () => sceneInstrumentation.activeMeshesEvaluationTimeCounter.current,
             };
         };
     }
@@ -233,13 +230,12 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the render targets time strategy
      */
     public static RenderTargetsStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.captureRenderTargetsRenderTime = true;
 
             return {
                 id: "render targets time",
-                getData: () => sceneInstrumentation.renderTargetsRenderTimeCounter.lastSecAverage,
+                getData: () => sceneInstrumentation.renderTargetsRenderTimeCounter.current,
             };
         };
     }
@@ -249,12 +245,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the particles time strategy
      */
     public static ParticlesStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.captureParticlesRenderTime = true;
             return {
                 id: "particles time",
-                getData: () => sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage,
+                getData: () => sceneInstrumentation.particlesRenderTimeCounter.current,
             };
         };
     }
@@ -264,12 +259,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the sprites time strategy
      */
     public static SpritesStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.captureSpritesRenderTime = true;
             return {
                 id: "sprites time",
-                getData: () => sceneInstrumentation.spritesRenderTimeCounter.lastSecAverage,
+                getData: () => sceneInstrumentation.spritesRenderTimeCounter.current,
             };
         };
     }
@@ -279,12 +273,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the animations time strategy
      */
     public static AnimationsStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.captureAnimationsTime = true;
             return {
                 id: "animations time",
-                getData: () => sceneInstrumentation.animationsTimeCounter.lastSecAverage,
+                getData: () => sceneInstrumentation.animationsTimeCounter.current,
             };
         };
     }
@@ -294,12 +287,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the physics time strategy
      */
     public static PhysicsStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.capturePhysicsTime = true;
             return {
                 id: "physics time",
-                getData: () => sceneInstrumentation.physicsTimeCounter.lastSecAverage,
+                getData: () => sceneInstrumentation.physicsTimeCounter.current,
             };
         };
     }
@@ -309,12 +301,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the render time strategy
      */
     public static RenderStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.captureRenderTime = true;
             return {
                 id: "render time",
-                getData: () => sceneInstrumentation.renderTimeCounter.lastSecAverage,
+                getData: () => sceneInstrumentation.renderTimeCounter.current,
             };
         };
     }
@@ -324,12 +315,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the total frame time strategy
      */
     public static FrameTotalStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.captureFrameTime = true;
             return {
                 id: "total frame time",
-                getData: () => sceneInstrumentation.frameTimeCounter.lastSecAverage,
+                getData: () => sceneInstrumentation.frameTimeCounter.current,
             };
         };
     }
@@ -339,12 +329,11 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the inter-frame time strategy
      */
     public static InterFrameStrategy(): PerfStrategyInitialization {
-        return (scene) => {
-            const sceneInstrumentation = new SceneInstrumentation(scene);
+        return (_, sceneInstrumentation) => {
             sceneInstrumentation.captureInterFrameTime = true;
             return {
                 id: "inter-frame time",
-                getData: () => sceneInstrumentation.interFrameTimeCounter.lastSecAverage,
+                getData: () => sceneInstrumentation.interFrameTimeCounter.current,
             };
         };
     }
@@ -359,7 +348,7 @@ export class PerfCollectionStrategy {
             engineInstrumentation.captureGPUFrameTime = true;
             return {
                 id: "gpu frame time",
-                getData: () => Math.max(engineInstrumentation.gpuFrameTimeCounter.lastSecAverage * 0.000001, 0),
+                getData: () => Math.max(engineInstrumentation.gpuFrameTimeCounter.current * 0.000001, 0),
             };
         };
     }
