@@ -1,4 +1,3 @@
-import { SceneInstrumentation } from "../../Instrumentation/sceneInstrumentation";
 import { Scene } from "../../scene";
 import { IPerfDatasets, IPerfMetadata } from "../interfaces/iPerfViewer";
 import { EventState, Observable } from "../observable";
@@ -23,7 +22,6 @@ export class PerformanceViewerCollector {
     private _datasetMeta: Map<string, IPerfMetadata>;
     private _strategies: Map<string, IPerfViewerCollectionStrategy>;
     private _startingTimestamp: number;
-    private _sceneInstrumentation: SceneInstrumentation;
 
     /**
      * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
@@ -59,7 +57,6 @@ export class PerformanceViewerCollector {
      * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
      */
     constructor(private _scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]) {
-        this._sceneInstrumentation = new SceneInstrumentation(_scene);
         this.datasets = {
             ids: [],
             data: new DynamicFloat32Array(initialArraySize),
@@ -80,9 +77,10 @@ export class PerformanceViewerCollector {
      */
     public addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]) {
         for (const strategyCallback of strategyCallbacks) {
-            const strategy = strategyCallback(this._scene, this._sceneInstrumentation);
+            const strategy = strategyCallback(this._scene);
 
             if (this._strategies.has(strategy.id)) {
+                strategy.dispose();
                 continue;
             }
 
@@ -231,5 +229,20 @@ export class PerformanceViewerCollector {
      */
     public stop() {
         this._scene.onBeforeRenderObservable.removeCallback(this._collectDataAtFrame);
+    }
+
+    /**
+     * Disposes of the object
+     */
+    public dispose() {
+        this._scene.onBeforeRenderObservable.removeCallback(this._collectDataAtFrame);
+        this._datasetMeta.clear();
+        this._strategies.forEach((strategy) => {
+            strategy.dispose();
+        });
+        this.datasetObservable.clear();
+        this.metadataObservable.clear();
+        (<any>this.datasets) = null;
+        (<any>this._scene) = null;
     }
 }

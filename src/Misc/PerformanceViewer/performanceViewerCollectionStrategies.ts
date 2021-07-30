@@ -1,6 +1,6 @@
 import { EngineInstrumentation } from "../../Instrumentation/engineInstrumentation";
-import { SceneInstrumentation } from "../../Instrumentation/sceneInstrumentation";
 import { Scene } from "../../scene";
+import { PrecisionDate } from "../precisionDate";
 
 /**
  * Defines the general structure of what is necessary for a collection strategy.
@@ -14,7 +14,13 @@ export interface IPerfViewerCollectionStrategy {
      * Function which gets the data for the strategy.
      */
     getData: () => number;
+    /**
+     * Function which does any necessary cleanup. Called when performanceViewerCollector.dispose() is called.
+     */
+    dispose: () => void;
 }
+// Dispose which does nothing.
+const defaultDisposeImpl = () => {};
 
 // Temporary until implemented all getDatas.
 const defaultGetDataImpl = () => 0;
@@ -22,7 +28,7 @@ const defaultGetDataImpl = () => 0;
 /**
  * Initializer callback for a strategy, we allow sceneInstrumentation to save on allocations of this object as a lot of default strategies use it.
  */
-export type PerfStrategyInitialization = (scene: Scene, sceneInstrumentation: SceneInstrumentation) => IPerfViewerCollectionStrategy;
+export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollectionStrategy;
 /**
  * Defines the predefined strategies used in the performance viewer.
  */
@@ -37,6 +43,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "fps",
                 getData: () => engine.getFps(),
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -50,6 +57,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "cpu utilization",
                 getData: defaultGetDataImpl,
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -63,6 +71,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "total meshes",
                 getData: () => scene.meshes.length,
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -76,6 +85,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "active meshes",
                 getData: () => scene.getActiveMeshes().length,
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -89,6 +99,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "active indices",
                 getData: () => scene.getActiveIndices(),
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -102,6 +113,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "active faces",
                 getData: () => scene.getActiveIndices() / 3,
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -115,6 +127,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "active bones",
                 getData: () => scene.getActiveBones(),
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -128,6 +141,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "active particles",
                 getData: () => scene.getActiveParticles(),
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -137,10 +151,17 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the draw calls strategy
      */
     public static DrawCallsStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
+        return (scene) => {
+            const drawCallsCounter = scene.getEngine()._drawCalls;
+            const onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
+                drawCallsCounter.fetchNewFrame();
+            });
             return {
                 id: "draw calls",
-                getData: () => sceneInstrumentation.drawCallsCounter.current,
+                getData: () => drawCallsCounter.current,
+                dispose: () => {
+                    scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
+                },
             };
         };
     }
@@ -154,6 +175,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "total lights",
                 getData: () => scene.lights.length,
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -167,6 +189,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "total vertices",
                 getData: () => scene.getTotalVertices(),
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -180,6 +203,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "total materials",
                 getData: () => scene.materials.length,
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -193,6 +217,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "total textures",
                 getData: () => scene.textures.length,
+                dispose: defaultDisposeImpl,
             };
         };
     }
@@ -202,11 +227,24 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the absolute fps strategy
      */
     public static AbsoluteFpsStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.captureFrameTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 1;
+            const onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+
+            const onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
+
             return {
                 id: "absolute fps",
-                getData: () => 1000.0 / sceneInstrumentation.frameTimeCounter.current,
+                getData: () => 1000.0 / timeTaken,
+                dispose: () => {
+                    scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
+                    scene.onAfterRenderObservable.remove(onAfterRenderObserver);
+                },
             };
         };
     }
@@ -216,11 +254,24 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the meshes selection time strategy
      */
     public static MeshesSelectionStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 0;
+            const onBeforeActiveMeshesObserver = scene.onBeforeActiveMeshesEvaluationObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+
+            const onAfterActiveMeshesObserver = scene.onAfterActiveMeshesEvaluationObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
+
             return {
                 id: "meshes selection time",
-                getData: () => sceneInstrumentation.activeMeshesEvaluationTimeCounter.current,
+                getData: () => timeTaken,
+                dispose: () => {
+                    scene.onBeforeActiveMeshesEvaluationObservable.remove(onBeforeActiveMeshesObserver);
+                    scene.onAfterActiveMeshesEvaluationObservable.remove(onAfterActiveMeshesObserver);
+                },
             };
         };
     }
@@ -230,12 +281,24 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the render targets time strategy
      */
     public static RenderTargetsStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.captureRenderTargetsRenderTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 0;
+            const onBeforeRenderTargetsObserver = scene.onBeforeRenderTargetsRenderObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+
+            const onAfterRenderTargetsObserver = scene.onAfterRenderTargetsRenderObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
 
             return {
                 id: "render targets time",
-                getData: () => sceneInstrumentation.renderTargetsRenderTimeCounter.current,
+                getData: () => timeTaken,
+                dispose: () => {
+                    scene.onBeforeRenderTargetsRenderObservable.remove(onBeforeRenderTargetsObserver);
+                    scene.onAfterRenderTargetsRenderObservable.remove(onAfterRenderTargetsObserver);
+                },
             };
         };
     }
@@ -245,11 +308,24 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the particles time strategy
      */
     public static ParticlesStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.captureParticlesRenderTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 0;
+            const onBeforeParticlesObserver = scene.onBeforeParticlesRenderingObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+
+            const onAfterParticlesObserver = scene.onAfterParticlesRenderingObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
+
             return {
                 id: "particles time",
-                getData: () => sceneInstrumentation.particlesRenderTimeCounter.current,
+                getData: () => timeTaken,
+                dispose: () => {
+                    scene.onBeforeParticlesRenderingObservable.remove(onBeforeParticlesObserver);
+                    scene.onAfterParticlesRenderingObservable.remove(onAfterParticlesObserver);
+                },
             };
         };
     }
@@ -259,11 +335,24 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the sprites time strategy
      */
     public static SpritesStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.captureSpritesRenderTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 0;
+            const onBeforeSpritesObserver = scene.onBeforeSpritesRenderingObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+
+            const onAfterSpritesObserver = scene.onAfterSpritesRenderingObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
+
             return {
                 id: "sprites time",
-                getData: () => sceneInstrumentation.spritesRenderTimeCounter.current,
+                getData: () => timeTaken,
+                dispose: () => {
+                    scene.onBeforeSpritesRenderingObservable.remove(onBeforeSpritesObserver);
+                    scene.onAfterSpritesRenderingObservable.remove(onAfterSpritesObserver);
+                },
             };
         };
     }
@@ -273,11 +362,24 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the animations time strategy
      */
     public static AnimationsStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.captureAnimationsTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 0;
+            const onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+
+            const onAfterAnimationsObserver = scene.onAfterAnimationsObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
+
             return {
                 id: "animations time",
-                getData: () => sceneInstrumentation.animationsTimeCounter.current,
+                getData: () => timeTaken,
+                dispose: () => {
+                    scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
+                    scene.onAfterAnimationsObservable.remove(onAfterAnimationsObserver);
+                },
             };
         };
     }
@@ -287,11 +389,24 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the physics time strategy
      */
     public static PhysicsStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.capturePhysicsTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 0;
+            const onBeforePhysicsObserver = scene.onBeforePhysicsObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+
+            const onAfterPhysicsObserver = scene.onAfterPhysicsObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
+
             return {
                 id: "physics time",
-                getData: () => sceneInstrumentation.physicsTimeCounter.current,
+                getData: () => timeTaken,
+                dispose: () => {
+                    scene.onBeforePhysicsObservable.remove(onBeforePhysicsObserver);
+                    scene.onAfterPhysicsObservable.remove(onAfterPhysicsObserver);
+                },
             };
         };
     }
@@ -301,11 +416,24 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the render time strategy
      */
     public static RenderStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.captureRenderTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 0;
+            const onBeforeDrawPhaseObserver = scene.onBeforeDrawPhaseObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+
+            const onAfterDrawPhaseObserver = scene.onAfterDrawPhaseObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
+
             return {
                 id: "render time",
-                getData: () => sceneInstrumentation.renderTimeCounter.current,
+                getData: () => timeTaken,
+                dispose: () => {
+                    scene.onBeforeDrawPhaseObservable.remove(onBeforeDrawPhaseObserver);
+                    scene.onAfterDrawPhaseObservable.remove(onAfterDrawPhaseObserver);
+                },
             };
         };
     }
@@ -315,11 +443,24 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the total frame time strategy
      */
     public static FrameTotalStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.captureFrameTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 0;
+            const onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+
+            const onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
+
             return {
                 id: "total frame time",
-                getData: () => sceneInstrumentation.frameTimeCounter.current,
+                getData: () => timeTaken,
+                dispose: () => {
+                    scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
+                    scene.onAfterRenderObservable.remove(onAfterRenderObserver);
+                },
             };
         };
     }
@@ -329,11 +470,25 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the inter-frame time strategy
      */
     public static InterFrameStrategy(): PerfStrategyInitialization {
-        return (_, sceneInstrumentation) => {
-            sceneInstrumentation.captureInterFrameTime = true;
+        return (scene) => {
+            let startTime = PrecisionDate.Now;
+            let timeTaken = 0;
+
+            const onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
+                timeTaken = PrecisionDate.Now - startTime;
+            });
+
+            const onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
+                startTime = PrecisionDate.Now;
+            });
+  
             return {
                 id: "inter-frame time",
-                getData: () => sceneInstrumentation.interFrameTimeCounter.current,
+                getData: () => timeTaken,
+                dispose: () => {
+                    scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
+                    scene.onAfterRenderObservable.remove(onAfterRenderObserver);
+                },
             };
         };
     }
@@ -349,6 +504,9 @@ export class PerfCollectionStrategy {
             return {
                 id: "gpu frame time",
                 getData: () => Math.max(engineInstrumentation.gpuFrameTimeCounter.current * 0.000001, 0),
+                dispose: () => {
+                    engineInstrumentation.dispose();
+                },
             };
         };
     }
