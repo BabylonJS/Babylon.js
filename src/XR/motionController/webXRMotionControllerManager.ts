@@ -226,7 +226,7 @@ export class WebXRMotionControllerManager {
                 return this._ProfileLoadingPromises[profileToLoad];
             })
             .then((profile: IMotionControllerProfile) => {
-                return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl, controllerCache);
+                return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl, this.DisableControllerCache ? undefined : controllerCache);
             });
     }
 
