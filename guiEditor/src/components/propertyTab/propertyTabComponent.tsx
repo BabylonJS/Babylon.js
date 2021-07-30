@@ -310,9 +310,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
                                     let index = 1;
                                     while (this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
-                                        control => control.name === newControl.name).length > 1) {
-                                        newControl.name = `${this.state.currentNode.name} Copy ${index++}`;
+                                        control => control.name === `${newControl.name} Copy ${index}`).length) { 
+                                        index++;
                                     }
+                                    newControl.name = `${newControl.name} Copy ${index}`;
                                     this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
                                 }
                             }
