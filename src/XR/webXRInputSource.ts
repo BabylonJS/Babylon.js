@@ -149,12 +149,12 @@ export class WebXRInputSource {
      */
     public dispose() {
         if (this.grip) {
-            this.grip.dispose(false, true);
+            this.grip.dispose(true);
         }
         if (this.motionController) {
             this.motionController.dispose();
         }
-        this.pointer.dispose();
+        this.pointer.dispose(true);
         this.onMotionControllerInitObservable.clear();
         this.onMeshLoadedObservable.clear();
         this.onDisposeObservable.notifyObservers(this);

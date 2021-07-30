@@ -4,6 +4,7 @@ import { Scene } from "../../scene";
 import { Tools } from "../../Misc/tools";
 import { WebXRProfiledMotionController } from "./webXRProfiledMotionController";
 import { Nullable } from "../../types";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
 
 /**
  * A construction function type to create a new controller based on an xrInput object
@@ -18,6 +19,12 @@ export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene)
  *
  * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
  */
+
+const controllerCache: Array<{
+    filename: string;
+    path: string;
+    meshes: AbstractMesh[]
+}> = [];
 export class WebXRMotionControllerManager {
     private static _AvailableControllers: { [type: string]: MotionControllerConstructor } = {};
     private static _Fallbacks: { [profileId: string]: string[] } = {};
@@ -37,6 +44,8 @@ export class WebXRMotionControllerManager {
      * Use the online repository, or use only locally-defined controllers
      */
     public static UseOnlineRepository: boolean = true;
+
+    public static DisableControllerCache: boolean = true;
 
     /**
      * Clear the cache used for profile loading and reload when requested again
@@ -174,6 +183,18 @@ export class WebXRMotionControllerManager {
         return this._ProfilesList;
     }
 
+    /**
+     * Clear the controller's cache (usually happens at the end of a session)
+     */
+    public static ClearControllerCache() {
+        controllerCache.forEach((cacheItem) => {
+            cacheItem.meshes.forEach((mesh) => {
+                mesh.dispose(false, true);
+            });
+        });
+        controllerCache.length = 0;
+    }
+
     private static _LoadProfileFromRepository(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
         return Promise.resolve()
             .then(() => {
@@ -205,7 +226,7 @@ export class WebXRMotionControllerManager {
                 return this._ProfileLoadingPromises[profileToLoad];
             })
             .then((profile: IMotionControllerProfile) => {
-                return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl);
+                return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl, controllerCache);
             });
     }
 
