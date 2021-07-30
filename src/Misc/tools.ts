@@ -215,7 +215,7 @@ export class Tools {
             return Math.fround(value);
         }
 
-        return (Tools._tmpFloatArray[0] = value);
+        return Tools._tmpFloatArray[0] = value, Tools._tmpFloatArray[0];
     }
 
     /**
