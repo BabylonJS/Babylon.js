@@ -243,6 +243,5 @@ export class PerformanceViewerCollector {
         this.datasetObservable.clear();
         this.metadataObservable.clear();
         (<any>this.datasets) = null;
-        (<any>this._scene) = null;
     }
 }

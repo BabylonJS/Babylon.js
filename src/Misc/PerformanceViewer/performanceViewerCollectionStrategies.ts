@@ -26,7 +26,7 @@ const defaultDisposeImpl = () => {};
 const defaultGetDataImpl = () => 0;
 
 /**
- * Initializer callback for a strategy, we allow sceneInstrumentation to save on allocations of this object as a lot of default strategies use it.
+ * Initializer callback for a strategy
  */
 export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollectionStrategy;
 /**
@@ -152,13 +152,13 @@ export class PerfCollectionStrategy {
      */
     public static DrawCallsStrategy(): PerfStrategyInitialization {
         return (scene) => {
-            const drawCallsCounter = scene.getEngine()._drawCalls;
             const onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
-                drawCallsCounter.fetchNewFrame();
+                scene.getEngine()._drawCalls.fetchNewFrame();
             });
+
             return {
                 id: "draw calls",
-                getData: () => drawCallsCounter.current,
+                getData: () => scene.getEngine()._drawCalls.current,
                 dispose: () => {
                     scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
                 },
