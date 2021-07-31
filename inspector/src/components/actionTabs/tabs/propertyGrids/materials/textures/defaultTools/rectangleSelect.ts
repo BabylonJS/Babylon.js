@@ -3,25 +3,25 @@ import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 import { Nullable } from 'babylonjs/types'
 import { Observer } from 'babylonjs/Misc/observable';
 
-export const RectangleSelect : IToolData = {
+export const RectangleSelect: IToolData = {
     name: 'Rectangle Select',
     type: class {
         getParameters: () => IToolParameters;
         pointerObserver: Nullable<Observer<PointerInfo>>;
         isSelecting = false;
-        xStart : number = -1;
-        yStart : number = -1;
+        xStart: number = -1;
+        yStart: number = -1;
         constructor(getParameters: () => IToolParameters) {
             this.getParameters = getParameters;
         }
         setup() {
-            const {scene} = this.getParameters();
+            const { scene } = this.getParameters();
             this.pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
-                const {getMouseCoordinates, setMetadata, metadata} = this.getParameters();
+                const { getMouseCoordinates, setMetadata, metadata } = this.getParameters();
                 if (!this.isSelecting) {
                     if (pointerInfo.type == PointerEventTypes.POINTERDOWN && pointerInfo && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled() && pointerInfo.pickInfo?.hit) {
                         this.isSelecting = true;
-                        const {x, y} = {x: this.xStart, y: this.yStart} = getMouseCoordinates(pointerInfo);
+                        const { x, y } = { x: this.xStart, y: this.yStart } = getMouseCoordinates(pointerInfo);
                         setMetadata({
                             select: {
                                 x1: x,
@@ -44,7 +44,7 @@ export const RectangleSelect : IToolData = {
                     } else {
                         if (pointerInfo.pickInfo?.hit && pointerInfo.type === PointerEventTypes.POINTERMOVE) {
                             if (pointerInfo.type === PointerEventTypes.POINTERMOVE && this.isSelecting) {
-                                const {x, y} = getMouseCoordinates(pointerInfo);
+                                const { x, y } = getMouseCoordinates(pointerInfo);
                                 setMetadata({
                                     select: {
                                         x1: Math.min(x, this.xStart),

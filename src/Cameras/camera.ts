@@ -848,7 +848,7 @@ export class Camera extends Node {
                     this.maxZ,
                     this._projectionMatrix,
                     engine.isNDCHalfZRange);
-                } else {
+            } else {
                 Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
@@ -857,7 +857,7 @@ export class Camera extends Node {
                     this.maxZ,
                     this._projectionMatrix,
                     engine.isNDCHalfZRange);
-                }
+            }
 
             this._cache.orthoLeft = this.orthoLeft;
             this._cache.orthoRight = this.orthoRight;
@@ -1129,7 +1129,7 @@ export class Camera extends Node {
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
             case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
-                    Camera._setStereoscopicRigMode(this);
+                Camera._setStereoscopicRigMode(this);
                 break;
             case Camera.RIG_MODE_VR:
                 Camera._setVRRigMode(this, rigParams);

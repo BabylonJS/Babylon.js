@@ -176,5 +176,5 @@ export class WebGPUBufferManager {
         }
 
         this._deferredReleaseBuffers.length = 0;
-   }
+    }
 }

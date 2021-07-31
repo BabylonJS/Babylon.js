@@ -253,6 +253,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Replaces an internal texture within the MRT. Useful to share textures between MultiRenderTarget.
      * @param texture The new texture to set in the MRT
      * @param index The index of the texture to replace
+     * @param attachmentIndex Texture attachment index
+     * @param disposePrevious Set to true if the previous internal texture should be disposed
      */
     public setInternalTexture(texture: InternalTexture, index: number, attachmentIndex: number = 0, disposePrevious: boolean = true) {
         if (disposePrevious && this._internalTextures[index] && index !== 0) {

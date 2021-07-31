@@ -890,11 +890,11 @@ declare module "babylonjs-gui/2D/controls/control" {
         */
         onWheelObservable: Observable<Vector2>;
         /**
-        * An event triggered when the pointer move over the control.
+        * An event triggered when the pointer moves over the control.
         */
         onPointerMoveObservable: Observable<Vector2>;
         /**
-        * An event triggered when the pointer move out of the control.
+        * An event triggered when the pointer moves out of the control.
         */
         onPointerOutObservable: Observable<Control>;
         /**
@@ -4270,11 +4270,11 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         /** Callback used to start pointer up animation */
         pointerUpAnimation: () => void;
         /**
-         * An event triggered when the pointer move over the control
+         * An event triggered when the pointer moves over the control
          */
         onPointerMoveObservable: Observable<Vector3>;
         /**
-         * An event triggered when the pointer move out of the control
+         * An event triggered when the pointer moves out of the control
          */
         onPointerOutObservable: Observable<Control3D>;
         /**
@@ -6953,11 +6953,11 @@ declare module BABYLON.GUI {
         */
         onWheelObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer move over the control.
+        * An event triggered when the pointer moves over the control.
         */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer move out of the control.
+        * An event triggered when the pointer moves out of the control.
         */
         onPointerOutObservable: BABYLON.Observable<Control>;
         /**
@@ -10096,11 +10096,11 @@ declare module BABYLON.GUI {
         /** Callback used to start pointer up animation */
         pointerUpAnimation: () => void;
         /**
-         * An event triggered when the pointer move over the control
+         * An event triggered when the pointer moves over the control
          */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector3>;
         /**
-         * An event triggered when the pointer move out of the control
+         * An event triggered when the pointer moves out of the control
          */
         onPointerOutObservable: BABYLON.Observable<Control3D>;
         /**

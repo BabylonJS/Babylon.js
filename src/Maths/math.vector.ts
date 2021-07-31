@@ -541,7 +541,7 @@ export class Vector2 {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-     public static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2 {
+    public static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2 {
         let result = Vector2.Zero();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
@@ -604,7 +604,7 @@ export class Vector2 {
      * @param vector defines the vector to normalize
      * @param result defines the vector where to store the result
      */
-     public static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2) {
+    public static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2) {
         var len = vector.length();
 
         if (len === 0) {
@@ -752,6 +752,9 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
+    private static _RightHandedForwardReadOnly = Vector3.Forward(true) as DeepImmutable<Vector3>;
+    private static _RightReadOnly = Vector3.Right() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
     /** @hidden */
@@ -1670,6 +1673,27 @@ export class Vector3 {
     }
 
     /**
+     * Gets a right Vector3 that must not be updated
+     */
+    public static get RightReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._RightReadOnly;
+    }
+
+    /**
+     * Gets a forward Vector3 that must not be updated
+     */
+    public static get LeftHandedForwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._LeftHandedForwardReadOnly;
+    }
+
+    /**
+     * Gets a forward Vector3 that must not be updated
+     */
+    public static get RightHandedForwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._RightHandedForwardReadOnly;
+    }
+
+    /**
      * Gets a zero Vector3 that must not be updated
      */
     public static get ZeroReadOnly(): DeepImmutable<Vector3> {
@@ -1926,7 +1950,7 @@ export class Vector3 {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3) {
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3) {
         const t2 = time * time;
 
         result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
@@ -2208,7 +2232,7 @@ export class Vector3 {
      * @param ref variable to store the result to
      * @returns The distance between "ref" and "vector"
      */
-    public static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3) : number {
+    public static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3): number {
         const p1p0 = MathTmp.Vector3[0];
         const p2p0 = MathTmp.Vector3[1];
         const p2p1 = MathTmp.Vector3[2];
@@ -3083,7 +3107,7 @@ export class Vector4 {
      * @param transformation defines the transformation matrix
      * @returns the transformed Vector4
      */
-     public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector4 {
+    public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector4 {
         var result = Vector4.Zero();
         Vector4.TransformCoordinatesToRef(vector, transformation, result);
         return result;
@@ -4135,7 +4159,7 @@ export class Quaternion {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion)  {
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion) {
         const t2 = time * time;
 
         result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
@@ -5340,16 +5364,14 @@ export class Matrix {
     public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void {
         const c = Vector3.Dot(to, from);
         const m = result._m;
-        if (c < (-1 + Epsilon))
-        {
+        if (c < (-1 + Epsilon)) {
             // from and to are colinear and opposite direction.
             // compute a PI rotation on Z axis
-            m[0] = -1; m[1] =  0; m[2] =  0; m[3] =  0;
-            m[4] =  0; m[5] = -1; m[6] =  0; m[7] =  0;
-            m[8] =  0; m[9] =  0; m[10] = 1; m[11] = 0;
+            m[0] = -1; m[1] = 0; m[2] = 0; m[3] = 0;
+            m[4] = 0; m[5] = -1; m[6] = 0; m[7] = 0;
+            m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
         }
-        else
-        {
+        else {
             const v = Vector3.Cross(to, from);
             const k = 1 / (1 + c);
 
@@ -6294,20 +6316,20 @@ export class Matrix {
  * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
  */
 class MathTmp {
-    public static Vector3: Vector3[] = ArrayTools.BuildArray(11, Vector3.Zero);
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(2, Matrix.Identity);
-    public static Quaternion: Quaternion[] = ArrayTools.BuildArray(3, Quaternion.Zero);
+    public static Vector3 = ArrayTools.BuildTuple(11, Vector3.Zero);
+    public static Matrix = ArrayTools.BuildTuple(2, Matrix.Identity);
+    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
 }
 
 /**
  * @hidden
  */
 export class TmpVectors {
-    public static Vector2: Vector2[] = ArrayTools.BuildArray(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
-    public static Vector3: Vector3[] = ArrayTools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
-    public static Vector4: Vector4[] = ArrayTools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
-    public static Quaternion: Quaternion[] = ArrayTools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
+    public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
+    public static Vector3 = ArrayTools.BuildTuple(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
+    public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
+    public static Quaternion = ArrayTools.BuildTuple(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
+    public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity); // 8 temp Matrices at once should be enough
 }
 
 _TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;

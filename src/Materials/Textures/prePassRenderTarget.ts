@@ -56,7 +56,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
       */
     public renderTargetTexture: Nullable<RenderTargetTexture> = null;
 
-    public constructor(name: string,  renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions | undefined) {
+    public constructor(name: string, renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions | undefined) {
         super(name, size, count, scene, options);
 
         this.renderTargetTexture = renderTargetTexture;
@@ -76,8 +76,8 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * @hidden
      */
     public _checkSize() {
-        var	requiredWidth = this._engine.getRenderWidth(true);
-        var	requiredHeight = this._engine.getRenderHeight(true);
+        var requiredWidth = this._engine.getRenderWidth(true);
+        var requiredHeight = this._engine.getRenderHeight(true);
 
         var width = this.getRenderWidth();
         var height = this.getRenderHeight();

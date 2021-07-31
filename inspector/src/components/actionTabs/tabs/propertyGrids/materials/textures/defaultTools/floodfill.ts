@@ -3,7 +3,7 @@ import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 import { Nullable } from 'babylonjs/types'
 import { Observer } from 'babylonjs/Misc/observable';
 
-export const Floodfill : IToolData = {
+export const Floodfill: IToolData = {
     name: 'Floodfill',
     type: class {
         getParameters: () => IToolParameters;
@@ -13,24 +13,24 @@ export const Floodfill : IToolData = {
         }
 
         async fill() {
-            const {metadata, startPainting, updatePainting, stopPainting} = this.getParameters();
+            const { metadata, startPainting, updatePainting, stopPainting } = this.getParameters();
             const ctx = await startPainting();
             ctx.fillStyle = metadata.color;
             ctx.globalAlpha = metadata.alpha;
             ctx.globalCompositeOperation = 'copy';
-            ctx.fillRect(0,0, ctx.canvas.width, ctx.canvas.height);
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             updatePainting();
             stopPainting();
         }
-        
-        setup () {
+
+        setup() {
             this.pointerObserver = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.type === PointerEventTypes.POINTERDOWN && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled() && pointerInfo.pickInfo?.hit) {
                     this.fill();
                 }
             });
         }
-        cleanup () {
+        cleanup() {
             if (this.pointerObserver) {
                 this.getParameters().scene.onPointerObservable.remove(this.pointerObserver);
             }

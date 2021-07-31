@@ -41,11 +41,11 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.setAlphaConstants = function(r: number, g: number, b: number, a: number) {
+ThinEngine.prototype.setAlphaConstants = function (r: number, g: number, b: number, a: number) {
     this._alphaState.setAlphaBlendConstants(r, g, b, a);
 };
 
-ThinEngine.prototype.setAlphaMode = function(mode: number, noDepthWriteChange: boolean = false): void {
+ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
     if (this._alphaMode === mode) {
         return;
     }
@@ -129,11 +129,11 @@ ThinEngine.prototype.setAlphaMode = function(mode: number, noDepthWriteChange: b
     this._alphaMode = mode;
 };
 
-ThinEngine.prototype.getAlphaMode = function(): number {
+ThinEngine.prototype.getAlphaMode = function (): number {
     return this._alphaMode;
 };
 
-ThinEngine.prototype.setAlphaEquation = function(equation: number): void {
+ThinEngine.prototype.setAlphaEquation = function (equation: number): void {
     if (this._alphaEquation === equation) {
         return;
     }
@@ -161,6 +161,6 @@ ThinEngine.prototype.setAlphaEquation = function(equation: number): void {
     this._alphaEquation = equation;
 };
 
-ThinEngine.prototype.getAlphaEquation = function() {
+ThinEngine.prototype.getAlphaEquation = function () {
     return this._alphaEquation;
 };

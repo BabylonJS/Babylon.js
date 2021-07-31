@@ -11149,6 +11149,24 @@ module.exports = exports;
 
 /***/ }),
 
+/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
+/*!***************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \***************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Imports
+var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+exports = ___CSS_LOADER_API_IMPORT___(false);
+// Module
+exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-areas: \"sidebar graph\"; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: \"graph\"; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: \"sidebar\";\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
+// Exports
+module.exports = exports;
+
+
+/***/ }),
+
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss":
 /*!**************************************************************************************************************************************************************************************************************************!*\
   !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
@@ -45892,22 +45910,34 @@ var GradientStepComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerComponent", function() { return PerformanceViewerComponent; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
-/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
-/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
 
 
 
 
 
+
+
+
+
+__webpack_require__(/*! ./scss/performanceViewer.scss */ "./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss");
 // aribitrary window size
 var initialWindowSize = { width: 1024, height: 512 };
 // Note this should be false when committed until the feature is fully working.
 var isEnabled = false;
 var PerformanceViewerComponent = function (props) {
-    var _a = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    var scene = props.scene;
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    var _b = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), performanceCollector = _b[0], setPerformanceCollector = _b[1];
+    var layoutObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
+    var popupRef = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(null);
     // do cleanup when the window is closed
     var onClosePerformanceViewer = function (window) {
         if (window) {
@@ -45919,21 +45949,121 @@ var PerformanceViewerComponent = function (props) {
         setIsOpen(true);
     };
     var onResize = function () {
-        // do nothing for now.
+        var _a, _b;
+        if (!popupRef.current) {
+            return;
+        }
+        var window = popupRef.current.getWindow();
+        var width = (_a = window === null || window === void 0 ? void 0 : window.innerWidth) !== null && _a !== void 0 ? _a : 0;
+        var height = (_b = window === null || window === void 0 ? void 0 : window.innerHeight) !== null && _b !== void 0 ? _b : 0;
+        layoutObservable.notifyObservers({ width: width, height: height });
     };
-    var canvasServiceCallback = function (canvasService) {
-        canvasService.update();
-    };
-    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        var perfCollector = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"](scene, [babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(), babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy()]);
+        setPerformanceCollector(perfCollector);
+    }, []);
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        if (isOpen) {
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.start();
+        }
+        return function () {
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.stop();
+        };
+    }, [isOpen]);
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
         isEnabled &&
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
         isOpen &&
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, onResize: onResize, onClose: onClosePerformanceViewer },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "performance-viewer" },
-                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
-                        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__["CanvasGraphComponent"], { id: "myChart", canvasServiceCallback: canvasServiceCallback }))))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_4__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer" }, performanceCollector && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_5__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__["CanvasGraphComponent"], { id: "performance-viewer-graph", layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
 };
 
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx ***!
+  \********************************************************************************************/
+/*! exports provided: PerformanceViewerSidebarComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerSidebarComponent", function() { return PerformanceViewerSidebarComponent; });
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorPickerComponent */ "./sharedUiComponents/lines/colorPickerComponent.tsx");
+
+
+
+
+var PerformanceViewerSidebarComponent = function (props) {
+    var collector = props.collector;
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])([]), metadata = _a[0], setMetadata = _a[1];
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        var onUpdateMetadata = function (metadata) {
+            var entries = [];
+            // convert to iterable list of entries
+            metadata.forEach(function (value, key) {
+                entries.push([key, value]);
+            });
+            setMetadata(entries);
+        };
+        collector.metadataObservable.add(onUpdateMetadata);
+        return function () {
+            collector.metadataObservable.removeCallback(onUpdateMetadata);
+        };
+    }, []);
+    var onCheckChange = function (id) { return function (event) {
+        collector.updateMetadata(id, "hidden", !event.currentTarget.checked);
+    }; };
+    var onColorChange = function (id) { return function (color) {
+        collector.updateMetadata(id, "color", color);
+    }; };
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer-sidebar" }, metadata.map(function (_a) {
+        var _b;
+        var id = _a[0], metadata = _a[1];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "perf-sidebar-item-" + id, className: "sidebar-item" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", checked: !metadata.hidden, onChange: onCheckChange(id) }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", { className: "sidebar-item-label" }, id),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__["ColorPickerLineComponent"], { value: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromHexString((_b = metadata.color) !== null && _b !== void 0 ? _b : "#000"), onColorChanged: onColorChange(id), shouldPopRight: true })));
+    })));
+};
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \**********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../../../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../../../../../../node_modules/css-loader/dist/cjs.js!../../../../../../../node_modules/sass-loader/dist/cjs.js!./performanceViewer.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(content, options);
+
+
+
+module.exports = content.locals || {};
 
 /***/ }),
 
@@ -59013,17 +59143,16 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CanvasGraphComponent = function (props) {
-    var id = props.id, canvasServiceCallback = props.canvasServiceCallback, layoutObservable = props.layoutObservable;
+    var id = props.id, collector = props.collector, scene = props.scene, layoutObservable = props.layoutObservable;
     var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
     Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
         if (!canvasRef.current) {
             return;
         }
         var cs;
-        // temporarily set empty array, will eventually be passed by props!
+        // TODO: SET datasets as collector.datasets once canvas graph service pr is up.
         try {
             cs = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] });
-            canvasServiceCallback(cs);
         }
         catch (error) {
             console.error(error);
@@ -59038,10 +59167,24 @@ var CanvasGraphComponent = function (props) {
             newSize.height = newSize.height - top;
             cs === null || cs === void 0 ? void 0 : cs.resize(newSize);
         };
+        var dataUpdated = function () {
+            cs === null || cs === void 0 ? void 0 : cs.update();
+        };
+        var metaUpdated = function (_) {
+            if (!cs) {
+                return;
+            }
+            // TODO: add this line once canvas graph service pr is up. cs.metadata = meta;
+            cs.update();
+        };
+        scene.onAfterRenderObservable.add(dataUpdated);
+        collector.metadataObservable.add(metaUpdated);
         layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.add(layoutUpdated);
         return function () {
             cs === null || cs === void 0 ? void 0 : cs.destroy();
             layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.removeCallback(layoutUpdated);
+            scene.onAfterRenderObservable.removeCallback(dataUpdated);
+            collector.metadataObservable.removeCallback(metaUpdated);
         };
     }, [canvasRef]);
     return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("canvas", { id: id, ref: canvasRef }));

@@ -179,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.33";
+        return "babylonjs@5.0.0-alpha.35";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.33";
+        return "5.0.0-alpha.35";
     }
 
     /**
@@ -653,9 +653,9 @@ export class ThinEngine {
      * Create an image to use with canvas
      * @return IImage interface
      */
-     public createCanvasImage(): IImage {
-         return document.createElement("img");
-     }
+    public createCanvasImage(): IImage {
+        return document.createElement("img");
+    }
 
     /**
      * Creates a new engine
@@ -1774,6 +1774,11 @@ export class ThinEngine {
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, framebuffer);
             this._currentFramebuffer = framebuffer;
         }
+    }
+
+    /** @hidden */
+    public _currentFrameBufferIsDefaultFrameBuffer() {
+        return this._currentFramebuffer === null;
     }
 
     /**

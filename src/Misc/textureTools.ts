@@ -55,7 +55,7 @@ export class TextureTools {
 
         let passPostProcess = new PassPostProcess("pass", 1, null, useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
         passPostProcess.getEffect().executeWhenCompiled(() => {
-            passPostProcess.onApply = function(effect) {
+            passPostProcess.onApply = function (effect) {
                 effect.setTexture("textureSampler", texture);
             };
 

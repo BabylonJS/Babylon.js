@@ -28,7 +28,7 @@ declare module "../scene" {
  * Gets the outline renderer associated with the scene
  * @returns a OutlineRenderer
  */
-Scene.prototype.getOutlineRenderer = function(): OutlineRenderer {
+Scene.prototype.getOutlineRenderer = function (): OutlineRenderer {
     if (!this._outlineRenderer) {
         this._outlineRenderer = new OutlineRenderer(this);
     }
@@ -56,10 +56,10 @@ declare module "../Meshes/abstractMesh" {
 }
 
 Object.defineProperty(Mesh.prototype, "renderOutline", {
-    get: function(this: Mesh) {
+    get: function (this: Mesh) {
         return this._renderOutline;
     },
-    set: function(this: Mesh, value: boolean) {
+    set: function (this: Mesh, value: boolean) {
         if (value) {
             // Lazy Load the component.
             this.getScene().getOutlineRenderer();
@@ -71,10 +71,10 @@ Object.defineProperty(Mesh.prototype, "renderOutline", {
 });
 
 Object.defineProperty(Mesh.prototype, "renderOverlay", {
-    get: function(this: Mesh) {
+    get: function (this: Mesh) {
         return this._renderOverlay;
     },
-    set: function(this: Mesh, value: boolean) {
+    set: function (this: Mesh, value: boolean) {
         if (value) {
             // Lazy Load the component.
             this.getScene().getOutlineRenderer();
@@ -307,7 +307,7 @@ export class OutlineRenderer implements ISceneComponent {
             effect = this.scene.getEngine().createEffect("outline",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant",
-                "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
+                    "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "morphTargets"], join,
                 undefined, undefined, undefined,
                 { maxSimultaneousMorphTargets: numMorphInfluencers });

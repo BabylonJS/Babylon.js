@@ -35,6 +35,11 @@ class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     public readonly texturesRequired: number[] = [Constants.PREPASS_COLOR_TEXTURE_TYPE, Constants.PREPASS_ALBEDO_TEXTURE_TYPE];
 }
 
+/**
+ * The depth peeling renderer that performs
+ * Order independant transparency (OIT).
+ * This should not be instanciated directly, as it is part of a scene component
+ */
 export class DepthPeelingRenderer {
     private _scene: Scene;
     private _engine: Engine;
@@ -53,6 +58,12 @@ export class DepthPeelingRenderer {
 
     private _blendBackTexture: InternalTexture;
 
+    /**
+     * Instanciates the depth peeling renderer
+     * @param scene Scene to attach to
+     * @param passCount Number of depth layers to peel
+     * @returns The depth peeling renderer
+     */
     constructor(scene: Scene, passCount: number = 5) {
         this._scene = scene;
         this._engine = scene.getEngine();
@@ -196,10 +207,18 @@ export class DepthPeelingRenderer {
         this._effectRenderer = new EffectRenderer(this._engine);
     }
 
+    /**
+     * Links to the prepass renderer
+     * @param prePassRenderer The scene PrePassRenderer
+     */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer) {
         prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
     }
 
+    /**
+     * Binds depth peeling textures on an effect
+     * @param effect The effect to bind textures on
+     */
     public bind(effect: Effect) {
         effect.setTexture("oitDepthSampler", this._thinTextures[this._currentPingPongState * 3]);
         effect.setTexture("oitFrontColorSampler", this._thinTextures[this._currentPingPongState * 3 + 1]);
@@ -240,7 +259,11 @@ export class DepthPeelingRenderer {
         this._effectRenderer.render(this._finalEffectWrapper);
     }
 
-    public render(transparentSubMeshes: SmartArray<SubMesh>) {
+    /**
+     * Renders transparent submeshes with depth peeling
+     * @param transparentSubMeshes List of transparent meshes to render
+     */
+    public render(transparentSubMeshes: SmartArray<SubMesh>): void {
         if (!this._blendBackEffectWrapper.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextures()) {
             return;
         }
@@ -342,6 +365,9 @@ export class DepthPeelingRenderer {
         this._engine.depthCullingState.depthMask = true;
     }
 
+    /**
+     * Disposes the depth peeling renderer and associated ressources
+     */
     public dispose() {
         this._disposeTexturesAndFramebuffers();
         this._blendBackEffectWrapper.dispose();

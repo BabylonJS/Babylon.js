@@ -109,7 +109,7 @@ export class WebXRDefaultExperience {
      */
     public nearInteraction: WebXRNearInteraction;
 
-    private constructor() {}
+    private constructor() { }
 
     /**
      * Creates the default xr experience
