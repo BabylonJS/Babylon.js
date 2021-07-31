@@ -93,7 +93,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             <div className={"ge-commands"}>
                 <div className="commands-left">
                     <img src={logoIcon} color="white" className={"active"} />
-                    <CommandDropdownComponent globalState={this.props.globalState} icon={hamburgerIcon} tooltip="Options" items={[
+                    <CommandDropdownComponent globalState={this.props.globalState} toRight={true} icon={hamburgerIcon} tooltip="Options" items={[
                         {
                             label: "Save",
                             onClick: () => { this.props.globalState.onSaveObservable.notifyObservers(); }
