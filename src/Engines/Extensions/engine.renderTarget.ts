@@ -158,7 +158,7 @@ ThinEngine.prototype._createInternalTexture = function(this: ThinEngine, size: R
     this._internalTexturesCache.push(texture);
 
     return texture;
-}
+};
 
 ThinEngine.prototype.createDepthStencilTexture = function(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture {
     if (options.isCube) {

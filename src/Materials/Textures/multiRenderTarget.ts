@@ -256,9 +256,9 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public setInternalTexture(texture: InternalTexture, index: number, attachmentIndex: number = 0, disposePrevious: boolean = true) {
         if (disposePrevious && this._internalTextures[index] && index !== 0) {
-            this._internalTextures[index].dispose();    
+            this._internalTextures[index].dispose();
         }
-        
+
         this._internalTextures[index] = texture;
         if (!this.textures[index]) {
             this.textures[index] = new Texture(null, this.getScene());
