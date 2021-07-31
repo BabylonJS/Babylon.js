@@ -95,14 +95,14 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     public ReviewUniform(name: string, arr: string[]): string[] {
         if (name == "uniform" && this._newUniforms) {
-            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
+            for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
         if (name == "sampler" && this._newUniforms) {
-            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
+            for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
                 }

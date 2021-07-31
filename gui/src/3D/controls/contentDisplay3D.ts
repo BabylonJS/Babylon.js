@@ -81,5 +81,5 @@ export class ContentDisplay3D extends Control3D {
      * This function can be overloaded by child classes
      * @param facadeTexture defines the AdvancedDynamicTexture to use
      */
-    protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {}
+    protected _applyFacade(facadeTexture: AdvancedDynamicTexture) { }
 }

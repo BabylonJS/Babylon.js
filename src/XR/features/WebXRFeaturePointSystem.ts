@@ -12,11 +12,11 @@ export interface IWebXRFeaturePoint {
     /**
      * Represents the position of the feature point in world space.
      */
-    position : Vector3;
+    position: Vector3;
     /**
      * Represents the confidence value of the feature point in world space. 0 being least confident, and 1 being most confident.
      */
-    confidenceValue : number;
+    confidenceValue: number;
 }
 
 /**
@@ -38,10 +38,10 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
      * This number does not correspond to the WebXR specs version
      */
     public static readonly Version = 1;
-     /**
-     * Observers registered here will be executed whenever new feature points are added (on XRFrame while the session is tracking).
-     * Will notify the observers about which feature points have been added.
-     */
+    /**
+    * Observers registered here will be executed whenever new feature points are added (on XRFrame while the session is tracking).
+    * Will notify the observers about which feature points have been added.
+    */
     public readonly onFeaturePointsAddedObservable: Observable<number[]> = new Observable();
     /**
      * Observers registered here will be executed whenever a feature point has been updated (on XRFrame while the session is tracking).
@@ -51,7 +51,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     /**
      * The current feature point cloud maintained across frames.
      */
-    public get featurePointCloud() : Array<IWebXRFeaturePoint> {
+    public get featurePointCloud(): Array<IWebXRFeaturePoint> {
         return this._featurePointCloud;
     }
 
@@ -113,7 +113,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
                 throw new Error("Received malformed feature point cloud of length: " + featurePointRawData.length);
             }
 
-            const numberOfFeaturePoints : number = featurePointRawData.length / 5;
+            const numberOfFeaturePoints: number = featurePointRawData.length / 5;
             let updatedFeaturePoints = new Array();
             let addedFeaturePoints = new Array();
             for (var i = 0; i < numberOfFeaturePoints; i++) {

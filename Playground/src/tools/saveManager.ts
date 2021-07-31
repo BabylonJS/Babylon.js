@@ -17,7 +17,7 @@ export class SaveManager {
         });
     }
 
-    private _saveSnippet() {        
+    private _saveSnippet() {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState === 4) {
@@ -47,13 +47,13 @@ export class SaveManager {
                         if (snippet.version && snippet.version !== "0") {
                             newUrl += "#" + snippet.version;
                         }
-                        location.href = newUrl;     
-                        this.globalState.onRunRequiredObservable.notifyObservers();               
+                        location.href = newUrl;
+                        this.globalState.onRunRequiredObservable.notifyObservers();
                     }
-                    
-                this.globalState.onSavedObservable.notifyObservers();
+
+                    this.globalState.onSavedObservable.notifyObservers();
                 } else {
-                    this.globalState.onErrorObservable.notifyObservers({message: "Unable to save your code. It may be too long."});
+                    this.globalState.onErrorObservable.notifyObservers({ message: "Unable to save your code. It may be too long." });
                 }
             }
         };
@@ -70,6 +70,6 @@ export class SaveManager {
             tags: this.globalState.currentSnippetTags
         };
 
-        xmlHttp.send(JSON.stringify(dataToSend));   
+        xmlHttp.send(JSON.stringify(dataToSend));
     }
 }

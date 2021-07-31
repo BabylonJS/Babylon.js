@@ -18,7 +18,7 @@ export { name };
  * @param options defines options used to configure the header
  * @returns a new StackPanel
  */
-Control.AddHeader = function(control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }): StackPanel {
+Control.AddHeader = function (control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }): StackPanel {
     let panel = new StackPanel("panel");
     let isHorizontal = options ? options.isHorizontal : true;
     let controlFirst = options ? options.controlFirst : true;

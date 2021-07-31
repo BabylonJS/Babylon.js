@@ -2484,7 +2484,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 scene._removePendingData(this);
             },
-            () => {},
+            () => { },
             scene.offlineProvider,
             getBinaryData
         );
@@ -2605,7 +2605,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // flip faces?
-        if (transform.m[0] * transform.m[5] * transform.m[10] < 0) {
+        if (transform.determinant() < 0) {
             this.flipFaces();
         }
 
@@ -2806,7 +2806,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
-        Tools.LoadImage(url, onload, () => {}, scene.offlineProvider);
+        Tools.LoadImage(url, onload, () => { }, scene.offlineProvider);
         return this;
     }
 
@@ -4874,7 +4874,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             vertexData.transform(wm);
             return vertexData;
         };
-        const vertexData = getVertexDataFromMesh(source).merge(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)));
+        const vertexData = getVertexDataFromMesh(source).merge(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)), allow32BitsIndices);
 
         if (!meshSubclass) {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
@@ -4902,10 +4902,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             //-- apply subdivision according to index table
             while (index < indiceArray.length) {
-                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
+                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass, undefined, false);
                 offset += indiceArray[index];
                 index++;
             }
+
+            for (const subMesh of meshSubclass.subMeshes) {
+                subMesh.refreshBoundingInfo();
+            }
+
+            meshSubclass.computeWorldMatrix(true);
         }
 
         if (multiMultiMaterials) {

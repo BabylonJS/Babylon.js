@@ -2227,7 +2227,7 @@ export class GLTFLoader implements IGLTFLoader {
             case AccessorComponentType.FLOAT: return Float32Array;
             default: throw new Error(`${context}: Invalid component type ${componentType}`);
         }
-}
+    }
 
     private static _GetTypedArray(context: string, componentType: AccessorComponentType, bufferView: ArrayBufferView, byteOffset: number | undefined, length: number): TypedArrayLike {
         const buffer = bufferView.buffer;

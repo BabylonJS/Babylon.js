@@ -371,7 +371,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}, overrideVertexArrayObjects?: {[key: string]: WebGLVertexArrayObject}): void {
+    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }, overrideVertexArrayObjects?: { [key: string]: WebGLVertexArrayObject }): void {
         if (!effect) {
             return;
         }
@@ -584,12 +584,7 @@ export class Geometry implements IGetSetVerticesData {
         if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
             return orig;
         } else {
-            var len = orig.length;
-            var copy = [];
-            for (var i = 0; i < len; i++) {
-                copy.push(orig[i]);
-            }
-            return copy;
+            return Tools.Slice(orig);
         }
     }
 

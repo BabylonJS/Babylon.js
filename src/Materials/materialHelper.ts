@@ -316,41 +316,41 @@ export class MaterialHelper {
         }
 
         const texturesList = [
-        {
-            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
-            define: "PREPASS_POSITION",
-            index: "PREPASS_POSITION_INDEX",
-        },
-        {
-            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
-            define: "PREPASS_VELOCITY",
-            index: "PREPASS_VELOCITY_INDEX",
-        },
-        {
-            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
-            define: "PREPASS_REFLECTIVITY",
-            index: "PREPASS_REFLECTIVITY_INDEX",
-        },
-        {
-            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
-            define: "PREPASS_IRRADIANCE",
-            index: "PREPASS_IRRADIANCE_INDEX",
-        },
-        {
-            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
-            define: "PREPASS_ALBEDO",
-            index: "PREPASS_ALBEDO_INDEX",
-        },
-        {
-            type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-            define: "PREPASS_DEPTH",
-            index: "PREPASS_DEPTH_INDEX",
-        },
-        {
-            type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
-            define: "PREPASS_NORMAL",
-            index: "PREPASS_NORMAL_INDEX",
-        }];
+            {
+                type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+                define: "PREPASS_POSITION",
+                index: "PREPASS_POSITION_INDEX",
+            },
+            {
+                type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+                define: "PREPASS_VELOCITY",
+                index: "PREPASS_VELOCITY_INDEX",
+            },
+            {
+                type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+                define: "PREPASS_REFLECTIVITY",
+                index: "PREPASS_REFLECTIVITY_INDEX",
+            },
+            {
+                type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+                define: "PREPASS_IRRADIANCE",
+                index: "PREPASS_IRRADIANCE_INDEX",
+            },
+            {
+                type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+                define: "PREPASS_ALBEDO",
+                index: "PREPASS_ALBEDO_INDEX",
+            },
+            {
+                type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+                define: "PREPASS_DEPTH",
+                index: "PREPASS_DEPTH_INDEX",
+            },
+            {
+                type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+                define: "PREPASS_NORMAL",
+                index: "PREPASS_NORMAL_INDEX",
+            }];
 
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
             defines.PREPASS = true;

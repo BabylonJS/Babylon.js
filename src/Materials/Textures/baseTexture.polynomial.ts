@@ -15,7 +15,7 @@ declare module "./baseTexture" {
 }
 
 Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
-    get: function(this: BaseTexture) {
+    get: function (this: BaseTexture) {
         if (this._texture) {
             if (this._texture._sphericalPolynomial || this._texture._sphericalPolynomialComputed) {
                 return this._texture._sphericalPolynomial;
@@ -40,7 +40,7 @@ Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
 
         return null;
     },
-    set: function(this: BaseTexture, value: Nullable<SphericalPolynomial>) {
+    set: function (this: BaseTexture, value: Nullable<SphericalPolynomial>) {
         if (this._texture) {
             this._texture._sphericalPolynomial = value;
         }

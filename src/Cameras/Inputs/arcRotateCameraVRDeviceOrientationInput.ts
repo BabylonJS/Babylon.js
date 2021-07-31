@@ -18,7 +18,7 @@ declare module "../../Cameras/arcRotateCameraInputsManager" {
  * Add orientation input support to the input manager.
  * @returns the current input manager
  */
-ArcRotateCameraInputsManager.prototype.addVRDeviceOrientation = function(): ArcRotateCameraInputsManager {
+ArcRotateCameraInputsManager.prototype.addVRDeviceOrientation = function (): ArcRotateCameraInputsManager {
     this.add(new ArcRotateCameraVRDeviceOrientationInput());
     return this;
 };
@@ -69,7 +69,7 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
         if (hostWindow) {
             // check iOS 13+ support
-            if (typeof(DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
+            if (typeof (DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
                 (<any>DeviceOrientationEvent).requestPermission()
                     .then((response: string) => {
                         if (response === 'granted') {

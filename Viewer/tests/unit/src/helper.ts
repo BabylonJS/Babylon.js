@@ -47,7 +47,7 @@ describe("viewer helper", () => {
                 r: 0,
                 g: 0
             },
-            test: function() {
+            test: function () {
 
             }
         };

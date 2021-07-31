@@ -42,7 +42,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     /**
      * Function called when the behavior needs to be initialized (after attaching it to a target)
      */
-    public init(): void {}
+    public init(): void { }
 
     /**
      * Set to false if the node should strictly follow the camera without any interpolation time
@@ -147,7 +147,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
      * @param pickInfo The input pickingInfo that will be used to intersect the meshes
      * @returns a boolean indicating if we found a hit to stick to
      */
-    public findAndUpdateTarget(pickInfo: PickingInfo) : boolean {
+    public findAndUpdateTarget(pickInfo: PickingInfo): boolean {
         this._hit = false;
         if (!pickInfo.ray) {
             return false;

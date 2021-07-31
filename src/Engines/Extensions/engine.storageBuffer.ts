@@ -37,9 +37,9 @@ ThinEngine.prototype.createStorageBuffer = function (data: DataArray | number, c
     throw new Error("createStorageBuffer: Unsupported method in this engine!");
 };
 
-ThinEngine.prototype.updateStorageBuffer = function(buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+ThinEngine.prototype.updateStorageBuffer = function (buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
 };
 
-ThinEngine.prototype.readFromStorageBuffer = function(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {
+ThinEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {
     throw new Error("readFromStorageBuffer: Unsupported method in this engine!");
 };

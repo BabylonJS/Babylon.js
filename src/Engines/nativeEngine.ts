@@ -190,7 +190,7 @@ interface INativeEngine {
     copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
     createImageBitmap(data: ArrayBufferView): ImageBitmap;
-    resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number) : Uint8Array;
+    resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
     createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
     deleteFrameBuffer(framebuffer: WebGLFramebuffer): void;
@@ -280,7 +280,7 @@ class NativePipelineContext implements IPipelineContext {
      * Release all associated resources.
      **/
     public dispose() {
-        this._uniforms = { };
+        this._uniforms = {};
     }
 
     /** @hidden */
@@ -788,7 +788,7 @@ export interface NativeEngineOptions {
     /**
      * defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    adaptToDeviceRatio? : boolean;
+    adaptToDeviceRatio?: boolean;
 }
 
 /** @hidden */
@@ -902,23 +902,23 @@ export class NativeEngine extends Engine {
                     onSuccess();
                 }
             }, undefined, undefined, false,
-            (request, exception) => {
-                if (onError) {
-                    onError("LoadScript Error", exception);
-                }
-            });
+                (request, exception) => {
+                    if (onError) {
+                        onError("LoadScript Error", exception);
+                    }
+                });
         };
 
         // Wrappers
         if (typeof URL === "undefined") {
             (window.URL as any) = {
-                createObjectURL: function() { },
-                revokeObjectURL: function() { }
+                createObjectURL: function () { },
+                revokeObjectURL: function () { }
             };
         }
 
         if (typeof Blob === "undefined") {
-            (window.Blob as any) = function(v: any) { return v; };
+            (window.Blob as any) = function (v: any) { return v; };
         }
 
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
@@ -1429,10 +1429,10 @@ export class NativeEngine extends Engine {
         return this._stencilTest;
     }
 
-        /**
-     * Gets the current stencil operation when stencil passes
-     * @returns a number defining stencil operation to use when stencil passes
-     */
+    /**
+ * Gets the current stencil operation when stencil passes
+ * @returns a number defining stencil operation to use when stencil passes
+ */
     public getStencilOperationPass(): number {
         return this._stencilOpStencilDepthPass;
     }
@@ -2144,8 +2144,7 @@ export class NativeEngine extends Engine {
         createPolynomials = false,
         lodScale: number = 0,
         lodOffset: number = 0,
-        fallback: Nullable<InternalTexture> = null): InternalTexture
-    {
+        fallback: Nullable<InternalTexture> = null): InternalTexture {
         var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
@@ -2334,9 +2333,7 @@ export class NativeEngine extends Engine {
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-        if (disableGenerateMipMaps) {
-            Logger.Warn("Disabling mipmap generation not yet supported in NativeEngine. Ignoring.");
-        }
+        // NOTE: Disabling mipmap generation is not yet supported in NativeEngine.
 
         if (onBeforeUnbind) {
             onBeforeUnbind();
@@ -2466,7 +2463,7 @@ export class NativeEngine extends Engine {
     public _bindTexture(channel: number, texture: InternalTexture): void {
         let uniform = this._boundUniforms[channel];
         if (!uniform) {
-            return ;
+            return;
         }
         if (texture && texture._hardwareTexture) {
             const webGLTexture = texture._hardwareTexture.underlyingResource;
@@ -2572,8 +2569,7 @@ export class NativeEngine extends Engine {
     }
 
     private _getStencilFunc(func: number): number {
-        switch (func)
-        {
+        switch (func) {
             case Constants.LESS:
                 return this._native.STENCIL_TEST_LESS;
             case Constants.LEQUAL:
@@ -2596,8 +2592,7 @@ export class NativeEngine extends Engine {
     }
 
     private _getStencilOpFail(opFail: number): number {
-        switch (opFail)
-        {
+        switch (opFail) {
             case Constants.KEEP:
                 return this._native.STENCIL_OP_FAIL_S_KEEP;
             case Constants.ZERO:
@@ -2620,8 +2615,7 @@ export class NativeEngine extends Engine {
     }
 
     private _getStencilDepthFail(depthFail: number): number {
-        switch (depthFail)
-        {
+        switch (depthFail) {
             case Constants.KEEP:
                 return this._native.STENCIL_OP_FAIL_Z_KEEP;
             case Constants.ZERO:
@@ -2644,8 +2638,7 @@ export class NativeEngine extends Engine {
     }
 
     private _getStencilDepthPass(opPass: number): number {
-        switch (opPass)
-        {
+        switch (opPass) {
             case Constants.KEEP:
                 return this._native.STENCIL_OP_PASS_Z_KEEP;
             case Constants.ZERO:
