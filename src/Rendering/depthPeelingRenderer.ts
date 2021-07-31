@@ -200,10 +200,6 @@ export class DepthPeelingRenderer {
         prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
     }
 
-    public _updateSize() {
-        // TODO
-    }
-
     public bind(effect: Effect) {
         effect.setTexture("oitDepthSampler", this._thinTextures[this._currentPingPongState * 3]);
         effect.setTexture("oitFrontColorSampler", this._thinTextures[this._currentPingPongState * 3 + 1]);
