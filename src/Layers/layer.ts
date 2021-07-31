@@ -76,6 +76,11 @@ export class Layer {
      */
     public renderOnlyInRenderTargetTextures = false;
 
+    /**
+     * Define if the layer is enabled (ie. should be displayed). Default: true
+     */
+    public isEnabled = true;
+
     private _scene: Scene;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
@@ -213,6 +218,9 @@ export class Layer {
      * Renders the layer in the scene.
      */
     public render(): void {
+        if (!this.isEnabled) {
+            return;
+        }
 
         var engine = this._scene.getEngine();
 
