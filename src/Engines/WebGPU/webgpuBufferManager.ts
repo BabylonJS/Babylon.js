@@ -2,6 +2,8 @@ import { DataBuffer } from '../../Buffers/dataBuffer';
 import { WebGPUDataBuffer } from '../../Meshes/WebGPU/webgpuDataBuffer';
 import { TextureTools } from "../../Misc/textureTools";
 import { Nullable } from '../../types';
+import { Constants } from "../constants";
+import { ThinEngine } from "../thinEngine";
 import * as WebGPUConstants from './webgpuConstants';
 
 /** @hidden */
@@ -88,45 +90,56 @@ export class WebGPUBufferManager {
         return destArray;
     }
 
-    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, floatFormat = 0, offset = 0, buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true): Promise<ArrayBufferView> {
+    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, type = Constants.TEXTURETYPE_UNSIGNED_BYTE, offset = 0,
+        buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true, noDataConversion = false): Promise<ArrayBufferView>
+    {
+        const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
         return new Promise((resolve, reject) => {
             gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(() => {
                 const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
                 let data: Nullable<ArrayBufferView> | Uint8Array | Float32Array = buffer;
-                if (data === null) {
-                    switch (floatFormat) {
-                        case 0: // byte format
-                            data = new Uint8Array(size);
-                            (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
-                            break;
-                        case 1: // half float
-                            // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer);
-                            break;
-                        case 2: // float
-                            data = new Float32Array(size / 4);
-                            (data as Float32Array).set(new Float32Array(copyArrayBuffer));
-                            break;
+                if (noDataConversion) {
+                    if (data === null) {
+                        data = ThinEngine.AllocateAndCopyTypedBuffer(type, size, true, copyArrayBuffer);
+                    } else {
+                        data = ThinEngine.AllocateAndCopyTypedBuffer(type, data.buffer, undefined, copyArrayBuffer);
                     }
                 } else {
-                    switch (floatFormat) {
-                        case 0: // byte format
-                            data = new Uint8Array(data.buffer);
-                            (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
-                            break;
-                        case 1: // half float
-                            // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer, buffer as Float32Array);
-                            break;
-                        case 2: // float
-                            data = new Float32Array(data.buffer);
-                            (data as Float32Array).set(new Float32Array(copyArrayBuffer));
-                            break;
+                    if (data === null) {
+                        switch (floatFormat) {
+                            case 0: // byte format
+                                data = new Uint8Array(size);
+                                (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                                break;
+                            case 1: // half float
+                                // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
+                                data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer);
+                                break;
+                            case 2: // float
+                                data = new Float32Array(size / 4);
+                                (data as Float32Array).set(new Float32Array(copyArrayBuffer));
+                                break;
+                        }
+                    } else {
+                        switch (floatFormat) {
+                            case 0: // byte format
+                                data = new Uint8Array(data.buffer);
+                                (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                                break;
+                            case 1: // half float
+                                // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
+                                data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer, buffer as Float32Array);
+                                break;
+                            case 2: // float
+                                data = new Float32Array(data.buffer);
+                                (data as Float32Array).set(new Float32Array(copyArrayBuffer));
+                                break;
+                        }
                     }
                 }
                 if (bytesPerRow !== bytesPerRowAligned) {
                     // TODO WEBGPU use computer shaders (or render pass) to build the final buffer data?
-                    if (floatFormat === 1) {
+                    if (floatFormat === 1 && !noDataConversion) {
                         // half float have been converted to float above
                         bytesPerRow *= 2;
                         bytesPerRowAligned *= 2;
@@ -139,7 +152,7 @@ export class WebGPUBufferManager {
                             data2[offset++] = data2[offset2++];
                         }
                     }
-                    if (floatFormat !== 0) {
+                    if (floatFormat !== 0 && !noDataConversion) {
                         data = new Float32Array(data2.buffer, 0, offset / 4);
                     } else {
                         data = new Uint8Array(data2.buffer, 0, offset);
