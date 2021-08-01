@@ -5,14 +5,14 @@ import { Nullable } from '../../types';
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /** @hidden */
-        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Promise<ArrayBufferView>;
+        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): Promise<ArrayBufferView>;
 
         /** @hidden */
-        _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): ArrayBufferView;
+        _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): ArrayBufferView;
     }
 }
 
-ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): ArrayBufferView {
+ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): ArrayBufferView {
     let gl = this._gl;
     if (!gl) {
         throw new Error("Engine does not have gl rendering context.");
@@ -36,19 +36,23 @@ ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture
 
     let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
 
-    switch (readType) {
-        case gl.UNSIGNED_BYTE:
-            if (!buffer) {
-                buffer = new Uint8Array(4 * width * height);
-            }
-            readType = gl.UNSIGNED_BYTE;
-            break;
-        default:
-            if (!buffer) {
-                buffer = new Float32Array(4 * width * height);
-            }
-            readType = gl.FLOAT;
-            break;
+    if (!noDataConversion) {
+        switch (readType) {
+            case gl.UNSIGNED_BYTE:
+                if (!buffer) {
+                    buffer = new Uint8Array(4 * width * height);
+                }
+                readType = gl.UNSIGNED_BYTE;
+                break;
+            default:
+                if (!buffer) {
+                    buffer = new Float32Array(4 * width * height);
+                }
+                readType = gl.FLOAT;
+                break;
+        }
+    } else if (!buffer) {
+        buffer = ThinEngine.AllocateAndCopyTypedBuffer(texture.type, 4 * width * height);
     }
 
     if (flushRenderer) {
@@ -61,6 +65,6 @@ ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture
     return buffer;
 };
 
-ThinEngine.prototype._readTexturePixels = function (texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Promise<ArrayBufferView> {
-    return Promise.resolve(this._readTexturePixelsSync(texture, width, height, faceIndex, level, buffer, flushRenderer));
+ThinEngine.prototype._readTexturePixels = function (texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): Promise<ArrayBufferView> {
+    return Promise.resolve(this._readTexturePixelsSync(texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion));
 };
