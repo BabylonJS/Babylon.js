@@ -372,6 +372,12 @@ export interface IAgentParameters {
      * How aggressive the agent manager should be at avoiding collisions with this agent. [Limit: >= 0]
      */
     separationWeight: number;
+
+    /**
+     * Observers will be notified when agent gets inside the virtual circle with this Radius around destination point.
+     * Default is agent radius
+     */
+     reachRadius?: number;
 }
 
 /**
