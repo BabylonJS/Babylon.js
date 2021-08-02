@@ -84,6 +84,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         this._wasSelected = true;
         const entity = this.props.entity;
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
+        this.props.globalState.selectionLock = true;
     }
 
     renderChildren() {

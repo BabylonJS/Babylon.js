@@ -75,7 +75,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.props.globalState.onSelectionChangedObservable.add(() => {
             this.forceUpdate();
         });
-        
+
         this._onParrentingChangeObserver = this.props.globalState.onParentingChangeObservable.add(() => {
             this.forceUpdate();
         });
@@ -203,13 +203,22 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
 
         return (
-            <div id="tree"             
-            onDrop={event => {
-                this.props.globalState.onParentingChangeObservable.notifyObservers(null);
-            }}
-            onDragOver={event => {
-                event.preventDefault();
-            }}>
+            <div id="tree"
+                onDrop={event => {
+                    this.props.globalState.onParentingChangeObservable.notifyObservers(null);
+                }}
+                onDragOver={event => {
+                    event.preventDefault();
+                }}
+                onClick={event => {
+                    if (!this.props.globalState.selectionLock) {
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }
+                    else {
+                        this.props.globalState.selectionLock = false;
+                    }
+                }}>
+
                 {guiElements && guiElements.length > 0 && <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />}
             </div>
         );
