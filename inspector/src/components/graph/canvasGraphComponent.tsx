@@ -25,9 +25,8 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
         
         let cs: CanvasGraphService | undefined;
 
-        // TODO: SET datasets as collector.datasets once canvas graph service pr is up.
         try {
-            cs = new CanvasGraphService(canvasRef.current, {datasets: []});
+            cs = new CanvasGraphService(canvasRef.current, {datasets: collector.datasets});
         } catch (error) {
             console.error(error);
             return;
@@ -47,11 +46,11 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
             cs?.update();
         };
 
-        const metaUpdated = (_: Map<string, IPerfMetadata>) => {
+        const metaUpdated = (meta: Map<string, IPerfMetadata>) => {
             if (!cs) {
                 return;
             }
-            // TODO: add this line once canvas graph service pr is up. cs.metadata = meta;
+            cs.metadata = meta;
             cs.update();
         };
         
