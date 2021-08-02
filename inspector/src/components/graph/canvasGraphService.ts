@@ -165,6 +165,12 @@ export class CanvasGraphService {
             return;
         }
 
+        const numSlices = this._getNumberOfSlices();
+
+        if (numSlices === 0) {
+            return;
+        }
+
         // First we clear the canvas so we can draw our data!
         this.clear();
 
@@ -173,49 +179,45 @@ export class CanvasGraphService {
         this._globalTimeMinMax.max = 0;
             
         // First we must get the end positions of our view port.
-        if (this._getNumberOfSlices() > 0) {
-            const pos = this._position ?? (this._getNumberOfSlices() - 1);
-            let start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
-            let startOverflow = 0;
+        const pos = this._position ?? (numSlices - 1);
+        let start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
+        let startOverflow = 0;
 
-            // account for overflow from start.
-            if (start < 0) {
-                startOverflow = 0 - start;
-                start = 0;
-            }
-
-            let end = Math.ceil(pos + this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
-
-            // account for overflow from end.
-            if (end > this._getNumberOfSlices()) {
-                const endOverflow = end - this._getNumberOfSlices();
-                end = this._getNumberOfSlices();
-
-                start = Math.max(start - endOverflow, 0);
-            }
-
-            // update the bounds
-            this._datasetBounds.start = start;
-            this._datasetBounds.end = end;
+        // account for overflow from start.
+        if (start < 0) {
+            startOverflow = 0 - start;
+            start = 0;
         }
+
+        let end = Math.ceil(pos + this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
+
+        // account for overflow from end.
+        if (end > numSlices) {
+            const endOverflow = end - numSlices;
+            end = numSlices;
+
+            start = Math.max(start - endOverflow, 0);
+        }
+
+        // update the bounds
+        this._datasetBounds.start = start;
+        this._datasetBounds.end = end;
+        
 
         // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
-        if (this._getNumberOfSlices() > 0) {
-            this._globalTimeMinMax.min = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.start));
-            this._globalTimeMinMax.max = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1));
-        }
+        this._globalTimeMinMax.min = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.start));
+        this._globalTimeMinMax.max = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1));
 
         // set the buffer region maximum by rescaling the max timestamp in bounds.
         const bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / scaleFactor + this._globalTimeMinMax.min);
 
         // we then need to update the end position based on the maximum for the buffer region
-        if (this._getNumberOfSlices() > 0) {
-            // binary search to get closest point to the buffer maximum.
-            this._datasetBounds.end = this._getClosestPointToTimestamp(bufferMaximum) + 1;
+        // binary search to get closest point to the buffer maximum.
+        this._datasetBounds.end = this._getClosestPointToTimestamp(bufferMaximum) + 1;
 
-            // keep track of largest timestamp value in view!
-            this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
-        }
+        // keep track of largest timestamp value in view!
+        this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
+
 
         const updatedScaleFactor = Scalar.Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
 
@@ -231,45 +233,42 @@ export class CanvasGraphService {
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
         const {left, right, bottom, top} = this._drawableArea;
         // process, and then draw our points
-        if (this._getNumberOfSlices() > 0) {
-            this.datasets.ids.forEach((id, idOffset) => {
-                // we don't want to draw hidden datasets.
-                if (!!this.metadata.get(id)?.hidden) {
-                    return;
+        this.datasets.ids.forEach((id, idOffset) => {
+            // we don't want to draw hidden datasets.
+            if (!!this.metadata.get(id)?.hidden) {
+                return;
+            }
+
+            const valueMinMax = this._getMinMax(this._datasetBounds, idOffset);
+
+            ctx.beginPath();
+            ctx.strokeStyle = this.metadata.get(id)?.color ?? defaultColor;
+            let prevPoint: [number, number] | undefined;
+            for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
+                const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
+
+                if (idOffset >= numPoints) {
+                    continue;
+                }
+    
+                const valueIndex = this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
+                const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
+                const value = this.datasets.data.at(valueIndex);
+
+                const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
+                const drawableValue = this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
+
+                if (prevPoint === undefined) {
+                    prevPoint = [drawableTime, drawableValue];
                 }
 
-                const valueMinMax = this._getMinMax(this._datasetBounds, idOffset);
-    
-                ctx.beginPath();
-                ctx.strokeStyle = this.metadata.get(id)?.color ?? defaultColor;
-                let prevPoint: [number, number] | undefined;
-                for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
-                    const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
-
-                    if (idOffset >= numPoints) {
-                        continue;
-                    }
-        
-                    const valueIndex = this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
-                    const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
-                    const value = this.datasets.data.at(valueIndex);
-    
-                    const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
-                    const drawableValue = this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
-    
-                    if (prevPoint === undefined) {
-                        prevPoint = [drawableTime, drawableValue];
-                    }
-    
-                    ctx.moveTo(prevPoint[0], prevPoint[1]);
-                    ctx.lineTo(drawableTime, drawableValue);
-                    prevPoint[0] = drawableTime;
-                    prevPoint[1] = drawableValue;
-                }
-                ctx.stroke();
-            });
-        }
-
+                ctx.moveTo(prevPoint[0], prevPoint[1]);
+                ctx.lineTo(drawableTime, drawableValue);
+                prevPoint[0] = drawableTime;
+                prevPoint[1] = drawableValue;
+            }
+            ctx.stroke();
+        });
 
         // then draw the tooltip.
         this._drawTooltip(this._hoverPosition, this._drawableArea);
@@ -546,7 +545,7 @@ export class CanvasGraphService {
     private _drawTooltip(pixel: number | null, drawableArea: IGraphDrawableArea) {
         const { _ctx: ctx } = this;
 
-        if (pixel === null || !ctx || !ctx.canvas) {
+        if (pixel === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
             return;
         }
 
@@ -560,31 +559,29 @@ export class CanvasGraphService {
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         const closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
 
-        if (this._getNumberOfSlices() > 0) {
-            this.datasets.ids.forEach((id, idOffset) => {
-                if (!!this.metadata.get(id)?.hidden) {
-                    return;
-                }
+        this.datasets.ids.forEach((id, idOffset) => {
+            if (!!this.metadata.get(id)?.hidden) {
+                return;
+            }
 
-                const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
-                
-                if (idOffset >= numPoints) {
-                    return;
-                }
+            const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
+            
+            if (idOffset >= numPoints) {
+                return;
+            }
 
-                const valueIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
+            const valueIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
 
-                const text = `${id}: ${this.datasets.data.at(valueIndex).toFixed(2)}`;
-                
-                if (text.length > longestText.length) {
-                    longestText = text;
-                }
+            const text = `${id}: ${this.datasets.data.at(valueIndex).toFixed(2)}`;
+            
+            if (text.length > longestText.length) {
+                longestText = text;
+            }
 
-                this._tooltipItems[numberOfTooltipItems].text = text;
-                this._tooltipItems[numberOfTooltipItems].color = this.metadata.get(id)?.color ?? defaultColor;
-                numberOfTooltipItems++;
-            }); 
-        }
+            this._tooltipItems[numberOfTooltipItems].text = text;
+            this._tooltipItems[numberOfTooltipItems].color = this.metadata.get(id)?.color ?? defaultColor;
+            numberOfTooltipItems++;
+        });
 
         let x = pixel - start;
         let y = Math.floor((drawableArea.bottom - drawableArea.top) / 2);
@@ -703,23 +700,22 @@ export class CanvasGraphService {
      * @param event The mouse event that contains positional information.
      */
     private _handlePan = (event: MouseEvent) => {
-        if (!this._panPosition) {
+        if (!this._panPosition || this._getNumberOfSlices() === 0) {
             return;
         }
 
         const pixelDelta = this._panPosition.delta + event.clientX - this._panPosition.xPos;
         const pixelsPerItem = this._width / this._sizeOfWindow;
         const itemsDelta = pixelDelta / pixelsPerItem | 0;
-        if (this._getNumberOfSlices() > 0) {
-            const pos = this._position ?? (this._getNumberOfSlices() - 1)
-            
-            // update our position without allowing the user to pan more than they need to (approximation) 
-            this._position = Scalar.Clamp(
-                                            pos - itemsDelta, 
-                                            Math.floor(this._sizeOfWindow * scaleFactor), 
-                                            this._getNumberOfSlices() - Math.floor(this._sizeOfWindow * (1-scaleFactor))
-                                        );
-        }
+        const pos = this._position ?? (this._getNumberOfSlices() - 1)
+        
+        // update our position without allowing the user to pan more than they need to (approximation) 
+        this._position = Scalar.Clamp(
+                                        pos - itemsDelta, 
+                                        Math.floor(this._sizeOfWindow * scaleFactor), 
+                                        this._getNumberOfSlices() - Math.floor(this._sizeOfWindow * (1-scaleFactor))
+                                    );
+
 
         if (itemsDelta === 0) {
             this._panPosition.delta += pixelDelta;
