@@ -3,12 +3,14 @@ import { Scene } from "babylonjs/scene";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
+import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
 import { CanvasGraphComponent } from "../../../graph/canvasGraphComponent";
 import { IPerfLayoutSize } from "../../../graph/graphSupportingTypes";
 import { PopupComponent } from "../../../popupComponent";
 import { PerformanceViewerSidebarComponent } from "./performanceViewerSidebarComponent";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
 import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
+import { Tools } from "babylonjs/Misc/tools";
 
 require('./scss/performanceViewer.scss');
 
@@ -20,7 +22,7 @@ interface IPerformanceViewerComponentProps {
 const initialWindowSize = { width: 1024, height: 512 };
 
 // Note this should be false when committed until the feature is fully working.
-const isEnabled = false;
+const isEnabled = true;
 
 export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps> = (props: IPerformanceViewerComponentProps) => {
     const { scene } = props;
@@ -39,6 +41,12 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
 
     const onPerformanceButtonClick = () => {
         setIsOpen(true);
+    }
+
+    const onLoadClick = (file: File) => {
+        Tools.ReadFile(file, (data: string) => {
+            console.log(data.split('\n').map((str) => str.replace('\r', '').split(',').filter((s) =>  s.length > 0)).filter((line) => line.length > 0));
+        });
     }
 
     const onResize = () => {
@@ -70,7 +78,10 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         <>
             {
                 isEnabled &&
-                <ButtonLineComponent label="Open Perf Viewer" onClick={onPerformanceButtonClick} />
+                <>
+                    <ButtonLineComponent label="Open Perf Viewer" onClick={onPerformanceButtonClick} />
+                    <FileButtonLineComponent accept="csv" label="Load CSV" onClick={onLoadClick} />
+                </>
             }
             {
                 isOpen &&
