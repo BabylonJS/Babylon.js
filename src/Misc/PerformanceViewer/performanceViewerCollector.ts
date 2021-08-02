@@ -211,6 +211,9 @@ export class PerformanceViewerCollector {
         this.metadataObservable.notifyObservers(this._datasetMeta);
     }
 
+    public loadFromFileData(data: string) {
+    }
+
     /**
      * Starts the realtime collection of data.
      * @param shouldPreserve optional boolean param, if set will preserve the dataset between calls of start.
