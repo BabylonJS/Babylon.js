@@ -819,5 +819,6 @@ export class RecastJSCrowd implements ICrowd {
         this.recastCrowd.destroy();
         this._scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
         this._onBeforeAnimationsObserver = null;
+        this.onReachTargetObservable.clear();
     }
 }
