@@ -7,6 +7,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
 import { Engine } from "../Engines/engine";
+import { Color4 } from "../Maths/math.color";
 
 interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): Nullable<RenderTargetTexture>;
@@ -24,6 +25,7 @@ export class WebXRSessionManager implements IDisposable {
     private _xrNavigator: any;
     private _baseLayer: Nullable<XRWebGLLayer> = null;
     private _renderTargetTextures: Array<RenderTargetTexture> = [];
+    private _sessionMode: XRSessionMode;
 
     /**
      * The base reference space from which the session started. good if you want to reset your
@@ -175,6 +177,7 @@ export class WebXRSessionManager implements IDisposable {
     public initializeSessionAsync(xrSessionMode: XRSessionMode = "immersive-vr", xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
         return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
             this.session = session;
+            this._sessionMode = xrSessionMode;
             this.onXRSessionInit.notifyObservers(session);
             this._sessionEnded = false;
 
@@ -388,6 +391,9 @@ export class WebXRSessionManager implements IDisposable {
         const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
         renderTargetTexture._texture = internalTexture;
         renderTargetTexture.disableRescaling();
+        if (this._sessionMode === 'immersive-ar') {
+            renderTargetTexture.clearColor = new Color4(0, 0, 0, 0);
+        }
 
         // Store the render target texture for cleanup when the session ends.
         this._renderTargetTextures.push(renderTargetTexture);
