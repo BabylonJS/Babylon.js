@@ -25,6 +25,11 @@ const controllerCache: Array<{
     path: string;
     meshes: AbstractMesh[]
 }> = [];
+
+/**
+ * Motion controller manager is managing the different webxr profiles and makes sure the right
+ * controller is being loaded.
+ */
 export class WebXRMotionControllerManager {
     private static _AvailableControllers: { [type: string]: MotionControllerConstructor } = {};
     private static _Fallbacks: { [profileId: string]: string[] } = {};
@@ -45,6 +50,10 @@ export class WebXRMotionControllerManager {
      */
     public static UseOnlineRepository: boolean = true;
 
+    /**
+     * Disable the controller cache and load the models each time a new WebXRProfileMotionController is loaded.
+     * Defaults to true.
+     */
     public static DisableControllerCache: boolean = true;
 
     /**
