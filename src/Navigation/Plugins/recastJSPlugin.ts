@@ -5,7 +5,7 @@ import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
 import { Epsilon, Vector3, Matrix } from '../../Maths/math';
 import { TransformNode } from "../../Meshes/transformNode";
-import { Observer } from "../../Misc/observable";
+import { Observer, Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 
@@ -491,6 +491,18 @@ export class RecastJSCrowd implements ICrowd {
      */
     public agents: number[] = new Array<number>();
     /**
+     * agents reach radius
+     */
+    public reachRadii: number[] = new Array<number>();
+    /**
+     * true when a destination is active for an agent and notifier hasn't been noticed of reach
+     */
+    private agentDestinationArmed: boolean[] = new Array<boolean>();
+    /**
+     * agent current target
+     */
+    private agentDestination: Vector3[] = new Array<Vector3>();
+    /**
      * Link to the scene is kept to unregister the crowd from the scene
      */
     private _scene: Scene;
@@ -499,6 +511,11 @@ export class RecastJSCrowd implements ICrowd {
      * Observer for crowd updates
      */
     private _onBeforeAnimationsObserver: Nullable<Observer<Scene>> = null;
+
+    /**
+     *  Fires each time an agent is in reach radius of his destination
+     */
+    public onReachTargetObservable = new Observable<{agentIndex:number, destination:Vector3}>();
 
     /**
      * Constructor
@@ -544,6 +561,9 @@ export class RecastJSCrowd implements ICrowd {
         var agentIndex = this.recastCrowd.addAgent(new this.bjsRECASTPlugin.bjsRECAST.Vec3(pos.x, pos.y, pos.z), agentParams);
         this.transforms.push(transform);
         this.agents.push(agentIndex);
+        this.reachRadii.push(parameters.reachRadius ? parameters.reachRadius : parameters.radius);
+        this.agentDestinationArmed.push(false);
+        this.agentDestination.push(new Vector3(0,0,0));
         return agentIndex;
     }
 
@@ -632,6 +652,13 @@ export class RecastJSCrowd implements ICrowd {
      */
     agentGoto(index: number, destination: Vector3): void {
         this.recastCrowd.agentGoto(index, new this.bjsRECASTPlugin.bjsRECAST.Vec3(destination.x, destination.y, destination.z));
+
+        // arm observer
+        var item = this.agents.indexOf(index);
+        if (item > -1) {
+            this.agentDestinationArmed[item] = true;
+            this.agentDestination[item].set(destination.x, destination.y, destination.z);
+        }
     }
 
     /**
@@ -687,6 +714,9 @@ export class RecastJSCrowd implements ICrowd {
         if (item > -1) {
             this.agents.splice(item, 1);
             this.transforms.splice(item, 1);
+            this.reachRadii.splice(item, 1);
+            this.agentDestinationArmed.splice(item, 1);
+            this.agentDestination.splice(item, 1);
         }
     }
 
@@ -727,7 +757,23 @@ export class RecastJSCrowd implements ICrowd {
 
         // update transforms
         for (let index = 0; index < this.agents.length; index++) {
-            this.transforms[index].position = this.getAgentPosition(this.agents[index]);
+            // update transform position
+            const agentIndex = this.agents[index];
+            const agentPosition = this.getAgentPosition(agentIndex);
+            this.transforms[index].position = agentPosition;
+            // check agent reach destination
+            if (this.agentDestinationArmed[index]) {
+                const dx = agentPosition.x - this.agentDestination[index].x;
+                const dz = agentPosition.z - this.agentDestination[index].z;
+                const radius = this.reachRadii[index];
+                const groundY = this.agentDestination[index].y - this.reachRadii[index];
+                const ceilingY = this.agentDestination[index].y + this.reachRadii[index];
+                const distanceXZSquared = dx * dx + dz * dz;
+                if (agentPosition.y > groundY && agentPosition.y < ceilingY && distanceXZSquared < (radius * radius)) {
+                    this.onReachTargetObservable.notifyObservers({agentIndex:agentIndex, destination:this.agentDestination[index]});
+                    this.agentDestinationArmed[index] = false;
+                }
+            }
         }
     }
 
