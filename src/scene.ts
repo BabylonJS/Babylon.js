@@ -4288,7 +4288,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (camera?.outputRenderTarget && !camera?.isRigCamera) {
             camera.outputRenderTarget._cleared = false;
         }
-        if (camera?.rigCameras?.length && camera?.rigCameras?.length > 1) {
+        if (camera?.rigCameras?.length) {
             for (let i = 0; i < camera.rigCameras.length; ++i) {
                 const rtt = camera.rigCameras[i].outputRenderTarget;
                 if (rtt) {
