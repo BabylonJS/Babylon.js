@@ -5586,11 +5586,12 @@ declare module BABYLON {
          * @param level defines the LOD level of the texture to read (in case of Mip Maps)
          * @param buffer defines a user defined buffer to fill with data (can be null)
          * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+         * @param noDataConversion false to convert the data to Uint8Array (if texture type is UNSIGNED_BYTE) or to Float32Array (if texture type is anything but UNSIGNED_BYTE). If true, the type of the generated buffer (if buffer==null) will depend on the type of the texture
          * @returns The Array buffer promise containing the pixels data.
          */
-        readPixels(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<Promise<ArrayBufferView>>;
+        readPixels(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): Nullable<Promise<ArrayBufferView>>;
         /** @hidden */
-        _readPixelsSync(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<ArrayBufferView>;
+        _readPixelsSync(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): Nullable<ArrayBufferView>;
         /** @hidden */
         get _lodTextureHigh(): Nullable<BaseTexture>;
         /** @hidden */
@@ -41516,10 +41517,19 @@ declare module BABYLON {
 declare module BABYLON {
         interface ThinEngine {
             /** @hidden */
-            _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Promise<ArrayBufferView>;
+            _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): Promise<ArrayBufferView>;
             /** @hidden */
-            _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): ArrayBufferView;
+            _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): ArrayBufferView;
         }
+    /**
+     * Allocate a typed array depending on a texture type. Optionally can copy existing data in the buffer.
+     * @param type type of the texture
+     * @param sizeOrDstBuffer size of the array OR an existing buffer that will be used as the destination of the copy (if copyBuffer is provided)
+     * @param sizeInBytes true if the size of the array is given in bytes, false if it is the number of elements of the array
+     * @param copyBuffer if provided, buffer to copy into the destination buffer (either a newly allocated buffer if sizeOrDstBuffer is a number or use sizeOrDstBuffer as the destination buffer otherwise)
+     * @returns the allocated buffer or sizeOrDstBuffer if the latter is an ArrayBuffer
+     */
+    export function allocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number | ArrayBuffer, sizeInBytes?: boolean, copyBuffer?: ArrayBuffer): ArrayBufferView;
 }
 declare module BABYLON {
     /**
@@ -60968,7 +60978,7 @@ declare module BABYLON {
         createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): DataBuffer;
         setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset?: number, byteLength?: number): void;
         private _GetHalfFloatAsFloatRGBAArrayBuffer;
-        readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, floatFormat?: number, offset?: number, buffer?: Nullable<ArrayBufferView>, destroyBuffer?: boolean): Promise<ArrayBufferView>;
+        readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, type?: number, offset?: number, buffer?: Nullable<ArrayBufferView>, destroyBuffer?: boolean, noDataConversion?: boolean): Promise<ArrayBufferView>;
         releaseBuffer(buffer: DataBuffer | GPUBuffer): boolean;
         destroyDeferredBuffers(): void;
     }
@@ -61105,7 +61115,7 @@ declare module BABYLON {
         createMSAATexture(texture: InternalTexture, samples: number): void;
         updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
         updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
-        readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, buffer?: Nullable<ArrayBufferView>): Promise<ArrayBufferView>;
+        readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, buffer?: Nullable<ArrayBufferView>, noDataConversion?: boolean): Promise<ArrayBufferView>;
         releaseTexture(texture: InternalTexture | GPUTexture): void;
         destroyDeferredTextures(): void;
     }
@@ -68965,6 +68975,10 @@ declare module BABYLON {
          * renders in the main frame buffer of the canvas.
          */
         renderOnlyInRenderTargetTextures: boolean;
+        /**
+         * Define if the layer is enabled (ie. should be displayed). Default: true
+         */
+        isEnabled: boolean;
         private _scene;
         private _vertexBuffers;
         private _indexBuffer;
@@ -84379,40 +84393,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * Defines what data is needed to graph a point on the performance graph.
-     */
-    export interface IPerfPoint {
-        /**
-         * The timestamp of the point.
-         */
-        timestamp: number;
-        /**
-         * The value of the point.
-         */
-        value: number;
-    }
-    /**
-     * Defines the shape of a dataset that our graphing service uses for drawing purposes.
-     */
-    export interface IPerfDataset {
-        /**
-         * The color of the line to be drawn.
-         */
-        color?: string;
-        /**
-         * The id of the dataset.
-         */
-        id: string;
-        /**
-         * The data to be processed by the performance graph.
-         */
-        data: IPerfPoint[];
-        /**
-         * Specifies if data should be hidden, falsey by default.
-         */
-        hidden?: boolean;
-    }
     /**
      * Defines the shape of a collection of datasets that our graphing service uses for drawing purposes.
      */
