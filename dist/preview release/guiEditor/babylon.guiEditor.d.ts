@@ -29,7 +29,7 @@ declare module GUIEDITOR {
         Y = 3
     }
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-        artBoardBackground: BABYLON.Nullable<Rectangle>;
+        artBoardBackground: Rectangle;
         private _rootContainer;
         private _setConstraintDirection;
         private _mouseStartPointX;
@@ -122,6 +122,7 @@ declare module GUIEDITOR {
         backgroundColor: BABYLON.Color4;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
+        selectionLock: boolean;
         workbench: WorkbenchComponent;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
@@ -750,8 +751,9 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         load(file: File): void;
-        save(): void;
-        saveToSnippetServer(): void;
+        save(saveCallback: () => void): void;
+        saveLocally: () => void;
+        saveToSnippetServer: () => void;
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
         render(): JSX.Element;
@@ -964,6 +966,7 @@ declare module GUIEDITOR {
         private _onSelectionChangeObserver;
         private _onParrentingChangeObserver;
         private _onNewSceneObserver;
+        private _onPropertyChangedObservable;
         constructor(props: ISceneExplorerComponentProps);
         processMutation(): void;
         componentDidMount(): void;
