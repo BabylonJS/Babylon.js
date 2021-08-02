@@ -3,6 +3,7 @@ import { WebGPUDataBuffer } from '../../Meshes/WebGPU/webgpuDataBuffer';
 import { TextureTools } from "../../Misc/textureTools";
 import { Nullable } from '../../types';
 import { Constants } from "../constants";
+import { AllocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
 import * as WebGPUConstants from './webgpuConstants';
 
 /** @hidden */
@@ -99,9 +100,9 @@ export class WebGPUBufferManager {
                 let data: Nullable<ArrayBufferView> | Uint8Array | Float32Array = buffer;
                 if (noDataConversion) {
                     if (data === null) {
-                        data = TextureTools.AllocateAndCopyTypedBuffer(type, size, true, copyArrayBuffer);
+                        data = AllocateAndCopyTypedBuffer(type, size, true, copyArrayBuffer);
                     } else {
-                        data = TextureTools.AllocateAndCopyTypedBuffer(type, data.buffer, undefined, copyArrayBuffer);
+                        data = AllocateAndCopyTypedBuffer(type, data.buffer, undefined, copyArrayBuffer);
                     }
                 } else {
                     if (data === null) {
