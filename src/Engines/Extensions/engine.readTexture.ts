@@ -21,7 +21,7 @@ declare module "../../Engines/thinEngine" {
  * @param copyBuffer if provided, buffer to copy into the destination buffer (either a newly allocated buffer if sizeOrDstBuffer is a number or use sizeOrDstBuffer as the destination buffer otherwise)
  * @returns the allocated buffer or sizeOrDstBuffer if the latter is an ArrayBuffer
  */
-export function AllocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number | ArrayBuffer, sizeInBytes = false, copyBuffer?: ArrayBuffer): ArrayBufferView {
+export function allocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number | ArrayBuffer, sizeInBytes = false, copyBuffer?: ArrayBuffer): ArrayBufferView {
     switch (type) {
         case Constants.TEXTURETYPE_BYTE: {
             const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Int8Array(sizeOrDstBuffer) : new Int8Array(sizeOrDstBuffer);
@@ -130,7 +130,7 @@ ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture
                 break;
         }
     } else if (!buffer) {
-        buffer = AllocateAndCopyTypedBuffer(texture.type, 4 * width * height);
+        buffer = allocateAndCopyTypedBuffer(texture.type, 4 * width * height);
     }
 
     if (flushRenderer) {
