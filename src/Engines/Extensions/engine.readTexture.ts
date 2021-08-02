@@ -1,5 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { TextureTools } from "../../Misc/textureTools";
 import { Nullable } from '../../types';
 
 declare module "../../Engines/thinEngine" {
@@ -52,7 +53,7 @@ ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture
                 break;
         }
     } else if (!buffer) {
-        buffer = ThinEngine.AllocateAndCopyTypedBuffer(texture.type, 4 * width * height);
+        buffer = TextureTools.AllocateAndCopyTypedBuffer(texture.type, 4 * width * height);
     }
 
     if (flushRenderer) {
