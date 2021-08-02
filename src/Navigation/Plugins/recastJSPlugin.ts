@@ -504,7 +504,7 @@ export class RecastJSCrowd implements ICrowd {
     /**
      *  Fires each time an agent is in reach radius of his destination
      */
-    public onReachTargetObservable = new Observable<{agentIndex:number, destination:Vector3}>();
+    public onReachTargetObservable = new Observable<{agentIndex: number, destination: Vector3}>();
 
     /**
      * Constructor
