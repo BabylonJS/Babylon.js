@@ -34,8 +34,8 @@ const stopDrawingPlayheadThreshold = 0.95;
 // Threshold for the ratio at which we go from panning mode to live mode.
 const returnToLiveThreshold = 0.998;
 
-// Font to use on the tooltip!
-const tooltipFont = "12px Arial";
+// Font to use on the addons such as tooltips and tickers!
+const graphAddonFont = "12px Arial";
 
 // A string containing the alphabet, used in line height calculation for the font.
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -85,7 +85,7 @@ export class CanvasGraphService {
     private _tickerTextCache: IPerfTextMeasureCache;
     private _tickerItems: IPerfTicker[];
 
-    private readonly _tooltipLineHeight: number;
+    private readonly _addonFontLineHeight: number;
     private readonly _defaultLineHeight: number;
 
     public readonly datasets: IPerfDatasets;
@@ -127,9 +127,9 @@ export class CanvasGraphService {
         this._axisHeight = axisLineLength + axisPadding + this._defaultLineHeight + axisPadding;
 
         this._ctx.save();
-        this._ctx.font = tooltipFont;
+        this._ctx.font = graphAddonFont;
         const fontMetrics = this._ctx.measureText(alphabet);
-        this._tooltipLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
+        this._addonFontLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
         this._ctx.restore();
 
         this.datasets = settings.datasets;
@@ -319,7 +319,7 @@ export class CanvasGraphService {
         });
 
         ctx.save();        
-        ctx.font = tooltipFont;
+        ctx.font = graphAddonFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
 
@@ -335,7 +335,7 @@ export class CanvasGraphService {
         
         drawableArea.right -= width;
 
-        const textHeight = this._tooltipLineHeight + Math.floor(tooltipHorizontalPadding/2);
+        const textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding/2);
 
         const x = drawableArea.right + tickerHorizontalPadding;
         let y = drawableArea.top + textHeight;
@@ -663,12 +663,12 @@ export class CanvasGraphService {
 
         ctx.save();
 
-        ctx.font = tooltipFont;
+        ctx.font = graphAddonFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
 
-        const boxLength = this._tooltipLineHeight;
-        const textHeight = this._tooltipLineHeight + Math.floor(tooltipHorizontalPadding / 2);
+        const boxLength = this._addonFontLineHeight;
+        const textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding / 2);
 
         // initialize width with cached value or measure width of longest text and update cache.
         let width: number;
