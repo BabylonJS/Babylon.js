@@ -198,7 +198,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/buttonLineComponent
     }
 }
 declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
-    import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer";
+    import { IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer";
     /**
      * Defines a structure to hold max and min.
      */
@@ -251,12 +251,12 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
-        datasets: IPerfDataset[];
+        datasets: IPerfDatasets;
     }
 }
 declare module "babylonjs-inspector/components/graph/canvasGraphService" {
     import { ICanvasGraphServiceSettings, IPerfLayoutSize } from "babylonjs-inspector/components/graph/graphSupportingTypes";
-    import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer";
+    import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
     /**
      * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
      * let it know something has been resized, etc!
@@ -268,7 +268,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _sizeOfWindow;
         private _ticks;
         private _panPosition;
-        private _positions;
+        private _position;
         private _datasetBounds;
         private _globalTimeMinMax;
         private _hoverPosition;
@@ -278,7 +278,8 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _textCache;
         private readonly _tooltipLineHeight;
         private readonly _defaultLineHeight;
-        readonly datasets: IPerfDataset[];
+        readonly datasets: IPerfDatasets;
+        metadata: Map<string, IPerfMetadata>;
         /**
          * Creates an instance of CanvasGraphService.
          *
@@ -296,14 +297,18 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          */
         private _draw;
         /**
-         * Returns the index of the closest time for a dataset.
+         * Returns the index of the closest time for the datasets.
          * Uses a modified binary search to get value.
          *
-         * @param dataset the dataset we want to search in.
          * @param targetTime the time we want to get close to.
          * @returns index of the item with the closest time to the targetTime
          */
         private _getClosestPointToTimestamp;
+        /**
+         * This is a convenience method to get the number of collected slices.
+         * @returns the total number of collected slices.
+         */
+        private _getNumberOfSlices;
         /**
          * Draws the time axis, adjusts the drawable area for the graph.
          *
@@ -334,16 +339,6 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * @returns the min and max of the array.
          */
         private _getMinMax;
-        /**
-         * Converts a data point to a point on the canvas (a pixel coordinate).
-         *
-         * @param point The datapoint
-         * @param timeMinMax The minimum and maximum in the time axis.
-         * @param valueMinMax The minimum and maximum in the value axis for the dataset.
-         * @param drawableArea The allowed drawable area.
-         * @returns
-         */
-        private _getPixelPointFromDataPoint;
         /**
          * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
          *
@@ -4988,7 +4983,7 @@ declare module INSPECTOR {
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
-        datasets: BABYLON.IPerfDataset[];
+        datasets: BABYLON.IPerfDatasets;
     }
 }
 declare module INSPECTOR {
@@ -5003,7 +4998,7 @@ declare module INSPECTOR {
         private _sizeOfWindow;
         private _ticks;
         private _panPosition;
-        private _positions;
+        private _position;
         private _datasetBounds;
         private _globalTimeMinMax;
         private _hoverPosition;
@@ -5013,7 +5008,8 @@ declare module INSPECTOR {
         private _textCache;
         private readonly _tooltipLineHeight;
         private readonly _defaultLineHeight;
-        readonly datasets: BABYLON.IPerfDataset[];
+        readonly datasets: BABYLON.IPerfDatasets;
+        metadata: Map<string, BABYLON.IPerfMetadata>;
         /**
          * Creates an instance of CanvasGraphService.
          *
@@ -5031,14 +5027,18 @@ declare module INSPECTOR {
          */
         private _draw;
         /**
-         * Returns the index of the closest time for a dataset.
+         * Returns the index of the closest time for the datasets.
          * Uses a modified binary search to get value.
          *
-         * @param dataset the dataset we want to search in.
          * @param targetTime the time we want to get close to.
          * @returns index of the item with the closest time to the targetTime
          */
         private _getClosestPointToTimestamp;
+        /**
+         * This is a convenience method to get the number of collected slices.
+         * @returns the total number of collected slices.
+         */
+        private _getNumberOfSlices;
         /**
          * Draws the time axis, adjusts the drawable area for the graph.
          *
@@ -5069,16 +5069,6 @@ declare module INSPECTOR {
          * @returns the min and max of the array.
          */
         private _getMinMax;
-        /**
-         * Converts a data point to a point on the canvas (a pixel coordinate).
-         *
-         * @param point The datapoint
-         * @param timeMinMax The minimum and maximum in the time axis.
-         * @param valueMinMax The minimum and maximum in the value axis for the dataset.
-         * @param drawableArea The allowed drawable area.
-         * @returns
-         */
-        private _getPixelPointFromDataPoint;
         /**
          * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
          *
