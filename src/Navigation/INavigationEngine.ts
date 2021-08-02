@@ -377,7 +377,7 @@ export interface IAgentParameters {
      * Observers will be notified when agent gets inside the virtual circle with this Radius around destination point.
      * Default is agent radius
      */
-     reachRadius: number;
+     reachRadius?: number;
 }
 
 /**

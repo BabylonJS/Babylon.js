@@ -484,7 +484,7 @@ export class RecastJSCrowd implements ICrowd {
      */
     public reachRadii: number[] = new Array<number>();
     /**
-     * true when a destination is active for an agent and notifier hasn't been noticed of reach
+     * true when a destination is active for an agent and notifier hasn't been notified of reach
      */
     private agentDestinationArmed: boolean[] = new Array<boolean>();
     /**
@@ -502,7 +502,7 @@ export class RecastJSCrowd implements ICrowd {
     private _onBeforeAnimationsObserver: Nullable<Observer<Scene>> = null;
 
     /**
-     *  Fires each time an agent is in reach radius of his destination
+     *  Fires each time an agent is in reach radius of its destination
      */
     public onReachTargetObservable = new Observable<{agentIndex: number, destination: Vector3}>();
 
@@ -642,7 +642,7 @@ export class RecastJSCrowd implements ICrowd {
         this.recastCrowd.agentGoto(index, new this.bjsRECASTPlugin.bjsRECAST.Vec3(destination.x, destination.y, destination.z));
 
         // arm observer
-        var item = this.agents.indexOf(index);
+        const item = this.agents.indexOf(index);
         if (item > -1) {
             this.agentDestinationArmed[item] = true;
             this.agentDestination[item].set(destination.x, destination.y, destination.z);
