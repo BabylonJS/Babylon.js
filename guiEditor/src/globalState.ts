@@ -37,6 +37,7 @@ export class GlobalState {
     backgroundColor: Color4;
     blockKeyboardEvents = false;
     controlCamera: boolean;
+    selectionLock: boolean;
     workbench: WorkbenchComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 

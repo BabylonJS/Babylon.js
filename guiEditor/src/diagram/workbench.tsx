@@ -43,7 +43,7 @@ export enum ConstraintDirection {
 }
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    public artBoardBackground: Nullable<Rectangle>;
+    public artBoardBackground: Rectangle;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean;
     private _mouseStartPointX: Nullable<number> = null;
@@ -482,6 +482,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.artBoardBackground.width = "100%"
         this.artBoardBackground.height = "100%";
         this.artBoardBackground.background = "white";
+        this.artBoardBackground.thickness = 0;
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
         this.addControls(this._scene, camera);

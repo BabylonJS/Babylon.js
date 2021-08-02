@@ -10148,7 +10148,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ":root {\n  --selectionGrey: #666666; }\n\n.ge-commands {\n  grid-row: 1;\n  grid-column: 1;\n  user-select: none; }\n  .ge-commands .commands-left {\n    float: left;\n    display: flex; }\n  .ge-commands .commands-right {\n    float: right;\n    display: flex; }\n  .ge-commands.background-ts .command-button img, .ge-commands.background-ts .command-dropdown img {\n    filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%); }\n  .ge-commands.background-ts .command-button .command-dropdown-active, .ge-commands.background-ts .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-ts .command-button:hover img, .ge-commands.background-ts .command-button.activated img, .ge-commands.background-ts .command-dropdown:hover img, .ge-commands.background-ts .command-dropdown.activated img {\n    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important; }\n  .ge-commands.background-js .command-button img, .ge-commands.background-js .command-dropdown img {\n    filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg); }\n  .ge-commands.background-js .command-button .command-dropdown-active, .ge-commands.background-js .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-js .command-button:hover img, .ge-commands.background-js .command-button.activated img, .ge-commands.background-js .command-dropdown:hover img, .ge-commands.background-js .command-dropdown.activated img {\n    filter: invert(17%) !important; }\n  .ge-commands .command-button {\n    cursor: pointer;\n    width: 55px; }\n    .ge-commands .command-button .command-label {\n      display: none; }\n    .ge-commands .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-button:hover {\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button .active {\n      transform-origin: center;\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button img.active {\n      background-color: var(--selectionGrey); }\n  .ge-commands .command-dropdown-root {\n    position: relative;\n    text-transform: uppercase;\n    z-index: 1; }\n  .ge-commands .command-dropdown {\n    cursor: pointer;\n    width: 55px;\n    height: 55px; }\n    .ge-commands .command-dropdown .command-dropdown-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-dropdown .command-dropdown-active {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      font-size: 14px; }\n    .ge-commands .command-dropdown:hover, .ge-commands .command-dropdown.activated {\n      background-color: #666666;\n      color: black; }\n    .ge-commands .command-dropdown:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  .ge-commands .command-dropdown-blocker {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    transform: scale(1);\n    z-index: 1; }\n  .ge-commands.background-js .command-dropdown-content {\n    background: #333333; }\n    .ge-commands.background-js .command-dropdown-content .command-dropdown-label:hover {\n      background: #333333; }\n  .ge-commands.background-ts .command-dropdown-content .command-dropdown-label:hover {\n    background: #333333; }\n  .ge-commands .command-dropdown-content {\n    background: #333333;\n    position: absolute;\n    top: 55px;\n    width: 200px;\n    transform: scale(1);\n    z-index: 100; }\n    .ge-commands .command-dropdown-content.toRight {\n      width: 120px;\n      right: 0; }\n    .ge-commands .command-dropdown-content .command-dropdown-label {\n      color: white;\n      padding: 5px;\n      padding-left: 10px;\n      height: 35px;\n      font-size: 18px;\n      display: grid;\n      align-items: center;\n      cursor: pointer;\n      user-select: none;\n      grid-template-columns: 1fr 20px;\n      grid-template-rows: 100%;\n      position: relative; }\n      .ge-commands .command-dropdown-content .command-dropdown-label.active {\n        font-weight: bold;\n        font-size: 20px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label:hover {\n        background: var(--selectionGrey); }\n        .ge-commands .command-dropdown-content .command-dropdown-label:hover .sub-items {\n          display: block; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-text {\n        font-family: Arial;\n        font-size: 12px;\n        grid-column: 1;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-check {\n        grid-column: 2;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-arrow {\n        grid-column: 2;\n        grid-row: 1;\n        font-size: 20px;\n        font-weight: bold;\n        padding-bottom: 10px;\n        padding-left: 4px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .sub-items {\n        position: absolute;\n        left: 200px;\n        top: 0;\n        width: 150px;\n        display: none; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js {\n          background: #bfabff; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts {\n          background: #333333; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item {\n          color: white;\n          padding: 5px;\n          padding-left: 10px;\n          height: 35px;\n          display: grid; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item.checked {\n            background: white;\n            color: black; }\n", ""]);
+exports.push([module.i, ":root {\n  --selectionGrey: #666666; }\n\n.ge-commands {\n  grid-row: 1;\n  grid-column: 1;\n  user-select: none; }\n  .ge-commands .commands-left {\n    float: left;\n    display: flex; }\n  .ge-commands .commands-right {\n    float: right;\n    display: flex; }\n  .ge-commands.background-ts .command-button img, .ge-commands.background-ts .command-dropdown img {\n    filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%); }\n  .ge-commands.background-ts .command-button .command-dropdown-active, .ge-commands.background-ts .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-ts .command-button:hover img, .ge-commands.background-ts .command-button.activated img, .ge-commands.background-ts .command-dropdown:hover img, .ge-commands.background-ts .command-dropdown.activated img {\n    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important; }\n  .ge-commands.background-js .command-button img, .ge-commands.background-js .command-dropdown img {\n    filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg); }\n  .ge-commands.background-js .command-button .command-dropdown-active, .ge-commands.background-js .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-js .command-button:hover img, .ge-commands.background-js .command-button.activated img, .ge-commands.background-js .command-dropdown:hover img, .ge-commands.background-js .command-dropdown.activated img {\n    filter: invert(17%) !important; }\n  .ge-commands .command-button {\n    cursor: pointer;\n    width: 55px; }\n    .ge-commands .command-button .command-label {\n      display: none; }\n    .ge-commands .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-button:hover {\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button .active {\n      transform-origin: center;\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button img.active {\n      background-color: var(--selectionGrey); }\n  .ge-commands .command-dropdown-root {\n    position: relative;\n    text-transform: uppercase;\n    z-index: 1; }\n  .ge-commands .command-dropdown {\n    cursor: pointer;\n    width: 55px;\n    height: 55px; }\n    .ge-commands .command-dropdown .command-dropdown-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-dropdown .command-dropdown-active {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      font-size: 14px; }\n    .ge-commands .command-dropdown:hover, .ge-commands .command-dropdown.activated {\n      background-color: #666666;\n      color: black; }\n    .ge-commands .command-dropdown:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  .ge-commands .command-dropdown-blocker {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    transform: scale(1);\n    z-index: 1; }\n  .ge-commands.background-js .command-dropdown-content {\n    background: #333333; }\n    .ge-commands.background-js .command-dropdown-content .command-dropdown-label:hover {\n      background: #333333; }\n  .ge-commands.background-ts .command-dropdown-content .command-dropdown-label:hover {\n    background: #333333; }\n  .ge-commands .command-dropdown-content {\n    background: #333333;\n    position: absolute;\n    top: 55px;\n    width: 55px;\n    transform: scale(1);\n    z-index: 100; }\n    .ge-commands .command-dropdown-content.toRight {\n      width: 120px; }\n    .ge-commands .command-dropdown-content .command-dropdown-label {\n      color: white;\n      padding: 5px;\n      padding-left: 7px;\n      height: 35px;\n      font-size: 18px;\n      display: grid;\n      align-items: center;\n      cursor: pointer;\n      user-select: none;\n      grid-template-columns: 1fr 20px;\n      grid-template-rows: 100%;\n      position: relative; }\n      .ge-commands .command-dropdown-content .command-dropdown-label.active {\n        font-weight: bold;\n        font-size: 20px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label:hover {\n        background: var(--selectionGrey); }\n        .ge-commands .command-dropdown-content .command-dropdown-label:hover .sub-items {\n          display: block; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-text {\n        font-family: Arial;\n        font-size: 12px;\n        grid-column: 1;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-check {\n        grid-column: 2;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-arrow {\n        grid-column: 2;\n        grid-row: 1;\n        font-size: 20px;\n        font-weight: bold;\n        padding-bottom: 10px;\n        padding-left: 4px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .sub-items {\n        position: absolute;\n        left: 200px;\n        top: 0;\n        width: 150px;\n        display: none; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js {\n          background: #bfabff; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts {\n          background: #333333; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item {\n          color: white;\n          padding: 5px;\n          padding-left: 10px;\n          height: 35px;\n          display: grid; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item.checked {\n            background: white;\n            color: black; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -42266,6 +42266,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/buttonIcon.svg":
+/*!*************************************!*\
+  !*** ../public/imgs/buttonIcon.svg ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.08,12.7H13.92a2,2,0,0,0-2,2V22a2,2,0,0,0,2,2h3.65V22.84H13.92a.81.81,0,0,1-.81-.81v-7.3a.81.81,0,0,1,.81-.81H26.08a.81.81,0,0,1,.81.81V22a.81.81,0,0,1-.81.81h-.45l.28.27a1.45,1.45,0,0,1,.56.91,2,2,0,0,0,1.64-2v-7.3A2,2,0,0,0,26.08,12.7Z' style='fill:%23fff'/%3E%3Cpath d='M19.42,17.75a.62.62,0,0,0-.67-.14.63.63,0,0,0-.37.57v8.51a.6.6,0,0,0,.43.58.61.61,0,0,0,.68-.24l2-2.91,3.45.73a.61.61,0,0,0,.56-1Zm1.92,5.1a.6.6,0,0,0-.62.25l-1.13,1.63V19.64l3.6,3.6Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/canvasSizeIcon.svg":
 /*!*****************************************!*\
   !*** ../public/imgs/canvasSizeIcon.svg ***!
@@ -42274,6 +42285,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M15,12a3,3,0,0,0-3,3v3.5a.5.5,0,0,0,1,0V15a2,2,0,0,1,2-2h3.5a.5.5,0,0,0,0-1Z' style='fill:%23333'/%3E%3Cpath d='M21.5,12a.5.5,0,0,0,0,1H25a2,2,0,0,1,2,2v3.5a.5.5,0,0,0,1,0V15a3,3,0,0,0-3-3Z' style='fill:%23333'/%3E%3Cpath d='M12.5,21a.5.5,0,0,1,.5.5V25a2,2,0,0,0,2,2h3.5a.5.5,0,0,1,0,1H15a3,3,0,0,1-3-3V21.5A.5.5,0,0,1,12.5,21Z' style='fill:%23333'/%3E%3Cpath d='M28,21.5a.5.5,0,0,0-1,0V25a2,2,0,0,1-2,2H21.5a.5.5,0,0,0,0,1H25a3,3,0,0,0,3-3Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/checkboxIcon.svg":
+/*!***************************************!*\
+  !*** ../public/imgs/checkboxIcon.svg ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M25,12.76A2.21,2.21,0,0,1,27.24,15V25A2.21,2.21,0,0,1,25,27.24H15A2.21,2.21,0,0,1,12.76,25V15A2.21,2.21,0,0,1,15,12.76ZM25,14H15a1,1,0,0,0-1,1V25a1,1,0,0,0,1,1H25a1,1,0,0,0,1-1V15A1,1,0,0,0,25,14Zm-6.64,8,5.21-5.2a.59.59,0,0,1,.85,0,.61.61,0,0,1,.06.78l-.06.07-5.63,5.63a.6.6,0,0,1-.79.06L18,23.24l-2.41-2.41a.61.61,0,0,1,0-.85.6.6,0,0,1,.79-.06l.06.06,2,2,5.21-5.2Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42288,6 +42310,39 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/colorPickerIcon.svg":
+/*!******************************************!*\
+  !*** ../public/imgs/colorPickerIcon.svg ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M13.31,15.34a8.34,8.34,0,0,1,14.25,8.34c-1.35,3.7-4.91,5.16-7.47,3.3a3.82,3.82,0,0,1-1.52-3l-.08-.81,0-.32c-.1-.76-.26-1.1-.58-1.28a1.27,1.27,0,0,0-1.3,0l-.28.12-.15.06a3.12,3.12,0,0,1-2.07.34l-.17,0-.13,0C11.49,21.29,11.15,18.2,13.31,15.34Zm.8,5.48.1,0,.11,0a1.81,1.81,0,0,0,1.17-.19l.49-.21a2.47,2.47,0,0,1,3.68,2.21l0,.37.05.44,0,.34a2.75,2.75,0,0,0,1,2.16c1.86,1.35,4.52.25,5.61-2.73a7.11,7.11,0,0,0-12.12-7.19C12.59,18.33,12.8,20.38,14.11,20.82Zm9.16-1.63a1,1,0,1,1,2-.53,1,1,0,0,1-2,.53ZM23.68,22a1,1,0,1,1,1.24.72A1,1,0,0,1,23.68,22Zm-2-5.3a1,1,0,0,1,.72-1.25,1,1,0,1,1,.53,2A1,1,0,0,1,21.66,16.74Zm0,7.35a1,1,0,0,1,.72-1.25,1,1,0,0,1,.53,2A1,1,0,0,1,21.63,24.09ZM18.78,16a1,1,0,1,1,1.25.72A1,1,0,0,1,18.78,16Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/displaygridIcon.svg":
+/*!******************************************!*\
+  !*** ../public/imgs/displaygridIcon.svg ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M17.39,20.8a1.81,1.81,0,0,1,1.81,1.81v2.81a1.81,1.81,0,0,1-1.81,1.81H14.58a1.81,1.81,0,0,1-1.81-1.81V22.61a1.81,1.81,0,0,1,1.81-1.81Zm8,0a1.81,1.81,0,0,1,1.81,1.81v2.81a1.81,1.81,0,0,1-1.81,1.81H22.61a1.81,1.81,0,0,1-1.81-1.81V22.61a1.81,1.81,0,0,1,1.81-1.81Zm-8,1.21H14.58a.6.6,0,0,0-.6.6v2.81a.6.6,0,0,0,.6.6h2.81a.6.6,0,0,0,.6-.6V22.61A.6.6,0,0,0,17.39,22Zm8,0H22.61a.6.6,0,0,0-.6.6v2.81a.6.6,0,0,0,.6.6h2.81a.6.6,0,0,0,.6-.6V22.61A.6.6,0,0,0,25.42,22Zm-8-9.24a1.81,1.81,0,0,1,1.81,1.81v2.81a1.81,1.81,0,0,1-1.81,1.81H14.58a1.81,1.81,0,0,1-1.81-1.81V14.58a1.81,1.81,0,0,1,1.81-1.81Zm8,0a1.81,1.81,0,0,1,1.81,1.81v2.81a1.81,1.81,0,0,1-1.81,1.81H22.61a1.81,1.81,0,0,1-1.81-1.81V14.58a1.81,1.81,0,0,1,1.81-1.81Zm-8,1.21H14.58a.6.6,0,0,0-.6.6v2.81a.6.6,0,0,0,.6.6h2.81a.6.6,0,0,0,.6-.6V14.58A.6.6,0,0,0,17.39,14Zm8,0H22.61a.6.6,0,0,0-.6.6v2.81a.6.6,0,0,0,.6.6h2.81a.6.6,0,0,0,.6-.6V14.58A.6.6,0,0,0,25.42,14Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/ellipseIcon.svg":
+/*!**************************************!*\
+  !*** ../public/imgs/ellipseIcon.svg ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M20,13.17A6.83,6.83,0,1,0,26.83,20,6.83,6.83,0,0,0,20,13.17ZM12,20a8,8,0,1,1,8,8A8,8,0,0,1,12,20Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/expandedIcon.svg":
 /*!***************************************!*\
   !*** ../public/imgs/expandedIcon.svg ***!
@@ -42296,6 +42351,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='30' viewBox='0 0 15 30'%3E%3Cpath d='M7.1,16.63,5.1,14a.5.5,0,0,1,.4-.8h4a.5.5,0,0,1,.4.8l-2,2.66A.5.5,0,0,1,7.1,16.63Z' style='fill:%238e8e8e'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/gridIcon.svg":
+/*!***********************************!*\
+  !*** ../public/imgs/gridIcon.svg ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M12.74,15.36a2.62,2.62,0,0,1,2.62-2.62h9.28a2.62,2.62,0,0,1,2.62,2.62v9.28a2.62,2.62,0,0,1-2.62,2.62H15.36a2.62,2.62,0,0,1-2.62-2.62ZM15.36,14A1.41,1.41,0,0,0,14,15.36v1.82h3.23V14ZM14,18.39v3.22h3.23V18.39Zm4.44,0v3.22h3.22V18.39Zm4.43,0v3.22h3.23V18.39Zm-1.21,4.43H18.39v3.23h3.22Zm1.21,3.23h1.82a1.41,1.41,0,0,0,1.41-1.41V22.82H22.82Zm0-8.87h3.23V15.36A1.41,1.41,0,0,0,24.64,14H22.82ZM21.61,14H18.39v3.23h3.22ZM14,22.82v1.82a1.41,1.41,0,0,0,1.41,1.41h1.82V22.82Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42332,6 +42398,50 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/imageIcon.svg":
+/*!************************************!*\
+  !*** ../public/imgs/imageIcon.svg ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M27.6,19.73a1.85,1.85,0,0,0-2.63,0l-4.81,4.81a2.22,2.22,0,0,0-.58,1l-.37,1.49a.89.89,0,0,0,1.08,1.07l1.49-.37a2.23,2.23,0,0,0,1-.58l4.81-4.81A1.85,1.85,0,0,0,27.6,19.73Z' style='fill:%23fff'/%3E%3Cpath d='M18.82,20.52a.62.62,0,0,1,.79.06l1.7,1.66.86-.86-1.7-1.67-.11-.1a1.83,1.83,0,0,0-2.46.1l-4.74,4.64a1.28,1.28,0,0,1-.09-.48V14.5a1.43,1.43,0,0,1,1.43-1.43h9.37A1.43,1.43,0,0,1,25.3,14.5v4.06a2.56,2.56,0,0,1,1.22-.18V14.5a2.65,2.65,0,0,0-2.65-2.65H14.5a2.65,2.65,0,0,0-2.65,2.65v9.37a2.65,2.65,0,0,0,2.65,2.65h4l.29-1.16,0-.06H14.5a1.51,1.51,0,0,1-.48-.08l4.74-4.64Z' style='fill:%23fff'/%3E%3Cpath d='M20,16.54a1.84,1.84,0,1,0,1.83-1.84A1.83,1.83,0,0,0,20,16.54Zm2.45,0a.62.62,0,0,1-1.23,0,.62.62,0,1,1,1.23,0Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/inputFieldIcon.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/inputFieldIcon.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M22.43,17.17H20.61v5.66H21a.61.61,0,0,1,.61.61.61.61,0,0,1-.61.61H19a.61.61,0,0,1-.61-.61.61.61,0,0,1,.61-.61h.4V17.17H17.57v.6a.61.61,0,1,1-1.21,0V16.56A.6.6,0,0,1,17,16H23a.6.6,0,0,1,.6.61v1.21a.61.61,0,1,1-1.21,0Z' style='fill:%23fff'/%3E%3Cpath d='M14.94,13.52a3,3,0,0,0-3,3v6.88a3,3,0,0,0,3,3H25.06a3,3,0,0,0,3-3V16.56a3,3,0,0,0-3-3Zm-1.82,3a1.81,1.81,0,0,1,1.82-1.82H25.06a1.81,1.81,0,0,1,1.82,1.82v6.88a1.81,1.81,0,0,1-1.82,1.82H14.94a1.81,1.81,0,0,1-1.82-1.82Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/keyboardIcon.svg":
+/*!***************************************!*\
+  !*** ../public/imgs/keyboardIcon.svg ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.31,14.3a1.83,1.83,0,0,1,1.83,1.83v7.74a1.83,1.83,0,0,1-1.83,1.83H13.69a1.83,1.83,0,0,1-1.83-1.83V16.13a1.83,1.83,0,0,1,1.83-1.83Zm0,1.22H13.69a.61.61,0,0,0-.61.61v7.74a.61.61,0,0,0,.61.61H26.31a.61.61,0,0,0,.61-.61V16.13A.61.61,0,0,0,26.31,15.52ZM15.73,22h8.55a.61.61,0,0,1,.08,1.22H15.73A.61.61,0,0,1,15.65,22Zm7.93-2.85a.82.82,0,0,1,.82.82.82.82,0,1,1-.82-.82Zm-4.88,0a.82.82,0,0,1,.82.82.82.82,0,1,1-.82-.82Zm-2.44,0a.82.82,0,0,1,.82.82.82.82,0,0,1-.82.81.81.81,0,0,1-.81-.81A.82.82,0,0,1,16.34,19.18Zm4.89,0A.82.82,0,0,1,22,20a.81.81,0,0,1-.81.81.82.82,0,0,1-.82-.81A.82.82,0,0,1,21.23,19.18Zm-6.11-2.44a.82.82,0,0,1,.81.82.81.81,0,0,1-.81.81.82.82,0,0,1-.82-.81A.82.82,0,0,1,15.12,16.74Zm2.44,0a.82.82,0,0,1,.81.82.81.81,0,0,1-.81.81.82.82,0,0,1-.82-.81A.82.82,0,0,1,17.56,16.74Zm2.44,0a.82.82,0,0,1,.81.82.81.81,0,0,1-.81.81.82.82,0,0,1-.82-.81A.82.82,0,0,1,20,16.74Zm2.44,0a.82.82,0,0,1,.81.82.81.81,0,1,1-1.62,0A.82.82,0,0,1,22.44,16.74Zm2.44,0a.82.82,0,0,1,.82.82.82.82,0,0,1-.82.81.81.81,0,0,1-.81-.81A.82.82,0,0,1,24.88,16.74Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/lineIcon.svg":
+/*!***********************************!*\
+  !*** ../public/imgs/lineIcon.svg ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M10.3,20a.61.61,0,0,1,.61-.61H29.09a.61.61,0,1,1,0,1.22H10.91A.61.61,0,0,1,10.3,20Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/makeChildOfContainerIcon.svg":
 /*!***************************************************!*\
   !*** ../public/imgs/makeChildOfContainerIcon.svg ***!
@@ -42354,6 +42464,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/passwordFieldIcon.svg":
+/*!********************************************!*\
+  !*** ../public/imgs/passwordFieldIcon.svg ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M19.82,18.55a.62.62,0,0,0-.86,0,.62.62,0,0,0,0,.87l.58.58-.58.58a.62.62,0,0,0,0,.87.62.62,0,0,0,.86,0l.59-.59.58.59a.61.61,0,0,0,.86,0,.6.6,0,0,0,0-.86L21.27,20l.58-.58a.62.62,0,0,0,0-.87.62.62,0,0,0-.86,0l-.58.59Z' style='fill:%23fff'/%3E%3Cpath d='M14.49,18.55a.62.62,0,0,1,.86,0l.59.59.58-.59a.62.62,0,0,1,.87.87L16.8,20l.59.58a.62.62,0,0,1-.87.87l-.58-.59-.59.59a.62.62,0,0,1-.86,0,.63.63,0,0,1,0-.87l.59-.58-.59-.58A.63.63,0,0,1,14.49,18.55Z' style='fill:%23fff'/%3E%3Cpath d='M23.65,21.22a.6.6,0,0,0-.6.61.61.61,0,0,0,.6.61h1.43a.61.61,0,0,0,.6-.61.6.6,0,0,0-.6-.61Z' style='fill:%23fff'/%3E%3Cpath d='M14.52,14.32A2.64,2.64,0,0,0,11.88,17v6.1a2.64,2.64,0,0,0,2.64,2.63h11a2.64,2.64,0,0,0,2.64-2.63V17a2.64,2.64,0,0,0-2.64-2.63ZM13.1,17a1.42,1.42,0,0,1,1.42-1.42h11A1.42,1.42,0,0,1,26.9,17v6.1a1.42,1.42,0,0,1-1.42,1.42h-11a1.42,1.42,0,0,1-1.42-1.42Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/pointerIcon.svg":
 /*!**************************************!*\
   !*** ../public/imgs/pointerIcon.svg ***!
@@ -42362,6 +42483,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.09,20.65,15.37,12.31a1.19,1.19,0,0,0-1.92.94v13.5a1.19,1.19,0,0,0,2.12.74l3.33-4.21a1.3,1.3,0,0,1,1-.5h5.44A1.19,1.19,0,0,0,26.09,20.65Zm-6.17.94a2.51,2.51,0,0,0-2,.95l-3.32,4.21V13.25l10.72,8.34Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/rectangleIcon.svg":
+/*!****************************************!*\
+  !*** ../public/imgs/rectangleIcon.svg ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M10.3,16.36a3.64,3.64,0,0,1,3.64-3.64H26.06a3.64,3.64,0,0,1,3.64,3.64v7.28a3.64,3.64,0,0,1-3.64,3.64H13.94a3.64,3.64,0,0,1-3.64-3.64Zm3.64-2.42a2.42,2.42,0,0,0-2.43,2.42v7.28a2.42,2.42,0,0,0,2.43,2.42H26.06a2.42,2.42,0,0,0,2.43-2.42V16.36a2.42,2.42,0,0,0-2.43-2.42Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42384,6 +42516,28 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M10.3,18a3.64,3.64,0,0,1,3.64-3.63H26.06A3.64,3.64,0,0,1,29.7,18V22a3.64,3.64,0,0,1-3.64,3.63H13.94A3.64,3.64,0,0,1,10.3,22Zm3.64-2.42A2.43,2.43,0,0,0,11.51,18V22a2.43,2.43,0,0,0,2.43,2.42H26.06A2.43,2.43,0,0,0,28.49,22V18a2.43,2.43,0,0,0-2.43-2.42Z' style='fill:%23fff'/%3E%3Ccircle cx='15.99' cy='20' r='2.64' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/stackPanelIcon.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/stackPanelIcon.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M12.74,15.35a2.62,2.62,0,0,1,2.62-2.63h9.28a2.62,2.62,0,0,1,2.62,2.63v9.28a2.62,2.62,0,0,1-2.62,2.62H15.36a2.62,2.62,0,0,1-2.62-2.62ZM26.05,21.6V18.37H14V21.6Zm0-4.44V15.35a1.41,1.41,0,0,0-1.41-1.41H15.36A1.41,1.41,0,0,0,14,15.35v1.81ZM24.64,26a1.41,1.41,0,0,0,1.41-1.41V22.81H14v1.82A1.41,1.41,0,0,0,15.36,26Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/textBoxIcon.svg":
+/*!**************************************!*\
+  !*** ../public/imgs/textBoxIcon.svg ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M14.33,14.12a.61.61,0,0,1,.6-.61H25.07a.61.61,0,0,1,.6.61v1.62a.61.61,0,1,1-1.21,0v-1H20.61V25.27h1.21a.61.61,0,0,1,.61.61.61.61,0,0,1-.61.61H18.18a.61.61,0,0,1-.61-.61.61.61,0,0,1,.61-.61h1.21V14.73H15.54v1a.61.61,0,1,1-1.21,0Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42448,6 +42602,21 @@ var zoomIcon = __webpack_require__(/*! ../../public/imgs/zoomIcon.svg */ "../pub
 var guidesIcon = __webpack_require__(/*! ../../public/imgs/guidesIcon.svg */ "../public/imgs/guidesIcon.svg");
 var controlsIcon = __webpack_require__(/*! ../../public/imgs/sliderIcon.svg */ "../public/imgs/sliderIcon.svg");
 var logoIcon = __webpack_require__(/*! ../../public/imgs/babylonLogo.svg */ "../public/imgs/babylonLogo.svg");
+var rectangleIcon = __webpack_require__(/*! ../../public/imgs/rectangleIcon.svg */ "../public/imgs/rectangleIcon.svg");
+var ellipseIcon = __webpack_require__(/*! ../../public/imgs/ellipseIcon.svg */ "../public/imgs/ellipseIcon.svg");
+var gridIcon = __webpack_require__(/*! ../../public/imgs/gridIcon.svg */ "../public/imgs/gridIcon.svg");
+var stackPanelIcon = __webpack_require__(/*! ../../public/imgs/stackPanelIcon.svg */ "../public/imgs/stackPanelIcon.svg");
+var textBoxIcon = __webpack_require__(/*! ../../public/imgs/textBoxIcon.svg */ "../public/imgs/textBoxIcon.svg");
+var sliderIcon = __webpack_require__(/*! ../../public/imgs/sliderIcon.svg */ "../public/imgs/sliderIcon.svg");
+var buttonIcon = __webpack_require__(/*! ../../public/imgs/buttonIcon.svg */ "../public/imgs/buttonIcon.svg");
+var passwordFieldIcon = __webpack_require__(/*! ../../public/imgs/passwordFieldIcon.svg */ "../public/imgs/passwordFieldIcon.svg");
+var checkboxIcon = __webpack_require__(/*! ../../public/imgs/checkboxIcon.svg */ "../public/imgs/checkboxIcon.svg");
+var imageIcon = __webpack_require__(/*! ../../public/imgs/imageIcon.svg */ "../public/imgs/imageIcon.svg");
+var keyboardIcon = __webpack_require__(/*! ../../public/imgs/keyboardIcon.svg */ "../public/imgs/keyboardIcon.svg");
+var inputFieldIcon = __webpack_require__(/*! ../../public/imgs/inputFieldIcon.svg */ "../public/imgs/inputFieldIcon.svg");
+var lineIcon = __webpack_require__(/*! ../../public/imgs/lineIcon.svg */ "../public/imgs/lineIcon.svg");
+var displaygridIcon = __webpack_require__(/*! ../../public/imgs/displaygridIcon.svg */ "../public/imgs/displaygridIcon.svg");
+var colorPickerIcon = __webpack_require__(/*! ../../public/imgs/colorPickerIcon.svg */ "../public/imgs/colorPickerIcon.svg");
 __webpack_require__(/*! ../scss/commandBar.scss */ "./scss/commandBar.scss");
 var CommandBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommandBarComponent, _super);
@@ -42496,7 +42665,7 @@ var CommandBarComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-commands" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-left" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: logoIcon, color: "white", className: "active" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: hamburgerIcon, tooltip: "Options", items: [
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, toRight: true, icon: hamburgerIcon, tooltip: "Options", items: [
                         {
                             label: "Save",
                             onClick: function () { _this.props.globalState.onSaveObservable.notifyObservers(); }
@@ -42520,66 +42689,81 @@ var CommandBarComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, icon: controlsIcon, tooltip: "Create", items: [
                         {
                             label: "Image",
-                            icon: "zoomIcon",
+                            icon: imageIcon,
                             onClick: function () { _this.onCreate("Image"); }
                         }, {
                             label: "TextButton",
+                            icon: buttonIcon,
                             onClick: function () { _this.onCreate("TextButton"); }
                         },
                         {
                             label: "Slider",
+                            icon: sliderIcon,
                             onClick: function () { _this.onCreate("Slider"); }
                         },
                         {
                             label: "ColorPicker",
+                            icon: colorPickerIcon,
                             onClick: function () { _this.onCreate("ColorPicker"); }
                         },
                         {
                             label: "ImageButton",
+                            icon: buttonIcon,
                             onClick: function () { _this.onCreate("ImageButton"); }
                         },
                         {
                             label: "Checkbox",
+                            icon: checkboxIcon,
                             onClick: function () { _this.onCreate("Checkbox"); }
                         },
                         {
                             label: "VirtualKeyboard",
+                            icon: keyboardIcon,
                             onClick: function () { _this.onCreate("VirtualKeyboard"); }
                         },
                         {
                             label: "DisplayGrid",
+                            icon: displaygridIcon,
                             onClick: function () { _this.onCreate("DisplayGrid"); }
                         },
                         {
                             label: "Grid",
+                            icon: gridIcon,
                             onClick: function () { _this.onCreate("Grid"); }
                         },
                         {
                             label: "StackPanel",
+                            icon: stackPanelIcon,
                             onClick: function () { _this.onCreate("StackPanel"); }
                         },
                         {
                             label: "Ellipse",
+                            icon: ellipseIcon,
                             onClick: function () { _this.onCreate("Ellipse"); }
                         },
                         {
                             label: "Line",
+                            icon: lineIcon,
                             onClick: function () { _this.onCreate("Line"); }
                         },
                         {
                             label: "Rectangle",
+                            icon: rectangleIcon,
                             onClick: function () { _this.onCreate("Rectangle"); }
                         },
                         {
                             label: "Text",
+                            icon: textBoxIcon,
                             onClick: function () { _this.onCreate("Text"); }
                         },
                         {
                             label: "InputText",
+                            icon: inputFieldIcon,
                             onClick: function () { _this.onCreate("InputText"); }
                         },
                         {
                             label: "InputPassword",
+                            icon: passwordFieldIcon,
                             onClick: function () { _this.onCreate("InputPassword"); }
                         }
                     ] })),
@@ -42691,7 +42875,11 @@ var CommandDropdownComponent = /** @class */ (function (_super) {
                                         _this.setState({ isExpanded: false, activeState: m.label });
                                     }
                                 }, title: m.label },
-                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-label-text" }, (m.isActive ? "> " : "") + m.label),
+                                !m.icon &&
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-label-text" }, (m.isActive ? "> " : "") + m.label),
+                                m.icon &&
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-icon" },
+                                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon })),
                                 m.onCheck &&
                                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkBox", className: "command-dropdown-label-check", onChange: function (evt) {
                                             _this.forceUpdate();
@@ -43856,12 +44044,64 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_8__["LockObject"]();
         _this._sizeOption = 2;
+        _this.saveLocally = function () {
+            try {
+                var json = JSON.stringify(_this.props.globalState.guiTexture.serializeContent());
+                _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_7__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, json, "guiTexture.json");
+            }
+            catch (error) {
+                alert("Unable to save your GUI");
+            }
+        };
+        _this.saveToSnippetServer = function () {
+            var adt = _this.props.globalState.guiTexture;
+            var content = JSON.stringify(adt.serializeContent());
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4) {
+                    if (xmlHttp.status == 200) {
+                        var snippet = JSON.parse(xmlHttp.responseText);
+                        var oldId = adt.snippetId;
+                        adt.snippetId = snippet.id;
+                        if (snippet.version && snippet.version != "0") {
+                            adt.snippetId += "#" + snippet.version;
+                        }
+                        _this.forceUpdate();
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(adt.snippetId);
+                        }
+                        var windowAsAny = window;
+                        if (windowAsAny.Playground && oldId) {
+                            windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                                regex: new RegExp(oldId, "g"),
+                                replace: "parseFromSnippetAsync(\"" + adt.snippetId,
+                            });
+                        }
+                        alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+                    }
+                    else {
+                        alert("Unable to save your GUI");
+                    }
+                }
+            };
+            xmlHttp.open("POST", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+            xmlHttp.setRequestHeader("Content-Type", "application/json");
+            var dataToSend = {
+                payload: JSON.stringify({
+                    gui: content,
+                }),
+                name: "",
+                description: "",
+                tags: "",
+            };
+            xmlHttp.send(JSON.stringify(dataToSend));
+        };
         _this.state = { currentNode: null, textureSize: new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1200, 1200) };
         _this.props.globalState.onSaveObservable.add(function () {
-            _this.save();
+            _this.save(_this.saveLocally);
         });
         _this.props.globalState.onSnippetSaveObservable.add(function () {
-            _this.saveToSnippetServer();
+            _this.save(_this.saveToSnippetServer);
         });
         _this.props.globalState.onSnippetLoadObservable.add(function () {
             _this.loadFromSnippet();
@@ -43903,58 +44143,17 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }, undefined, true);
     };
-    PropertyTabComponent.prototype.save = function () {
-        try {
-            var json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
-            _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_7__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
+    PropertyTabComponent.prototype.save = function (saveCallback) {
+        //removing the art board background from the adt.
+        this.props.globalState.guiTexture.removeControl(this.props.globalState.workbench.artBoardBackground);
+        saveCallback();
+        //readding the art board at the front of the list so it will be the first thing rendered.
+        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
+            this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
         }
-        catch (error) {
-            alert("Unable to save your GUI");
+        else {
+            this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
         }
-    };
-    PropertyTabComponent.prototype.saveToSnippetServer = function () {
-        var _this = this;
-        var adt = this.props.globalState.guiTexture;
-        var content = JSON.stringify(adt.serializeContent());
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4) {
-                if (xmlHttp.status == 200) {
-                    var snippet = JSON.parse(xmlHttp.responseText);
-                    var oldId = adt.snippetId;
-                    adt.snippetId = snippet.id;
-                    if (snippet.version && snippet.version != "0") {
-                        adt.snippetId += "#" + snippet.version;
-                    }
-                    _this.forceUpdate();
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(adt.snippetId);
-                    }
-                    var windowAsAny = window;
-                    if (windowAsAny.Playground && oldId) {
-                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: "parseFromSnippetAsync(\"" + adt.snippetId,
-                        });
-                    }
-                    alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
-                }
-                else {
-                    alert("Unable to save your GUI");
-                }
-            }
-        };
-        xmlHttp.open("POST", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-        var dataToSend = {
-            payload: JSON.stringify({
-                gui: content,
-            }),
-            name: "",
-            description: "",
-            tags: "",
-        };
-        xmlHttp.send(JSON.stringify(dataToSend));
     };
     PropertyTabComponent.prototype.loadFromSnippet = function () {
         var snippedId = window.prompt("Please enter the snippet ID to use");
@@ -44049,18 +44248,22 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
+                        var _a;
                         if (_this.state.currentNode) {
                             var serializationObject = {};
                             _this.state.currentNode.serialize(serializationObject);
                             var newControl_1 = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["Control"].Parse(serializationObject, _this.props.globalState.guiTexture);
-                            if (newControl_1) { //insert the new control into the adt
+                            if (newControl_1) { //insert the new control into the adt or parent container
                                 _this.props.globalState.workbench.appendBlock(newControl_1);
-                                var index = 1;
-                                while (_this.props.globalState.workbench.nodes.filter(//search if there are any copies
+                                _this.props.globalState.guiTexture.removeControl(newControl_1);
+                                (_a = _this.state.currentNode.parent) === null || _a === void 0 ? void 0 : _a.addControl(newControl_1);
+                                var index_1 = 1;
+                                while (_this.props.globalState.guiTexture.getDescendants(false).filter(//search if there are any copies
                                 function (//search if there are any copies
-                                control) { return control.name === newControl_1.name; }).length > 1) {
-                                    newControl_1.name = _this.state.currentNode.name + " Copy " + index++;
+                                control) { return control.name === newControl_1.name + " Copy " + index_1; }).length) {
+                                    index_1++;
                                 }
+                                newControl_1.name = newControl_1.name + " Copy " + index_1;
                                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl_1);
                             }
                         }
@@ -44111,13 +44314,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "FILE", value: " ", color: "grey" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.load(file); }, accept: ".json" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save", onClick: function () {
-                        _this.save();
+                        _this.props.globalState.onSaveObservable.notifyObservers();
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "SNIPPET", value: " ", color: "grey" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () {
-                        _this.saveToSnippetServer();
+                        _this.props.globalState.onSnippetSaveObservable.notifyObservers();
                     } }))));
     };
     return PropertyTabComponent;
@@ -44455,6 +44658,11 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 scene: scene,
             });
         });
+        _this._onPropertyChangedObservable = _this.props.globalState.onPropertyChangedObservable.add(function (event) {
+            if (event.property === "name") {
+                _this.forceUpdate();
+            }
+        });
         return _this;
     }
     SceneExplorerComponent.prototype.processMutation = function () {
@@ -44487,6 +44695,9 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         if (this._onParrentingChangeObserver) {
             this.props.globalState.onParentingChangeObservable.remove(this._onParrentingChangeObserver);
+        }
+        if (this._onPropertyChangedObservable) {
+            this.props.globalState.onPropertyChangedObservable.remove(this._onPropertyChangedObservable);
         }
     };
     SceneExplorerComponent.prototype.filterContent = function (filter) {
@@ -44588,6 +44799,13 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 _this.props.globalState.onParentingChangeObservable.notifyObservers(null);
             }, onDragOver: function (event) {
                 event.preventDefault();
+            }, onClick: function (event) {
+                if (!_this.props.globalState.selectionLock) {
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                }
+                else {
+                    _this.props.globalState.selectionLock = false;
+                }
             } }, guiElements && guiElements.length > 0 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter })));
     };
     SceneExplorerComponent.prototype.onClose = function () {
@@ -44875,6 +45093,7 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         this._wasSelected = true;
         var entity = this.props.entity;
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
+        this.props.globalState.selectionLock = true;
     };
     TreeItemSelectableComponent.prototype.renderChildren = function () {
         var _this = this;
@@ -45435,6 +45654,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.artBoardBackground.width = "100%";
         this.artBoardBackground.height = "100%";
         this.artBoardBackground.background = "white";
+        this.artBoardBackground.thickness = 0;
         this.globalState.guiTexture.addControl(this.artBoardBackground);
         this.addControls(this._scene, camera);
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
