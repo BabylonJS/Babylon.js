@@ -49678,6 +49678,7 @@ declare module BABYLON {
         private _xrNavigator;
         private _baseLayer;
         private _renderTargetTextures;
+        private _sessionMode;
         /**
          * The base reference space from which the session started. good if you want to reset your
          * reference space
@@ -76924,6 +76925,11 @@ declare module BABYLON {
          * How aggressive the agent manager should be at avoiding collisions with this agent. [Limit: >= 0]
          */
         separationWeight: number;
+        /**
+         * Observers will be notified when agent gets inside the virtual circle with this Radius around destination point.
+         * Default is agent radius
+         */
+        reachRadius?: number;
     }
     /**
      * Configures the navigation mesh creation
@@ -77205,6 +77211,18 @@ declare module BABYLON {
          */
         agents: number[];
         /**
+         * agents reach radius
+         */
+        reachRadii: number[];
+        /**
+         * true when a destination is active for an agent and notifier hasn't been notified of reach
+         */
+        private agentDestinationArmed;
+        /**
+         * agent current target
+         */
+        private agentDestination;
+        /**
          * Link to the scene is kept to unregister the crowd from the scene
          */
         private _scene;
@@ -77212,6 +77230,13 @@ declare module BABYLON {
          * Observer for crowd updates
          */
         private _onBeforeAnimationsObserver;
+        /**
+         *  Fires each time an agent is in reach radius of its destination
+         */
+        onReachTargetObservable: Observable<{
+            agentIndex: number;
+            destination: Vector3;
+        }>;
         /**
          * Constructor
          * @param plugin recastJS plugin
@@ -84730,6 +84755,10 @@ declare module BABYLON {
          * Function which gets the data for the strategy.
          */
         getData: () => number;
+        /**
+         * Function which does any necessary cleanup. Called when performanceViewerCollector.dispose() is called.
+         */
+        dispose: () => void;
     }
     /**
      * Initializer callback for a strategy
@@ -84936,6 +84965,10 @@ declare module BABYLON {
          * Stops the collection of data.
          */
         stop(): void;
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
