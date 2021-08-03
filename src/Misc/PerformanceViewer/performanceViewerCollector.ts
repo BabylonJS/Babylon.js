@@ -80,6 +80,7 @@ export class PerformanceViewerCollector {
             const strategy = strategyCallback(this._scene);
 
             if (this._strategies.has(strategy.id)) {
+                strategy.dispose();
                 continue;
             }
 
@@ -228,5 +229,19 @@ export class PerformanceViewerCollector {
      */
     public stop() {
         this._scene.onBeforeRenderObservable.removeCallback(this._collectDataAtFrame);
+    }
+
+    /**
+     * Disposes of the object
+     */
+    public dispose() {
+        this._scene.onBeforeRenderObservable.removeCallback(this._collectDataAtFrame);
+        this._datasetMeta.clear();
+        this._strategies.forEach((strategy) => {
+            strategy.dispose();
+        });
+        this.datasetObservable.clear();
+        this.metadataObservable.clear();
+        (<any>this.datasets) = null;
     }
 }

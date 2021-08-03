@@ -1190,6 +1190,7 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
             .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS', (this.CustomParts.Fragment_Custom_MetallicRoughness ? this.CustomParts.Fragment_Custom_MetallicRoughness : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE', (this.CustomParts.Fragment_Custom_MicroSurface ? this.CustomParts.Fragment_Custom_MicroSurface : ""))
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION', (this.CustomParts.Fragment_Before_FinalColorComposition ? this.CustomParts.Fragment_Before_FinalColorComposition : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
         if (this.CustomParts.Fragment_Before_Fog) {
             babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "PixelShader"] = babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "PixelShader"].replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', this.CustomParts.Fragment_Before_Fog);
@@ -1258,6 +1259,10 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
     };
     PBRCustomMaterial.prototype.Fragment_Before_Fog = function (shaderPart) {
         this.CustomParts.Fragment_Before_Fog = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Before_FinalColorComposition = function (shaderPart) {
+        this.CustomParts.Fragment_Before_FinalColorComposition = shaderPart;
         return this;
     };
     PBRCustomMaterial.prototype.Fragment_Before_FragColor = function (shaderPart) {

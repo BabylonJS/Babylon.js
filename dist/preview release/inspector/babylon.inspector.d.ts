@@ -104,6 +104,8 @@ declare module INSPECTOR {
         ignoreValue?: boolean;
         additionalClass?: string;
         icon?: string;
+        iconLabel?: string;
+        tooltip?: string;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
         constructor(props: ITextLineComponentProps);
@@ -144,6 +146,7 @@ declare module INSPECTOR {
         fractionDigits?: number;
         units?: string;
         icon?: string;
+        iconLabel?: string;
     }
     export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
         constructor(props: IValueLineComponentProps);
@@ -155,6 +158,7 @@ declare module INSPECTOR {
         label: string;
         value: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class BooleanLineComponent extends React.Component<IBooleanLineComponentProps> {
         constructor(props: IBooleanLineComponentProps);
@@ -166,6 +170,7 @@ declare module INSPECTOR {
         label: string;
         onClick: () => void;
         icon?: string;
+        iconLabel?: string;
     }
     export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
         constructor(props: IButtonLineComponentProps);
@@ -225,7 +230,7 @@ declare module INSPECTOR {
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
-        datasets: BABYLON.IPerfDataset[];
+        datasets: BABYLON.IPerfDatasets;
     }
 }
 declare module INSPECTOR {
@@ -240,7 +245,7 @@ declare module INSPECTOR {
         private _sizeOfWindow;
         private _ticks;
         private _panPosition;
-        private _positions;
+        private _position;
         private _datasetBounds;
         private _globalTimeMinMax;
         private _hoverPosition;
@@ -250,7 +255,8 @@ declare module INSPECTOR {
         private _textCache;
         private readonly _tooltipLineHeight;
         private readonly _defaultLineHeight;
-        readonly datasets: BABYLON.IPerfDataset[];
+        readonly datasets: BABYLON.IPerfDatasets;
+        metadata: Map<string, BABYLON.IPerfMetadata>;
         /**
          * Creates an instance of CanvasGraphService.
          *
@@ -268,14 +274,18 @@ declare module INSPECTOR {
          */
         private _draw;
         /**
-         * Returns the index of the closest time for a dataset.
+         * Returns the index of the closest time for the datasets.
          * Uses a modified binary search to get value.
          *
-         * @param dataset the dataset we want to search in.
          * @param targetTime the time we want to get close to.
          * @returns index of the item with the closest time to the targetTime
          */
         private _getClosestPointToTimestamp;
+        /**
+         * This is a convenience method to get the number of collected slices.
+         * @returns the total number of collected slices.
+         */
+        private _getNumberOfSlices;
         /**
          * Draws the time axis, adjusts the drawable area for the graph.
          *
@@ -306,16 +316,6 @@ declare module INSPECTOR {
          * @returns the min and max of the array.
          */
         private _getMinMax;
-        /**
-         * Converts a data point to a point on the canvas (a pixel coordinate).
-         *
-         * @param point The datapoint
-         * @param timeMinMax The minimum and maximum in the time axis.
-         * @param valueMinMax The minimum and maximum in the value axis for the dataset.
-         * @param drawableArea The allowed drawable area.
-         * @returns
-         */
-        private _getPixelPointFromDataPoint;
         /**
          * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
          *
@@ -531,6 +531,7 @@ declare module INSPECTOR {
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        iconLabel?: string;
         shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
@@ -591,6 +592,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         disabled?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -660,6 +662,7 @@ declare module INSPECTOR {
         smallUI?: boolean;
         onEnter?: (newValue: number) => void;
         icon?: string;
+        iconLabel?: string;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -694,6 +697,7 @@ declare module INSPECTOR {
         decimalCount?: number;
         margin?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -727,6 +731,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         allowNullValue?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number;
@@ -751,6 +756,7 @@ declare module INSPECTOR {
         onChange: (value: number) => void;
         precision?: number;
         icon?: string;
+        iconLabel?: string;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -776,6 +782,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         isLinear?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -808,6 +815,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         noSlider?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -877,6 +885,7 @@ declare module INSPECTOR {
         onChange?: (value: string) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         icon?: string;
+        iconLabel?: string;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -1596,6 +1605,7 @@ declare module INSPECTOR {
         useEuler?: boolean;
         min?: number;
         icon?: string;
+        iconLabel?: string;
     }
     export class HexLineComponent extends React.Component<IHexLineComponentProps, {
         value: string;
@@ -1646,6 +1656,7 @@ declare module INSPECTOR {
         onClick: (file: File) => void;
         accept: string;
         icon?: string;
+        iconLabel?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private static _IDGenerator;
@@ -2161,6 +2172,7 @@ declare module INSPECTOR {
         onChange?: (newvalue: BABYLON.Vector2) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         icon?: string;
+        iconLabel?: string;
     }
     export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
         isExpanded: boolean;
@@ -2205,6 +2217,7 @@ declare module INSPECTOR {
         isSelected: () => boolean;
         onSelect: () => void;
         icon?: string;
+        iconLabel?: string;
     }
     export class RadioButtonLineComponent extends React.Component<IRadioButtonLineComponentProps, {
         isSelected: boolean;
@@ -2846,6 +2859,7 @@ declare module INSPECTOR {
         useEuler?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         icon?: string;
+        iconLabel?: string;
     }
     export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
         isExpanded: boolean;
@@ -2918,6 +2932,7 @@ declare module INSPECTOR {
         onChange?: () => void;
         isLinear?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
         isExpanded: boolean;
@@ -3356,6 +3371,7 @@ declare module INSPECTOR {
         onClick: (event: any) => void;
         accept: string;
         icon?: string;
+        iconLabel?: string;
     }
     export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
         private static _IDGenerator;

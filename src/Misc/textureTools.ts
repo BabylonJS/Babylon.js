@@ -211,5 +211,4 @@ export class TextureTools {
 
         return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
     }
-
 }

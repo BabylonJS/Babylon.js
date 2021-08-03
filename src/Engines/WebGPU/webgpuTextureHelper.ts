@@ -1150,7 +1150,7 @@ export class WebGPUTextureHelper {
         }
     }
 
-    public readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, buffer: Nullable<ArrayBufferView> = null): Promise<ArrayBufferView> {
+    public readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, buffer: Nullable<ArrayBufferView> = null, noDataConversion = false): Promise<ArrayBufferView> {
         const blockInformation = WebGPUTextureHelper._GetBlockInformationFromFormat(format);
 
         const bytesPerRow = Math.ceil(width / blockInformation.width) * blockInformation.length;
@@ -1183,10 +1183,7 @@ export class WebGPUTextureHelper {
 
         this._device.queue.submit([commandEncoder!.finish()]);
 
-        const type = WebGPUTextureHelper._GetTextureTypeFromFormat(format);
-        const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
-
-        return this._bufferManager.readDataFromBuffer(gpuBuffer, size, width, height, bytesPerRow, bytesPerRowAligned, floatFormat, 0, buffer);
+        return this._bufferManager.readDataFromBuffer(gpuBuffer, size, width, height, bytesPerRow, bytesPerRowAligned, WebGPUTextureHelper._GetTextureTypeFromFormat(format), 0, buffer, true, noDataConversion);
     }
 
     //------------------------------------------------------------------------------

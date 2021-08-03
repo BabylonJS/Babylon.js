@@ -160,19 +160,18 @@
         background: #333333;
         position: absolute;
         top: 55px;
-        width: 200px;
+        width: 55px;
         transform: scale(1);
         z-index: 100;
 
         &.toRight {
             width: 120px;
-            right:0;
-        }        
-
+        } 
+        
         .command-dropdown-label {
             color:white;
             padding: 5px;
-            padding-left: 10px;
+            padding-left: 7px;
             height: 35px;
             font-size: 18px;
             display: grid;
