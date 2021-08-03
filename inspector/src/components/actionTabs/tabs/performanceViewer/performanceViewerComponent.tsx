@@ -22,11 +22,14 @@ interface IPerformanceViewerComponentProps {
 const initialWindowSize = { width: 1024, height: 512 };
 
 // Note this should be false when committed until the feature is fully working.
-const isEnabled = true;
+const isEnabled = false;
+
+const defaultStrategies = [PerfCollectionStrategy.GpuFrameTimeStrategy(), PerfCollectionStrategy.FpsStrategy()];
 
 export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps> = (props: IPerformanceViewerComponentProps) => {
     const { scene } = props;
     const [isOpen, setIsOpen] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
     const [ performanceCollector, setPerformanceCollector ] = useState<PerformanceViewerCollector | undefined>();
     const [layoutObservable] = useState(new Observable<IPerfLayoutSize>());
     const popupRef = useRef<PopupComponent | null>(null);
@@ -37,16 +40,31 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
             window.close();
         }
         setIsOpen(false);
+        setIsLoaded(false);
     }
 
     const onPerformanceButtonClick = () => {
+        setIsLoaded(false);
         setIsOpen(true);
     }
 
     const onLoadClick = (file: File) => {
         Tools.ReadFile(file, (data: string) => {
-            console.log(data.split('\n').map((str) => str.replace('\r', '').split(',').filter((s) =>  s.length > 0)).filter((line) => line.length > 0));
+            // reopen window and load data!
+            setIsOpen(false);
+            setIsLoaded(true);
+            setIsOpen(true);
+            const isValid = performanceCollector?.loadFromFileData(data);
+            if (!isValid) {
+                // if our data isnt valid we close the window.
+                setIsOpen(false);
+                setIsLoaded(false);
+            }
         });
+    }
+
+    const onExportClick = () => {
+        performanceCollector?.exportDataToCsv();
     }
 
     const onResize = () => {
@@ -60,12 +78,16 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     }
 
     useEffect(() => {
-        const perfCollector = new PerformanceViewerCollector(scene, [PerfCollectionStrategy.GpuFrameTimeStrategy(), PerfCollectionStrategy.FpsStrategy()]);
+        const perfCollector = new PerformanceViewerCollector(scene, defaultStrategies);
         setPerformanceCollector(perfCollector);
     }, []);
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && !isLoaded) {
+            if (performanceCollector?.hasLoadedData) {
+                performanceCollector?.clear();
+                performanceCollector?.addCollectionStrategies(...defaultStrategies);
+            }
             performanceCollector?.start();
         }
 
@@ -81,6 +103,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                 <>
                     <ButtonLineComponent label="Open Perf Viewer" onClick={onPerformanceButtonClick} />
                     <FileButtonLineComponent accept="csv" label="Load CSV" onClick={onLoadClick} />
+                    <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
                 </>
             }
             {
