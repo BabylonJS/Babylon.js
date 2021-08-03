@@ -25,10 +25,10 @@ export class ReplayRecorder {
     }
 
     public export() {
-       let content = JSON.stringify(this._sceneRecorder.getDelta());
+        let content = JSON.stringify(this._sceneRecorder.getDelta());
 
-       Tools.Download(new Blob([content]), "diff.json");
+        Tools.Download(new Blob([content]), "diff.json");
 
-       this._isRecording = false;
+        this._isRecording = false;
     }
 }

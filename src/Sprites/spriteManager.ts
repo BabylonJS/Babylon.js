@@ -293,7 +293,7 @@ export class SpriteManager implements ISpriteManager {
                 let celldata: any;
                 if (typeof spriteJSON === "string") {
                     celldata = JSON.parse(spriteJSON);
-                }else {
+                } else {
                     celldata = spriteJSON;
                 }
 
@@ -340,7 +340,7 @@ export class SpriteManager implements ISpriteManager {
             };
             xmlhttp.onload = () => {
                 try {
-                    let celldata  = JSON.parse(xmlhttp.response);
+                    let celldata = JSON.parse(xmlhttp.response);
                     let spritemap = (<string[]>(Reflect).ownKeys(celldata.frames));
                     this._spriteMap = spritemap;
                     this._packedAndReady = true;
@@ -384,7 +384,7 @@ export class SpriteManager implements ISpriteManager {
         let rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
 
         let u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
-        let v = (sprite._yOffset * textureSize.height +  rotatedV * sprite._ySize) | 0;
+        let v = (sprite._yOffset * textureSize.height + rotatedV * sprite._ySize) | 0;
 
         let alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
 
@@ -561,7 +561,7 @@ export class SpriteManager implements ISpriteManager {
      */
     public render(): void {
         // Check
-        if (this._fromPacked  && (!this._packedAndReady || !this._spriteMap || !this._cellData)) {
+        if (this._fromPacked && (!this._packedAndReady || !this._spriteMap || !this._cellData)) {
             return;
         }
 

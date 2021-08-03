@@ -9,10 +9,10 @@ import { AssetContainer } from "babylonjs/assetContainer";
  * Class reading and parsing the MTL file bundled with the obj file.
  */
 export class MTLFileLoader {
-   /**
-    * Invert Y-Axis of referenced textures on load
-    */
-   public static INVERT_TEXTURE_Y = true;
+    /**
+     * Invert Y-Axis of referenced textures on load
+     */
+    public static INVERT_TEXTURE_Y = true;
 
     /**
      * All material loaded from the mtl will be set here

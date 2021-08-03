@@ -58,8 +58,9 @@ export class DepthRenderer {
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
+     * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...)
      */
-    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNonLinearDepth = false) {
+    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNonLinearDepth = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE) {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
         this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -76,10 +77,19 @@ export class DepthRenderer {
         this._camera = camera;
         var engine = scene.getEngine();
 
+        if (samplingMode !== Texture.NEAREST_SAMPLINGMODE) {
+            if (type === Constants.TEXTURETYPE_FLOAT && !engine._caps.textureFloatLinearFiltering) {
+                samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+            if (type === Constants.TEXTURETYPE_HALF_FLOAT && !engine._caps.textureHalfFloatLinearFiltering) {
+                samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+        }
+
         // Render target
         var format = (this.isPacked || !engine._features.supportExtendedTextureFormats) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
         this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
-            false, undefined, undefined, undefined, undefined,
+            false, samplingMode, undefined, undefined, undefined,
             format);
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -148,7 +158,7 @@ export class DepthRenderer {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
-                let minZ : number, maxZ: number;
+                let minZ: number, maxZ: number;
 
                 if (cameraIsOrtho) {
                     minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
@@ -219,6 +229,10 @@ export class DepthRenderer {
             if (this.forceDepthWriteTransparentMeshes) {
                 for (index = 0; index < transparentSubMeshes.length; index++) {
                     renderSubMesh(transparentSubMeshes.data[index]);
+                }
+            } else {
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    transparentSubMeshes.data[index].getEffectiveMesh()._internalAbstractMeshDataInfo._isActiveIntermediate = false;
                 }
             }
         };

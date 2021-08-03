@@ -333,10 +333,10 @@ export class Trajectory {
         let segmentDir = new Vector3();
         for (let idx = 2; idx < this._points.length; ++idx) {
             if (Trajectory._transformSegmentDirToRef(
-                    this._points[idx - 2],
-                    this._points[idx - 1],
-                    this._points[idx],
-                    segmentDir)) {
+                this._points[idx - 2],
+                this._points[idx - 1],
+                this._points[idx],
+                segmentDir)) {
 
                 tokenization.push(Trajectory._tokenizeSegment(segmentDir, tokens));
             }
@@ -586,7 +586,7 @@ class TrajectoryDescriptor {
      */
     public static CreateFromTokenizationPyramid(
         pyramid: number[][],
-        levenshteinAlphabet: Levenshtein.Alphabet<number>) : TrajectoryDescriptor {
+        levenshteinAlphabet: Levenshtein.Alphabet<number>): TrajectoryDescriptor {
 
         let descriptor = new TrajectoryDescriptor();
         descriptor._sequences = pyramid.map((tokens) => new Levenshtein.Sequence<number>(tokens, levenshteinAlphabet));

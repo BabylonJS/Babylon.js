@@ -11,7 +11,7 @@ interface DecoderExports {
 }
 
 let init: Promise<void>;
-let instance: {exports: DecoderExports};
+let instance: { exports: DecoderExports };
 let heap: Uint8Array;
 
 const IMPORT_OBJECT = {
@@ -35,7 +35,7 @@ export class ZSTDDecoder {
 
     public static WasmModuleURL = "https://preview.babylonjs.com/zstddec.wasm";
 
-    init (): Promise<void> {
+    init(): Promise<void> {
 
         if (init) { return init; }
 
@@ -67,7 +67,7 @@ export class ZSTDDecoder {
 
     }
 
-    _init (result: WebAssembly.WebAssemblyInstantiatedSource): void {
+    _init(result: WebAssembly.WebAssemblyInstantiatedSource): void {
 
         instance = result.instance as unknown as { exports: DecoderExports };
 
@@ -75,9 +75,9 @@ export class ZSTDDecoder {
 
     }
 
-    decode (array: Uint8Array, uncompressedSize = 0): Uint8Array {
+    decode(array: Uint8Array, uncompressedSize = 0): Uint8Array {
 
-        if (! instance) { throw new Error(`ZSTDDecoder: Await .init() before decoding.`); }
+        if (!instance) { throw new Error(`ZSTDDecoder: Await .init() before decoding.`); }
 
         // Write compressed data into WASM memory.
         const compressedSize = array.byteLength;

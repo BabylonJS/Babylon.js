@@ -17,6 +17,7 @@ export interface IColor4LineComponentProps {
     onChange?: () => void;
     isLinear?: boolean;
     icon? : string;
+    iconLabel? : string;
 }
 
 export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean, color: Color4 }> {
@@ -166,7 +167,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
         return (
             <div className="color3Line">
                 <div className="firstLine">
-                    {this.props.icon && <img src={this.props.icon} className="icon"/>}
+                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>

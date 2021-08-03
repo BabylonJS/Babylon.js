@@ -1,6 +1,9 @@
 import { DataBuffer } from '../../Buffers/dataBuffer';
 import { WebGPUDataBuffer } from '../../Meshes/WebGPU/webgpuDataBuffer';
+import { TextureTools } from "../../Misc/textureTools";
 import { Nullable } from '../../types';
+import { Constants } from "../constants";
+import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
 import * as WebGPUConstants from './webgpuConstants';
 
 /** @hidden */
@@ -75,71 +78,68 @@ export class WebGPUBufferManager {
         this._device.queue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
     }
 
-    private _FromHalfFloat(value: number): number {
-        const s = (value & 0x8000) >> 15;
-        const e = (value & 0x7C00) >> 10;
-        const f = value & 0x03FF;
-
-        if (e === 0) {
-            return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
-        } else if (e == 0x1F) {
-            return f ? NaN : ((s ? -1 : 1) * Infinity);
-        }
-
-        return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
-    }
-
     private _GetHalfFloatAsFloatRGBAArrayBuffer(dataLength: number, arrayBuffer: ArrayBuffer, destArray?: Float32Array): Float32Array {
         if (!destArray) {
             destArray = new Float32Array(dataLength);
         }
         const srcData = new Uint16Array(arrayBuffer);
         while (dataLength--) {
-            destArray[dataLength] = this._FromHalfFloat(srcData[dataLength]);
+            destArray[dataLength] = TextureTools.FromHalfFloat(srcData[dataLength]);
         }
 
         return destArray;
     }
 
-    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, floatFormat = 0, offset = 0, buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true): Promise<ArrayBufferView> {
+    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, type = Constants.TEXTURETYPE_UNSIGNED_BYTE, offset = 0,
+        buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true, noDataConversion = false): Promise<ArrayBufferView>
+    {
+        const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
         return new Promise((resolve, reject) => {
             gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(() => {
                 const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
                 let data: Nullable<ArrayBufferView> | Uint8Array | Float32Array = buffer;
-                if (data === null) {
-                    switch (floatFormat) {
-                        case 0: // byte format
-                            data = new Uint8Array(size);
-                            (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
-                            break;
-                        case 1: // half float
-                            // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer);
-                            break;
-                        case 2: // float
-                            data = new Float32Array(size / 4);
-                            (data as Float32Array).set(new Float32Array(copyArrayBuffer));
-                            break;
+                if (noDataConversion) {
+                    if (data === null) {
+                        data = allocateAndCopyTypedBuffer(type, size, true, copyArrayBuffer);
+                    } else {
+                        data = allocateAndCopyTypedBuffer(type, data.buffer, undefined, copyArrayBuffer);
                     }
                 } else {
-                    switch (floatFormat) {
-                        case 0: // byte format
-                            data = new Uint8Array(data.buffer);
-                            (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
-                            break;
-                        case 1: // half float
-                            // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer, buffer as Float32Array);
-                            break;
-                        case 2: // float
-                            data = new Float32Array(data.buffer);
-                            (data as Float32Array).set(new Float32Array(copyArrayBuffer));
-                            break;
+                    if (data === null) {
+                        switch (floatFormat) {
+                            case 0: // byte format
+                                data = new Uint8Array(size);
+                                (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                                break;
+                            case 1: // half float
+                                // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
+                                data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer);
+                                break;
+                            case 2: // float
+                                data = new Float32Array(size / 4);
+                                (data as Float32Array).set(new Float32Array(copyArrayBuffer));
+                                break;
+                        }
+                    } else {
+                        switch (floatFormat) {
+                            case 0: // byte format
+                                data = new Uint8Array(data.buffer);
+                                (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                                break;
+                            case 1: // half float
+                                // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
+                                data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer, buffer as Float32Array);
+                                break;
+                            case 2: // float
+                                data = new Float32Array(data.buffer);
+                                (data as Float32Array).set(new Float32Array(copyArrayBuffer));
+                                break;
+                        }
                     }
                 }
                 if (bytesPerRow !== bytesPerRowAligned) {
                     // TODO WEBGPU use computer shaders (or render pass) to build the final buffer data?
-                    if (floatFormat === 1) {
+                    if (floatFormat === 1 && !noDataConversion) {
                         // half float have been converted to float above
                         bytesPerRow *= 2;
                         bytesPerRowAligned *= 2;
@@ -152,7 +152,7 @@ export class WebGPUBufferManager {
                             data2[offset++] = data2[offset2++];
                         }
                     }
-                    if (floatFormat !== 0) {
+                    if (floatFormat !== 0 && !noDataConversion) {
                         data = new Float32Array(data2.buffer, 0, offset / 4);
                     } else {
                         data = new Uint8Array(data2.buffer, 0, offset);
@@ -189,5 +189,5 @@ export class WebGPUBufferManager {
         }
 
         this._deferredReleaseBuffers.length = 0;
-   }
+    }
 }

@@ -1,9 +1,9 @@
-import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
+import { IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer"
 
 /**
  * Defines a structure to hold max and min.
  */
- export interface IPerfMinMax {
+export interface IPerfMinMax {
     min: number;
     max: number;
 }
@@ -24,6 +24,27 @@ export interface IPerfIndexBounds {
     end: number;
 }
 
+export interface IPerfLayoutSize {
+    width: number;
+    height: number;
+}
+
+/**
+ * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
+ */
+export interface IPerfTooltip {
+    text: string;
+    color: string
+}
+
+/**
+ * Defines the structure of a cache object used to store the result of measureText().
+ */
+export interface IPerfTextMeasureCache {
+    text: string;
+    width: number;
+}
+
 /**
  * Defines a structure defining the available space in a drawable area.
  */
@@ -38,5 +59,5 @@ export interface IGraphDrawableArea {
  * Defines what settings our canvas graphing service accepts
  */
 export interface ICanvasGraphServiceSettings {
-    datasets: IPerfDataset[];
+    datasets: IPerfDatasets;
 }

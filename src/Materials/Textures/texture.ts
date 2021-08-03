@@ -273,9 +273,6 @@ export class Texture extends BaseTexture {
     private _cachedCoordinatesMode: number = -1;
 
     /** @hidden */
-    protected _initialSamplingMode = Texture.BILINEAR_SAMPLINGMODE;
-
-    /** @hidden */
     public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
     private _deleteBuffer: boolean = false;
     protected _format: Nullable<number> = null;
@@ -310,17 +307,6 @@ export class Texture extends BaseTexture {
     }
 
     /**
-     * Get the current sampling mode associated with the texture.
-     */
-    public get samplingMode(): number {
-        if (!this._texture) {
-            return this._initialSamplingMode;
-        }
-
-        return this._texture.samplingMode;
-    }
-
-    /**
      * Gets a boolean indicating if the texture needs to be inverted on the y axis during loading
      */
     public get invertY(): boolean {
@@ -346,9 +332,8 @@ export class Texture extends BaseTexture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
-            deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number)
-    {
+        onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number) {
         super(sceneOrEngine);
 
         this.name = url || "";
@@ -439,7 +424,14 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                try {
+                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                } catch (e) {
+                    if (onError) {
+                        onError(e.message, e);
+                    }
+                    throw e;
+                }
                 if (deleteBuffer) {
                     this._buffer = null;
                 }
@@ -541,13 +533,13 @@ export class Texture extends BaseTexture {
      */
     public checkTransformsAreIdentical(texture: Nullable<Texture>): boolean {
         return texture !== null &&
-                this.uOffset === texture.uOffset &&
-                this.vOffset === texture.vOffset &&
-                this.uScale === texture.uScale &&
-                this.vScale === texture.vScale &&
-                this.uAng === texture.uAng &&
-                this.vAng === texture.vAng &&
-                this.wAng === texture.wAng;
+            this.uOffset === texture.uOffset &&
+            this.vOffset === texture.vOffset &&
+            this.uScale === texture.uScale &&
+            this.vScale === texture.vScale &&
+            this.uAng === texture.uAng &&
+            this.vAng === texture.vAng &&
+            this.wAng === texture.wAng;
     }
 
     /**

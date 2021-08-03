@@ -2,12 +2,13 @@ import { Nullable } from "babylonjs/types";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 
 import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Tools } from "../../tools";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
 import { GlobalState } from "../../globalState";
+
+const expandedIcon: string = require("../../../public/imgs/expandedIcon.svg");
+const collapsedIcon: string = require("../../../public/imgs/collapsedIcon.svg");
 
 export interface ITreeItemSelectableComponentProps {
     entity: any,
@@ -21,6 +22,7 @@ export interface ITreeItemSelectableComponentProps {
 
 export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, { isExpanded: boolean, isSelected: boolean }> {
     private _wasSelected = false;
+    dragOverHover: boolean;
 
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
@@ -37,14 +39,14 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             return true;
         }
 
+        //if the next entity is going to be selected then we want to highlight it so update
+        if (nextProps.entity === nextProps.selectedEntity) {
+            nextState.isSelected = true;
+            return true;
+        } else {
+            nextState.isSelected = false;
+        }
         if (nextProps.selectedEntity) {
-            if (nextProps.entity === nextProps.selectedEntity) {
-                nextState.isSelected = true;
-                return true;
-            } else {
-                nextState.isSelected = false;
-            }
-
             if (Tools.LookForItem(nextProps.entity, nextProps.selectedEntity)) {
                 nextState.isExpanded = true;
                 return true;
@@ -82,6 +84,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         this._wasSelected = true;
         const entity = this.props.entity;
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
+        this.props.globalState.selectionLock = true;
     }
 
     renderChildren() {
@@ -110,7 +113,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         };
         const entity = this.props.entity;
 
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
+        const chevron = this.state.isExpanded ? <img src={expandedIcon} className="icon" /> : <img src={collapsedIcon} className="icon" />
         const children = entity.getClassName() === "MultiMaterial" ? [] : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         const hasChildren = children.length > 0;
 
@@ -151,6 +154,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     }
                     <TreeItemSpecializedComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} />
                 </div>
+                <div className="spacer"></div>
                 {
                     this.renderChildren()
                 }

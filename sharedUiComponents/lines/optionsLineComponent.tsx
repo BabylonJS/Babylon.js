@@ -21,6 +21,7 @@ export interface IOptionsLineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     allowNullValue?: boolean;
     icon?: string;
+    iconLabel? : string;
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number }> {
@@ -91,7 +92,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     render() {
         return (
             <div className="listLine">
-                {this.props.icon && <img src={this.props.icon} color="black" className="icon"/>}
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  color="black" className="icon"/>}
                 <div className="label" title={this.props.label}>{this.props.label}</div>
                 <div className="options">
                     <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>

@@ -41,7 +41,7 @@ export class Helper {
     public static disposeViewer() {
         if (Helper.viewer != null) {
             Helper.viewer.dispose();
-            (Helper.viewer as any)= null;
+            (Helper.viewer as any) = null;
         }
     }
 
@@ -80,7 +80,7 @@ export class Helper {
     }
 
     public static MockScreenCapture(viewer: AbstractViewer, data) {
-        BABYLON.Tools.CreateScreenshot = function(viewer, camera, size, successCallback) {
+        BABYLON.Tools.CreateScreenshot = function (viewer, camera, size, successCallback) {
             successCallback && successCallback(data || '');
         };
     }
@@ -150,9 +150,9 @@ export class NullEngineAbstractViewer extends AbstractViewer {
             this.engine.setHardwareScalingLevel(scale);
         }
 
-        this.engine.createCubeTexture = <any>function() { };
+        this.engine.createCubeTexture = <any>function () { };
 
-        this.engine.dispose = function() { };
+        this.engine.dispose = function () { };
 
         return Promise.resolve(this.engine);
     }
@@ -189,9 +189,9 @@ export class NullEngineDefaultViewer extends DefaultViewer {
             this.engine.setHardwareScalingLevel(scale);
         }
 
-        this.engine.createCubeTexture = <any>function() { };
+        this.engine.createCubeTexture = <any>function () { };
 
-        this.engine.dispose = function() { };
+        this.engine.dispose = function () { };
 
         return Promise.resolve(this.engine);
     }
