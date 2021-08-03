@@ -527,7 +527,7 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
 
                     this.isReady = true;
-                 } else if (this.isCube) {
+                } else if (this.isCube) {
                     let depthTextureOptions = {
                         bilinearFiltering: this.samplingMode !== Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                         comparisonFunction: this._comparisonFunction,
@@ -539,8 +539,8 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
 
                     this.isReady = true;
-                 }
-                 break;
+                }
+                break;
         }
 
         rebuildSamples();

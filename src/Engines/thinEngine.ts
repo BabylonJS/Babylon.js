@@ -36,7 +36,7 @@ import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
-import { ICanvas, ICanvasRenderingContext } from "./ICanvas";
+import { ICanvas, ICanvasRenderingContext, IImage } from "./ICanvas";
 import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
@@ -179,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.31";
+        return "babylonjs@5.0.0-alpha.36";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.31";
+        return "5.0.0-alpha.36";
     }
 
     /**
@@ -652,6 +652,14 @@ export class ThinEngine {
      */
     public createCanvas(width: number, height: number): ICanvas {
         return ThinEngine._createCanvas(width, height);
+    }
+
+    /**
+     * Create an image to use with canvas
+     * @return IImage interface
+     */
+    public createCanvasImage(): IImage {
+        return document.createElement("img");
     }
 
     /**
@@ -1738,6 +1746,11 @@ export class ThinEngine {
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, framebuffer);
             this._currentFramebuffer = framebuffer;
         }
+    }
+
+    /** @hidden */
+    public _currentFrameBufferIsDefaultFrameBuffer() {
+        return this._currentFramebuffer === null;
     }
 
     /**

@@ -14,7 +14,7 @@ import { Color3, Color4, TmpColors } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 import { Observable } from '../../../../Misc/observable';
 
-const remapAttributeName: { [name: string]: string }  = {
+const remapAttributeName: { [name: string]: string } = {
     "position2d": "position",
     "particle_uv": "vUV",
     "particle_color": "vColor",
@@ -22,14 +22,14 @@ const remapAttributeName: { [name: string]: string }  = {
     "particle_positionw": "vPositionW",
 };
 
-const attributeInFragmentOnly: { [name: string]: boolean }  = {
+const attributeInFragmentOnly: { [name: string]: boolean } = {
     "particle_uv": true,
     "particle_color": true,
     "particle_texturemask": true,
     "particle_positionw": true,
 };
 
-const attributeAsUniform: { [name: string]: boolean }  = {
+const attributeAsUniform: { [name: string]: boolean } = {
     "particle_texturemask": true,
 };
 

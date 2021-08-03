@@ -18,8 +18,12 @@ export interface IComputeEffectCreationOptions {
      */
     defines: any;
     /**
-     * Callback that will be called when the shader is compiled.
+     * The name of the entry point in the shader source (defaut: "main")
      */
+    entryPoint?: string;
+    /**
+    * Callback that will be called when the shader is compiled.
+    */
     onCompiled: Nullable<(effect: ComputeEffect) => void>;
     /**
      * Callback that will be called if an error occurs during shader compilation.
@@ -52,14 +56,14 @@ export class ComputeEffect {
     /**
      * Callback that will be called when the shader is compiled.
      */
-     public onCompiled: Nullable<(effect: ComputeEffect) => void> = null;
-     /**
-      * Callback that will be called if an error occurs during shader compilation.
-      */
-     public onError: Nullable<(effect: ComputeEffect, errors: string) => void> = null;
-     /**
-     * Unique ID of the effect.
+    public onCompiled: Nullable<(effect: ComputeEffect) => void> = null;
+    /**
+     * Callback that will be called if an error occurs during shader compilation.
      */
+    public onError: Nullable<(effect: ComputeEffect, errors: string) => void> = null;
+    /**
+    * Unique ID of the effect.
+    */
     public uniqueId = 0;
     /**
      * Observable that will be called when the shader is compiled.
@@ -92,6 +96,7 @@ export class ComputeEffect {
     /** @hidden */
     public _computeSourceCode: string = "";
     private _rawComputeSourceCode: string = "";
+    private _entryPoint: string;
 
     /**
      * Creates a compute effect that can be used to execute a compute shader
@@ -110,6 +115,7 @@ export class ComputeEffect {
         this.defines = options.defines ?? "";
         this.onError = options.onError;
         this.onCompiled = options.onCompiled;
+        this._entryPoint = options.entryPoint ?? "main";
 
         let computeSource: any;
 
@@ -170,7 +176,7 @@ export class ComputeEffect {
     /**
      * Unique key for this effect
      */
-     public get key(): string {
+    public get key(): string {
         return this._key;
     }
 
@@ -217,7 +223,7 @@ export class ComputeEffect {
      * The error from the last compilation.
      * @returns the error string.
      */
-     public getCompilationError(): string {
+    public getCompilationError(): string {
         return this._compilationError;
     }
 
@@ -225,7 +231,7 @@ export class ComputeEffect {
      * Adds a callback to the onCompiled observable and call the callback immediately if already ready.
      * @param func The callback to be used.
      */
-     public executeWhenCompiled(func: (effect: ComputeEffect) => void): void {
+    public executeWhenCompiled(func: (effect: ComputeEffect) => void): void {
         if (this.isReady()) {
             func(this);
             return;
@@ -258,7 +264,7 @@ export class ComputeEffect {
     }
 
     private _loadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void): void {
-        if (typeof(HTMLElement) !== "undefined") {
+        if (typeof (HTMLElement) !== "undefined") {
             // DOM element ?
             if (shader instanceof HTMLElement) {
                 var shaderCode = DomManagement.GetDOMTextContent(shader);
@@ -320,7 +326,7 @@ export class ComputeEffect {
      * Prepares the effect
      * @hidden
      */
-     public _prepareEffect() {
+    public _prepareEffect() {
         let defines = this.defines;
 
         var previousPipelineContext = this._pipelineContext;
@@ -333,7 +339,7 @@ export class ComputeEffect {
             this._pipelineContext = engine.createComputePipelineContext();
             this._pipelineContext._name = this._key;
 
-            engine._prepareComputePipelineContext(this._pipelineContext, this._computeSourceCodeOverride ? this._computeSourceCodeOverride : this._computeSourceCode, this._rawComputeSourceCode, this._computeSourceCodeOverride ? null : defines);
+            engine._prepareComputePipelineContext(this._pipelineContext, this._computeSourceCodeOverride ? this._computeSourceCodeOverride : this._computeSourceCode, this._rawComputeSourceCode, this._computeSourceCodeOverride ? null : defines, this._entryPoint);
 
             engine._executeWhenComputeStateIsCompiled(this._pipelineContext, () => {
                 this._compilationError = "";
@@ -354,7 +360,7 @@ export class ComputeEffect {
             }
 
         } catch (e) {
-           this._processCompilationErrors(e, previousPipelineContext);
+            this._processCompilationErrors(e, previousPipelineContext);
         }
     }
 

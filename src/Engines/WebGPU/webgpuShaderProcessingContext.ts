@@ -32,11 +32,12 @@ export interface WebGPUBindingDescription {
     usedInFragment: boolean;
 
     isSampler: boolean;
-    isComparisonSampler?: boolean;
+    samplerBindingType?: GPUSamplerBindingType;
 
     isTexture: boolean;
     sampleType?: GPUTextureSampleType;
     textureDimension?: GPUTextureViewDimension;
+    origName?: string;
 }
 
 /**
@@ -49,7 +50,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
 
     public availableVaryings: { [key: string]: number };
     public availableAttributes: { [key: string]: number };
-    public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number} };
+    public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number } };
     public availableSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription };
 
     public leftOverUniforms: { name: string, type: string, length: number }[];
@@ -57,7 +58,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public orderedAttributes: string[];
     public orderedUBOsAndSamplers: WebGPUBindingDescription[][];
     public uniformBufferNames: string[];
-    public samplerNames: string[]; // list of all sampler names used in the shader
+    public samplerNames: string[]; // list of all sampler (texture) names used in the shader
     public attributeNamesFromEffect: string[];
     public attributeLocationsFromEffect: number[];
 
@@ -70,10 +71,10 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         this.freeSetIndex = 2;
         this.freeBindingIndex = 0;
 
-        this.availableVaryings = { };
-        this.availableAttributes = { };
-        this.availableUBOs = { };
-        this.availableSamplers = { };
+        this.availableVaryings = {};
+        this.availableAttributes = {};
+        this.availableUBOs = {};
+        this.availableSamplers = {};
 
         this.orderedAttributes = [];
         this.orderedUBOsAndSamplers = [];

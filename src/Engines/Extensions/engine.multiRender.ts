@@ -40,42 +40,42 @@ declare module "../../Engines/thinEngine" {
          * Select a subsets of attachments to draw to.
          * @param attachments gl attachments
          */
-        bindAttachments(attachments: number[]) : void;
+        bindAttachments(attachments: number[]): void;
 
         /**
          * Creates a layout object to draw/clear on specific textures in a MRT
          * @param textureStatus textureStatus[i] indicates if the i-th is active
          * @returns A layout to be fed to the engine, calling `bindAttachments`.
          */
-        buildTextureLayout(textureStatus: boolean[]) : number[];
+        buildTextureLayout(textureStatus: boolean[]): number[];
 
         /**
          * Restores the webgl state to only draw on the main color attachment
          * when the frame buffer associated is the canvas frame buffer
          */
-        restoreSingleAttachment() : void;
+        restoreSingleAttachment(): void;
 
         /**
          * Restores the webgl state to only draw on the main color attachment
          * when the frame buffer associated is not the canvas frame buffer
          */
-        restoreSingleAttachmentForRenderTarget() : void;
+        restoreSingleAttachmentForRenderTarget(): void;
     }
 }
 
-ThinEngine.prototype.restoreSingleAttachment = function(): void {
+ThinEngine.prototype.restoreSingleAttachment = function (): void {
     const gl = this._gl;
 
     this.bindAttachments([gl.BACK]);
 };
 
-ThinEngine.prototype.restoreSingleAttachmentForRenderTarget = function(): void {
+ThinEngine.prototype.restoreSingleAttachmentForRenderTarget = function (): void {
     const gl = this._gl;
 
     this.bindAttachments([gl.COLOR_ATTACHMENT0]);
 };
 
-ThinEngine.prototype.buildTextureLayout = function(textureStatus: boolean[]): number[] {
+ThinEngine.prototype.buildTextureLayout = function (textureStatus: boolean[]): number[] {
     const gl = this._gl;
 
     const result = [];
@@ -91,13 +91,13 @@ ThinEngine.prototype.buildTextureLayout = function(textureStatus: boolean[]): nu
     return result;
 };
 
-ThinEngine.prototype.bindAttachments = function(attachments: number[]): void {
+ThinEngine.prototype.bindAttachments = function (attachments: number[]): void {
     const gl = this._gl;
 
     gl.drawBuffers(attachments);
 };
 
-ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     this._currentRenderTarget = null;
 
     // If MSAA, we need to bitblt back to main texture
@@ -153,7 +153,7 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
     this._bindUnboundFramebuffer(null);
 };
 
-ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions, initializeBuffers: boolean = true): InternalTexture[] {
+ThinEngine.prototype.createMultipleRenderTarget = function (size: any, options: IMultiRenderTargetOptions, initializeBuffers: boolean = true): InternalTexture[] {
     var generateMipMaps = false;
     var generateDepthBuffer = true;
     var generateStencilBuffer = false;
@@ -295,7 +295,9 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         depthTexture.isReady = true;
         depthTexture.samples = 1;
         depthTexture.generateMipMaps = generateMipMaps;
-        depthTexture.samplingMode = gl.NEAREST;
+        depthTexture.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        depthTexture.format = Constants.TEXTUREFORMAT_DEPTH16;
+        depthTexture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT;
         depthTexture._generateDepthBuffer = generateDepthBuffer;
         depthTexture._generateStencilBuffer = generateStencilBuffer;
 
@@ -313,7 +315,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
     return textures;
 };
 
-ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number, initializeBuffers: boolean = true): number {
+ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (textures: Nullable<InternalTexture[]>, samples: number, initializeBuffers: boolean = true): number {
     if (this.webGLVersion < 2 || !textures) {
         return 1;
     }

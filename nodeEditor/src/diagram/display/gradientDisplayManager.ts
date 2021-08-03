@@ -23,7 +23,7 @@ export class GradientDisplayManager implements IDisplayManager {
         return gradients.length ? `linear-gradient(90deg, ${gradients.join(", ")})` : 'black';
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {       
+    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         contentArea.classList.add("gradient-block");
     }
 }

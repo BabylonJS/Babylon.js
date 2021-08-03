@@ -556,7 +556,7 @@ export class MeshBuilder {
      * @see https://doc.babylonjs.com/how_to/capsule_shape
      */
     public static CreateCapsule(name: string, options: ICreateCapsuleOptions = {
-        orientation : Vector3.Up(),
+        orientation: Vector3.Up(),
         subdivisions: 2,
         tessellation: 16,
         height: 1,

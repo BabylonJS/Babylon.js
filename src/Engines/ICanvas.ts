@@ -1,8 +1,7 @@
 /**
  * Class used to abstract a canvas
  */
-export interface ICanvas
-{
+export interface ICanvas {
     /**
      * Canvas width.
      */
@@ -27,6 +26,47 @@ export interface ICanvas
      * @returns string containing the requested data URI.
      */
     toDataURL(mime: string): string;
+}
+
+/**
+ * Class used to abstract am image to use with the canvas and its context
+ */
+export interface IImage {
+    /**
+     * onload callback.
+     */
+    onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+
+    /**
+     * Image source.
+     */
+    src: string;
+
+    /**
+     * Image width.
+     */
+    readonly width: number;
+
+    /**
+     * Image height.
+     */
+    readonly height: number;
+
+    /**
+     * The original height of the image resource before sizing.
+     */
+    readonly naturalHeight: number;
+
+    /**
+     * The original width of the image resource before sizing.
+     */
+    readonly naturalWidth: number;
+
+    /**
+     * provides support for CORS, defining how the element handles crossorigin requests,
+     * thereby enabling the configuration of the CORS requests for the element's fetched data.
+     */
+    crossOrigin: string | null;
 }
 
 /**
@@ -148,7 +188,7 @@ export interface ICanvasRenderingContext {
      * @param x Scaling factor in the horizontal direction. A negative value flips pixels across the vertical axis. A value of 1 results in no horizontal scaling.
      * @param y Scaling factor in the vertical direction. A negative value flips pixels across the horizontal axis. A value of 1 results in no vertical scaling.
      */
-    scale(x: number , y: number): void;
+    scale(x: number, y: number): void;
 
     /**
      * Adds a rotation to the transformation matrix. The angle argument represents a clockwise rotation angle and is expressed in radians.
@@ -161,7 +201,7 @@ export interface ICanvasRenderingContext {
      * @param x Distance to move in the horizontal direction. Positive values are to the right, and negative to the left.
      * @param y Distance to move in the vertical direction. Positive values are down, and negative are up.
      */
-    translate(x: number , y: number): void;
+    translate(x: number, y: number): void;
 
     /**
      * Paints a rectangle which has a starting point at (x, y) and has a w width and an h height onto the canvas, using the current stroke style.
@@ -192,7 +232,7 @@ export interface ICanvasRenderingContext {
      * @param dx Horizontal position (x coordinate) at which to place the image data in the destination canvas.
      * @param dy Vertical position (y coordinate) at which to place the image data in the destination canvas.
      */
-    putImageData(imageData: ImageData, dx: number, dy: number) : void;
+    putImageData(imageData: ImageData, dx: number, dy: number): void;
 
     /**
      * Adds a circular arc to the current path.
@@ -208,7 +248,7 @@ export interface ICanvasRenderingContext {
     /**
      * Starts a new path by emptying the list of sub-paths. Call this method when you want to create a new path.
      */
-    beginPath() : void;
+    beginPath(): void;
 
     /**
      * Causes the point of the pen to move back to the start of the current sub-path. It tries to draw a straight line from the current point to the start.
@@ -269,7 +309,7 @@ export interface ICanvasRenderingContext {
      * @param dHeight The height to draw the image in the destination canvas. This allows scaling of the drawn image. If not specified, the image is not scaled in height when drawn.
      */
 
-     drawImage(image: any, sx: number, sy: number, sWidth: number, sHeight: number, dx: number, dy: number, dWidth: number, dHeight: number): void;
+    drawImage(image: any, sx: number, sy: number, sWidth: number, sHeight: number, dx: number, dy: number, dWidth: number, dHeight: number): void;
     /**
      * Draws the specified image. This method is available in multiple formats, providing a great deal of flexibility in its use.
      * @param image An element to draw into the context.

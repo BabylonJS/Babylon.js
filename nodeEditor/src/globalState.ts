@@ -75,7 +75,7 @@ export class GlobalState {
         this.onPreviewCommandActivated.notifyObservers(true);
     }
 
-    customSave?: {label: string, action: (data: string) => Promise<void>};
+    customSave?: { label: string, action: (data: string) => Promise<void> };
 
     public constructor() {
         this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);

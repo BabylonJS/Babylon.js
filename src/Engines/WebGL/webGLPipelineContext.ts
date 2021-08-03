@@ -80,7 +80,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * Release all associated resources.
      **/
     public dispose() {
-        this._uniforms = { };
+        this._uniforms = {};
     }
 
     /** @hidden */

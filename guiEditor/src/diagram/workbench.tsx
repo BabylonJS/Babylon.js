@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import { DragOverLocation, GlobalState } from "../globalState";
 import { Nullable } from "babylonjs/types";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
@@ -43,7 +43,7 @@ export enum ConstraintDirection {
 }
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    public artBoardBackground: Nullable<Rectangle>;
+    public artBoardBackground: Rectangle;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean;
     private _mouseStartPointX: Nullable<number> = null;
@@ -291,20 +291,59 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.highlightLineWidth = 5;
     }
 
-    private parent(control: Nullable<Control>) {
+    private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
+        const draggedControlParent = draggedControl?.parent;
 
-        if (draggedControl != null) {
-            if (draggedControl.parent) {
-                (draggedControl.parent as Container).removeControl(draggedControl);
-                this.props.globalState.guiTexture.addControl(draggedControl);
-            }
-            if (control != null && this.props.globalState.workbench.isContainer(control)) {
-                this.props.globalState.guiTexture.removeControl(draggedControl);
-                (control as Container).addControl(draggedControl);
+        if (draggedControlParent && draggedControl) {
+            if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
+                
+                draggedControlParent.removeControl(draggedControl);
+                if (dropLocationControl != null) { //the control you are dragging onto top
+                    if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
+                        this.props.globalState.draggedControlDirection === DragOverLocation.CENTER) {
+                        (dropLocationControl as Container).addControl(draggedControl);
+                    }
+                    else if (dropLocationControl.parent) { //dropping inside the controls parent container
+                        let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
+                        //adjusting index to be before or after based on where the control is over
+                        index = this._adjustParentingIndex(index);
+                        dropLocationControl.parent.children.splice(index, 0, draggedControl);
+                        draggedControl.parent = dropLocationControl.parent;
+                    }
+                    else {
+                        this.props.globalState.guiTexture.addControl(draggedControl);
+                    }
+                }
+                else {
+                    //starting at index 1 because of object "Art-Board-Background" must be at index 0
+                    draggedControlParent.children.splice(1, 0, draggedControl);
+                    draggedControl.parent = draggedControlParent;
+                }
             }
         }
         this.globalState.draggedControl = null;
+    }
+
+    private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {
+        while (control?.parent) {
+            if (control.parent == draggedControl) {
+                return false;
+            }
+            control = control.parent;
+        }
+        return true;
+    }
+
+    private _adjustParentingIndex(index: number) {
+        switch (this.props.globalState.draggedControlDirection) {
+            case DragOverLocation.ABOVE:
+                return index + 1;
+            case DragOverLocation.BELOW:
+            case DragOverLocation.CENTER:
+                return index;
+        }
+        return index;
     }
 
     public isSelected(value: boolean, guiNode: Control) {
@@ -443,6 +482,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.artBoardBackground.width = "100%"
         this.artBoardBackground.height = "100%";
         this.artBoardBackground.background = "white";
+        this.artBoardBackground.thickness = 0;
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
         this.addControls(this._scene, camera);

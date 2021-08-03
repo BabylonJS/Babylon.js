@@ -522,35 +522,35 @@ export class BlockTools {
             case "NotEqualBlock":
                 let notEqualBlock = new ConditionalBlock("NotEqual");
                 notEqualBlock.condition = ConditionalBlockConditions.NotEqual;
-                return notEqualBlock;             
+                return notEqualBlock;
             case "LessThanBlock":
                 let lessThanBlock = new ConditionalBlock("LessThan");
                 lessThanBlock.condition = ConditionalBlockConditions.LessThan;
-                return lessThanBlock; 
+                return lessThanBlock;
             case "LessOrEqualBlock":
                 let lessOrEqualBlock = new ConditionalBlock("LessOrEqual");
                 lessOrEqualBlock.condition = ConditionalBlockConditions.LessOrEqual;
-                return lessOrEqualBlock; 
+                return lessOrEqualBlock;
             case "GreaterThanBlock":
                 let greaterThanBlock = new ConditionalBlock("GreaterThan");
                 greaterThanBlock.condition = ConditionalBlockConditions.GreaterThan;
-                return greaterThanBlock; 
+                return greaterThanBlock;
             case "GreaterOrEqualBlock":
                 let greaterOrEqualBlock = new ConditionalBlock("GreaterOrEqual");
                 greaterOrEqualBlock.condition = ConditionalBlockConditions.GreaterOrEqual;
-                return greaterOrEqualBlock; 
+                return greaterOrEqualBlock;
             case "XorBlock":
                 let xorBlock = new ConditionalBlock("Xor");
                 xorBlock.condition = ConditionalBlockConditions.Xor;
-                return xorBlock; 
+                return xorBlock;
             case "OrBlock":
                 let orBlock = new ConditionalBlock("Or");
                 orBlock.condition = ConditionalBlockConditions.Or;
-                return orBlock; 
+                return orBlock;
             case "AndBlock":
                 let andBlock = new ConditionalBlock("And");
                 andBlock.condition = ConditionalBlockConditions.And;
-                return andBlock;                              
+                return andBlock;
         }
 
         return null;
@@ -606,7 +606,7 @@ export class BlockTools {
     }
 
     public static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
-        switch (type){
+        switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
                 return "Float";
             case NodeMaterialBlockConnectionPointTypes.Vector2:
