@@ -6725,7 +6725,9 @@ declare module BABYLON {
         /** Fog Color */
         FogColor = 8,
         /** Delta time */
-        DeltaTime = 9
+        DeltaTime = 9,
+        /** Camera parameters */
+        CameraParameters = 10
     }
 }
 declare module BABYLON {
@@ -39570,6 +39572,10 @@ declare module BABYLON {
          * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
          */
         readonly isNDCHalfZRange: boolean;
+        /**
+         * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
+         */
+        readonly hasOriginBottomLeft: boolean;
         /**
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
