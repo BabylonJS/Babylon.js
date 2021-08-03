@@ -7,6 +7,7 @@ export interface IColorPickerComponentProps {
     linearHint?: boolean;
     onColorChanged: (newOne: string) => void;
     icon? : string;
+    iconLabel? : string;
     shouldPopRight?: boolean;
 }
 
@@ -80,7 +81,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
 
         return (
             <div className="color-picker">
-                {this.props.icon && <img src={this.props.icon} className="icon"/>}
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
                 <div className="color-rect"  ref={this._floatHostRef}
                     style={{background: this.state.hex}}
                     onClick={() => this.setState({pickerEnabled: true})}>
