@@ -565,6 +565,8 @@ void main(void) {
 
     #include<pbrBlockFinalUnlitComponents>
 
+    #define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION
+
     #include<pbrBlockFinalColorComposition>
 
     #include<logDepthFragment>
